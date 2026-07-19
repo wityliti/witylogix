@@ -42,8 +42,8 @@ const TIER_BADGE_VARIANT = {
 } as const;
 
 const TIER_DOT: Record<string, string> = {
-  enterprise: 'bg-amber-400',
-  premium: 'bg-blue-400',
+  enterprise: 'bg-wl-warning-400',
+  premium: 'bg-wl-info-400',
   standard: 'bg-wl-neutral-500',
 };
 
@@ -99,7 +99,7 @@ export default function CustomersPage() {
     {
       label: 'Avg Orders / Customer',
       value: statsLoading ? null : (stats?.avgOrderCount ?? 0).toFixed(1),
-      icon: <ShoppingBag className="w-5 h-5 text-purple-400" />,
+      icon: <ShoppingBag className="w-5 h-5 text-wl-primary-400" />,
       change: null,
     },
     {
@@ -126,7 +126,7 @@ export default function CustomersPage() {
                 onClick={() => setView('grid')}
                 className={cn(
                   'px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-colors',
-                  view === 'grid' ? 'bg-blue-600 text-white' : 'text-wl-text-secondary hover:text-white',
+                  view === 'grid' ? 'bg-wl-primary-600 text-white' : 'text-wl-text-secondary hover:text-white',
                 )}
               >
                 <LayoutGrid className="w-3.5 h-3.5" /> List
@@ -135,7 +135,7 @@ export default function CustomersPage() {
                 onClick={() => setView('map')}
                 className={cn(
                   'px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-colors',
-                  view === 'map' ? 'bg-blue-600 text-white' : 'text-wl-text-secondary hover:text-white',
+                  view === 'map' ? 'bg-wl-primary-600 text-white' : 'text-wl-text-secondary hover:text-white',
                 )}
               >
                 <MapIcon className="w-3.5 h-3.5" /> Map
@@ -191,7 +191,7 @@ export default function CustomersPage() {
                 className={cn(
                   'px-3 py-1.5 rounded-full text-xs font-semibold border transition-all capitalize',
                   statusFilter === s
-                    ? 'bg-blue-600 text-white border-blue-600'
+                    ? 'bg-wl-primary-600 text-white border-wl-primary-600'
                     : 'bg-transparent text-wl-text-secondary border-wl-border-default hover:border-wl-border-strong',
                 )}
               >
@@ -208,7 +208,7 @@ export default function CustomersPage() {
                 className={cn(
                   'px-3 py-1.5 rounded-full text-xs font-semibold border transition-all flex items-center gap-1.5',
                   tierFilter === t
-                    ? 'bg-blue-600 text-white border-blue-600'
+                    ? 'bg-wl-primary-600 text-white border-wl-primary-600'
                     : 'bg-transparent text-wl-text-secondary border-wl-border-default hover:border-wl-border-strong',
                 )}
               >

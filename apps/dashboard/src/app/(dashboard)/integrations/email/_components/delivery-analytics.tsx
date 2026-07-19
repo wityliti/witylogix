@@ -57,7 +57,7 @@ export function DeliveryAnalytics({ metrics }: DeliveryAnalyticsProps) {
                   {/* Stacked Bar Chart */}
                   <div className="flex h-8 rounded-lg overflow-hidden bg-wl-bg-surface">
                     <div
-                      className="bg-emerald-500 flex items-center justify-center text-xs font-bold text-white"
+                      className="bg-wl-success-500 flex items-center justify-center text-xs font-bold text-white"
                       style={{
                         width: `${delivered}%`,
                       }}
@@ -66,7 +66,7 @@ export function DeliveryAnalytics({ metrics }: DeliveryAnalyticsProps) {
                       {Number(delivered) > 15 && `${delivered}%`}
                     </div>
                     <div
-                      className="bg-cyan-500 flex items-center justify-center text-xs font-bold text-white"
+                      className="bg-wl-info-500 flex items-center justify-center text-xs font-bold text-white"
                       style={{
                         width: `${(metric.opened / metric.sent) * 100}%`,
                       }}
@@ -76,7 +76,7 @@ export function DeliveryAnalytics({ metrics }: DeliveryAnalyticsProps) {
                         `${((metric.opened / metric.sent) * 100).toFixed(0)}%`}
                     </div>
                     <div
-                      className="bg-blue-500 flex items-center justify-center text-xs font-bold text-white"
+                      className="bg-wl-info-500 flex items-center justify-center text-xs font-bold text-white"
                       style={{
                         width: `${(metric.clicked / metric.sent) * 100}%`,
                       }}
@@ -86,7 +86,7 @@ export function DeliveryAnalytics({ metrics }: DeliveryAnalyticsProps) {
                         `${((metric.clicked / metric.sent) * 100).toFixed(0)}%`}
                     </div>
                     <div
-                      className="bg-red-500 flex items-center justify-center text-xs font-bold text-white"
+                      className="bg-wl-danger-500 flex items-center justify-center text-xs font-bold text-white"
                       style={{
                         width: `${bounced}%`,
                       }}
@@ -99,25 +99,25 @@ export function DeliveryAnalytics({ metrics }: DeliveryAnalyticsProps) {
                   {/* Metrics */}
                   <div className="grid grid-cols-4 gap-2 mt-3 text-xs">
                     <div>
-                      <span className="inline-block w-2 h-2 bg-emerald-500 rounded-full mr-1" />
+                      <span className="inline-block w-2 h-2 bg-wl-success-500 rounded-full mr-1" />
                       <span className="text-wl-text-tertiary">
                         Delivered: {metric.delivered}
                       </span>
                     </div>
                     <div>
-                      <span className="inline-block w-2 h-2 bg-cyan-500 rounded-full mr-1" />
+                      <span className="inline-block w-2 h-2 bg-wl-info-500 rounded-full mr-1" />
                       <span className="text-wl-text-tertiary">
                         Opened: {metric.opened}
                       </span>
                     </div>
                     <div>
-                      <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mr-1" />
+                      <span className="inline-block w-2 h-2 bg-wl-info-500 rounded-full mr-1" />
                       <span className="text-wl-text-tertiary">
                         Clicked: {metric.clicked}
                       </span>
                     </div>
                     <div>
-                      <span className="inline-block w-2 h-2 bg-red-500 rounded-full mr-1" />
+                      <span className="inline-block w-2 h-2 bg-wl-danger-500 rounded-full mr-1" />
                       <span className="text-wl-text-tertiary">
                         Bounced: {metric.bounced}
                       </span>

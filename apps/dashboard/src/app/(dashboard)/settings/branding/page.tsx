@@ -100,7 +100,7 @@ export default function BrandingPage() {
                 <div className="border-2 border-dashed border-wl-border-default rounded-lg p-8 text-center hover:border-wl-info-500/50 transition-colors cursor-pointer">
                   <div className="mb-4">
                     <div className="w-16 h-16 mx-auto rounded-lg bg-wl-bg-elevated flex items-center justify-center">
-                      <div className="w-8 h-8 rounded bg-blue-500" />
+                      <div className="w-8 h-8 rounded bg-wl-info-500" />
                     </div>
                   </div>
                   <p className="text-sm font-medium text-white mb-2">
@@ -171,7 +171,7 @@ export default function BrandingPage() {
                   Accent Color
                 </label>
                 <div className="flex items-center gap-3">
-                  <div className="w-16 h-16 rounded-lg bg-amber-500 border border-[var(--wl-border)] cursor-pointer hover:shadow-lg transition-shadow" />
+                  <div className="w-16 h-16 rounded-lg bg-wl-warning-500 border border-[var(--wl-border)] cursor-pointer hover:shadow-lg transition-shadow" />
                   <div className="flex-1">
                     <input
                       type="text"
@@ -187,7 +187,7 @@ export default function BrandingPage() {
                   Success Color
                 </label>
                 <div className="flex items-center gap-3">
-                  <div className="w-16 h-16 rounded-lg bg-emerald-500 border border-[var(--wl-border)] cursor-pointer hover:shadow-lg transition-shadow" />
+                  <div className="w-16 h-16 rounded-lg bg-wl-success-500 border border-[var(--wl-border)] cursor-pointer hover:shadow-lg transition-shadow" />
                   <div className="flex-1">
                     <input
                       type="text"
@@ -359,7 +359,7 @@ export default function BrandingPage() {
           >
             Preview
           </Button>
-          <Button variant="primary" className="bg-blue-500 hover:bg-blue-600">
+          <Button variant="primary" className="bg-wl-info-500 hover:bg-wl-primary-600">
             Save Changes
           </Button>
         </div>

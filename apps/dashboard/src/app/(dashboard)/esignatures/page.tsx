@@ -196,7 +196,7 @@ function RecentEnvelopesTable({ envelopes }: { envelopes: Envelope[] }) {
                     <div className={cn("flex items-center gap-2")}>
                       <div className={cn("flex-1 h-1.5 bg-wl-bg-elevated rounded-full overflow-hidden")}>
                         <div
-                          className={cn("h-full bg-emerald-500 transition-all")}
+                          className={cn("h-full bg-wl-success-500 transition-all")}
                           style={{ width: `${env.completionRate}%` }}
                         />
                       </div>

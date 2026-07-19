@@ -79,7 +79,7 @@ const MetricsBar = ({ stores }: { stores: Store[] }) => {
   const activeSubscriptions = stores.filter((s) => s.planTier !== 'free').length;
 
   const metrics = [
-    { label: 'Total Stores',  value: totalStores.toString(),                      icon: ShoppingCart, iconClass: 'text-indigo-400',         bgClass: 'bg-indigo-400/10'         },
+    { label: 'Total Stores',  value: totalStores.toString(),                      icon: ShoppingCart, iconClass: 'text-wl-primary-400',         bgClass: 'bg-wl-primary-400/10'         },
     { label: 'Active Stores', value: activeStores.toString(),                     icon: CheckCircle2, iconClass: 'text-wl-success-500',      bgClass: 'bg-wl-success-500/10'     },
     { label: 'Orders (30d)',  value: totalOrders.toLocaleString(),                icon: BarChart3,    iconClass: 'text-wl-warning-500',      bgClass: 'bg-wl-warning-500/10'     },
     { label: 'Revenue',       value: `$${(totalRevenue / 1000).toFixed(0)}K`,    icon: TrendingUp,   iconClass: 'text-violet-400',          bgClass: 'bg-violet-400/10'         },

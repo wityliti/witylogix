@@ -213,7 +213,7 @@ export default function IntegrationOverviewPage() {
                   </div>
                   <div className="w-full h-2 bg-wl-bg-root rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-emerald-500 rounded-full transition-all"
+                      className="h-full bg-wl-success-500 rounded-full transition-all"
                       style={{ width: `${totalProviders > 0 ? (totalActive / totalProviders) * 100 : 0}%` }}
                     />
                   </div>
@@ -285,7 +285,7 @@ export default function IntegrationOverviewPage() {
                 className={cn(
                   'px-4 py-2 rounded-lg border text-sm font-medium transition-all',
                   filterStatus === status
-                    ? 'bg-blue-500 text-black border-blue-600'
+                    ? 'bg-wl-info-500 text-black border-wl-primary-600'
                     : 'border-wl-border-default text-wl-text-secondary hover:border-wl-info-500/50'
                 )}
               >

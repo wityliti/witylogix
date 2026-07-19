@@ -272,7 +272,7 @@ export default function SystemPage() {
             {degradedServices.length > 0 && (
               <div className="space-y-3">
                 {degradedServices.map(service => (
-                  <Card key={service.name} className="border border-amber-600/30 bg-wl-warning-500/10">
+                  <Card key={service.name} className="border border-wl-warning-500/30 bg-wl-warning-500/10">
                     <CardContent className="pt-5">
                       <div className="flex items-start gap-3">
                         <AlertCircle className="w-5 h-5 text-wl-warning-500 flex-shrink-0 mt-0.5" />
@@ -292,7 +292,7 @@ export default function SystemPage() {
             )}
 
             {degradedServices.length === 0 && services.length > 0 && (
-              <Card className="border border-emerald-600/30 bg-wl-success-500/10">
+              <Card className="border border-wl-success-600/30 bg-wl-success-500/10">
                 <CardContent className="pt-5">
                   <div className="flex items-center gap-3">
                     <CheckCircle2 className="w-5 h-5 text-wl-success-500" />

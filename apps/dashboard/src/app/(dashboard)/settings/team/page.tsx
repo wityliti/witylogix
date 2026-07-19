@@ -364,7 +364,7 @@ export default function TeamPage() {
           )}
 
           {/* Info */}
-          <Card className="bg-blue-500/5 border border-wl-info-500/30">
+          <Card className="bg-wl-info-bg border border-wl-info-500/30">
             <CardContent className="pt-6">
               <div className="flex gap-3">
                 <AlertCircle className="w-5 h-5 text-wl-info-500 flex-shrink-0 mt-0.5" />

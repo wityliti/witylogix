@@ -318,7 +318,7 @@ export default function ShipmentDetailPage() {
               </div>
               {mapData?.driverLocation && (
                 <div className="px-4 py-2 bg-wl-success-500/10 border-t border-wl-success-500/20 flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <div className="w-2 h-2 rounded-full bg-wl-success-400 animate-pulse" />
                   <span className="text-xs text-wl-success-400 font-semibold">
                     {mapData.driverLocation.driverName} is live on this route
                   </span>
@@ -346,7 +346,7 @@ export default function ShipmentDetailPage() {
                       className={cn(
                         'px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
                         isCurrent
-                          ? 'bg-blue-500 text-white border-blue-500 shadow-[0_0_12px_rgba(59,130,246,0.3)]'
+                          ? 'bg-wl-info-500 text-white border-wl-info-500 shadow-[0_0_12px_rgba(59,130,246,0.3)]'
                           : isCompleted
                             ? 'bg-wl-success-500/20 text-wl-success-400 border-wl-success-500/30'
                             : 'bg-transparent text-wl-text-tertiary border-wl-border-default',
@@ -383,7 +383,7 @@ export default function ShipmentDetailPage() {
                       )}
                     >
                       <div className="flex flex-col items-center flex-shrink-0">
-                        <div className="w-6 h-6 rounded-full border-2 flex items-center justify-center bg-wl-info-500/20 border-blue-500">
+                        <div className="w-6 h-6 rounded-full border-2 flex items-center justify-center bg-wl-info-500/20 border-wl-info-500">
                           {index === 0 ? (
                             <CheckCircle
                               size={14}
@@ -733,7 +733,7 @@ export default function ShipmentDetailPage() {
                 {driverLocationData && (
                   <div className="mt-3 p-2.5 rounded-lg bg-wl-success-500/10 border border-wl-success-500/20">
                     <div className="flex items-center gap-2 mb-1">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-wl-success-400 animate-pulse" />
                       <span className="text-xs font-semibold text-wl-success-400">
                         Live Location
                       </span>
@@ -774,10 +774,10 @@ export default function ShipmentDetailPage() {
             className={cn(
               'border-2',
               shipment.status === 'DELIVERED'
-                ? 'bg-emerald-500/5 border-wl-success-500/40'
+                ? 'bg-wl-success-bg border-wl-success-500/40'
                 : shipment.status === 'FAILED' || shipment.status === 'CANCELLED'
-                  ? 'bg-red-500/5 border-wl-danger-500/40'
-                  : 'bg-blue-500/5 border-wl-info-500/40',
+                  ? 'bg-wl-danger-bg border-wl-danger-500/40'
+                  : 'bg-wl-info-bg border-wl-info-500/40',
             )}
           >
             <CardContent className="p-5">

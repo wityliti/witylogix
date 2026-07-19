@@ -215,7 +215,7 @@ export default function ShippingProfilesPage() {
                   className={cn(
                     "px-3 py-1 rounded-full border text-xs font-semibold cursor-pointer font-sans transition-all duration-200",
                     deliveryFilter === m
-                      ? "bg-blue-500 text-wl-text-primary border-blue-500"
+                      ? "bg-wl-info-500 text-wl-text-primary border-wl-info-500"
                       : "bg-transparent text-wl-text-secondary border-wl-border-default",
                   )}
                 >
@@ -250,7 +250,7 @@ export default function ShippingProfilesPage() {
                 <div
                   className={cn(
                     "absolute top-0 left-0 right-0 h-0.5",
-                    profile.isActive ? "bg-emerald-500" : "bg-red-500",
+                    profile.isActive ? "bg-wl-success-500" : "bg-wl-danger-500",
                   )}
                 />
 

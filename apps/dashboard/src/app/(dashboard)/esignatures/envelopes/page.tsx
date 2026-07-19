@@ -89,7 +89,7 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
                       type="checkbox"
                       checked={selectedIds.size === envelopes.length && envelopes.length > 0}
                       onChange={toggleSelectAll}
-                      className="w-4 h-4 rounded border-wl-border-default accent-blue-500"
+                      className="w-4 h-4 rounded border-wl-border-default accent-wl-info-500"
                     />
                   </th>
                   <th className="text-left py-3 px-4 font-medium text-wl-text-secondary">Name</th>
@@ -111,7 +111,7 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
                         type="checkbox"
                         checked={selectedIds.has(env.id)}
                         onChange={() => toggleSelect(env.id)}
-                        className="w-4 h-4 rounded border-wl-border-default accent-blue-500"
+                        className="w-4 h-4 rounded border-wl-border-default accent-wl-info-500"
                       />
                     </td>
                     <td className="py-3 px-4 text-white font-medium">
@@ -149,7 +149,7 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
                       <div className="flex items-center gap-2">
                         <div className="w-20 h-1.5 bg-wl-bg-elevated rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-emerald-500 transition-all"
+                            className="h-full bg-wl-success-500 transition-all"
                             style={{ width: `${env.completionRate}%` }}
                           />
                         </div>
@@ -334,7 +334,7 @@ export default function EnvelopesPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-wl-text-secondary text-sm font-medium">Completed</span>
-              <div className="w-5 h-5 rounded-full bg-emerald-500"></div>
+              <div className="w-5 h-5 rounded-full bg-wl-success-500"></div>
             </div>
             <p className="text-3xl font-bold text-white">
               {data.filter(e => e.status === 'COMPLETED').length}
@@ -346,7 +346,7 @@ export default function EnvelopesPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-wl-text-secondary text-sm font-medium">Pending</span>
-              <div className="w-5 h-5 rounded-full bg-amber-500"></div>
+              <div className="w-5 h-5 rounded-full bg-wl-warning-500"></div>
             </div>
             <p className="text-3xl font-bold text-white">
               {data.filter(e => ['DRAFT', 'SENT', 'VIEWED'].includes(e.status)).length}
@@ -358,7 +358,7 @@ export default function EnvelopesPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-wl-text-secondary text-sm font-medium">Avg. Completion</span>
-              <div className="w-5 h-5 rounded-full bg-blue-500"></div>
+              <div className="w-5 h-5 rounded-full bg-wl-info-500"></div>
             </div>
             <p className="text-3xl font-bold text-white">
               {data.length > 0 ? Math.round(data.reduce((sum, e) => sum + e.completionRate, 0) / data.length) : 0}%
@@ -382,7 +382,7 @@ export default function EnvelopesPage() {
                   className={cn(
                     "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
                     filterStatus === status
-                      ? "bg-blue-500 text-white"
+                      ? "bg-wl-info-500 text-white"
                       : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white"
                   )}
                 >

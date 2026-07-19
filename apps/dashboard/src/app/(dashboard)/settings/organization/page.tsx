@@ -211,7 +211,7 @@ export default function OrganizationPage() {
                   <CardTitle className="text-white">Current Plan</CardTitle>
                   <CardDescription className="text-wl-text-secondary">Manage your billing and subscription</CardDescription>
                 </div>
-                <Badge variant="primary" className="bg-blue-500 text-white">{billing?.plan ?? 'Free'} Plan</Badge>
+                <Badge variant="primary" className="bg-wl-info-500 text-white">{billing?.plan ?? 'Free'} Plan</Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -250,9 +250,9 @@ export default function OrganizationPage() {
                   <div className="space-y-4">
                     {usageMetrics.map((metric) => {
                       const barColor =
-                        metric.percentage >= 90 ? "bg-red-500"
-                        : metric.percentage >= 70 ? "bg-amber-500"
-                        : "bg-blue-500";
+                        metric.percentage >= 90 ? "bg-wl-danger-500"
+                        : metric.percentage >= 70 ? "bg-wl-warning-500"
+                        : "bg-wl-info-500";
                       return (
                         <div key={metric.name}>
                           <div className="flex justify-between items-end mb-2">
@@ -289,7 +289,7 @@ export default function OrganizationPage() {
               <CardDescription className="text-wl-text-secondary">Irreversible and destructive actions</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="p-4 bg-red-500/5 border border-wl-danger-500/30 rounded-lg">
+              <div className="p-4 bg-wl-danger-bg border border-wl-danger-500/30 rounded-lg">
                 <h4 className="font-semibold text-white mb-2">
                   Delete Organization
                 </h4>

@@ -80,7 +80,7 @@ export default function RecordsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-wl-text-secondary text-sm font-medium">Signed Records</span>
-              <div className="w-5 h-5 rounded-full bg-emerald-500"></div>
+              <div className="w-5 h-5 rounded-full bg-wl-success-500"></div>
             </div>
             <p className="text-3xl font-bold text-white">{records.filter(r => r.isSigned).length}</p>
             <p className="text-wl-text-secondary text-xs mt-2">Completed</p>
@@ -91,7 +91,7 @@ export default function RecordsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-wl-text-secondary text-sm font-medium">Unsigned</span>
-              <div className="w-5 h-5 rounded-full bg-amber-500"></div>
+              <div className="w-5 h-5 rounded-full bg-wl-warning-500"></div>
             </div>
             <p className="text-3xl font-bold text-white">{records.filter(r => !r.isSigned).length}</p>
             <p className="text-wl-text-secondary text-xs mt-2">Pending review</p>
@@ -114,7 +114,7 @@ export default function RecordsPage() {
                   className={cn(
                     "px-3 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap",
                     recordTypeFilter === type
-                      ? "bg-blue-500 text-white"
+                      ? "bg-wl-info-500 text-white"
                       : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white"
                   )}
                 >

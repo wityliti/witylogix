@@ -213,7 +213,7 @@ export default function ActivityPage() {
                   className={cn(
                     "w-2 h-2 rounded-full transition-all duration-500",
                     isLiveMode
-                      ? "bg-emerald-500 animate-pulse"
+                      ? "bg-wl-success-500 animate-pulse"
                       : "bg-wl-text-tertiary"
                   )}
                 />

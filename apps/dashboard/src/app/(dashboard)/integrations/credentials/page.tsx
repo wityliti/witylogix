@@ -71,10 +71,10 @@ function VaultStatusCard({
               className={cn(
                 "h-2 rounded-full transition-all",
                 healthScore >= 80
-                  ? "bg-emerald-500"
+                  ? "bg-wl-success-500"
                   : healthScore >= 60
-                    ? "bg-amber-500"
-                    : "bg-red-500"
+                    ? "bg-wl-warning-500"
+                    : "bg-wl-danger-500"
               )}
               style={{ width: `${healthScore}%` }}
             />
@@ -102,10 +102,10 @@ function RotationTimeline({ schedules }: { schedules: RotationSchedule[] }) {
                 className={cn(
                   "w-3 h-3 rounded-full",
                   schedule.status === "completed"
-                    ? "bg-emerald-500"
+                    ? "bg-wl-success-500"
                     : isOverdue
-                      ? "bg-red-500"
-                      : "bg-cyan-500"
+                      ? "bg-wl-danger-500"
+                      : "bg-wl-info-500"
                 )}
               />
               {idx < sorted.length - 1 && (

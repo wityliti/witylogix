@@ -189,7 +189,7 @@ function StopListItem({ stop, isSelected, onSelect, routeId, onStatusUpdated }: 
       className={cn(
         'rounded-lg border transition-all cursor-pointer',
         isSelected
-          ? 'border-blue-500 bg-blue-500/5'
+          ? 'border-wl-info-500 bg-wl-info-bg'
           : 'border-wl-border-default bg-wl-bg-surface hover:border-wl-border-strong',
       )}
       onClick={onSelect}
@@ -200,11 +200,11 @@ function StopListItem({ stop, isSelected, onSelect, routeId, onStatusUpdated }: 
           className={cn(
             'w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0',
             stop.status === 'COMPLETED'
-              ? 'bg-emerald-500 text-white'
+              ? 'bg-wl-success-500 text-white'
               : stop.status === 'FAILED'
-                ? 'bg-red-500 text-white'
+                ? 'bg-wl-danger-500 text-white'
                 : stop.status === 'EN_ROUTE' || stop.status === 'ARRIVED'
-                  ? 'bg-blue-500 text-white'
+                  ? 'bg-wl-info-500 text-white'
                   : 'bg-wl-bg-overlay text-wl-neutral-300',
           )}
         >
@@ -436,7 +436,7 @@ export default function RouteDetailPage() {
           {/* Progress bar */}
           <div className="mt-2 h-1 bg-wl-bg-overlay rounded-full overflow-hidden">
             <div
-              className="h-1 bg-blue-500 rounded-full transition-all"
+              className="h-1 bg-wl-info-500 rounded-full transition-all"
               style={{ width: `${progressPct}%` }}
             />
           </div>
@@ -458,7 +458,7 @@ export default function RouteDetailPage() {
 
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-4">
           <div className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-1">Progress</div>
-          <div className="text-2xl font-bold text-purple-400">{progressPct}%</div>
+          <div className="text-2xl font-bold text-wl-primary-400">{progressPct}%</div>
         </div>
       </div>
 
@@ -603,11 +603,11 @@ export default function RouteDetailPage() {
                 const isLast = idx === route.stops.length - 1;
                 const dotColor =
                   stop.status === 'COMPLETED'
-                    ? 'bg-emerald-500'
+                    ? 'bg-wl-success-500'
                     : stop.status === 'FAILED'
-                      ? 'bg-red-500'
+                      ? 'bg-wl-danger-500'
                       : stop.status === 'EN_ROUTE' || stop.status === 'ARRIVED'
-                        ? 'bg-blue-500'
+                        ? 'bg-wl-info-500'
                         : 'bg-wl-bg-elevated';
 
                 return (

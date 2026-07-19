@@ -79,7 +79,7 @@ export default function EtaAccuracyMapView({ zoneGeoJSON, accuracyData, loading,
       {/* Top-left overlay */}
       <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
         <div className="rounded-lg bg-black/70 backdrop-blur border border-white/10 px-3 py-1.5 flex items-center gap-2">
-          <Target className="w-3.5 h-3.5 text-indigo-400" />
+          <Target className="w-3.5 h-3.5 text-wl-primary-400" />
           <span className="text-xs font-medium text-wl-text-primary">ETA Accuracy by Zone</span>
         </div>
         <div className="rounded-lg bg-black/70 backdrop-blur border border-white/10 px-3 py-1.5">

@@ -38,9 +38,9 @@ const EldDriverMap = dynamic(
 const dutyStatusColor = (status: DutyStatus): string => {
   const colors: Record<DutyStatus, string> = {
     OFF_DUTY: "bg-wl-neutral-600/40",
-    SLEEPER: "bg-amber-500/40",
-    DRIVING: "bg-red-500/40",
-    ON_DUTY: "bg-blue-500/40",
+    SLEEPER: "bg-wl-warning-500/40",
+    DRIVING: "bg-wl-danger-500/40",
+    ON_DUTY: "bg-wl-info-500/40",
   };
   return colors[status];
 };
@@ -269,11 +269,11 @@ export default function HOSPage() {
                       className={cn(
                         "w-3 h-3 rounded-full",
                         hos.currentStatus === "DRIVING"
-                          ? "bg-red-500 animate-pulse"
+                          ? "bg-wl-danger-500 animate-pulse"
                           : hos.currentStatus === "ON_DUTY"
-                            ? "bg-blue-500"
+                            ? "bg-wl-info-500"
                             : hos.currentStatus === "SLEEPER"
-                              ? "bg-amber-500"
+                              ? "bg-wl-warning-500"
                               : "bg-wl-neutral-400"
                       )}
                     />
@@ -334,7 +334,7 @@ export default function HOSPage() {
             <Card
               className={cn(
                 "bg-wl-bg-surface border-wl-border-default",
-                hosStatus === "critical" && "border-wl-danger-500/50 bg-red-500/5"
+                hosStatus === "critical" && "border-wl-danger-500/50 bg-wl-danger-bg"
               )}
             >
               <CardHeader>
@@ -382,7 +382,7 @@ export default function HOSPage() {
             <CardContent>
               {detailsLoading ? (
                 <div className="flex items-center justify-center py-8">
-                  <div className="w-6 h-6 rounded-full border-2 border-blue-500/30 border-t-blue-500 animate-spin" />
+                  <div className="w-6 h-6 rounded-full border-2 border-wl-info-500/30 border-t-blue-500 animate-spin" />
                 </div>
               ) : (
               <div className="space-y-2">
@@ -422,15 +422,15 @@ export default function HOSPage() {
                 {/* Legend */}
                 <div className="pt-4 flex flex-wrap gap-4 text-xs text-wl-text-secondary border-t border-wl-border-default">
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-sm bg-red-500/40" />
+                    <div className="w-3 h-3 rounded-sm bg-wl-danger-500/40" />
                     Driving
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-sm bg-blue-500/40" />
+                    <div className="w-3 h-3 rounded-sm bg-wl-info-500/40" />
                     On-Duty
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-sm bg-amber-500/40" />
+                    <div className="w-3 h-3 rounded-sm bg-wl-warning-500/40" />
                     Sleeper
                   </div>
                   <div className="flex items-center gap-2">
@@ -452,7 +452,7 @@ export default function HOSPage() {
             <CardContent>
               {detailsLoading ? (
                 <div className="flex items-center justify-center py-8">
-                  <div className="w-6 h-6 rounded-full border-2 border-blue-500/30 border-t-blue-500 animate-spin" />
+                  <div className="w-6 h-6 rounded-full border-2 border-wl-info-500/30 border-t-blue-500 animate-spin" />
                 </div>
               ) : eightDayRecap.length === 0 ? (
                 <p className="text-sm text-wl-text-secondary text-center py-6">
@@ -483,7 +483,7 @@ export default function HOSPage() {
                           <div className="flex items-center justify-center gap-1">
                             <div className="w-16 h-1.5 rounded-full bg-white/5 overflow-hidden">
                               <div
-                                className="h-full bg-blue-500 transition-all"
+                                className="h-full bg-wl-info-500 transition-all"
                                 style={{ width: `${Math.min((entry.total / 70) * 100, 100)}%` }}
                               />
                             </div>

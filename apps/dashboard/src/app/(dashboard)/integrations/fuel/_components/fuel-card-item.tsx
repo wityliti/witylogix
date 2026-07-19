@@ -97,10 +97,10 @@ export function FuelCardItem({
               className={cn(
                 'h-2 rounded-full transition-all',
                 spendPercentage > 90
-                  ? 'bg-red-500'
+                  ? 'bg-wl-danger-500'
                   : spendPercentage > 70
-                  ? 'bg-yellow-500'
-                  : 'bg-emerald-500'
+                  ? 'bg-wl-warning-500'
+                  : 'bg-wl-success-500'
               )}
               style={{ width: `${Math.min(spendPercentage, 100)}%` }}
             />

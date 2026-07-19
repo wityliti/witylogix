@@ -109,7 +109,7 @@ export default function RealtimePage() {
                   className={cn(
                     'px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap',
                     selectedType === type
-                      ? 'bg-blue-500 text-white'
+                      ? 'bg-wl-info-500 text-white'
                       : 'bg-wl-bg-elevated text-wl-neutral-300'
                   )}
                 >

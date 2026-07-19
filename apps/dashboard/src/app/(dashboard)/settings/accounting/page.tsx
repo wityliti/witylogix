@@ -199,7 +199,7 @@ export default function AccountingSettingsPage() {
           const connection = connections.find(c => c.provider === provider && c.isActive);
 
           return (
-            <Card key={provider} className={cn('relative border border-wl-border-default bg-wl-bg-surface', connection && 'border-blue-500')}>
+            <Card key={provider} className={cn('relative border border-wl-border-default bg-wl-bg-surface', connection && 'border-wl-info-500')}>
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">

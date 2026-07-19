@@ -54,7 +54,7 @@ export function SigningTemplateCard({ template }: SigningTemplateCardProps) {
         </div>
 
         <div className="flex gap-2">
-          <Button variant="primary" size="sm" className="flex-1 bg-blue-500 hover:bg-blue-500/90">
+          <Button variant="primary" size="sm" className="flex-1 bg-wl-info-500 hover:bg-wl-info-500">
             <Plus className="w-4 h-4 mr-2" />Use Template
           </Button>
           <Button variant="secondary" size="sm" className="flex-1 bg-wl-bg-surface hover:bg-wl-bg-elevated">

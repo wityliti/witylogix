@@ -167,7 +167,7 @@ export default function POSPage() {
                 </div>
                 <div className="w-full bg-wl-bg-elevated rounded-full h-2">
                   <div
-                    className="bg-emerald-500 h-2 rounded-full"
+                    className="bg-wl-success-500 h-2 rounded-full"
                     style={{ width: `${paymentBreakdownPercentages.cash}%` }}
                   />
                 </div>
@@ -189,7 +189,7 @@ export default function POSPage() {
                 </div>
                 <div className="w-full bg-wl-bg-elevated rounded-full h-2">
                   <div
-                    className="bg-blue-500 h-2 rounded-full"
+                    className="bg-wl-info-500 h-2 rounded-full"
                     style={{ width: `${paymentBreakdownPercentages.card}%` }}
                   />
                 </div>
@@ -211,7 +211,7 @@ export default function POSPage() {
                 </div>
                 <div className="w-full bg-wl-bg-elevated rounded-full h-2">
                   <div
-                    className="bg-purple-500 h-2 rounded-full"
+                    className="bg-wl-primary-500 h-2 rounded-full"
                     style={{ width: `${paymentBreakdownPercentages.mobile}%` }}
                   />
                 </div>
@@ -264,7 +264,7 @@ export default function POSPage() {
                       <div
                         key={txn.id}
                         className={cn(
-                          "p-3 bg-wl-bg-elevated rounded-md border-l-4 border-blue-500 hover:bg-wl-bg-elevated transition-colors opacity-0",
+                          "p-3 bg-wl-bg-elevated rounded-md border-l-4 border-wl-info-500 hover:bg-wl-bg-elevated transition-colors opacity-0",
                           "cursor-pointer"
                         )}
                         style={{
@@ -408,7 +408,7 @@ export default function POSPage() {
                         className={cn(
                           "p-3 bg-wl-bg-elevated rounded-md border transition-colors cursor-pointer opacity-0",
                           selectedTerminal === terminal.id
-                            ? "border-blue-500 bg-wl-bg-elevated"
+                            ? "border-wl-info-500 bg-wl-bg-elevated"
                             : "border-wl-border-default hover:border-wl-border-strong"
                         )}
                         style={{

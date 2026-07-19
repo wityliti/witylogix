@@ -129,7 +129,7 @@ export default function WebhooksDebuggerPage() {
       case 'failed':
         return <AlertCircle className="w-4 h-4 text-wl-danger-500" />;
       default:
-        return <Clock className="w-4 h-4 text-yellow-500" />;
+        return <Clock className="w-4 h-4 text-wl-warning-500" />;
     }
   };
 
@@ -275,7 +275,7 @@ export default function WebhooksDebuggerPage() {
                         className={cn(
                           'p-3 rounded-lg border cursor-pointer transition-all',
                           selectedEvent?.id === event.id
-                            ? 'bg-wl-info-500/10 border-blue-500'
+                            ? 'bg-wl-info-500/10 border-wl-info-500'
                             : 'border-wl-border-default hover:bg-wl-bg-elevated',
                         )}
                       >

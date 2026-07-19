@@ -220,7 +220,7 @@ export default function ConnectedIntegrationsPage() {
               className={cn(
                 "px-4 py-2 rounded-lg border text-sm font-medium transition-all whitespace-nowrap",
                 statusFilter === status
-                  ? "bg-blue-500 text-black border-blue-600"
+                  ? "bg-wl-info-500 text-black border-wl-primary-600"
                   : "border-wl-border-default text-wl-text-secondary hover:border-wl-info-500/50"
               )}
             >
@@ -365,10 +365,10 @@ export default function ConnectedIntegrationsPage() {
                         className={cn(
                           "h-2 rounded-full transition-all",
                           connection.uptime >= 99
-                            ? "bg-emerald-500"
+                            ? "bg-wl-success-500"
                             : connection.uptime >= 95
-                              ? "bg-amber-500"
-                              : "bg-red-500"
+                              ? "bg-wl-warning-500"
+                              : "bg-wl-danger-500"
                         )}
                         style={{ width: `${connection.uptime}%` }}
                       />

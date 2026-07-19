@@ -210,10 +210,10 @@ export default function ProductSyncPage() {
   };
 
   const syncStatusColor = {
-    synced: 'bg-emerald-500 text-wl-success-500',
-    syncing: 'bg-blue-500 text-wl-info-500',
-    error: 'bg-red-500 text-wl-danger-500',
-    pending: 'bg-amber-500 text-wl-warning-500',
+    synced: 'bg-wl-success-500 text-wl-success-500',
+    syncing: 'bg-wl-info-500 text-wl-info-500',
+    error: 'bg-wl-danger-500 text-wl-danger-500',
+    pending: 'bg-wl-warning-500 text-wl-warning-500',
   };
 
   const syncStatusIcon = {
@@ -253,7 +253,7 @@ export default function ProductSyncPage() {
                 className={cn(
                   'flex items-center justify-between p-4 rounded-lg border transition-all',
                   effectivePlatformId === platform.id
-                    ? 'hover:bg-wl-bg-elevated border-blue-500 ring-2 ring-wl-info-500/20'
+                    ? 'hover:bg-wl-bg-elevated border-wl-info-500 ring-2 ring-wl-info-500/20'
                     : 'bg-wl-bg-surface border-wl-border-default hover:border-wl-border-default'
                 )}
               >
@@ -318,7 +318,7 @@ export default function ProductSyncPage() {
                 className={cn(
                   'px-4 py-3 font-medium text-sm transition-colors border-b-2',
                   activeTab === tab
-                    ? 'border-blue-500 text-wl-info-500'
+                    ? 'border-wl-info-500 text-wl-info-500'
                     : 'border-transparent text-wl-neutral-300 hover:text-white'
                 )}
               >

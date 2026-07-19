@@ -328,7 +328,7 @@ export default function IntegrationCatalogPage() {
                     <Card
                       key={app.slug}
                       className={cn(
-                        'relative overflow-hidden transition-all duration-300 cursor-pointer hover:border-blue-500 hover:shadow-lg',
+                        'relative overflow-hidden transition-all duration-300 cursor-pointer hover:border-wl-info-500 hover:shadow-lg',
                         expandedId === app.slug && 'ring-2 ring-wl-info-500',
                       )}
                       style={{ animationDelay: `${index * 30}ms` }}

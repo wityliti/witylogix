@@ -57,9 +57,9 @@ function EldDriverMapInner({ pins, selectedDriverId, onDriverClick }: EldDriverM
 /* ─── Legend ─────────────────────────────────────────────────────────────────── */
 
 const LEGEND = [
-  { compliance: 'COMPLIANT' as EldComplianceStatus, label: 'Compliant',  color: 'bg-emerald-500' },
-  { compliance: 'WARNING'   as EldComplianceStatus, label: 'Warning',    color: 'bg-amber-500'   },
-  { compliance: 'VIOLATION' as EldComplianceStatus, label: 'Violation',  color: 'bg-red-500'     },
+  { compliance: 'COMPLIANT' as EldComplianceStatus, label: 'Compliant',  color: 'bg-wl-success-500' },
+  { compliance: 'WARNING'   as EldComplianceStatus, label: 'Warning',    color: 'bg-wl-warning-500'   },
+  { compliance: 'VIOLATION' as EldComplianceStatus, label: 'Violation',  color: 'bg-wl-danger-500'     },
   { compliance: 'OFFLINE'   as EldComplianceStatus, label: 'Offline',    color: 'bg-neutral-500' },
 ];
 

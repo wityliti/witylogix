@@ -238,7 +238,7 @@ export default function MobileConfigPage() {
                   App Logo
                 </label>
                 <div
-                  className="border-2 border-dashed border-wl-border-default rounded-lg p-8 text-center cursor-pointer transition-all bg-wl-bg-elevated hover:border-blue-500 hover:bg-blue-500/8"
+                  className="border-2 border-dashed border-wl-border-default rounded-lg p-8 text-center cursor-pointer transition-all bg-wl-bg-elevated hover:border-wl-info-500 hover:bg-wl-info-500/8"
                 >
                   <Upload className="w-8 h-8 mx-auto mb-2 text-wl-text-secondary" />
                   <p className="text-sm font-medium text-white">
@@ -332,7 +332,7 @@ export default function MobileConfigPage() {
                       type="checkbox"
                       checked={feature.enabled}
                       onChange={() => toggleFeature(feature.id)}
-                      className="w-5 h-5 cursor-pointer accent-blue-500"
+                      className="w-5 h-5 cursor-pointer accent-wl-info-500"
                     />
                   </label>
                 </div>
@@ -390,7 +390,7 @@ export default function MobileConfigPage() {
                       type="checkbox"
                       checked={notification.enabled}
                       onChange={() => toggleNotification(notification.id)}
-                      className="w-5 h-5 cursor-pointer accent-blue-500"
+                      className="w-5 h-5 cursor-pointer accent-wl-info-500"
                     />
                   </label>
                 </div>
@@ -507,7 +507,7 @@ export default function MobileConfigPage() {
         </Card>
 
         {/* Configuration Summary */}
-        <Card className="bg-emerald-900/20 border border-emerald-400">
+        <Card className="bg-wl-success-bg border border-wl-success-400">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-wl-success-400">
               <CheckCircle className="w-5 h-5" />

@@ -131,7 +131,7 @@ export default function ShippingProfileDetailPage() {
               <input
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
-                className="text-3xl font-bold bg-transparent border-b border-blue-500 text-white outline-none mb-1 w-full"
+                className="text-3xl font-bold bg-transparent border-b border-wl-info-500 text-white outline-none mb-1 w-full"
               />
             ) : (
               <h1 className="text-4xl font-bold text-white mb-1">{profile.name}</h1>

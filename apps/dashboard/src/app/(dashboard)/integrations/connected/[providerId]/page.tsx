@@ -99,7 +99,7 @@ export default function IntegrationDetailPage() {
           <CardContent className="pt-6">
             <div className="text-center py-12">
               {isLoading ? (
-                <div className="w-8 h-8 rounded-full border-2 border-blue-500 border-t-transparent animate-spin mx-auto mb-4" />
+                <div className="w-8 h-8 rounded-full border-2 border-wl-info-500 border-t-transparent animate-spin mx-auto mb-4" />
               ) : (
                 <AlertCircle className="w-12 h-12 text-wl-danger-500 mx-auto mb-4" />
               )}
@@ -331,8 +331,8 @@ export default function IntegrationDetailPage() {
                       className={cn(
                         "p-3 rounded-lg border-l-2",
                         entry.status === "success"
-                          ? "border-l-emerald-500 bg-emerald-500/5"
-                          : "border-l-amber-500 bg-amber-500/5"
+                          ? "border-l-emerald-500 bg-wl-success-bg"
+                          : "border-l-amber-500 bg-wl-warning-bg"
                       )}
                     >
                       <div className="flex items-start justify-between">
@@ -371,7 +371,7 @@ export default function IntegrationDetailPage() {
                   return (
                     <div
                       key={error.id}
-                      className="border border-wl-danger-500/20 rounded-lg bg-red-500/5"
+                      className="border border-wl-danger-500/20 rounded-lg bg-wl-danger-bg"
                     >
                       <button
                         onClick={() => {

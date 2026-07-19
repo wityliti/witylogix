@@ -88,7 +88,7 @@ export default function InstalledAppsPage() {
         {loading && <TableSkeleton rows={3} />}
         {error && <ErrorState message={error.message} onRetry={fetchInstallations} />}
         {revokeError && (
-          <div className="p-3 rounded-lg bg-red-900/20 border border-wl-danger-500/50 text-wl-danger-400 text-sm">
+          <div className="p-3 rounded-lg bg-wl-danger-bg border border-wl-danger-500/50 text-wl-danger-400 text-sm">
             {revokeError}
           </div>
         )}

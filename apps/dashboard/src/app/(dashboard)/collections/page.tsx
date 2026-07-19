@@ -192,7 +192,7 @@ export default function CollectionsPage() {
                 className={cn(
                   "px-3 py-1 rounded-full border text-xs font-semibold cursor-pointer transition-all capitalize",
                   typeFilter === type
-                    ? "bg-blue-500 text-white border-blue-500"
+                    ? "bg-wl-info-500 text-white border-wl-info-500"
                     : "bg-transparent text-wl-text-secondary border-wl-border-default"
                 )}
               >

@@ -55,7 +55,7 @@ export function StepConfigureSync({
                     'flex items-start gap-3 p-3 rounded-md',
                     'border cursor-pointer transition-all duration-base',
                     syncConfig.direction === option.value
-                      ? 'border-blue-500 bg-wl-info-500/10'
+                      ? 'border-wl-info-500 bg-wl-info-500/10'
                       : 'border-wl-border-default hover:border-wl-border-default'
                   )}
                 >

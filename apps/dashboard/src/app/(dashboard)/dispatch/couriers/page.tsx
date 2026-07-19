@@ -169,7 +169,7 @@ function DeliveryCard({
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wl-info-500",
         "hover:border-wl-border-strong hover:bg-wl-bg-elevated/60",
         isSelected
-          ? "bg-wl-info-500/10 border-blue-500 ring-1 ring-wl-info-500/25"
+          ? "bg-wl-info-500/10 border-wl-info-500 ring-1 ring-wl-info-500/25"
           : "bg-wl-bg-elevated/40 border-wl-border-strong",
       )}
     >
@@ -202,7 +202,7 @@ function DeliveryCard({
         </div>
         {courier && (
           <div className="flex items-center gap-2">
-            <div className="w-3.5 h-3.5 rounded-full bg-blue-500 flex-shrink-0" />
+            <div className="w-3.5 h-3.5 rounded-full bg-wl-info-500 flex-shrink-0" />
             <span className="text-wl-info-400">{courier.name}</span>
           </div>
         )}
@@ -468,7 +468,7 @@ export default function CourierDispatchPage() {
             {/* Map header overlay */}
             <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-2 bg-wl-bg-surface/90 border-b border-wl-border-default backdrop-blur-sm">
               <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-cyan-400" />
+                <MapPin className="w-4 h-4 text-wl-info-400" />
                 <span className="text-xs font-semibold text-wl-text-primary uppercase tracking-wider">
                   Live Courier Map
                 </span>

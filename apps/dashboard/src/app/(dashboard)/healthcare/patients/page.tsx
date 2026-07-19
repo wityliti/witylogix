@@ -293,7 +293,7 @@ export default function PatientsPage() {
                 className={cn(
                   'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors',
                   viewMode === 'list'
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-wl-primary-600 text-white'
                     : 'bg-wl-bg-surface text-wl-text-secondary hover:text-white',
                 )}
               >
@@ -304,7 +304,7 @@ export default function PatientsPage() {
                 className={cn(
                   'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors',
                   viewMode === 'map'
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-wl-primary-600 text-white'
                     : 'bg-wl-bg-surface text-wl-text-secondary hover:text-white',
                 )}
               >

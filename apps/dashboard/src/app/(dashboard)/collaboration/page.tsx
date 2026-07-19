@@ -270,7 +270,7 @@ function TeamCollaborationPage() {
 
             {/* Delete confirmation banner */}
             {pendingDeleteMsgId && (
-              <div className="px-4 py-2 flex items-center justify-between gap-3 bg-red-900/20 border-t border-wl-danger-500/30">
+              <div className="px-4 py-2 flex items-center justify-between gap-3 bg-wl-danger-bg border-t border-wl-danger-500/30">
                 <span className="text-xs text-wl-danger-400">Delete this message?</span>
                 <div className="flex gap-2">
                   <button
@@ -281,7 +281,7 @@ function TeamCollaborationPage() {
                   </button>
                   <button
                     onClick={() => handleDeleteMessage(pendingDeleteMsgId)}
-                    className="text-xs px-2 py-1 rounded bg-red-600 text-white hover:bg-red-700"
+                    className="text-xs px-2 py-1 rounded bg-wl-danger-600 text-white hover:bg-wl-danger-600"
                   >
                     Delete
                   </button>
@@ -493,7 +493,7 @@ function RightSidebar({
                 href={file.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block p-2 rounded bg-wl-bg-elevated border border-wl-border-default hover:border-blue-500 text-xs text-wl-info-400 truncate"
+                className="block p-2 rounded bg-wl-bg-elevated border border-wl-border-default hover:border-wl-info-500 text-xs text-wl-info-400 truncate"
               >
                 📄 {file.name}
               </a>

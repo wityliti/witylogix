@@ -403,8 +403,8 @@ function EndpointCard({
                   className={cn(
                     "p-4 rounded-lg border",
                     response.code >= 200 && response.code < 300
-                      ? "bg-emerald-600/30 border-wl-success-500/30"
-                      : "bg-red-600/30 border-wl-danger-500/30"
+                      ? "bg-wl-success-600/30 border-wl-success-500/30"
+                      : "bg-wl-danger-600/30 border-wl-danger-500/30"
                   )}
                 >
                   <div className="flex items-start justify-between mb-2">
@@ -441,7 +441,7 @@ function EndpointCard({
           </div>
 
           {/* Try It Out */}
-          <div className="p-4 bg-blue-600/5 rounded-lg border border-blue-600/20">
+          <div className="p-4 bg-wl-info-bg rounded-lg border border-wl-primary-600/20">
             <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
               <Code className="w-4 h-4" />
               Try It Out
@@ -570,7 +570,7 @@ export default function ApiDocsPage() {
             className={cn(
               "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
               !selectedTag
-                ? "bg-blue-600 text-white"
+                ? "bg-wl-primary-600 text-white"
                 : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated"
             )}
           >
@@ -583,7 +583,7 @@ export default function ApiDocsPage() {
               className={cn(
                 "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                 selectedTag === tag
-                  ? "bg-blue-600 text-white"
+                  ? "bg-wl-primary-600 text-white"
                   : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated"
               )}
             >
@@ -610,7 +610,7 @@ export default function ApiDocsPage() {
         </div>
 
         {/* Footer */}
-        <Card className="bg-blue-600/40 border border-wl-info-500/30">
+        <Card className="bg-wl-primary-600/40 border border-wl-info-500/30">
           <CardContent className="pt-5">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-wl-info-500 flex-shrink-0 mt-0.5" />

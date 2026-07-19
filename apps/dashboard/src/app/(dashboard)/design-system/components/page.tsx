@@ -88,7 +88,7 @@ function ComponentPreviewCard({ title, description, preview, code }: ComponentPr
                 "flex items-center gap-1 px-2 py-1 text-xs rounded",
                 "bg-wl-bg-elevated border border-wl-border-default hover:border-wl-border-strong",
                 "transition-colors",
-                copiedCode && "bg-wl-success-500/20 border-emerald-500"
+                copiedCode && "bg-wl-success-500/20 border-wl-success-500"
               )}
             >
               {copiedCode ? (
@@ -647,7 +647,7 @@ export default function ComponentGalleryPage() {
             description="Alert with status icons"
             preview={
               <div className="w-full max-w-xs space-y-3">
-                <div className="flex gap-2 p-3 rounded-lg border border-blue-600/30 bg-wl-info-500/10">
+                <div className="flex gap-2 p-3 rounded-lg border border-wl-primary-600/30 bg-wl-info-500/10">
                   <Info className="w-5 h-5 text-wl-info-500 flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm font-medium text-wl-info-500">Info Message</p>

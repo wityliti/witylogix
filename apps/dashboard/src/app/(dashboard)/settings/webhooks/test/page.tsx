@@ -150,7 +150,7 @@ export default function WebhookTestPage() {
       case "failed":
         return <AlertCircle className="w-4 h-4 text-wl-danger-500" />;
       case "pending":
-        return <Clock className="w-4 h-4 text-yellow-500" />;
+        return <Clock className="w-4 h-4 text-wl-warning-500" />;
       default:
         return null;
     }
@@ -184,7 +184,7 @@ export default function WebhookTestPage() {
                       className={cn(
                         "px-4 py-2 rounded-lg text-sm font-medium transition-all border",
                         selectedEvent === event.id
-                          ? "bg-blue-500 text-white border-blue-500"
+                          ? "bg-wl-info-500 text-white border-wl-info-500"
                           : "border-wl-border-default hover:bg-wl-bg-elevated"
                       )}
                     >
@@ -376,7 +376,7 @@ export default function WebhookTestPage() {
 
       {/* Copy Feedback Toast */}
       {copyFeedback && (
-        <div className="fixed bottom-4 right-4 px-4 py-2 rounded-lg bg-green-500 text-white text-sm flex items-center gap-2">
+        <div className="fixed bottom-4 right-4 px-4 py-2 rounded-lg bg-wl-success-500 text-white text-sm flex items-center gap-2">
           <CheckCircle className="w-4 h-4" />
           {copyFeedback}
         </div>

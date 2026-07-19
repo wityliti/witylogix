@@ -103,9 +103,9 @@ function ServiceRow({ service }: { service: ServiceStatus }) {
         {service.name === 'API Server' ? (
           <Server className="w-4 h-4 text-wl-info-400 shrink-0" />
         ) : service.name.includes('Redis') ? (
-          <Layers className="w-4 h-4 text-orange-400 shrink-0" />
+          <Layers className="w-4 h-4 text-wl-warning-400 shrink-0" />
         ) : (
-          <Database className="w-4 h-4 text-purple-400 shrink-0" />
+          <Database className="w-4 h-4 text-wl-primary-400 shrink-0" />
         )}
         <div>
           <h4 className="font-medium text-sm text-white">{service.name}</h4>

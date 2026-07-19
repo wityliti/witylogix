@@ -172,7 +172,7 @@ export default function OrdersPage() {
               className={cn(
                 'px-1 py-3 text-sm font-medium border-b-2 transition-colors capitalize',
                 selectedTab === tab
-                  ? 'border-blue-500 text-wl-info-500'
+                  ? 'border-wl-info-500 text-wl-info-500'
                   : 'border-transparent text-wl-neutral-300 hover:text-white'
               )}
             >
@@ -257,7 +257,7 @@ export default function OrdersPage() {
                 className={cn(
                   'cursor-pointer transition-all',
                   selectedOrder === order.id &&
-                    'border-blue-500'
+                    'border-wl-info-500'
                 )}
               >
                 <CardHeader>
@@ -463,7 +463,7 @@ export default function OrdersPage() {
                   </div>
                   <div className="w-full hover:bg-wl-bg-elevated rounded-full h-2">
                     <div
-                      className="h-full rounded-full bg-blue-500 transition-all"
+                      className="h-full rounded-full bg-wl-info-500 transition-all"
                       style={{ width: `${batch.completionRate}%` }}
                     />
                   </div>

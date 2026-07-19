@@ -334,7 +334,7 @@ export default function GeneralSettingsPage() {
           >
             Cancel
           </Button>
-          <Button variant="primary" className="bg-blue-500 hover:bg-blue-600">
+          <Button variant="primary" className="bg-wl-info-500 hover:bg-wl-primary-600">
             Save Changes
           </Button>
         </div>

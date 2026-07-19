@@ -60,7 +60,7 @@ const ACTION_META: Record<AuditAction, { label: string; color: string; icon: typ
   READ:   { label: 'Read',   color: 'text-wl-info-400 bg-wl-info-400/10 border-wl-info-400/20',          icon: Eye },
   UPDATE: { label: 'Update', color: 'text-wl-warning-400 bg-wl-warning-400/10 border-wl-warning-400/20',        icon: Edit3 },
   DELETE: { label: 'Delete', color: 'text-wl-danger-400 bg-wl-danger-400/10 border-wl-danger-400/20',              icon: Trash2 },
-  EXPORT: { label: 'Export', color: 'text-purple-400 bg-purple-400/10 border-purple-400/20',     icon: Download },
+  EXPORT: { label: 'Export', color: 'text-wl-primary-400 bg-wl-primary-400/10 border-wl-primary-400/20',     icon: Download },
 };
 
 const RESOURCE_ICONS: Record<string, typeof User> = {

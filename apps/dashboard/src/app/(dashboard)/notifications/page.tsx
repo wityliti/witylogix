@@ -261,7 +261,7 @@ export default function NotificationsPage() {
                   "transition-colors duration-200",
                   "border cursor-pointer",
                   selectedCategory === cat.id
-                    ? "border-blue-500 bg-wl-info-500/20 text-wl-info-400"
+                    ? "border-wl-info-500 bg-wl-info-500/20 text-wl-info-400"
                     : "border-wl-border-default text-wl-text-secondary hover:border-wl-border-strong"
                 )}
               >
@@ -272,7 +272,7 @@ export default function NotificationsPage() {
 
           {/* Bulk Actions Bar */}
           {selectedNotifications.size > 0 && (
-            <Card className={cn("border-wl-info-500/30 bg-blue-500/5")}>
+            <Card className={cn("border-wl-info-500/30 bg-wl-info-bg")}>
               <CardContent className="flex items-center justify-between py-3">
                 <span className="text-sm text-wl-text-secondary">
                   {selectedNotifications.size} selected
@@ -344,7 +344,7 @@ export default function NotificationsPage() {
                             "hover:bg-wl-bg-elevated cursor-pointer transition-colors",
                             isSelected && "bg-wl-bg-elevated",
                             notif.status === "UNREAD" &&
-                              "bg-blue-500/5 border-l-2 border-blue-500"
+                              "bg-wl-info-bg border-l-2 border-wl-info-500"
                           )}
                         >
                           <Checkbox
@@ -357,7 +357,7 @@ export default function NotificationsPage() {
                           {/* Read/Unread Indicator */}
                           <div className="flex-shrink-0 w-2 h-2">
                             {notif.status === "UNREAD" && (
-                              <div className="w-2 h-2 rounded-full bg-blue-500" />
+                              <div className="w-2 h-2 rounded-full bg-wl-info-500" />
                             )}
                           </div>
 

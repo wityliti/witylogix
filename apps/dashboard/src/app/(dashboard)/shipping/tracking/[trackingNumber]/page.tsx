@@ -227,7 +227,7 @@ export default function TrackingDetailPage() {
                 {shipment.activityLogs.map((log, idx) => (
                   <div key={log.id} className="flex gap-4">
                     <div className="flex flex-col items-center">
-                      <div className="w-3 h-3 rounded-full bg-blue-500" />
+                      <div className="w-3 h-3 rounded-full bg-wl-info-500" />
                       {idx < shipment.activityLogs.length - 1 && (
                         <div className="w-0.5 h-12 bg-wl-bg-elevated mt-2" />
                       )}

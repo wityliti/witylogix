@@ -444,7 +444,7 @@ export default function AdminCustomersPage() {
                   className={cn(
                     "px-3 py-1 border rounded-md text-xs font-semibold cursor-pointer transition-all capitalize",
                     statusFilter === status
-                      ? "bg-blue-500 text-white border-blue-500"
+                      ? "bg-wl-info-500 text-white border-wl-info-500"
                       : "bg-wl-bg-root min-h-screen text-white border-wl-border-default"
                   )}
                 >

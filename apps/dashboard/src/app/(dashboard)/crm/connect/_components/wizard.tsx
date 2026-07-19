@@ -84,7 +84,7 @@ export function WizardNav({ steps, activeStep, onStepClick }: WizardNavProps) {
               'transition-all duration-base ease-default',
               'relative group',
               step.isActive
-                ? 'bg-wl-info-500/20 border border-blue-500'
+                ? 'bg-wl-info-500/20 border border-wl-info-500'
                 : 'hover:bg-wl-bg-elevated',
               !step.isAccessible && 'opacity-50 cursor-not-allowed'
             )}
@@ -97,9 +97,9 @@ export function WizardNav({ steps, activeStep, onStepClick }: WizardNavProps) {
                   'flex items-center justify-center',
                   'text-xs font-bold',
                   step.isComplete
-                    ? 'bg-emerald-500 text-white'
+                    ? 'bg-wl-success-500 text-white'
                     : step.isActive
-                    ? 'bg-blue-500 text-white'
+                    ? 'bg-wl-info-500 text-white'
                     : 'bg-wl-bg-surface border border-wl-border-default text-wl-text-secondary'
                 )}
               >
@@ -140,7 +140,7 @@ export function WizardNav({ steps, activeStep, onStepClick }: WizardNavProps) {
               className={cn(
                 'ml-7 h-2 w-0.5',
                 'bg-wl-bg-elevated',
-                step.isComplete && 'bg-emerald-500'
+                step.isComplete && 'bg-wl-success-500'
               )}
             />
           )}

@@ -124,7 +124,7 @@ export default function LocationsPage() {
                   className={cn(
                     "px-3 py-1.5 text-xs font-semibold transition-colors capitalize",
                     viewMode === v
-                      ? "bg-blue-600 text-white"
+                      ? "bg-wl-primary-600 text-white"
                       : "bg-wl-bg-surface text-wl-text-secondary hover:text-white"
                   )}
                 >
@@ -171,7 +171,7 @@ export default function LocationsPage() {
                   className={cn(
                     "py-1 px-3 rounded-full border text-xs font-semibold cursor-pointer transition-all",
                     typeFilter === t
-                      ? "bg-blue-500 text-wl-text-inverse border-blue-500"
+                      ? "bg-wl-info-500 text-wl-text-inverse border-wl-info-500"
                       : "bg-transparent text-wl-text-secondary border-wl-border-default"
                   )}
                 >
@@ -215,10 +215,10 @@ export default function LocationsPage() {
                     className={cn(
                       "absolute top-0 left-0 right-0 h-0.5",
                       location.status === "ACTIVE"
-                        ? "bg-emerald-500"
+                        ? "bg-wl-success-500"
                         : location.status === "MAINTENANCE"
-                        ? "bg-amber-500"
-                        : "bg-red-500"
+                        ? "bg-wl-warning-500"
+                        : "bg-wl-danger-500"
                     )}
                   />
 

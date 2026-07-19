@@ -111,7 +111,7 @@ function DriverCard({ driver, isSelected, isCurrentDriver, onSelect }: DriverCar
       className={cn(
         'transition-all cursor-pointer',
         isSelected
-          ? 'border-blue-500 bg-blue-500/5'
+          ? 'border-wl-info-500 bg-wl-info-bg'
           : canAssign
             ? 'border-wl-border-default bg-wl-bg-surface hover:border-wl-border-strong'
             : 'border-wl-border-default bg-wl-bg-sunken opacity-60 cursor-not-allowed',
@@ -417,7 +417,7 @@ export default function RouteAssignPage() {
 
           {/* Error */}
           {assignError && (
-            <div className="p-3 bg-wl-danger-500/10 border border-red-500 rounded-lg text-wl-danger-400 text-sm flex items-center gap-2">
+            <div className="p-3 bg-wl-danger-500/10 border border-wl-danger-500 rounded-lg text-wl-danger-400 text-sm flex items-center gap-2">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               {assignError.message}
             </div>

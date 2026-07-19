@@ -434,10 +434,10 @@ export default function IntegrationsPage() {
                       className={cn(
                         "h-2 rounded-full transition-all",
                         provider.uptime >= 99
-                          ? "bg-emerald-500"
+                          ? "bg-wl-success-500"
                           : provider.uptime >= 95
-                            ? "bg-amber-500"
-                            : "bg-red-500"
+                            ? "bg-wl-warning-500"
+                            : "bg-wl-danger-500"
                       )}
                       style={{ width: `${provider.uptime}%` }}
                     />

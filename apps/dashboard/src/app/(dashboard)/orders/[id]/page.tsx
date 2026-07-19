@@ -379,10 +379,10 @@ export default function OrderDetailPage() {
                   <span
                     className={`absolute -left-6 top-1 w-2.5 h-2.5 rounded-full border-2 border-wl-border-default ${
                       log.status === 'sent' || log.status === 'delivered'
-                        ? 'bg-emerald-500'
+                        ? 'bg-wl-success-500'
                         : log.status === 'failed'
-                          ? 'bg-red-500'
-                          : 'bg-blue-500'
+                          ? 'bg-wl-danger-500'
+                          : 'bg-wl-info-500'
                     }`}
                   />
                   <p className="text-xs text-wl-text-tertiary">{new Date(log.createdAt).toLocaleString()}</p>

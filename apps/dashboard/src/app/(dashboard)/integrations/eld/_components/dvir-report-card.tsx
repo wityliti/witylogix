@@ -37,7 +37,7 @@ interface DVIRReportCardProps {
 const getStatusColor = (status: string) => {
   switch (status) {
     case "pass":
-      return "bg-wl-success-500/20 text-wl-success-400 border-green-500/50";
+      return "bg-wl-success-500/20 text-wl-success-400 border-wl-success-500/50";
     case "fail":
       return "bg-wl-danger-500/20 text-wl-danger-400 border-wl-danger-500/50";
     case "pending":
@@ -52,7 +52,7 @@ const getSeverityColor = (severity: string) => {
     case "critical":
       return "bg-wl-danger-500/20 text-wl-danger-400 border-wl-danger-500/50";
     case "warning":
-      return "bg-yellow-500/20 text-yellow-400 border-yellow-500/50";
+      return "bg-wl-warning-bg text-wl-warning-400 border-wl-warning-500/50";
     case "info":
       return "bg-wl-info-500/20 text-wl-info-400 border-wl-info-500/50";
     default:
@@ -97,7 +97,7 @@ export function DVIRReportCard({ report }: DVIRReportCardProps) {
               {report.issues.map((issue) => (
                 <div key={issue.id} className="flex items-start gap-3 p-3 bg-wl-bg-surface rounded-lg">
                   <div className={cn("w-2 h-2 rounded-full mt-1.5 flex-shrink-0",
-                    issue.severity === "critical" ? "bg-red-500" : issue.severity === "warning" ? "bg-yellow-500" : "bg-blue-500"
+                    issue.severity === "critical" ? "bg-wl-danger-500" : issue.severity === "warning" ? "bg-wl-warning-500" : "bg-wl-info-500"
                   )} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">

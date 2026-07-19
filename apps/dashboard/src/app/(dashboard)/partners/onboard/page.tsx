@@ -222,7 +222,7 @@ export default function OnboardPage() {
                       isCompleted
                         ? "bg-wl-success-500/20 text-wl-success-400"
                         : isActive
-                          ? "bg-wl-info-500/20 text-wl-info-400 ring-2 ring-blue-400"
+                          ? "bg-wl-info-500/20 text-wl-info-400 ring-2 ring-wl-info-400"
                           : "bg-wl-bg-surface text-wl-neutral-300"
                     )}
                   >
@@ -266,7 +266,7 @@ export default function OnboardPage() {
                       className={cn(
                         "p-4 rounded-lg border-2 transition-all flex gap-4 items-start",
                         isSelected
-                          ? "border-blue-400 bg-wl-info-500/10"
+                          ? "border-wl-info-400 bg-wl-info-500/10"
                           : "border-wl-border-default hover:border-wl-border-default"
                       )}
                     >

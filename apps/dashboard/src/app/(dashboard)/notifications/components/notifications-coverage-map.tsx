@@ -116,7 +116,7 @@ export function NotificationsCoverageMap() {
             className={cn(
               'px-3 py-1 rounded-full text-xs font-medium border transition-colors',
               channel === ch
-                ? 'border-blue-500 bg-wl-info-500/20 text-wl-info-400'
+                ? 'border-wl-info-500 bg-wl-info-500/20 text-wl-info-400'
                 : 'border-wl-border-default text-wl-text-secondary hover:border-wl-border-strong hover:text-wl-text-primary',
             )}
           >

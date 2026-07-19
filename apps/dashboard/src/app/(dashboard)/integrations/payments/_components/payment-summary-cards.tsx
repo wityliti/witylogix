@@ -44,7 +44,7 @@ export function PaymentSummaryCards({
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/30">
+      <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-wl-success-500/30">
         <CardContent className="pt-6">
           <p className="text-xs font-medium text-wl-info-500 uppercase">
             Connected Providers

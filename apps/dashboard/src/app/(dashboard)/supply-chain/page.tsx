@@ -233,7 +233,7 @@ export default function SupplyChainPage() {
                       <div
                         className={cn(
                           'h-full rounded-full transition-all',
-                          stage.status === 'healthy' ? 'bg-emerald-500' : stage.status === 'warning' ? 'bg-amber-500' : 'bg-red-500'
+                          stage.status === 'healthy' ? 'bg-wl-success-500' : stage.status === 'warning' ? 'bg-wl-warning-500' : 'bg-wl-danger-500'
                         )}
                         style={{ width: `${stage.percentage}%` }}
                       />
@@ -284,7 +284,7 @@ export default function SupplyChainPage() {
                       <div
                         className={cn(
                           'h-full rounded-full transition-all',
-                          wh.utilizationPercentage < 60 ? 'bg-emerald-500' : wh.utilizationPercentage < 80 ? 'bg-amber-500' : 'bg-red-500'
+                          wh.utilizationPercentage < 60 ? 'bg-wl-success-500' : wh.utilizationPercentage < 80 ? 'bg-wl-warning-500' : 'bg-wl-danger-500'
                         )}
                         style={{ width: `${wh.utilizationPercentage}%` }}
                       />
@@ -327,14 +327,14 @@ export default function SupplyChainPage() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1">
-                        <div className="w-3 h-3 rounded-full bg-blue-500" />
+                        <div className="w-3 h-3 rounded-full bg-wl-info-500" />
                         <span className="text-xs text-wl-text-secondary">Demand:</span>
                         <span className="text-sm font-semibold text-white flex-1">{data.demand.toLocaleString()} units</span>
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1">
-                        <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                        <div className="w-3 h-3 rounded-full bg-wl-success-500" />
                         <span className="text-xs text-wl-text-secondary">Supply:</span>
                         <span className="text-sm font-semibold text-white flex-1">{data.supply.toLocaleString()} units</span>
                       </div>

@@ -421,7 +421,7 @@ export default function PaymentsPage() {
           </p>
           <div className="mt-4 w-full bg-wl-bg-elevated rounded-full h-2">
             <div
-              className="bg-emerald-500 h-2 rounded-full"
+              className="bg-wl-success-500 h-2 rounded-full"
               style={{
                 width: `${(stats.totalCollected / (stats.totalCollected + stats.totalPending)) * 100}%`,
               }}
@@ -442,7 +442,7 @@ export default function PaymentsPage() {
           </p>
           <div className="mt-4 w-full bg-wl-bg-elevated rounded-full h-2">
             <div
-              className="bg-amber-500 h-2 rounded-full"
+              className="bg-wl-warning-500 h-2 rounded-full"
               style={{
                 width: `${(stats.totalPending / (stats.totalCollected + stats.totalPending)) * 100}%`,
               }}

@@ -185,7 +185,7 @@ export default function LocalOrdersPage() {
               onClick={() => setView('list')}
               className={cn(
                 'px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors',
-                view === 'list' ? 'bg-blue-500 text-white' : 'bg-wl-bg-surface text-wl-text-secondary hover:text-white',
+                view === 'list' ? 'bg-wl-info-500 text-white' : 'bg-wl-bg-surface text-wl-text-secondary hover:text-white',
               )}
             >
               <List size={13} /> List
@@ -194,7 +194,7 @@ export default function LocalOrdersPage() {
               onClick={() => setView('map')}
               className={cn(
                 'px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors border-l border-wl-border-default',
-                view === 'map' ? 'bg-blue-500 text-white' : 'bg-wl-bg-surface text-wl-text-secondary hover:text-white',
+                view === 'map' ? 'bg-wl-info-500 text-white' : 'bg-wl-bg-surface text-wl-text-secondary hover:text-white',
               )}
             >
               <Map size={13} /> Map
@@ -255,8 +255,8 @@ export default function LocalOrdersPage() {
                 className={cn(
                   'px-3 py-1.5 rounded text-xs font-medium transition-all border',
                   statusFilter === s
-                    ? 'bg-blue-500 text-white border-blue-500'
-                    : 'bg-wl-bg-surface text-wl-text-secondary border-wl-border-default hover:border-blue-500 hover:text-wl-info-400',
+                    ? 'bg-wl-info-500 text-white border-wl-info-500'
+                    : 'bg-wl-bg-surface text-wl-text-secondary border-wl-border-default hover:border-wl-info-500 hover:text-wl-info-400',
                 )}
               >
                 {s === 'all' ? 'All' : s.replace(/_/g, ' ')}
@@ -279,7 +279,7 @@ export default function LocalOrdersPage() {
                   className={cn(
                     'cursor-pointer transition-all',
                     selectedOrderId === order.id
-                      ? 'bg-wl-bg-elevated border-blue-500 border-2'
+                      ? 'bg-wl-bg-elevated border-wl-info-500 border-2'
                       : 'bg-wl-bg-surface border-wl-border-default',
                   )}
                   onClick={() => setSelectedOrderId(order.id)}
@@ -291,7 +291,7 @@ export default function LocalOrdersPage() {
                         checked={selectedOrderIds.has(order.id)}
                         onChange={() => handleToggleSelect(order.id)}
                         onClick={(e) => e.stopPropagation()}
-                        className="w-4 h-4 cursor-pointer mt-0.5 accent-blue-500"
+                        className="w-4 h-4 cursor-pointer mt-0.5 accent-wl-info-500"
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-center mb-1">

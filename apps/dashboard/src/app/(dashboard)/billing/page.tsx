@@ -213,10 +213,10 @@ export default function BillingPage() {
                             className={cn(
                               'h-full transition-all duration-300 rounded-full',
                               quotaColor === 'danger'
-                                ? 'bg-red-500'
+                                ? 'bg-wl-danger-500'
                                 : quotaColor === 'warning'
-                                  ? 'bg-amber-500'
-                                  : 'bg-emerald-500'
+                                  ? 'bg-wl-warning-500'
+                                  : 'bg-wl-success-500'
                             )}
                             style={{ width: `${Math.min(resource.percentage, 100)}%` }}
                           />
@@ -260,13 +260,13 @@ export default function BillingPage() {
                     className={cn(
                       'relative overflow-hidden cursor-pointer transition-all border-2',
                       isCurrent
-                        ? 'border-blue-500 bg-blue-500/5'
+                        ? 'border-wl-info-500 bg-wl-info-bg'
                         : 'border-wl-border-default bg-wl-bg-surface hover:border-wl-info-500/50'
                     )}
                     onClick={() => setExpandedPlan(isExpanded ? null : plan.tier)}
                   >
                     {isCurrent && (
-                      <div className="absolute top-0 left-0 right-0 h-1 bg-blue-500" />
+                      <div className="absolute top-0 left-0 right-0 h-1 bg-wl-info-500" />
                     )}
                     <CardContent className={cn('pt-6', isCurrent && 'pt-8')}>
                       {isCurrent && (

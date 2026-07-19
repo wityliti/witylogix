@@ -53,10 +53,10 @@ export function SupplyChainWarehouseMap({ warehouses }: SupplyChainWarehouseMapP
       {/* Legend */}
       <div className="absolute bottom-4 left-4 bg-wl-bg-elevated/90 backdrop-blur rounded-lg border border-wl-border-default p-3 text-xs space-y-1.5">
         <p className="font-semibold text-wl-text-secondary mb-1">Utilization</p>
-        <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-blue-500 flex-shrink-0" /><span className="text-wl-text-tertiary">&lt;60% — Low</span></div>
-        <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-emerald-500 flex-shrink-0" /><span className="text-wl-text-tertiary">60–79% — Moderate</span></div>
-        <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-amber-500 flex-shrink-0" /><span className="text-wl-text-tertiary">80–94% — High</span></div>
-        <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-red-500 flex-shrink-0" /><span className="text-wl-text-tertiary">≥95% — Critical</span></div>
+        <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-wl-info-500 flex-shrink-0" /><span className="text-wl-text-tertiary">&lt;60% — Low</span></div>
+        <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-wl-success-500 flex-shrink-0" /><span className="text-wl-text-tertiary">60–79% — Moderate</span></div>
+        <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-wl-warning-500 flex-shrink-0" /><span className="text-wl-text-tertiary">80–94% — High</span></div>
+        <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-wl-danger-500 flex-shrink-0" /><span className="text-wl-text-tertiary">≥95% — Critical</span></div>
       </div>
 
       {/* Count badge */}

@@ -156,7 +156,7 @@ function IntegrationRow({
               </p>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {integration.errors.map((error, idx) => (
-                  <div key={idx} className="p-3 bg-red-600/50 rounded-md border border-wl-danger-500/30">
+                  <div key={idx} className="p-3 bg-wl-danger-600/50 rounded-md border border-wl-danger-500/30">
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="text-xs font-semibold text-wl-danger-500">{error.code}</p>
@@ -169,7 +169,7 @@ function IntegrationRow({
               </div>
             </div>
           ) : (
-            <div className="p-3 bg-emerald-600/50 rounded-md border border-wl-success-500/30 flex items-center gap-2">
+            <div className="p-3 bg-wl-success-600/50 rounded-md border border-wl-success-500/30 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-wl-success-500 flex-shrink-0" />
               <span className="text-sm text-wl-success-500">No recent errors. Integration is operating normally.</span>
             </div>
@@ -265,7 +265,7 @@ export default function IntegrationsPage() {
                 onClick={() => setSelectedCategory(null)}
                 className={cn(
                   "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                  !selectedCategory ? "bg-blue-600 text-white" : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated"
+                  !selectedCategory ? "bg-wl-primary-600 text-white" : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated"
                 )}
               >
                 All ({allIntegrations.length})
@@ -276,7 +276,7 @@ export default function IntegrationsPage() {
                   onClick={() => setSelectedCategory(cat.id)}
                   className={cn(
                     "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                    selectedCategory === cat.id ? "bg-blue-600 text-white" : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated"
+                    selectedCategory === cat.id ? "bg-wl-primary-600 text-white" : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated"
                   )}
                 >
                   {cat.label} ({cat.count})
@@ -308,7 +308,7 @@ export default function IntegrationsPage() {
             </Card>
 
             {errorCount > 0 && (
-              <Card className="border border-red-600/30 bg-wl-danger-500/10">
+              <Card className="border border-wl-danger-600/30 bg-wl-danger-500/10">
                 <CardContent className="pt-5">
                   <div className="flex items-start gap-3">
                     <AlertCircle className="w-5 h-5 text-wl-danger-500 flex-shrink-0 mt-0.5" />

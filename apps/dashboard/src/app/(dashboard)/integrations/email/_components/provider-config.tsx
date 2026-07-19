@@ -98,7 +98,7 @@ export function ProviderConfig({
                         className="text-xs p-2 bg-wl-bg-root rounded font-mono text-wl-text-tertiary"
                       >
                         <div>
-                          <span className="text-cyan-400">{record.type}</span>{' '}
+                          <span className="text-wl-info-400">{record.type}</span>{' '}
                           {record.name}
                         </div>
                         <div className="text-wl-text-secondary mt-1">{record.value}</div>

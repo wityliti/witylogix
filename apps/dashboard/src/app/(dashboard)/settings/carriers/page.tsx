@@ -92,8 +92,8 @@ export default function CarriersSettingsPage() {
 
         {/* Summary */}
         <div className="flex items-center gap-3 mb-8">
-          <div className="p-2 rounded-lg bg-purple-500/10">
-            <Package className="w-5 h-5 text-purple-400" />
+          <div className="p-2 rounded-lg bg-wl-primary-50">
+            <Package className="w-5 h-5 text-wl-primary-400" />
           </div>
           <div>
             <p className="text-sm text-wl-text-secondary">
@@ -123,7 +123,7 @@ export default function CarriersSettingsPage() {
                     variant="default"
                     className={
                       carrier.configured
-                        ? "border-green-500/40 text-wl-success-400 bg-wl-success-500/10"
+                        ? "border-wl-success-500/40 text-wl-success-400 bg-wl-success-500/10"
                         : "border-wl-border-strong text-wl-text-tertiary"
                     }
                   >

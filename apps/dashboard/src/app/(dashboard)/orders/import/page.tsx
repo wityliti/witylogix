@@ -257,9 +257,9 @@ export default function OrderImportPage() {
                   key={platform.id}
                   className={cn(
                     "relative p-4 rounded-lg border-2 transition-all cursor-pointer",
-                    "bg-wl-bg-root hover:border-blue-500",
+                    "bg-wl-bg-root hover:border-wl-info-500",
                     selectedPlatform === platform.id
-                      ? "border-blue-500 bg-[rgba(59,82,255,0.08)]"
+                      ? "border-wl-info-500 bg-[rgba(59,82,255,0.08)]"
                       : "border-wl-border-default"
                   )}
                   onClick={() => isConnected && handlePlatformSelect(platform.id)}

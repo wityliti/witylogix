@@ -98,8 +98,8 @@ export default function QueuesPage() {
       case "completed": return "bg-wl-success-bg text-wl-success-400";
       case "failed": return "bg-wl-danger-bg text-wl-danger-400";
       case "active": return "bg-wl-info-bg text-wl-info-400";
-      case "waiting": return "bg-yellow-100 text-yellow-800";
-      case "delayed": return "bg-purple-100 text-purple-800";
+      case "waiting": return "bg-wl-warning-bg text-wl-warning-500";
+      case "delayed": return "bg-wl-primary-50 text-wl-primary-600";
       default: return "bg-wl-bg-surface text-wl-text-primary";
     }
   };
@@ -222,7 +222,7 @@ export default function QueuesPage() {
                             </div>
                             <div className="w-full bg-wl-neutral-200 rounded-full h-2">
                               <div
-                                className="bg-red-600 h-2 rounded-full"
+                                className="bg-wl-danger-600 h-2 rounded-full"
                                 style={{ width: `${Math.min(q.errorRate, 100)}%` }}
                               />
                             </div>
@@ -342,7 +342,7 @@ export default function QueuesPage() {
                           <div className="flex items-center gap-2">
                             <div className="w-24 bg-wl-neutral-200 rounded-full h-2">
                               <div
-                                className="bg-blue-600 h-2 rounded-full"
+                                className="bg-wl-primary-600 h-2 rounded-full"
                                 style={{ width: `${job.progress}%` }}
                               />
                             </div>
@@ -405,7 +405,7 @@ export default function QueuesPage() {
                 {dlqItems.map(item => (
                   <div
                     key={item.jobId}
-                    className="p-4 border border-red-200 bg-red-50 rounded-lg"
+                    className="p-4 border border-wl-danger-400 bg-wl-danger-bg rounded-lg"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div>

@@ -182,7 +182,7 @@ export default function ComparePage() {
                 onClick={() => !isDisabled && handleToggleCourier(courier.id)}
                 className={cn(
                   "cursor-pointer transition-all",
-                  isSelected && "ring-2 ring-blue-400 bg-wl-info-500/10",
+                  isSelected && "ring-2 ring-wl-info-400 bg-wl-info-500/10",
                   isDisabled && "opacity-50 cursor-not-allowed"
                 )}
               >
@@ -213,7 +213,7 @@ export default function ComparePage() {
                     </div>
 
                     {isSelected ? (
-                      <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                      <div className="w-6 h-6 rounded-full bg-wl-info-500 flex items-center justify-center flex-shrink-0">
                         <CheckCircle className="w-4 h-4 text-black" />
                       </div>
                     ) : (

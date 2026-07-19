@@ -97,7 +97,7 @@ function StatusBadge({ status }: { status: string }) {
   const variants: Record<string, string> = {
     pending: 'bg-wl-warning-subtle text-wl-warning border-wl-warning/20',
     collected: 'bg-wl-info-500/10 text-wl-info-400 border-wl-info-400/20',
-    verified: 'bg-purple-500/10 text-purple-400 border-purple-400/20',
+    verified: 'bg-wl-primary-50 text-wl-primary-400 border-wl-primary-400/20',
     reconciled: 'bg-wl-success-subtle text-wl-success border-wl-success/20',
     failed: 'bg-wl-error-subtle text-wl-error border-wl-error/20',
   };
@@ -267,7 +267,7 @@ export default function CODReconciliationPage() {
             amount={totals?.collected ?? '0.00'}
             count={totals?.collectedCount ?? 0}
             icon={DollarSign}
-            color="bg-blue-600"
+            color="bg-wl-primary-600"
           />
           <SummaryCard
             label="Outstanding"

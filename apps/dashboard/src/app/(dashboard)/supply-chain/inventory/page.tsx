@@ -225,10 +225,10 @@ export default function InventoryPage() {
             {/* Legend */}
             {warehousePins.length > 0 && (
               <div className="p-4 border-t border-wl-border-default flex flex-wrap gap-4 text-xs text-wl-text-secondary">
-                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-blue-500 inline-block" />Low utilization</span>
-                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" />Normal</span>
-                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-amber-500 inline-block" />High utilization</span>
-                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-red-500 inline-block" />At capacity</span>
+                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-wl-info-500 inline-block" />Low utilization</span>
+                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-wl-success-500 inline-block" />Normal</span>
+                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-wl-warning-500 inline-block" />High utilization</span>
+                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-wl-danger-500 inline-block" />At capacity</span>
                 <span className="ml-auto opacity-60">Bubble size = total quantity on hand</span>
               </div>
             )}
@@ -278,10 +278,10 @@ export default function InventoryPage() {
                         className={cn(
                           'flex-1 rounded-t transition-all',
                           gauge.status === 'critical'
-                            ? 'bg-red-500'
+                            ? 'bg-wl-danger-500'
                             : gauge.status === 'warning'
-                            ? 'bg-amber-500'
-                            : 'bg-emerald-500'
+                            ? 'bg-wl-warning-500'
+                            : 'bg-wl-success-500'
                         )}
                         style={{ height: `${Math.max(5, gaugePercentage)}%` }}
                       />
@@ -442,7 +442,7 @@ export default function InventoryPage() {
                   className={cn(
                     'p-4 rounded-lg border-2 cursor-pointer transition-all',
                     selectedItem === item.id
-                      ? 'border-blue-500 bg-wl-info-500/10'
+                      ? 'border-wl-info-500 bg-wl-info-500/10'
                       : 'border-wl-border-default hover:bg-wl-bg-elevated'
                   )}
                 >

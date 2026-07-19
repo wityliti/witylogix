@@ -329,7 +329,7 @@ export default function CreateRoutePage() {
                     {filteredOrders.map((order) => (
                       <div
                         key={order.id}
-                        className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default cursor-pointer transition-all hover:border-blue-500 hover:bg-wl-bg-surface"
+                        className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default cursor-pointer transition-all hover:border-wl-info-500 hover:bg-wl-bg-surface"
                       >
                         <div className="flex justify-between items-start mb-2">
                           <span className="text-white font-semibold text-sm">

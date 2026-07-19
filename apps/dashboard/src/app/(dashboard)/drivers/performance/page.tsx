@@ -147,7 +147,7 @@ export default function DriverPerformancePage() {
                 className={cn(
                   "px-3 py-1.5 text-xs font-medium rounded transition-colors flex items-center gap-1.5",
                   viewMode === "list"
-                    ? "bg-blue-500 text-white"
+                    ? "bg-wl-info-500 text-white"
                     : "text-wl-text-secondary hover:text-white",
                 )}
               >
@@ -158,7 +158,7 @@ export default function DriverPerformancePage() {
                 className={cn(
                   "px-3 py-1.5 text-xs font-medium rounded transition-colors flex items-center gap-1.5",
                   viewMode === "map"
-                    ? "bg-blue-500 text-white"
+                    ? "bg-wl-info-500 text-white"
                     : "text-wl-text-secondary hover:text-white",
                 )}
               >
@@ -185,7 +185,7 @@ export default function DriverPerformancePage() {
               className={cn(
                 "px-4 py-2 rounded-md text-sm font-medium transition-all duration-fast",
                 period === p
-                  ? "bg-blue-500 text-white"
+                  ? "bg-wl-info-500 text-white"
                   : "bg-wl-bg-elevated text-wl-neutral-300 hover:text-white",
               )}
             >

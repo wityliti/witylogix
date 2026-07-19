@@ -122,11 +122,11 @@ function ShipmentsTableSkeleton() {
 
 function MapLegend() {
   const items = [
-    { label: "Pending / Processing", colorClass: "bg-blue-400" },
-    { label: "Picked Up / In Transit", colorClass: "bg-amber-400" },
-    { label: "Out for Delivery / Arrived", colorClass: "bg-emerald-400" },
-    { label: "Delivered", colorClass: "bg-emerald-500" },
-    { label: "Failed / Cancelled", colorClass: "bg-red-500" },
+    { label: "Pending / Processing", colorClass: "bg-wl-info-400" },
+    { label: "Picked Up / In Transit", colorClass: "bg-wl-warning-400" },
+    { label: "Out for Delivery / Arrived", colorClass: "bg-wl-success-400" },
+    { label: "Delivered", colorClass: "bg-wl-success-500" },
+    { label: "Failed / Cancelled", colorClass: "bg-wl-danger-500" },
   ];
   return (
     <div className="space-y-1.5">
@@ -334,7 +334,7 @@ export default function ShipmentsPage() {
                 className={cn(
                   "px-3 py-1.5 text-xs font-semibold transition-all",
                   viewMode === "list"
-                    ? "bg-blue-500 text-white"
+                    ? "bg-wl-info-500 text-white"
                     : "text-wl-text-secondary hover:text-white",
                 )}
               >
@@ -345,7 +345,7 @@ export default function ShipmentsPage() {
                 className={cn(
                   "px-3 py-1.5 text-xs font-semibold transition-all flex items-center gap-1",
                   viewMode === "map"
-                    ? "bg-blue-500 text-white"
+                    ? "bg-wl-info-500 text-white"
                     : "text-wl-text-secondary hover:text-white",
                 )}
               >
@@ -436,7 +436,7 @@ export default function ShipmentsPage() {
                   className={cn(
                     "px-3 py-1 rounded-full border text-xs font-semibold cursor-pointer transition-all",
                     statusFilter === f.key
-                      ? "bg-blue-500 text-white border-blue-500"
+                      ? "bg-wl-info-500 text-white border-wl-info-500"
                       : "bg-transparent text-wl-text-secondary border-wl-border-default hover:border-wl-border-strong",
                   )}
                 >
@@ -470,7 +470,7 @@ export default function ShipmentsPage() {
                 className={cn(
                   "flex items-center gap-1 px-3 py-1 rounded border text-xs font-semibold cursor-pointer transition-all",
                   methodFilter === m.key
-                    ? "bg-blue-500 text-white border-blue-500"
+                    ? "bg-wl-info-500 text-white border-wl-info-500"
                     : "bg-transparent text-wl-text-secondary border-wl-border-default hover:border-wl-border-strong",
                 )}
               >

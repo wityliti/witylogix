@@ -51,7 +51,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               >
                 {/* Error header */}
                 <div className="flex items-center gap-3 mb-6">
-                  <AlertTriangle className="w-6 h-6 text-red-500" />
+                  <AlertTriangle className="w-6 h-6 text-wl-danger-500" />
                   <div>
                     <h1 className="text-xl font-bold text-white">
                       Critical Error
@@ -63,7 +63,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                 </div>
 
                 {/* Error message */}
-                <div className="mb-6 p-4 rounded-md bg-red-900/20 border border-red-500/30">
+                <div className="mb-6 p-4 rounded-md bg-wl-danger-bg border border-wl-danger-500/30">
                   <p className="text-sm text-white mb-2 break-words">
                     {error.message || 'An unexpected error occurred'}
                   </p>
@@ -96,7 +96,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                       <div
                         className={cn(
                           'p-3 rounded-md max-h-48 overflow-auto',
-                          'bg-red-900/10 border border-red-500/30',
+                          'bg-wl-danger-bg border border-wl-danger-500/30',
                           'font-mono text-xs text-wl-text-secondary'
                         )}
                       >
@@ -137,7 +137,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                   If this persists, contact{' '}
                   <a
                     href="mailto:support@witylogix.com"
-                    className="text-blue-400 hover:text-blue-300"
+                    className="text-wl-info-400 hover:text-wl-info-400"
                   >
                     support
                   </a>

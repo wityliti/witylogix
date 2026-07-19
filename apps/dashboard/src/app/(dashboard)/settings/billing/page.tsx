@@ -138,7 +138,7 @@ export default function BillingPage() {
             </div>
 
             <div className="flex gap-4 mt-8 pt-8 border-t border-wl-border-default">
-              <Button variant="primary" className="bg-blue-500 hover:bg-blue-600">
+              <Button variant="primary" className="bg-wl-info-500 hover:bg-wl-primary-600">
                 <ArrowUpRight className="w-4 h-4 mr-2" />
                 Upgrade Plan
               </Button>
@@ -174,7 +174,7 @@ export default function BillingPage() {
                     <div
                       className={cn(
                         'h-2 rounded-full transition-all',
-                        metric.percentage >= 90 ? 'bg-red-500' : metric.percentage >= 70 ? 'bg-amber-500' : 'bg-blue-500',
+                        metric.percentage >= 90 ? 'bg-wl-danger-500' : metric.percentage >= 70 ? 'bg-wl-warning-500' : 'bg-wl-info-500',
                       )}
                       style={{ width: `${metric.percentage}%` }}
                     />
@@ -281,7 +281,7 @@ export default function BillingPage() {
             </div>
             <Button
               variant="primary"
-              className="bg-blue-500 hover:bg-blue-600"
+              className="bg-wl-info-500 hover:bg-wl-primary-600"
               onClick={handleAddressSave}
               disabled={savingAddress}
             >
@@ -335,7 +335,7 @@ export default function BillingPage() {
 
         {/* Auto-renewal Notice */}
         {billing?.renewalDate && (
-          <div className="mt-8 p-4 rounded-lg border border-wl-warning-500/30 bg-amber-500/5 flex gap-3">
+          <div className="mt-8 p-4 rounded-lg border border-wl-warning-500/30 bg-wl-warning-bg flex gap-3">
             <AlertCircle className="w-5 h-5 text-wl-warning-400 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-wl-text-secondary">
               Your subscription will automatically renew on{' '}

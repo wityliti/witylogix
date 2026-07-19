@@ -81,7 +81,7 @@ export function ProviderList({
                 }
                 className={cn(
                   provider.status === 'connected' &&
-                    'bg-wl-success-500/20 text-wl-success-400 border border-green-500/50',
+                    'bg-wl-success-500/20 text-wl-success-400 border border-wl-success-500/50',
                   provider.status === 'error' &&
                     'bg-wl-danger-500/20 text-wl-danger-400 border border-wl-danger-500/50',
                   provider.status === 'disconnected' &&
@@ -196,7 +196,7 @@ export function ProviderList({
                 <Button
                   variant="primary"
                   size="sm"
-                  className="flex-1 bg-blue-500 hover:bg-blue-500/90"
+                  className="flex-1 bg-wl-info-500 hover:bg-wl-info-500"
                 >
                   <AlertCircle className="w-4 h-4 mr-2" />
                   Reconnect
@@ -205,7 +205,7 @@ export function ProviderList({
                 <Button
                   variant="primary"
                   size="sm"
-                  className="flex-1 bg-blue-500 hover:bg-blue-500/90"
+                  className="flex-1 bg-wl-info-500 hover:bg-wl-info-500"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Connect

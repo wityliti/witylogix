@@ -155,7 +155,7 @@ export default function WidgetConfigPage() {
                     onClick={() => setCartSelectorEnabled(!cartSelectorEnabled)}
                     className={cn(
                       'w-12 h-7 rounded-full border-none cursor-pointer transition-colors',
-                      cartSelectorEnabled ? 'bg-blue-500' : 'bg-wl-bg-elevated'
+                      cartSelectorEnabled ? 'bg-wl-info-500' : 'bg-wl-bg-elevated'
                     )}
                   />
                 </div>
@@ -173,7 +173,7 @@ export default function WidgetConfigPage() {
                     onClick={() => setShippingCalcEnabled(!shippingCalcEnabled)}
                     className={cn(
                       'w-12 h-7 rounded-full border-none cursor-pointer transition-colors',
-                      shippingCalcEnabled ? 'bg-blue-500' : 'bg-wl-bg-elevated'
+                      shippingCalcEnabled ? 'bg-wl-info-500' : 'bg-wl-bg-elevated'
                     )}
                   />
                 </div>
@@ -256,7 +256,7 @@ export default function WidgetConfigPage() {
                     onClick={() => setShadowEnabled(!shadowEnabled)}
                     className={cn(
                       'w-11 h-6 rounded-full border-none cursor-pointer transition-colors',
-                      shadowEnabled ? 'bg-blue-500' : 'bg-wl-bg-elevated'
+                      shadowEnabled ? 'bg-wl-info-500' : 'bg-wl-bg-elevated'
                     )}
                   />
                 </div>

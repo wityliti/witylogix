@@ -223,7 +223,7 @@ export default function SupplyChainIntegrationsPage() {
               className={cn(
                 "px-3 py-1 rounded-sm border-none text-xs font-semibold cursor-pointer capitalize",
                 view === v
-                  ? "bg-blue-500 text-white"
+                  ? "bg-wl-info-500 text-white"
                   : "bg-transparent text-wl-neutral-300"
               )}
             >
@@ -301,7 +301,7 @@ export default function SupplyChainIntegrationsPage() {
                   key={warehouse.id}
                   className={cn(
                     "cursor-pointer transition-all blue-500",
-                    isExpanded && "ring-1 ring-blue-400"
+                    isExpanded && "ring-1 ring-wl-info-400"
                   )}
                   style={{ animationDelay: `${idx * 40}ms` }}
                   onClick={() =>

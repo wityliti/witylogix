@@ -161,7 +161,7 @@ export default function PaymentSettingsPage() {
                     key={gateway.id}
                     className={cn(
                       'border-2 transition-all bg-wl-bg-surface',
-                      gateway.isDefault ? 'border-blue-500 bg-blue-500/5' : 'border-wl-border-default',
+                      gateway.isDefault ? 'border-wl-info-500 bg-wl-info-bg' : 'border-wl-border-default',
                     )}
                   >
                     <CardHeader>
@@ -174,7 +174,7 @@ export default function PaymentSettingsPage() {
                           </div>
                         </div>
                         {gateway.isDefault && (
-                          <Badge variant="primary" className="bg-blue-500 text-white">DEFAULT</Badge>
+                          <Badge variant="primary" className="bg-wl-info-500 text-white">DEFAULT</Badge>
                         )}
                       </div>
                     </CardHeader>
@@ -250,7 +250,7 @@ export default function PaymentSettingsPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="flex-1 text-wl-danger-500 hover:text-red-700"
+                          className="flex-1 text-wl-danger-500 hover:text-wl-danger-600"
                           onClick={() => handleDisconnect(gateway.id)}
                         >
                           <Trash2 className="w-4 h-4 mr-2" />
