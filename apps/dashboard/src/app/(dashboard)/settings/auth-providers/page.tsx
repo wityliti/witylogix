@@ -87,6 +87,10 @@ export default function AuthProvidersPage() {
   const [testResults, setTestResults] = useState<Record<string, TestResult>>({});
   const [testingId, setTestingId] = useState<string | null>(null);
   const [jitProvisioning, setJitProvisioning] = useState(true);
+  const [mfaEnforced, setMfaEnforced] = useState(false);
+  const [sessionTimeout, setSessionTimeout] = useState('30');
+  const [mappingExternalRole, setMappingExternalRole] = useState('');
+  const [mappingWitylogixRole, setMappingWitylogixRole] = useState('ADMIN');
 
   // New provider form state
   const [newProvider, setNewProvider] = useState({
@@ -416,7 +420,13 @@ export default function AuthProvidersPage() {
                     <div className="text-sm font-semibold text-white mb-1">Enforce MFA for All Users</div>
                     <div className="text-sm text-wl-text-secondary">Require multi-factor authentication on login</div>
                   </div>
-                  <Button variant="secondary" className="min-w-[100px]">Disabled</Button>
+                  <Button
+                    variant={mfaEnforced ? 'primary' : 'secondary'}
+                    onClick={() => setMfaEnforced(!mfaEnforced)}
+                    className="min-w-[100px]"
+                  >
+                    {mfaEnforced ? 'Enabled' : 'Disabled'}
+                  </Button>
                 </div>
 
                 <div className="flex items-start justify-between pb-6 border-b border-wl-border-default">
@@ -431,8 +441,8 @@ export default function AuthProvidersPage() {
                       { value: '60', label: '1 hour' },
                       { value: '480', label: '8 hours' },
                     ]}
-                    defaultValue="30"
-                    onChange={() => {}}
+                    value={sessionTimeout}
+                    onChange={(e) => setSessionTimeout((e as React.ChangeEvent<HTMLSelectElement>).target.value)}
                   />
                 </div>
 
@@ -544,14 +554,27 @@ export default function AuthProvidersPage() {
         footer={
           <div className="flex gap-3 justify-end">
             <Button variant="secondary" onClick={() => setIsMappingModalOpen(false)}>Cancel</Button>
-            <Button variant="primary" onClick={() => setIsMappingModalOpen(false)}>Save Mapping</Button>
+            <Button
+              variant="primary"
+              onClick={() => {
+                setIsMappingModalOpen(false);
+                setMappingExternalRole('');
+                setMappingWitylogixRole('ADMIN');
+              }}
+            >
+              Save Mapping
+            </Button>
           </div>
         }
       >
         <div className="flex flex-col gap-6">
           <div>
             <label className="block text-sm font-semibold text-white mb-2">External Role Claim</label>
-            <Input placeholder="e.g., admin, manager, viewer" />
+            <Input
+              placeholder="e.g., admin, manager, viewer"
+              value={mappingExternalRole}
+              onChange={(e) => setMappingExternalRole(e.target.value)}
+            />
           </div>
           <div>
             <label className="block text-sm font-semibold text-white mb-2">Map to Witylogix Role</label>
@@ -563,8 +586,8 @@ export default function AuthProvidersPage() {
                 { value: 'VIEWER', label: 'Viewer' },
                 { value: 'DRIVER', label: 'Driver' },
               ]}
-              defaultValue="ADMIN"
-              onChange={() => {}}
+              value={mappingWitylogixRole}
+              onChange={(e) => setMappingWitylogixRole((e as React.ChangeEvent<HTMLSelectElement>).target.value)}
             />
           </div>
         </div>

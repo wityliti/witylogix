@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { DollarSign, AlertCircle, BarChart3, Map } from 'lucide-react';
 import Link from 'next/link';
+import { Header } from '@/components/layout/header';
 
 const FinanceMapView = dynamic(
   () => import('./components/finance-map-view').then((m) => m.FinanceMapView),
@@ -61,54 +62,46 @@ export default function FinancePage() {
 
   const summary = summaryData?.summary;
 
+  const headerActions = (
+    <div className="flex items-center gap-3">
+      <div className="flex items-center rounded-lg border border-wl-border-default bg-wl-bg-surface overflow-hidden">
+        <button
+          onClick={() => setViewMode('charts')}
+          className={cn(
+            'flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors',
+            viewMode === 'charts'
+              ? 'bg-wl-primary-600 text-white'
+              : 'text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated',
+          )}
+        >
+          <BarChart3 className="w-4 h-4" />
+          Charts
+        </button>
+        <button
+          onClick={() => setViewMode('map')}
+          className={cn(
+            'flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors',
+            viewMode === 'map'
+              ? 'bg-wl-primary-600 text-white'
+              : 'text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated',
+          )}
+        >
+          <Map className="w-4 h-4" />
+          Revenue Map
+        </button>
+      </div>
+      <Link href="/invoices/create">
+        <Button variant="primary" size="md">
+          <DollarSign className="w-4 h-4" />
+          Create Invoice
+        </Button>
+      </Link>
+    </div>
+  );
+
   return (
     <div className="flex flex-col min-h-screen bg-wl-bg-root">
-      <div className="sticky top-0 z-10 bg-wl-bg-root/95 backdrop-blur border-b border-wl-border-default">
-        <div className="p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-white">Finance</h1>
-              <p className="text-sm text-wl-text-secondary mt-1">Revenue, invoices, and payments</p>
-            </div>
-            <div className="flex items-center gap-3">
-              {/* View toggle */}
-              <div className="flex items-center rounded-lg border border-wl-border-default bg-wl-bg-surface overflow-hidden">
-                <button
-                  onClick={() => setViewMode('charts')}
-                  className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors',
-                    viewMode === 'charts'
-                      ? 'bg-wl-primary-600 text-white'
-                      : 'text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated',
-                  )}
-                >
-                  <BarChart3 className="w-4 h-4" />
-                  Charts
-                </button>
-                <button
-                  onClick={() => setViewMode('map')}
-                  className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors',
-                    viewMode === 'map'
-                      ? 'bg-wl-primary-600 text-white'
-                      : 'text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated',
-                  )}
-                >
-                  <Map className="w-4 h-4" />
-                  Revenue Map
-                </button>
-              </div>
-
-              <Link href="/invoices/create">
-                <Button variant="primary" size="md">
-                  <DollarSign className="w-4 h-4" />
-                  Create Invoice
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Header title="Finance" subtitle="Revenue, invoices, and payments" actions={headerActions} />
 
       <div className="flex-1 overflow-auto p-6">
         <div className="space-y-6 max-w-7xl">
