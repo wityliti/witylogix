@@ -62,22 +62,22 @@ export function WebhookEventViewer({
     switch (status) {
       case "delivered":
         return {
-          color: "text-green-600 dark:text-green-400",
-          bgColor: "bg-green-100 dark:bg-green-900/30",
+          color: "text-wl-success-600",
+          bgColor: "bg-wl-success-bg",
           icon: "✓",
           label: "Delivered",
         };
       case "failed":
         return {
-          color: "text-red-600 dark:text-red-400",
-          bgColor: "bg-red-100 dark:bg-red-900/30",
+          color: "text-wl-danger-600",
+          bgColor: "bg-wl-danger-bg",
           icon: "✕",
           label: "Failed",
         };
       case "pending":
         return {
-          color: "text-blue-600 dark:text-blue-400",
-          bgColor: "bg-blue-100 dark:bg-blue-900/30",
+          color: "text-wl-info-500",
+          bgColor: "bg-wl-info-bg",
           icon: "⧖",
           label: "Pending",
         };
@@ -298,8 +298,8 @@ export function WebhookEventViewer({
                               <div className={cn(
                                 "text-sm font-semibold",
                                 event.responseStatus >= 200 && event.responseStatus < 300
-                                  ? "text-green-600 dark:text-green-400"
-                                  : "text-red-600 dark:text-red-400"
+                                  ? "text-wl-success-600"
+                                  : "text-wl-danger-600"
                               )}>
                                 {event.responseStatus}
                               </div>

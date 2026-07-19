@@ -43,37 +43,37 @@ export function ConnectionStatusBadge({
     switch (status) {
       case "connected":
         return {
-          color: "text-green-600 dark:text-green-400",
-          bgColor: "bg-green-100 dark:bg-green-900/30",
-          dotClass: "bg-green-500 animate-pulse",
+          color: "text-wl-success-600",
+          bgColor: "bg-wl-success-bg",
+          dotClass: "bg-wl-success-500 animate-pulse",
           label: "Connected",
         };
       case "disconnected":
         return {
-          color: "text-wl-text-tertiary dark:text-wl-text-secondary",
-          bgColor: "bg-wl-bg-surface dark:bg-wl-bg-elevated",
+          color: "text-wl-text-tertiary",
+          bgColor: "bg-wl-bg-surface",
           dotClass: "bg-wl-neutral-400",
           label: "Disconnected",
         };
       case "error":
         return {
-          color: "text-red-600 dark:text-red-400",
-          bgColor: "bg-red-100 dark:bg-red-900/30",
-          dotClass: "bg-red-500",
+          color: "text-wl-danger-600",
+          bgColor: "bg-wl-danger-bg",
+          dotClass: "bg-wl-danger-500",
           label: "Error",
         };
       case "syncing":
         return {
-          color: "text-blue-600 dark:text-blue-400",
-          bgColor: "bg-blue-100 dark:bg-blue-900/30",
-          dotClass: "bg-blue-500 animate-spin",
+          color: "text-wl-info-500",
+          bgColor: "bg-wl-info-bg",
+          dotClass: "bg-wl-info-500 animate-spin",
           label: "Syncing",
         };
       case "pending":
         return {
-          color: "text-yellow-600 dark:text-yellow-400",
-          bgColor: "bg-yellow-100 dark:bg-yellow-900/30",
-          dotClass: "bg-yellow-500 animate-pulse",
+          color: "text-wl-warning-500",
+          bgColor: "bg-wl-warning-bg",
+          dotClass: "bg-wl-warning-500 animate-pulse",
           label: "Pending",
         };
       default:

@@ -209,11 +209,11 @@ export function DispatchLiveMap({
           </div>
           <div className="border-t border-wl-border-default my-1" />
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-400 flex-shrink-0" />
+            <span className="w-2.5 h-2.5 rounded-full bg-wl-info-400 flex-shrink-0" />
             <span className="text-wl-text-secondary">Pending</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-orange-400 flex-shrink-0" />
+            <span className="w-2.5 h-2.5 rounded-full bg-wl-warning-400 flex-shrink-0" />
             <span className="text-wl-text-secondary">Assigned</span>
           </div>
           <div className="flex items-center gap-2">

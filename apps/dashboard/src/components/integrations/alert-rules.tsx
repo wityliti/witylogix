@@ -87,7 +87,7 @@ export function AlertRules({ rules, onSave, onDelete, onToggle, className }: Ale
       case 'high':
         return 'bg-wl-danger-100 dark:bg-wl-danger-900/30 text-wl-danger-700 dark:text-wl-danger-300';
       case 'critical':
-        return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300';
+        return 'bg-wl-danger-bg text-wl-danger-600';
     }
   };
 

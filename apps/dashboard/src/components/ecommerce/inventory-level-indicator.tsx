@@ -33,9 +33,9 @@ interface InventoryLevelIndicatorProps
 }
 
 const getStockColor = (percentage: number): string => {
-  if (percentage > 50) return 'bg-green-500 dark:bg-green-600';
-  if (percentage >= 10) return 'bg-yellow-500 dark:bg-yellow-600';
-  if (percentage > 0) return 'bg-red-500 dark:bg-red-600';
+  if (percentage > 50) return 'bg-wl-success-500';
+  if (percentage >= 10) return 'bg-wl-warning-500';
+  if (percentage > 0) return 'bg-wl-danger-500';
   return 'bg-wl-neutral-600';
 };
 
@@ -121,8 +121,8 @@ const InventoryLevelIndicator = forwardRef<
             className={cn(
               'text-xs font-semibold whitespace-nowrap',
               isOutOfStock && 'text-wl-text-tertiary dark:text-wl-text-secondary',
-              isLowStock && 'text-yellow-600 dark:text-yellow-400',
-              !isLowStock && !isOutOfStock && 'text-green-600 dark:text-green-400'
+              isLowStock && 'text-wl-warning-500',
+              !isLowStock && !isOutOfStock && 'text-wl-success-600'
             )}
           >
             {available}/{maxLevel}
@@ -130,7 +130,7 @@ const InventoryLevelIndicator = forwardRef<
 
           {/* Low stock alert */}
           {showAlert && isLowStock && (
-            <AlertCircle className="w-4 h-4 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
+            <AlertCircle className="w-4 h-4 text-wl-warning-500 flex-shrink-0" />
           )}
         </div>
       );
@@ -155,15 +155,15 @@ const InventoryLevelIndicator = forwardRef<
               Stock Level
             </span>
             {showAlert && isLowStock && (
-              <AlertCircle className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+              <AlertCircle className="w-4 h-4 text-wl-warning-500" />
             )}
           </div>
           <span
             className={cn(
               'text-xs font-semibold px-2 py-1 rounded',
               isOutOfStock && 'bg-wl-bg-surface dark:bg-wl-bg-elevated text-wl-text-primary dark:text-wl-neutral-300',
-              isLowStock && 'bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400',
-              !isLowStock && !isOutOfStock && 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400'
+              isLowStock && 'bg-wl-warning-bg text-wl-warning-500',
+              !isLowStock && !isOutOfStock && 'bg-wl-success-bg text-wl-success-600'
             )}
           >
             {getStockLabel(percentage)}
@@ -206,7 +206,7 @@ const InventoryLevelIndicator = forwardRef<
           {reserved > 0 && (
             <div>
               <span className="text-wl-text-tertiary dark:text-wl-text-secondary">Reserved:</span>
-              <span className="ml-1 font-semibold text-yellow-600 dark:text-yellow-400">
+              <span className="ml-1 font-semibold text-wl-warning-500">
                 {reserved}
               </span>
             </div>
@@ -219,7 +219,7 @@ const InventoryLevelIndicator = forwardRef<
             <button
               onClick={() => setShowWarehouseDetail(!showWarehouseDetail)}
               className={cn(
-                'text-xs font-semibold text-blue-600 dark:text-blue-400',
+                'text-xs font-semibold text-wl-info-500',
                 'hover:underline transition-colors'
               )}
               aria-expanded={showWarehouseDetail}

@@ -69,28 +69,28 @@ const statusConfig: Record<
   }
 > = {
   pending: {
-    bgColor: 'bg-yellow-100 dark:bg-yellow-500/20',
-    textColor: 'text-yellow-700 dark:text-yellow-400',
+    bgColor: 'bg-wl-warning-bg',
+    textColor: 'text-wl-warning-500',
     label: 'Pending',
   },
   processing: {
-    bgColor: 'bg-blue-100 dark:bg-blue-500/20',
-    textColor: 'text-blue-700 dark:text-blue-400',
+    bgColor: 'bg-wl-info-bg',
+    textColor: 'text-wl-info-500',
     label: 'Processing',
   },
   shipped: {
-    bgColor: 'bg-purple-100 dark:bg-purple-500/20',
-    textColor: 'text-purple-700 dark:text-purple-400',
+    bgColor: 'bg-wl-primary-500/20',
+    textColor: 'text-wl-primary-500',
     label: 'Shipped',
   },
   delivered: {
-    bgColor: 'bg-green-100 dark:bg-green-500/20',
-    textColor: 'text-green-700 dark:text-green-400',
+    bgColor: 'bg-wl-success-bg',
+    textColor: 'text-wl-success-600',
     label: 'Delivered',
   },
   cancelled: {
-    bgColor: 'bg-red-100 dark:bg-red-500/20',
-    textColor: 'text-red-700 dark:text-red-400',
+    bgColor: 'bg-wl-danger-bg',
+    textColor: 'text-wl-danger-600',
     label: 'Cancelled',
   },
   refunded: {
@@ -111,20 +111,20 @@ const syncStatusConfig: Record<
 > = {
   synced: {
     icon: CheckCircle2,
-    color: 'text-green-600 dark:text-green-400',
-    bgColor: 'bg-green-100 dark:bg-green-500/20',
+    color: 'text-wl-success-600',
+    bgColor: 'bg-wl-success-bg',
     label: 'Synced',
   },
   pending: {
     icon: Clock,
-    color: 'text-yellow-600 dark:text-yellow-400',
-    bgColor: 'bg-yellow-100 dark:bg-yellow-500/20',
+    color: 'text-wl-warning-500',
+    bgColor: 'bg-wl-warning-bg',
     label: 'Pending Sync',
   },
   conflict: {
     icon: AlertCircle,
-    color: 'text-red-600 dark:text-red-400',
-    bgColor: 'bg-red-100 dark:bg-red-500/20',
+    color: 'text-wl-danger-600',
+    bgColor: 'bg-wl-danger-bg',
     label: 'Conflict',
   },
 };
@@ -382,8 +382,8 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
                 className={cn(
                   'flex items-center justify-center gap-1.5',
                   'flex-1 px-3 py-2 text-xs font-semibold rounded',
-                  'bg-blue-600 dark:bg-blue-700 text-white',
-                  'hover:bg-blue-700 dark:hover:bg-blue-800',
+                  'bg-wl-primary-500 text-wl-text-inverse',
+                  'hover:bg-wl-primary-600',
                   'disabled:opacity-50 disabled:cursor-not-allowed',
                   'transition-colors duration-150'
                 )}

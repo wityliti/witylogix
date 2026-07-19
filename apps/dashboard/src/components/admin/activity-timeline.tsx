@@ -63,16 +63,16 @@ export function ActivityTimeline({
   const getActionColor = (action: ActivityAction): string => {
     switch (action) {
       case "login":
-        return "text-blue-400";
+        return "text-wl-info-400";
       case "create":
-        return "text-green-400";
+        return "text-wl-success-400";
       case "update":
-        return "text-yellow-400";
+        return "text-wl-warning-400";
       case "delete":
-        return "text-red-400";
+        return "text-wl-danger-400";
       case "export":
       case "import":
-        return "text-purple-400";
+        return "text-wl-primary-400";
     }
   };
 

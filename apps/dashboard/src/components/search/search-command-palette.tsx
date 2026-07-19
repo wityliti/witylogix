@@ -161,7 +161,7 @@ export function SearchCommandPalette(): React.ReactElement {
             </div>
           )}
           {search.error && (
-            <div className="mt-2 text-sm text-red-400">{search.error.message}</div>
+            <div className="mt-2 text-sm text-wl-danger-400">{search.error.message}</div>
           )}
         </div>
 
@@ -184,7 +184,7 @@ export function SearchCommandPalette(): React.ReactElement {
                     className={cn(
                       "w-full rounded-lg px-4 py-2 text-left text-sm transition-colors",
                       search.selectedIndex === index
-                        ? "bg-blue-600 text-white"
+                        ? "bg-wl-primary-500 text-wl-text-inverse"
                         : "text-wl-neutral-300 hover:bg-wl-bg-elevated"
                     )}
                   >
@@ -220,7 +220,7 @@ export function SearchCommandPalette(): React.ReactElement {
                     className={cn(
                       "w-full rounded-lg px-4 py-2 text-left text-sm transition-colors",
                       search.selectedIndex === index
-                        ? "bg-blue-600 text-white"
+                        ? "bg-wl-primary-500 text-wl-text-inverse"
                         : "text-wl-text-secondary hover:bg-wl-bg-elevated"
                     )}
                   >
@@ -268,7 +268,7 @@ export function SearchCommandPalette(): React.ReactElement {
                         className={cn(
                           "w-full rounded-lg px-4 py-2 text-left transition-colors",
                           search.selectedIndex === index
-                            ? "bg-blue-600 text-white"
+                            ? "bg-wl-primary-500 text-wl-text-inverse"
                             : "hover:bg-wl-bg-elevated"
                         )}
                       >
@@ -287,11 +287,11 @@ export function SearchCommandPalette(): React.ReactElement {
                             className={cn(
                               "rounded px-2 py-1 text-xs font-semibold",
                               entity === "orders"
-                                ? "bg-blue-900 text-blue-300"
+                                ? "bg-wl-info-500/20 text-wl-info-400"
                                 : entity === "drivers"
-                                  ? "bg-green-900 text-green-300"
+                                  ? "bg-wl-success-500/20 text-wl-success-400"
                                   : entity === "deliveries"
-                                    ? "bg-purple-900 text-purple-300"
+                                    ? "bg-wl-primary-500/20 text-wl-primary-400"
                                     : "bg-wl-bg-overlay text-wl-neutral-300"
                             )}
                           >

@@ -27,21 +27,21 @@ const statusConfig: Record<
   }
 > = {
   connected: {
-    bgColor: 'bg-green-50 dark:bg-green-500/10',
-    textColor: 'text-green-700 dark:text-green-400',
-    dotColor: 'bg-green-500',
+    bgColor: 'bg-wl-success-bg',
+    textColor: 'text-wl-success-600',
+    dotColor: 'bg-wl-success-500',
     label: 'Connected',
   },
   disconnected: {
     bgColor: 'bg-wl-neutral-500/10',
-    textColor: 'text-wl-text-primary dark:text-wl-text-secondary',
+    textColor: 'text-wl-text-primary',
     dotColor: 'bg-wl-neutral-400',
     label: 'Disconnected',
   },
   error: {
-    bgColor: 'bg-red-50 dark:bg-red-500/10',
-    textColor: 'text-red-700 dark:text-red-400',
-    dotColor: 'bg-red-500',
+    bgColor: 'bg-wl-danger-bg',
+    textColor: 'text-wl-danger-600',
+    dotColor: 'bg-wl-danger-500',
     label: 'Error',
   },
 };
