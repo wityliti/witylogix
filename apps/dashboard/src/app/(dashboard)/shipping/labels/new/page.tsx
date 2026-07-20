@@ -76,7 +76,7 @@ export default function CreateLabelPage() {
                     value={formData.destination}
                     onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
                     placeholder="City, State"
-                    className="w-full p-2 border border-wl-border-default rounded bg-wl-bg-root text-white placeholder-gray-600"
+                    className="w-full p-2 border border-wl-border-default rounded bg-wl-bg-root text-white placeholder:text-wl-text-tertiary"
                   />
                 </div>
                 <div>

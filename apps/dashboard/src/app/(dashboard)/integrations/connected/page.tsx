@@ -208,7 +208,7 @@ export default function ConnectedIntegrationsPage() {
             placeholder="Search integrations..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-sm text-white placeholder-gray-500 focus:border-wl-info-500 outline-none"
+            className="w-full pl-10 pr-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-sm text-white placeholder:text-wl-text-tertiary focus:border-wl-info-500 outline-none"
           />
         </div>
 

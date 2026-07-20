@@ -207,7 +207,7 @@ export default function HOSPage() {
                   placeholder="Search drivers..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="border-0 rounded-t-lg rounded-b-none text-xs h-8 bg-wl-bg-elevated text-white placeholder-gray-500"
+                  className="border-0 rounded-t-lg rounded-b-none text-xs h-8 bg-wl-bg-elevated text-wl-text-primary placeholder:text-wl-text-tertiary"
                   autoFocus
                 />
 

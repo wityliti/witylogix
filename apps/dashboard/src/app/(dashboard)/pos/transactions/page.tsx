@@ -197,7 +197,7 @@ export default function TransactionsPage() {
             placeholder="Search by transaction ID, receipt, or customer name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 rounded border border-wl-border-default bg-wl-bg-surface text-white text-sm placeholder-gray-500 focus:outline-none focus:border-wl-info-500"
+            className="w-full px-4 py-2 rounded border border-wl-border-default bg-wl-bg-surface text-white text-sm placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500"
           />
 
           {/* Filter Pills */}
