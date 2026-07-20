@@ -121,8 +121,13 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
         createdAt: { gte: from, lte: to },
       };
 
+      // Prior period for trend computation (same length as current period)
+      const periodMs = to.getTime() - from.getTime();
+      const priorFrom = new Date(from.getTime() - periodMs);
+      const priorTo = from;
+
       // ── Fetch orders (Shopify data) ──────────────────────────
-      const [orders, activeDriversCount] = await Promise.all([
+      const [orders, priorOrders, activeDriversCount] = await Promise.all([
         db.order.findMany({
           where: orderWhere,
           select: {
@@ -136,6 +141,10 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
             driverId: true,
             driver: { select: { id: true, name: true } },
           },
+        }),
+        db.order.findMany({
+          where: { shopId, createdAt: { gte: priorFrom, lte: priorTo } },
+          select: { city: true },
         }),
         db.driver.count({
           where: {
@@ -235,15 +244,26 @@ async function analyticsRoutes(fastify: FastifyInstance): Promise<void> {
         const city = (o.city as string | null) ?? "Unknown";
         cityMap[city] = (cityMap[city] ?? 0) + 1;
       }
+      const priorCityMap: Record<string, number> = {};
+      for (const o of priorOrders) {
+        const city = (o.city as string | null) ?? "Unknown";
+        priorCityMap[city] = (priorCityMap[city] ?? 0) + 1;
+      }
       const sortedCities = Object.entries(cityMap)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5);
-      const topZones = sortedCities.map(([name, count]) => ({
-        name,
-        orders: count,
-        pct: totalOrders > 0 ? Math.round((count / totalOrders) * 1000) / 10 : 0,
-        trend: 0, // trend requires prior-period comparison — not yet implemented
-      }));
+      const topZones = sortedCities.map(([name, count]) => {
+        const prior = priorCityMap[name] ?? 0;
+        const trend = prior > 0
+          ? Math.round(((count - prior) / prior) * 1000) / 10
+          : count > 0 ? 100 : 0;
+        return {
+          name,
+          orders: count,
+          pct: totalOrders > 0 ? Math.round((count / totalOrders) * 1000) / 10 : 0,
+          trend,
+        };
+      });
 
       // ── Top drivers (group delivered orders by driverId) ─────
       const driverMap: Record<string, { name: string; total: number; onTime: number }> = {};

@@ -134,7 +134,7 @@ export default function AICopilotPage() {
             className={cn(
               "rounded-lg border border-wl-border-default bg-wl-bg-overlay",
               "px-3 py-2 text-sm text-wl-text-primary",
-              "focus:outline-none focus:ring-2 focus:ring-wl-accent/50"
+              "focus:outline-none focus:ring-2 focus:ring-wl-primary-500/50"
             )}
           >
             {(Object.keys(ENTITY_LABELS) as EntityType[]).map((et) => (
@@ -154,7 +154,7 @@ export default function AICopilotPage() {
             className={cn(
               "flex-1 rounded-lg border border-wl-border-default bg-wl-bg-overlay",
               "px-4 py-2 text-sm text-wl-text-primary placeholder:text-wl-text-tertiary",
-              "focus:outline-none focus:ring-2 focus:ring-wl-accent/50"
+              "focus:outline-none focus:ring-2 focus:ring-wl-primary-500/50"
             )}
           />
 
@@ -163,9 +163,9 @@ export default function AICopilotPage() {
             disabled={loading || !query.trim()}
             className={cn(
               "rounded-lg px-5 py-2 text-sm font-medium",
-              "bg-wl-accent text-white",
+              "bg-wl-primary-500 text-wl-text-inverse",
               "disabled:opacity-40 disabled:cursor-not-allowed",
-              "hover:bg-wl-accent/90 transition-colors"
+              "hover:bg-wl-primary-600 transition-colors"
             )}
           >
             {loading ? "Searching…" : "Search"}
@@ -207,7 +207,7 @@ export default function AICopilotPage() {
               key={`${chip.label}-${chip.value}`}
               className={cn(
                 "rounded-full px-3 py-1 text-xs font-medium",
-                "bg-wl-accent/15 text-wl-accent border border-wl-accent/20"
+                "bg-wl-primary-500/15 text-wl-primary-400 border border-wl-primary-500/20"
               )}
             >
               {chip.label}: {chip.value}

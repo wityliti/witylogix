@@ -88,7 +88,7 @@ export default function StoresManagement() {
       {/* Header */}
       <div className="px-6 py-8 border-b border-wl-border-default flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-white mb-2">Connected Stores</h1>
+          <h1 className="text-2xl font-bold text-wl-text-primary mb-2">Connected Stores</h1>
           <p className="text-wl-text-secondary text-sm">Manage your connected e-commerce store</p>
         </div>
         <Button onClick={handleRefresh} variant="secondary" disabled={loading}>
@@ -123,7 +123,7 @@ export default function StoresManagement() {
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="text-wl-text-secondary mb-2 text-xs">Total Orders</p>
-                      <p className="text-2xl font-bold text-white">
+                      <p className="text-2xl font-bold text-wl-text-primary">
                         {stats?.orders.total?.toLocaleString() ?? shop._count?.orders?.toLocaleString() ?? '—'}
                       </p>
                     </div>
@@ -137,7 +137,7 @@ export default function StoresManagement() {
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="text-wl-text-secondary mb-2 text-xs">Today's Orders</p>
-                      <p className="text-2xl font-bold text-white">{stats?.orders.today ?? '—'}</p>
+                      <p className="text-2xl font-bold text-wl-text-primary">{stats?.orders.today ?? '—'}</p>
                     </div>
                     <Package size={28} className="text-wl-primary-400" />
                   </div>
@@ -149,7 +149,7 @@ export default function StoresManagement() {
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="text-wl-text-secondary mb-2 text-xs">Active Drivers</p>
-                      <p className="text-2xl font-bold text-white">{stats?.drivers.active ?? '—'}</p>
+                      <p className="text-2xl font-bold text-wl-text-primary">{stats?.drivers.active ?? '—'}</p>
                     </div>
                     <Zap size={28} className="text-wl-success-500" />
                   </div>
@@ -161,7 +161,7 @@ export default function StoresManagement() {
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="text-wl-text-secondary mb-2 text-xs">Active Zones</p>
-                      <p className="text-2xl font-bold text-white">{stats?.zones.active ?? '—'}</p>
+                      <p className="text-2xl font-bold text-wl-text-primary">{stats?.zones.active ?? '—'}</p>
                     </div>
                     <Globe size={28} className="text-wl-info-400" />
                   </div>
@@ -176,7 +176,7 @@ export default function StoresManagement() {
                   <div className="flex items-center gap-3">
                     <Store size={24} className="text-wl-info-500" />
                     <div>
-                      <h3 className="text-base font-semibold text-white">{shop.name}</h3>
+                      <h3 className="text-base font-semibold text-wl-text-primary">{shop.name}</h3>
                       {shop.domain && <p className="text-wl-text-secondary text-xs">{shop.domain}</p>}
                     </div>
                   </div>
@@ -188,19 +188,19 @@ export default function StoresManagement() {
                 <div className="grid grid-cols-2 gap-3 mb-4 pb-4 border-b border-wl-border-default">
                   <div>
                     <p className="text-wl-text-secondary mb-1 text-xs">Platform</p>
-                    <p className="text-white font-semibold capitalize">{shop.platform ?? 'Shopify'}</p>
+                    <p className="text-wl-text-primary font-semibold capitalize">{shop.platform ?? 'Shopify'}</p>
                   </div>
                   <div>
                     <p className="text-wl-text-secondary mb-1 text-xs">In Transit</p>
-                    <p className="text-white font-semibold">{stats?.orders.inTransit ?? '—'}</p>
+                    <p className="text-wl-text-primary font-semibold">{stats?.orders.inTransit ?? '—'}</p>
                   </div>
                   <div>
                     <p className="text-wl-text-secondary mb-1 text-xs">Pending Orders</p>
-                    <p className="text-white font-semibold">{stats?.orders.pending ?? '—'}</p>
+                    <p className="text-wl-text-primary font-semibold">{stats?.orders.pending ?? '—'}</p>
                   </div>
                   <div>
                     <p className="text-wl-text-secondary mb-1 text-xs">Delivery Zones</p>
-                    <p className="text-white font-semibold">{shop._count?.deliveryZones ?? stats?.zones.total ?? '—'}</p>
+                    <p className="text-wl-text-primary font-semibold">{shop._count?.deliveryZones ?? stats?.zones.total ?? '—'}</p>
                   </div>
                 </div>
 
@@ -215,7 +215,7 @@ export default function StoresManagement() {
             <div className="mt-8">
               <div className="flex items-center gap-2 mb-3">
                 <MapPin size={16} className="text-wl-primary-400" />
-                <h2 className="text-base font-semibold text-white">Zone Coverage</h2>
+                <h2 className="text-base font-semibold text-wl-text-primary">Zone Coverage</h2>
                 {zonesLoading ? (
                   <span className="text-wl-text-tertiary text-xs">Loading…</span>
                 ) : (

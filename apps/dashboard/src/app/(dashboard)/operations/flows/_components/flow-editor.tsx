@@ -497,7 +497,7 @@ function StageEditor({
                 onClick={() => onToggleTransition(target.key)}
                 className={
                   transitionSet.has(target.key)
-                    ? 'px-2 py-1 rounded-md text-xs bg-wl-accent-500/20 text-wl-accent-400 border border-wl-accent-500/40'
+                    ? 'px-2 py-1 rounded-md text-xs bg-wl-primary-500/20 text-wl-primary-400 border border-wl-primary-500/40'
                     : 'px-2 py-1 rounded-md text-xs bg-wl-bg-surface text-wl-text-tertiary border border-wl-border-default hover:border-wl-border-strong'
                 }
               >
@@ -524,7 +524,7 @@ function GraphPreview({ stages }: { stages: FlowStage[] }) {
       {stages.map((stage) => (
         <div key={stage.key} className="text-sm">
           <div className="flex items-center gap-2">
-            {stage.isInitial && <Flag className="w-3 h-3 text-wl-accent-500" />}
+            {stage.isInitial && <Flag className="w-3 h-3 text-wl-primary-500" />}
             <span className="font-medium">{stage.label || stage.key}</span>
             {stage.isTerminal && (
               <Badge variant="default" className="text-xs">
