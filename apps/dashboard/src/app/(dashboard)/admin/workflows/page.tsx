@@ -127,7 +127,7 @@ export default function WorkflowExecutionsPage() {
             label="Total Runs"
             value={totalRuns}
             isLoading={loading}
-            accentColor="var(--blue-600)"
+            accentColor="var(--wl-primary-500)"
             icon={<Activity size={18} />}
             index={0}
           />
@@ -135,7 +135,7 @@ export default function WorkflowExecutionsPage() {
             label="Active"
             value={activeRuns}
             isLoading={loading}
-            accentColor="var(--blue-500)"
+            accentColor="var(--wl-info-500)"
             icon={<Clock size={18} />}
             index={1}
           />
@@ -143,7 +143,7 @@ export default function WorkflowExecutionsPage() {
             label="Completed"
             value={completedRuns}
             isLoading={loading}
-            accentColor="var(--emerald-500)"
+            accentColor="var(--wl-success-500)"
             icon={<CheckCircle2 size={18} />}
             index={2}
           />
@@ -151,7 +151,7 @@ export default function WorkflowExecutionsPage() {
             label="Failed"
             value={failedRuns}
             isLoading={loading}
-            accentColor="var(--red-500)"
+            accentColor="var(--wl-danger-500)"
             icon={<AlertCircle size={18} />}
             index={3}
           />
@@ -168,7 +168,7 @@ export default function WorkflowExecutionsPage() {
                 className={cn(
                   "px-3 py-2 text-sm font-medium cursor-pointer bg-transparent border-0 border-b-2 transition-all capitalize",
                   isActive
-                    ? "text-white border-b-blue-500"
+                    ? "text-white border-b-wl-info-500"
                     : "text-wl-text-secondary border-b-transparent"
                 )}
               >

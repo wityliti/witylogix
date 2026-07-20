@@ -197,7 +197,8 @@ function ToolbarButton({ icon, label, onClick, active, disabled }: ToolbarButton
 }
 
 export function ComposerToolbar() {
-  const { content, setContent, showEmojiPicker, setShowEmojiPicker } = useComposerContext();
+  const { content, setContent, showEmojiPicker, setShowEmojiPicker, setAttachments } = useComposerContext();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const toggleBold = useCallback(() => {
     setContent(`**${content}**`);
@@ -210,6 +211,33 @@ export function ComposerToolbar() {
   const toggleCode = useCallback(() => {
     setContent("`" + content + "`");
   }, [content, setContent]);
+
+  const handleAddLink = useCallback(() => {
+    const url = window.prompt('Enter URL:');
+    if (!url) return;
+    const label = content ? `[link](${url})` : url;
+    setContent(content ? `${content} ${label}` : label);
+  }, [content, setContent]);
+
+  const handleAttachmentClick = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setAttachments((prev) => [
+      ...prev,
+      ...files.map((f) => ({
+        id: `${f.name}-${f.size}-${f.lastModified}`,
+        name: f.name,
+        url: URL.createObjectURL(f),
+        size: f.size,
+        type: f.type,
+      })),
+    ]);
+    e.target.value = '';
+  }, [setAttachments]);
 
   return (
     <div className="flex items-center gap-1 px-3 py-2 border-t border-wl-border-default">
@@ -235,8 +263,7 @@ export function ComposerToolbar() {
       <ToolbarButton
         icon="🔗"
         label="Add link"
-        onClick={() => {}}
-        disabled={!content}
+        onClick={handleAddLink}
       />
       <ToolbarButton
         icon="😊"
@@ -244,7 +271,15 @@ export function ComposerToolbar() {
         onClick={() => setShowEmojiPicker(!showEmojiPicker)}
         active={showEmojiPicker}
       />
-      <ToolbarButton icon="📎" label="Attachments" onClick={() => {}} />
+      <ToolbarButton icon="📎" label="Attachments" onClick={handleAttachmentClick} />
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        className="sr-only"
+        aria-hidden="true"
+        onChange={handleFileChange}
+      />
     </div>
   );
 }
