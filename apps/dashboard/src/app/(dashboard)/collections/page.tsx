@@ -278,7 +278,7 @@ export default function CollectionsPage() {
 
                               {/* Products List */}
                               <div>
-                                <h4 className="text-sm font-semibold text-white mb-3">Products in Collection</h4>
+                                <h4 className="text-sm font-semibold text-wl-text-primary mb-3">Products in Collection</h4>
                                 <div className="flex flex-col gap-2 mb-4">
                                   {collection.products?.map((product, pIdx) => (
                                     <div key={product.id} className="flex items-center gap-3 p-2 px-3 bg-wl-bg-elevated rounded-lg hover:bg-wl-bg-elevated/80 transition-colors">
@@ -302,7 +302,7 @@ export default function CollectionsPage() {
                                 {/* Sort Rules for Auto Collections */}
                                 {collection.type === "auto" && collection.sortRules && collection.sortRules.length > 0 && (
                                   <div>
-                                    <h4 className="text-sm font-semibold text-white mb-2">Sort Rules</h4>
+                                    <h4 className="text-sm font-semibold text-wl-text-primary mb-2">Sort Rules</h4>
                                     <ul className="list-none p-0 m-0 flex flex-col gap-2">
                                       {collection.sortRules.map((rule, rIdx) => (
                                         <li key={rIdx} className="text-sm text-wl-text-secondary p-2 px-3 bg-wl-bg-elevated rounded-lg">

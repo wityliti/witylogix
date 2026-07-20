@@ -54,7 +54,7 @@ export function PaymentProviderCard({
         <div className="flex items-start gap-3">
           <div className="text-2xl">{provider.icon}</div>
           <div className="flex-1">
-            <h3 className="text-sm font-semibold text-white">{provider.name}</h3>
+            <h3 className="text-sm font-semibold text-wl-text-primary">{provider.name}</h3>
             <Badge variant={config.badge as any} className="mt-2">
               {config.icon}
               <span className="ml-2">{config.label}</span>

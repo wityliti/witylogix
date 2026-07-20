@@ -29,7 +29,7 @@ export function ESignatureProviderCard({ provider }: ESignatureProviderCardProps
           <div className="flex items-center gap-3">
             <div className="text-wl-info-500 text-2xl">{provider.icon}</div>
             <div>
-              <h3 className="text-lg font-semibold text-white">{provider.name}</h3>
+              <h3 className="text-lg font-semibold text-wl-text-primary">{provider.name}</h3>
               <p className="text-xs text-wl-text-tertiary mt-1">
                 {provider.status === "connected" && `Connected on ${provider.connectedAt}`}
                 {provider.status === "disconnected" && "Not connected"}

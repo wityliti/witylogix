@@ -212,7 +212,7 @@ export default function NotificationPreferencesPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-wl-border-default">
-                      <th className="text-left py-3 px-4 font-semibold text-white">
+                      <th className="text-left py-3 px-4 font-semibold text-wl-text-primary">
                         Channel
                       </th>
                       {categories.map((cat) => (
@@ -243,7 +243,7 @@ export default function NotificationPreferencesPage() {
                           key={channel}
                           className="border-b border-wl-border-default hover:bg-wl-bg-overlay transition-colors"
                         >
-                          <td className="py-4 px-4 font-medium text-white">
+                          <td className="py-4 px-4 font-medium text-wl-text-primary">
                             {channel}
                           </td>
 
@@ -330,7 +330,7 @@ export default function NotificationPreferencesPage() {
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-medium text-white">
+                  <h4 className="font-medium text-wl-text-primary">
                     Enable Quiet Hours
                   </h4>
                   <p className="text-sm text-wl-text-secondary">
@@ -352,7 +352,7 @@ export default function NotificationPreferencesPage() {
                 <div className="space-y-4 p-4 bg-wl-bg-root rounded-lg border border-wl-border-default">
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-white mb-2">
+                      <label className="block text-sm font-medium text-wl-text-primary mb-2">
                         Start Time
                       </label>
                       <Input
@@ -364,12 +364,12 @@ export default function NotificationPreferencesPage() {
                             startTime: e.target.value,
                           }))
                         }
-                        className="bg-wl-bg-overlay border-wl-border-default text-white"
+                        className="bg-wl-bg-overlay border-wl-border-default text-wl-text-primary"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-white mb-2">
+                      <label className="block text-sm font-medium text-wl-text-primary mb-2">
                         End Time
                       </label>
                       <Input
@@ -381,12 +381,12 @@ export default function NotificationPreferencesPage() {
                             endTime: e.target.value,
                           }))
                         }
-                        className="bg-wl-bg-overlay border-wl-border-default text-white"
+                        className="bg-wl-bg-overlay border-wl-border-default text-wl-text-primary"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-white mb-2">
+                      <label className="block text-sm font-medium text-wl-text-primary mb-2">
                         Timezone
                       </label>
                       <select
@@ -400,7 +400,7 @@ export default function NotificationPreferencesPage() {
                         className={cn(
                           "w-full px-4 py-2 rounded-md",
                           "bg-wl-bg-overlay border border-wl-border-default",
-                          "text-white",
+                          "text-wl-text-primary",
                           "focus:outline-none focus:border-wl-info-500",
                           "transition-colors duration-fast"
                         )}
@@ -429,7 +429,7 @@ export default function NotificationPreferencesPage() {
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-medium text-white">
+                  <h4 className="font-medium text-wl-text-primary">
                     Enable Digest
                   </h4>
                   <p className="text-sm text-wl-text-secondary">
@@ -451,7 +451,7 @@ export default function NotificationPreferencesPage() {
                 <div className="space-y-4 p-4 bg-wl-bg-root rounded-lg border border-wl-border-default">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-white mb-2">
+                      <label className="block text-sm font-medium text-wl-text-primary mb-2">
                         Frequency
                       </label>
                       <select
@@ -465,7 +465,7 @@ export default function NotificationPreferencesPage() {
                         className={cn(
                           "w-full px-4 py-2 rounded-md",
                           "bg-wl-bg-overlay border border-wl-border-default",
-                          "text-white",
+                          "text-wl-text-primary",
                           "focus:outline-none focus:border-wl-info-500",
                           "transition-colors duration-fast"
                         )}
@@ -480,7 +480,7 @@ export default function NotificationPreferencesPage() {
 
                     {digestSettings.frequency === "DAILY" && (
                       <div>
-                        <label className="block text-sm font-medium text-white mb-2">
+                        <label className="block text-sm font-medium text-wl-text-primary mb-2">
                           Delivery Time
                         </label>
                         <Input
@@ -492,7 +492,7 @@ export default function NotificationPreferencesPage() {
                               time: e.target.value,
                             }))
                           }
-                          className="bg-wl-bg-overlay border-wl-border-default text-white"
+                          className="bg-wl-bg-overlay border-wl-border-default text-wl-text-primary"
                         />
                       </div>
                     )}

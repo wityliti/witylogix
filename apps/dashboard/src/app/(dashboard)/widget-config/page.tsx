@@ -124,7 +124,7 @@ export default function WidgetConfigPage() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
+          <h1 className="text-3xl font-bold text-wl-text-primary mb-2">
             Widget Configuration
           </h1>
           <p className="text-wl-text-secondary text-sm">
@@ -138,7 +138,7 @@ export default function WidgetConfigPage() {
             {/* Widget Features */}
             <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
-                <CardTitle className="text-white">Widget Features</CardTitle>
+                <CardTitle className="text-wl-text-primary">Widget Features</CardTitle>
                 <CardDescription className="text-wl-text-secondary">Enable widget features</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
@@ -183,13 +183,13 @@ export default function WidgetConfigPage() {
             {/* Widget Appearance */}
             <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
-                <CardTitle className="text-white">Appearance</CardTitle>
+                <CardTitle className="text-wl-text-primary">Appearance</CardTitle>
                 <CardDescription className="text-wl-text-secondary">Customize widget look and feel</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
                 {/* Position */}
                 <div>
-                  <label className="block text-white text-xs font-medium mb-1.5">
+                  <label className="block text-wl-text-primary text-xs font-medium mb-1.5">
                     Position
                   </label>
                   <select
@@ -207,7 +207,7 @@ export default function WidgetConfigPage() {
                 {/* Dimensions */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-white text-xs font-medium mb-1.5">
+                    <label className="block text-wl-text-primary text-xs font-medium mb-1.5">
                       Width (px)
                     </label>
                     <input
@@ -220,7 +220,7 @@ export default function WidgetConfigPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-white text-xs font-medium mb-1.5">
+                    <label className="block text-wl-text-primary text-xs font-medium mb-1.5">
                       Height (px)
                     </label>
                     <input
@@ -236,7 +236,7 @@ export default function WidgetConfigPage() {
 
                 {/* Border Radius */}
                 <div>
-                  <label className="block text-white text-xs font-medium mb-1.5">
+                  <label className="block text-wl-text-primary text-xs font-medium mb-1.5">
                     Border Radius: {borderRadius}px
                   </label>
                   <input
@@ -263,7 +263,7 @@ export default function WidgetConfigPage() {
 
                 {/* Font */}
                 <div>
-                  <label className="block text-white text-xs font-medium mb-1.5">
+                  <label className="block text-wl-text-primary text-xs font-medium mb-1.5">
                     Font Family
                   </label>
                   <select
@@ -280,7 +280,7 @@ export default function WidgetConfigPage() {
 
                 {/* Language */}
                 <div>
-                  <label className="block text-white text-xs font-medium mb-1.5">
+                  <label className="block text-wl-text-primary text-xs font-medium mb-1.5">
                     Language
                   </label>
                   <select
@@ -301,14 +301,14 @@ export default function WidgetConfigPage() {
             {/* Color Scheme */}
             <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
+                <CardTitle className="text-wl-text-primary flex items-center gap-2">
                   <Palette size={18} />
                   Colors
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
                 <div>
-                  <label className="block text-white text-xs font-medium mb-2">
+                  <label className="block text-wl-text-primary text-xs font-medium mb-2">
                     Primary Color
                   </label>
                   <div className="flex gap-2 items-center">
@@ -328,7 +328,7 @@ export default function WidgetConfigPage() {
                 </div>
 
                 <div>
-                  <label className="block text-white text-xs font-medium mb-2">
+                  <label className="block text-wl-text-primary text-xs font-medium mb-2">
                     Background Color
                   </label>
                   <div className="flex gap-2 items-center">
@@ -348,7 +348,7 @@ export default function WidgetConfigPage() {
                 </div>
 
                 <div>
-                  <label className="block text-white text-xs font-medium mb-2">
+                  <label className="block text-wl-text-primary text-xs font-medium mb-2">
                     Text Color
                   </label>
                   <div className="flex gap-2 items-center">
@@ -375,7 +375,7 @@ export default function WidgetConfigPage() {
             {/* Widget Preview */}
             <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
+                <CardTitle className="text-wl-text-primary flex items-center gap-2">
                   <Eye size={18} />
                   Widget Preview
                 </CardTitle>
@@ -427,7 +427,7 @@ export default function WidgetConfigPage() {
             {/* Embed Code */}
             <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
+                <CardTitle className="text-wl-text-primary flex items-center gap-2">
                   <Code size={18} />
                   Embed Code
                 </CardTitle>
@@ -453,7 +453,7 @@ export default function WidgetConfigPage() {
             {/* Documentation */}
             <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
-                <CardTitle className="text-white">Installation</CardTitle>
+                <CardTitle className="text-wl-text-primary">Installation</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-2.5">
                 <div>

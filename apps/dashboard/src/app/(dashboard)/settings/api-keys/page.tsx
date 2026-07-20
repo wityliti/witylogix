@@ -126,12 +126,12 @@ export default function APIKeysPage() {
           {showCreateDialog && (
             <Card className="border-wl-info-500/30 bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
-                <CardTitle className="text-white">Create New API Key</CardTitle>
+                <CardTitle className="text-wl-text-primary">Create New API Key</CardTitle>
                 <CardDescription className="text-wl-text-secondary">Generate a new API key for your application</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <label className="text-sm font-semibold text-white block mb-2">
+                  <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                     Key Name
                   </label>
                   <Input
@@ -142,7 +142,7 @@ export default function APIKeysPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold text-white block mb-3">
+                  <label className="text-sm font-semibold text-wl-text-primary block mb-3">
                     Scopes (Permissions)
                   </label>
                   <div className="grid grid-cols-2 gap-3">
@@ -194,7 +194,7 @@ export default function APIKeysPage() {
           {/* API Keys List */}
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
-              <CardTitle className="text-white">Your API Keys</CardTitle>
+              <CardTitle className="text-wl-text-primary">Your API Keys</CardTitle>
               <CardDescription className="text-wl-text-secondary">
                 {apiKeys.length} {apiKeys.length === 1 ? "key" : "keys"} available
               </CardDescription>

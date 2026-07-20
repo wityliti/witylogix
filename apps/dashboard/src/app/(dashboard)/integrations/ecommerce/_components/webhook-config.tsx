@@ -23,7 +23,7 @@ interface WebhookConfigProps {
 export function WebhookConfig({ platforms }: WebhookConfigProps) {
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold text-white">
+      <h2 className="text-xl font-bold text-wl-text-primary">
         Webhook Configuration
       </h2>
 
@@ -35,7 +35,7 @@ export function WebhookConfig({ platforms }: WebhookConfigProps) {
                 key={platform.id}
                 className="border border-wl-border-default rounded-lg p-4"
               >
-                <h3 className="font-semibold text-white mb-3">
+                <h3 className="font-semibold text-wl-text-primary mb-3">
                   {platform.name} Webhooks
                 </h3>
                 <div className="space-y-2">

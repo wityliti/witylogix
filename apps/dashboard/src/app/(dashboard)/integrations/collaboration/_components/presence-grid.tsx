@@ -46,7 +46,7 @@ export function PresenceGrid({ indicators }: PresenceGridProps) {
                   {indicator.name.charAt(0)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold text-white truncate">
+                  <h4 className="font-semibold text-wl-text-primary truncate">
                     {indicator.name}
                   </h4>
                   <p className="text-xs text-wl-text-tertiary mt-1">

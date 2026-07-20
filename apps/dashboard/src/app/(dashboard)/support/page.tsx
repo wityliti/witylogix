@@ -159,7 +159,7 @@ export default function SupportPage() {
       <div className="max-w-[1200px] mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Support & Help Center</h1>
+          <h1 className="text-4xl font-bold text-wl-text-primary mb-2">Support & Help Center</h1>
           <p className="text-wl-text-secondary text-sm">
             Get help with Witylogix platform and manage support tickets
           </p>
@@ -170,7 +170,7 @@ export default function SupportPage() {
           <div className="flex flex-col gap-4">
             <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardHeader>
-                <CardTitle className="text-white">Frequently Asked Questions</CardTitle>
+                <CardTitle className="text-wl-text-primary">Frequently Asked Questions</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
                 {faqSections.map((section) => (
@@ -210,7 +210,7 @@ export default function SupportPage() {
           <div className="flex flex-col gap-4">
             <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardHeader>
-                <CardTitle className="text-white">Contact Support</CardTitle>
+                <CardTitle className="text-wl-text-primary">Contact Support</CardTitle>
                 <CardDescription className="text-wl-text-secondary">
                   Create a new support ticket
                 </CardDescription>
@@ -218,7 +218,7 @@ export default function SupportPage() {
               <CardContent>
                 <form onSubmit={handleSubmit} className="flex flex-col gap-3">
                   <div>
-                    <label className="block text-white text-sm font-medium mb-1.5">Subject</label>
+                    <label className="block text-wl-text-primary text-sm font-medium mb-1.5">Subject</label>
                     <input
                       type="text"
                       value={formData.subject}
@@ -230,7 +230,7 @@ export default function SupportPage() {
                   </div>
 
                   <div>
-                    <label className="block text-white text-sm font-medium mb-1.5">Priority</label>
+                    <label className="block text-wl-text-primary text-sm font-medium mb-1.5">Priority</label>
                     <select
                       value={formData.priority}
                       onChange={(e) =>
@@ -249,7 +249,7 @@ export default function SupportPage() {
                   </div>
 
                   <div>
-                    <label className="block text-white text-sm font-medium mb-1.5">
+                    <label className="block text-wl-text-primary text-sm font-medium mb-1.5">
                       Description
                     </label>
                     <textarea
@@ -279,7 +279,7 @@ export default function SupportPage() {
         {/* Support Tickets */}
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="text-wl-text-primary flex items-center gap-2">
               <MessageSquare size={20} />
               Your Support Tickets
             </CardTitle>

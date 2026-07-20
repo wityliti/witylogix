@@ -412,7 +412,7 @@ export default function NotificationsPage() {
                           <div className="bg-wl-bg-elevated px-6 py-4 border-t border-wl-border-default">
                             <div className="space-y-4">
                               <div>
-                                <h4 className="text-sm font-semibold text-white mb-2">
+                                <h4 className="text-sm font-semibold text-wl-text-primary mb-2">
                                   Details
                                 </h4>
                                 <p className="text-sm text-wl-text-secondary">

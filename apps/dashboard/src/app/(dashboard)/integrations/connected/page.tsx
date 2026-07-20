@@ -414,7 +414,7 @@ export default function ConnectedIntegrationsPage() {
       ) : (
         <div className="text-center py-12">
           <Filter className="w-12 h-12 text-wl-text-tertiary mx-auto mb-4 opacity-50" />
-          <h3 className="text-lg font-semibold text-white mb-2">
+          <h3 className="text-lg font-semibold text-wl-text-primary mb-2">
             No integrations found
           </h3>
           <p className="text-wl-text-secondary mb-4">

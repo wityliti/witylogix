@@ -145,7 +145,7 @@ export default function IntegrationOverviewPage() {
           <Card className="bg-wl-bg-elevated border-wl-border-default">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-white">System Health</h3>
+                <h3 className="font-semibold text-wl-text-primary">System Health</h3>
                 <Activity className="w-5 h-5 text-wl-info-500" />
               </div>
 
@@ -198,7 +198,7 @@ export default function IntegrationOverviewPage() {
           <Card className="bg-wl-bg-elevated border-wl-border-default">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-white">Active Connections</h3>
+                <h3 className="font-semibold text-wl-text-primary">Active Connections</h3>
                 <Zap className="w-5 h-5 text-wl-success-500" />
               </div>
               {connectionsLoading ? (
@@ -229,7 +229,7 @@ export default function IntegrationOverviewPage() {
           <Card className="bg-wl-bg-elevated border-wl-border-default">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-white">Integration Health</h3>
+                <h3 className="font-semibold text-wl-text-primary">Integration Health</h3>
                 <AlertCircle className={cn('w-5 h-5', totalError > 0 ? 'text-wl-danger-500' : 'text-wl-success-500')} />
               </div>
               {connectionsLoading ? (
@@ -302,7 +302,7 @@ export default function IntegrationOverviewPage() {
 
         {/* Category Grid */}
         <div className="space-y-6 mb-8">
-          <h2 className="text-xl font-bold text-white">Integration Categories</h2>
+          <h2 className="text-xl font-bold text-wl-text-primary">Integration Categories</h2>
 
           {connectionsLoading ? (
             <div className="py-12 text-center text-wl-text-tertiary text-sm">
@@ -346,7 +346,7 @@ export default function IntegrationOverviewPage() {
                     <CardContent className="pt-6">
                       <div className="flex items-start justify-between mb-4">
                         <div>
-                          <h3 className="font-semibold text-white">{category.name}</h3>
+                          <h3 className="font-semibold text-wl-text-primary">{category.name}</h3>
                           <div className="text-xs text-wl-text-tertiary mt-1">
                             {category.active} of {category.total} active
                           </div>
@@ -386,7 +386,7 @@ export default function IntegrationOverviewPage() {
         {/* Recent Activity Feed */}
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white">Recent Activity</h2>
+            <h2 className="text-xl font-bold text-wl-text-primary">Recent Activity</h2>
             <Button variant="ghost" size="sm" className="text-wl-text-tertiary">
               View All
               <ArrowRight className="w-4 h-4 ml-2" />
@@ -410,7 +410,7 @@ export default function IntegrationOverviewPage() {
           <Card className="bg-wl-bg-surface border border-wl-info-500/20 cursor-pointer hover:border-wl-info-500/50 transition-all">
             <CardContent className="pt-6">
               <Plus className="w-6 h-6 text-wl-info-500 mb-3" />
-              <h3 className="font-semibold text-white">Connect New</h3>
+              <h3 className="font-semibold text-wl-text-primary">Connect New</h3>
               <p className="text-xs text-wl-text-tertiary mt-1">Add a new integration</p>
             </CardContent>
           </Card>
@@ -418,7 +418,7 @@ export default function IntegrationOverviewPage() {
           <Card className="bg-wl-bg-surface border border-wl-info-500/20 cursor-pointer hover:border-wl-info-500/50 transition-all">
             <CardContent className="pt-6">
               <Zap className="w-6 h-6 text-wl-info-500 mb-3" />
-              <h3 className="font-semibold text-white">Run Sync</h3>
+              <h3 className="font-semibold text-wl-text-primary">Run Sync</h3>
               <p className="text-xs text-wl-text-tertiary mt-1">Manually trigger sync</p>
             </CardContent>
           </Card>
@@ -426,7 +426,7 @@ export default function IntegrationOverviewPage() {
           <Card className="bg-wl-bg-surface border border-wl-info-500/20 cursor-pointer hover:border-wl-info-500/50 transition-all">
             <CardContent className="pt-6">
               <Activity className="w-6 h-6 text-wl-info-500 mb-3" />
-              <h3 className="font-semibold text-white">View Logs</h3>
+              <h3 className="font-semibold text-wl-text-primary">View Logs</h3>
               <p className="text-xs text-wl-text-tertiary mt-1">Integration logs</p>
             </CardContent>
           </Card>
@@ -434,7 +434,7 @@ export default function IntegrationOverviewPage() {
           <Card className="bg-wl-bg-surface border border-wl-info-500/20 cursor-pointer hover:border-wl-info-500/50 transition-all">
             <CardContent className="pt-6">
               <Settings className="w-6 h-6 text-wl-info-500 mb-3" />
-              <h3 className="font-semibold text-white">Settings</h3>
+              <h3 className="font-semibold text-wl-text-primary">Settings</h3>
               <p className="text-xs text-wl-text-tertiary mt-1">Global integration config</p>
             </CardContent>
           </Card>

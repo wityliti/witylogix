@@ -259,7 +259,7 @@ export default function ProductSyncPage() {
               >
                 <div className="flex items-center gap-3 flex-1 text-left">
                   <div className="flex-1">
-                    <h4 className="font-semibold text-white">
+                    <h4 className="font-semibold text-wl-text-primary">
                       {platform.name}
                     </h4>
                     <p className="text-sm text-wl-neutral-300">
@@ -482,7 +482,7 @@ export default function ProductSyncPage() {
 
               <CardContent className="space-y-4">
                 <div className="bg-wl-bg-surface rounded-lg p-4 border border-wl-border-default">
-                  <h4 className="font-semibold text-white mb-4">
+                  <h4 className="font-semibold text-wl-text-primary mb-4">
                     Sample Product Transformation
                   </h4>
 

@@ -112,7 +112,7 @@ export default function FuelPage() {
           {/* Top Consumers */}
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
-              <CardTitle className="text-sm text-white">Top Fuel Consumers</CardTitle>
+              <CardTitle className="text-sm text-wl-text-primary">Top Fuel Consumers</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -138,7 +138,7 @@ export default function FuelPage() {
           {/* Fuel Cost Summary */}
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
-              <CardTitle className="text-sm text-white">Fuel Cost Summary</CardTitle>
+              <CardTitle className="text-sm text-wl-text-primary">Fuel Cost Summary</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -161,7 +161,7 @@ export default function FuelPage() {
           {/* Fuel Cards */}
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
-              <CardTitle className="text-sm text-white">Fuel Cards Status</CardTitle>
+              <CardTitle className="text-sm text-wl-text-primary">Fuel Cards Status</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col items-center justify-center py-6 text-center gap-3">

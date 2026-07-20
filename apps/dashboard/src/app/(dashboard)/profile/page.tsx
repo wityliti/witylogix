@@ -144,7 +144,7 @@ export default function ProfilePage() {
         {/* Personal Information */}
         <Card className="bg-wl-bg-surface border-wl-border-default mb-6">
           <CardHeader>
-            <CardTitle className="text-white flex items-center justify-between">
+            <CardTitle className="text-wl-text-primary flex items-center justify-between">
               Personal Information
               {!isEditing && (
                 <button
@@ -270,7 +270,7 @@ export default function ProfilePage() {
         {/* Security Settings */}
         <Card className="bg-wl-bg-surface border-wl-border-default mb-6">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="text-wl-text-primary flex items-center gap-2">
               <Shield size={20} />
               Security Settings
             </CardTitle>
@@ -278,7 +278,7 @@ export default function ProfilePage() {
           <CardContent className="space-y-6">
             {/* Change Password */}
             <div>
-              <h4 className="text-base font-semibold text-white mb-3">
+              <h4 className="text-base font-semibold text-wl-text-primary mb-3">
                 Change Password
               </h4>
               <div className="space-y-3">
@@ -356,7 +356,7 @@ export default function ProfilePage() {
             <div className="border-t border-wl-border-default pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-base font-semibold text-white mb-1">
+                  <h4 className="text-base font-semibold text-wl-text-primary mb-1">
                     Two-Factor Authentication
                   </h4>
                   <p className="text-wl-text-muted text-sm">
@@ -380,7 +380,7 @@ export default function ProfilePage() {
         {/* Active Sessions */}
         <Card className="bg-wl-bg-surface border-wl-border-default mb-6">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="text-wl-text-primary flex items-center gap-2">
               <Globe size={20} />
               Active Sessions
             </CardTitle>
@@ -404,7 +404,7 @@ export default function ProfilePage() {
         {/* Delete Account */}
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="text-wl-text-primary flex items-center gap-2">
               <AlertTriangle size={20} className="text-wl-danger-500" />
               Delete Account
             </CardTitle>

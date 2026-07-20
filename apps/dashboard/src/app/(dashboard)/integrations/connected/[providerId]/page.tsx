@@ -103,7 +103,7 @@ export default function IntegrationDetailPage() {
               ) : (
                 <AlertCircle className="w-12 h-12 text-wl-danger-500 mx-auto mb-4" />
               )}
-              <h2 className="text-xl font-semibold text-white mb-2">
+              <h2 className="text-xl font-semibold text-wl-text-primary mb-2">
                 {isLoading ? "Loading…" : "Integration not found"}
               </h2>
               {!isLoading && (
@@ -144,7 +144,7 @@ export default function IntegrationDetailPage() {
             <CheckCircle className="w-6 h-6 text-wl-info-500" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-white">
+            <h1 className="text-3xl font-bold text-wl-text-primary">
               {connection.providerName}
             </h1>
             <div className="flex items-center gap-3 mt-2">
@@ -536,7 +536,7 @@ export default function IntegrationDetailPage() {
           onClose={() => setShowDisconnectModal(false)}
         >
           <div className="space-y-4">
-            <h2 className="text-xl font-bold text-white">
+            <h2 className="text-xl font-bold text-wl-text-primary">
               Disconnect {connection.providerName}?
             </h2>
             <p className="text-wl-text-secondary">

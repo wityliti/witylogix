@@ -85,7 +85,7 @@ function PatientTable({ patients }: { patients: Patient[] }) {
       {/* Patients Table */}
       <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader className="border-b border-wl-border-default">
-          <CardTitle className="text-base text-white">
+          <CardTitle className="text-base text-wl-text-primary">
             Patients ({filteredPatients.length})
           </CardTitle>
         </CardHeader>
@@ -156,7 +156,7 @@ function PatientTable({ patients }: { patients: Patient[] }) {
         <Card className="mt-6 bg-wl-bg-surface border-wl-border-default">
           <CardHeader className="border-b border-wl-border-default flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-base text-white">
+              <CardTitle className="text-base text-wl-text-primary">
                 {selectedPatient.firstName} {selectedPatient.lastName}
               </CardTitle>
               <p className="text-xs text-wl-text-secondary mt-1">
@@ -278,7 +278,7 @@ export default function PatientsPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Patient Registry</h1>
+            <h1 className="text-3xl font-bold text-wl-text-primary mb-2">Patient Registry</h1>
             <p className="text-wl-text-secondary">
               {viewMode === 'map'
                 ? `${locationPins.length} patient${locationPins.length !== 1 ? 's' : ''} mapped`

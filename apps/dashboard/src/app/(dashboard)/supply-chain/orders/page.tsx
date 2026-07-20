@@ -360,7 +360,7 @@ export default function OrdersPage() {
       {selectedTab === 'waves' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-white">
+            <h3 className="text-lg font-semibold text-wl-text-primary">
               Wave Plans
             </h3>
             <Button variant="primary">Create Wave</Button>
@@ -413,7 +413,7 @@ export default function OrdersPage() {
       {/* Batch Picking Tab */}
       {selectedTab === 'batches' && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-white">
+          <h3 className="text-lg font-semibold text-wl-text-primary">
             Batch Picking Tasks
           </h3>
 
@@ -427,7 +427,7 @@ export default function OrdersPage() {
               <CardContent className="pt-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h4 className="text-sm font-semibold text-white">
+                    <h4 className="text-sm font-semibold text-wl-text-primary">
                       {batch.batchId}
                     </h4>
                     <p className="text-xs text-wl-text-secondary mt-1">
@@ -483,7 +483,7 @@ export default function OrdersPage() {
       {/* Returns Queue Tab */}
       {selectedTab === 'returns' && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-white">
+          <h3 className="text-lg font-semibold text-wl-text-primary">
             Returns Queue
           </h3>
 
@@ -497,7 +497,7 @@ export default function OrdersPage() {
               <CardContent className="pt-6">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h4 className="text-sm font-semibold text-white">
+                    <h4 className="text-sm font-semibold text-wl-text-primary">
                       {returnItem.orderNumber ?? returnItem.id}
                     </h4>
                     <p className="text-xs text-wl-text-secondary mt-1">

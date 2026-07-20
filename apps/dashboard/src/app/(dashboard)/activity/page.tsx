@@ -191,7 +191,7 @@ export default function ActivityPage() {
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-white tracking-tight">
+              <h1 className="text-3xl font-bold text-wl-text-primary tracking-tight">
                 Activity Log
               </h1>
               <p className="text-sm text-wl-neutral-300 mt-2">
@@ -400,7 +400,7 @@ export default function ActivityPage() {
                         <X className="w-3 h-3" />
                         Close
                       </button>
-                      <h3 className="text-lg font-semibold text-white">
+                      <h3 className="text-lg font-semibold text-wl-text-primary">
                         {selectedEvent.title}
                       </h3>
                       <div className="mt-3 flex items-center gap-2">

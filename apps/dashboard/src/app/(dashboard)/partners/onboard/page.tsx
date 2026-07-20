@@ -198,7 +198,7 @@ export default function OnboardPage() {
       <div className="max-w-2xl mx-auto w-full">
         {/* Title */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
+          <h1 className="text-3xl font-bold text-wl-text-primary mb-2">
             Onboard New Courier Partner
           </h1>
           <p className="text-wl-neutral-300">
@@ -281,7 +281,7 @@ export default function OnboardPage() {
                         <Icon className="w-5 h-5" />
                       </div>
                       <div className="flex-1 text-left">
-                        <h3 className="font-semibold text-white">
+                        <h3 className="font-semibold text-wl-text-primary">
                           {partner.name}
                         </h3>
                         <p className="text-sm text-wl-neutral-300">
@@ -377,7 +377,7 @@ export default function OnboardPage() {
             <CardContent className="space-y-6">
               {/* Service Areas */}
               <div className="space-y-3">
-                <label className="text-sm font-semibold text-white">
+                <label className="text-sm font-semibold text-wl-text-primary">
                   Service Areas
                 </label>
                 <div className="flex gap-2">
@@ -423,7 +423,7 @@ export default function OnboardPage() {
 
               {/* Max Distance */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-white">
+                <label className="text-sm font-semibold text-wl-text-primary">
                   Max Delivery Distance (km)
                 </label>
                 <Input
@@ -444,7 +444,7 @@ export default function OnboardPage() {
 
               {/* Max Delivery Time */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-white">
+                <label className="text-sm font-semibold text-wl-text-primary">
                   Max Delivery Time (minutes)
                 </label>
                 <Input

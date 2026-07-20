@@ -163,7 +163,7 @@ export default function InventoryPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white">Inventory Management</h2>
+          <h2 className="text-2xl font-bold text-wl-text-primary">Inventory Management</h2>
           <p className="text-wl-neutral-300 mt-1">
             Monitor stock levels, ABC analysis, and reorder alerts
           </p>
@@ -249,7 +249,7 @@ export default function InventoryPage() {
                 <div key={gauge.sku} className="p-4 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default">
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <h4 className="text-sm font-medium text-white">
+                      <h4 className="text-sm font-medium text-wl-text-primary">
                         {gauge.name}
                       </h4>
                       <p className="text-xs text-wl-text-secondary mt-0.5">
@@ -335,7 +335,7 @@ export default function InventoryPage() {
                 className="flex items-start justify-between p-3 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default"
               >
                 <div className="flex-1">
-                  <h4 className="text-sm font-medium text-white">
+                  <h4 className="text-sm font-medium text-wl-text-primary">
                     {alert.productName}
                   </h4>
                   <div className="flex items-center gap-4 mt-2">
@@ -448,7 +448,7 @@ export default function InventoryPage() {
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div>
-                      <h4 className="text-sm font-medium text-white">
+                      <h4 className="text-sm font-medium text-wl-text-primary">
                         {item.name}
                       </h4>
                       <p className="text-xs text-wl-text-secondary">{item.sku}</p>
@@ -541,7 +541,7 @@ export default function InventoryPage() {
                   className="flex items-start justify-between p-3 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default"
                 >
                   <div className="flex-1">
-                    <h4 className="text-sm font-medium text-white">
+                    <h4 className="text-sm font-medium text-wl-text-primary">
                       {transfer.fromWarehouse} → {transfer.toWarehouse}
                     </h4>
                     <div className="flex items-center gap-4 mt-2">

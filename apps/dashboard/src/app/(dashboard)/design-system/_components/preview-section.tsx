@@ -23,7 +23,7 @@ export function PreviewSection({
   return (
     <div className="space-y-3">
       <div>
-        <h4 className="text-sm font-semibold text-white mb-1">
+        <h4 className="text-sm font-semibold text-wl-text-primary mb-1">
           {title}
         </h4>
         <p className="text-xs text-wl-text-secondary">{description}</p>

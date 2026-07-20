@@ -220,7 +220,7 @@ export default function LastMileIntegrationPage() {
 
         {/* Courier Partner Cards */}
         <div className="mb-6">
-          <h2 className="text-sm font-semibold text-white mb-4 uppercase tracking-wider">
+          <h2 className="text-sm font-semibold text-wl-text-primary mb-4 uppercase tracking-wider">
             Courier Partners
           </h2>
           {partnersLoading ? (
@@ -259,7 +259,7 @@ export default function LastMileIntegrationPage() {
                           {partner.provider.slice(0, 2)}
                         </div>
                         <div>
-                          <h3 className="text-sm font-semibold text-white">{partner.name}</h3>
+                          <h3 className="text-sm font-semibold text-wl-text-primary">{partner.name}</h3>
                           <Badge variant={getHealthVariant(partner.healthStatus)}>
                             ● {partner.healthStatus.toLowerCase()}
                           </Badge>

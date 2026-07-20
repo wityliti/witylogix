@@ -333,7 +333,7 @@ function ProviderCard({ provider, index, layout, categoryLabel }: ProviderCardPr
             {logo}
           </div>
           <div className={cn('flex-1 min-w-0')}>
-            <h3 className="text-sm font-semibold text-white">{provider.name}</h3>
+            <h3 className="text-sm font-semibold text-wl-text-primary">{provider.name}</h3>
             <p className="text-xs text-wl-text-tertiary truncate">{provider.description}</p>
             <Badge variant="default" className="text-xs mt-1">
               {categoryLabel}
@@ -375,7 +375,7 @@ function ProviderCard({ provider, index, layout, categoryLabel }: ProviderCardPr
         </div>
 
         <div className={cn('flex-1 flex flex-col')}>
-          <h3 className="text-sm font-semibold text-white mb-2">{provider.name}</h3>
+          <h3 className="text-sm font-semibold text-wl-text-primary mb-2">{provider.name}</h3>
           <p className="text-xs text-wl-text-tertiary mb-3 line-clamp-2">{provider.description}</p>
           <Badge variant="default" className="mb-2 w-fit text-xs">
             {categoryLabel}

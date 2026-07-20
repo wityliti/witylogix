@@ -217,7 +217,7 @@ export default function PartnersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold text-white">Courier Partners</h1>
+          <h1 className="text-3xl font-bold text-wl-text-primary">Courier Partners</h1>
           <p className="text-wl-text-secondary">Manage and monitor your delivery partners</p>
         </div>
         <div className="flex gap-2">
@@ -342,7 +342,7 @@ export default function PartnersPage() {
             <Card className="flex flex-col items-center justify-center gap-4 py-16">
               <Filter className="w-12 h-12 text-wl-text-tertiary" />
               <div className="flex flex-col items-center gap-2">
-                <h3 className="text-lg font-semibold text-white">No partners found</h3>
+                <h3 className="text-lg font-semibold text-wl-text-primary">No partners found</h3>
                 <p className="text-sm text-wl-text-secondary">
                   {partners.length === 0
                     ? "Add a courier partner to get started"
@@ -386,7 +386,7 @@ export default function PartnersPage() {
                       </div>
                     )}
                     <div className="flex-1">
-                      <h3 className="font-semibold text-white">{partner.name}</h3>
+                      <h3 className="font-semibold text-wl-text-primary">{partner.name}</h3>
                       <p className="text-sm text-wl-text-secondary">
                         {partner.activeDeliveries} active deliveries · {partner.successRate}% success
                         rate{partner.rating > 0 ? ` · ${partner.rating.toFixed(1)}★` : ""}

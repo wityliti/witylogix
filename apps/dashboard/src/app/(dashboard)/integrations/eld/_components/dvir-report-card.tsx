@@ -67,7 +67,7 @@ export function DVIRReportCard({ report }: DVIRReportCardProps) {
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <h3 className="text-base font-semibold text-white">
+            <h3 className="text-base font-semibold text-wl-text-primary">
               {report.vehicle}
             </h3>
             <p className="text-xs text-wl-text-tertiary mt-1">

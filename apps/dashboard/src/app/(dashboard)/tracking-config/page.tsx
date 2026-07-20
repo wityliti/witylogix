@@ -125,7 +125,7 @@ export default function TrackingConfigPage() {
       <div className="sticky top-0 z-20 bg-wl-bg-root/95 backdrop-blur border-b border-wl-border-default p-6">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">Tracking Page Configuration</h1>
+            <h1 className="text-2xl font-bold text-wl-text-primary">Tracking Page Configuration</h1>
             <p className="text-wl-text-secondary text-sm mt-0.5">Customize your branded tracking page for customers</p>
           </div>
           {isDirty && (
@@ -166,7 +166,7 @@ export default function TrackingConfigPage() {
           <div className="flex flex-col gap-6">
             {/* Feature Toggles */}
             <Card className="bg-wl-bg-surface border border-wl-border-default p-6">
-              <h3 className="text-lg font-semibold text-white mb-1">Page Features</h3>
+              <h3 className="text-lg font-semibold text-wl-text-primary mb-1">Page Features</h3>
               <p className="text-wl-text-secondary text-xs mb-4">Enable or disable tracking page features</p>
               <div className="space-y-3">
                 {featureToggles.map((feature) => {
@@ -208,7 +208,7 @@ export default function TrackingConfigPage() {
 
             {/* Custom Domain */}
             <Card className="bg-wl-bg-surface border border-wl-border-default p-6">
-              <h3 className="text-lg font-semibold text-white mb-1">Custom Domain</h3>
+              <h3 className="text-lg font-semibold text-wl-text-primary mb-1">Custom Domain</h3>
               <p className="text-wl-text-secondary text-xs mb-4">Your branded tracking page domain</p>
               <div className="flex gap-2 items-center mb-3">
                 <input
@@ -234,7 +234,7 @@ export default function TrackingConfigPage() {
 
             {/* SEO Settings */}
             <Card className="bg-wl-bg-surface border border-wl-border-default p-6">
-              <h3 className="text-lg font-semibold text-white mb-1">SEO Configuration</h3>
+              <h3 className="text-lg font-semibold text-wl-text-primary mb-1">SEO Configuration</h3>
               <p className="text-wl-text-secondary text-xs mb-4">Meta tags shown in search results</p>
               <div className="space-y-4">
                 <div>
@@ -273,7 +273,7 @@ export default function TrackingConfigPage() {
             <Card className="bg-wl-bg-surface border border-wl-border-default p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Eye size={18} className="text-wl-info-500" />
-                <h3 className="text-lg font-semibold text-white">Page Preview</h3>
+                <h3 className="text-lg font-semibold text-wl-text-primary">Page Preview</h3>
               </div>
 
               {/* Mini preview */}
@@ -332,7 +332,7 @@ export default function TrackingConfigPage() {
             <Card className="bg-wl-bg-surface border border-wl-border-default p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Palette size={18} className="text-wl-info-500" />
-                <h3 className="text-lg font-semibold text-white">Branding</h3>
+                <h3 className="text-lg font-semibold text-wl-text-primary">Branding</h3>
               </div>
               <p className="text-wl-text-secondary text-xs mb-4">Customize colors and logo for the tracking page</p>
               <div className="space-y-4">

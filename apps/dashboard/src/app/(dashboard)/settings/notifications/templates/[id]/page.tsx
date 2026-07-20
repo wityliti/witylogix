@@ -249,7 +249,7 @@ export default function TemplateEditorPage() {
                 <TabsContent value="email" className="m-0">
                   <CardContent className="space-y-4">
                     <div>
-                      <label className="text-sm font-semibold text-white block mb-2">
+                      <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                         Subject
                       </label>
                       <Input
@@ -268,7 +268,7 @@ export default function TemplateEditorPage() {
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold text-white block mb-2">
+                      <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                         HTML Content
                       </label>
                       <textarea
@@ -288,7 +288,7 @@ export default function TemplateEditorPage() {
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold text-white block mb-2">
+                      <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                         Plain Text Content
                       </label>
                       <textarea
@@ -312,7 +312,7 @@ export default function TemplateEditorPage() {
                 <TabsContent value="sms" className="m-0">
                   <CardContent className="space-y-4">
                     <div>
-                      <label className="text-sm font-semibold text-white block mb-2">
+                      <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                         Message Text
                       </label>
                       <textarea
@@ -498,7 +498,7 @@ export default function TemplateEditorPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="text-sm font-semibold text-white block mb-2">
+                  <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                     {activeChannel === "email"
                       ? "Email Address"
                       : activeChannel === "sms"

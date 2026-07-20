@@ -161,7 +161,7 @@ export default function CalendarPage() {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold text-white">{rule.name}</h3>
+                          <h3 className="font-semibold text-wl-text-primary">{rule.name}</h3>
                           <Badge variant={getRuleTypeVariant(rule.type)}>{rule.type.replace("_", " ")}</Badge>
                           {!rule.isActive && <Badge variant="default">Inactive</Badge>}
                         </div>
@@ -201,7 +201,7 @@ export default function CalendarPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-lg bg-wl-bg-surface border border-wl-border-default rounded-xl shadow-2xl">
             <div className="flex items-center justify-between p-6 border-b border-wl-border-default">
-              <h2 className="text-lg font-bold text-white">New Calendar Rule</h2>
+              <h2 className="text-lg font-bold text-wl-text-primary">New Calendar Rule</h2>
               <button
                 onClick={() => setShowCreateModal(false)}
                 className="text-wl-text-tertiary hover:text-white transition-colors"

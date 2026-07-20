@@ -262,7 +262,7 @@ export default function CreateInvoicePage() {
             Back
           </Button>
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl font-bold text-white">
+            <h1 className="text-3xl font-bold text-wl-text-primary">
               Create Invoice
             </h1>
             <p className="text-wl-text-secondary">
@@ -292,7 +292,7 @@ export default function CreateInvoicePage() {
         <div className="col-span-2 space-y-6">
           {/* Customer Selection */}
           <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
-            <h2 className="text-lg font-semibold text-white mb-4">
+            <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
               Customer
             </h2>
 
@@ -331,7 +331,7 @@ export default function CreateInvoicePage() {
 
           {/* Billing Dates */}
           <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
-            <h2 className="text-lg font-semibold text-white mb-4">
+            <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
               Billing Period
             </h2>
             <div className="grid grid-cols-2 gap-4">
@@ -362,7 +362,7 @@ export default function CreateInvoicePage() {
 
           {/* Billing Rule */}
           <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
-            <h2 className="text-lg font-semibold text-white mb-4">
+            <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
               Billing Rule
             </h2>
             <Select
@@ -397,7 +397,7 @@ export default function CreateInvoicePage() {
           {/* Line Items */}
           <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-white">
+              <h2 className="text-lg font-semibold text-wl-text-primary">
                 Line Items
               </h2>
               <Button variant="secondary" size="sm" onClick={addLineItem}>
@@ -508,7 +508,7 @@ export default function CreateInvoicePage() {
 
           {/* Due Date */}
           <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
-            <h2 className="text-lg font-semibold text-white mb-4">
+            <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
               Due Date
             </h2>
             <div className="space-y-4">
@@ -554,7 +554,7 @@ export default function CreateInvoicePage() {
 
           {/* Notes & Terms */}
           <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
-            <h2 className="text-lg font-semibold text-white mb-4">
+            <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
               Notes & Terms
             </h2>
             <div className="space-y-4">
@@ -590,7 +590,7 @@ export default function CreateInvoicePage() {
         <div className="space-y-6">
           {/* Pricing Summary */}
           <Card className={cn("p-6 sticky top-6 bg-wl-bg-surface border border-wl-border-default")}>
-            <h2 className="text-lg font-semibold text-white mb-6">
+            <h2 className="text-lg font-semibold text-wl-text-primary mb-6">
               Invoice Summary
             </h2>
 

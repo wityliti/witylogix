@@ -108,7 +108,7 @@ export default function ChaosDashboard() {
     <div className="flex h-screen flex-col bg-wl-bg-root">
       {/* Header */}
       <div className="border-b border-wl-border-default bg-wl-bg-root px-8 py-6">
-        <h1 className="text-3xl font-bold text-white">Chaos Testing Dashboard</h1>
+        <h1 className="text-3xl font-bold text-wl-text-primary">Chaos Testing Dashboard</h1>
         <p className="mt-2 text-wl-text-secondary">
           Test provider resilience with controlled fault injection
         </p>
@@ -140,7 +140,7 @@ export default function ChaosDashboard() {
           <div className="space-y-6">
             {/* Predefined Scenarios */}
             <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
-              <h2 className="mb-4 text-lg font-semibold text-white">
+              <h2 className="mb-4 text-lg font-semibold text-wl-text-primary">
                 Predefined Scenarios
               </h2>
               <div className="grid grid-cols-2 gap-3">
@@ -163,7 +163,7 @@ export default function ChaosDashboard() {
 
             {/* Custom Scenario Builder */}
             <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
-              <h2 className="mb-6 text-lg font-semibold text-white">
+              <h2 className="mb-6 text-lg font-semibold text-wl-text-primary">
                 Custom Scenario Builder
               </h2>
               <div className="space-y-4">
@@ -267,7 +267,7 @@ export default function ChaosDashboard() {
 
             {/* Recurring Schedules */}
             <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
-              <h2 className="mb-6 text-lg font-semibold text-white">
+              <h2 className="mb-6 text-lg font-semibold text-wl-text-primary">
                 Schedule Recurring Tests
               </h2>
               <div className="space-y-4">
@@ -325,7 +325,7 @@ function ExecutionMonitor({ execution }: { execution: ChaosExecution }) {
       <div className="space-y-6">
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">Execution Progress</h2>
+            <h2 className="text-lg font-semibold text-wl-text-primary">Execution Progress</h2>
             <Badge variant={execution.status as any}>{execution.status}</Badge>
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-wl-bg-root">
@@ -345,7 +345,7 @@ function ExecutionMonitor({ execution }: { execution: ChaosExecution }) {
         </div>
 
         <div>
-          <h3 className="mb-3 font-semibold text-white">Assertions</h3>
+          <h3 className="mb-3 font-semibold text-wl-text-primary">Assertions</h3>
           <div className="space-y-2">
             {execution.assertions.map((assertion, idx) => (
               <div
@@ -384,7 +384,7 @@ function HistoryTable({
 }) {
   return (
     <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
-      <h2 className="mb-4 text-lg font-semibold text-white">Scenario History</h2>
+      <h2 className="mb-4 text-lg font-semibold text-wl-text-primary">Scenario History</h2>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>

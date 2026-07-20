@@ -239,7 +239,7 @@ export default function OrderImportPage() {
         <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-lg font-bold text-white">Platform Status</h2>
+              <h2 className="text-lg font-bold text-wl-text-primary">Platform Status</h2>
               <p className="text-sm text-wl-text-secondary mt-1">Connection and health overview</p>
             </div>
             <Badge variant={statusLoading ? "info" : "default"}>

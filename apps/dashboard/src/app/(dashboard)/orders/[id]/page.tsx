@@ -176,7 +176,7 @@ export default function OrderDetailPage() {
       {/* Header */}
       <div className="flex flex-wrap justify-between items-start gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white">{displayNumber}</h1>
+          <h1 className="text-3xl font-bold text-wl-text-primary">{displayNumber}</h1>
           <p className="text-sm text-wl-text-secondary mt-1">
             Created {new Date(order.createdAt).toLocaleDateString()} · Source:{' '}
             <span className="text-wl-neutral-300">{order.source}</span>
@@ -210,7 +210,7 @@ export default function OrderDetailPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         {/* Customer */}
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-6">
-          <h3 className="text-sm font-semibold text-white mb-4">Customer</h3>
+          <h3 className="text-sm font-semibold text-wl-text-primary mb-4">Customer</h3>
           {[
             { label: 'Name', value: order.customerName },
             { label: 'Email', value: order.customerEmail },
@@ -232,7 +232,7 @@ export default function OrderDetailPage() {
 
         {/* Delivery address + map */}
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-6">
-          <h3 className="text-sm font-semibold text-white mb-4">Delivery Address</h3>
+          <h3 className="text-sm font-semibold text-wl-text-primary mb-4">Delivery Address</h3>
           {[
             { label: 'Street', value: order.addressLine1 },
             { label: 'City', value: order.city },
@@ -267,7 +267,7 @@ export default function OrderDetailPage() {
 
         {/* Shipment / Tracking */}
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-6">
-          <h3 className="text-sm font-semibold text-white mb-4">Shipment</h3>
+          <h3 className="text-sm font-semibold text-wl-text-primary mb-4">Shipment</h3>
           {shipment ? (
             <>
               {[
@@ -304,7 +304,7 @@ export default function OrderDetailPage() {
 
       {/* Line Items */}
       <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-6 mb-6">
-        <h3 className="text-sm font-semibold text-white mb-4">
+        <h3 className="text-sm font-semibold text-wl-text-primary mb-4">
           Line Items <span className="text-wl-text-tertiary ml-1">({lineItems.length})</span>
         </h3>
         {lineItems.length === 0 ? (
@@ -369,7 +369,7 @@ export default function OrderDetailPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Activity Timeline from notification logs */}
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-6">
-          <h3 className="text-sm font-semibold text-white mb-4">Activity Timeline</h3>
+          <h3 className="text-sm font-semibold text-wl-text-primary mb-4">Activity Timeline</h3>
           {order.notificationLogs.length === 0 ? (
             <p className="text-wl-text-tertiary text-sm text-center py-6">No activity recorded yet.</p>
           ) : (
@@ -400,7 +400,7 @@ export default function OrderDetailPage() {
 
         {/* Notes */}
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-6">
-          <h3 className="text-sm font-semibold text-white mb-4">Internal Notes</h3>
+          <h3 className="text-sm font-semibold text-wl-text-primary mb-4">Internal Notes</h3>
           {order.notes ? (
             <div className="bg-wl-bg-root border border-wl-border-default rounded-lg p-4 mb-4">
               <p className="text-sm text-wl-neutral-300 leading-relaxed whitespace-pre-wrap">

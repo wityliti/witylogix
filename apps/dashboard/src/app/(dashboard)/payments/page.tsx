@@ -343,7 +343,7 @@ export default function PaymentsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold text-white">
+          <h1 className="text-3xl font-bold text-wl-text-primary">
             Payment Tracking
           </h1>
           <p className="text-wl-text-secondary">
@@ -382,7 +382,7 @@ export default function PaymentsPage() {
 
       {/* Revenue Chart */}
       <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
-        <h2 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+        <h2 className="text-lg font-semibold text-wl-text-primary mb-6 flex items-center gap-2">
           <TrendingUp className="w-5 h-5" />
           Monthly Revenue
         </h2>
@@ -635,7 +635,7 @@ export default function PaymentsPage() {
 
       {/* Recent Payments Feed */}
       <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
-        <h2 className="text-lg font-semibold text-white mb-4">
+        <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
           Recent Payments
         </h2>
         <div className="space-y-3">

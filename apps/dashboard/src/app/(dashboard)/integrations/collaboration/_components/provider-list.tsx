@@ -60,7 +60,7 @@ export function ProviderList({
               <div className="flex items-center gap-3">
                 <div className="text-wl-info-500 text-2xl">{provider.icon}</div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white">
+                  <h3 className="text-lg font-semibold text-wl-text-primary">
                     {provider.name}
                   </h3>
                   <p className="text-xs text-wl-text-tertiary mt-1">

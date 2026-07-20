@@ -100,7 +100,7 @@ function SDKReference({
         <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
           <div className="mb-6 space-y-4">
             <div>
-              <h3 className="text-lg font-semibold text-white">{selectedProvider} SDK</h3>
+              <h3 className="text-lg font-semibold text-wl-text-primary">{selectedProvider} SDK</h3>
               <p className="mt-1 text-sm text-wl-text-secondary">Version: {sdk.version}</p>
             </div>
 
@@ -212,7 +212,7 @@ function WebhookCatalog({
         <div className="space-y-4">
           {catalogs.map((catalog) => (
             <Card key={catalog.provider} className="border border-wl-border-default bg-wl-bg-surface p-6">
-              <h3 className="text-lg font-semibold text-white">{catalog.provider}</h3>
+              <h3 className="text-lg font-semibold text-wl-text-primary">{catalog.provider}</h3>
               <div className="mt-4 space-y-2">
                 {catalog.events.slice(0, 5).map((event) => (
                   <div key={event.type} className="text-sm text-wl-text-secondary">
@@ -238,7 +238,7 @@ function RateLimitReference() {
 
   return (
     <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
-      <h2 className="mb-6 text-xl font-semibold text-white">Rate Limits by Provider</h2>
+      <h2 className="mb-6 text-xl font-semibold text-wl-text-primary">Rate Limits by Provider</h2>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -293,7 +293,7 @@ function ConfigurationGuides({
       </div>
 
       <Card className="border border-wl-border-default bg-wl-bg-surface p-6">
-        <h2 className="mb-4 text-xl font-semibold text-white">
+        <h2 className="mb-4 text-xl font-semibold text-wl-text-primary">
           Setup Guide: {selectedProvider}
         </h2>
 
@@ -304,7 +304,7 @@ function ConfigurationGuides({
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-wl-primary-500 font-semibold text-white">
                   {step}
                 </div>
-                <h3 className="font-semibold text-white">
+                <h3 className="font-semibold text-wl-text-primary">
                   {step === 1 && 'Create Account & Get API Keys'}
                   {step === 2 && 'Install SDK & Configure'}
                   {step === 3 && 'Implement Error Handling'}
@@ -376,7 +376,7 @@ function TroubleshootingSection({
           <Card key={playbook.id} className="border border-wl-border-default bg-wl-bg-surface p-6">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-white">{playbook.title}</h3>
+                <h3 className="text-lg font-semibold text-wl-text-primary">{playbook.title}</h3>
                 {playbook.errorCode && (
                   <Badge variant="danger" className="mt-2">
                     {playbook.errorCode}
@@ -387,7 +387,7 @@ function TroubleshootingSection({
             </div>
 
             <div className="mt-4">
-              <h4 className="font-semibold text-white">Resolution Steps:</h4>
+              <h4 className="font-semibold text-wl-text-primary">Resolution Steps:</h4>
               <ol className="mt-2 space-y-2 text-sm text-wl-text-secondary">
                 {playbook.steps.map((step, idx) => (
                   <li key={idx} className="ml-5 list-decimal">

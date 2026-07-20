@@ -239,7 +239,7 @@ export default function RouteAssignPage() {
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="text-xl font-bold text-white">
+          <h1 className="text-xl font-bold text-wl-text-primary">
             Assign Driver — {route.name ?? `Route ${new Date(route.date).toLocaleDateString()}`}
           </h1>
           <p className="text-sm text-wl-text-secondary mt-0.5">
@@ -321,7 +321,7 @@ export default function RouteAssignPage() {
           {/* Current Assignment */}
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader className="pb-3 border-b border-wl-border-default">
-              <CardTitle className="text-sm text-white">Current Assignment</CardTitle>
+              <CardTitle className="text-sm text-wl-text-primary">Current Assignment</CardTitle>
             </CardHeader>
             <CardContent className="p-4">
               {route.driver ? (
@@ -343,7 +343,7 @@ export default function RouteAssignPage() {
           {/* Route Stops Preview */}
           <Card className="bg-wl-bg-surface border border-wl-border-default flex-1">
             <CardHeader className="pb-3 border-b border-wl-border-default">
-              <CardTitle className="text-sm text-white flex items-center gap-2">
+              <CardTitle className="text-sm text-wl-text-primary flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-wl-info-400" />
                 Route Stops ({route.stops.length})
               </CardTitle>
@@ -378,7 +378,7 @@ export default function RouteAssignPage() {
           {/* ETA Preview */}
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader className="pb-3 border-b border-wl-border-default">
-              <CardTitle className="text-sm text-white flex items-center gap-2">
+              <CardTitle className="text-sm text-wl-text-primary flex items-center gap-2">
                 <Clock className="w-4 h-4 text-wl-warning-400" />
                 Estimated Impact
               </CardTitle>

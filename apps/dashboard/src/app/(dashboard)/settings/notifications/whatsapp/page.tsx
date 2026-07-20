@@ -120,7 +120,7 @@ const TemplateModal = ({
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="text-sm font-semibold text-white block mb-2">
+            <label className="text-sm font-semibold text-wl-text-primary block mb-2">
               Template Name
             </label>
             <Input
@@ -130,7 +130,7 @@ const TemplateModal = ({
             />
           </div>
           <div>
-            <label className="text-sm font-semibold text-white block mb-2">
+            <label className="text-sm font-semibold text-wl-text-primary block mb-2">
               Category
             </label>
             <select
@@ -376,7 +376,7 @@ export default function WhatsAppPage() {
 
         {/* Template Detail Cards */}
         <div className="mt-8">
-          <h3 className="text-lg font-bold text-white mb-4">
+          <h3 className="text-lg font-bold text-wl-text-primary mb-4">
             Template Details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

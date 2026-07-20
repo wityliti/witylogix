@@ -177,7 +177,7 @@ export default function LocalOrdersPage() {
       <div className="mb-6">
         <div className="flex items-start justify-between mb-2">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Local Delivery Orders</h1>
+            <h1 className="text-3xl font-bold text-wl-text-primary mb-2">Local Delivery Orders</h1>
             <p className="text-wl-text-secondary">{orders.length} orders total{orderPins.length > 0 && ` · ${orderPins.length} on map`}</p>
           </div>
           <div className="flex rounded overflow-hidden border border-wl-border-default">
@@ -344,7 +344,7 @@ export default function LocalOrdersPage() {
           {selectedOrder ? (
             <Card className="bg-wl-bg-surface border-wl-border-default sticky top-6">
               <CardHeader className="pb-3 border-b border-wl-border-default">
-                <CardTitle className="text-base text-white font-mono">
+                <CardTitle className="text-base text-wl-text-primary font-mono">
                   #{selectedOrder.id.slice(0, 8)}
                 </CardTitle>
               </CardHeader>

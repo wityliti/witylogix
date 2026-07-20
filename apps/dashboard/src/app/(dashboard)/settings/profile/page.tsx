@@ -144,12 +144,12 @@ export default function ProfilePage() {
           {/* Avatar and Basic Info */}
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
-              <CardTitle className="text-white">Profile Information</CardTitle>
+              <CardTitle className="text-wl-text-primary">Profile Information</CardTitle>
               <CardDescription className="text-wl-text-secondary">Update your personal details</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <label className="text-sm font-semibold text-white block mb-3">
+                <label className="text-sm font-semibold text-wl-text-primary block mb-3">
                   Avatar
                 </label>
                 <div className="flex items-center gap-6">
@@ -185,7 +185,7 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-white block mb-2">
+                <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                   Full Name
                 </label>
                 <Input
@@ -197,7 +197,7 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-white block mb-2">
+                <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                   Email Address (Read-only)
                 </label>
                 <Input
@@ -209,7 +209,7 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-white block mb-2">
+                <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                   Phone Number
                 </label>
                 <Input
@@ -231,7 +231,7 @@ export default function ProfilePage() {
           {/* Password Change */}
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
+              <CardTitle className="flex items-center gap-2 text-wl-text-primary">
                 <Lock className="w-5 h-5" />
                 Change Password
               </CardTitle>
@@ -239,7 +239,7 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-semibold text-white block mb-2">
+                <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                   Current Password
                 </label>
                 <Input
@@ -251,7 +251,7 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-white block mb-2">
+                <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                   New Password
                 </label>
                 <div className="relative">
@@ -284,7 +284,7 @@ export default function ProfilePage() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-white block mb-2">
+                <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                   Confirm Password
                 </label>
                 <Input
@@ -308,7 +308,7 @@ export default function ProfilePage() {
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div>
-                  <CardTitle className="flex items-center gap-2 text-white">
+                  <CardTitle className="flex items-center gap-2 text-wl-text-primary">
                     <Shield className="w-5 h-5" />
                     Two-Factor Authentication
                   </CardTitle>
@@ -344,7 +344,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div>
-                    <label className="text-sm font-semibold text-white block mb-2">
+                    <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                       Enter verification code to confirm
                     </label>
                     <Input

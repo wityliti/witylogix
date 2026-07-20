@@ -69,12 +69,12 @@ export default function GeneralSettingsPage() {
         {/* Company Information */}
         <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
-            <CardTitle className="text-white">Company Information</CardTitle>
+            <CardTitle className="text-wl-text-primary">Company Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
+                <label className="block text-sm font-medium text-wl-text-primary mb-2">
                   Company Name
                 </label>
                 <input
@@ -84,7 +84,7 @@ export default function GeneralSettingsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
+                <label className="block text-sm font-medium text-wl-text-primary mb-2">
                   Industry
                 </label>
                 <input
@@ -108,7 +108,7 @@ export default function GeneralSettingsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
+                <label className="block text-sm font-medium text-wl-text-primary mb-2">
                   Support Email
                 </label>
                 <input
@@ -118,7 +118,7 @@ export default function GeneralSettingsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
+                <label className="block text-sm font-medium text-wl-text-primary mb-2">
                   Support Phone
                 </label>
                 <input
@@ -134,7 +134,7 @@ export default function GeneralSettingsPage() {
         {/* Regional Settings */}
         <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
+            <CardTitle className="flex items-center gap-2 text-wl-text-primary">
               <MapPin className="w-5 h-5" />
               Regional Settings
             </CardTitle>
@@ -142,7 +142,7 @@ export default function GeneralSettingsPage() {
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
+                <label className="block text-sm font-medium text-wl-text-primary mb-2">
                   Country
                 </label>
                 <select className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
@@ -153,7 +153,7 @@ export default function GeneralSettingsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
+                <label className="block text-sm font-medium text-wl-text-primary mb-2">
                   State / Province
                 </label>
                 <input
@@ -166,7 +166,7 @@ export default function GeneralSettingsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
+                <label className="block text-sm font-medium text-wl-text-primary mb-2">
                   City
                 </label>
                 <input
@@ -176,7 +176,7 @@ export default function GeneralSettingsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
+                <label className="block text-sm font-medium text-wl-text-primary mb-2">
                   Postal Code
                 </label>
                 <input
@@ -203,7 +203,7 @@ export default function GeneralSettingsPage() {
         {/* Localization */}
         <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
+            <CardTitle className="flex items-center gap-2 text-wl-text-primary">
               <DollarSign className="w-5 h-5" />
               Localization & Units
             </CardTitle>
@@ -211,7 +211,7 @@ export default function GeneralSettingsPage() {
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
+                <label className="block text-sm font-medium text-wl-text-primary mb-2">
                   Timezone
                 </label>
                 <select className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
@@ -223,7 +223,7 @@ export default function GeneralSettingsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
+                <label className="block text-sm font-medium text-wl-text-primary mb-2">
                   Language
                 </label>
                 <select className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
@@ -238,7 +238,7 @@ export default function GeneralSettingsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
+                <label className="block text-sm font-medium text-wl-text-primary mb-2">
                   Default Currency
                 </label>
                 <select className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
@@ -249,7 +249,7 @@ export default function GeneralSettingsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
+                <label className="block text-sm font-medium text-wl-text-primary mb-2">
                   Weight Unit
                 </label>
                 <select className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
@@ -261,7 +261,7 @@ export default function GeneralSettingsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
+                <label className="block text-sm font-medium text-wl-text-primary mb-2">
                   Distance Unit
                 </label>
                 <select className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
@@ -270,7 +270,7 @@ export default function GeneralSettingsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
+                <label className="block text-sm font-medium text-wl-text-primary mb-2">
                   Date Format
                 </label>
                 <select className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
@@ -286,7 +286,7 @@ export default function GeneralSettingsPage() {
         {/* Business Hours */}
         <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
+            <CardTitle className="flex items-center gap-2 text-wl-text-primary">
               <Clock className="w-5 h-5" />
               Business Hours
             </CardTitle>

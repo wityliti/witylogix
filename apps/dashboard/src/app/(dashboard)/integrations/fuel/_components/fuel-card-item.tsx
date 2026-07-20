@@ -60,7 +60,7 @@ export function FuelCardItem({
       <CardContent className="pt-6">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h3 className="text-sm font-semibold text-white">
+            <h3 className="text-sm font-semibold text-wl-text-primary">
               {card.cardNumber}
             </h3>
             <p className="text-xs text-wl-text-secondary mt-1">{card.provider}</p>

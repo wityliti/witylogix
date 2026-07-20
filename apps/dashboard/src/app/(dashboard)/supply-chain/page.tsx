@@ -138,7 +138,7 @@ export default function SupplyChainPage() {
         <div className="px-8 py-6">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-white">Supply Chain</h1>
+              <h1 className="text-3xl font-bold text-wl-text-primary">Supply Chain</h1>
               <p className="text-sm text-wl-text-secondary mt-1">Inventory, orders, and warehouse operations</p>
             </div>
             <div className="flex gap-3 items-center">
@@ -213,7 +213,7 @@ export default function SupplyChainPage() {
           {view === 'list' && <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Order Fulfillment Pipeline */}
             <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
-              <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-wl-text-primary mb-4 flex items-center gap-2">
                 <BoxIcon className="w-5 h-5 text-wl-info-500" />
                 Order Fulfillment Pipeline
               </h2>
@@ -222,7 +222,7 @@ export default function SupplyChainPage() {
                   <div key={stage.stage}>
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex-1 cursor-pointer" onClick={() => setSelectedStage(selectedStage === stage.stage ? null : stage.stage)}>
-                        <h4 className="font-medium text-white">{stage.stage}</h4>
+                        <h4 className="font-medium text-wl-text-primary">{stage.stage}</h4>
                         <p className="text-xs text-wl-text-tertiary">{stage.count} orders</p>
                       </div>
                       <Badge variant={stage.status === 'healthy' ? 'success' : stage.status === 'warning' ? 'warning' : 'danger'}>
@@ -269,7 +269,7 @@ export default function SupplyChainPage() {
 
             {/* Warehouse Utilization */}
             <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
-              <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-wl-text-primary mb-4 flex items-center gap-2">
                 <Warehouse className="w-5 h-5 text-wl-success-500" />
                 Warehouse Utilization
               </h2>
@@ -277,7 +277,7 @@ export default function SupplyChainPage() {
                 {warehouse.warehouses.map((wh) => (
                   <div key={wh.warehouseId}>
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium text-white">{wh.name}</h4>
+                      <h4 className="font-medium text-wl-text-primary">{wh.name}</h4>
                       <span className="text-sm font-semibold text-white">{wh.utilizationPercentage.toFixed(1)}%</span>
                     </div>
                     <div className="w-full bg-wl-bg-elevated rounded-full h-2.5">
@@ -311,7 +311,7 @@ export default function SupplyChainPage() {
 
           {/* Demand vs Supply */}
           <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
-            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-wl-text-primary mb-4 flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-wl-info-500" />
               Demand vs Supply Forecast
             </h2>
@@ -319,7 +319,7 @@ export default function SupplyChainPage() {
               {demandSupplyData.map((data) => (
                 <div key={data.period} className="pb-4 border-b border-wl-border-default last:border-0">
                   <div className="flex items-start justify-between mb-3">
-                    <h4 className="font-medium text-white">{data.period}</h4>
+                    <h4 className="font-medium text-wl-text-primary">{data.period}</h4>
                     <Badge variant={data.variance > 10 ? 'danger' : data.variance < -10 ? 'warning' : 'success'}>
                       {data.variance > 0 ? '+' : ''}{data.variance.toFixed(1)}%
                     </Badge>
@@ -347,7 +347,7 @@ export default function SupplyChainPage() {
 
           {/* Inventory ABC Distribution */}
           <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
-            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-wl-text-primary mb-4 flex items-center gap-2">
               <Package className="w-5 h-5 text-wl-warning-500" />
               Inventory ABC Distribution
             </h2>
@@ -356,7 +356,7 @@ export default function SupplyChainPage() {
                 <div key={item.category}>
                   <div className="flex items-center justify-between mb-2">
                     <div>
-                      <h4 className="font-medium text-white">{item.category}</h4>
+                      <h4 className="font-medium text-wl-text-primary">{item.category}</h4>
                       <p className="text-xs text-wl-text-tertiary">{item.description}</p>
                     </div>
                     <div className="text-right">

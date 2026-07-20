@@ -162,7 +162,7 @@ export default function NotificationsConfigPage() {
                   >
                     <div className="flex items-center gap-3 mb-3">
                       <Icon className="w-5 h-5 text-wl-info-500" />
-                      <h4 className="font-medium text-white">
+                      <h4 className="font-medium text-wl-text-primary">
                         {channel.name}
                       </h4>
                     </div>

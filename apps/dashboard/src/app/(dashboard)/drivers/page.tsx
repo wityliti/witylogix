@@ -97,7 +97,7 @@ const DriverCard = ({ driver }: { driver: ApiDriver }) => {
               <span className="text-sm font-semibold text-white">{initials}</span>
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-white text-sm leading-tight">{driver.name}</h3>
+              <h3 className="font-semibold text-wl-text-primary text-sm leading-tight">{driver.name}</h3>
               <div className="flex items-center gap-1 text-xs text-wl-text-secondary mt-1">
                 <Phone className="w-3 h-3" />
                 <span>{driver.phone}</span>

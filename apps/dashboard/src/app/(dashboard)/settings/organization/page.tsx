@@ -106,12 +106,12 @@ export default function OrganizationPage() {
           {/* Organization Details */}
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
-              <CardTitle className="text-white">Organization Details</CardTitle>
+              <CardTitle className="text-wl-text-primary">Organization Details</CardTitle>
               <CardDescription className="text-wl-text-secondary">Update your organization information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <label className="text-sm font-semibold text-white block mb-3">
+                <label className="text-sm font-semibold text-wl-text-primary block mb-3">
                   Organization Logo
                 </label>
                 <div className="flex items-center gap-6">
@@ -136,7 +136,7 @@ export default function OrganizationPage() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-white block mb-2">
+                <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                   Organization Name
                 </label>
                 <Input
@@ -148,7 +148,7 @@ export default function OrganizationPage() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-white block mb-2">
+                <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                   Website
                 </label>
                 <Input
@@ -161,7 +161,7 @@ export default function OrganizationPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-semibold text-white block mb-2">
+                  <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                     Industry
                   </label>
                   <select
@@ -178,7 +178,7 @@ export default function OrganizationPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold text-white block mb-2">
+                  <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                     Company Size
                   </label>
                   <select
@@ -208,7 +208,7 @@ export default function OrganizationPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-white">Current Plan</CardTitle>
+                  <CardTitle className="text-wl-text-primary">Current Plan</CardTitle>
                   <CardDescription className="text-wl-text-secondary">Manage your billing and subscription</CardDescription>
                 </div>
                 <Badge variant="primary" className="bg-wl-info-500 text-white">{billing?.plan ?? 'Free'} Plan</Badge>
@@ -244,7 +244,7 @@ export default function OrganizationPage() {
 
               {usageMetrics.length > 0 && (
                 <div>
-                  <h4 className="text-sm font-semibold text-white mb-4">
+                  <h4 className="text-sm font-semibold text-wl-text-primary mb-4">
                     Usage Statistics
                   </h4>
                   <div className="space-y-4">
@@ -290,7 +290,7 @@ export default function OrganizationPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="p-4 bg-wl-danger-bg border border-wl-danger-500/30 rounded-lg">
-                <h4 className="font-semibold text-white mb-2">
+                <h4 className="font-semibold text-wl-text-primary mb-2">
                   Delete Organization
                 </h4>
                 <p className="text-sm text-wl-text-secondary mb-3">

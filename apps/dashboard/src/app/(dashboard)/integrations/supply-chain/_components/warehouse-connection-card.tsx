@@ -42,7 +42,7 @@ export function WarehouseConnectionCard({ warehouse }: WarehouseConnectionCardPr
       <CardContent className="pt-6">
         <div className="flex items-start justify-between mb-6">
           <div className="flex-1">
-            <h3 className="text-base font-semibold text-white">{warehouse.name}</h3>
+            <h3 className="text-base font-semibold text-wl-text-primary">{warehouse.name}</h3>
             <p className="text-xs text-wl-text-tertiary mt-1">{warehouse.warehouseCount} warehouses</p>
           </div>
           <Badge className={cn("capitalize border", getSyncStatusColor(warehouse.syncStatus))}>

@@ -212,7 +212,7 @@ export default function EventsPage() {
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-white">Filters &amp; Search</CardTitle>
+              <CardTitle className="text-wl-text-primary">Filters &amp; Search</CardTitle>
               {Object.keys(filters).length > 0 && (
                 <Button
                   variant="ghost"
@@ -417,7 +417,7 @@ export default function EventsPage() {
                   <Card className="flex-1 p-4 bg-wl-bg-surface border-wl-border-default">
                     <div className="flex justify-between items-start">
                       <div>
-                        <h4 className="text-sm font-semibold text-white mb-1">
+                        <h4 className="text-sm font-semibold text-wl-text-primary mb-1">
                           {event.action}
                         </h4>
                         <p className="text-xs text-wl-text-secondary mb-2">

@@ -207,7 +207,7 @@ export default function DeliveryLogPage() {
               <div className="space-y-4">
                 {/* Search */}
                 <div>
-                  <label className="block text-sm font-medium text-white mb-2">
+                  <label className="block text-sm font-medium text-wl-text-primary mb-2">
                     Search
                   </label>
                   <Input
@@ -221,7 +221,7 @@ export default function DeliveryLogPage() {
                 {/* Filters */}
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-white mb-2">
+                    <label className="block text-sm font-medium text-wl-text-primary mb-2">
                       Channel
                     </label>
                     <select
@@ -250,7 +250,7 @@ export default function DeliveryLogPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-white mb-2">
+                    <label className="block text-sm font-medium text-wl-text-primary mb-2">
                       Status
                     </label>
                     <select

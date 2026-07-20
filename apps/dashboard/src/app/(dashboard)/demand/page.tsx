@@ -301,7 +301,7 @@ export default function DemandPage() {
         <div className="px-8 py-6">
           <div className="flex items-center justify-between gap-4 mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-white">Demand Forecast</h1>
+              <h1 className="text-3xl font-bold text-wl-text-primary">Demand Forecast</h1>
               <p className="text-sm text-wl-text-secondary mt-1">Real-time demand predictions and analytics</p>
             </div>
             <div className="flex gap-2 items-center">
@@ -513,7 +513,7 @@ export default function DemandPage() {
 
           {/* Chart Section */}
           <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
-            <h2 className="text-lg font-semibold text-white mb-4">Predicted vs Actual Volume</h2>
+            <h2 className="text-lg font-semibold text-wl-text-primary mb-4">Predicted vs Actual Volume</h2>
             <div className="flex items-end gap-6">
               <div className="flex-1 overflow-x-auto">{renderForecastChart()}</div>
               <div className="flex flex-col gap-3 text-sm min-w-max">
@@ -537,13 +537,13 @@ export default function DemandPage() {
 
           {/* Heatmap Section */}
           <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
-            <h2 className="text-lg font-semibold text-white mb-4">Demand Intensity by Zone</h2>
+            <h2 className="text-lg font-semibold text-wl-text-primary mb-4">Demand Intensity by Zone</h2>
             {renderHeatmap()}
           </Card>
 
           {/* Zone Performance Table */}
           <Card className="p-6 bg-wl-bg-surface border border-wl-border-default overflow-hidden">
-            <h2 className="text-lg font-semibold text-white mb-4">Zone Performance</h2>
+            <h2 className="text-lg font-semibold text-wl-text-primary mb-4">Zone Performance</h2>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -604,7 +604,7 @@ export default function DemandPage() {
 
           {/* Anomaly Alerts */}
           <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
-            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-wl-text-primary mb-4 flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-wl-warning-500" />
               Anomaly Alerts
             </h2>

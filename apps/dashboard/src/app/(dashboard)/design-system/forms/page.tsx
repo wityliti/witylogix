@@ -94,7 +94,7 @@ export default function FormsPage() {
       {/* Header */}
       <div className="border-b border-wl-border-default">
         <div className="max-w-7xl mx-auto px-6 py-12">
-          <h1 className="text-3xl font-bold text-white mb-2">
+          <h1 className="text-3xl font-bold text-wl-text-primary mb-2">
             Form Components
           </h1>
           <p className="text-wl-neutral-300 max-w-2xl">
@@ -108,7 +108,7 @@ export default function FormsPage() {
       <div className="max-w-4xl mx-auto px-6 py-12 space-y-12">
         {/* Form Components Overview */}
         <section>
-          <h2 className="text-2xl font-bold text-white mb-6">
+          <h2 className="text-2xl font-bold text-wl-text-primary mb-6">
             Available Form Components
           </h2>
 
@@ -178,7 +178,7 @@ export default function FormsPage() {
 
         {/* Complete Form Example */}
         <section>
-          <h2 className="text-2xl font-bold text-white mb-6">
+          <h2 className="text-2xl font-bold text-wl-text-primary mb-6">
             Complete Form Example
           </h2>
 
@@ -278,7 +278,7 @@ export default function FormsPage() {
 
         {/* Validation States */}
         <section>
-          <h2 className="text-2xl font-bold text-white mb-6">
+          <h2 className="text-2xl font-bold text-wl-text-primary mb-6">
             Validation States
           </h2>
 
@@ -342,7 +342,7 @@ export default function FormsPage() {
 
         {/* Accessibility Features */}
         <section>
-          <h2 className="text-2xl font-bold text-white mb-6">
+          <h2 className="text-2xl font-bold text-wl-text-primary mb-6">
             Accessibility Features
           </h2>
 
@@ -419,7 +419,7 @@ export default function FormsPage() {
 
         {/* Input Types */}
         <section>
-          <h2 className="text-2xl font-bold text-white mb-6">
+          <h2 className="text-2xl font-bold text-wl-text-primary mb-6">
             Input Types
           </h2>
 
@@ -482,7 +482,7 @@ export default function FormsPage() {
 
         {/* Best Practices */}
         <section>
-          <h2 className="text-2xl font-bold text-white mb-6">
+          <h2 className="text-2xl font-bold text-wl-text-primary mb-6">
             Form Best Practices
           </h2>
 

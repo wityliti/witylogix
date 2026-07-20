@@ -66,7 +66,7 @@ function ComponentPreviewCard({ title, description, preview, code }: ComponentPr
   return (
     <Card className="overflow-hidden bg-wl-bg-surface border-wl-border-default">
       <CardHeader>
-        <CardTitle className="text-white">{title}</CardTitle>
+        <CardTitle className="text-wl-text-primary">{title}</CardTitle>
         <CardDescription className="text-wl-text-secondary">{description}</CardDescription>
       </CardHeader>
 
@@ -132,7 +132,7 @@ export default function ComponentGalleryPage() {
       {/* Header */}
       <div className="border-b border-wl-border-default sticky top-0 z-40 bg-wl-bg-root/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 py-8">
-          <h1 className="text-3xl font-bold tracking-tight mb-2 text-white">Component Gallery</h1>
+          <h1 className="text-3xl font-bold tracking-tight mb-2 text-wl-text-primary">Component Gallery</h1>
           <p className="text-wl-text-secondary">
             Interactive showcase of all design system components
           </p>
@@ -165,7 +165,7 @@ export default function ComponentGalleryPage() {
           {/* BUTTON CONTROLS */}
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
-              <CardTitle className="text-white">Button Props</CardTitle>
+              <CardTitle className="text-wl-text-primary">Button Props</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -218,7 +218,7 @@ export default function ComponentGalleryPage() {
                   onCheckedChange={(checked) => setButtonDisabled(checked === true)}
                   id="button-disabled"
                 />
-                <label htmlFor="button-disabled" className="text-sm text-white">
+                <label htmlFor="button-disabled" className="text-sm text-wl-text-primary">
                   Disabled
                 </label>
               </div>
@@ -244,7 +244,7 @@ export default function ComponentGalleryPage() {
           {/* BADGE CONTROLS */}
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
-              <CardTitle className="text-white">Badge Props</CardTitle>
+              <CardTitle className="text-wl-text-primary">Badge Props</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -275,7 +275,7 @@ export default function ComponentGalleryPage() {
                   onCheckedChange={(checked) => setBadgeWithDot(checked === true)}
                   id="badge-dot"
                 />
-                <label htmlFor="badge-dot" className="text-sm text-white">
+                <label htmlFor="badge-dot" className="text-sm text-wl-text-primary">
                   Show Dot
                 </label>
               </div>
@@ -289,7 +289,7 @@ export default function ComponentGalleryPage() {
             preview={
               <Card className="w-full max-w-xs bg-wl-bg-surface border-wl-border-default">
                 <CardHeader>
-                  <CardTitle className="text-white">Card Title</CardTitle>
+                  <CardTitle className="text-wl-text-primary">Card Title</CardTitle>
                   <CardDescription className="text-wl-text-secondary">Card subtitle or description</CardDescription>
                 </CardHeader>
                 <CardContent>

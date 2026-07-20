@@ -190,7 +190,7 @@ export default function EditRoutePage() {
   return (
     <div className="min-h-screen bg-wl-bg-root p-6 text-wl-text-primary">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-white mb-2">Edit Route</h1>
+        <h1 className="text-4xl font-bold text-wl-text-primary mb-2">Edit Route</h1>
         <p className="text-sm text-wl-text-secondary">Modify route details, reorder stops, and optimize delivery sequence</p>
       </div>
 
@@ -199,12 +199,12 @@ export default function EditRoutePage() {
           <div>
             <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
-                <CardTitle className="text-white">Route Information</CardTitle>
+                <CardTitle className="text-wl-text-primary">Route Information</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div>
-                    <label className="block text-white text-sm font-semibold mb-2">Route Name</label>
+                    <label className="block text-wl-text-primary text-sm font-semibold mb-2">Route Name</label>
                     <input
                       type="text"
                       name="name"
@@ -214,7 +214,7 @@ export default function EditRoutePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-white text-sm font-semibold mb-2">Delivery Date</label>
+                    <label className="block text-wl-text-primary text-sm font-semibold mb-2">Delivery Date</label>
                     <input
                       type="date"
                       name="date"
@@ -226,7 +226,7 @@ export default function EditRoutePage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-white text-sm font-semibold mb-2">Assign Driver</label>
+                    <label className="block text-wl-text-primary text-sm font-semibold mb-2">Assign Driver</label>
                     <select
                       name="driverId"
                       value={currentFormData.driverId}
@@ -241,7 +241,7 @@ export default function EditRoutePage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-white text-sm font-semibold mb-2">Vehicle</label>
+                    <label className="block text-wl-text-primary text-sm font-semibold mb-2">Vehicle</label>
                     <select
                       name="vehicleId"
                       value={currentFormData.vehicleId}
@@ -261,7 +261,7 @@ export default function EditRoutePage() {
 
             <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
-                <CardTitle className="text-white">Route Stops</CardTitle>
+                <CardTitle className="text-wl-text-primary">Route Stops</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-3 gap-3 mb-6">
@@ -369,7 +369,7 @@ export default function EditRoutePage() {
           <div className="flex flex-col gap-4">
             <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
-                <CardTitle className="text-white">Current Driver</CardTitle>
+                <CardTitle className="text-wl-text-primary">Current Driver</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="p-3 rounded-md bg-wl-bg-root border border-wl-border-default">
@@ -386,7 +386,7 @@ export default function EditRoutePage() {
 
             <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
-                <CardTitle className="text-white">Vehicle Details</CardTitle>
+                <CardTitle className="text-wl-text-primary">Vehicle Details</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="p-3 rounded-md bg-wl-bg-root border border-wl-border-default">
@@ -405,7 +405,7 @@ export default function EditRoutePage() {
 
             <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
-                <CardTitle className="text-white">Route Summary</CardTitle>
+                <CardTitle className="text-wl-text-primary">Route Summary</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="p-3 rounded-md bg-wl-bg-root border border-wl-border-default text-wl-text-secondary text-xs leading-relaxed">

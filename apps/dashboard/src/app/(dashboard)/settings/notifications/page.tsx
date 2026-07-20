@@ -195,7 +195,7 @@ export default function NotificationsPage() {
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-semibold text-white block mb-2">
+                  <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                     Start Time
                   </label>
                   <Input
@@ -208,7 +208,7 @@ export default function NotificationsPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-semibold text-white block mb-2">
+                  <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                     End Time
                   </label>
                   <Input

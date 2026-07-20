@@ -307,7 +307,7 @@ export default function PaymentSettingsPage() {
                     <CardContent className="space-y-4">
                       {gateway.config?.lastDigits && (
                         <div>
-                          <label className="block text-sm font-medium text-white mb-2">Card Details</label>
+                          <label className="block text-sm font-medium text-wl-text-primary mb-2">Card Details</label>
                           <Input
                             type="text"
                             value={`**** **** **** ${gateway.config.lastDigits}${gateway.config.expiryDate ? ` (exp: ${gateway.config.expiryDate})` : ''}`}

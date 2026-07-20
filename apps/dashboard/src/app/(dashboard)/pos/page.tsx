@@ -150,7 +150,7 @@ export default function POSPage() {
           {/* Payment Breakdown Card */}
           <Card className={cn("border-wl-border-default bg-wl-bg-surface")}>
             <CardHeader>
-              <CardTitle className="text-white">Payment Breakdown</CardTitle>
+              <CardTitle className="text-wl-text-primary">Payment Breakdown</CardTitle>
             </CardHeader>
 
             <CardContent className="space-y-4">
@@ -250,7 +250,7 @@ export default function POSPage() {
           <div className="lg:col-span-2">
             <Card className={cn("border-wl-border-default bg-wl-bg-surface")}>
               <CardHeader>
-                <CardTitle className="text-white">Live Transactions</CardTitle>
+                <CardTitle className="text-wl-text-primary">Live Transactions</CardTitle>
               </CardHeader>
 
               <CardContent className="max-h-96 overflow-y-auto">
@@ -315,7 +315,7 @@ export default function POSPage() {
           {/* Top-Selling Items */}
           <Card className={cn("border-wl-border-default bg-wl-bg-surface")}>
             <CardHeader>
-              <CardTitle className="text-white">Top-Selling Items</CardTitle>
+              <CardTitle className="text-wl-text-primary">Top-Selling Items</CardTitle>
             </CardHeader>
 
             <CardContent className="overflow-x-auto">
@@ -357,7 +357,7 @@ export default function POSPage() {
           <Card className={cn("border-wl-border-default bg-wl-bg-surface")}>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-white">Terminal Status</CardTitle>
+                <CardTitle className="text-wl-text-primary">Terminal Status</CardTitle>
                 {mappableTerminals.length > 0 && (
                   <div className="flex items-center gap-1 bg-wl-bg-elevated rounded-md p-1">
                     <button

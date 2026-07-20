@@ -61,7 +61,7 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
       <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader className="border-b border-wl-border-default">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base text-white">
+            <CardTitle className="text-base text-wl-text-primary">
               Envelopes ({envelopes.length})
             </CardTitle>
             {selectedIds.size > 0 && (
@@ -174,7 +174,7 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
         <Card className="mt-6 bg-wl-bg-surface border-wl-border-default">
           <CardHeader className="border-b border-wl-border-default flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-base text-white">
+              <CardTitle className="text-base text-wl-text-primary">
                 {selectedEnvelope.name}
               </CardTitle>
               <p className="text-xs text-wl-text-secondary mt-1">
@@ -309,7 +309,7 @@ export default function EnvelopesPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Envelope Management</h1>
+            <h1 className="text-3xl font-bold text-wl-text-primary mb-2">Envelope Management</h1>
             <p className="text-wl-text-secondary">Create, send, and track document envelopes</p>
           </div>
           <Button variant="primary" className="flex items-center gap-2">

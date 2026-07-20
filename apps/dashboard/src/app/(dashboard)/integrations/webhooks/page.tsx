@@ -219,7 +219,7 @@ export default function WebhooksPage() {
           <CardContent>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
+                <label className="block text-sm font-medium text-wl-text-primary mb-2">
                   Endpoint URL
                 </label>
                 <input
@@ -234,7 +234,7 @@ export default function WebhooksPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
+                <label className="block text-sm font-medium text-wl-text-primary mb-2">
                   Event Types (select all that apply)
                 </label>
                 <div className="space-y-2">
@@ -271,7 +271,7 @@ export default function WebhooksPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
+                <label className="block text-sm font-medium text-wl-text-primary mb-2">
                   Webhook Secret
                 </label>
                 <div className="relative">
@@ -290,7 +290,7 @@ export default function WebhooksPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-white mb-2">
+                  <label className="block text-sm font-medium text-wl-text-primary mb-2">
                     Retry Policy
                   </label>
                   <select
@@ -306,7 +306,7 @@ export default function WebhooksPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-2">
+                  <label className="block text-sm font-medium text-wl-text-primary mb-2">
                     Max Retries
                   </label>
                   <input

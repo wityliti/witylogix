@@ -191,7 +191,7 @@ export default function FieldServicePage() {
             <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <CardTitle className="text-white">Today&apos;s Schedule</CardTitle>
+                  <CardTitle className="text-wl-text-primary">Today&apos;s Schedule</CardTitle>
                   <select
                     value={selectedTech ?? 'all'}
                     onChange={(e) => setSelectedTech(e.target.value === 'all' ? null : e.target.value)}
@@ -239,7 +239,7 @@ export default function FieldServicePage() {
 
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
-              <CardTitle className="text-white">SLA Compliance</CardTitle>
+              <CardTitle className="text-wl-text-primary">SLA Compliance</CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
               <div>
@@ -273,7 +273,7 @@ export default function FieldServicePage() {
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <div className="flex justify-between items-center">
-                <CardTitle className="text-white">Job Queue (Unassigned)</CardTitle>
+                <CardTitle className="text-wl-text-primary">Job Queue (Unassigned)</CardTitle>
                 <Badge variant="warning">{jobQueue.length}</Badge>
               </div>
             </CardHeader>
@@ -312,7 +312,7 @@ export default function FieldServicePage() {
 
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
-              <CardTitle className="text-white">Recent Completions</CardTitle>
+              <CardTitle className="text-wl-text-primary">Recent Completions</CardTitle>
             </CardHeader>
             <CardContent>
               {recentCompletions.length === 0 ? (
