@@ -153,7 +153,7 @@ export default function FieldServicePage() {
                   <p className="text-3xl font-bold text-white">{overview.techniciansInField}</p>
                   <p className="text-xs text-wl-text-secondary mt-2">dispatched technicians</p>
                 </div>
-                <Users className="w-8 h-8 text-cyan-500/30" />
+                <Users className="w-8 h-8 text-wl-info-500/30" />
               </div>
             </CardContent>
           </Card>
@@ -218,7 +218,7 @@ export default function FieldServicePage() {
                           <div className="text-sm font-semibold text-wl-info-400">{item.startTime}</div>
                           <div className="text-xs text-wl-text-tertiary">{item.endTime}</div>
                         </div>
-                        <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
+                        <div className="w-2 h-2 rounded-full bg-wl-info-500 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-semibold text-white">{item.jobNumber}</div>
                           <div className="text-xs text-wl-text-secondary mt-0.5">
@@ -249,7 +249,7 @@ export default function FieldServicePage() {
                 </div>
                 <div className="w-full bg-wl-bg-elevated rounded-full h-2.5 overflow-hidden">
                   <div
-                    className="bg-emerald-500 h-2.5 rounded-full transition-all"
+                    className="bg-wl-success-500 h-2.5 rounded-full transition-all"
                     style={{ width: `${slaMetrics.onTimePercentage}%` }}
                   />
                 </div>
@@ -285,7 +285,7 @@ export default function FieldServicePage() {
                   {jobQueue.map((job) => (
                     <div
                       key={job.id}
-                      className="p-4 bg-wl-bg-elevated rounded-lg border-l-4 border-amber-500 hover:border-amber-400 transition-colors cursor-pointer"
+                      className="p-4 bg-wl-bg-elevated rounded-lg border-l-4 border-wl-warning-500 hover:border-wl-warning-400 transition-colors cursor-pointer"
                     >
                       <div className="flex justify-between items-start gap-2 mb-2">
                         <div>
@@ -322,7 +322,7 @@ export default function FieldServicePage() {
                   {recentCompletions.map((job) => (
                     <div
                       key={job.id}
-                      className="p-4 bg-wl-bg-elevated rounded-lg border-l-4 border-emerald-500"
+                      className="p-4 bg-wl-bg-elevated rounded-lg border-l-4 border-wl-success-500"
                     >
                       <div className="flex justify-between items-start gap-2 mb-1">
                         <div>

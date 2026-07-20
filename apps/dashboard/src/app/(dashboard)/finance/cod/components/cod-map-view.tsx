@@ -19,11 +19,11 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  pending: 'bg-blue-500',
-  collected: 'bg-green-500',
-  verified: 'bg-amber-500',
+  pending: 'bg-wl-info-500',
+  collected: 'bg-wl-success-500',
+  verified: 'bg-wl-warning-500',
   reconciled: 'bg-neutral-500',
-  failed: 'bg-red-500',
+  failed: 'bg-wl-danger-500',
 };
 
 export function CodMapView({ points, driverFilter }: Props) {

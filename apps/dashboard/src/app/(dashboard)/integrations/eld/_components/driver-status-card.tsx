@@ -40,11 +40,11 @@ const getStatusColor = (status: string) => {
     case "driving":
       return "bg-wl-info-500/20 text-wl-info-400 border-wl-info-500/50";
     case "on-duty":
-      return "bg-yellow-500/20 text-yellow-400 border-yellow-500/50";
+      return "bg-wl-warning-bg text-wl-warning-400 border-wl-warning-500/50";
     case "sleeper":
-      return "bg-purple-500/20 text-purple-400 border-purple-500/50";
+      return "bg-wl-primary-500/20 text-wl-primary-400 border-wl-primary-500/50";
     case "off-duty":
-      return "bg-wl-success-500/20 text-wl-success-400 border-green-500/50";
+      return "bg-wl-success-500/20 text-wl-success-400 border-wl-success-500/50";
     default:
       return "";
   }
@@ -107,7 +107,7 @@ export function DriverStatusCard({ driver }: DriverStatusCardProps) {
             <p className="text-xs font-medium text-wl-text-tertiary uppercase">
               On-Duty
             </p>
-            <p className="text-lg font-bold text-yellow-400 mt-1">
+            <p className="text-lg font-bold text-wl-warning-400 mt-1">
               {driver.currentHOS.onDuty}h
             </p>
           </div>
@@ -115,7 +115,7 @@ export function DriverStatusCard({ driver }: DriverStatusCardProps) {
             <p className="text-xs font-medium text-wl-text-tertiary uppercase">
               Sleeper
             </p>
-            <p className="text-lg font-bold text-purple-400 mt-1">
+            <p className="text-lg font-bold text-wl-primary-400 mt-1">
               {driver.currentHOS.sleeper}h
             </p>
           </div>

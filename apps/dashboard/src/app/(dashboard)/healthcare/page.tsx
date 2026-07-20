@@ -20,8 +20,8 @@ interface KPICard {
 function KPICardComponent({ card }: { card: KPICard }) {
   const icons: Record<string, React.ReactNode> = {
     patients: <Users className="w-8 h-8 text-wl-info-500/30" />,
-    encounters: <Clock className="w-8 h-8 text-cyan-500/30" />,
-    lab: <FileText className="w-8 h-8 text-purple-500/30" />,
+    encounters: <Clock className="w-8 h-8 text-wl-info-500/30" />,
+    lab: <FileText className="w-8 h-8 text-wl-primary-500/30" />,
     alerts: <AlertCircle className="w-8 h-8 text-wl-warning-500/30" />,
   };
 

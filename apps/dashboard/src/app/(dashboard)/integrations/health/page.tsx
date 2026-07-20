@@ -373,10 +373,10 @@ export default function IntegrationHealthPage() {
                       className={cn(
                         "h-full transition-all",
                         integration.uptime >= 99.5
-                          ? "bg-emerald-500"
+                          ? "bg-wl-success-500"
                           : integration.uptime >= 98
-                          ? "bg-amber-500"
-                          : "bg-red-500"
+                          ? "bg-wl-warning-500"
+                          : "bg-wl-danger-500"
                       )}
                       style={{ width: `${integration.uptime}%` }}
                     />

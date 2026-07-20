@@ -201,7 +201,7 @@ export default function CRMIntegrationPage() {
                   </div>
 
                   {provider.status === 'error' && provider.errorMessage && (
-                    <div className="bg-red-900/30 border border-wl-danger-400/30 rounded px-2 py-1.5 mb-2 text-xs text-wl-danger-400">
+                    <div className="bg-wl-danger-bg border border-wl-danger-400/30 rounded px-2 py-1.5 mb-2 text-xs text-wl-danger-400">
                       {provider.errorMessage}
                     </div>
                   )}
@@ -272,7 +272,7 @@ export default function CRMIntegrationPage() {
                     onChange={(e) => setAutoSyncEnabled(e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-10 h-6 bg-wl-bg-surface border border-wl-border-default rounded-full peer peer-checked:bg-blue-500 peer-checked:border-blue-500 transition-all" />
+                  <div className="w-10 h-6 bg-wl-bg-surface border border-wl-border-default rounded-full peer peer-checked:bg-wl-info-500 peer-checked:border-wl-info-500 transition-all" />
                 </label>
               </div>
 
@@ -393,7 +393,7 @@ export default function CRMIntegrationPage() {
                   className={cn(
                     'px-3 py-1 text-xs font-semibold rounded-md border capitalize transition-all',
                     syncFilterType === type
-                      ? 'bg-blue-500 text-white border-blue-500'
+                      ? 'bg-wl-info-500 text-white border-wl-info-500'
                       : 'bg-transparent text-wl-text-secondary border-wl-border-default hover:border-wl-border-default'
                   )}
                 >
@@ -417,10 +417,10 @@ export default function CRMIntegrationPage() {
                     className={cn(
                       'p-3 rounded-md border',
                       log.status === 'success'
-                        ? 'border-wl-success-400/20 bg-emerald-900/30'
+                        ? 'border-wl-success-400/20 bg-wl-success-bg'
                         : log.status === 'failed'
-                        ? 'border-wl-danger-400/20 bg-red-900/30'
-                        : 'border-wl-warning-400/20 bg-amber-900/30'
+                        ? 'border-wl-danger-400/20 bg-wl-danger-bg'
+                        : 'border-wl-warning-400/20 bg-wl-warning-bg'
                     )}
                   >
                     <div className="flex items-start justify-between gap-3">

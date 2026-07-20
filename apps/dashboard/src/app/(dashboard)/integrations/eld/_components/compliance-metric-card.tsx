@@ -30,7 +30,7 @@ export function ComplianceMetricCard({ metric }: ComplianceMetricCardProps) {
           <Badge
             variant={metric.status === "compliant" ? "success" : "warning"}
             className={cn(
-              metric.status === "compliant" ? "bg-wl-success-500/20 text-wl-success-400" : "bg-yellow-500/20 text-yellow-400"
+              metric.status === "compliant" ? "bg-wl-success-500/20 text-wl-success-400" : "bg-wl-warning-bg text-wl-warning-400"
             )}
           >
             {metric.status}

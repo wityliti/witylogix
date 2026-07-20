@@ -121,7 +121,7 @@ function StatusTimeline({ status }: { status: string }) {
                 className={cn(
                   'w-5 h-5 rounded-full flex items-center justify-center border-2',
                   completed
-                    ? 'bg-emerald-500 border-emerald-500'
+                    ? 'bg-wl-success-500 border-wl-success-500'
                     : 'bg-wl-bg-overlay border-wl-border-default',
                 )}
               >
@@ -133,7 +133,7 @@ function StatusTimeline({ status }: { status: string }) {
                 <div
                   className={cn(
                     'w-0.5 h-8 my-2',
-                    completed ? 'bg-emerald-500' : 'bg-wl-border-default',
+                    completed ? 'bg-wl-success-500' : 'bg-wl-border-default',
                   )}
                 />
               )}
@@ -441,7 +441,7 @@ export default function LiveTracking() {
                           className={cn(
                             'p-4 rounded-lg text-left transition-all border',
                             selectedOrderId === order.id
-                              ? 'border-blue-500 bg-wl-bg-overlay'
+                              ? 'border-wl-info-500 bg-wl-bg-overlay'
                               : 'border-wl-border-default bg-wl-bg-overlay hover:border-wl-border-strong',
                           )}
                         >

@@ -190,7 +190,7 @@ export default function TrackingConfigPage() {
                         aria-label={`Toggle ${feature.label}`}
                         className={cn(
                           "relative w-12 h-7 rounded-full border-none cursor-pointer transition-colors shrink-0",
-                          enabled ? "bg-blue-500" : "bg-wl-bg-overlay"
+                          enabled ? "bg-wl-info-500" : "bg-wl-bg-overlay"
                         )}
                       >
                         <span

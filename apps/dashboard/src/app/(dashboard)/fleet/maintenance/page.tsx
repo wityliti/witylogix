@@ -165,7 +165,7 @@ export default function MaintenancePage() {
                 className={cn(
                   'px-3 py-2 text-xs font-medium rounded-md transition-colors',
                   viewMode === 'list'
-                    ? 'bg-blue-500 text-white'
+                    ? 'bg-wl-info-500 text-white'
                     : 'bg-wl-bg-elevated text-wl-text-secondary hover:text-white',
                 )}
               >
@@ -176,7 +176,7 @@ export default function MaintenancePage() {
                 className={cn(
                   'px-3 py-2 text-xs font-medium rounded-md transition-colors',
                   viewMode === 'calendar'
-                    ? 'bg-blue-500 text-white'
+                    ? 'bg-wl-info-500 text-white'
                     : 'bg-wl-bg-elevated text-wl-text-secondary hover:text-white',
                 )}
               >
@@ -187,7 +187,7 @@ export default function MaintenancePage() {
                 className={cn(
                   'px-3 py-2 text-xs font-medium rounded-md transition-colors',
                   viewMode === 'map'
-                    ? 'bg-blue-500 text-white'
+                    ? 'bg-wl-info-500 text-white'
                     : 'bg-wl-bg-elevated text-wl-text-secondary hover:text-white',
                 )}
               >
@@ -270,7 +270,7 @@ export default function MaintenancePage() {
               <CardContent>
                 <div className="space-y-3">
                   {filteredMaintenance.slice(0, 5).map((item) => (
-                    <div key={item.id} className="p-4 bg-wl-bg-elevated rounded-md border-l-4 border-blue-500">
+                    <div key={item.id} className="p-4 bg-wl-bg-elevated rounded-md border-l-4 border-wl-info-500">
                       <div className="flex items-start justify-between">
                         <div>
                           <p className="text-sm font-semibold text-white">{item.type.replace('-', ' ').toUpperCase()}</p>

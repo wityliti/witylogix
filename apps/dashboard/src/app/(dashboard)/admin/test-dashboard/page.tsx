@@ -170,7 +170,7 @@ export default function TestDashboardPage() {
 
         {/* Failing Files */}
         {failedFiles.length > 0 && (
-          <Card className="mb-8 border border-red-600/30 bg-red-600/5">
+          <Card className="mb-8 border border-wl-danger-600/30 bg-wl-danger-600/5">
             <CardHeader>
               <CardTitle>Failing Test Files ({failedFiles.length})</CardTitle>
             </CardHeader>
@@ -244,7 +244,7 @@ export default function TestDashboardPage() {
         </Card>
 
         {stats.failed === 0 && stats.total > 0 && (
-          <Card className="mt-6 border border-emerald-600/30 bg-emerald-600/5">
+          <Card className="mt-6 border border-wl-success-600/30 bg-wl-success-600/5">
             <CardContent className="pt-5">
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="w-5 h-5 text-wl-success-500" />

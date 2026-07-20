@@ -287,7 +287,7 @@ export default function EditRoutePage() {
                         'p-3 rounded-md grid gap-3 items-center cursor-grab transition-all',
                         'border border-wl-border-default',
                         draggedStop === idx
-                          ? 'bg-wl-info-500/20 border-blue-500 opacity-70'
+                          ? 'bg-wl-info-500/20 border-wl-info-500 opacity-70'
                           : 'bg-wl-bg-surface',
                       )}
                       style={{ gridTemplateColumns: '24px 1fr auto auto' }}
@@ -344,7 +344,7 @@ export default function EditRoutePage() {
                       {ordersList.map((order) => (
                         <div
                           key={order.id}
-                          className="p-3 rounded-md bg-wl-bg-root border border-wl-border-default cursor-pointer text-xs transition-all hover:bg-wl-bg-surface hover:border-blue-500"
+                          className="p-3 rounded-md bg-wl-bg-root border border-wl-border-default cursor-pointer text-xs transition-all hover:bg-wl-bg-surface hover:border-wl-info-500"
                           onClick={() => handleAddStop(order)}
                         >
                           <div className="flex justify-between items-center mb-1.5">
@@ -429,12 +429,12 @@ export default function EditRoutePage() {
             </Card>
 
             {saveError && (
-              <div className="p-3 rounded-md bg-wl-danger-500/10 border border-red-500 text-wl-danger-500 text-xs text-center">
+              <div className="p-3 rounded-md bg-wl-danger-500/10 border border-wl-danger-500 text-wl-danger-500 text-xs text-center">
                 {saveError}
               </div>
             )}
             {hasChanges && !saveError && (
-              <div className="p-3 rounded-md bg-wl-warning-500/10 border border-amber-500 text-wl-warning-400 text-xs text-center">
+              <div className="p-3 rounded-md bg-wl-warning-500/10 border border-wl-warning-500 text-wl-warning-400 text-xs text-center">
                 You have unsaved changes
               </div>
             )}

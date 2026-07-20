@@ -182,7 +182,7 @@ export default function LastMileIntegrationPage() {
 
       <div className="p-6 bg-wl-bg-root min-h-screen">
         {partnersError && (
-          <div className="mb-6 p-3 rounded-lg bg-red-900/20 border border-wl-danger-500/50 text-wl-danger-400 text-sm">
+          <div className="mb-6 p-3 rounded-lg bg-wl-danger-bg border border-wl-danger-500/50 text-wl-danger-400 text-sm">
             {partnersError.message}
           </div>
         )}
@@ -366,7 +366,7 @@ export default function LastMileIntegrationPage() {
                     className={cn(
                       'px-2 py-1 text-xs font-semibold rounded border capitalize transition-all',
                       deliveryFilter === s
-                        ? 'bg-blue-500 text-white border-blue-500'
+                        ? 'bg-wl-info-500 text-white border-wl-info-500'
                         : 'bg-transparent text-wl-text-secondary border-wl-border-default'
                     )}
                   >
@@ -440,7 +440,7 @@ export default function LastMileIntegrationPage() {
                     className={cn(
                       'px-2 py-1 text-xs font-semibold rounded border capitalize transition-all',
                       driverFilter === s
-                        ? 'bg-blue-500 text-white border-blue-500'
+                        ? 'bg-wl-info-500 text-white border-wl-info-500'
                         : 'bg-transparent text-wl-text-secondary border-wl-border-default'
                     )}
                   >

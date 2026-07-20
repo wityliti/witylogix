@@ -85,10 +85,10 @@ function tierToStatus(tier: LeaderboardEntry['tier']): DriverMarker['status'] {
 
 function tierColor(tier: string) {
   switch (tier) {
-    case 'platinum': return { bg: 'bg-indigo-500/15', text: 'text-indigo-300', border: 'border-indigo-500/30' };
+    case 'platinum': return { bg: 'bg-wl-primary-50', text: 'text-wl-primary-300', border: 'border-wl-primary-500/30' };
     case 'gold':     return { bg: 'bg-wl-warning-500/15',  text: 'text-wl-warning-400',  border: 'border-wl-warning-500/30' };
     case 'silver':   return { bg: 'bg-wl-neutral-400/15',   text: 'text-wl-neutral-300',   border: 'border-wl-neutral-400/30' };
-    case 'bronze':   return { bg: 'bg-orange-700/15', text: 'text-orange-400', border: 'border-orange-700/30' };
+    case 'bronze':   return { bg: 'bg-wl-warning-bg', text: 'text-wl-warning-400', border: 'border-wl-warning-500/30' };
     default:         return { bg: 'bg-white/[0.05]',  text: 'text-wl-text-tertiary',   border: 'border-white/10' };
   }
 }
@@ -96,7 +96,7 @@ function tierColor(tier: string) {
 function rankStyle(rank: number) {
   if (rank === 1) return 'bg-wl-warning-500/20 text-wl-warning-400';
   if (rank === 2) return 'bg-wl-neutral-400/20 text-wl-neutral-300';
-  if (rank === 3) return 'bg-orange-700/20 text-orange-400';
+  if (rank === 3) return 'bg-wl-warning-bg text-wl-warning-400';
   return 'bg-white/[0.05] text-wl-text-tertiary';
 }
 
@@ -238,8 +238,8 @@ export default function DriverInsightsPage() {
             <div className="flex items-center justify-between px-5 py-4 border-b border-wl-border-subtle">
               <h3 className="text-sm font-semibold text-wl-text-secondary tracking-wide">Driver Locations by Performance Tier</h3>
               <div className="flex items-center gap-4 text-[11px] text-wl-text-tertiary">
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />Platinum</span>
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500" />Gold</span>
+                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-wl-success-500" />Platinum</span>
+                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-wl-warning-500" />Gold</span>
                 <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-violet-400" />Silver</span>
                 <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-wl-neutral-500" />Bronze</span>
               </div>
@@ -343,7 +343,7 @@ export default function DriverInsightsPage() {
                     </div>
 
                     <div className="text-right">
-                      <p className={cn('text-sm font-mono font-semibold', entry.compositeScore >= 90 ? 'text-indigo-300' : entry.compositeScore >= 80 ? 'text-wl-success-400' : 'text-wl-warning-400')}>
+                      <p className={cn('text-sm font-mono font-semibold', entry.compositeScore >= 90 ? 'text-wl-primary-300' : entry.compositeScore >= 80 ? 'text-wl-success-400' : 'text-wl-warning-400')}>
                         {entry.compositeScore.toFixed(1)}
                       </p>
                     </div>
@@ -398,10 +398,10 @@ export default function DriverInsightsPage() {
         )}
 
         <div className="flex items-center gap-6 text-[11px] text-wl-text-tertiary">
-          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-indigo-400" />Platinum (≥90)</span>
-          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-400" />Gold (80–89)</span>
+          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-wl-primary-400" />Platinum (≥90)</span>
+          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-wl-warning-400" />Gold (80–89)</span>
           <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-wl-neutral-400" />Silver (70–79)</span>
-          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-600" />Bronze (&lt;70)</span>
+          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-wl-warning-500" />Bronze (&lt;70)</span>
           <span className="ml-auto">Powered by AI composite scoring · {toScoringPeriod(period)} window</span>
         </div>
       </div>

@@ -158,9 +158,9 @@ export default function RoutePlanningPage() {
                       'w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold',
                       'transition-colors cursor-pointer',
                       isActive
-                        ? 'bg-blue-500 text-white ring-2 ring-offset-2 ring-wl-info-500'
+                        ? 'bg-wl-info-500 text-white ring-2 ring-offset-2 ring-wl-info-500'
                         : isCompleted
-                          ? 'bg-emerald-500 text-white'
+                          ? 'bg-wl-success-500 text-white'
                           : 'bg-wl-bg-surface border-2 border-wl-border-default text-wl-text-secondary',
                     )}
                   >
@@ -170,7 +170,7 @@ export default function RoutePlanningPage() {
                     <div
                       className={cn(
                         'flex-1 h-0.5 mx-2',
-                        isCompleted || isActive ? 'bg-blue-500' : 'bg-wl-border-default',
+                        isCompleted || isActive ? 'bg-wl-info-500' : 'bg-wl-border-default',
                       )}
                     />
                   )}
@@ -405,7 +405,7 @@ export default function RoutePlanningPage() {
                     onUpdateConstraints={updateConstraints}
                   />
                   {saveError && (
-                    <div className="mt-4 p-3 bg-wl-danger-500/10 border border-red-500 text-wl-danger-500 rounded-md text-sm">
+                    <div className="mt-4 p-3 bg-wl-danger-500/10 border border-wl-danger-500 text-wl-danger-500 rounded-md text-sm">
                       {saveError}
                     </div>
                   )}

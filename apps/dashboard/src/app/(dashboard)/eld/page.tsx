@@ -226,7 +226,7 @@ export default function ELDOverviewPage() {
                         "p-3 rounded-lg border transition-all text-left",
                         "hover:border-wl-info-500/30 hover:bg-wl-bg-elevated",
                         selectedDriver === driver.driverId
-                          ? "border-wl-info-500/50 bg-blue-500/5"
+                          ? "border-wl-info-500/50 bg-wl-info-bg"
                           : "border-wl-border-default"
                       )}
                     >
@@ -376,7 +376,7 @@ export default function ELDOverviewPage() {
               </div>
               <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
                 <div
-                  className="h-full bg-emerald-500 transition-all"
+                  className="h-full bg-wl-success-500 transition-all"
                   style={{ width: `${compliance?.dvirCompletionRate ?? 0}%` }}
                 />
               </div>

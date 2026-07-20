@@ -305,7 +305,7 @@ export default function OnboardingPage() {
                   className={cn(
                     "w-10 h-10 rounded-full flex items-center justify-center mb-2 font-semibold text-sm transition-all duration-200",
                     isCompleted || isActive
-                      ? "bg-blue-500 text-white"
+                      ? "bg-wl-info-500 text-white"
                       : "bg-wl-bg-elevated text-wl-text-tertiary border border-wl-border-default"
                   )}
                 >
@@ -329,7 +329,7 @@ export default function OnboardingPage() {
         {/* Progress Line */}
         <div className="w-full h-1 bg-wl-bg-elevated rounded-full overflow-hidden mb-6">
           <div
-            className="h-full bg-blue-500 transition-all duration-500"
+            className="h-full bg-wl-info-500 transition-all duration-500"
             style={{
               width: `${Math.round(overallProgress)}%`,
             }}
@@ -350,7 +350,7 @@ export default function OnboardingPage() {
                   className={cn(
                     "px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 whitespace-nowrap flex-shrink-0",
                     isActive
-                      ? "bg-blue-500 text-white"
+                      ? "bg-wl-info-500 text-white"
                       : isCompleted
                         ? "bg-wl-success-500/20 text-wl-success-400 border border-wl-success-400/30"
                         : "bg-wl-bg-elevated text-wl-text-secondary border border-wl-border-default hover:border-wl-border-strong"

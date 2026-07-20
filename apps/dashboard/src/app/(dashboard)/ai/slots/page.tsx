@@ -185,7 +185,7 @@ export default function SlotAIPage() {
             <p className="text-xs text-wl-text-tertiary mt-1">Customer ID is required to personalise slot scoring</p>
           </div>
         ) : recommendError ? (
-          <div className="rounded-xl bg-red-500/5 border border-wl-danger-500/20 p-8 text-center">
+          <div className="rounded-xl bg-wl-danger-bg border border-wl-danger-500/20 p-8 text-center">
             <AlertCircle className="w-8 h-8 text-wl-danger-400/60 mx-auto mb-3" />
             <p className="text-sm text-wl-text-secondary">{recommendError.message}</p>
             <button
@@ -232,7 +232,7 @@ export default function SlotAIPage() {
                     className={cn(
                       'rounded-xl border p-5 transition-all',
                       isTop
-                        ? 'bg-emerald-500/5 border-wl-success-500/20'
+                        ? 'bg-wl-success-bg border-wl-success-500/20'
                         : 'bg-wl-bg-surface border-wl-border-subtle hover:border-wl-border-default',
                     )}
                   >

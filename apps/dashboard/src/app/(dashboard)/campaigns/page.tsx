@@ -623,7 +623,7 @@ export default function CampaignsPage() {
                                         Cancel
                                       </button>
                                       <button
-                                        className="text-xs px-1.5 py-0.5 rounded bg-red-600 text-white hover:bg-red-700"
+                                        className="text-xs px-1.5 py-0.5 rounded bg-wl-danger-600 text-white hover:bg-wl-danger-600"
                                         disabled={actionLoading === campaign.id}
                                         onClick={(e) => {
                                           setPendingDeleteCampaignId(null);

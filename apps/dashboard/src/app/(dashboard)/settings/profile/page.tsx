@@ -123,10 +123,10 @@ export default function ProfilePage() {
   };
 
   const getStrengthColor = () => {
-    if (passwordStrength < 25) return "bg-red-500";
-    if (passwordStrength < 50) return "bg-amber-500";
-    if (passwordStrength < 75) return "bg-blue-500";
-    return "bg-emerald-500";
+    if (passwordStrength < 25) return "bg-wl-danger-500";
+    if (passwordStrength < 50) return "bg-wl-warning-500";
+    if (passwordStrength < 75) return "bg-wl-info-500";
+    return "bg-wl-success-500";
   };
 
   if (loading) return <LoadingSkeleton />;

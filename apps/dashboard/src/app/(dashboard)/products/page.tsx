@@ -231,7 +231,7 @@ export default function ProductsPage() {
             className={cn(
               "p-1 px-3 rounded-full border text-xs font-semibold cursor-pointer font-sans",
               selectedFilters.has("requiresShipping")
-                ? "bg-blue-500 text-white border-blue-500"
+                ? "bg-wl-info-500 text-white border-wl-info-500"
                 : "bg-transparent text-wl-text-secondary border-wl-border-default"
             )}
           >
@@ -243,7 +243,7 @@ export default function ProductsPage() {
             className={cn(
               "p-1 px-3 rounded-full border text-xs font-semibold cursor-pointer font-sans",
               selectedFilters.has("missingWeight")
-                ? "bg-amber-500 text-white border-amber-500"
+                ? "bg-wl-warning-500 text-white border-wl-warning-500"
                 : "bg-transparent text-wl-text-secondary border-wl-border-default"
             )}
           >
@@ -257,7 +257,7 @@ export default function ProductsPage() {
               className={cn(
                 "p-1 px-3 rounded-full border text-xs font-semibold cursor-pointer font-sans",
                 selectedFilters.has(vendor)
-                  ? "bg-cyan-500 text-white border-cyan-500"
+                  ? "bg-wl-info-500 text-white border-wl-info-500"
                   : "bg-transparent text-wl-text-secondary border-wl-border-default"
               )}
             >
@@ -282,13 +282,13 @@ export default function ProductsPage() {
         {syncInfo && (
           <div className={cn("mb-4 p-3 rounded-md bg-wl-info-500/10 border border-wl-info-500/30 flex items-center justify-between")}>
             <span className="text-wl-info-400 text-sm">{syncInfo}</span>
-            <button onClick={() => setSyncInfo(null)} className="text-wl-info-400 hover:text-blue-200 text-xs ml-4">✕</button>
+            <button onClick={() => setSyncInfo(null)} className="text-wl-info-400 hover:text-wl-text-secondary text-xs ml-4">✕</button>
           </div>
         )}
 
         {/* Bulk Actions Bar */}
         {selectedProducts.size > 0 && (
-          <Card className={cn("mb-5 p-4 border", deleteConfirm ? "bg-red-900/30 border-red-600" : "bg-blue-500 border-blue-600")}>
+          <Card className={cn("mb-5 p-4 border", deleteConfirm ? "bg-wl-danger-bg border-wl-danger-600" : "bg-wl-info-500 border-wl-primary-600")}>
             {deleteConfirm ? (
               <div className="flex gap-4 items-center justify-between">
                 <div className="text-white text-sm font-semibold">

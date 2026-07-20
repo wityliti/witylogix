@@ -124,7 +124,7 @@ export default function ChaosDashboard() {
               className={cn(
                 'border-b-2 px-1 py-4 text-sm font-medium transition-colors',
                 activeTab === tab
-                  ? 'border-blue-500 text-wl-info-500'
+                  ? 'border-wl-info-500 text-wl-info-500'
                   : 'border-transparent text-wl-text-secondary hover:text-white'
               )}
             >
@@ -330,7 +330,7 @@ function ExecutionMonitor({ execution }: { execution: ChaosExecution }) {
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-wl-bg-root">
             <div
-              className="h-full bg-blue-500 transition-all"
+              className="h-full bg-wl-info-500 transition-all"
               style={{ width: `${execution.progress}%` }}
             />
           </div>

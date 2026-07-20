@@ -81,7 +81,7 @@ export default function CreateDriverPage() {
                 type="text"
                 value={form.name}
                 onChange={update('name')}
-                className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-amber-500"
+                className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-wl-warning-500"
                 required
               />
             </div>
@@ -94,7 +94,7 @@ export default function CreateDriverPage() {
                 type="tel"
                 value={form.phone}
                 onChange={update('phone')}
-                className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-amber-500"
+                className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-wl-warning-500"
                 required
               />
             </div>
@@ -107,7 +107,7 @@ export default function CreateDriverPage() {
                 type="email"
                 value={form.email ?? ''}
                 onChange={update('email')}
-                className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-amber-500"
+                className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-wl-warning-500"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -119,7 +119,7 @@ export default function CreateDriverPage() {
                   id="driver-vehicle"
                   value={form.vehicleType ?? 'VAN'}
                   onChange={update('vehicleType')}
-                  className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-amber-500"
+                  className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-wl-warning-500"
                 >
                   <option value="VAN">Van</option>
                   <option value="TRUCK">Truck</option>
@@ -136,7 +136,7 @@ export default function CreateDriverPage() {
                   type="text"
                   value={form.licensePlate ?? ''}
                   onChange={update('licensePlate')}
-                  className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-amber-500"
+                  className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-wl-warning-500"
                 />
               </div>
             </div>

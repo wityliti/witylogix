@@ -33,7 +33,7 @@ export function StepTestConnection({
         {testResults && (
           <Card
             className={cn(
-              testResults.success && 'border-emerald-500 bg-emerald-500/5'
+              testResults.success && 'border-wl-success-500 bg-wl-success-bg'
             )}
           >
             <CardContent className={cn('pt-5')}>

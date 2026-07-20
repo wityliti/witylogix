@@ -212,7 +212,7 @@ export default function TransactionsPage() {
                     className={cn(
                       "px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border",
                       statusFilter === status
-                        ? "bg-blue-500 text-white border-blue-500"
+                        ? "bg-wl-info-500 text-white border-wl-info-500"
                         : "border-wl-border-default bg-transparent text-wl-text-secondary hover:border-wl-border-strong"
                     )}
                   >
@@ -232,7 +232,7 @@ export default function TransactionsPage() {
                     className={cn(
                       "px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border flex items-center gap-1",
                       paymentFilter === method
-                        ? "bg-emerald-500 text-white border-emerald-500"
+                        ? "bg-wl-success-500 text-white border-wl-success-500"
                         : "border-wl-border-default bg-transparent text-wl-text-secondary hover:border-wl-border-strong"
                     )}
                   >

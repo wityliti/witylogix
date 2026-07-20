@@ -95,15 +95,15 @@ function LatencyChart({ metrics }: { metrics: ProviderMetrics | null }) {
 
       <div className="flex gap-4 text-xs">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded bg-blue-500" />
+          <div className="w-3 h-3 rounded bg-wl-info-500" />
           <span className="text-wl-text-secondary">P50 (50th percentile)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded bg-amber-500" />
+          <div className="w-3 h-3 rounded bg-wl-warning-500" />
           <span className="text-wl-text-secondary">P95 (95th percentile)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded bg-red-500" />
+          <div className="w-3 h-3 rounded bg-wl-danger-500" />
           <span className="text-wl-text-secondary">P99 (99th percentile)</span>
         </div>
       </div>
@@ -123,10 +123,10 @@ function ErrorBreakdown({ metrics }: { metrics: ProviderMetrics | null }) {
   );
 
   const colors = [
-    "bg-red-500",
-    "bg-amber-500",
-    "bg-blue-500",
-    "bg-blue-500",
+    "bg-wl-danger-500",
+    "bg-wl-warning-500",
+    "bg-wl-info-500",
+    "bg-wl-info-500",
   ];
 
   return (
@@ -432,8 +432,8 @@ export default function ProvidersPage() {
                       className={cn(
                         "w-3 h-3 rounded-full",
                         incident.resolved
-                          ? "bg-emerald-500"
-                          : "bg-amber-500"
+                          ? "bg-wl-success-500"
+                          : "bg-wl-warning-500"
                       )}
                     />
                     {idx < metrics.incidents.length - 1 && (

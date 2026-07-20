@@ -210,7 +210,7 @@ export default function DriversPage() {
                 <Map className="w-3.5 h-3.5" />
                 Map
                 {driversWithLocation.length > 0 && (
-                  <span className="text-[10px] bg-blue-500 text-white rounded-full px-1.5 py-0 font-bold">
+                  <span className="text-[10px] bg-wl-info-500 text-white rounded-full px-1.5 py-0 font-bold">
                     {driversWithLocation.length}
                   </span>
                 )}

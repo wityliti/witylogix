@@ -255,7 +255,7 @@ export default function ProfilePage() {
                 <button
                   onClick={handleSaveProfile}
                   disabled={saveLoading}
-                  className="px-4 py-2 bg-blue-500 text-white rounded text-sm font-medium cursor-pointer hover:bg-blue-600 transition-colors disabled:opacity-50"
+                  className="px-4 py-2 bg-wl-info-500 text-white rounded text-sm font-medium cursor-pointer hover:bg-wl-primary-600 transition-colors disabled:opacity-50"
                 >
                   {saveLoading ? 'Saving…' : 'Save Changes'}
                 </button>
@@ -348,7 +348,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
               </div>
-              <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded text-sm font-medium cursor-pointer hover:bg-blue-600 transition-colors">
+              <button className="mt-4 px-4 py-2 bg-wl-info-500 text-white rounded text-sm font-medium cursor-pointer hover:bg-wl-primary-600 transition-colors">
                 Update Password
               </button>
             </div>
@@ -369,7 +369,7 @@ export default function ProfilePage() {
                   onClick={() => setTwoFAEnabled(!twoFAEnabled)}
                   className={cn(
                     "w-12 h-7 rounded-full border-none cursor-pointer transition-colors",
-                    twoFAEnabled ? "bg-emerald-500" : "bg-wl-bg-elevated"
+                    twoFAEnabled ? "bg-wl-success-500" : "bg-wl-bg-elevated"
                   )}
                 />
               </div>
@@ -416,7 +416,7 @@ export default function ProfilePage() {
             {!showDeleteConfirm && (
               <button
                 onClick={() => setShowDeleteConfirm(true)}
-                className="px-4 py-2 bg-red-500 text-white rounded text-sm font-medium cursor-pointer hover:bg-red-600 transition-colors"
+                className="px-4 py-2 bg-wl-danger-500 text-white rounded text-sm font-medium cursor-pointer hover:bg-wl-danger-600 transition-colors"
               >
                 Delete Account
               </button>
@@ -433,7 +433,7 @@ export default function ProfilePage() {
                   >
                     Cancel
                   </button>
-                  <button className="px-4 py-2 bg-red-500 text-white rounded text-sm font-medium cursor-pointer hover:bg-red-600 transition-colors">
+                  <button className="px-4 py-2 bg-wl-danger-500 text-white rounded text-sm font-medium cursor-pointer hover:bg-wl-danger-600 transition-colors">
                     Delete My Account
                   </button>
                 </div>

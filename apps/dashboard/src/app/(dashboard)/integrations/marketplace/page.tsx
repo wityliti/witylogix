@@ -153,7 +153,7 @@ export default function MarketplacePage() {
                   className={cn(
                     'p-2 rounded-sm cursor-pointer transition-all',
                     view === v
-                      ? 'bg-blue-500 text-black'
+                      ? 'bg-wl-info-500 text-black'
                       : 'bg-transparent text-wl-text-tertiary hover:text-white',
                   )}
                 >
@@ -171,8 +171,8 @@ export default function MarketplacePage() {
                   className={cn(
                     'px-3 py-1.5 text-sm rounded-lg border transition-all',
                     sortBy === s
-                      ? 'bg-wl-info-500/15 text-wl-info-400 border-blue-500'
-                      : 'bg-wl-bg-elevated border-wl-border-default text-white hover:border-blue-500',
+                      ? 'bg-wl-info-500/15 text-wl-info-400 border-wl-info-500'
+                      : 'bg-wl-bg-elevated border-wl-border-default text-white hover:border-wl-info-500',
                   )}
                 >
                   {s.charAt(0).toUpperCase() + s.slice(1)}
@@ -323,7 +323,7 @@ function ProviderCard({ provider, index, layout, categoryLabel }: ProviderCardPr
     return (
       <Card
         className={cn(
-          'flex items-center justify-between p-4 hover:border-blue-500 transition-all',
+          'flex items-center justify-between p-4 hover:border-wl-info-500 transition-all',
           provider.installed && 'border-wl-success-500/30',
         )}
         style={{ animationDelay: delay } as React.CSSProperties}
@@ -356,7 +356,7 @@ function ProviderCard({ provider, index, layout, categoryLabel }: ProviderCardPr
     <Link href={`/integrations/marketplace/${provider.slug}`}>
       <Card
         className={cn(
-          'h-full flex flex-col hover:border-blue-500 cursor-pointer transition-all',
+          'h-full flex flex-col hover:border-wl-info-500 cursor-pointer transition-all',
           provider.installed && 'border-wl-success-500/30',
         )}
         style={{ animationDelay: delay } as React.CSSProperties}

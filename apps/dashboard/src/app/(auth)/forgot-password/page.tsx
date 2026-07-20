@@ -144,7 +144,7 @@ export default function ForgotPasswordPage() {
         </div>
 
         {/* Additional Info */}
-        <div className="p-4 rounded-lg text-xs text-wl-text-tertiary bg-opacity-5 border border-opacity-15 bg-blue-400 border-blue-400 leading-relaxed">
+        <div className="p-4 rounded-lg text-xs text-wl-text-tertiary bg-opacity-5 border border-opacity-15 bg-wl-info-400 border-wl-info-400 leading-relaxed">
           Didn&apos;t receive the email? Check your spam folder or resend below.
         </div>
 

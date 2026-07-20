@@ -97,15 +97,15 @@ interface DriverProfile {
 // ── Helpers ──────────────────────────────────────────────────────
 
 const TIER_STYLE: Record<string, { bg: string; text: string; border: string; label: string }> = {
-  platinum: { bg: 'bg-indigo-500/15', text: 'text-indigo-300', border: 'border-indigo-400/30', label: 'Platinum' },
+  platinum: { bg: 'bg-wl-primary-50', text: 'text-wl-primary-300', border: 'border-wl-primary-400/30', label: 'Platinum' },
   gold:     { bg: 'bg-wl-warning-500/15',  text: 'text-wl-warning-400',  border: 'border-wl-warning-400/30',  label: 'Gold' },
   silver:   { bg: 'bg-wl-neutral-400/15',   text: 'text-wl-neutral-300',   border: 'border-wl-neutral-300/30',   label: 'Silver' },
-  bronze:   { bg: 'bg-orange-700/15', text: 'text-orange-400', border: 'border-orange-600/30', label: 'Bronze' },
+  bronze:   { bg: 'bg-wl-warning-bg', text: 'text-wl-warning-400', border: 'border-wl-warning-500/30', label: 'Bronze' },
 };
 
 const STATUS_DOT: Record<string, string> = {
-  AVAILABLE: 'bg-emerald-400',
-  ON_ROUTE: 'bg-amber-400',
+  AVAILABLE: 'bg-wl-success-400',
+  ON_ROUTE: 'bg-wl-warning-400',
   ON_BREAK: 'bg-violet-400',
   OFFLINE: 'bg-wl-text-tertiary',
 };
@@ -383,7 +383,7 @@ export default function DriverDetailPage() {
               className={cn(
                 'px-4 py-2.5 text-xs font-medium capitalize transition-colors border-b-2 -mb-px',
                 activeTab === tab
-                  ? 'text-wl-text-primary border-indigo-400'
+                  ? 'text-wl-text-primary border-wl-primary-400'
                   : 'text-wl-text-tertiary border-transparent hover:text-wl-text-secondary',
               )}
             >
@@ -499,7 +499,7 @@ export default function DriverDetailPage() {
                   <div className="space-y-2">
                     {profile.orders.map((order) => (
                       <div key={order.id} className="flex items-center gap-3 py-2 border-b border-wl-border-subtle last:border-0">
-                        <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-wl-warning-400 shrink-0" />
                         <div className="min-w-0 flex-1">
                           <p className="text-xs text-wl-text-secondary truncate">
                             {order.customerName ?? order.externalOrderNumber ?? order.id.slice(0, 8)}

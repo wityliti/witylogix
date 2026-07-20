@@ -490,7 +490,7 @@ export default function TimeSlotsPage() {
                       </div>
                       <div className="h-1.5 bg-wl-bg-overlay rounded-full overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-blue-500"
+                          className="h-full rounded-full bg-wl-info-500"
                           style={{ width: "100%" }}
                         />
                       </div>

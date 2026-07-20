@@ -131,7 +131,7 @@ const CopyToken = ({ token }: { token: string }) => {
       title="Copy token"
     >
       {copied ? (
-        <Check className="w-4 h-4 text-emerald-600" />
+        <Check className="w-4 h-4 text-wl-success-600" />
       ) : (
         <Copy className="w-4 h-4" />
       )}
@@ -235,7 +235,7 @@ const SpacingSection = () => {
                 </p>
               </div>
               <div
-                className="h-0.5 bg-blue-600 rounded"
+                className="h-0.5 bg-wl-primary-600 rounded"
                 style={{
                   width: `${Math.max(space.value, 4)}px`,
                 }}

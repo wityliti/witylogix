@@ -75,7 +75,7 @@ const TIER_CONFIG = {
     label: "Enterprise",
     color: "var(--wl-warning-500)",
     bgClass: "bg-wl-warning-400/10 border-wl-warning-400/30",
-    dotClass: "bg-amber-400",
+    dotClass: "bg-wl-warning-400",
     badgeVariant: "warning" as const,
     description: "Top 5%+ by lifetime spend — highest-value accounts",
   },
@@ -83,7 +83,7 @@ const TIER_CONFIG = {
     label: "Premium",
     color: "var(--wl-info-400)",
     bgClass: "bg-wl-info-400/10 border-wl-info-400/30",
-    dotClass: "bg-blue-400",
+    dotClass: "bg-wl-info-400",
     badgeVariant: "primary" as const,
     description: "Regular buyers with solid order history",
   },
@@ -130,7 +130,7 @@ export default function CustomerSegmentsPage() {
                 className={cn(
                   "px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-colors",
                   activeView === "cards"
-                    ? "bg-blue-600 text-white"
+                    ? "bg-wl-primary-600 text-white"
                     : "text-wl-text-secondary hover:text-white",
                 )}
               >
@@ -141,7 +141,7 @@ export default function CustomerSegmentsPage() {
                 className={cn(
                   "px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-colors",
                   activeView === "geo"
-                    ? "bg-blue-600 text-white"
+                    ? "bg-wl-primary-600 text-white"
                     : "text-wl-text-secondary hover:text-white",
                 )}
               >
@@ -265,7 +265,7 @@ export default function CustomerSegmentsPage() {
                         className={cn(
                           "p-4 rounded-lg border",
                           status === "active"
-                            ? "bg-green-400/5 border-green-400/20"
+                            ? "bg-wl-success-400/5 border-wl-success-400/20"
                             : "bg-wl-neutral-500/5 border-wl-neutral-500/20",
                         )}
                       >
@@ -295,7 +295,7 @@ export default function CustomerSegmentsPage() {
                             className={cn(
                               "h-full rounded-full transition-all",
                               status === "active"
-                                ? "bg-green-400"
+                                ? "bg-wl-success-400"
                                 : "bg-wl-neutral-500",
                             )}
                             style={{ width: fmtPct(count, total) }}
@@ -457,7 +457,7 @@ export default function CustomerSegmentsPage() {
                               <td className="p-3 px-4">
                                 <div className="flex items-center gap-2">
                                   <div
-                                    className="h-1.5 bg-blue-500 rounded-full"
+                                    className="h-1.5 bg-wl-info-500 rounded-full"
                                     style={{
                                       width: `${Math.max(4, (city.count / maxCount) * 60)}px`,
                                     }}

@@ -294,7 +294,7 @@ export default function ReturnsPage() {
                 <Map className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Map</span>
                 {returnsWithCoords.length > 0 && (
-                  <span className="text-[10px] bg-blue-500 text-white rounded-full px-1.5 py-0 font-bold">
+                  <span className="text-[10px] bg-wl-info-500 text-white rounded-full px-1.5 py-0 font-bold">
                     {returnsWithCoords.length}
                   </span>
                 )}

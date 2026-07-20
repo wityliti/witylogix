@@ -28,7 +28,7 @@ export function TemplateList({
           className={cn(
             'w-full text-left p-4 rounded-lg border transition-all',
             selectedId === template.id
-              ? 'bg-wl-info-500/10 border-blue-500'
+              ? 'bg-wl-info-500/10 border-wl-info-500'
               : 'bg-wl-bg-elevated border-wl-border-default hover:border-wl-info-500/50'
           )}
         >

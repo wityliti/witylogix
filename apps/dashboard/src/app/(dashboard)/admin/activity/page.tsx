@@ -210,7 +210,7 @@ export default function ActivityPage() {
                   className={cn(
                     "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                     !selectedType
-                      ? "bg-blue-600 text-white"
+                      ? "bg-wl-primary-600 text-white"
                       : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated"
                   )}
                 >
@@ -223,7 +223,7 @@ export default function ActivityPage() {
                     className={cn(
                       "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                       selectedType === type.id
-                        ? "bg-blue-600 text-white"
+                        ? "bg-wl-primary-600 text-white"
                         : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white hover:bg-wl-bg-elevated"
                     )}
                   >

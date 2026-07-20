@@ -322,8 +322,8 @@ export default function ConflictsPage() {
                     className={cn(
                       "rounded-lg border transition-all",
                       isExpanded
-                        ? "border-blue-500 bg-[rgba(59,82,255,0.08)]"
-                        : "border-wl-border-default bg-wl-bg-root hover:border-blue-500"
+                        ? "border-wl-info-500 bg-[rgba(59,82,255,0.08)]"
+                        : "border-wl-border-default bg-wl-bg-root hover:border-wl-info-500"
                     )}
                   >
                     {/* Header */}

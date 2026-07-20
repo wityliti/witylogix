@@ -24,13 +24,13 @@ interface WarehouseConnectionCardProps {
 const getSyncStatusColor = (status: string) => {
   switch (status) {
     case "SYNCED":
-      return "bg-wl-success-500/20 text-wl-success-400 border-green-500/50";
+      return "bg-wl-success-500/20 text-wl-success-400 border-wl-success-500/50";
     case "SYNCING":
       return "bg-wl-info-500/20 text-wl-info-400 border-wl-info-500/50";
     case "FAILED":
       return "bg-wl-danger-500/20 text-wl-danger-400 border-wl-danger-500/50";
     case "PENDING":
-      return "bg-yellow-500/20 text-yellow-400 border-yellow-500/50";
+      return "bg-wl-warning-bg text-wl-warning-400 border-wl-warning-500/50";
     default:
       return "";
   }

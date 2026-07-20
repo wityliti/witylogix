@@ -335,7 +335,7 @@ export default function TemplateEditorPage() {
                         </p>
                         <div className="relative h-2 bg-wl-bg-overlay rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-blue-500 transition-all"
+                            className="h-full bg-wl-info-500 transition-all"
                             style={{
                               width: `${Math.min(
                                 (content.sms.text.length / 160) * 100,

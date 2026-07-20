@@ -134,7 +134,7 @@ function Section({
 
 function HosBar({ remaining, max = 11 }: { remaining: number; max?: number }) {
   const pct = Math.min(100, (remaining / max) * 100);
-  const color = pct > 50 ? 'bg-emerald-500' : pct > 20 ? 'bg-amber-500' : 'bg-red-500';
+  const color = pct > 50 ? 'bg-wl-success-500' : pct > 20 ? 'bg-wl-warning-500' : 'bg-wl-danger-500';
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-1.5 rounded-full bg-wl-bg-overlay overflow-hidden">
@@ -323,7 +323,7 @@ export default function ELDIntegrationPage() {
                 </thead>
                 <tbody className="divide-y divide-wl-border-default">
                   {eldDrivers.map((drv) => (
-                    <tr key={drv.driverId} className={cn('hover:bg-wl-bg-elevated transition-colors', drv.violations > 0 && 'bg-red-950/20')}>
+                    <tr key={drv.driverId} className={cn('hover:bg-wl-bg-elevated transition-colors', drv.violations > 0 && 'bg-wl-danger-bg')}>
                       <td className="px-4 py-3">
                         <p className="text-sm font-medium text-wl-text-primary">{drv.name}</p>
                         <p className="text-xs text-wl-text-tertiary font-mono">{drv.driverId.slice(0, 8)}</p>
@@ -401,7 +401,7 @@ export default function ELDIntegrationPage() {
                     const fail = dvir.status === 'FAIL' || dvir.status === 'fail';
                     const pending = dvir.status === 'PENDING' || dvir.status === 'pending';
                     return (
-                      <tr key={dvir.id} className={cn('hover:bg-wl-bg-elevated transition-colors', fail && 'bg-red-950/20')}>
+                      <tr key={dvir.id} className={cn('hover:bg-wl-bg-elevated transition-colors', fail && 'bg-wl-danger-bg')}>
                         <td className="px-4 py-3 text-xs text-wl-text-tertiary font-mono">{dvir.id.slice(0, 8)}</td>
                         <td className="px-4 py-3 text-wl-text-secondary text-xs">{dvir.vehicleId}</td>
                         <td className="px-4 py-3">
@@ -466,7 +466,7 @@ export default function ELDIntegrationPage() {
                   className={cn(
                     'rounded-xl border px-5 py-4',
                     v.severity.toLowerCase() === 'critical'
-                      ? 'bg-red-950/20 border-wl-danger-500/20'
+                      ? 'bg-wl-danger-bg border-wl-danger-500/20'
                       : 'bg-wl-bg-surface border-wl-border-default',
                   )}
                 >

@@ -137,7 +137,7 @@ export default function MapsSettingsPage() {
 
       <div className="p-6 max-w-4xl space-y-6">
         {/* Keyless notice */}
-        <Card className="border border-emerald-600/30 bg-wl-success-500/10">
+        <Card className="border border-wl-success-600/30 bg-wl-success-500/10">
           <CardContent className="pt-4">
             <div className="flex items-start gap-3">
               <Map className="w-5 h-5 text-wl-success-400 flex-shrink-0 mt-0.5" />
@@ -344,7 +344,7 @@ export default function MapsSettingsPage() {
                   max="18"
                   value={config.defaultZoom}
                   onChange={e => handleSettingChange('defaultZoom', parseInt(e.target.value))}
-                  className="w-full accent-blue-500"
+                  className="w-full accent-wl-info-500"
                 />
                 <div className="flex justify-between text-xs text-wl-text-tertiary mt-1">
                   <span>1 — World</span>
@@ -382,7 +382,7 @@ export default function MapsSettingsPage() {
                     className={cn(
                       'relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent',
                       'transition-colors duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-wl-info-500',
-                      config[key] ? 'bg-blue-600' : 'bg-wl-bg-elevated'
+                      config[key] ? 'bg-wl-primary-600' : 'bg-wl-bg-elevated'
                     )}
                   >
                     <span

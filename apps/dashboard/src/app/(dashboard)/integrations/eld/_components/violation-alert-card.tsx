@@ -24,7 +24,7 @@ const getSeverityColor = (severity: string) => {
     case "critical":
       return "bg-wl-danger-500/20 text-wl-danger-400 border-wl-danger-500/50";
     case "warning":
-      return "bg-yellow-500/20 text-yellow-400 border-yellow-500/50";
+      return "bg-wl-warning-bg text-wl-warning-400 border-wl-warning-500/50";
     case "info":
       return "bg-wl-info-500/20 text-wl-info-400 border-wl-info-500/50";
     default:
@@ -43,7 +43,7 @@ export function ViolationAlertCard({ alert }: ViolationAlertCardProps) {
           <div className="flex items-start gap-3 flex-1">
             <div className={cn(
               "w-2 h-2 rounded-full mt-2 flex-shrink-0",
-              alert.severity === "critical" ? "bg-red-500" : alert.severity === "warning" ? "bg-yellow-500" : "bg-blue-500"
+              alert.severity === "critical" ? "bg-wl-danger-500" : alert.severity === "warning" ? "bg-wl-warning-500" : "bg-wl-info-500"
             )} />
             <div className="flex-1">
               <h4 className="font-semibold text-white">
@@ -76,8 +76,8 @@ export function ViolationAlertCard({ alert }: ViolationAlertCardProps) {
             className={cn(
               "flex-1",
               alert.severity === "critical"
-                ? "bg-wl-danger-500/20 text-wl-danger-400 hover:bg-red-500/30"
-                : "bg-blue-500 hover:bg-blue-500/90"
+                ? "bg-wl-danger-500/20 text-wl-danger-400 hover:bg-wl-danger-500/30"
+                : "bg-wl-info-500 hover:bg-wl-info-500"
             )}
           >
             {alert.severity === "critical" ? "Take Action" : "Review"}

@@ -184,7 +184,7 @@ export default function RoutesPage() {
                 className={cn(
                   'px-4 py-2 rounded-md text-sm font-medium transition-colors border',
                   filter === f
-                    ? 'bg-blue-500 text-white border-blue-500'
+                    ? 'bg-wl-info-500 text-white border-wl-info-500'
                     : 'bg-transparent text-wl-text-secondary border-wl-border-default hover:border-wl-border-strong'
                 )}
               >

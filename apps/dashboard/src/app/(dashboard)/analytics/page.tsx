@@ -144,8 +144,8 @@ function WeeklyChart({ data }: { data: AnalyticsOverview['weekly'] }) {
         return (
           <div key={d.day} className="flex-1 flex flex-col items-center gap-1.5">
             <div className="w-full flex gap-1 items-end" style={{ height: '100px' }}>
-              <div className="flex-1 rounded-t-sm bg-blue-500/60" style={{ height: `${h}%` }} />
-              <div className="flex-1 rounded-t-sm bg-emerald-500/50" style={{ height: `${dh}%` }} />
+              <div className="flex-1 rounded-t-sm bg-wl-info-500" style={{ height: `${h}%` }} />
+              <div className="flex-1 rounded-t-sm bg-wl-success-500/50" style={{ height: `${dh}%` }} />
             </div>
             <span className="text-[10px] text-wl-text-tertiary font-medium">{d.day}</span>
           </div>
@@ -296,8 +296,8 @@ export default function AnalyticsPage() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-wl-text-secondary tracking-wide">Hourly Activity</h3>
               <div className="flex items-center gap-4 text-[11px] text-wl-text-tertiary">
-                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500/70" />Orders</span>
-                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500/70" />Deliveries</span>
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-wl-info-500/70" />Orders</span>
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-wl-success-500/70" />Deliveries</span>
               </div>
             </div>
             {loading ? (
@@ -318,8 +318,8 @@ export default function AnalyticsPage() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-wl-text-secondary tracking-wide">Weekly Trend</h3>
               <div className="flex items-center gap-4 text-[11px] text-wl-text-tertiary">
-                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500/60" />Orders</span>
-                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500/50" />Delivered</span>
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-wl-info-500" />Orders</span>
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-wl-success-500/50" />Delivered</span>
               </div>
             </div>
             {loading ? (
@@ -392,7 +392,7 @@ export default function AnalyticsPage() {
                       'w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold',
                       i === 0 ? 'bg-wl-warning-500/20 text-wl-warning-400' :
                       i === 1 ? 'bg-wl-neutral-400/20 text-wl-neutral-300' :
-                      i === 2 ? 'bg-orange-600/20 text-orange-400' :
+                      i === 2 ? 'bg-wl-warning-bg text-wl-warning-400' :
                       'bg-white/[0.05] text-wl-text-tertiary'
                     )}>
                       {i + 1}

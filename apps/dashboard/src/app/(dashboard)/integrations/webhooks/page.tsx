@@ -427,9 +427,9 @@ export default function WebhooksPage() {
                           className="flex-1 flex flex-col-reverse gap-0 group relative"
                           title={`${i}:00 — Success: ${bucket.success}, Failed: ${bucket.failed}`}
                         >
-                          <div className="w-full bg-red-500 rounded-t transition-all group-hover:opacity-80"
+                          <div className="w-full bg-wl-danger-500 rounded-t transition-all group-hover:opacity-80"
                             style={{ height: `${total > 0 ? (bucket.failed / total) * heightPercent : 0}%` }} />
-                          <div className="w-full bg-emerald-500 rounded-t transition-all group-hover:opacity-80"
+                          <div className="w-full bg-wl-success-500 rounded-t transition-all group-hover:opacity-80"
                             style={{ height: `${total > 0 ? (bucket.success / total) * heightPercent : 0}%` }} />
                         </div>
                       );

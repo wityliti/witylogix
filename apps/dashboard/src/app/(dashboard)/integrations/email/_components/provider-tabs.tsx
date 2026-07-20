@@ -31,7 +31,7 @@ export function ProviderTabs({
           className={cn(
             'px-4 py-2 rounded-lg border transition-all whitespace-nowrap flex items-center gap-2',
             activeProvider === provider.id
-              ? 'bg-blue-500 text-white border-blue-600'
+              ? 'bg-wl-info-500 text-white border-wl-primary-600'
               : 'border-wl-border-default text-wl-text-secondary hover:border-wl-info-500/50'
           )}
         >

@@ -245,7 +245,7 @@ export default function AnalyticsIntegrationsPage() {
               className={cn(
                 'px-3 py-1 rounded-sm border-none text-xs font-semibold cursor-pointer capitalize',
                 view === v
-                  ? 'bg-blue-500 text-white'
+                  ? 'bg-wl-info-500 text-white'
                   : 'bg-transparent text-wl-text-tertiary'
               )}
             >
@@ -273,10 +273,10 @@ export default function AnalyticsIntegrationsPage() {
                       className={cn(
                         'p-4 rounded-lg border cursor-pointer transition-all',
                         connection?.status === 'connected'
-                          ? 'border-emerald-400 border-opacity-30 bg-[rgba(16,185,129,0.08)]'
+                          ? 'border-wl-success-400 border-opacity-30 bg-[rgba(16,185,129,0.08)]'
                           : connection?.status === 'error'
-                            ? 'border-red-400 border-opacity-30 bg-[rgba(239,68,68,0.08)]'
-                            : 'border-wl-border-default hover:border-blue-400'
+                            ? 'border-wl-danger-400 border-opacity-30 bg-[rgba(239,68,68,0.08)]'
+                            : 'border-wl-border-default hover:border-wl-info-400'
                       )}
                       onClick={() => setSelectedProvider(provider.slug)}
                     >
@@ -378,7 +378,7 @@ export default function AnalyticsIntegrationsPage() {
                         </div>
 
                         {connection.status === 'error' && connection.errorMessage && (
-                          <div className={cn('mb-3 p-2 rounded bg-[rgba(239,68,68,0.1)] border border-red-400 border-opacity-30')}>
+                          <div className={cn('mb-3 p-2 rounded bg-[rgba(239,68,68,0.1)] border border-wl-danger-400 border-opacity-30')}>
                             <p className={cn('text-xs text-wl-danger-400')}>
                               {connection.errorMessage}
                             </p>
@@ -602,12 +602,12 @@ export default function AnalyticsIntegrationsPage() {
                           className={cn(
                             'w-2 h-2 rounded-full shrink-0',
                             source.status === 'SYNCED'
-                              ? 'bg-emerald-400'
+                              ? 'bg-wl-success-400'
                               : source.status === 'SYNCING'
-                                ? 'bg-cyan-400'
+                                ? 'bg-wl-info-400'
                                 : source.status === 'STALE'
-                                  ? 'bg-amber-400'
-                                  : 'bg-red-400'
+                                  ? 'bg-wl-warning-400'
+                                  : 'bg-wl-danger-400'
                           )}
                         />
                         <div className={cn('min-w-0')}>

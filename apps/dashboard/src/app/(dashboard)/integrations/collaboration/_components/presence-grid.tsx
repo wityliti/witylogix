@@ -17,11 +17,11 @@ interface PresenceGridProps {
 function getStatusColor(status: string) {
   switch (status) {
     case 'online':
-      return 'bg-wl-success-500/20 text-wl-success-400 border-green-500/50';
+      return 'bg-wl-success-500/20 text-wl-success-400 border-wl-success-500/50';
     case 'away':
-      return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50';
+      return 'bg-wl-warning-bg text-wl-warning-400 border-wl-warning-500/50';
     case 'busy':
-      return 'bg-orange-500/20 text-orange-400 border-orange-500/50';
+      return 'bg-wl-warning-500/20 text-wl-warning-400 border-wl-warning-500/50';
     case 'offline':
       return 'bg-wl-neutral-500/20 text-wl-text-secondary border-wl-neutral-500/50';
     default:

@@ -72,14 +72,14 @@ const getAvatarInitials = (name: string): string => {
 
 const getAvatarBgColor = (name: string): string => {
   const colors = [
-    'bg-blue-500',
-    'bg-purple-500',
-    'bg-pink-500',
-    'bg-amber-500',
-    'bg-green-500',
-    'bg-cyan-500',
-    'bg-red-500',
-    'bg-indigo-500',
+    'bg-wl-info-500',
+    'bg-wl-primary-500',
+    'bg-wl-primary-500',
+    'bg-wl-warning-500',
+    'bg-wl-success-500',
+    'bg-wl-info-500',
+    'bg-wl-danger-500',
+    'bg-wl-primary-500',
   ];
   const index = name.charCodeAt(0) % colors.length;
   return colors[index];
@@ -214,16 +214,16 @@ export default function OrdersPage() {
         {/* Error State */}
         {error && (
           <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="p-4 bg-red-950/30 border border-red-900/50 rounded-lg flex items-center justify-between">
+            <div className="p-4 bg-wl-danger-bg border border-wl-danger-600/50 rounded-lg flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-red-500 rounded-full" />
+                <div className="w-2 h-2 bg-wl-danger-500 rounded-full" />
                 <p className="text-sm text-wl-danger-400">Failed to load orders</p>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => refetch()}
-                className="text-wl-danger-400 hover:text-red-100"
+                className="text-wl-danger-400 hover:text-wl-danger-400"
               >
                 Retry
               </Button>

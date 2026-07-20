@@ -263,7 +263,7 @@ export default function AICopilotPage() {
                               <span
                                 className={cn(
                                   "rounded-full px-2 py-0.5 text-xs font-medium",
-                                  displayVal === "PENDING" && "bg-yellow-500/10 text-yellow-400",
+                                  displayVal === "PENDING" && "bg-wl-warning-bg text-wl-warning-400",
                                   displayVal === "COMPLETED" && "bg-wl-success-500/10 text-wl-success-400",
                                   displayVal === "ACTIVE" && "bg-wl-info-500/10 text-wl-info-400",
                                   displayVal === "FAILED" && "bg-wl-danger-500/10 text-wl-danger-400",

@@ -312,7 +312,7 @@ export default function DemandPage() {
                   className={cn(
                     'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors',
                     viewMode === 'charts'
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-wl-primary-600 text-white'
                       : 'bg-transparent text-wl-text-secondary hover:text-white'
                   )}
                 >
@@ -323,7 +323,7 @@ export default function DemandPage() {
                   className={cn(
                     'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors',
                     viewMode === 'map'
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-wl-primary-600 text-white'
                       : 'bg-transparent text-wl-text-secondary hover:text-white'
                   )}
                 >
@@ -619,10 +619,10 @@ export default function DemandPage() {
 
                   const severityColor =
                     anomaly.severity === 'high'
-                      ? 'border-wl-danger-500/50 bg-red-500/5'
+                      ? 'border-wl-danger-500/50 bg-wl-danger-bg'
                       : anomaly.severity === 'medium'
-                        ? 'border-wl-warning-500/50 bg-amber-500/5'
-                        : 'border-wl-info-500/50 bg-blue-500/5';
+                        ? 'border-wl-warning-500/50 bg-wl-warning-bg'
+                        : 'border-wl-info-500/50 bg-wl-info-bg';
 
                   const severityBadgeVariant =
                     anomaly.severity === 'high'

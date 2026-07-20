@@ -173,7 +173,7 @@ export default function CreateOrderPage() {
           <div className="flex gap-3">
             <button
               onClick={() => router.push('/orders')}
-              className="flex-1 px-4 py-2.5 rounded bg-blue-500 text-white font-semibold text-sm transition-all hover:bg-blue-600"
+              className="flex-1 px-4 py-2.5 rounded bg-wl-info-500 text-white font-semibold text-sm transition-all hover:bg-wl-primary-600"
             >
               View Orders
             </button>
@@ -186,7 +186,7 @@ export default function CreateOrderPage() {
                 setTags('');
                 setDeliveryNotes('');
               }}
-              className="flex-1 px-4 py-2.5 rounded bg-transparent text-wl-info-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white"
+              className="flex-1 px-4 py-2.5 rounded bg-transparent text-wl-info-500 font-semibold text-sm border border-wl-info-500 transition-all hover:bg-wl-info-500 hover:text-white"
             >
               Create Another
             </button>
@@ -204,7 +204,7 @@ export default function CreateOrderPage() {
       </div>
 
       {submitError && (
-        <div className="mb-6 p-4 bg-red-900/20 border border-red-500 rounded text-wl-danger-400 text-sm">
+        <div className="mb-6 p-4 bg-wl-danger-bg border border-wl-danger-500 rounded text-wl-danger-400 text-sm">
           {submitError}
         </div>
       )}
@@ -426,8 +426,8 @@ export default function CreateOrderPage() {
                   className={cn(
                     'px-4 py-2 rounded border text-sm font-semibold transition-all',
                     priority === pri
-                      ? 'bg-blue-500 text-white border-blue-500'
-                      : 'bg-transparent text-wl-info-500 border-blue-500'
+                      ? 'bg-wl-info-500 text-white border-wl-info-500'
+                      : 'bg-transparent text-wl-info-500 border-wl-info-500'
                   )}
                 >
                   {pri === 'normal' ? 'Normal' : pri === 'express' ? 'Express' : 'Same Day'}
@@ -524,7 +524,7 @@ export default function CreateOrderPage() {
             <label className="block text-sm font-medium text-wl-neutral-300 mb-1.5">&nbsp;</label>
             <button
               onClick={addLineItem}
-              className="w-full px-4 py-2.5 rounded bg-blue-500 text-white font-semibold text-sm transition-all hover:bg-blue-600"
+              className="w-full px-4 py-2.5 rounded bg-wl-info-500 text-white font-semibold text-sm transition-all hover:bg-wl-primary-600"
             >
               Add
             </button>
@@ -556,7 +556,7 @@ export default function CreateOrderPage() {
                   <td className="border-b border-wl-border-default p-3 text-sm">
                     <button
                       onClick={() => removeLineItem(item.id)}
-                      className="px-2.5 py-1.5 rounded bg-red-500 text-white font-semibold text-xs transition-all hover:bg-red-600"
+                      className="px-2.5 py-1.5 rounded bg-wl-danger-500 text-white font-semibold text-xs transition-all hover:bg-wl-danger-600"
                     >
                       Remove
                     </button>
@@ -625,7 +625,7 @@ export default function CreateOrderPage() {
             disabled={creating}
             className={cn(
               "flex-1 px-4 py-2.5 rounded font-semibold text-sm transition-all",
-              creating ? "bg-blue-500 text-white opacity-50 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600"
+              creating ? "bg-wl-info-500 text-white opacity-50 cursor-not-allowed" : "bg-wl-info-500 text-white hover:bg-wl-primary-600"
             )}
           >
             {creating ? 'Creating...' : 'Create Order'}
@@ -633,7 +633,7 @@ export default function CreateOrderPage() {
           <button
             onClick={handleSaveDraft}
             disabled={creating}
-            className="flex-1 px-4 py-2.5 rounded bg-transparent text-wl-info-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white disabled:opacity-50"
+            className="flex-1 px-4 py-2.5 rounded bg-transparent text-wl-info-500 font-semibold text-sm border border-wl-info-500 transition-all hover:bg-wl-info-500 hover:text-white disabled:opacity-50"
           >
             Save as Draft
           </button>

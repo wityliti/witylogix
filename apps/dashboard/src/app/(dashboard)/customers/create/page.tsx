@@ -75,7 +75,7 @@ export default function CreateCustomerPage() {
                   type="text"
                   value={form.firstName}
                   onChange={update('firstName')}
-                  className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-amber-500"
+                  className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-wl-warning-500"
                 />
               </div>
               <div>
@@ -87,7 +87,7 @@ export default function CreateCustomerPage() {
                   type="text"
                   value={form.lastName}
                   onChange={update('lastName')}
-                  className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-amber-500"
+                  className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-wl-warning-500"
                 />
               </div>
             </div>
@@ -100,7 +100,7 @@ export default function CreateCustomerPage() {
                 type="email"
                 value={form.email}
                 onChange={update('email')}
-                className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-amber-500"
+                className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-wl-warning-500"
                 required
               />
             </div>
@@ -113,7 +113,7 @@ export default function CreateCustomerPage() {
                 type="tel"
                 value={form.phone}
                 onChange={update('phone')}
-                className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-amber-500"
+                className="w-full rounded-md bg-wl-bg-surface border border-wl-border-default px-3 py-2 text-wl-text-primary focus:outline-none focus:border-wl-warning-500"
               />
             </div>
             {error && <p className="text-sm text-wl-danger-400">{error}</p>}

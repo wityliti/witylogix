@@ -139,7 +139,7 @@ function OrderCard({
       className={cn(
         'p-4 rounded-lg border transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wl-info-500',
         'bg-wl-bg-elevated/60 border-wl-border-strong hover:border-wl-border-strong hover:bg-wl-bg-elevated',
-        isSelected && 'border-blue-500 ring-1 ring-wl-info-500/25 bg-wl-bg-elevated',
+        isSelected && 'border-wl-info-500 ring-1 ring-wl-info-500/25 bg-wl-bg-elevated',
       )}
     >
       {/* Header row */}
@@ -202,7 +202,7 @@ function OrderCard({
                   key={driver.id}
                   type="button"
                   onClick={() => onAssign(order.id, driver.id)}
-                  className="w-full text-left px-2.5 py-2 text-xs rounded bg-wl-bg-overlay hover:bg-blue-600 text-wl-text-primary transition-colors flex items-center justify-between group"
+                  className="w-full text-left px-2.5 py-2 text-xs rounded bg-wl-bg-overlay hover:bg-wl-primary-600 text-wl-text-primary transition-colors flex items-center justify-between group"
                 >
                   <div className="flex items-center gap-1.5 min-w-0">
                     <span>{VEHICLE_ICON[driver.vehicleType] ?? '🚗'}</span>
@@ -245,8 +245,8 @@ interface DriverCardProps {
 function DriverCard({ driver, isSelected, onClick }: DriverCardProps) {
   const status = normalizeDriverStatus(driver.status);
   const statusColor =
-    status === 'available' ? 'bg-emerald-500' :
-    status === 'busy' ? 'bg-amber-500' :
+    status === 'available' ? 'bg-wl-success-500' :
+    status === 'busy' ? 'bg-wl-warning-500' :
     status === 'break' ? 'bg-violet-400' :
     'bg-wl-text-tertiary';
   const statusLabel =
@@ -265,7 +265,7 @@ function DriverCard({ driver, isSelected, onClick }: DriverCardProps) {
       className={cn(
         'p-3 rounded-lg border transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wl-info-500',
         'bg-wl-bg-elevated/60 border-wl-border-strong hover:border-wl-border-strong',
-        isSelected && 'border-blue-500 ring-1 ring-wl-info-500/25',
+        isSelected && 'border-wl-info-500 ring-1 ring-wl-info-500/25',
       )}
     >
       <div className="flex items-start justify-between mb-2">
@@ -488,7 +488,7 @@ export default function DispatchPage() {
           {/* Brand + live indicator */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-lg shadow-emerald-500/50" />
+              <div className="w-2.5 h-2.5 rounded-full bg-wl-success-500 animate-pulse shadow-lg shadow-emerald-500/50" />
               <h1 className="text-base font-bold text-wl-text-primary tracking-tight">Dispatch Center</h1>
             </div>
           </div>
@@ -541,14 +541,14 @@ export default function DispatchPage() {
                 <button
                   type="button"
                   onClick={() => setSortType('priority')}
-                  className={cn('text-[10px] px-2 py-0.5 rounded transition-colors', sortType === 'priority' ? 'bg-blue-600 text-wl-text-primary' : 'text-wl-text-secondary hover:text-wl-text-primary')}
+                  className={cn('text-[10px] px-2 py-0.5 rounded transition-colors', sortType === 'priority' ? 'bg-wl-primary-600 text-wl-text-primary' : 'text-wl-text-secondary hover:text-wl-text-primary')}
                 >
                   Priority
                 </button>
                 <button
                   type="button"
                   onClick={() => setSortType('time')}
-                  className={cn('text-[10px] px-2 py-0.5 rounded transition-colors', sortType === 'time' ? 'bg-blue-600 text-wl-text-primary' : 'text-wl-text-secondary hover:text-wl-text-primary')}
+                  className={cn('text-[10px] px-2 py-0.5 rounded transition-colors', sortType === 'time' ? 'bg-wl-primary-600 text-wl-text-primary' : 'text-wl-text-secondary hover:text-wl-text-primary')}
                 >
                   Time
                 </button>
@@ -612,7 +612,7 @@ export default function DispatchPage() {
           <div className="flex-shrink-0 px-4 py-3 border-b border-wl-border-default bg-wl-bg-surface/50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-cyan-400" />
+                <MapPin className="w-4 h-4 text-wl-info-400" />
                 <span className="text-xs font-semibold text-wl-text-primary uppercase tracking-wider">Live Map</span>
               </div>
               <div className="flex items-center gap-3 text-[11px] text-wl-text-tertiary">
@@ -726,7 +726,7 @@ export default function DispatchPage() {
                 { value: stats.unassigned, label: 'Unassigned', color: 'text-white' },
                 { value: stats.inTransit, label: 'In Transit', color: 'text-wl-info-400' },
                 { value: stats.completedToday, label: 'Completed', color: 'text-wl-success-400' },
-                { value: `${stats.avgDeliveryTime}m`, label: 'Avg Delivery', color: 'text-orange-400' },
+                { value: `${stats.avgDeliveryTime}m`, label: 'Avg Delivery', color: 'text-wl-warning-400' },
                 { value: `${stats.onTimePercent}%`, label: 'On-Time', color: 'text-wl-success-400' },
               ].map((stat, i) => (
                 <div

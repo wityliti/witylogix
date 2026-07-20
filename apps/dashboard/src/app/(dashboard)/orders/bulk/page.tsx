@@ -198,7 +198,7 @@ export default function BulkOperationsPage() {
             <label className="text-sm font-medium text-wl-neutral-300">&nbsp;</label>
             <button
               onClick={() => { setSearchTerm(''); setFilterStatus(''); }}
-              className="px-4 py-2.5 rounded bg-transparent text-wl-info-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white"
+              className="px-4 py-2.5 rounded bg-transparent text-wl-info-500 font-semibold text-sm border border-wl-info-500 transition-all hover:bg-wl-info-500 hover:text-white"
             >
               Reset Filters
             </button>
@@ -216,7 +216,7 @@ export default function BulkOperationsPage() {
           </p>
           <button
             onClick={toggleSelectAll}
-            className="px-4 py-2.5 rounded bg-transparent text-wl-info-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white"
+            className="px-4 py-2.5 rounded bg-transparent text-wl-info-500 font-semibold text-sm border border-wl-info-500 transition-all hover:bg-wl-info-500 hover:text-white"
           >
             {selectedOrders.size === filteredOrders.length && selectedOrders.size > 0 ? 'Deselect All' : 'Select All'}
           </button>
@@ -320,8 +320,8 @@ export default function BulkOperationsPage() {
                 className={cn(
                   'px-4 py-2.5 rounded font-semibold text-sm transition-all',
                   !bulkAction || processing
-                    ? 'bg-blue-500 text-white opacity-50 cursor-not-allowed'
-                    : 'bg-blue-500 text-white cursor-pointer hover:bg-blue-600'
+                    ? 'bg-wl-info-500 text-white opacity-50 cursor-not-allowed'
+                    : 'bg-wl-info-500 text-white cursor-pointer hover:bg-wl-primary-600'
                 )}
               >
                 {processing ? 'Processing...' : 'Execute Action'}
@@ -344,13 +344,13 @@ export default function BulkOperationsPage() {
             <div className="flex gap-2.5 justify-end">
               <button
                 onClick={() => setShowConfirmation(false)}
-                className="px-4 py-2.5 rounded bg-transparent text-wl-info-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white"
+                className="px-4 py-2.5 rounded bg-transparent text-wl-info-500 font-semibold text-sm border border-wl-info-500 transition-all hover:bg-wl-info-500 hover:text-white"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmAction}
-                className="px-4 py-2.5 rounded bg-blue-500 text-white font-semibold text-sm transition-all hover:bg-blue-600"
+                className="px-4 py-2.5 rounded bg-wl-info-500 text-white font-semibold text-sm transition-all hover:bg-wl-primary-600"
               >
                 Confirm
               </button>
@@ -385,7 +385,7 @@ export default function BulkOperationsPage() {
             <div className="flex gap-2.5 justify-end mt-5">
               <button
                 onClick={resetOperations}
-                className="px-4 py-2.5 rounded bg-blue-500 text-white font-semibold text-sm transition-all hover:bg-blue-600"
+                className="px-4 py-2.5 rounded bg-wl-info-500 text-white font-semibold text-sm transition-all hover:bg-wl-primary-600"
               >
                 Done
               </button>

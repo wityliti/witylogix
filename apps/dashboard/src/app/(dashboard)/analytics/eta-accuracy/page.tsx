@@ -188,16 +188,16 @@ function ModelRow({ modelName, m, isEnsemble }: { modelName: string; m: Calibrat
       className={cn(
         'flex items-center gap-4 p-3 rounded-lg transition-colors',
         isEnsemble
-          ? 'bg-indigo-500/10 border border-indigo-500/20'
+          ? 'bg-wl-primary-50 border border-wl-primary-500/20'
           : 'hover:bg-white/[0.02]',
       )}
     >
       <div className="w-44 shrink-0">
-        <p className={cn('text-sm font-medium', isEnsemble ? 'text-indigo-300' : 'text-wl-text-secondary')}>
+        <p className={cn('text-sm font-medium', isEnsemble ? 'text-wl-primary-300' : 'text-wl-text-secondary')}>
           {name}
         </p>
         {isEnsemble && (
-          <p className="text-[10px] text-indigo-400/60 font-mono">weighted ensemble</p>
+          <p className="text-[10px] text-wl-primary-400/60 font-mono">weighted ensemble</p>
         )}
       </div>
       <div className="flex-1 grid grid-cols-4 gap-4 text-right">
@@ -285,8 +285,8 @@ export default function EtaAccuracyPage() {
       <div className="px-6 lg:px-8 pt-6 pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-indigo-500/15 flex items-center justify-center">
-              <Brain className="w-5 h-5 text-indigo-400" />
+            <div className="w-9 h-9 rounded-lg bg-wl-primary-50 flex items-center justify-center">
+              <Brain className="w-5 h-5 text-wl-primary-400" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-wl-text-primary tracking-tight">ETA Accuracy</h1>
@@ -422,7 +422,7 @@ export default function EtaAccuracyPage() {
 
         {/* Degradation alerts */}
         {report && report.degradation_alerts.length > 0 && (
-          <div className="rounded-xl bg-amber-500/[0.06] border border-wl-warning-500/20 p-5">
+          <div className="rounded-xl bg-wl-warning-500/[0.06] border border-wl-warning-500/20 p-5">
             <h3 className="text-sm font-semibold text-wl-warning-400 mb-3 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4" />
               Model Degradation Alerts

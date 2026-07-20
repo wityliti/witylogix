@@ -293,7 +293,7 @@ export default function TrackingPage() {
                   {[
                     { label: "Pending", status: "pending", color: "text-wl-warning-400" },
                     { label: "Confirmed", status: "confirmed", color: "text-wl-info-400" },
-                    { label: "In Transit", status: "in_transit", color: "text-indigo-400" },
+                    { label: "In Transit", status: "in_transit", color: "text-wl-primary-400" },
                     { label: "Delivered", status: "delivered", color: "text-wl-success-400" },
                     { label: "Cancelled", status: "cancelled", color: "text-wl-danger-400" },
                   ].map((item) => (
@@ -411,7 +411,7 @@ export default function TrackingPage() {
                             </div>
                             <div className="h-1 rounded-full bg-wl-bg-overlay overflow-hidden">
                               <div
-                                className="h-full rounded-full bg-blue-500 transition-all"
+                                className="h-full rounded-full bg-wl-info-500 transition-all"
                                 style={{ width: `${progress}%` }}
                               />
                             </div>

@@ -222,7 +222,7 @@ export function PlatformCard({
               </Button>
             )}
             {platform.status === 'error' && (
-              <div className="p-3 bg-red-900 rounded text-sm text-wl-danger-400">
+              <div className="p-3 bg-wl-danger-bg border border-wl-danger-600/30 rounded text-sm text-wl-danger-400">
                 Sync failed. Check webhooks configuration and try again.
               </div>
             )}

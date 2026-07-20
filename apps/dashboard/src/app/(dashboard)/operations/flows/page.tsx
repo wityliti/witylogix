@@ -104,7 +104,7 @@ export default function ActivityFlowsPage() {
         {loading && <TableSkeleton rows={4} />}
         {error && <ErrorState message={error.message} onRetry={refetch} />}
         {deleteError && (
-          <div className="p-3 rounded-lg bg-red-900/20 border border-wl-danger-500/50 text-wl-danger-400 text-sm">
+          <div className="p-3 rounded-lg bg-wl-danger-bg border border-wl-danger-500/50 text-wl-danger-400 text-sm">
             {deleteError}
           </div>
         )}
@@ -132,7 +132,7 @@ export default function ActivityFlowsPage() {
                   <CardTitle className="flex items-center gap-2">
                     <span className="truncate">{flow.name}</span>
                     {flow.isDefault && (
-                      <Star className="w-4 h-4 fill-yellow-500 text-yellow-500 shrink-0" />
+                      <Star className="w-4 h-4 fill-yellow-500 text-wl-warning-500 shrink-0" />
                     )}
                   </CardTitle>
                   <CardDescription className="truncate">

@@ -137,7 +137,7 @@ export default function TrackingPage() {
                       className={cn(
                         'px-4 py-2 rounded-md text-sm font-medium transition-colors',
                         filterStatus === status
-                          ? 'bg-blue-500 text-white'
+                          ? 'bg-wl-info-500 text-white'
                           : 'bg-wl-bg-elevated text-wl-text-secondary hover:text-white',
                       )}
                     >

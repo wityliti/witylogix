@@ -16,8 +16,8 @@ interface DeliveryStatsCardProps {
 
 const variantClasses = {
   success: 'text-wl-success-400',
-  info: 'text-cyan-400',
-  warning: 'text-yellow-400',
+  info: 'text-wl-info-400',
+  warning: 'text-wl-warning-400',
   danger: 'text-wl-danger-400',
 };
 

@@ -231,11 +231,11 @@ export default function AuthProvidersPage() {
                         key={provider.id}
                         className={cn(
                           'bg-wl-bg-surface border border-wl-border-default relative',
-                          provider.isDefault && 'border-2 border-emerald-500',
+                          provider.isDefault && 'border-2 border-wl-success-500',
                         )}
                       >
                         {provider.isDefault && (
-                          <div className="absolute -top-0.5 right-4 bg-emerald-500 text-white px-3 py-1 rounded-b text-xs font-semibold">
+                          <div className="absolute -top-0.5 right-4 bg-wl-success-500 text-white px-3 py-1 rounded-b text-xs font-semibold">
                             ACTIVE
                           </div>
                         )}

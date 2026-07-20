@@ -155,19 +155,19 @@ export default function DriverLocationMap({
       <div className="absolute bottom-4 left-4 bg-wl-bg-surface/90 backdrop-blur-sm border border-wl-border-default rounded-lg p-3 z-10 space-y-1.5">
         {driverMarker && (
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+            <div className="w-2.5 h-2.5 rounded-full bg-wl-success-400" />
             <span className="text-xs text-wl-text-secondary">Driver position</span>
           </div>
         )}
         {deliveryPins.some((p) => p.status === 'assigned') && (
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+            <div className="w-2.5 h-2.5 rounded-full bg-wl-warning-400" />
             <span className="text-xs text-wl-text-secondary">Assigned delivery</span>
           </div>
         )}
         {deliveryPins.some((p) => p.status === 'in_transit') && (
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-blue-400" />
+            <div className="w-2.5 h-2.5 rounded-full bg-wl-info-400" />
             <span className="text-xs text-wl-text-secondary">In-transit delivery</span>
           </div>
         )}

@@ -301,7 +301,7 @@ export default function APIKeysPage() {
           </Card>
 
           {/* Documentation Link */}
-          <Card className="bg-blue-500/5 border border-wl-info-500/30 bg-wl-bg-surface border border-wl-border-default">
+          <Card className="bg-wl-info-bg border border-wl-info-500/30 bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="pt-6">
               <p className="text-sm text-wl-text-secondary">
                 Learn how to use the Witylogix API in our{" "}

@@ -413,7 +413,7 @@ export default function AdminShopDetail() {
                     key={log.id}
                     className={cn("py-3 flex gap-3", index < activityLogs.length - 1 && "border-b border-wl-border-default")}
                   >
-                    <div className="flex-shrink-0 rounded-full w-2 h-2 mt-1.5 bg-blue-500" />
+                    <div className="flex-shrink-0 rounded-full w-2 h-2 mt-1.5 bg-wl-info-500" />
                     <div className="flex-1 min-w-0">
                       <p className="text-white mb-1 text-sm">{log.action}</p>
                       <div className="flex gap-3 items-center">

@@ -164,7 +164,7 @@ export default function TrackingMapView({
             onClick={() => setShowDrivers((v) => !v)}
             className={`rounded-lg px-3 py-1.5 text-xs font-medium border transition-all ${
               showDrivers
-                ? 'bg-emerald-600/80 border-wl-success-500/50 text-white'
+                ? 'bg-wl-success-600/80 border-wl-success-500/50 text-white'
                 : 'bg-black/60 border-white/10 text-wl-text-secondary'
             }`}
           >
