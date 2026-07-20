@@ -60,7 +60,7 @@ const LEGEND = [
   { compliance: 'COMPLIANT' as EldComplianceStatus, label: 'Compliant',  color: 'bg-wl-success-500' },
   { compliance: 'WARNING'   as EldComplianceStatus, label: 'Warning',    color: 'bg-wl-warning-500'   },
   { compliance: 'VIOLATION' as EldComplianceStatus, label: 'Violation',  color: 'bg-wl-danger-500'     },
-  { compliance: 'OFFLINE'   as EldComplianceStatus, label: 'Offline',    color: 'bg-neutral-500' },
+  { compliance: 'OFFLINE'   as EldComplianceStatus, label: 'Offline',    color: 'bg-wl-neutral-500' },
 ];
 
 /* ─── Public component ───────────────────────────────────────────────────────── */

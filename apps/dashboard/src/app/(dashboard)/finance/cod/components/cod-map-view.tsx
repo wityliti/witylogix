@@ -22,7 +22,7 @@ const STATUS_COLORS: Record<string, string> = {
   pending: 'bg-wl-info-500',
   collected: 'bg-wl-success-500',
   verified: 'bg-wl-warning-500',
-  reconciled: 'bg-neutral-500',
+  reconciled: 'bg-wl-neutral-500',
   failed: 'bg-wl-danger-500',
 };
 

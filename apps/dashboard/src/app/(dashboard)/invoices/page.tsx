@@ -398,7 +398,7 @@ export default function InvoicesPage() {
                   setCurrentPage(1);
                 }}
                 icon={<Search className="w-4 h-4" />}
-                className="w-full bg-wl-bg-elevated border-wl-border-default text-white placeholder-gray-500"
+                className="w-full bg-wl-bg-elevated border-wl-border-default text-white placeholder:text-wl-text-tertiary"
               />
             </div>
 
@@ -503,7 +503,7 @@ export default function InvoicesPage() {
                   setAmountMin(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-20 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-white placeholder-gray-500"
+                className="w-20 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-white placeholder:text-wl-text-tertiary"
               />
               <span className="text-wl-text-secondary">-</span>
               <input
@@ -514,7 +514,7 @@ export default function InvoicesPage() {
                   setAmountMax(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-20 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-white placeholder-gray-500"
+                className="w-20 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-white placeholder:text-wl-text-tertiary"
               />
             </div>
           </div>

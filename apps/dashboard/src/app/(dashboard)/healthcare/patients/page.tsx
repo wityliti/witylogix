@@ -70,7 +70,7 @@ function PatientTable({ patients }: { patients: Patient[] }) {
               placeholder="Search by name or MRN..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 pl-10 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder-gray-500 focus:border-wl-info-500 focus:outline-none transition-colors"
+              className="w-full px-4 py-2 pl-10 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:border-wl-info-500 focus:outline-none transition-colors"
             />
             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-wl-text-tertiary">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">

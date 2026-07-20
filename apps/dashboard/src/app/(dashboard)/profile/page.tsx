@@ -167,7 +167,7 @@ export default function ProfilePage() {
                     type="text"
                     value={editForm.firstName}
                     onChange={(e) => handleEditChange("firstName", e.target.value)}
-                    className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
+                    className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
                   />
                 ) : (
                   <p className="text-white">{profile.firstName}</p>
@@ -183,7 +183,7 @@ export default function ProfilePage() {
                     type="text"
                     value={editForm.lastName}
                     onChange={(e) => handleEditChange("lastName", e.target.value)}
-                    className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
+                    className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
                   />
                 ) : (
                   <p className="text-white">{profile.lastName}</p>
@@ -199,7 +199,7 @@ export default function ProfilePage() {
                     type="email"
                     value={editForm.email}
                     onChange={(e) => handleEditChange("email", e.target.value)}
-                    className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
+                    className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
                   />
                 ) : (
                   <p className="text-white">{profile.email}</p>
@@ -215,7 +215,7 @@ export default function ProfilePage() {
                     type="tel"
                     value={editForm.phone}
                     onChange={(e) => handleEditChange("phone", e.target.value)}
-                    className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
+                    className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
                   />
                 ) : (
                   <p className="text-white">{profile.phone}</p>
@@ -293,7 +293,7 @@ export default function ProfilePage() {
                       onChange={(e) =>
                         setPasswordForm((prev) => ({ ...prev, current: e.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm pr-10 placeholder-gray-500 focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
+                      className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm pr-10 placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
                     />
                     <button
                       onClick={() => setShowPassword(!showPassword)}
@@ -315,7 +315,7 @@ export default function ProfilePage() {
                       onChange={(e) =>
                         setPasswordForm((prev) => ({ ...prev, new: e.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm pr-10 placeholder-gray-500 focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
+                      className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm pr-10 placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
                     />
                     <button
                       onClick={() => setShowNewPassword(!showNewPassword)}
@@ -337,7 +337,7 @@ export default function ProfilePage() {
                       onChange={(e) =>
                         setPasswordForm((prev) => ({ ...prev, confirm: e.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm pr-10 placeholder-gray-500 focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
+                      className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm pr-10 placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
                     />
                     <button
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}

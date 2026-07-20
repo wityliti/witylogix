@@ -457,7 +457,7 @@ function EndpointCard({
                   placeholder="Enter your Bearer token"
                   value={authToken}
                   onChange={(e) => setAuthToken(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg text-sm bg-wl-bg-elevated border border-wl-border-default text-white placeholder-gray-500 focus:outline-none focus:border-wl-border-default-focus"
+                  className="w-full px-3 py-2 rounded-lg text-sm bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-border-default-focus"
                 />
               </div>
 

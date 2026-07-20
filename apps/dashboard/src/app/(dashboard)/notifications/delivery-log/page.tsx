@@ -214,7 +214,7 @@ export default function DeliveryLogPage() {
                     placeholder="Search by message, recipient..."
                     value={debouncedQuery}
                     onChange={(e) => setDebouncedQuery(e.target.value)}
-                    className="bg-wl-bg-elevated border-wl-border-default text-white placeholder-gray-500"
+                    className="bg-wl-bg-elevated border-wl-border-default text-white placeholder:text-wl-text-tertiary"
                   />
                 </div>
 

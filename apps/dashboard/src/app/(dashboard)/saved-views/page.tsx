@@ -259,7 +259,7 @@ export default function SavedViewsPage() {
                     placeholder="e.g., Today's Priority Orders"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
+                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
                   />
                 </div>
 
@@ -304,7 +304,7 @@ export default function SavedViewsPage() {
                           placeholder="Value"
                           value={filter.value}
                           onChange={(e) => updateFilter(idx, 'value', e.target.value)}
-                          className="flex-1 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:border-wl-info-500 transition-colors"
+                          className="flex-1 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 transition-colors"
                         />
                         {formData.filters.length > 1 && (
                           <Button variant="danger" size="sm" onClick={() => removeFilter(idx)}>Remove</Button>

@@ -469,7 +469,7 @@ export default function LastMileIntegrationPage() {
                           ? 'border-wl-success-500/20 bg-wl-success-500/10'
                           : driver.status === 'ON_ROUTE'
                           ? 'border-wl-warning-500/20 bg-wl-warning-500/10'
-                          : 'border-neutral-600/20 bg-wl-bg-elevated/20'
+                          : 'border-wl-border-subtle bg-wl-bg-elevated/20'
                       )}
                     >
                       <div className="flex items-start justify-between mb-1">

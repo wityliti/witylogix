@@ -144,7 +144,7 @@ export default function DVIRPage() {
                   placeholder="Search defects..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-9 text-xs flex-1 bg-wl-bg-elevated border-wl-border-default text-white placeholder-gray-500"
+                  className="h-9 text-xs flex-1 bg-wl-bg-elevated border-wl-border-default text-wl-text-primary placeholder:text-wl-text-tertiary"
                 />
 
                 <select
