@@ -8,7 +8,8 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Search, Download, Filter, Plus } from 'lucide-react';
+import { Search, Download, Plus } from 'lucide-react';
+import { api } from '@/lib/api';
 
 interface Invoice {
   id: string;
@@ -19,6 +20,16 @@ interface Invoice {
   dueDate: string;
   createdDate: string;
   items: Array<{ description: string; quantity: number; price: number }>;
+}
+
+async function downloadInvoicePdf(inv: Invoice) {
+  const blob = await api.download(`/api/v4/invoices/${inv.id}/pdf`);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `invoice-${inv.invoiceNumber}.pdf`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 export default function InvoicesPage() {
@@ -57,7 +68,7 @@ export default function InvoicesPage() {
         <div className="p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-white">Invoices</h1>
+              <h1 className="text-2xl font-bold text-wl-text-primary">Invoices</h1>
               <p className="text-sm text-wl-text-secondary mt-1">Manage customer invoices</p>
             </div>
             <Button variant="primary" size="md">
@@ -80,7 +91,7 @@ export default function InvoicesPage() {
                 className={cn(
                   'w-full pl-10 pr-4 py-2 rounded-md text-sm',
                   'bg-wl-bg-elevated border border-wl-border-default',
-                  'text-white',
+                  'text-wl-text-primary',
                   'focus:outline-none focus:ring-2 focus:ring-wl-info-500'
                 )}
               />
@@ -127,9 +138,9 @@ export default function InvoicesPage() {
                 <tbody>
                   {filtered.map((inv) => (
                     <tr key={inv.id} className="border-b border-wl-border-default hover:bg-wl-bg-elevated">
-                      <td className="px-4 py-3 font-medium text-white">{inv.invoiceNumber}</td>
+                      <td className="px-4 py-3 font-medium text-wl-text-primary">{inv.invoiceNumber}</td>
                       <td className="px-4 py-3 text-wl-neutral-300">{inv.customer}</td>
-                      <td className="text-right px-4 py-3 font-medium text-white">
+                      <td className="text-right px-4 py-3 font-medium text-wl-text-primary">
                         ${inv.amount.toLocaleString()}
                       </td>
                       <td className="px-4 py-3 text-wl-neutral-300">
@@ -141,7 +152,7 @@ export default function InvoicesPage() {
                         </Badge>
                       </td>
                       <td className="text-right px-4 py-3">
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" onClick={() => downloadInvoicePdf(inv)} title="Download PDF">
                           <Download className="w-4 h-4" />
                         </Button>
                       </td>
