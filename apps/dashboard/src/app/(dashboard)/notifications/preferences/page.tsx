@@ -161,7 +161,7 @@ export default function NotificationPreferencesPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-wl-bg-primary">
+      <div className="min-h-screen bg-wl-bg-elevated">
         <Header title="Notification Preferences" subtitle="Loading preferences…" />
         <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <LoadingSkeleton />
@@ -172,7 +172,7 @@ export default function NotificationPreferencesPage() {
 
   if (error && !isLoading) {
     return (
-      <div className="min-h-screen bg-wl-bg-primary">
+      <div className="min-h-screen bg-wl-bg-elevated">
         <Header title="Notification Preferences" subtitle="Configure how and when you receive notifications" />
         <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <ErrorState error={error} onRetry={refetch} />
@@ -182,7 +182,7 @@ export default function NotificationPreferencesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-wl-bg-primary">
+    <div className="min-h-screen bg-wl-bg-elevated">
       <Header
         title="Notification Preferences"
         subtitle="Configure how and when you receive notifications"

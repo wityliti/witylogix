@@ -146,7 +146,7 @@ const CommandPalette = forwardRef<HTMLDivElement, CommandPaletteProps>(
             className={cn(
               "w-full max-w-2xl",
               "rounded-lg shadow-2xl",
-              "bg-wl-bg-primary border border-wl-border-default",
+              "bg-wl-bg-elevated border border-wl-border-default",
               "transition-all duration-200 ease-out",
               isOpen
                 ? "opacity-100 scale-100"

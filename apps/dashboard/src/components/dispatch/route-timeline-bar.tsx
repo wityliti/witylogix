@@ -124,7 +124,7 @@ export function RouteTimelineBar({
               aria-label={`Stop ${stop.sequenceNumber}: ${stop.customerName}`}
             >
               {/* Stop number badge */}
-              <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-wl-bg-primary border border-wl-border-default rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold text-wl-text-primary">
+              <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-wl-bg-elevated border border-wl-border-default rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold text-wl-text-primary">
                 {stop.sequenceNumber}
               </div>
             </div>

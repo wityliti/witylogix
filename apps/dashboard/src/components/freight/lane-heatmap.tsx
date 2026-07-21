@@ -93,7 +93,7 @@ export function LaneHeatmap({
   return (
     <div
       className={cn(
-        "rounded-lg border border-wl-border-default bg-wl-bg-primary p-4 space-y-4",
+        "rounded-lg border border-wl-border-default bg-wl-bg-elevated p-4 space-y-4",
         className
       )}
     >

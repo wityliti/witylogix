@@ -117,7 +117,7 @@ export function DriverAvatar({
         <div
           className={cn(
             "absolute -bottom-1 -left-1",
-            "bg-wl-bg-primary rounded-full",
+            "bg-wl-bg-elevated rounded-full",
             "flex items-center justify-center",
             "border border-wl-border-default",
             "text-lg leading-none"

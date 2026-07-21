@@ -196,7 +196,7 @@ export default function LiveTracking() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-wl-bg-primary p-6">
+      <div className="min-h-screen bg-wl-bg-elevated p-6">
         <LoadingSkeleton />
       </div>
     );
@@ -204,16 +204,16 @@ export default function LiveTracking() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-wl-bg-primary p-6">
+      <div className="min-h-screen bg-wl-bg-elevated p-6">
         <ErrorState message={error.message} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-wl-bg-primary">
+    <div className="min-h-screen bg-wl-bg-elevated">
       {/* Header */}
-      <div className="sticky top-0 z-20 bg-wl-bg-primary/95 backdrop-blur border-b border-wl-border-default p-6">
+      <div className="sticky top-0 z-20 bg-wl-bg-elevated/95 backdrop-blur border-b border-wl-border-default p-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-wl-text-primary">
@@ -466,7 +466,7 @@ export default function LiveTracking() {
                                 {progress}%
                               </p>
                             </div>
-                            <div className="h-1.5 rounded-full bg-wl-bg-primary overflow-hidden">
+                            <div className="h-1.5 rounded-full bg-wl-bg-elevated overflow-hidden">
                               <div
                                 className="h-full transition-all rounded-full"
                                 style={{

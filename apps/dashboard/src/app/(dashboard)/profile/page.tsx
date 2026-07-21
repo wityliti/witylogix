@@ -137,7 +137,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="bg-wl-bg-primary min-h-screen">
+    <div className="bg-wl-bg-elevated min-h-screen">
       <Header title="Profile Settings" subtitle="Manage your account and security settings" />
 
       <main className="flex-1 p-6 max-w-4xl mx-auto">

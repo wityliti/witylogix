@@ -310,7 +310,7 @@ export default function TimeSlotsPage() {
         }
       />
 
-      <div className="p-6 bg-wl-bg-primary min-h-screen">
+      <div className="p-6 bg-wl-bg-elevated min-h-screen">
         {/* Filters — only shown in list view */}
         {view === "list" && <div className="flex flex-col sm:flex-row gap-3 mb-5">
           <div className="relative flex-1 max-w-xs">

@@ -214,7 +214,7 @@ export function RouteTimeline({
 
                       {/* Tooltip */}
                       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-30">
-                        <div className="bg-wl-bg-primary border border-wl-border-subtle rounded-md p-2 shadow-lg whitespace-nowrap text-xs">
+                        <div className="bg-wl-bg-elevated border border-wl-border-subtle rounded-md p-2 shadow-lg whitespace-nowrap text-xs">
                           <p className="font-medium text-wl-text-primary">
                             Stop #{stop.sequence}
                           </p>

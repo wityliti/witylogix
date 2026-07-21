@@ -144,16 +144,16 @@ export default function TrackingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-wl-bg-primary p-6">
+      <div className="min-h-screen bg-wl-bg-elevated p-6">
         <LoadingSkeleton />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-wl-bg-primary">
+    <div className="min-h-screen bg-wl-bg-elevated">
       {/* Header */}
-      <div className="sticky top-0 z-20 bg-wl-bg-primary/95 backdrop-blur border-b border-wl-border-default p-6">
+      <div className="sticky top-0 z-20 bg-wl-bg-elevated/95 backdrop-blur border-b border-wl-border-default p-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-wl-text-primary">

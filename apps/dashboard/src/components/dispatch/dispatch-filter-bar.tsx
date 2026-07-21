@@ -83,7 +83,7 @@ export function DispatchFilterBar({
           onChange={(e) => handleSearchChange(e.target.value)}
           className={cn(
             "w-full px-4 py-2.5 rounded-lg",
-            "bg-wl-bg-primary border border-wl-border-default",
+            "bg-wl-bg-elevated border border-wl-border-default",
             "text-wl-text-primary placeholder:text-wl-text-tertiary",
             "focus:outline-none focus:ring-2 focus:ring-wl-primary-500 focus:border-transparent",
             "transition-all duration-200"
@@ -103,7 +103,7 @@ export function DispatchFilterBar({
             onClick={() => setExpandedSection(expandedSection === "status" ? null : "status")}
             className={cn(
               "px-3 py-2 rounded-lg text-sm font-medium",
-              "bg-wl-bg-primary border border-wl-border-default",
+              "bg-wl-bg-elevated border border-wl-border-default",
               "text-wl-text-secondary hover:text-wl-text-primary",
               "transition-all duration-200",
               expandedSection === "status" && "ring-2 ring-wl-primary-500"
@@ -144,7 +144,7 @@ export function DispatchFilterBar({
             onClick={() => setExpandedSection(expandedSection === "sort" ? null : "sort")}
             className={cn(
               "px-3 py-2 rounded-lg text-sm font-medium",
-              "bg-wl-bg-primary border border-wl-border-default",
+              "bg-wl-bg-elevated border border-wl-border-default",
               "text-wl-text-secondary hover:text-wl-text-primary",
               "transition-all duration-200",
               expandedSection === "sort" && "ring-2 ring-wl-primary-500"
@@ -180,7 +180,7 @@ export function DispatchFilterBar({
         </div>
 
         {/* View toggle */}
-        <div className="flex gap-1 bg-wl-bg-primary border border-wl-border-default rounded-lg p-1">
+        <div className="flex gap-1 bg-wl-bg-elevated border border-wl-border-default rounded-lg p-1">
           {viewOptions.map((option) => (
             <button
               key={option.value}

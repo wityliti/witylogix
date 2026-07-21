@@ -85,7 +85,7 @@ export function FreightTimeline({
   return (
     <div
       className={cn(
-        "rounded-lg border border-wl-border-default bg-wl-bg-primary p-4",
+        "rounded-lg border border-wl-border-default bg-wl-bg-elevated p-4",
         className
       )}
     >

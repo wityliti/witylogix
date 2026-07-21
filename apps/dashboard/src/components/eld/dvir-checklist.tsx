@@ -158,7 +158,7 @@ export function DVIRChecklist({
   return (
     <div
       className={cn(
-        "rounded-lg border border-wl-border-default bg-wl-bg-primary p-6 space-y-6",
+        "rounded-lg border border-wl-border-default bg-wl-bg-elevated p-6 space-y-6",
         className
       )}
     >
