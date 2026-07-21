@@ -136,7 +136,7 @@ const TemplateModal = ({
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as TemplateCategory)}
-              className="w-full px-3 py-2 bg-wl-bg-elevated text-white border border-wl-border-default rounded-md text-sm"
+              className="w-full px-3 py-2 bg-wl-bg-elevated text-wl-text-primary border border-wl-border-default rounded-md text-sm"
             >
               <option value="UTILITY">Utility</option>
               <option value="MARKETING">Marketing</option>
@@ -222,7 +222,7 @@ export default function WhatsAppPage() {
                           "px-3 py-2 rounded-lg text-sm font-medium transition-all",
                           category === "all"
                             ? "bg-wl-info-500 text-white"
-                            : "bg-wl-bg-elevated text-white hover:bg-wl-bg-overlay"
+                            : "bg-wl-bg-elevated text-wl-text-primary hover:bg-wl-bg-overlay"
                         )}
                       >
                         {category === "all" ? "All" : category}
@@ -294,7 +294,7 @@ export default function WhatsAppPage() {
                       <TableRow key={template.id}>
                         <TableCell>
                           <div>
-                            <p className="text-sm font-medium text-white">
+                            <p className="text-sm font-medium text-wl-text-primary">
                               {template.name}
                             </p>
                             <p className="text-xs text-wl-text-secondary mt-1">
@@ -405,7 +405,7 @@ export default function WhatsAppPage() {
                         {component.type}
                       </p>
                       {component.text && (
-                        <p className="text-sm text-white whitespace-pre-wrap">
+                        <p className="text-sm text-wl-text-primary whitespace-pre-wrap">
                           {component.text}
                         </p>
                       )}

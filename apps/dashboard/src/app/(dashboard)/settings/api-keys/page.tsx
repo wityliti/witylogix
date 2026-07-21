@@ -211,7 +211,7 @@ export default function APIKeysPage() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <Key className="w-4 h-4 text-wl-text-secondary" />
-                            <p className="font-semibold text-white">
+                            <p className="font-semibold text-wl-text-primary">
                               {apiKey.name}
                             </p>
                           </div>
@@ -265,7 +265,7 @@ export default function APIKeysPage() {
 
                       {deleteConfirmId === apiKey.id && (
                         <div className="mt-4 p-3 bg-wl-danger-500/10 border border-wl-danger-500/30 rounded-lg flex items-center justify-between gap-3">
-                          <p className="text-xs text-white">
+                          <p className="text-xs text-wl-text-primary">
                             Are you sure? This action cannot be undone.
                           </p>
                           <div className="flex gap-2">

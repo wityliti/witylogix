@@ -196,28 +196,28 @@ export default function NotificationsConfigPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-wl-border-default">
-                    <th className="text-left py-4 px-4 font-semibold text-white">
+                    <th className="text-left py-4 px-4 font-semibold text-wl-text-primary">
                       Event Type
                     </th>
-                    <th className="text-center py-4 px-4 font-semibold text-white">
+                    <th className="text-center py-4 px-4 font-semibold text-wl-text-primary">
                       <div className="flex items-center justify-center gap-1">
                         <Mail className="w-4 h-4" />
                         <span className="hidden sm:inline">Email</span>
                       </div>
                     </th>
-                    <th className="text-center py-4 px-4 font-semibold text-white">
+                    <th className="text-center py-4 px-4 font-semibold text-wl-text-primary">
                       <div className="flex items-center justify-center gap-1">
                         <MessageSquare className="w-4 h-4" />
                         <span className="hidden sm:inline">SMS</span>
                       </div>
                     </th>
-                    <th className="text-center py-4 px-4 font-semibold text-white">
+                    <th className="text-center py-4 px-4 font-semibold text-wl-text-primary">
                       <div className="flex items-center justify-center gap-1">
                         <Smartphone className="w-4 h-4" />
                         <span className="hidden sm:inline">Push</span>
                       </div>
                     </th>
-                    <th className="text-center py-4 px-4 font-semibold text-white">
+                    <th className="text-center py-4 px-4 font-semibold text-wl-text-primary">
                       <div className="flex items-center justify-center gap-1">
                         <Webhook className="w-4 h-4" />
                         <span className="hidden sm:inline">Webhook</span>
@@ -233,7 +233,7 @@ export default function NotificationsConfigPage() {
                     >
                       <td className="py-4 px-4">
                         <div>
-                          <p className="font-medium text-white">
+                          <p className="font-medium text-wl-text-primary">
                             {event.name}
                           </p>
                           <p className="text-xs text-wl-text-secondary">

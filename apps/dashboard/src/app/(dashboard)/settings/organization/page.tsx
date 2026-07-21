@@ -167,7 +167,7 @@ export default function OrganizationPage() {
                   <select
                     value={orgData.industry}
                     onChange={(e) => setOrgData({ ...orgData, industry: e.target.value })}
-                    className="w-full px-3 py-2 bg-wl-bg-root text-white border border-wl-border-default rounded-md text-sm"
+                    className="w-full px-3 py-2 bg-wl-bg-root text-wl-text-primary border border-wl-border-default rounded-md text-sm"
                   >
                     <option value="Logistics & Delivery">Logistics & Delivery</option>
                     <option value="E-Commerce">E-Commerce</option>
@@ -184,7 +184,7 @@ export default function OrganizationPage() {
                   <select
                     value={orgData.companySize}
                     onChange={(e) => setOrgData({ ...orgData, companySize: e.target.value })}
-                    className="w-full px-3 py-2 bg-wl-bg-root text-white border border-wl-border-default rounded-md text-sm"
+                    className="w-full px-3 py-2 bg-wl-bg-root text-wl-text-primary border border-wl-border-default rounded-md text-sm"
                   >
                     <option value="1-10">1-10 employees</option>
                     <option value="10-50">10-50 employees</option>
@@ -220,7 +220,7 @@ export default function OrganizationPage() {
                   <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wide mb-1">
                     Monthly Cost
                   </p>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-2xl font-bold text-wl-text-primary">
                     ${billing?.monthlyPrice ?? 0}
                   </p>
                 </div>
@@ -228,7 +228,7 @@ export default function OrganizationPage() {
                   <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wide mb-1">
                     Cycle Start
                   </p>
-                  <p className="text-lg font-semibold text-white">
+                  <p className="text-lg font-semibold text-wl-text-primary">
                     {billing?.cycleStart ?? '—'}
                   </p>
                 </div>
@@ -236,7 +236,7 @@ export default function OrganizationPage() {
                   <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wide mb-1">
                     Next Billing
                   </p>
-                  <p className="text-lg font-semibold text-white">
+                  <p className="text-lg font-semibold text-wl-text-primary">
                     {billing?.nextBilling ?? '—'}
                   </p>
                 </div>
@@ -256,7 +256,7 @@ export default function OrganizationPage() {
                       return (
                         <div key={metric.name}>
                           <div className="flex justify-between items-end mb-2">
-                            <span className="text-sm text-white">{metric.name}</span>
+                            <span className="text-sm text-wl-text-primary">{metric.name}</span>
                             <span className="text-xs text-wl-text-secondary">
                               {metric.current.toLocaleString()} / {metric.limit.toLocaleString()} {metric.unit}
                             </span>
@@ -308,7 +308,7 @@ export default function OrganizationPage() {
 
               {showDeleteConfirm && (
                 <div className="p-4 bg-wl-danger-500/10 border border-wl-danger-500/50 rounded-lg">
-                  <p className="text-sm font-semibold text-white mb-3">
+                  <p className="text-sm font-semibold text-wl-text-primary mb-3">
                     Are you absolutely sure? This action cannot be undone.
                   </p>
                   <div className="flex gap-3">

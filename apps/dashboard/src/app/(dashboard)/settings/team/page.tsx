@@ -156,7 +156,7 @@ export default function TeamPage() {
                   <select
                     value={inviteRole}
                     onChange={(e) => setInviteRole(e.target.value as typeof inviteRole)}
-                    className="w-full px-3 py-2 bg-wl-bg-elevated text-white border border-wl-border-default rounded-md text-sm"
+                    className="w-full px-3 py-2 bg-wl-bg-elevated text-wl-text-primary border border-wl-border-default rounded-md text-sm"
                   >
                     <option value="viewer">Viewer - Read-only access</option>
                     <option value="member">Member - Can edit content</option>
@@ -208,7 +208,7 @@ export default function TeamPage() {
                           className="w-10 h-10 rounded-full"
                         />
                         <div className="flex-1">
-                          <p className="font-semibold text-white">
+                          <p className="font-semibold text-wl-text-primary">
                             {member.name}
                           </p>
                           <p className="text-xs text-wl-text-secondary">
@@ -221,7 +221,7 @@ export default function TeamPage() {
                           <select
                             value={newRole}
                             onChange={(e) => setNewRole(e.target.value as typeof newRole)}
-                            className="px-2 py-1 bg-wl-bg-elevated text-white border border-wl-border-default rounded text-sm"
+                            className="px-2 py-1 bg-wl-bg-elevated text-wl-text-primary border border-wl-border-default rounded text-sm"
                           >
                             <option value="viewer">Viewer</option>
                             <option value="member">Member</option>
@@ -283,7 +283,7 @@ export default function TeamPage() {
 
                     {removeConfirmId === member.id && (
                       <div className="mt-3 p-3 bg-wl-danger-500/10 border border-wl-danger-500/30 rounded-lg flex items-center justify-between gap-3">
-                        <p className="text-xs text-white">
+                        <p className="text-xs text-wl-text-primary">
                           Remove this member from the team?
                         </p>
                         <div className="flex gap-2">
@@ -328,7 +328,7 @@ export default function TeamPage() {
                         <div className="flex items-center gap-3 flex-1">
                           <Mail className="w-5 h-5 text-wl-text-secondary" />
                           <div>
-                            <p className="font-semibold text-white">
+                            <p className="font-semibold text-wl-text-primary">
                               {invitation.email}
                             </p>
                             <p className="text-xs text-wl-text-secondary">
@@ -369,7 +369,7 @@ export default function TeamPage() {
               <div className="flex gap-3">
                 <AlertCircle className="w-5 h-5 text-wl-info-500 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-white mb-1">
+                  <p className="text-sm font-semibold text-wl-text-primary mb-1">
                     Role Permissions
                   </p>
                   <ul className="text-xs text-wl-text-secondary space-y-1">

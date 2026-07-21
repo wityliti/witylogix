@@ -147,7 +147,7 @@ export default function PaymentSettingsPage() {
                 <CardContent className="flex items-center justify-center py-16">
                   <div className="text-center">
                     <DollarSign className="w-10 h-10 mx-auto text-wl-text-tertiary mb-4" />
-                    <p className="text-sm font-medium text-white mb-2">No payment gateways configured</p>
+                    <p className="text-sm font-medium text-wl-text-primary mb-2">No payment gateways configured</p>
                     <p className="text-xs text-wl-text-secondary mb-4">
                       Cash on Delivery is always available. Add a payment method to unlock card processing.
                     </p>
@@ -267,7 +267,7 @@ export default function PaymentSettingsPage() {
               <CardContent className="flex items-center justify-center py-12">
                 <div className="text-center">
                   <Plus className="w-8 h-8 mx-auto text-wl-text-secondary mb-3" />
-                  <p className="text-sm font-medium text-white mb-2">Add Payment Gateway</p>
+                  <p className="text-sm font-medium text-wl-text-primary mb-2">Add Payment Gateway</p>
                   <p className="text-xs text-wl-text-secondary mb-4">
                     Connect Stripe, PayPal, or Square. Requires API keys in environment configuration.
                   </p>
@@ -312,7 +312,7 @@ export default function PaymentSettingsPage() {
                             type="text"
                             value={`**** **** **** ${gateway.config.lastDigits}${gateway.config.expiryDate ? ` (exp: ${gateway.config.expiryDate})` : ''}`}
                             readOnly
-                            className="bg-wl-bg-elevated border-wl-border-default text-white"
+                            className="bg-wl-bg-elevated border-wl-border-default text-wl-text-primary"
                           />
                         </div>
                       )}
@@ -358,11 +358,11 @@ export default function PaymentSettingsPage() {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-wl-border-default">
-                          <th className="text-left py-3 px-4 font-medium text-white">Gateway</th>
-                          <th className="text-right py-3 px-4 font-medium text-white">Rate</th>
-                          <th className="text-right py-3 px-4 font-medium text-white">Fee on $100</th>
-                          <th className="text-right py-3 px-4 font-medium text-white">Fee on $1,000</th>
-                          <th className="text-right py-3 px-4 font-medium text-white">Savings vs Highest</th>
+                          <th className="text-left py-3 px-4 font-medium text-wl-text-primary">Gateway</th>
+                          <th className="text-right py-3 px-4 font-medium text-wl-text-primary">Rate</th>
+                          <th className="text-right py-3 px-4 font-medium text-wl-text-primary">Fee on $100</th>
+                          <th className="text-right py-3 px-4 font-medium text-wl-text-primary">Fee on $1,000</th>
+                          <th className="text-right py-3 px-4 font-medium text-wl-text-primary">Savings vs Highest</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -371,12 +371,12 @@ export default function PaymentSettingsPage() {
                           const savings100 = maxFee100 - row.for100;
                           return (
                             <tr key={i} className="border-b border-wl-border-default hover:bg-wl-bg-elevated transition">
-                              <td className="py-3 px-4"><span className="font-medium text-white">{row.gateway}</span></td>
-                              <td className="py-3 px-4 text-right text-white">
+                              <td className="py-3 px-4"><span className="font-medium text-wl-text-primary">{row.gateway}</span></td>
+                              <td className="py-3 px-4 text-right text-wl-text-primary">
                                 {row.percent}% + ${(row.fixed / 100).toFixed(2)}
                               </td>
-                              <td className="py-3 px-4 text-right text-white">${(row.for100 / 100).toFixed(2)}</td>
-                              <td className="py-3 px-4 text-right text-white">${(row.for1000 / 100).toFixed(2)}</td>
+                              <td className="py-3 px-4 text-right text-wl-text-primary">${(row.for100 / 100).toFixed(2)}</td>
+                              <td className="py-3 px-4 text-right text-wl-text-primary">${(row.for1000 / 100).toFixed(2)}</td>
                               <td className="py-3 px-4 text-right">
                                 {savings100 > 0 ? (
                                   <span className="text-wl-success-500 font-medium">+${(savings100 / 100).toFixed(2)}</span>

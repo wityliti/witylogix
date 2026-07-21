@@ -283,7 +283,7 @@ export default function TemplateEditorPage() {
                           }))
                         }
                         placeholder="HTML content"
-                        className="w-full h-64 px-3 py-2 bg-wl-bg-overlay text-white border border-wl-border-default rounded-md text-sm font-mono"
+                        className="w-full h-64 px-3 py-2 bg-wl-bg-overlay text-wl-text-primary border border-wl-border-default rounded-md text-sm font-mono"
                       />
                     </div>
 
@@ -303,7 +303,7 @@ export default function TemplateEditorPage() {
                           }))
                         }
                         placeholder="Plain text content"
-                        className="w-full h-32 px-3 py-2 bg-wl-bg-overlay text-white border border-wl-border-default rounded-md text-sm font-mono"
+                        className="w-full h-32 px-3 py-2 bg-wl-bg-overlay text-wl-text-primary border border-wl-border-default rounded-md text-sm font-mono"
                       />
                     </div>
                   </CardContent>
@@ -327,7 +327,7 @@ export default function TemplateEditorPage() {
                           }))
                         }
                         placeholder="SMS message"
-                        className="w-full h-32 px-3 py-2 bg-wl-bg-overlay text-white border border-wl-border-default rounded-md text-sm font-mono"
+                        className="w-full h-32 px-3 py-2 bg-wl-bg-overlay text-wl-text-primary border border-wl-border-default rounded-md text-sm font-mono"
                       />
                       <div className="mt-3 p-3 bg-wl-bg-overlay rounded-lg border border-wl-border-default">
                         <p className="text-xs text-wl-text-secondary mb-2">
@@ -382,7 +382,7 @@ export default function TemplateEditorPage() {
                   <button
                     key={variable.name}
                     onClick={() => insertVariable(variable.name)}
-                    className="w-full text-left px-3 py-2 bg-wl-bg-overlay hover:bg-wl-bg-overlay text-white rounded-lg text-sm transition-colors border border-wl-border-default"
+                    className="w-full text-left px-3 py-2 bg-wl-bg-overlay hover:bg-wl-bg-overlay text-wl-text-primary rounded-lg text-sm transition-colors border border-wl-border-default"
                   >
                     <code className="font-mono">{`{{${variable.name}}}`}</code>
                     <p className="text-xs text-wl-text-secondary mt-1">
@@ -406,7 +406,7 @@ export default function TemplateEditorPage() {
                       <p className="text-xs text-wl-text-secondary mb-1">
                         Subject:
                       </p>
-                      <p className="text-sm text-white break-words">
+                      <p className="text-sm text-wl-text-primary break-words">
                         {renderPreview(content.email.subject)}
                       </p>
                     </div>
@@ -414,7 +414,7 @@ export default function TemplateEditorPage() {
                       <p className="text-xs text-wl-text-secondary mb-1">
                         Text Preview:
                       </p>
-                      <p className="text-sm text-white whitespace-pre-wrap break-words">
+                      <p className="text-sm text-wl-text-primary whitespace-pre-wrap break-words">
                         {renderPreview(content.email.text)}
                       </p>
                     </div>

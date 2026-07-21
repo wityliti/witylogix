@@ -118,13 +118,13 @@ export default function NotificationsPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-wl-border-default">
-                      <th className="text-left py-3 px-3 font-semibold text-white">
+                      <th className="text-left py-3 px-3 font-semibold text-wl-text-primary">
                         Event Type
                       </th>
                       {CHANNELS.map((channel) => (
                         <th
                           key={channel.id}
-                          className="text-center py-3 px-3 font-semibold text-white"
+                          className="text-center py-3 px-3 font-semibold text-wl-text-primary"
                         >
                           <div className="flex items-center justify-center gap-1">
                             {channel.icon}
@@ -140,7 +140,7 @@ export default function NotificationsPage() {
                         key={category}
                         className="border-b border-wl-border-default last:border-b-0"
                       >
-                        <td className="py-4 px-3 font-medium text-white">
+                        <td className="py-4 px-3 font-medium text-wl-text-primary">
                           {category}
                         </td>
                         {CHANNELS.map((channel) => {
@@ -235,7 +235,7 @@ export default function NotificationsPage() {
                   <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wide mb-2">
                     Active Channels
                   </p>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-2xl font-bold text-wl-text-primary">
                     {CHANNELS.length}
                   </p>
                 </div>
@@ -243,7 +243,7 @@ export default function NotificationsPage() {
                   <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wide mb-2">
                     Total Notifications
                   </p>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-2xl font-bold text-wl-text-primary">
                     {Object.values(preferences).reduce(
                       (sum, channel) =>
                         sum + Object.values(channel).filter(Boolean).length,
