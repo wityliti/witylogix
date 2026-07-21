@@ -214,7 +214,7 @@ export default function MapsSettingsPage() {
                     className={cn(
                       'w-full px-4 py-2.5 rounded-md',
                       'bg-wl-bg-root border border-wl-border-default',
-                      'text-white placeholder:text-wl-text-tertiary',
+                      'text-wl-text-primary placeholder:text-wl-text-tertiary',
                       'focus:outline-none focus:ring-2 focus:ring-wl-info-500 focus:border-transparent',
                       'font-mono text-sm'
                     )}
@@ -307,7 +307,7 @@ export default function MapsSettingsPage() {
                   className={cn(
                     'w-full px-4 py-2.5 rounded-md',
                     'bg-wl-bg-root border border-wl-border-default',
-                    'text-white',
+                    'text-wl-text-primary',
                     'focus:outline-none focus:ring-2 focus:ring-wl-info-500 focus:border-transparent'
                   )}
                 />
@@ -329,14 +329,14 @@ export default function MapsSettingsPage() {
                   className={cn(
                     'w-full px-4 py-2.5 rounded-md',
                     'bg-wl-bg-root border border-wl-border-default',
-                    'text-white',
+                    'text-wl-text-primary',
                     'focus:outline-none focus:ring-2 focus:ring-wl-info-500 focus:border-transparent'
                   )}
                 />
               </div>
               <div className="md:col-span-2">
                 <label className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider block mb-2">
-                  Default Zoom Level: <span className="text-white">{config.defaultZoom}</span>
+                  Default Zoom Level: <span className="text-wl-text-primary">{config.defaultZoom}</span>
                 </label>
                 <input
                   type="range"
@@ -372,7 +372,7 @@ export default function MapsSettingsPage() {
                   className="flex items-center justify-between p-4 rounded-lg bg-wl-bg-root border border-wl-border-default hover:border-wl-info-500/30 transition-colors"
                 >
                   <div>
-                    <p className="text-sm font-semibold text-white">{label}</p>
+                    <p className="text-sm font-semibold text-wl-text-primary">{label}</p>
                     <p className="text-xs text-wl-text-secondary mt-0.5">{desc}</p>
                   </div>
                   <button

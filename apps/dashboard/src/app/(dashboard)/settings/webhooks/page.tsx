@@ -189,7 +189,7 @@ export default function WebhooksDebuggerPage() {
                 <select
                   value={filters.eventType}
                   onChange={(e) => setFilters({ ...filters, eventType: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-white text-sm"
+                  className="w-full px-3 py-2 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-wl-text-primary text-sm"
                 >
                   <option value="all">All Events</option>
                   {eventTypes.map((type) => (
@@ -336,7 +336,7 @@ export default function WebhooksDebuggerPage() {
 
                     <div>
                       <div className="text-xs font-semibold text-wl-text-secondary mb-1">Timestamp</div>
-                      <div className="text-sm text-white">
+                      <div className="text-sm text-wl-text-primary">
                         {new Date(selectedEvent.timestamp).toLocaleString()}
                       </div>
                     </div>
@@ -369,18 +369,18 @@ export default function WebhooksDebuggerPage() {
                     <div className="grid grid-cols-2 gap-2">
                       <div>
                         <div className="text-xs font-semibold text-wl-text-secondary mb-1">Duration</div>
-                        <div className="text-sm font-mono text-white">{selectedEvent.duration}ms</div>
+                        <div className="text-sm font-mono text-wl-text-primary">{selectedEvent.duration}ms</div>
                       </div>
                       <div>
                         <div className="text-xs font-semibold text-wl-text-secondary mb-1">Status Code</div>
-                        <div className="text-sm font-mono text-white">{selectedEvent.statusCode ?? '—'}</div>
+                        <div className="text-sm font-mono text-wl-text-primary">{selectedEvent.statusCode ?? '—'}</div>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
                       <div>
                         <div className="text-xs font-semibold text-wl-text-secondary mb-1">Attempt</div>
-                        <div className="text-sm font-mono text-white">
+                        <div className="text-sm font-mono text-wl-text-primary">
                           {selectedEvent.attempt}/{selectedEvent.maxAttempts}
                         </div>
                       </div>

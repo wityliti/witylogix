@@ -210,7 +210,7 @@ export default function AuthProvidersPage() {
               <Card className="bg-wl-bg-surface border border-wl-border-default">
                 <CardContent className="flex flex-col items-center justify-center py-16 gap-4">
                   <Shield className="w-12 h-12 text-wl-text-tertiary" />
-                  <p className="text-lg font-semibold text-white">No auth providers configured</p>
+                  <p className="text-lg font-semibold text-wl-text-primary">No auth providers configured</p>
                   <p className="text-sm text-wl-text-secondary text-center max-w-md">
                     Connect an SSO provider to enable single sign-on for your team.
                   </p>
@@ -403,7 +403,7 @@ export default function AuthProvidersPage() {
               <div className="flex flex-col gap-8">
                 <div className="flex items-center justify-between pb-6 border-b border-wl-border-default">
                   <div>
-                    <div className="text-sm font-semibold text-white mb-1">Just-In-Time Provisioning</div>
+                    <div className="text-sm font-semibold text-wl-text-primary mb-1">Just-In-Time Provisioning</div>
                     <div className="text-sm text-wl-text-secondary">Automatically create users on first SSO login</div>
                   </div>
                   <Button
@@ -417,7 +417,7 @@ export default function AuthProvidersPage() {
 
                 <div className="flex items-center justify-between pb-6 border-b border-wl-border-default">
                   <div>
-                    <div className="text-sm font-semibold text-white mb-1">Enforce MFA for All Users</div>
+                    <div className="text-sm font-semibold text-wl-text-primary mb-1">Enforce MFA for All Users</div>
                     <div className="text-sm text-wl-text-secondary">Require multi-factor authentication on login</div>
                   </div>
                   <Button
@@ -431,7 +431,7 @@ export default function AuthProvidersPage() {
 
                 <div className="flex items-start justify-between pb-6 border-b border-wl-border-default">
                   <div>
-                    <div className="text-sm font-semibold text-white mb-1">Session Timeout</div>
+                    <div className="text-sm font-semibold text-wl-text-primary mb-1">Session Timeout</div>
                     <div className="text-sm text-wl-text-secondary">Auto-logout after period of inactivity</div>
                   </div>
                   <Select
@@ -448,7 +448,7 @@ export default function AuthProvidersPage() {
 
                 <div className="flex items-start justify-between">
                   <div>
-                    <div className="text-sm font-semibold text-white mb-1">IP Whitelist</div>
+                    <div className="text-sm font-semibold text-wl-text-primary mb-1">IP Whitelist</div>
                     <div className="text-sm text-wl-text-secondary">Restrict access to specific IP addresses (optional)</div>
                   </div>
                   <Button variant="secondary">Manage IPs</Button>

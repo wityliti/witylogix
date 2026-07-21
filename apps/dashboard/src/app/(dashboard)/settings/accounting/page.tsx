@@ -226,7 +226,7 @@ export default function AccountingSettingsPage() {
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div className="bg-wl-bg-elevated rounded p-2">
                         <div className="text-wl-text-secondary text-xs">Synced</div>
-                        <div className="text-lg font-semibold text-white">{connection.syncedCount || 0}</div>
+                        <div className="text-lg font-semibold text-wl-text-primary">{connection.syncedCount || 0}</div>
                       </div>
                       <div className="bg-wl-bg-elevated rounded p-2">
                         <div className="text-wl-text-secondary text-xs">Failed</div>
@@ -316,7 +316,7 @@ export default function AccountingSettingsPage() {
                 {/* Auto Sync Toggle */}
                 <div className="flex items-center justify-between py-3 border-b border-wl-border-default">
                   <div>
-                    <p className="font-medium text-white">Automatic Sync</p>
+                    <p className="font-medium text-wl-text-primary">Automatic Sync</p>
                     <p className="text-sm text-wl-text-secondary">
                       Automatically sync new invoices to all connected providers
                     </p>
@@ -330,9 +330,9 @@ export default function AccountingSettingsPage() {
                 {/* Sync Frequency */}
                 {autoSync && (
                   <div className="py-3">
-                    <p className="font-medium mb-3 text-white">Sync Frequency</p>
+                    <p className="font-medium mb-3 text-wl-text-primary">Sync Frequency</p>
                     <Select value={syncFrequency} onValueChange={setSyncFrequency}>
-                      <SelectTrigger className="w-full border-wl-border-default bg-wl-bg-elevated text-white">
+                      <SelectTrigger className="w-full border-wl-border-default bg-wl-bg-elevated text-wl-text-primary">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -346,7 +346,7 @@ export default function AccountingSettingsPage() {
 
                 {/* Sync Options */}
                 <div className="space-y-3 py-3 border-t border-wl-border-default">
-                  <p className="font-medium text-white">Sync Options</p>
+                  <p className="font-medium text-wl-text-primary">Sync Options</p>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
                       <input
@@ -357,7 +357,7 @@ export default function AccountingSettingsPage() {
                       />
                       <label
                         htmlFor="include-discounts"
-                        className="text-sm cursor-pointer text-white"
+                        className="text-sm cursor-pointer text-wl-text-primary"
                       >
                         Include discounts in sync
                       </label>
@@ -371,7 +371,7 @@ export default function AccountingSettingsPage() {
                       />
                       <label
                         htmlFor="include-taxes"
-                        className="text-sm cursor-pointer text-white"
+                        className="text-sm cursor-pointer text-wl-text-primary"
                       >
                         Include taxes in sync
                       </label>
@@ -396,12 +396,12 @@ export default function AccountingSettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
-                  <p className="font-medium text-white">Select Provider</p>
+                  <p className="font-medium text-wl-text-primary">Select Provider</p>
                   <Select
                     value={manualSyncProvider}
                     onValueChange={(v) => setManualSyncProvider(v as 'quickbooks' | 'xero')}
                   >
-                    <SelectTrigger className="border-wl-border-default bg-wl-bg-elevated text-white">
+                    <SelectTrigger className="border-wl-border-default bg-wl-bg-elevated text-wl-text-primary">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -445,28 +445,28 @@ export default function AccountingSettingsPage() {
                   <table>
                     <TableHeader>
                       <TableRow className="border-b border-wl-border-default">
-                        <TableHead className="text-white">Invoice</TableHead>
-                        <TableHead className="text-white">Provider</TableHead>
-                        <TableHead className="text-white">Status</TableHead>
-                        <TableHead className="text-white">External ID</TableHead>
-                        <TableHead className="text-white">Synced At</TableHead>
+                        <TableHead className="text-wl-text-primary">Invoice</TableHead>
+                        <TableHead className="text-wl-text-primary">Provider</TableHead>
+                        <TableHead className="text-wl-text-primary">Status</TableHead>
+                        <TableHead className="text-wl-text-primary">External ID</TableHead>
+                        <TableHead className="text-wl-text-primary">Synced At</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {syncHistory.length > 0 ? (
                         syncHistory.map(record => (
                           <TableRow key={record.id} className="border-b border-wl-border-default">
-                            <TableCell className="font-mono text-sm text-white">{record.invoiceId.slice(0, 8)}</TableCell>
-                            <TableCell className="capitalize text-white">{record.provider}</TableCell>
+                            <TableCell className="font-mono text-sm text-wl-text-primary">{record.invoiceId.slice(0, 8)}</TableCell>
+                            <TableCell className="capitalize text-wl-text-primary">{record.provider}</TableCell>
                             <TableCell>
                               <Badge variant={getStatusColor(record.status)}>
                                 {record.status}
                               </Badge>
                             </TableCell>
-                            <TableCell className="font-mono text-sm text-white">
+                            <TableCell className="font-mono text-sm text-wl-text-primary">
                               {record.externalId ? record.externalId.slice(0, 12) : '—'}
                             </TableCell>
-                            <TableCell className="text-sm text-white">
+                            <TableCell className="text-sm text-wl-text-primary">
                               {record.syncedAt
                                 ? new Date(record.syncedAt).toLocaleDateString()
                                 : '—'}

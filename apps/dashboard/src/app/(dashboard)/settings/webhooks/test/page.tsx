@@ -238,7 +238,7 @@ export default function WebhookTestPage() {
                 <textarea
                   value={customPayload}
                   onChange={(e) => setCustomPayload(e.target.value)}
-                  className="w-full h-48 p-3 rounded-lg border border-wl-border-default bg-wl-bg-elevated font-mono text-xs resize-none focus:outline-none focus:border-wl-info-500 text-white"
+                  className="w-full h-48 p-3 rounded-lg border border-wl-border-default bg-wl-bg-elevated font-mono text-xs resize-none focus:outline-none focus:border-wl-info-500 text-wl-text-primary"
                 />
               </CardContent>
             </Card>
@@ -291,7 +291,7 @@ export default function WebhookTestPage() {
                               <div className="text-xs font-mono text-wl-text-secondary">
                                 {send.timestamp.toLocaleTimeString()}
                               </div>
-                              <div className="text-xs truncate text-white">
+                              <div className="text-xs truncate text-wl-text-primary">
                                 {send.eventType}
                               </div>
                             </div>
@@ -323,7 +323,7 @@ export default function WebhookTestPage() {
                               <div className="font-semibold text-wl-text-secondary mb-1">
                                 Duration
                               </div>
-                              <div className="font-mono text-white">
+                              <div className="font-mono text-wl-text-primary">
                                 {send.duration}ms
                               </div>
                             </div>
@@ -332,7 +332,7 @@ export default function WebhookTestPage() {
                               <div className="font-semibold text-wl-text-secondary mb-1">
                                 Endpoint
                               </div>
-                              <div className="font-mono break-all text-white">
+                              <div className="font-mono break-all text-wl-text-primary">
                                 {send.endpoint}
                               </div>
                             </div>
@@ -342,7 +342,7 @@ export default function WebhookTestPage() {
                                 <div className="font-semibold text-wl-text-secondary mb-1">
                                   Response
                                 </div>
-                                <pre className="bg-wl-bg-root p-2 rounded overflow-x-auto max-h-32 overflow-y-auto text-white">
+                                <pre className="bg-wl-bg-root p-2 rounded overflow-x-auto max-h-32 overflow-y-auto text-wl-text-primary">
                                   {send.responseBody}
                                 </pre>
                               </div>

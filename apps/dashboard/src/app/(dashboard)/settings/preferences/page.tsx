@@ -130,7 +130,7 @@ export default function PreferencesPage() {
                 <select
                   value={preferences.timezone}
                   onChange={(e) => setPreferences({ ...preferences, timezone: e.target.value })}
-                  className="w-full px-3 py-2 bg-wl-bg-root text-white border border-wl-border-default rounded-md text-sm"
+                  className="w-full px-3 py-2 bg-wl-bg-root text-wl-text-primary border border-wl-border-default rounded-md text-sm"
                 >
                   {TIMEZONES.map((tz) => (
                     <option key={tz.value} value={tz.value}>
@@ -166,7 +166,7 @@ export default function PreferencesPage() {
                 <select
                   value={preferences.language}
                   onChange={(e) => setPreferences({ ...preferences, language: e.target.value })}
-                  className="w-full px-3 py-2 bg-wl-bg-root text-white border border-wl-border-default rounded-md text-sm"
+                  className="w-full px-3 py-2 bg-wl-bg-root text-wl-text-primary border border-wl-border-default rounded-md text-sm"
                 >
                   {LANGUAGES.map((lang) => (
                     <option key={lang.value} value={lang.value}>
@@ -183,7 +183,7 @@ export default function PreferencesPage() {
                 <select
                   value={preferences.dateFormat}
                   onChange={(e) => setPreferences({ ...preferences, dateFormat: e.target.value })}
-                  className="w-full px-3 py-2 bg-wl-bg-root text-white border border-wl-border-default rounded-md text-sm"
+                  className="w-full px-3 py-2 bg-wl-bg-root text-wl-text-primary border border-wl-border-default rounded-md text-sm"
                 >
                   {DATE_FORMATS.map((fmt) => (
                     <option key={fmt.value} value={fmt.value}>
@@ -297,7 +297,7 @@ export default function PreferencesPage() {
                         onChange={(e) => setPreferences({ ...preferences, dashboardView: e.target.value })}
                         className="w-4 h-4 cursor-pointer"
                       />
-                      <span className="text-sm font-medium text-white ml-2">
+                      <span className="text-sm font-medium text-wl-text-primary ml-2">
                         {option.label}
                       </span>
                     </label>

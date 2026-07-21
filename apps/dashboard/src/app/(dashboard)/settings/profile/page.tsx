@@ -263,7 +263,7 @@ export default function ProfilePage() {
                   />
                   <button
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-wl-text-secondary hover:text-white"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-wl-text-secondary hover:text-wl-text-primary"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -366,7 +366,7 @@ export default function ProfilePage() {
                       {backupCodes.map((code, idx) => (
                         <div
                           key={idx}
-                          className="flex items-center justify-between p-2 bg-wl-bg-root rounded font-mono text-sm text-white"
+                          className="flex items-center justify-between p-2 bg-wl-bg-root rounded font-mono text-sm text-wl-text-primary"
                         >
                           <span>{code}</span>
                           <button className="text-wl-info-400 hover:text-wl-info-400">

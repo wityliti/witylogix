@@ -100,7 +100,7 @@ export default function BillingPage() {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <Link href="/settings">
-          <Button variant="ghost" className="mb-8 text-wl-text-secondary hover:text-white">
+          <Button variant="ghost" className="mb-8 text-wl-text-secondary hover:text-wl-text-primary">
             <ChevronLeft className="w-4 h-4 mr-2" />
             Back to Settings
           </Button>
@@ -142,7 +142,7 @@ export default function BillingPage() {
                 <ArrowUpRight className="w-4 h-4 mr-2" />
                 Upgrade Plan
               </Button>
-              <Button variant="secondary" className="border-wl-border-default text-white hover:bg-wl-bg-elevated">
+              <Button variant="secondary" className="border-wl-border-default text-wl-text-primary hover:bg-wl-bg-elevated">
                 Downgrade Plan
               </Button>
               <Button variant="ghost" className="text-wl-danger-400">
@@ -165,7 +165,7 @@ export default function BillingPage() {
               {usageMetrics.map((metric) => (
                 <div key={metric.name}>
                   <div className="flex items-center justify-between mb-2">
-                    <p className="font-medium text-white">{metric.name}</p>
+                    <p className="font-medium text-wl-text-primary">{metric.name}</p>
                     <span className="text-sm text-wl-text-tertiary">
                       {metric.current.toLocaleString()} / {metric.limit.toLocaleString()} {metric.unit}
                     </span>
@@ -201,7 +201,7 @@ export default function BillingPage() {
                 Configure payment gateways →
               </Link>
             </div>
-            <Button variant="secondary" className="border-wl-border-default text-white hover:bg-wl-bg-elevated">
+            <Button variant="secondary" className="border-wl-border-default text-wl-text-primary hover:bg-wl-bg-elevated">
               Add Payment Method
             </Button>
           </CardContent>
@@ -221,7 +221,7 @@ export default function BillingPage() {
                     type="text"
                     value={addr.fullName ?? ''}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,fullName: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-wl-info-500"
+                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-wl-text-primary placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-wl-info-500"
                     placeholder="Full name"
                   />
                 </div>
@@ -231,7 +231,7 @@ export default function BillingPage() {
                     type="text"
                     value={addr.company ?? ''}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,company: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-wl-info-500"
+                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-wl-text-primary placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-wl-info-500"
                     placeholder="Company name"
                   />
                 </div>
@@ -242,7 +242,7 @@ export default function BillingPage() {
                   type="text"
                   value={addr.address ?? ''}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,address: e.target.value })}
-                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-wl-info-500"
+                  className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-wl-text-primary placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-wl-info-500"
                   placeholder="Street address"
                 />
               </div>
@@ -253,7 +253,7 @@ export default function BillingPage() {
                     type="text"
                     value={addr.city ?? ''}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,city: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-wl-info-500"
+                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-wl-text-primary placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-wl-info-500"
                     placeholder="City"
                   />
                 </div>
@@ -263,7 +263,7 @@ export default function BillingPage() {
                     type="text"
                     value={addr.state ?? ''}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,state: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-wl-info-500"
+                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-wl-text-primary placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-wl-info-500"
                     placeholder="State"
                   />
                 </div>
@@ -273,7 +273,7 @@ export default function BillingPage() {
                     type="text"
                     value={addr.postalCode ?? ''}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddressForm({ ...addr,postalCode: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-white placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-wl-info-500"
+                    className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-root text-wl-text-primary placeholder:text-wl-text-tertiary focus:outline-none focus:ring-2 focus:ring-wl-info-500"
                     placeholder="Postal code"
                   />
                 </div>
@@ -309,14 +309,14 @@ export default function BillingPage() {
                     className="flex items-center justify-between p-4 rounded-lg border border-wl-border-default hover:bg-wl-bg-elevated transition-colors"
                   >
                     <div className="flex-1">
-                      <p className="font-medium text-white">{invoice.period}</p>
+                      <p className="font-medium text-wl-text-primary">{invoice.period}</p>
                       <p className="text-sm text-wl-text-tertiary">
                         {new Date(invoice.date).toLocaleDateString()}
                       </p>
                     </div>
                     <div className="flex items-center gap-6">
                       <div className="text-right">
-                        <p className="font-medium text-white">${invoice.amount.toFixed(2)}</p>
+                        <p className="font-medium text-wl-text-primary">${invoice.amount.toFixed(2)}</p>
                         <Badge variant={invoiceStatusVariant(invoice.status)}>
                           {invoiceStatusLabel(invoice.status)}
                         </Badge>
