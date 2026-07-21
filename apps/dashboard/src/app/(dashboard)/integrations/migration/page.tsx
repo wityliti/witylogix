@@ -95,7 +95,7 @@ export default function MigrationWizard() {
     <div className="flex h-screen flex-col bg-wl-bg-root">
       {/* Header */}
       <div className="border-b border-wl-border-default bg-wl-bg-root px-8 py-6">
-        <h1 className="text-3xl font-bold text-white">Migration Wizard</h1>
+        <h1 className="text-3xl font-bold text-wl-text-primary">Migration Wizard</h1>
         <p className="mt-2 text-white">
           Safely migrate between payment and integration providers
         </p>
@@ -153,7 +153,7 @@ export default function MigrationWizard() {
             </div>
 
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-white">
+              <h2 className="text-2xl font-bold text-wl-text-primary">
                 {currentStep === 1 && 'Select Source Provider'}
                 {currentStep === 2 && 'Select Target Provider'}
                 {currentStep === 3 && 'Configure Field Mapping'}
@@ -256,7 +256,7 @@ function ProviderSelection({
 }) {
   return (
     <Card className="border border-wl-border-default bg-wl-bg-root p-6">
-      <h3 className="mb-4 text-lg font-semibold text-white">{title}</h3>
+      <h3 className="mb-4 text-lg font-semibold text-wl-text-primary">{title}</h3>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         {providers.map((provider) => (
           <button
@@ -308,7 +308,7 @@ function FieldMappingEditor({
 
   return (
     <Card className="border border-wl-border-default bg-wl-bg-root p-6">
-      <h3 className="mb-4 text-lg font-semibold text-white">Field Mapping</h3>
+      <h3 className="mb-4 text-lg font-semibold text-wl-text-primary">Field Mapping</h3>
       <div className="space-y-4">
         {mappings.length === 0 ? (
           <p className="text-sm text-white">No mappings configured yet.</p>
@@ -387,7 +387,7 @@ function ShadowModeSettings({
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-white">Shadow Mode</h3>
+            <h3 className="text-lg font-semibold text-wl-text-primary">Shadow Mode</h3>
             <p className="mt-1 text-sm text-white">
               Run both providers in parallel and compare responses
             </p>
@@ -427,7 +427,7 @@ function ReviewCutover({
 }) {
   return (
     <Card className="border border-wl-border-default bg-wl-bg-root p-6">
-      <h3 className="mb-6 text-lg font-semibold text-white">Review Migration Plan</h3>
+      <h3 className="mb-6 text-lg font-semibold text-wl-text-primary">Review Migration Plan</h3>
       <div className="space-y-4">
         <div className="rounded bg-wl-bg-root p-4">
           <div className="text-sm text-white">Source Provider</div>
@@ -474,7 +474,7 @@ function MigrationProgress({ migrationId, migrations }: { migrationId: string; m
 
   return (
     <Card className="border border-wl-border-default bg-wl-bg-root p-6">
-      <h3 className="mb-6 text-lg font-semibold text-white">Migration in Progress</h3>
+      <h3 className="mb-6 text-lg font-semibold text-wl-text-primary">Migration in Progress</h3>
       <div className="space-y-6">
         <div>
           <div className="mb-2 flex items-center justify-between">
@@ -501,7 +501,7 @@ function MigrationProgress({ migrationId, migrations }: { migrationId: string; m
 function MigrationHistory({ migrations }: { migrations: Migration[] }) {
   return (
     <Card className="border border-wl-border-default bg-wl-bg-root p-6">
-      <h3 className="mb-4 text-lg font-semibold text-white">Migration History</h3>
+      <h3 className="mb-4 text-lg font-semibold text-wl-text-primary">Migration History</h3>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>

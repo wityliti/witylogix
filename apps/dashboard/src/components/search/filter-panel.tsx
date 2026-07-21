@@ -235,7 +235,7 @@ export function FilterPanel({
         <div className="flex-1 overflow-y-auto p-4">
           {/* Status Filter */}
           <div className="mb-6">
-            <h3 className="mb-3 font-semibold text-white">Status</h3>
+            <h3 className="mb-3 font-semibold text-wl-text-primary">Status</h3>
             <div className="space-y-2">
               {(STATUS_OPTIONS[entityType] || []).map((status) => (
                 <label key={status} className="flex cursor-pointer items-center gap-2">
@@ -253,7 +253,7 @@ export function FilterPanel({
 
           {/* Date Range Filter */}
           <div className="mb-6">
-            <h3 className="mb-3 font-semibold text-white">Date Range</h3>
+            <h3 className="mb-3 font-semibold text-wl-text-primary">Date Range</h3>
             <div className="space-y-2">
               {DATE_SHORTCUTS.map((shortcut) => (
                 <button
@@ -328,7 +328,7 @@ export function FilterPanel({
       {showSavePreset && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 p-4">
           <div className="rounded-lg bg-wl-bg-surface p-6 shadow-xl">
-            <h2 className="mb-4 text-lg font-semibold text-white">Save Filter Preset</h2>
+            <h2 className="mb-4 text-lg font-semibold text-wl-text-primary">Save Filter Preset</h2>
             <input
               type="text"
               placeholder="Preset name..."

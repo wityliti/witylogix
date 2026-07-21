@@ -64,7 +64,7 @@ export default function CreateLabelPage() {
 
         <Card className="bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
-            <CardTitle className="text-white">{step === 'package' ? 'Package Details' : step === 'carrier' ? 'Select Carrier' : step === 'rates' ? 'Review Rates' : 'Review Order'}</CardTitle>
+            <CardTitle className="text-wl-text-primary">{step === 'package' ? 'Package Details' : step === 'carrier' ? 'Select Carrier' : step === 'rates' ? 'Review Rates' : 'Review Order'}</CardTitle>
           </CardHeader>
           <CardContent>
             {step === 'package' && (

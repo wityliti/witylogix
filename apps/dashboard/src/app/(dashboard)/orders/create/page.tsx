@@ -212,7 +212,7 @@ export default function CreateOrderPage() {
       <div className="grid grid-cols-1 gap-6 md:grid-cols-[repeat(auto-fit,minmax(400px,1fr))] mb-6">
         {/* Customer Section */}
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6">
-          <h3 className="text-base font-semibold mb-4 text-white">Customer Information</h3>
+          <h3 className="text-base font-semibold mb-4 text-wl-text-primary">Customer Information</h3>
 
           <div className="mb-4">
             <label className="block text-sm font-medium text-wl-neutral-300 mb-2">Customer Type</label>
@@ -308,7 +308,7 @@ export default function CreateOrderPage() {
 
         {/* Delivery Address */}
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6">
-          <h3 className="text-base font-semibold mb-4 text-white">Delivery Address</h3>
+          <h3 className="text-base font-semibold mb-4 text-wl-text-primary">Delivery Address</h3>
 
           <div className="mb-4">
             <label className="block text-sm font-medium text-wl-neutral-300 mb-1.5">Street Address *</label>
@@ -359,7 +359,7 @@ export default function CreateOrderPage() {
 
         {/* Delivery Preferences */}
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6">
-          <h3 className="text-base font-semibold mb-4 text-white">Delivery Preferences</h3>
+          <h3 className="text-base font-semibold mb-4 text-wl-text-primary">Delivery Preferences</h3>
 
           <div className="mb-4">
             <label className="block text-sm font-medium text-wl-neutral-300 mb-1.5">Preferred Delivery Date</label>
@@ -398,7 +398,7 @@ export default function CreateOrderPage() {
 
         {/* Payment & Priority */}
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6">
-          <h3 className="text-base font-semibold mb-4 text-white">Payment & Priority</h3>
+          <h3 className="text-base font-semibold mb-4 text-wl-text-primary">Payment & Priority</h3>
 
           <div className="mb-5">
             <label className="block text-sm font-medium text-wl-neutral-300 mb-2.5">Payment Method</label>
@@ -459,7 +459,7 @@ export default function CreateOrderPage() {
 
       {/* Line Items Section */}
       <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6 mb-6">
-        <h3 className="text-base font-semibold mb-4 text-white">Line Items</h3>
+        <h3 className="text-base font-semibold mb-4 text-wl-text-primary">Line Items</h3>
 
         <div className="grid grid-cols-[2fr_1fr_1fr_1fr_100px] gap-2.5 mb-4">
           <div className="mb-4">

@@ -18,7 +18,7 @@ interface DeliveryAnalyticsProps {
 export function DeliveryAnalytics({ metrics }: DeliveryAnalyticsProps) {
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold text-white">
+      <h2 className="text-xl font-bold text-wl-text-primary">
         Delivery Analytics (24h)
       </h2>
 
@@ -46,7 +46,7 @@ export function DeliveryAnalytics({ metrics }: DeliveryAnalyticsProps) {
                   className="border border-wl-border-default rounded-lg p-4"
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-medium text-white">
+                    <h4 className="font-medium text-wl-text-primary">
                       {metric.template}
                     </h4>
                     <span className="text-sm text-wl-text-tertiary">

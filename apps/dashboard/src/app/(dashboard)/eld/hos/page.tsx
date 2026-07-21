@@ -146,7 +146,7 @@ export default function HOSPage() {
       <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg text-white">Driver Selection</CardTitle>
+            <CardTitle className="text-lg text-wl-text-primary">Driver Selection</CardTitle>
             <div className="flex items-center rounded-lg border border-wl-border-strong overflow-hidden">
               <button
                 onClick={() => setDriverViewMode('list')}
@@ -258,7 +258,7 @@ export default function HOSPage() {
             {/* Current Status */}
             <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardHeader>
-                <CardTitle className="text-sm text-white">Current Status</CardTitle>
+                <CardTitle className="text-sm text-wl-text-primary">Current Status</CardTitle>
               </CardHeader>
 
               <CardContent className="space-y-3">
@@ -300,7 +300,7 @@ export default function HOSPage() {
             {/* Toggles */}
             <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardHeader>
-                <CardTitle className="text-sm text-white">HOS Exemptions</CardTitle>
+                <CardTitle className="text-sm text-wl-text-primary">HOS Exemptions</CardTitle>
               </CardHeader>
 
               <CardContent className="space-y-3">
@@ -338,7 +338,7 @@ export default function HOSPage() {
               )}
             >
               <CardHeader>
-                <CardTitle className="text-sm flex items-center gap-2 text-white">
+                <CardTitle className="text-sm flex items-center gap-2 text-wl-text-primary">
                   {hosStatus === "compliant" && (
                     <>
                       <CheckCircle className="w-4 h-4 text-wl-success-500" />
@@ -372,7 +372,7 @@ export default function HOSPage() {
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg text-white">24-Hour Daily Log</CardTitle>
+                <CardTitle className="text-lg text-wl-text-primary">24-Hour Daily Log</CardTitle>
                 <span className="text-xs text-wl-text-secondary">
                   {detailsLoading ? "Loading…" : new Date().toLocaleDateString()}
                 </span>
@@ -446,7 +446,7 @@ export default function HOSPage() {
           {/* 8-Day Recap Table */}
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
-              <CardTitle className="text-lg text-white">8-Day Cycle Recap</CardTitle>
+              <CardTitle className="text-lg text-wl-text-primary">8-Day Cycle Recap</CardTitle>
             </CardHeader>
 
             <CardContent>
@@ -516,7 +516,7 @@ export default function HOSPage() {
           {/* Edit Request Workflow */}
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2 text-white">
+              <CardTitle className="text-lg flex items-center gap-2 text-wl-text-primary">
                 <Edit2 className="w-5 h-5 text-wl-info-500" />
                 Edit Request Workflow
               </CardTitle>

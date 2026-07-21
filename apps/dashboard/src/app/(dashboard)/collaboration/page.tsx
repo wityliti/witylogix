@@ -228,7 +228,7 @@ function TeamCollaborationPage() {
         {collaboration.currentChannel && (
           <div className="px-6 py-4 border-b border-wl-border-default flex items-center justify-between">
             <div>
-              <h1 className="text-lg font-semibold text-white">
+              <h1 className="text-lg font-semibold text-wl-text-primary">
                 #{collaboration.currentChannel.name}
               </h1>
               {collaboration.currentChannel.description && (
@@ -437,7 +437,7 @@ function RightSidebar({
     <div className="w-64 border-l border-wl-border-default bg-wl-bg-surface flex flex-col">
       {/* Channel Details */}
       <div className="px-4 py-4 border-b border-wl-border-default">
-        <h2 className="text-sm font-semibold text-white mb-3">
+        <h2 className="text-sm font-semibold text-wl-text-primary mb-3">
           {channel.name}
         </h2>
         <div className="space-y-2 text-xs text-wl-neutral-300">
@@ -526,7 +526,7 @@ function ThreadPanel({
     <div className="w-80 border-l border-wl-border-default bg-wl-bg-surface flex flex-col animate-slide-in">
       {/* Header */}
       <div className="px-4 py-4 border-b border-wl-border-default flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-white">
+        <h2 className="text-sm font-semibold text-wl-text-primary">
           Thread
         </h2>
         <button
@@ -602,7 +602,7 @@ function CreateChannelModal({
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6 w-96 shadow-xl">
-        <h2 className="text-lg font-semibold text-white mb-4">
+        <h2 className="text-lg font-semibold text-wl-text-primary mb-4">
           Create New Channel
         </h2>
 

@@ -69,7 +69,7 @@ export default function RealtimePage() {
         <div className="p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-white">Realtime Activity</h1>
+              <h1 className="text-2xl font-bold text-wl-text-primary">Realtime Activity</h1>
               <p className="text-sm text-wl-neutral-300 mt-1">Live event feed</p>
             </div>
             <div className="flex gap-2">

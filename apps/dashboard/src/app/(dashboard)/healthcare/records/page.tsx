@@ -49,7 +49,7 @@ export default function RecordsPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Clinical Records</h1>
+            <h1 className="text-3xl font-bold text-wl-text-primary mb-2">Clinical Records</h1>
             <p className="text-wl-text-secondary">View and manage clinical documents</p>
           </div>
           <div className="flex gap-2">
@@ -129,7 +129,7 @@ export default function RecordsPage() {
       {/* Records Table */}
       <Card className="bg-wl-bg-surface border-wl-border-default mb-6">
         <CardHeader className="border-b border-wl-border-default">
-          <CardTitle className="text-base text-white">
+          <CardTitle className="text-base text-wl-text-primary">
             Clinical Records ({filteredRecords.length})
           </CardTitle>
         </CardHeader>
@@ -192,7 +192,7 @@ export default function RecordsPage() {
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardHeader className="border-b border-wl-border-default flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-base text-white">{selectedRecord.title}</CardTitle>
+              <CardTitle className="text-base text-wl-text-primary">{selectedRecord.title}</CardTitle>
               <p className="text-xs text-wl-text-secondary mt-1">ID: {selectedRecord.id}</p>
             </div>
             <button

@@ -160,7 +160,7 @@ export default function CRMIntegrationPage() {
 
         {/* Provider Cards */}
         <div className="mb-6">
-          <h2 className="text-sm font-semibold text-white mb-4 uppercase tracking-wider">
+          <h2 className="text-sm font-semibold text-wl-text-primary mb-4 uppercase tracking-wider">
             Connected Providers
           </h2>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
@@ -190,7 +190,7 @@ export default function CRMIntegrationPage() {
                         {provider.logo}
                       </div>
                       <div>
-                        <h3 className="text-sm font-semibold text-white">
+                        <h3 className="text-sm font-semibold text-wl-text-primary">
                           {provider.name}
                         </h3>
                         <Badge variant={getStatusColor(provider.status)} className="mt-1">
@@ -260,7 +260,7 @@ export default function CRMIntegrationPage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-sm font-semibold text-white">Auto-Sync Enabled</h4>
+                  <h4 className="text-sm font-semibold text-wl-text-primary">Auto-Sync Enabled</h4>
                   <p className="text-xs text-wl-text-tertiary mt-1">
                     Automatically sync data every 30 minutes
                   </p>
@@ -277,7 +277,7 @@ export default function CRMIntegrationPage() {
               </div>
 
               <div className="border-t border-wl-border-default pt-4">
-                <h4 className="text-sm font-semibold text-white mb-3">
+                <h4 className="text-sm font-semibold text-wl-text-primary mb-3">
                   Conflict Resolution
                 </h4>
                 <div className="space-y-2">

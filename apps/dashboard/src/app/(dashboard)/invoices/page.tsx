@@ -331,7 +331,7 @@ export default function InvoicesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold text-white">Invoices</h1>
+          <h1 className="text-3xl font-bold text-wl-text-primary">Invoices</h1>
           <p className="text-wl-text-secondary">Manage and track your invoices</p>
         </div>
         <Button variant="primary" onClick={handleCreateInvoice}>

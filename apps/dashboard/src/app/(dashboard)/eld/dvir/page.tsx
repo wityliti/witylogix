@@ -127,7 +127,7 @@ export default function DVIRPage() {
             <CardHeader>
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <CardTitle className="text-lg text-white">Active Defects</CardTitle>
+                  <CardTitle className="text-lg text-wl-text-primary">Active Defects</CardTitle>
                   <p className="text-xs text-wl-text-secondary mt-1">Track vehicle maintenance issues</p>
                 </div>
                 <Button variant="primary" className="h-9" onClick={() => setShowForm(true)}>
@@ -181,7 +181,7 @@ export default function DVIRPage() {
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <h4 className="text-sm font-semibold text-white">{defect.component}</h4>
+                            <h4 className="text-sm font-semibold text-wl-text-primary">{defect.component}</h4>
                             <Badge
                               variant={
                                 defect.severity === "CRITICAL"
@@ -232,7 +232,7 @@ export default function DVIRPage() {
             <CardHeader>
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <CardTitle className="text-lg text-white">Inspection History</CardTitle>
+                  <CardTitle className="text-lg text-wl-text-primary">Inspection History</CardTitle>
                   <p className="text-xs text-wl-text-secondary mt-1">Past and current vehicle inspections</p>
                 </div>
               </div>
@@ -306,7 +306,7 @@ export default function DVIRPage() {
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <h4 className="text-sm font-semibold text-white">
+                            <h4 className="text-sm font-semibold text-wl-text-primary">
                               {inspection.type === "PRE_TRIP" ? "📋" : "✓"}{" "}
                               {inspection.type.replace(/_/g, "-")} Inspection
                             </h4>

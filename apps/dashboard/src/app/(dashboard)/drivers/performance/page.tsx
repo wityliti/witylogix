@@ -254,7 +254,7 @@ export default function DriverPerformancePage() {
 
               {/* Podium Section */}
               <Card className="mb-6 p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">
+                <h3 className="text-lg font-semibold text-wl-text-primary mb-4">
                   Top 3 Drivers
                 </h3>
                 <div className="flex gap-4 items-flex-end justify-center">
@@ -430,7 +430,7 @@ export default function DriverPerformancePage() {
               {/* Score Breakdown Chart for Selected Driver */}
               {selectedDriver && (
                 <Card className="mt-6 p-6">
-                  <h3 className="text-lg font-semibold text-white mb-4">
+                  <h3 className="text-lg font-semibold text-wl-text-primary mb-4">
                     Score Breakdown: {selectedDriver.name}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-5 gap-4">

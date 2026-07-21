@@ -4,7 +4,7 @@ export function TypographySection() {
   return (
     <div className="space-y-12">
       <div>
-        <h2 className="text-2xl font-bold text-white mb-2">
+        <h2 className="text-2xl font-bold text-wl-text-primary mb-2">
           Typography
         </h2>
         <p className="text-wl-neutral-300 mb-8">
@@ -14,7 +14,7 @@ export function TypographySection() {
 
         <div className="space-y-8">
           <div>
-            <h3 className="text-lg font-semibold text-white mb-4">
+            <h3 className="text-lg font-semibold text-wl-text-primary mb-4">
               Font Sizes
             </h3>
             <div className="space-y-4">
@@ -78,7 +78,7 @@ export function TypographySection() {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-white mb-4">
+            <h3 className="text-lg font-semibold text-wl-text-primary mb-4">
               Font Weights
             </h3>
             <div className="space-y-3">
@@ -118,7 +118,7 @@ export function TypographySection() {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-white mb-4">
+            <h3 className="text-lg font-semibold text-wl-text-primary mb-4">
               Monospace Font
             </h3>
             <p className="font-mono text-sm">

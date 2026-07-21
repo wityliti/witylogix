@@ -73,7 +73,7 @@ export function DriverStatusCard({ driver }: DriverStatusCardProps) {
         <div className="flex items-start justify-between mb-6">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <h3 className="text-lg font-semibold text-white">
+              <h3 className="text-lg font-semibold text-wl-text-primary">
                 {driver.name}
               </h3>
               <Badge variant="default" className="font-mono text-xs">

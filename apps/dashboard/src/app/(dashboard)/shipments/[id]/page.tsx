@@ -278,7 +278,7 @@ export default function ShipmentDetailPage() {
 
         <div className="flex justify-between items-start gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-1 font-mono">
+            <h1 className="text-3xl font-bold text-wl-text-primary mb-1 font-mono">
               {shipment.trackingNumber ?? shipment.shipmentNumber}
             </h1>
             <p className="text-wl-text-secondary text-sm">
@@ -330,7 +330,7 @@ export default function ShipmentDetailPage() {
           {/* Status Progression */}
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="p-6">
-              <h2 className="text-base font-semibold text-white mb-5">
+              <h2 className="text-base font-semibold text-wl-text-primary mb-5">
                 Shipment Progress
               </h2>
               <div className="flex flex-wrap gap-2">
@@ -370,7 +370,7 @@ export default function ShipmentDetailPage() {
           {timeline.length > 0 && (
             <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardContent className="p-6">
-                <h2 className="text-base font-semibold text-white mb-5">
+                <h2 className="text-base font-semibold text-wl-text-primary mb-5">
                   Activity Timeline
                 </h2>
                 <div className="space-y-0">
@@ -415,7 +415,7 @@ export default function ShipmentDetailPage() {
           {/* Package Details */}
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="p-6">
-              <h2 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
+              <h2 className="text-base font-semibold text-wl-text-primary mb-4 flex items-center gap-2">
                 <Package size={16} className="text-wl-info-500" />
                 Package Details
               </h2>
@@ -486,7 +486,7 @@ export default function ShipmentDetailPage() {
           {/* Recipient Information */}
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="p-6">
-              <h2 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
+              <h2 className="text-base font-semibold text-wl-text-primary mb-4 flex items-center gap-2">
                 <User size={16} className="text-wl-info-500" />
                 Recipient Information
               </h2>
@@ -541,7 +541,7 @@ export default function ShipmentDetailPage() {
           {shipment.notes && (
             <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardContent className="p-6">
-                <h2 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
+                <h2 className="text-base font-semibold text-wl-text-primary mb-3 flex items-center gap-2">
                   <FileText size={16} className="text-wl-info-500" />
                   Delivery Notes
                 </h2>
@@ -558,7 +558,7 @@ export default function ShipmentDetailPage() {
           {shipment.proofOfDelivery && (
             <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardContent className="p-6">
-                <h2 className="text-base font-semibold text-white mb-4">
+                <h2 className="text-base font-semibold text-wl-text-primary mb-4">
                   Proof of Delivery
                 </h2>
                 <p className="text-xs text-wl-text-secondary mb-4">

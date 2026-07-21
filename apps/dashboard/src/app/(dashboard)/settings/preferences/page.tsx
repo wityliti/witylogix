@@ -116,7 +116,7 @@ export default function PreferencesPage() {
           {/* Location & Timezone */}
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
+              <CardTitle className="flex items-center gap-2 text-wl-text-primary">
                 <MapPin className="w-5 h-5" />
                 Location & Timezone
               </CardTitle>
@@ -124,7 +124,7 @@ export default function PreferencesPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-semibold text-white block mb-2">
+                <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                   Timezone
                 </label>
                 <select
@@ -152,7 +152,7 @@ export default function PreferencesPage() {
           {/* Language & Regional */}
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
+              <CardTitle className="flex items-center gap-2 text-wl-text-primary">
                 <Globe className="w-5 h-5" />
                 Language & Regional
               </CardTitle>
@@ -160,7 +160,7 @@ export default function PreferencesPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-semibold text-white block mb-2">
+                <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                   Language
                 </label>
                 <select
@@ -177,7 +177,7 @@ export default function PreferencesPage() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-white block mb-2">
+                <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                   Date Format
                 </label>
                 <select
@@ -198,7 +198,7 @@ export default function PreferencesPage() {
           {/* Units & Measurements */}
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
+              <CardTitle className="flex items-center gap-2 text-wl-text-primary">
                 <Weight className="w-5 h-5" />
                 Units & Measurements
               </CardTitle>
@@ -206,7 +206,7 @@ export default function PreferencesPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-semibold text-white block mb-2">
+                <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                   Distance Unit
                 </label>
                 <div className="flex gap-4">
@@ -232,7 +232,7 @@ export default function PreferencesPage() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-white block mb-2">
+                <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                   Weight Unit
                 </label>
                 <div className="flex gap-4">
@@ -262,7 +262,7 @@ export default function PreferencesPage() {
           {/* Dashboard Display */}
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
+              <CardTitle className="flex items-center gap-2 text-wl-text-primary">
                 <Calendar className="w-5 h-5" />
                 Dashboard Display
               </CardTitle>
@@ -270,7 +270,7 @@ export default function PreferencesPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-semibold text-white block mb-2">
+                <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                   Default Dashboard View
                 </label>
                 <div className="grid grid-cols-2 gap-4">

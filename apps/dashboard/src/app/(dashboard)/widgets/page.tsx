@@ -106,7 +106,7 @@ export default function WidgetsPage() {
           <>
             {/* Active Widgets */}
             <div className="mb-8">
-              <h2 className="text-lg font-semibold text-white mb-4">Active Widgets</h2>
+              <h2 className="text-lg font-semibold text-wl-text-primary mb-4">Active Widgets</h2>
               {activeWidgets.length === 0 ? (
                 <Card className="bg-wl-bg-surface border border-wl-border-default p-8 text-center">
                   <p className="text-wl-text-secondary">No active widgets. Add some from the gallery.</p>
@@ -124,7 +124,7 @@ export default function WidgetsPage() {
                             {getWidgetIcon(widget.type)}
                           </div>
                           <div>
-                            <CardTitle className="text-base text-white">{widget.name}</CardTitle>
+                            <CardTitle className="text-base text-wl-text-primary">{widget.name}</CardTitle>
                             {widget.size && <p className="text-xs text-wl-text-secondary mt-1">{widget.size}</p>}
                           </div>
                         </div>
@@ -157,7 +157,7 @@ export default function WidgetsPage() {
             {/* Widget Gallery */}
             {showGallery && (
               <div className="mb-8">
-                <h2 className="text-lg font-semibold text-white mb-4">Widget Gallery</h2>
+                <h2 className="text-lg font-semibold text-wl-text-primary mb-4">Widget Gallery</h2>
                 {catalog.length === 0 ? (
                   <Card className="bg-wl-bg-surface border border-wl-border-default p-8 text-center">
                     <p className="text-wl-text-secondary">No widgets available in catalog.</p>
@@ -174,7 +174,7 @@ export default function WidgetsPage() {
                             >
                               {getWidgetIcon(widget.type)}
                             </div>
-                            <CardTitle className="text-base text-white">{widget.name}</CardTitle>
+                            <CardTitle className="text-base text-wl-text-primary">{widget.name}</CardTitle>
                           </div>
                         </CardHeader>
                         <CardContent className="flex-1 pt-0 pb-4 flex flex-col">

@@ -151,7 +151,7 @@ export default function ComparePage() {
       </div>
 
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold text-white">Compare Couriers</h1>
+        <h1 className="text-3xl font-bold text-wl-text-primary">Compare Couriers</h1>
         <p className="text-wl-text-secondary">Select up to 4 couriers to compare side-by-side</p>
       </div>
 
@@ -189,7 +189,7 @@ export default function ComparePage() {
                 <CardContent className="pt-0">
                   <div className="flex items-start justify-between gap-3 mb-4">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-white">{courier.name}</h3>
+                      <h3 className="font-semibold text-wl-text-primary">{courier.name}</h3>
                       {courier.rating > 0 ? (
                         <div className="flex items-center gap-1 mt-1">
                           {[...Array(5)].map((_, i) => (

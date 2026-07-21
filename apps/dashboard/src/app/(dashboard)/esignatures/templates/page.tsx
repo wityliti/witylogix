@@ -43,7 +43,7 @@ function TemplateGrid({ templates, viewMode }: { templates: Template[]; viewMode
       <>
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardHeader className="border-b border-wl-border-default">
-            <CardTitle className="text-base text-white">Templates</CardTitle>
+            <CardTitle className="text-base text-wl-text-primary">Templates</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -115,7 +115,7 @@ function TemplateGrid({ templates, viewMode }: { templates: Template[]; viewMode
               <FileText className="text-wl-info-500" size={48} />
             </div>
             <CardContent className="pt-4">
-              <h3 className="font-semibold text-white mb-2">{tpl.name}</h3>
+              <h3 className="font-semibold text-wl-text-primary mb-2">{tpl.name}</h3>
               <div className="flex items-center justify-between mb-3">
                 <Badge variant={categoryColors[tpl.category] || 'default'}>
                   {tpl.category}
@@ -170,7 +170,7 @@ function TemplateDetailCard({
     <Card className="mt-6 bg-wl-bg-surface border-wl-border-default">
       <CardHeader className="border-b border-wl-border-default flex flex-row items-center justify-between">
         <div>
-          <CardTitle className="text-base text-white">{template.name}</CardTitle>
+          <CardTitle className="text-base text-wl-text-primary">{template.name}</CardTitle>
           <p className="text-xs text-wl-text-secondary mt-1">ID: {template.id}</p>
         </div>
         <button
@@ -291,7 +291,7 @@ export default function TemplatesPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Template Library</h1>
+            <h1 className="text-3xl font-bold text-wl-text-primary mb-2">Template Library</h1>
             <p className="text-wl-text-secondary">Manage and organize signing templates</p>
           </div>
           <Button variant="primary" className="flex items-center gap-2">

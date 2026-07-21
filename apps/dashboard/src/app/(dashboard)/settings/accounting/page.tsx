@@ -180,7 +180,7 @@ export default function AccountingSettingsPage() {
     <div className="space-y-6 bg-wl-bg-root min-h-screen p-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-white">Accounting Integration</h1>
+        <h1 className="text-3xl font-bold text-wl-text-primary">Accounting Integration</h1>
         <p className="text-sm text-wl-text-secondary">
           Connect your accounting software to automatically sync invoices and payments
         </p>

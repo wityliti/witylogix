@@ -49,7 +49,7 @@ export function ProviderConfig({
       <CardContent className="space-y-6">
         {/* Auth Config */}
         <div>
-          <h4 className="text-sm font-semibold text-white mb-3">
+          <h4 className="text-sm font-semibold text-wl-text-primary mb-3">
             Authentication Method
           </h4>
           <div className="p-4 bg-wl-bg-surface rounded-lg border border-wl-border-default">
@@ -68,7 +68,7 @@ export function ProviderConfig({
         {/* Verified Domains */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm font-semibold text-white">
+            <h4 className="text-sm font-semibold text-wl-text-primary">
               Verified Domains ({domains.length})
             </h4>
             <Button variant="secondary" size="sm">
@@ -113,7 +113,7 @@ export function ProviderConfig({
 
         {/* Sending Limits */}
         <div>
-          <h4 className="text-sm font-semibold text-white mb-3">
+          <h4 className="text-sm font-semibold text-wl-text-primary mb-3">
             Sending Limits
           </h4>
           <div className="grid grid-cols-3 gap-3">

@@ -246,7 +246,7 @@ export default function ProvidersPage() {
     <div className="space-y-6">
       {/* Provider Selector */}
       <div>
-        <label className="block text-sm font-medium text-white mb-2">
+        <label className="block text-sm font-medium text-wl-text-primary mb-2">
           Select Provider
         </label>
         <select
@@ -481,7 +481,7 @@ export default function ProvidersPage() {
         <CardContent>
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-white">
+              <label className="text-sm font-medium text-wl-text-primary">
                 Rate Limit (req/s)
               </label>
               <input
@@ -494,7 +494,7 @@ export default function ProvidersPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium text-white">
+              <label className="text-sm font-medium text-wl-text-primary">
                 Timeout (ms)
               </label>
               <input
@@ -507,7 +507,7 @@ export default function ProvidersPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium text-white">
+              <label className="text-sm font-medium text-wl-text-primary">
                 Retry Policy
               </label>
               <select
@@ -523,7 +523,7 @@ export default function ProvidersPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium text-white">
+              <label className="text-sm font-medium text-wl-text-primary">
                 Circuit Breaker Threshold
               </label>
               <input

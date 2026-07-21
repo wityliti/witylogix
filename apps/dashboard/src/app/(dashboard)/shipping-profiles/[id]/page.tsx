@@ -134,7 +134,7 @@ export default function ShippingProfileDetailPage() {
                 className="text-3xl font-bold bg-transparent border-b border-wl-info-500 text-white outline-none mb-1 w-full"
               />
             ) : (
-              <h1 className="text-4xl font-bold text-white mb-1">{profile.name}</h1>
+              <h1 className="text-4xl font-bold text-wl-text-primary mb-1">{profile.name}</h1>
             )}
             <p className="text-wl-text-secondary text-sm">ID: {profile.id}</p>
           </div>

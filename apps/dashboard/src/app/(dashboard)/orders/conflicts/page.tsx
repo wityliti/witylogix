@@ -134,7 +134,7 @@ export default function ConflictsPage() {
       <div className="p-6 space-y-6">
         {/* Conflict Stats */}
         <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
-          <h2 className="text-lg font-bold text-white mb-4">Conflict Summary</h2>
+          <h2 className="text-lg font-bold text-wl-text-primary mb-4">Conflict Summary</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 rounded-lg bg-wl-bg-root border border-wl-border-default">
@@ -183,7 +183,7 @@ export default function ConflictsPage() {
         {/* Conflicts by Field */}
         {Object.keys(conflictsByField).length > 0 && (
           <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
-            <h2 className="text-lg font-bold text-white mb-4">Conflicts by Field</h2>
+            <h2 className="text-lg font-bold text-wl-text-primary mb-4">Conflicts by Field</h2>
 
             <div className="space-y-2">
               {Object.entries(conflictsByField).map(([field, count]) => (
@@ -230,7 +230,7 @@ export default function ConflictsPage() {
 
         {/* Filters */}
         <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
-          <h2 className="text-lg font-bold text-white mb-4">Filters</h2>
+          <h2 className="text-lg font-bold text-wl-text-primary mb-4">Filters</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Platform Filter */}
@@ -307,7 +307,7 @@ export default function ConflictsPage() {
           </Card>
         ) : (
           <Card className="p-6 bg-wl-bg-surface border border-wl-border-default">
-            <h2 className="text-lg font-bold text-white mb-4">
+            <h2 className="text-lg font-bold text-wl-text-primary mb-4">
               Unresolved Conflicts ({filteredConflicts.length})
             </h2>
 

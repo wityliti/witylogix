@@ -112,12 +112,12 @@ export default function BillingPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div>
                 <p className="text-sm font-medium text-wl-text-tertiary uppercase">Current Plan</p>
-                <h3 className="text-3xl font-bold text-white mt-2">{billing?.plan ?? '—'}</h3>
+                <h3 className="text-3xl font-bold text-wl-text-primary mt-2">{billing?.plan ?? '—'}</h3>
                 <p className="text-wl-text-secondary mt-2">Professional logistics platform</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-wl-text-tertiary uppercase">Monthly Cost</p>
-                <h3 className="text-3xl font-bold text-white mt-2">
+                <h3 className="text-3xl font-bold text-wl-text-primary mt-2">
                   {billing?.monthlyPrice != null
                     ? billing.monthlyPrice === 0
                       ? 'Free'
@@ -128,7 +128,7 @@ export default function BillingPage() {
               </div>
               <div>
                 <p className="text-sm font-medium text-wl-text-tertiary uppercase">Next Renewal</p>
-                <h3 className="text-3xl font-bold text-white mt-2">
+                <h3 className="text-3xl font-bold text-wl-text-primary mt-2">
                   {billing?.renewalDate
                     ? new Date(billing.renewalDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                     : '—'}
@@ -156,7 +156,7 @@ export default function BillingPage() {
         {usageMetrics.length > 0 && (
           <Card className="mb-8 bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
+              <CardTitle className="flex items-center gap-2 text-wl-text-primary">
                 <TrendingUp className="w-5 h-5" />
                 Usage This Month
               </CardTitle>
@@ -189,7 +189,7 @@ export default function BillingPage() {
         {/* Payment Method */}
         <Card className="mb-8 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
+            <CardTitle className="flex items-center gap-2 text-wl-text-primary">
               <CreditCard className="w-5 h-5" />
               Payment Method
             </CardTitle>
@@ -210,13 +210,13 @@ export default function BillingPage() {
         {/* Billing Address */}
         <Card className="mb-8 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
-            <CardTitle className="text-white">Billing Address</CardTitle>
+            <CardTitle className="text-wl-text-primary">Billing Address</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4 mb-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-white mb-2">Full Name</label>
+                  <label className="block text-sm font-medium text-wl-text-primary mb-2">Full Name</label>
                   <input
                     type="text"
                     value={addr.fullName ?? ''}
@@ -226,7 +226,7 @@ export default function BillingPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-2">Company</label>
+                  <label className="block text-sm font-medium text-wl-text-primary mb-2">Company</label>
                   <input
                     type="text"
                     value={addr.company ?? ''}
@@ -237,7 +237,7 @@ export default function BillingPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-white mb-2">Address</label>
+                <label className="block text-sm font-medium text-wl-text-primary mb-2">Address</label>
                 <input
                   type="text"
                   value={addr.address ?? ''}
@@ -248,7 +248,7 @@ export default function BillingPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-white mb-2">City</label>
+                  <label className="block text-sm font-medium text-wl-text-primary mb-2">City</label>
                   <input
                     type="text"
                     value={addr.city ?? ''}
@@ -258,7 +258,7 @@ export default function BillingPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-2">State</label>
+                  <label className="block text-sm font-medium text-wl-text-primary mb-2">State</label>
                   <input
                     type="text"
                     value={addr.state ?? ''}
@@ -268,7 +268,7 @@ export default function BillingPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-2">Postal Code</label>
+                  <label className="block text-sm font-medium text-wl-text-primary mb-2">Postal Code</label>
                   <input
                     type="text"
                     value={addr.postalCode ?? ''}
@@ -293,7 +293,7 @@ export default function BillingPage() {
         {/* Invoice History */}
         <Card className="bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
+            <CardTitle className="flex items-center gap-2 text-wl-text-primary">
               <Calendar className="w-5 h-5" />
               Invoice History
             </CardTitle>

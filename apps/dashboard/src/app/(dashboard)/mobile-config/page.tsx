@@ -225,7 +225,7 @@ export default function MobileConfigPage() {
         {/* App Branding Section */}
         <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="text-wl-text-primary flex items-center gap-2">
               <Palette className="w-5 h-5" />
               App Branding
             </CardTitle>
@@ -234,7 +234,7 @@ export default function MobileConfigPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Logo Upload */}
               <div>
-                <label className="block text-sm font-semibold text-white mb-3">
+                <label className="block text-sm font-semibold text-wl-text-primary mb-3">
                   App Logo
                 </label>
                 <div
@@ -264,7 +264,7 @@ export default function MobileConfigPage() {
 
               {/* App Name */}
               <div>
-                <label className="block text-sm font-semibold text-white mb-2">
+                <label className="block text-sm font-semibold text-wl-text-primary mb-2">
                   App Name
                 </label>
                 <input
@@ -280,7 +280,7 @@ export default function MobileConfigPage() {
 
               {/* Primary Color */}
               <div>
-                <label className="block text-sm font-semibold text-white mb-2">
+                <label className="block text-sm font-semibold text-wl-text-primary mb-2">
                   Primary Color (Hex)
                 </label>
                 <div className="flex gap-2">
@@ -305,7 +305,7 @@ export default function MobileConfigPage() {
         {/* Feature Toggles Section */}
         <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="text-wl-text-primary flex items-center gap-2">
               <Zap className="w-5 h-5" />
               Feature Toggles
             </CardTitle>
@@ -340,7 +340,7 @@ export default function MobileConfigPage() {
 
               {/* Route Navigation Options */}
               <div className="mt-4 pt-4 border-t border-wl-border-default">
-                <label className="block text-sm font-semibold text-white mb-2">
+                <label className="block text-sm font-semibold text-wl-text-primary mb-2">
                   Route Navigation Service
                 </label>
                 <Select
@@ -363,7 +363,7 @@ export default function MobileConfigPage() {
         {/* Notification Settings Section */}
         <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="text-wl-text-primary flex items-center gap-2">
               <Bell className="w-5 h-5" />
               Notification Settings
             </CardTitle>
@@ -402,7 +402,7 @@ export default function MobileConfigPage() {
         {/* GPS Settings Section */}
         <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="text-wl-text-primary flex items-center gap-2">
               <MapPin className="w-5 h-5" />
               GPS Settings
             </CardTitle>
@@ -455,7 +455,7 @@ export default function MobileConfigPage() {
         {/* Offline Mode Section */}
         <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="text-wl-text-primary flex items-center gap-2">
               <Smartphone className="w-5 h-5" />
               Offline Mode
             </CardTitle>

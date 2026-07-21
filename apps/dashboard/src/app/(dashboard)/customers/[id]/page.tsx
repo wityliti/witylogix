@@ -227,7 +227,7 @@ export default function CustomerDetailPage() {
           <Package className="w-8 h-8 text-wl-danger-400" />
         </div>
         <div className="text-center">
-          <h2 className="text-lg font-semibold text-white mb-1">
+          <h2 className="text-lg font-semibold text-wl-text-primary mb-1">
             {customerError?.message?.includes('404') ? 'Customer not found' : 'Failed to load customer'}
           </h2>
           <p className="text-sm text-wl-text-tertiary">
@@ -282,7 +282,7 @@ export default function CustomerDetailPage() {
               >
                 {initials}
               </div>
-              <h1 className="text-lg font-bold text-white mb-1">{customer.name}</h1>
+              <h1 className="text-lg font-bold text-wl-text-primary mb-1">{customer.name}</h1>
               <div className="flex items-center justify-center gap-2 mb-4">
                 <Badge variant={TIER_VARIANT[customer.tier] ?? 'default'}>
                   <Star className="w-3 h-3 mr-1" />

@@ -220,7 +220,7 @@ export default function CredentialsPage() {
           <div className="flex gap-3">
             <AlertTriangle className="w-5 h-5 text-wl-danger-400 flex-shrink-0" />
             <div>
-              <h3 className="font-semibold text-white">
+              <h3 className="font-semibold text-wl-text-primary">
                 {overdueRotations.length} Credential Rotation{overdueRotations.length !== 1 ? "s" : ""} Overdue
               </h3>
               <p className="text-sm text-wl-text-secondary mt-1">

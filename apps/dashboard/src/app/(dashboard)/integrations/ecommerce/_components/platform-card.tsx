@@ -72,7 +72,7 @@ export function PlatformCard({
           <div className="flex items-center gap-4">
             <div className="text-4xl">{platform.logo}</div>
             <div className="flex-1">
-              <h3 className="font-semibold text-white">{platform.name}</h3>
+              <h3 className="font-semibold text-wl-text-primary">{platform.name}</h3>
               <div className="flex gap-2 mt-1">
                 <StatusBadge status={platform.status} />
                 {platform.lastSync && (
@@ -135,7 +135,7 @@ export function PlatformCard({
 
             {/* Sync Settings */}
             <div>
-              <h4 className="text-sm font-semibold text-white mb-3">
+              <h4 className="text-sm font-semibold text-wl-text-primary mb-3">
                 Sync Settings
               </h4>
               <div className="space-y-2">
@@ -175,7 +175,7 @@ export function PlatformCard({
             {/* Webhooks */}
             {platform.webhooks.length > 0 && (
               <div>
-                <h4 className="text-sm font-semibold text-white mb-3">
+                <h4 className="text-sm font-semibold text-wl-text-primary mb-3">
                   Webhooks ({platform.webhooks.length})
                 </h4>
                 <div className="space-y-2">

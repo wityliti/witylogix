@@ -461,7 +461,7 @@ export default function InvoiceDetailPage() {
           </Button>
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-white">
+              <h1 className="text-3xl font-bold text-wl-text-primary">
                 {invoice.number}
               </h1>
               <Badge variant={getStatusBadgeVariant(invoice.status)}>
@@ -711,7 +711,7 @@ export default function InvoiceDetailPage() {
         <div className="flex flex-col gap-6">
           {/* Payment Summary */}
           <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
-            <h3 className="font-semibold text-white mb-4">
+            <h3 className="font-semibold text-wl-text-primary mb-4">
               Payment Summary
             </h3>
             <div className="space-y-3">
@@ -752,7 +752,7 @@ export default function InvoiceDetailPage() {
           {/* Payments */}
           {invoice.payments.length > 0 && (
             <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
-              <h3 className="font-semibold text-white mb-4">
+              <h3 className="font-semibold text-wl-text-primary mb-4">
                 Payment History
               </h3>
               <div className="space-y-3">
@@ -786,7 +786,7 @@ export default function InvoiceDetailPage() {
           {/* Activity Log */}
           {invoice.activity.length > 0 && (
             <Card className={cn("p-6 bg-wl-bg-surface border border-wl-border-default")}>
-              <h3 className="font-semibold text-white mb-4">
+              <h3 className="font-semibold text-wl-text-primary mb-4">
                 Activity Log
               </h3>
               <div className="space-y-3">
@@ -815,7 +815,7 @@ export default function InvoiceDetailPage() {
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <Card className={cn("max-w-md p-6 bg-wl-bg-surface border border-wl-border-default")}>
-            <h2 className="text-lg font-bold text-white mb-2">
+            <h2 className="text-lg font-bold text-wl-text-primary mb-2">
               Void Invoice?
             </h2>
             <p className="text-sm text-wl-text-secondary mb-6">

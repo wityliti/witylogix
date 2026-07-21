@@ -141,7 +141,7 @@ export default function FinancePage() {
             <>
               {summary && (
                 <Card className={cn('p-6 bg-wl-bg-surface border border-wl-border-default')}>
-                  <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <h2 className="text-lg font-semibold text-wl-text-primary mb-4 flex items-center gap-2">
                     <AlertCircle className="w-5 h-5" />
                     Invoice Status Breakdown
                   </h2>
@@ -170,7 +170,7 @@ export default function FinancePage() {
               )}
 
               <Card className={cn('p-6 bg-wl-bg-surface border border-wl-border-default overflow-hidden')}>
-                <h2 className="text-lg font-semibold text-white mb-4">Recent Payments</h2>
+                <h2 className="text-lg font-semibold text-wl-text-primary mb-4">Recent Payments</h2>
                 {payments.length === 0 ? (
                   <p className="text-wl-text-secondary text-center py-8">No payments found</p>
                 ) : (

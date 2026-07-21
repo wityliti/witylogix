@@ -368,7 +368,7 @@ export default function OnboardingPage() {
       <div className="rounded-lg border border-wl-border-default bg-wl-bg-surface p-8 mb-6 animate-in fade-in duration-300">
         {/* Step Title */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white m-0">
+          <h1 className="text-2xl font-bold text-wl-text-primary m-0">
             {currentMainStep === "verify-email" && "Verify your email"}
             {currentMainStep === "choose-deployment" && "Choose deployment"}
             {currentMainStep === "configure-workspace" &&

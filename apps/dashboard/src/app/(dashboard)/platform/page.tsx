@@ -108,7 +108,7 @@ function ServiceRow({ service }: { service: ServiceStatus }) {
           <Database className="w-4 h-4 text-wl-primary-400 shrink-0" />
         )}
         <div>
-          <h4 className="font-medium text-sm text-white">{service.name}</h4>
+          <h4 className="font-medium text-sm text-wl-text-primary">{service.name}</h4>
           <p className="text-xs text-wl-text-tertiary mt-0.5">
             Checked {service.lastChecked ? new Date(service.lastChecked).toLocaleTimeString() : '—'}
           </p>
@@ -134,7 +134,7 @@ function IntegrationCard({ integration }: { integration: IntegrationStatus }) {
     <div className="border border-wl-border-default rounded-lg p-4 hover:bg-wl-bg-elevated transition-colors bg-wl-bg-surface">
       <div className="flex items-start justify-between mb-3">
         <div>
-          <h4 className="font-semibold text-sm text-white">{integration.name}</h4>
+          <h4 className="font-semibold text-sm text-wl-text-primary">{integration.name}</h4>
           <p className="text-xs text-wl-text-secondary capitalize">{integration.provider}</p>
         </div>
         <Badge variant={integration.status === 'connected' ? 'success' : integration.status === 'error' ? 'danger' : 'warning'}>
@@ -164,7 +164,7 @@ function AlertItem({ alert, onAcknowledge }: { alert: PlatformAlert; onAcknowled
             {alert.severity.charAt(0).toUpperCase() + alert.severity.slice(1)}
           </Badge>
           <div>
-            <h4 className="font-semibold text-sm text-white">{alert.title}</h4>
+            <h4 className="font-semibold text-sm text-wl-text-primary">{alert.title}</h4>
             <p className="text-xs text-wl-text-secondary mt-1">{alert.description}</p>
             <p className="text-xs text-wl-text-tertiary mt-2">{new Date(alert.timestamp).toLocaleString()}</p>
           </div>
@@ -268,7 +268,7 @@ export default function PlatformHealthPage() {
     return (
       <div className="space-y-8 bg-wl-bg-root min-h-screen p-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white">Platform Health</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-wl-text-primary">Platform Health</h1>
           <p className="text-wl-text-secondary mt-2">Live system status and integration monitoring</p>
         </div>
         <ErrorState error={criticalError} onRetry={handleRefresh} />
@@ -281,7 +281,7 @@ export default function PlatformHealthPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white">Platform Health</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-wl-text-primary">Platform Health</h1>
           <p className="text-wl-text-secondary mt-2">Live system status and integration monitoring</p>
         </div>
         <Button onClick={handleRefresh} disabled={loading} variant="primary">
@@ -344,7 +344,7 @@ export default function PlatformHealthPage() {
       <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-white">
+            <CardTitle className="text-wl-text-primary">
               Service Status
             </CardTitle>
             {statusData && (
@@ -392,7 +392,7 @@ export default function PlatformHealthPage() {
       <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-white">Connected Integrations</CardTitle>
+            <CardTitle className="text-wl-text-primary">Connected Integrations</CardTitle>
             {integrationsPayload && (
               <Badge variant={integrationsPayload.summary.error > 0 ? 'warning' : 'success'}>
                 {integrationsPayload.summary.connected} of {integrationsPayload.summary.total} active
@@ -428,7 +428,7 @@ export default function PlatformHealthPage() {
       {/* Alerts */}
       <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader>
-          <CardTitle className="text-white">
+          <CardTitle className="text-wl-text-primary">
             Active Alerts
             {alertsPayload && alertsPayload.summary.pending > 0 && (
               <Badge variant="warning" className="ml-2">{alertsPayload.summary.pending} pending</Badge>

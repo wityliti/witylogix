@@ -11,7 +11,7 @@ export function FormsSection() {
   return (
     <div className="space-y-12">
       <div>
-        <h2 className="text-2xl font-bold text-white mb-2">
+        <h2 className="text-2xl font-bold text-wl-text-primary mb-2">
           Form Components
         </h2>
         <p className="text-wl-neutral-300 mb-8">

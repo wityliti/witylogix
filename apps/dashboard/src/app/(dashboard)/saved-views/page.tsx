@@ -168,7 +168,7 @@ export default function SavedViewsPage() {
           </Card>
         ) : (
           <div className="mb-6">
-            <h2 className="text-lg font-semibold text-white mb-4">My Views</h2>
+            <h2 className="text-lg font-semibold text-wl-text-primary mb-4">My Views</h2>
             {views.length === 0 ? (
               <Card className="bg-wl-bg-surface border-wl-border-default p-8 text-center">
                 <p className="text-wl-text-secondary">No saved views yet. Create your first view.</p>
@@ -180,7 +180,7 @@ export default function SavedViewsPage() {
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-start gap-2">
                         <div className="flex-1">
-                          <CardTitle className="text-base mb-2 text-white">{view.name}</CardTitle>
+                          <CardTitle className="text-base mb-2 text-wl-text-primary">{view.name}</CardTitle>
                           <p className="text-sm text-wl-text-secondary">{view.tableName ?? view.targetTable}</p>
                         </div>
                         <button className="bg-transparent border-0 cursor-pointer p-0 text-wl-text-tertiary hover:text-wl-neutral-300 transition-colors">
@@ -248,12 +248,12 @@ export default function SavedViewsPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <CardHeader>
-              <CardTitle className="text-white">Create New Saved View</CardTitle>
+              <CardTitle className="text-wl-text-primary">Create New Saved View</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-6">
                 <div>
-                  <label className="block text-sm font-semibold text-white mb-2">View Name</label>
+                  <label className="block text-sm font-semibold text-wl-text-primary mb-2">View Name</label>
                   <input
                     type="text"
                     placeholder="e.g., Today's Priority Orders"
@@ -264,7 +264,7 @@ export default function SavedViewsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-white mb-2">Target Table</label>
+                  <label className="block text-sm font-semibold text-wl-text-primary mb-2">Target Table</label>
                   <select
                     value={formData.targetTable}
                     onChange={(e) => handleTableChange(e.target.value)}
@@ -275,7 +275,7 @@ export default function SavedViewsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-white mb-2">Filters</label>
+                  <label className="block text-sm font-semibold text-wl-text-primary mb-2">Filters</label>
                   <div className="flex flex-col gap-3">
                     {formData.filters.map((filter, idx) => (
                       <div key={idx} className="flex gap-2 items-end">
@@ -318,10 +318,10 @@ export default function SavedViewsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-white mb-2">Visible Columns</label>
+                  <label className="block text-sm font-semibold text-wl-text-primary mb-2">Visible Columns</label>
                   <div className="grid grid-cols-2 gap-3">
                     {availableColumns.map((col) => (
-                      <label key={col} className="flex items-center gap-2 cursor-pointer text-sm text-wl-neutral-300 hover:text-white transition-colors">
+                      <label key={col} className="flex items-center gap-2 cursor-pointer text-sm text-wl-neutral-300 hover:text-wl-text-primary transition-colors">
                         <input
                           type="checkbox"
                           checked={formData.visibleColumns.includes(col)}
@@ -336,7 +336,7 @@ export default function SavedViewsPage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-semibold text-white mb-2">Sort Column</label>
+                    <label className="block text-sm font-semibold text-wl-text-primary mb-2">Sort Column</label>
                     <select
                       value={formData.sortColumn}
                       onChange={(e) => setFormData({ ...formData, sortColumn: e.target.value })}
@@ -347,7 +347,7 @@ export default function SavedViewsPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-white mb-2">Direction</label>
+                    <label className="block text-sm font-semibold text-wl-text-primary mb-2">Direction</label>
                     <select
                       value={formData.sortDirection}
                       onChange={(e) => setFormData({ ...formData, sortDirection: e.target.value as 'asc' | 'desc' })}
@@ -359,7 +359,7 @@ export default function SavedViewsPage() {
                   </div>
                 </div>
 
-                <label className="flex items-center gap-2 cursor-pointer text-sm text-wl-neutral-300 hover:text-white transition-colors">
+                <label className="flex items-center gap-2 cursor-pointer text-sm text-wl-neutral-300 hover:text-wl-text-primary transition-colors">
                   <input
                     type="checkbox"
                     checked={formData.shareWithTeam}

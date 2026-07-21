@@ -46,7 +46,7 @@ export function ViolationAlertCard({ alert }: ViolationAlertCardProps) {
               alert.severity === "critical" ? "bg-wl-danger-500" : alert.severity === "warning" ? "bg-wl-warning-500" : "bg-wl-info-500"
             )} />
             <div className="flex-1">
-              <h4 className="font-semibold text-white">
+              <h4 className="font-semibold text-wl-text-primary">
                 {alert.type}
               </h4>
               <p className="text-sm text-wl-text-tertiary mt-1">

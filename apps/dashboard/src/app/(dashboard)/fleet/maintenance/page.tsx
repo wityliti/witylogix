@@ -265,7 +265,7 @@ export default function MaintenancePage() {
             {/* Calendar View */}
             <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
-                <CardTitle className="text-sm text-white">Maintenance Calendar</CardTitle>
+                <CardTitle className="text-sm text-wl-text-primary">Maintenance Calendar</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">

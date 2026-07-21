@@ -240,7 +240,7 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
             {/* Main content */}
             <div className="flex-1 min-w-0">
               <div className="flex items-baseline gap-2 mb-1">
-                <h3 className="text-sm font-semibold text-wl-text-primary dark:text-white truncate">
+                <h3 className="text-sm font-semibold text-wl-text-primary dark:text-wl-text-primary truncate">
                   {orderId}
                 </h3>
                 <span className="text-xs text-wl-text-tertiary dark:text-wl-text-tertiary">

@@ -161,7 +161,7 @@ export default function PartnerDetailPage() {
           Back
         </Button>
         <div className="flex-1">
-          <h1 className="text-3xl font-bold text-white">{partner.name}</h1>
+          <h1 className="text-3xl font-bold text-wl-text-primary">{partner.name}</h1>
           <p className="text-wl-neutral-300 flex items-center gap-2">
             {partner.category}
             <Badge
@@ -300,7 +300,7 @@ export default function PartnerDetailPage() {
             <CardContent className="space-y-4">
               {/* API Key */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-white">API Key</label>
+                <label className="text-sm font-semibold text-wl-text-primary">API Key</label>
                 <div className="flex gap-2">
                   <Input
                     type={showApiKey ? "text" : "password"}
@@ -329,7 +329,7 @@ export default function PartnerDetailPage() {
 
               {/* API Secret */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-white">API Secret</label>
+                <label className="text-sm font-semibold text-wl-text-primary">API Secret</label>
                 <div className="flex gap-2">
                   <Input
                     type={showApiSecret ? "text" : "password"}
@@ -363,7 +363,7 @@ export default function PartnerDetailPage() {
               {/* Base URL */}
               {baseUrl && (
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-white">Base URL</label>
+                  <label className="text-sm font-semibold text-wl-text-primary">Base URL</label>
                   <div className="flex gap-2">
                     <Input type="text" value={baseUrl} readOnly className="flex-1 font-mono text-xs" />
                     <Button
@@ -384,7 +384,7 @@ export default function PartnerDetailPage() {
               {/* Webhook Secret */}
               {webhookSecret && (
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-white">Webhook Secret</label>
+                  <label className="text-sm font-semibold text-wl-text-primary">Webhook Secret</label>
                   <div className="flex gap-2">
                     <Input
                       type="password"

@@ -246,7 +246,7 @@ export default function CustomerSegmentsPage() {
 
             {/* Active vs Inactive */}
             <Card className="p-5">
-              <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-wl-text-primary mb-4 flex items-center gap-2">
                 <Users className="w-4 h-4 text-wl-text-tertiary" /> Engagement
                 Status
               </h3>
@@ -310,7 +310,7 @@ export default function CustomerSegmentsPage() {
 
             {/* Top tier actions */}
             <Card className="p-5">
-              <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-wl-text-primary mb-4 flex items-center gap-2">
                 <Star className="w-4 h-4 text-wl-warning-400" /> Segment Criteria
               </h3>
               <div className="space-y-3 text-sm">
@@ -395,7 +395,7 @@ export default function CustomerSegmentsPage() {
               {/* Top cities table */}
               <Card className="overflow-hidden p-0">
                 <div className="p-4 border-b border-wl-border-default">
-                  <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-wl-text-primary flex items-center gap-2">
                     <MapPin className="w-4 h-4 text-wl-text-tertiary" /> Top
                     Cities
                   </h3>
@@ -488,7 +488,7 @@ export default function CustomerSegmentsPage() {
               {/* Revenue by tier bar chart (CSS-based) */}
               <div className="space-y-4">
                 <Card className="p-5">
-                  <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-wl-text-primary mb-4 flex items-center gap-2">
                     <TrendingUp className="w-4 h-4 text-wl-text-tertiary" />{" "}
                     Revenue Distribution by Tier
                   </h3>
@@ -554,7 +554,7 @@ export default function CustomerSegmentsPage() {
 
                 {/* Customer count by tier */}
                 <Card className="p-5">
-                  <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-wl-text-primary mb-4 flex items-center gap-2">
                     <Users className="w-4 h-4 text-wl-text-tertiary" /> Customer
                     Count by Tier
                   </h3>

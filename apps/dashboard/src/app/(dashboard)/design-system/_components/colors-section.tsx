@@ -4,7 +4,7 @@ export function ColorsSection() {
   return (
     <div className="space-y-12">
       <div>
-        <h2 className="text-2xl font-bold text-white mb-2">
+        <h2 className="text-2xl font-bold text-wl-text-primary mb-2">
           Color Palette
         </h2>
         <p className="text-wl-neutral-300 mb-8">
@@ -14,7 +14,7 @@ export function ColorsSection() {
 
         <div className="space-y-8">
           <div>
-            <h3 className="text-lg font-semibold text-white mb-4">
+            <h3 className="text-lg font-semibold text-wl-text-primary mb-4">
               Primary Colors (Amber)
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
@@ -47,7 +47,7 @@ export function ColorsSection() {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-white mb-4">
+            <h3 className="text-lg font-semibold text-wl-text-primary mb-4">
               Semantic Colors
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -118,7 +118,7 @@ export function ColorsSection() {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-white mb-4">
+            <h3 className="text-lg font-semibold text-wl-text-primary mb-4">
               Background Colors
             </h3>
             <div className="grid grid-cols-2 gap-4">

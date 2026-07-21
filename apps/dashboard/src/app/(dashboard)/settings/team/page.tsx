@@ -139,7 +139,7 @@ export default function TeamPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="text-sm font-semibold text-white block mb-2">
+                  <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                     Email Address
                   </label>
                   <Input
@@ -150,7 +150,7 @@ export default function TeamPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-semibold text-white block mb-2">
+                  <label className="text-sm font-semibold text-wl-text-primary block mb-2">
                     Role
                   </label>
                   <select

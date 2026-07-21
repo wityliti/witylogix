@@ -111,7 +111,7 @@ export default function CarriersSettingsPage() {
             >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-white text-base flex items-center gap-2">
+                  <CardTitle className="text-wl-text-primary text-base flex items-center gap-2">
                     {carrier.configured ? (
                       <CheckCircle2 className="w-4 h-4 text-wl-success-400 shrink-0" />
                     ) : (

@@ -250,7 +250,7 @@ export default function AuthProvidersPage() {
                               )}
                             </div>
                           </div>
-                          <CardTitle className="text-xl mb-1 text-white">
+                          <CardTitle className="text-xl mb-1 text-wl-text-primary">
                             {meta?.label ?? provider.displayName}
                           </CardTitle>
                           <CardDescription className="text-wl-text-secondary">
@@ -344,7 +344,7 @@ export default function AuthProvidersPage() {
         {activeTab === 'role-mapping' && (
           <Card className="mb-8 bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
-              <CardTitle className="text-white">Role Mapping Configuration</CardTitle>
+              <CardTitle className="text-wl-text-primary">Role Mapping Configuration</CardTitle>
               <CardDescription className="text-wl-text-secondary">
                 Map external authentication provider roles to Witylogix platform roles
               </CardDescription>
@@ -396,7 +396,7 @@ export default function AuthProvidersPage() {
         {activeTab === 'settings' && (
           <Card className="mb-8 bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
-              <CardTitle className="text-white">Authentication Settings</CardTitle>
+              <CardTitle className="text-wl-text-primary">Authentication Settings</CardTitle>
               <CardDescription className="text-wl-text-secondary">Configure global SSO and security options</CardDescription>
             </CardHeader>
             <CardContent>
@@ -476,7 +476,7 @@ export default function AuthProvidersPage() {
       >
         <div className="flex flex-col gap-6">
           <div>
-            <label className="block text-sm font-semibold text-white mb-2">Provider Type</label>
+            <label className="block text-sm font-semibold text-wl-text-primary mb-2">Provider Type</label>
             <Select
               options={Object.entries(PROVIDER_LABELS).map(([value, meta]) => ({
                 value,
@@ -487,7 +487,7 @@ export default function AuthProvidersPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-white mb-2">Display Name</label>
+            <label className="block text-sm font-semibold text-wl-text-primary mb-2">Display Name</label>
             <Input
               placeholder="e.g., Company Auth0"
               value={newProvider.name}
@@ -496,7 +496,7 @@ export default function AuthProvidersPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-white mb-2">Client ID</label>
+            <label className="block text-sm font-semibold text-wl-text-primary mb-2">Client ID</label>
             <Input
               placeholder="Your client ID"
               value={newProvider.clientId}
@@ -505,7 +505,7 @@ export default function AuthProvidersPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-white mb-2">Client Secret</label>
+            <label className="block text-sm font-semibold text-wl-text-primary mb-2">Client Secret</label>
             <div className="flex gap-2">
               <Input
                 type={showSecrets['new'] ? 'text' : 'password'}
@@ -524,7 +524,7 @@ export default function AuthProvidersPage() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-semibold text-white mb-2">Redirect URI (optional)</label>
+            <label className="block text-sm font-semibold text-wl-text-primary mb-2">Redirect URI (optional)</label>
             <div className="flex gap-2">
               <Input
                 placeholder="/api/v4/auth-providers/callback"
@@ -569,7 +569,7 @@ export default function AuthProvidersPage() {
       >
         <div className="flex flex-col gap-6">
           <div>
-            <label className="block text-sm font-semibold text-white mb-2">External Role Claim</label>
+            <label className="block text-sm font-semibold text-wl-text-primary mb-2">External Role Claim</label>
             <Input
               placeholder="e.g., admin, manager, viewer"
               value={mappingExternalRole}
@@ -577,7 +577,7 @@ export default function AuthProvidersPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-white mb-2">Map to Witylogix Role</label>
+            <label className="block text-sm font-semibold text-wl-text-primary mb-2">Map to Witylogix Role</label>
             <Select
               options={[
                 { value: 'SUPER_ADMIN', label: 'Super Admin' },

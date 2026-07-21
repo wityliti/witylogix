@@ -172,17 +172,17 @@ export default function BillingPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div>
                 <p className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">Current Plan</p>
-                <h2 className="text-3xl font-bold text-white">{billing.plan}</h2>
+                <h2 className="text-3xl font-bold text-wl-text-primary">{billing.plan}</h2>
               </div>
               <div>
                 <p className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">Monthly Cost</p>
-                <h2 className="text-3xl font-bold text-white">
+                <h2 className="text-3xl font-bold text-wl-text-primary">
                   ${billing.monthlyPrice.toLocaleString()}
                 </h2>
               </div>
               <div>
                 <p className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">Next Billing Date</p>
-                <h2 className="text-3xl font-bold text-white">
+                <h2 className="text-3xl font-bold text-wl-text-primary">
                   {new Date(billing.renewalDate).toLocaleDateString()}
                 </h2>
               </div>
@@ -246,7 +246,7 @@ export default function BillingPage() {
         {/* ── Plan Comparison ─────────────────────────────────────────────── */}
         {plans.length > 0 && (
           <div>
-            <h2 className="text-2xl font-bold text-white mb-4">Plan Comparison</h2>
+            <h2 className="text-2xl font-bold text-wl-text-primary mb-4">Plan Comparison</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {plans.map((plan) => {
                 const isCurrent = plan.tier === currentTier;
@@ -272,7 +272,7 @@ export default function BillingPage() {
                       {isCurrent && (
                         <Badge variant="primary" className="mb-4">Current Plan</Badge>
                       )}
-                      <h3 className="text-lg font-bold text-white mb-1">{plan.displayName}</h3>
+                      <h3 className="text-lg font-bold text-wl-text-primary mb-1">{plan.displayName}</h3>
                       <p className="text-xs text-wl-text-secondary mb-3">{plan.description}</p>
                       <div className="flex items-baseline gap-1 mb-5">
                         <span className="text-3xl font-bold text-white">
@@ -332,7 +332,7 @@ export default function BillingPage() {
         {/* ── Payment Method ──────────────────────────────────────────────── */}
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
+            <CardTitle className="flex items-center gap-2 text-wl-text-primary">
               <CreditCard className="w-5 h-5" />
               Payment Method
             </CardTitle>
@@ -362,7 +362,7 @@ export default function BillingPage() {
         {/* ── Invoice History ─────────────────────────────────────────────── */}
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
+            <CardTitle className="flex items-center gap-2 text-wl-text-primary">
               <TrendingUp className="w-5 h-5" />
               Invoice History
             </CardTitle>

@@ -383,7 +383,7 @@ export default function RouteDetailPage() {
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-2xl font-bold text-white">
+        <h1 className="text-2xl font-bold text-wl-text-primary">
           {route.name ?? `Route ${new Date(route.date).toLocaleDateString()}`}
         </h1>
         <Badge variant={STATUS_BADGE[route.status]}>{route.status.replace('_', ' ')}</Badge>

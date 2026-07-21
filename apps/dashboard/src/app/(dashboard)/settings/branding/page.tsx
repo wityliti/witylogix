@@ -52,7 +52,7 @@ export default function BrandingPage() {
         {/* Logo Section */}
         <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
+            <CardTitle className="flex items-center gap-2 text-wl-text-primary">
               <Upload className="w-5 h-5" />
               Logo Management
             </CardTitle>
@@ -61,7 +61,7 @@ export default function BrandingPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Logo Upload */}
               <div>
-                <h4 className="font-medium text-white mb-4">
+                <h4 className="font-medium text-wl-text-primary mb-4">
                   Primary Logo
                 </h4>
                 <div className="border-2 border-dashed border-wl-border-default rounded-lg p-8 text-center hover:border-wl-info-500/50 transition-colors cursor-pointer">
@@ -94,7 +94,7 @@ export default function BrandingPage() {
 
               {/* Favicon Upload */}
               <div>
-                <h4 className="font-medium text-white mb-4">
+                <h4 className="font-medium text-wl-text-primary mb-4">
                   Favicon
                 </h4>
                 <div className="border-2 border-dashed border-wl-border-default rounded-lg p-8 text-center hover:border-wl-info-500/50 transition-colors cursor-pointer">
@@ -127,7 +127,7 @@ export default function BrandingPage() {
         {/* Color Scheme */}
         <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
+            <CardTitle className="flex items-center gap-2 text-wl-text-primary">
               <Paintbrush className="w-5 h-5" />
               Color Scheme
             </CardTitle>
@@ -135,7 +135,7 @@ export default function BrandingPage() {
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-white mb-3">
+                <label className="block text-sm font-medium text-wl-text-primary mb-3">
                   Primary Color
                 </label>
                 <div className="flex items-center gap-3">
@@ -151,7 +151,7 @@ export default function BrandingPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white mb-3">
+                <label className="block text-sm font-medium text-wl-text-primary mb-3">
                   Secondary Color
                 </label>
                 <div className="flex items-center gap-3">
@@ -167,7 +167,7 @@ export default function BrandingPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white mb-3">
+                <label className="block text-sm font-medium text-wl-text-primary mb-3">
                   Accent Color
                 </label>
                 <div className="flex items-center gap-3">
@@ -183,7 +183,7 @@ export default function BrandingPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white mb-3">
+                <label className="block text-sm font-medium text-wl-text-primary mb-3">
                   Success Color
                 </label>
                 <div className="flex items-center gap-3">
@@ -211,14 +211,14 @@ export default function BrandingPage() {
         {/* Tracking Page Branding */}
         <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
+            <CardTitle className="flex items-center gap-2 text-wl-text-primary">
               <Eye className="w-5 h-5" />
               Tracking Page Branding
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-white mb-2">
+              <label className="block text-sm font-medium text-wl-text-primary mb-2">
                 Page Title
               </label>
               <input
@@ -271,7 +271,7 @@ export default function BrandingPage() {
         {/* Email Template Branding */}
         <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
-            <CardTitle className="text-white">Email Template Branding</CardTitle>
+            <CardTitle className="text-wl-text-primary">Email Template Branding</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
@@ -317,7 +317,7 @@ export default function BrandingPage() {
         {/* Custom Domain */}
         <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
+            <CardTitle className="flex items-center gap-2 text-wl-text-primary">
               <Globe className="w-5 h-5" />
               Custom Domain
             </CardTitle>

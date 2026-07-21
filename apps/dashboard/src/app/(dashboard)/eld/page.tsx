@@ -232,7 +232,7 @@ export default function ELDOverviewPage() {
                     >
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div className="flex-1">
-                          <p className="text-sm font-semibold text-white">
+                          <p className="text-sm font-semibold text-wl-text-primary">
                             {driver.name}
                           </p>
                           <p className="text-xs text-wl-text-secondary mt-0.5">
@@ -323,7 +323,7 @@ export default function ELDOverviewPage() {
                     className="p-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default"
                   >
                     <div className="flex items-start justify-between gap-2 mb-1">
-                      <p className="text-xs font-semibold text-white">
+                      <p className="text-xs font-semibold text-wl-text-primary">
                         {violation.type.replace(/_/g, " ")}
                       </p>
                       <Badge
@@ -358,7 +358,7 @@ export default function ELDOverviewPage() {
         {/* DVIR Summary */}
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2 text-white">
+            <CardTitle className="text-lg flex items-center gap-2 text-wl-text-primary">
               <Wrench className="w-5 h-5 text-wl-info-500" />
               DVIR Status
             </CardTitle>
@@ -408,7 +408,7 @@ export default function ELDOverviewPage() {
         <div className="lg:col-span-2">
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2 text-white">
+              <CardTitle className="text-lg flex items-center gap-2 text-wl-text-primary">
                 <Activity className="w-5 h-5 text-wl-info-500" />
                 Recent ELD Events
               </CardTitle>
@@ -443,7 +443,7 @@ export default function ELDOverviewPage() {
                                 : "✓"}
                         </span>
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-white">
+                          <p className="font-semibold text-wl-text-primary">
                             {event.driverName}
                           </p>
                           <p className="text-wl-text-secondary">{event.description}</p>
@@ -468,7 +468,7 @@ export default function ELDOverviewPage() {
       {/* Quick Actions */}
       <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader>
-          <CardTitle className="text-lg text-white">Quick Actions</CardTitle>
+          <CardTitle className="text-lg text-wl-text-primary">Quick Actions</CardTitle>
         </CardHeader>
 
         <CardContent>

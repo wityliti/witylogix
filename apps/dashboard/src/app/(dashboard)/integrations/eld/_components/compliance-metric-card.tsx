@@ -24,7 +24,7 @@ export function ComplianceMetricCard({ metric }: ComplianceMetricCardProps) {
     <Card className="bg-wl-bg-elevated">
       <CardContent className="pt-6">
         <div className="flex items-start justify-between mb-4">
-          <h3 className="text-base font-semibold text-white">
+          <h3 className="text-base font-semibold text-wl-text-primary">
             {metric.metric}
           </h3>
           <Badge

@@ -66,17 +66,6 @@ export default function TrackingDetailPage() {
   const params = useParams();
   const trackingNumber = params.trackingNumber as string;
 
-  // Search for the shipment by tracking number
-  const {
-    items: shipments,
-    loading,
-    error,
-    refetch,
-  } = useApiList<ShipmentDetail>(`/api/v4/shipments`, {
-    limit: 1,
-  });
-
-  // The API search uses the `search` param — we pass it via the initial filters
   const {
     items: searchResults,
     loading: searchLoading,
@@ -109,7 +98,7 @@ export default function TrackingDetailPage() {
             <CardContent className="flex flex-col items-center justify-center h-64 gap-4">
               <p className="text-wl-text-secondary">
                 No shipment found with tracking number{' '}
-                <span className="font-mono text-white">{trackingNumber}</span>
+                <span className="font-mono text-wl-text-primary">{trackingNumber}</span>
               </p>
               <Link href="/shipping/tracking">
                 <Button variant="secondary" size="sm">
@@ -134,7 +123,7 @@ export default function TrackingDetailPage() {
         {/* Status Card */}
         <Card className="bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
-            <CardTitle className="text-white">Shipment Status</CardTitle>
+            <CardTitle className="text-wl-text-primary">Shipment Status</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -146,17 +135,17 @@ export default function TrackingDetailPage() {
               </div>
               <div>
                 <p className="text-sm text-wl-text-secondary">Carrier</p>
-                <p className="text-white font-medium mt-1">{shipment.carrier ?? '—'}</p>
+                <p className="text-wl-text-primary font-medium mt-1">{shipment.carrier ?? '—'}</p>
               </div>
               <div>
                 <p className="text-sm text-wl-text-secondary">Last Known Location</p>
-                <p className="text-white font-medium mt-1">
+                <p className="text-wl-text-primary font-medium mt-1">
                   {[shipment.city, shipment.province].filter(Boolean).join(', ') || '—'}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-wl-text-secondary">Estimated Delivery</p>
-                <p className="text-white font-medium mt-1">
+                <p className="text-wl-text-primary font-medium mt-1">
                   {shipment.estimatedArrival
                     ? new Date(shipment.estimatedArrival).toLocaleDateString()
                     : 'TBD'}
@@ -189,7 +178,7 @@ export default function TrackingDetailPage() {
         {/* Delivery Location Map */}
         <Card className="bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
-            <CardTitle className="text-white">Delivery Location</CardTitle>
+            <CardTitle className="text-wl-text-primary">Delivery Location</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {shipment.deliveryLocation &&
@@ -220,7 +209,7 @@ export default function TrackingDetailPage() {
         {shipment.activityLogs && shipment.activityLogs.length > 0 && (
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader>
-              <CardTitle className="text-white">Tracking Timeline</CardTitle>
+              <CardTitle className="text-wl-text-primary">Tracking Timeline</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -233,7 +222,7 @@ export default function TrackingDetailPage() {
                       )}
                     </div>
                     <div className="pb-4">
-                      <p className="text-sm font-medium text-white">
+                      <p className="text-sm font-medium text-wl-text-primary">
                         {log.action.replace(/_/g, ' ')}
                       </p>
                       <p className="text-xs text-wl-text-secondary mt-1">

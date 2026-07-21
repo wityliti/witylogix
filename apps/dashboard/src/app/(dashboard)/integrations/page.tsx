@@ -402,7 +402,7 @@ export default function IntegrationsPage() {
               <CardContent className="pt-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    <h3 className="font-semibold text-white">
+                    <h3 className="font-semibold text-wl-text-primary">
                       {provider.name}
                     </h3>
                     <p className="text-xs text-wl-text-secondary mt-1">
