@@ -225,19 +225,19 @@ export default function DriverPerformancePage() {
                 <StatCard
                   label="Average Score"
                   value={avgScore}
-                  accentColor="var(--blue-500)"
+                  accentColor="var(--wl-info-500)"
                   index={0}
                 />
                 <StatCard
                   label="Avg On-Time %"
                   value={`${avgOnTime}%`}
-                  accentColor="var(--emerald-500)"
+                  accentColor="var(--wl-success-500)"
                   index={1}
                 />
                 <StatCard
                   label="Total Deliveries"
                   value={totalDeliveries}
-                  accentColor="var(--blue-500)"
+                  accentColor="var(--wl-info-500)"
                   index={2}
                 />
                 <StatCard
@@ -247,7 +247,7 @@ export default function DriverPerformancePage() {
                       (d) => d.tier === "platinum" || d.tier === "gold",
                     ).length
                   }
-                  accentColor="var(--amber-500)"
+                  accentColor="var(--wl-warning-500)"
                   index={3}
                 />
               </div>
@@ -439,7 +439,7 @@ export default function DriverPerformancePage() {
                       <div
                         className="relative w-24 h-24 rounded-full border-4 border-wl-border-default flex items-center justify-center"
                         style={{
-                          background: `conic-gradient(var(--emerald-500) 0deg ${selectedDriver.onTimePercent * 3.6}deg, var(--wl-bg-overlay) ${selectedDriver.onTimePercent * 3.6}deg)`,
+                          background: `conic-gradient(var(--wl-success-500) 0deg ${selectedDriver.onTimePercent * 3.6}deg, var(--wl-bg-overlay) ${selectedDriver.onTimePercent * 3.6}deg)`,
                         }}
                       >
                         <div className="w-20 h-20 rounded-full bg-wl-bg-surface flex items-center justify-center">
@@ -458,7 +458,7 @@ export default function DriverPerformancePage() {
                       <div
                         className="relative w-24 h-24 rounded-full border-4 border-wl-border-default flex items-center justify-center"
                         style={{
-                          background: `conic-gradient(var(--blue-500) 0deg ${(selectedDriver.customerRating / 5) * 360}deg, var(--wl-bg-overlay) ${(selectedDriver.customerRating / 5) * 360}deg)`,
+                          background: `conic-gradient(var(--wl-info-500) 0deg ${(selectedDriver.customerRating / 5) * 360}deg, var(--wl-bg-overlay) ${(selectedDriver.customerRating / 5) * 360}deg)`,
                         }}
                       >
                         <div className="w-20 h-20 rounded-full bg-wl-bg-surface flex items-center justify-center">
@@ -477,7 +477,7 @@ export default function DriverPerformancePage() {
                       <div
                         className="relative w-24 h-24 rounded-full border-4 border-wl-border-default flex items-center justify-center"
                         style={{
-                          background: `conic-gradient(var(--amber-500) 0deg ${selectedDriver.podCompliance * 3.6}deg, var(--wl-bg-overlay) ${selectedDriver.podCompliance * 3.6}deg)`,
+                          background: `conic-gradient(var(--wl-warning-500) 0deg ${selectedDriver.podCompliance * 3.6}deg, var(--wl-bg-overlay) ${selectedDriver.podCompliance * 3.6}deg)`,
                         }}
                       >
                         <div className="w-20 h-20 rounded-full bg-wl-bg-surface flex items-center justify-center">
@@ -508,7 +508,7 @@ export default function DriverPerformancePage() {
                       <div
                         className="relative w-24 h-24 rounded-full border-4 border-wl-border-default flex items-center justify-center"
                         style={{
-                          background: `conic-gradient(var(--blue-500) 0deg ${selectedDriver.compositeScore * 3.6}deg, var(--wl-bg-overlay) ${selectedDriver.compositeScore * 3.6}deg)`,
+                          background: `conic-gradient(var(--wl-info-500) 0deg ${selectedDriver.compositeScore * 3.6}deg, var(--wl-bg-overlay) ${selectedDriver.compositeScore * 3.6}deg)`,
                         }}
                       >
                         <div className="w-20 h-20 rounded-full bg-wl-bg-surface flex items-center justify-center flex-col">

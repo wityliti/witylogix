@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout/header";
@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
-import { useApiList } from "@/hooks/use-api";
+import { useApiList, useApiMutation } from "@/hooks/use-api";
 import { LoadingSkeleton, ErrorState } from "@/components/ui/loading";
 
 const LocationsOverviewMap = dynamic(
@@ -71,12 +71,293 @@ const typeLabel = (t: LocationType): string => {
   return map[t];
 };
 
+// ─── Location Form Modal ──────────────────────────────────
+
+interface LocationFormData {
+  name: string;
+  type: LocationType;
+  addressLine1: string;
+  city: string;
+  province: string;
+  postalCode: string;
+  country: string;
+  latitude: string;
+  longitude: string;
+  phone: string;
+  email: string;
+}
+
+const EMPTY_FORM: LocationFormData = {
+  name: '', type: 'WAREHOUSE', addressLine1: '', city: '', province: '',
+  postalCode: '', country: 'US', latitude: '', longitude: '', phone: '', email: '',
+};
+
+function LocationFormModal({
+  mode,
+  location,
+  onClose,
+  onSuccess,
+}: {
+  mode: 'create' | 'edit';
+  location?: Location;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [form, setForm] = useState<LocationFormData>(
+    location
+      ? {
+          name: location.name,
+          type: location.type,
+          addressLine1: location.addressLine1,
+          city: location.city,
+          province: location.province ?? '',
+          postalCode: location.postalCode ?? '',
+          country: location.country ?? 'US',
+          latitude: location.latitude?.toString() ?? '',
+          longitude: location.longitude?.toString() ?? '',
+          phone: location.phone ?? '',
+          email: location.email ?? '',
+        }
+      : EMPTY_FORM
+  );
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const { execute: createLocation, loading: creating } = useApiMutation<Location>('POST', '/api/v4/locations');
+  const { execute: updateLocation, loading: updating } = useApiMutation<Location>(
+    'PATCH',
+    `/api/v4/locations/${location?.id ?? 'new'}`,
+  );
+  const saving = creating || updating;
+
+  const set = useCallback(
+    <K extends keyof LocationFormData>(key: K, value: LocationFormData[K]) =>
+      setForm((f) => ({ ...f, [key]: value })),
+    [],
+  );
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError(null);
+    const lat = parseFloat(form.latitude);
+    const lng = parseFloat(form.longitude);
+    if (!form.name || !form.addressLine1 || !form.city || isNaN(lat) || isNaN(lng)) {
+      setFormError('Name, address, city, latitude, and longitude are required.');
+      return;
+    }
+    const payload: Record<string, unknown> = {
+      name: form.name,
+      type: form.type,
+      addressLine1: form.addressLine1,
+      city: form.city,
+      country: form.country || 'US',
+      latitude: lat,
+      longitude: lng,
+    };
+    if (form.province) payload.province = form.province;
+    if (form.postalCode) payload.postalCode = form.postalCode;
+    if (form.phone) payload.phone = form.phone;
+    if (form.email) payload.email = form.email;
+    try {
+      if (mode === 'create') {
+        await createLocation(payload);
+      } else {
+        await updateLocation(payload);
+      }
+      onSuccess();
+      onClose();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to save location.';
+      setFormError(msg);
+    }
+  };
+
+  const inputCls = cn(
+    'w-full px-3 py-2 rounded-md bg-wl-bg-elevated border border-wl-border-default',
+    'text-sm text-wl-text-primary placeholder-wl-text-tertiary outline-none',
+    'focus:border-wl-info-500 focus:ring-2 focus:ring-wl-info-500/20 transition-colors',
+  );
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl w-full max-w-lg shadow-2xl max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between p-5 border-b border-wl-border-default flex-shrink-0">
+          <h2 className="text-base font-semibold text-wl-text-primary">
+            {mode === 'create' ? 'Add Location' : 'Edit Location'}
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-wl-text-secondary hover:text-wl-text-primary text-xl leading-none transition-colors"
+          >
+            ✕
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-5 overflow-y-auto flex-1">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="col-span-2">
+              <label className="block text-xs font-medium text-wl-text-secondary mb-1">Name *</label>
+              <input
+                className={inputCls}
+                placeholder="e.g. Main Warehouse"
+                value={form.name}
+                onChange={(e) => set('name', e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="col-span-2">
+              <label className="block text-xs font-medium text-wl-text-secondary mb-1">Type</label>
+              <select
+                className={inputCls}
+                value={form.type}
+                onChange={(e) => set('type', e.target.value as LocationType)}
+              >
+                <option value="WAREHOUSE">Warehouse</option>
+                <option value="STORE">Store</option>
+                <option value="HUB">Hub</option>
+                <option value="DEPOT">Depot</option>
+                <option value="PICKUP_POINT">Pickup Point</option>
+              </select>
+            </div>
+
+            <div className="col-span-2">
+              <label className="block text-xs font-medium text-wl-text-secondary mb-1">Address *</label>
+              <input
+                className={inputCls}
+                placeholder="123 Main St"
+                value={form.addressLine1}
+                onChange={(e) => set('addressLine1', e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-wl-text-secondary mb-1">City *</label>
+              <input
+                className={inputCls}
+                placeholder="City"
+                value={form.city}
+                onChange={(e) => set('city', e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-wl-text-secondary mb-1">Province / State</label>
+              <input
+                className={inputCls}
+                placeholder="State"
+                value={form.province}
+                onChange={(e) => set('province', e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-wl-text-secondary mb-1">Postal Code</label>
+              <input
+                className={inputCls}
+                placeholder="00000"
+                value={form.postalCode}
+                onChange={(e) => set('postalCode', e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-wl-text-secondary mb-1">Country</label>
+              <input
+                className={inputCls}
+                placeholder="US"
+                value={form.country}
+                onChange={(e) => set('country', e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-wl-text-secondary mb-1">Latitude *</label>
+              <input
+                className={inputCls}
+                type="number"
+                step="any"
+                min={-90}
+                max={90}
+                placeholder="e.g. 40.7128"
+                value={form.latitude}
+                onChange={(e) => set('latitude', e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-wl-text-secondary mb-1">Longitude *</label>
+              <input
+                className={inputCls}
+                type="number"
+                step="any"
+                min={-180}
+                max={180}
+                placeholder="e.g. -74.0060"
+                value={form.longitude}
+                onChange={(e) => set('longitude', e.target.value)}
+                required
+              />
+            </div>
+            <p className="col-span-2 text-xs text-wl-text-tertiary -mt-2">
+              Tip: find coordinates at maps.google.com (right-click → copy location)
+            </p>
+
+            <div>
+              <label className="block text-xs font-medium text-wl-text-secondary mb-1">Phone</label>
+              <input
+                className={inputCls}
+                type="tel"
+                placeholder="+1 555 000 0000"
+                value={form.phone}
+                onChange={(e) => set('phone', e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-wl-text-secondary mb-1">Email</label>
+              <input
+                className={inputCls}
+                type="email"
+                placeholder="location@example.com"
+                value={form.email}
+                onChange={(e) => set('email', e.target.value)}
+              />
+            </div>
+          </div>
+
+          {formError && (
+            <p className="text-sm text-wl-danger-400 bg-wl-danger-500/10 border border-wl-danger-500/20 rounded-md px-3 py-2">
+              {formError}
+            </p>
+          )}
+        </form>
+
+        <div className="flex justify-end gap-2 p-5 border-t border-wl-border-default flex-shrink-0">
+          <Button variant="ghost" size="md" onClick={onClose} type="button">
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={handleSubmit as unknown as React.MouseEventHandler}
+            disabled={saving}
+          >
+            {saving ? 'Saving…' : mode === 'create' ? 'Create Location' : 'Save Changes'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function LocationsPage() {
   const { items: locations, loading, error, refetch } = useApiList<Location>('/api/v4/locations');
   const [typeFilter, setTypeFilter] = useState<LocationType | "ALL">("ALL");
   const [search, setSearch] = useState("");
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingLocation, setEditingLocation] = useState<Location | null>(null);
 
   const filtered = useMemo(() => {
     return locations.filter((loc) => {
@@ -132,7 +413,7 @@ export default function LocationsPage() {
                 </button>
               ))}
             </div>
-            <Button variant="primary" size="md">
+            <Button variant="primary" size="md" onClick={() => setShowCreateModal(true)}>
               + Add Location
             </Button>
           </div>
@@ -142,10 +423,10 @@ export default function LocationsPage() {
       <div className={cn("p-6")}>
         {/* KPI Stats */}
         <div className={cn("grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-6")}>
-          <StatCard label="Total Locations" value={stats.totalLocations} index={0} accentColor="var(--blue-500)" />
-          <StatCard label="Active" value={stats.activeLocations} index={1} accentColor="var(--emerald-500)" />
-          <StatCard label="Shipments Today" value={stats.totalShipments} index={2} accentColor="var(--blue-500)" />
-          <StatCard label="Avg Prep Time" value={`${stats.avgPrepTime}m`} index={3} accentColor="var(--amber-500)" />
+          <StatCard label="Total Locations" value={stats.totalLocations} index={0} accentColor="var(--wl-info-500)" />
+          <StatCard label="Active" value={stats.activeLocations} index={1} accentColor="var(--wl-success-500)" />
+          <StatCard label="Shipments Today" value={stats.totalShipments} index={2} accentColor="var(--wl-info-500)" />
+          <StatCard label="Avg Prep Time" value={`${stats.avgPrepTime}m`} index={3} accentColor="var(--wl-warning-500)" />
         </div>
 
         {/* Filters Bar */}
@@ -207,7 +488,7 @@ export default function LocationsPage() {
                     animation: `wl-fade-in var(--wl-duration-slow) var(--wl-ease-default) ${i * 60}ms forwards`,
                     opacity: 0,
                     borderColor:
-                      selectedLocation?.id === location.id ? "var(--blue-500)" : undefined,
+                      selectedLocation?.id === location.id ? "var(--wl-info-500)" : undefined,
                   }}
                 >
                   {/* Status indicator line */}
@@ -276,12 +557,32 @@ export default function LocationsPage() {
                       "flex gap-2 flex-wrap mt-auto pt-3 border-t border-wl-border-default"
                     )}
                   >
-                    <Button variant="primary" size="sm">Edit</Button>
-                    <Button variant="secondary" size="sm">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={(e) => { e.stopPropagation(); setEditingLocation(location); }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled
+                      title="Status management requires admin access"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       {location.status === "ACTIVE" ? "Deactivate" : "Activate"}
                     </Button>
                     {!location.isDefault && (
-                      <Button variant="ghost" size="sm">Set Default</Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled
+                        title="Contact support to set default location"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Set Default
+                      </Button>
                     )}
                   </div>
                 </Card>
@@ -423,12 +724,30 @@ export default function LocationsPage() {
                 )}
 
                 <div className={cn("flex gap-2 flex-wrap mt-auto pt-3 border-t border-wl-border-default")}>
-                  <Button variant="primary" size="sm">Edit</Button>
-                  <Button variant="secondary" size="sm">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => setEditingLocation(selectedLocation)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    disabled
+                    title="Status management requires admin access"
+                  >
                     {selectedLocation.status === "ACTIVE" ? "Deactivate" : "Activate"}
                   </Button>
                   {!selectedLocation.isDefault && (
-                    <Button variant="ghost" size="sm">Set Default</Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled
+                      title="Contact support to set default location"
+                    >
+                      Set Default
+                    </Button>
                   )}
                 </div>
               </div>
@@ -451,6 +770,23 @@ export default function LocationsPage() {
           </div>
         )}
       </div>
+
+      {showCreateModal && (
+        <LocationFormModal
+          mode="create"
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={refetch}
+        />
+      )}
+
+      {editingLocation && (
+        <LocationFormModal
+          mode="edit"
+          location={editingLocation}
+          onClose={() => setEditingLocation(null)}
+          onSuccess={refetch}
+        />
+      )}
     </>
   );
 }

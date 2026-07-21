@@ -259,7 +259,7 @@ export default function FleetPage() {
             <Button variant="ghost" size="sm" onClick={refetch}>
               <RefreshCw className="w-4 h-4" />
             </Button>
-            <Button variant="primary" size="md">
+            <Button variant="primary" size="md" onClick={() => router.push('/fleet/vehicles')}>
               <Plus className="w-4 h-4" />
               Add Vehicle
             </Button>
