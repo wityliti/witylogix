@@ -77,7 +77,7 @@ function HealthScoreGauge({ score }: { score: number }) {
   return (
     <div className="flex flex-col items-center">
       <svg width="220" height="220" viewBox="0 0 220 220" className="mb-4">
-        <circle cx="110" cy="110" r={radius} fill="none" stroke="var(--wl-border)" strokeWidth="8" />
+        <circle cx="110" cy="110" r={radius} fill="none" stroke="var(--wl-border-default)" strokeWidth="8" />
         <circle
           cx="110" cy="110" r={radius} fill="none" stroke={color} strokeWidth="8"
           strokeDasharray={circumference} strokeDashoffset={strokeDashoffset}

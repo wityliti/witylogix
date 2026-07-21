@@ -80,9 +80,9 @@ export default function SettingsLayout({
   const pathname = usePathname();
 
   return (
-    <div className="flex gap-6 min-h-screen bg-[var(--wl-bg-primary)]">
+    <div className="flex gap-6 min-h-screen bg-wl-bg-sunken">
       {/* Sidebar */}
-      <aside className="hidden lg:flex lg:w-64 flex-col gap-2 p-6 border-r border-[var(--wl-border)]">
+      <aside className="hidden lg:flex lg:w-64 flex-col gap-2 p-6 border-r border-wl-border-default">
         <div className="mb-8">
           <h3 className="text-sm font-bold uppercase tracking-wide text-[var(--wl-text-secondary)] px-3">
             Settings
@@ -100,7 +100,7 @@ export default function SettingsLayout({
                   "flex items-center justify-between gap-3 px-3 py-3 rounded-lg transition-all no-underline",
                   isActive
                     ? "bg-[var(--wl-primary)] bg-opacity-10 text-[var(--wl-primary)] border border-[var(--wl-primary)] border-opacity-30"
-                    : "text-[var(--wl-text-secondary)] hover:bg-[var(--wl-bg-secondary)] hover:text-[var(--wl-text-primary)]"
+                    : "text-[var(--wl-text-secondary)] hover:bg-wl-bg-elevated hover:text-[var(--wl-text-primary)]"
                 )}
               >
                 <div className="flex items-center gap-3">
@@ -108,7 +108,7 @@ export default function SettingsLayout({
                     "p-2 rounded-lg",
                     isActive
                       ? "bg-[var(--wl-primary)] text-white"
-                      : "bg-[var(--wl-bg-secondary)] text-[var(--wl-text-secondary)]"
+                      : "bg-wl-bg-elevated text-[var(--wl-text-secondary)]"
                   )}>
                     {link.icon}
                   </span>

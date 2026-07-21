@@ -233,7 +233,7 @@ export function RouteTimeline({
                         <div
                           className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45"
                           style={{
-                            backgroundColor: "var(--wl-bg-primary)",
+                            backgroundColor: "var(--wl-bg-sunken)",
                             border: "1px solid var(--wl-border-subtle)",
                           }}
                         />

@@ -184,7 +184,7 @@ export function DVIRChecklist({
               {completedRequired.length}/{requiredItems.length}
             </span>
           </div>
-          <div className="h-2 bg-wl-bg-secondary rounded-full overflow-hidden">
+          <div className="h-2 bg-wl-bg-elevated rounded-full overflow-hidden">
             <div
               className={cn(
                 "h-full transition-all duration-300",
@@ -214,7 +214,7 @@ export function DVIRChecklist({
               className="border border-wl-border-default rounded-lg overflow-hidden"
             >
               {/* Category Header */}
-              <div className="bg-wl-bg-secondary px-4 py-3 border-b border-wl-border-default">
+              <div className="bg-wl-bg-elevated px-4 py-3 border-b border-wl-border-default">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-wl-text-primary">
                     {category}
@@ -262,7 +262,7 @@ export function DVIRChecklist({
                                 "text-xs px-2 py-1.5 rounded font-medium transition-colors",
                                 item.status === "pass"
                                   ? "bg-wl-success-500/20 text-wl-success-400"
-                                  : "bg-wl-bg-secondary text-wl-text-secondary hover:text-wl-success-400"
+                                  : "bg-wl-bg-elevated text-wl-text-secondary hover:text-wl-success-400"
                               )}
                             >
                               ✓ Pass
@@ -278,7 +278,7 @@ export function DVIRChecklist({
                                 "text-xs px-2 py-1.5 rounded font-medium transition-colors",
                                 item.status === "fail"
                                   ? "bg-wl-danger-500/20 text-wl-danger-400"
-                                  : "bg-wl-bg-secondary text-wl-text-secondary hover:text-wl-danger-400"
+                                  : "bg-wl-bg-elevated text-wl-text-secondary hover:text-wl-danger-400"
                               )}
                             >
                               ✕ Fail
@@ -294,7 +294,7 @@ export function DVIRChecklist({
                                 "text-xs px-2 py-1.5 rounded font-medium transition-colors",
                                 item.status === "na"
                                   ? "bg-wl-text-secondary/20 text-wl-text-secondary"
-                                  : "bg-wl-bg-secondary text-wl-text-secondary hover:text-wl-text-secondary"
+                                  : "bg-wl-bg-elevated text-wl-text-secondary hover:text-wl-text-secondary"
                               )}
                             >
                               N/A
@@ -346,7 +346,7 @@ export function DVIRChecklist({
                                     handleDefectNoteChange(item.id, e.target.value)
                                   }
                                   placeholder="Describe the defect and severity..."
-                                  className="w-full text-xs px-2 py-1.5 rounded bg-wl-bg-secondary border border-wl-border-default text-wl-text-primary placeholder:text-wl-text-secondary focus:outline-none focus:ring-1 focus:ring-wl-primary-500"
+                                  className="w-full text-xs px-2 py-1.5 rounded bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary placeholder:text-wl-text-secondary focus:outline-none focus:ring-1 focus:ring-wl-primary-500"
                                   rows={2}
                                 />
                               </div>
@@ -384,7 +384,7 @@ export function DVIRChecklist({
                                   />
                                   <label
                                     htmlFor={`photo-${item.id}`}
-                                    className="text-xs px-2 py-1.5 rounded bg-wl-bg-secondary text-wl-primary-400 hover:bg-wl-primary-500/20 cursor-pointer font-medium transition-colors"
+                                    className="text-xs px-2 py-1.5 rounded bg-wl-bg-elevated text-wl-primary-400 hover:bg-wl-primary-500/20 cursor-pointer font-medium transition-colors"
                                   >
                                     📷 Choose Photo
                                   </label>
@@ -431,7 +431,7 @@ export function DVIRChecklist({
           {onCancel && (
             <button
               onClick={onCancel}
-              className="text-sm px-4 py-2 rounded border border-wl-border-default text-wl-text-primary hover:bg-wl-bg-secondary transition-colors font-medium"
+              className="text-sm px-4 py-2 rounded border border-wl-border-default text-wl-text-primary hover:bg-wl-bg-elevated transition-colors font-medium"
             >
               Cancel
             </button>
@@ -443,7 +443,7 @@ export function DVIRChecklist({
               "text-sm px-4 py-2 rounded font-medium transition-colors",
               canSubmit
                 ? "bg-wl-success-500/20 text-wl-success-400 hover:bg-wl-success-500/30"
-                : "bg-wl-bg-secondary text-wl-text-secondary cursor-not-allowed opacity-50"
+                : "bg-wl-bg-elevated text-wl-text-secondary cursor-not-allowed opacity-50"
             )}
           >
             Submit DVIR

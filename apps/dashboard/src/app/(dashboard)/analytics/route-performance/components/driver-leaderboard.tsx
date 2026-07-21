@@ -93,7 +93,7 @@ export function DriverLeaderboard({
                   "px-3 py-1 text-sm rounded-md transition-colors",
                   period === p
                     ? "bg-wl-primary-500 text-white"
-                    : "bg-wl-bg-secondary text-wl-text-secondary hover:text-wl-text-primary border border-wl-neutral-800"
+                    : "bg-wl-bg-elevated text-wl-text-secondary hover:text-wl-text-primary border border-wl-neutral-800"
                 )}
               >
                 {p}
@@ -150,7 +150,7 @@ export function DriverLeaderboard({
               {sortedData.map((driver, index) => (
                 <tr
                   key={driver.driverId}
-                  className="border-b border-wl-neutral-800 hover:bg-wl-bg-secondary transition-colors cursor-pointer"
+                  className="border-b border-wl-neutral-800 hover:bg-wl-bg-elevated transition-colors cursor-pointer"
                   onClick={() => onDriverSelect?.(driver.driverId)}
                 >
                   {/* Rank */}
@@ -222,7 +222,7 @@ export function DriverLeaderboard({
                   {/* Composite Score */}
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-16 h-2 bg-wl-bg-secondary rounded-full overflow-hidden">
+                      <div className="w-16 h-2 bg-wl-bg-elevated rounded-full overflow-hidden">
                         <div
                           className="h-full bg-gradient-to-r from-wl-success-500 to-wl-primary-500"
                           style={{ width: `${driver.compositeScore}%` }}

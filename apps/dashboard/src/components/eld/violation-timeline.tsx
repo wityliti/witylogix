@@ -61,7 +61,7 @@ export function ViolationTimeline({
 
   if (isLoading) {
     return (
-      <Card className="border-[var(--wl-border)]">
+      <Card className="border-wl-border-default">
         <CardHeader>
           <CardTitle className="text-lg">Recent Violations</CardTitle>
         </CardHeader>
@@ -75,7 +75,7 @@ export function ViolationTimeline({
   }
 
   return (
-    <Card className="border-[var(--wl-border)]">
+    <Card className="border-wl-border-default">
       <CardHeader>
         <div className="flex items-center justify-between gap-4">
           <CardTitle className="text-lg">Recent Violations</CardTitle>
@@ -88,7 +88,7 @@ export function ViolationTimeline({
 
         {/* Filter buttons */}
         {violations.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-4 pb-4 border-b border-[var(--wl-border)]">
+          <div className="flex flex-wrap gap-2 mt-4 pb-4 border-b border-wl-border-default">
             <Button
               variant={filterType === null ? "primary" : "secondary"}
               size="sm"
@@ -146,8 +146,8 @@ export function ViolationTimeline({
                   }
                   className={cn(
                     "w-full text-left p-3 rounded-lg border transition-all",
-                    "hover:bg-[var(--wl-bg-secondary)] border-[var(--wl-border)]",
-                    expandedId === violation.id && "bg-[var(--wl-bg-secondary)] border-wl-primary-500/30"
+                    "hover:bg-wl-bg-elevated border-wl-border-default",
+                    expandedId === violation.id && "bg-wl-bg-elevated border-wl-primary-500/30"
                   )}
                 >
                   <div className="flex items-start gap-3">
@@ -207,7 +207,7 @@ export function ViolationTimeline({
 
                 {/* Expanded details */}
                 {expandedId === violation.id && (
-                  <div className="mt-2 ml-6 p-3 bg-[var(--wl-bg-secondary)] rounded-lg border border-[var(--wl-border)] space-y-3">
+                  <div className="mt-2 ml-6 p-3 bg-wl-bg-elevated rounded-lg border border-wl-border-default space-y-3">
                     <div>
                       <p className="text-xs uppercase tracking-wide font-semibold text-wl-text-secondary mb-1">
                         Description
@@ -262,7 +262,7 @@ export function ViolationTimeline({
 
                 {/* Timeline connector line */}
                 {index < filteredViolations.length - 1 && (
-                  <div className="h-2 border-l border-[var(--wl-border)] ml-[17px]" />
+                  <div className="h-2 border-l border-wl-border-default ml-[17px]" />
                 )}
               </div>
             ))}

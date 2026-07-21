@@ -28,34 +28,12 @@ export function ProtectedRoute({
   if (isLoading) {
     return (
       fallback || (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            minHeight: "100vh",
-            background: "var(--wl-bg)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: "var(--wl-space-4)",
-            }}
-          >
-            <div
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: "50%",
-                border: "2px solid var(--wl-border)",
-                borderTopColor: "var(--wl-primary)",
-                animation: "spin 1s linear infinite",
-              }}
+        <div className="flex items-center justify-center min-h-screen bg-wl-bg-root">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 rounded-full border-2 border-wl-border-default animate-spin"
+              style={{ borderTopColor: "var(--wl-primary-500)" }}
             />
-            <p style={{ color: "var(--wl-text)" }}>Loading...</p>
+            <p className="text-wl-text-secondary text-sm">Loading...</p>
           </div>
         </div>
       )

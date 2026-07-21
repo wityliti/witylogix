@@ -70,7 +70,7 @@ export function RouteTimelineBar({
       </div>
 
       {/* Timeline bar container */}
-      <div className="relative bg-wl-bg-secondary rounded-lg overflow-hidden h-16 border border-wl-border-subtle">
+      <div className="relative bg-wl-bg-elevated rounded-lg overflow-hidden h-16 border border-wl-border-subtle">
         {/* Hour divider lines */}
         {hours.slice(0, -1).map((hour) => {
           const position = ((hour - startHour + 1) / (endHour - startHour)) * 100;

@@ -124,7 +124,7 @@ export function RateComparisonCard({
               "text-xs px-2 py-1 rounded transition-colors",
               view === "contracted"
                 ? "bg-wl-primary-500/20 text-wl-primary-400"
-                : "text-wl-text-secondary hover:bg-wl-bg-secondary"
+                : "text-wl-text-secondary hover:bg-wl-bg-elevated"
             )}
           >
             Contracted
@@ -135,7 +135,7 @@ export function RateComparisonCard({
               "text-xs px-2 py-1 rounded transition-colors",
               view === "spot"
                 ? "bg-wl-primary-500/20 text-wl-primary-400"
-                : "text-wl-text-secondary hover:bg-wl-bg-secondary"
+                : "text-wl-text-secondary hover:bg-wl-bg-elevated"
             )}
           >
             Spot
@@ -168,7 +168,7 @@ export function RateComparisonCard({
                     "grid grid-cols-12 gap-2 items-center p-2 rounded-md transition-colors cursor-pointer",
                     isAward
                       ? "bg-wl-success-500/10 border border-wl-success-500/30"
-                      : "hover:bg-wl-bg-secondary border border-transparent",
+                      : "hover:bg-wl-bg-elevated border border-transparent",
                     expanded === rate.carrier && "border-wl-border-default"
                   )}
                   onClick={() =>
@@ -233,7 +233,7 @@ export function RateComparisonCard({
 
                 {/* Expanded Accessorial Details */}
                 {expanded === rate.carrier && (
-                  <div className="bg-wl-bg-secondary rounded-md mt-1 p-3 text-xs border border-wl-border-default ml-2">
+                  <div className="bg-wl-bg-elevated rounded-md mt-1 p-3 text-xs border border-wl-border-default ml-2">
                     <p className="font-medium text-wl-text-primary mb-2">
                       Accessorials
                     </p>

@@ -134,7 +134,7 @@ const ToastItem = React.memo(
       <div
         className={cn(
           "flex items-start gap-3 rounded-md border p-4",
-          "bg-[var(--wl-bg-primary)]",
+          "bg-wl-bg-sunken",
           config.bgColor,
           config.borderColor,
           "transition-all duration-300",
@@ -183,7 +183,7 @@ const ToastItem = React.memo(
           className={cn(
             "flex-shrink-0 p-1 rounded-sm",
             "text-[var(--wl-text-secondary)] hover:text-[var(--wl-text-primary)]",
-            "hover:bg-[var(--wl-bg-secondary)]",
+            "hover:bg-wl-bg-elevated",
             "transition-colors duration-200",
             "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--wl-primary)]"
           )}
@@ -278,7 +278,7 @@ export const ToastStack = React.memo(
           <div
             className={cn(
               "flex items-center justify-center px-4 py-2 rounded-md",
-              "bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)]",
+              "bg-wl-bg-elevated border border-wl-border-default",
               "text-xs font-medium text-[var(--wl-text-secondary)]"
             )}
           >

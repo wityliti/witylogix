@@ -66,7 +66,7 @@ export function LaneHeatmap({
 
   // Color scale function - gradient from cool to warm
   const getColor = (value: number | null): string => {
-    if (value === null) return "bg-wl-bg-secondary";
+    if (value === null) return "bg-wl-bg-elevated";
 
     const normalized = (value - minValue) / (maxValue - minValue);
 
@@ -116,7 +116,7 @@ export function LaneHeatmap({
               "text-xs px-3 py-1.5 rounded transition-colors font-medium",
               view === "volume"
                 ? "bg-wl-primary-500/20 text-wl-primary-400"
-                : "text-wl-text-secondary hover:bg-wl-bg-secondary"
+                : "text-wl-text-secondary hover:bg-wl-bg-elevated"
             )}
           >
             Volume
@@ -127,7 +127,7 @@ export function LaneHeatmap({
               "text-xs px-3 py-1.5 rounded transition-colors font-medium",
               view === "cost"
                 ? "bg-wl-primary-500/20 text-wl-primary-400"
-                : "text-wl-text-secondary hover:bg-wl-bg-secondary"
+                : "text-wl-text-secondary hover:bg-wl-bg-elevated"
             )}
           >
             Cost/Mile
@@ -170,7 +170,7 @@ export function LaneHeatmap({
                     <div
                       key={`cell-${origin}-${destination}`}
                       style={{ width: cellSize, height: cellSize }}
-                      className="bg-wl-bg-secondary border border-wl-border-default"
+                      className="bg-wl-bg-elevated border border-wl-border-default"
                     />
                   );
                 }

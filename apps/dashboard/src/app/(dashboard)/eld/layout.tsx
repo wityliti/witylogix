@@ -45,13 +45,13 @@ export default function ELDLayout({
   };
 
   return (
-    <div className="flex flex-col gap-6 min-h-screen bg-[var(--wl-bg-primary)]">
+    <div className="flex flex-col gap-6 min-h-screen bg-wl-bg-sunken">
       {/* Header */}
       <Header title="Electronic Logging Device" />
 
       {/* Tab navigation */}
       <div className="px-6 pt-6">
-        <div className="flex flex-col gap-4 border-b border-[var(--wl-border)] pb-6">
+        <div className="flex flex-col gap-4 border-b border-wl-border-default pb-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-wl-text-primary">Electronic Logging Device</h1>
@@ -74,7 +74,7 @@ export default function ELDLayout({
                     "text-sm font-medium border",
                     isActive
                       ? "bg-wl-primary-500/10 border-wl-primary-500/30 text-wl-primary-400"
-                      : "border-[var(--wl-border)] text-wl-text-secondary hover:bg-[var(--wl-bg-secondary)] hover:text-wl-text-primary"
+                      : "border-wl-border-default text-wl-text-secondary hover:bg-wl-bg-elevated hover:text-wl-text-primary"
                   )}
                 >
                   {tab.icon}

@@ -152,21 +152,21 @@ export default function WebhooksDebuggerPage() {
             </CardContent>
           </Card>
 
-          <Card className="border border-[var(--wl-border)]">
+          <Card className="border border-wl-border-default">
             <CardHeader><CardDescription>Avg Delivery Time</CardDescription></CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">{stats.avgDeliveryTime.toFixed(0)}ms</div>
             </CardContent>
           </Card>
 
-          <Card className="border border-[var(--wl-border)]">
+          <Card className="border border-wl-border-default">
             <CardHeader><CardDescription>Events/Hour</CardDescription></CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">{stats.eventsPerHour}</div>
             </CardContent>
           </Card>
 
-          <Card className="border border-[var(--wl-border)]">
+          <Card className="border border-wl-border-default">
             <CardHeader><CardDescription>Total Events</CardDescription></CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">{stats.totalEvents}</div>
@@ -203,7 +203,7 @@ export default function WebhooksDebuggerPage() {
                 <select
                   value={filters.status}
                   onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-sm"
+                  className="w-full px-3 py-2 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-sm"
                 >
                   <option value="all">All Statuses</option>
                   <option value="success">Success</option>

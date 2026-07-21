@@ -191,7 +191,7 @@ export function MultiHOSGauge({
   isViolation = false,
 }: MultiHOSGaugeProps) {
   return (
-    <div className="grid grid-cols-2 gap-6 lg:grid-cols-4 p-6 bg-[var(--wl-bg-secondary)] rounded-lg border border-[var(--wl-border)]">
+    <div className="grid grid-cols-2 gap-6 lg:grid-cols-4 p-6 bg-wl-bg-elevated rounded-lg border border-wl-border-default">
       <HOSClock
         remainingMinutes={driving}
         maxMinutes={660}

@@ -228,8 +228,8 @@ const Body = ({
           rows={8}
           className={cn(
             "w-full px-3 py-2 rounded-md",
-            "bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)]",
-            "border border-[var(--wl-border)]",
+            "bg-wl-bg-elevated text-[var(--wl-text-primary)]",
+            "border border-wl-border-default",
             "focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]/40",
             "placeholder:text-[var(--wl-text-secondary)]",
             "font-mono text-sm"
@@ -250,8 +250,8 @@ const Body = ({
         {autocompleteOpen && filteredVariables.length > 0 && (
           <div
             className={cn(
-              "absolute z-50 mt-1 rounded-md border border-[var(--wl-border)]",
-              "bg-[var(--wl-bg-primary)] shadow-lg",
+              "absolute z-50 mt-1 rounded-md border border-wl-border-default",
+              "bg-wl-bg-sunken shadow-lg",
               "max-h-48 w-64 overflow-y-auto"
             )}
             style={{
@@ -265,8 +265,8 @@ const Body = ({
                 onClick={() => insertVariable(variable.name)}
                 className={cn(
                   "w-full px-3 py-2 text-left text-sm",
-                  "hover:bg-[var(--wl-bg-secondary)] transition-colors",
-                  "border-b border-[var(--wl-border)] last:border-b-0"
+                  "hover:bg-wl-bg-elevated transition-colors",
+                  "border-b border-wl-border-default last:border-b-0"
                 )}
               >
                 <div className="font-mono text-[var(--wl-text-primary)]">
@@ -309,13 +309,13 @@ const Preview = ({ label = "Preview" }: PreviewProps) => {
       </label>
       <div
         className={cn(
-          "rounded-md border border-[var(--wl-border)]",
-          "bg-[var(--wl-bg-secondary)] p-4",
+          "rounded-md border border-wl-border-default",
+          "bg-wl-bg-elevated p-4",
           "min-h-32"
         )}
       >
         {subject && (
-          <div className="mb-3 pb-3 border-b border-[var(--wl-border)]">
+          <div className="mb-3 pb-3 border-b border-wl-border-default">
             <p className="text-xs font-semibold text-[var(--wl-text-secondary)]">
               SUBJECT
             </p>
@@ -346,7 +346,7 @@ const Tabs = ({ children }: TabsProps) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2 border-b border-[var(--wl-border)]">
+      <div className="flex gap-2 border-b border-wl-border-default">
         {(["email", "sms", "push"] as const).map((ch) => (
           <button
             key={ch}
@@ -386,7 +386,7 @@ const VariablesSidebar = ({ title = "Available Variables" }: VariablesSidebarPro
             key={variable.name}
             className={cn(
               "px-3 py-2 rounded-md",
-              "bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)]",
+              "bg-wl-bg-elevated border border-wl-border-default",
               "text-xs"
             )}
           >

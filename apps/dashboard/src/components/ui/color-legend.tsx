@@ -44,8 +44,8 @@ export function ColorLegend({
               "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium",
               "border border-wl-border-subtle transition-all duration-200",
               visibilityState[route.id]
-                ? "bg-wl-bg-secondary border-wl-border-default"
-                : "bg-wl-bg-secondary opacity-50 border-dashed"
+                ? "bg-wl-bg-elevated border-wl-border-default"
+                : "bg-wl-bg-elevated opacity-50 border-dashed"
             )}
             aria-pressed={visibilityState[route.id]}
             aria-label={`Toggle ${route.driverName} route`}
@@ -72,10 +72,10 @@ export function ColorLegend({
             className={cn(
               "w-full flex items-center gap-3 p-3 rounded-lg",
               "border border-wl-border-default transition-all duration-200",
-              "hover:bg-wl-bg-secondary hover:border-wl-primary-500",
+              "hover:bg-wl-bg-elevated hover:border-wl-primary-500",
               visibilityState[route.id]
                 ? "bg-wl-bg-elevated"
-                : "bg-wl-bg-secondary opacity-50"
+                : "bg-wl-bg-elevated opacity-50"
             )}
             aria-pressed={visibilityState[route.id]}
             aria-label={`Toggle ${route.driverName} route on map`}
@@ -107,7 +107,7 @@ export function ColorLegend({
 
       {/* Legend footer */}
       {routes.length > 0 && (
-        <div className="mt-3 px-3 py-2 text-xs text-wl-text-tertiary bg-wl-bg-secondary rounded-lg border border-wl-border-subtle">
+        <div className="mt-3 px-3 py-2 text-xs text-wl-text-tertiary bg-wl-bg-elevated rounded-lg border border-wl-border-subtle">
           Click to show/hide routes on map
         </div>
       )}
