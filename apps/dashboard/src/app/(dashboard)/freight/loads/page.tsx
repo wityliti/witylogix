@@ -54,7 +54,7 @@ export default function FreightLoadsPage() {
   const mappableLoads = shipments.filter((s) => s.deliveryLocation?.lat != null).length;
 
   return (
-    <div className="flex flex-col min-h-screen bg-wl-bg-primary p-6">
+    <div className="flex flex-col min-h-screen bg-wl-bg-elevated p-6">
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between gap-4 mb-4">

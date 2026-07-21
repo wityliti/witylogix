@@ -144,7 +144,7 @@ export function CourierAssignmentPanel({
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 w-96 bg-wl-bg-primary border-l border-wl-border-subtle shadow-lg flex flex-col z-50 overflow-hidden">
+    <div className="fixed inset-y-0 right-0 w-96 bg-wl-bg-elevated border-l border-wl-border-subtle shadow-lg flex flex-col z-50 overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-wl-border-subtle">
         <h3 className="font-semibold text-wl-text-primary">Assign Courier</h3>

@@ -17,17 +17,17 @@ export default function RootLoading() {
           >
             {/* Logo skeleton */}
             <div className="flex items-center gap-2 mb-8 animate-pulse">
-              <div className="w-10 h-10 bg-wl-bg-primary rounded-lg" />
+              <div className="w-10 h-10 bg-wl-bg-elevated rounded-lg" />
               <div className="flex-1">
-                <div className="h-4 bg-wl-bg-primary rounded w-20" />
+                <div className="h-4 bg-wl-bg-elevated rounded w-20" />
               </div>
             </div>
 
             {/* Navigation items skeleton */}
             {Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="flex items-center gap-3 animate-pulse">
-                <div className="w-5 h-5 bg-wl-bg-primary rounded" />
-                <div className="h-4 bg-wl-bg-primary rounded flex-1" />
+                <div className="w-5 h-5 bg-wl-bg-elevated rounded" />
+                <div className="h-4 bg-wl-bg-elevated rounded flex-1" />
               </div>
             ))}
           </aside>
@@ -41,8 +41,8 @@ export default function RootLoading() {
           >
             {/* Header skeleton */}
             <div className="mb-8 space-y-2 animate-pulse">
-              <div className="h-8 bg-wl-bg-primary rounded w-1/3" />
-              <div className="h-4 bg-wl-bg-primary rounded w-1/2" />
+              <div className="h-8 bg-wl-bg-elevated rounded w-1/3" />
+              <div className="h-4 bg-wl-bg-elevated rounded w-1/2" />
             </div>
 
             {/* Content cards skeleton */}
@@ -55,9 +55,9 @@ export default function RootLoading() {
                     "animate-pulse"
                   )}
                 >
-                  <div className="h-4 bg-wl-bg-primary rounded w-1/2 mb-4" />
-                  <div className="h-10 bg-wl-bg-primary rounded mb-2" />
-                  <div className="h-4 bg-wl-bg-primary rounded w-3/4" />
+                  <div className="h-4 bg-wl-bg-elevated rounded w-1/2 mb-4" />
+                  <div className="h-10 bg-wl-bg-elevated rounded mb-2" />
+                  <div className="h-4 bg-wl-bg-elevated rounded w-3/4" />
                 </div>
               ))}
             </div>
@@ -69,16 +69,16 @@ export default function RootLoading() {
                 "animate-pulse"
               )}
             >
-              <div className="h-6 bg-wl-bg-primary rounded w-1/4 mb-4" />
+              <div className="h-6 bg-wl-bg-elevated rounded w-1/4 mb-4" />
               {Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={i}
                   className="flex items-center gap-4 py-3 border-b border-wl-border-subtle last:border-b-0"
                 >
-                  <div className="w-4 h-4 bg-wl-bg-primary rounded" />
-                  <div className="h-4 bg-wl-bg-primary rounded flex-1" />
-                  <div className="h-4 bg-wl-bg-primary rounded w-1/4" />
-                  <div className="h-4 bg-wl-bg-primary rounded w-1/5" />
+                  <div className="w-4 h-4 bg-wl-bg-elevated rounded" />
+                  <div className="h-4 bg-wl-bg-elevated rounded flex-1" />
+                  <div className="h-4 bg-wl-bg-elevated rounded w-1/4" />
+                  <div className="h-4 bg-wl-bg-elevated rounded w-1/5" />
                 </div>
               ))}
             </div>

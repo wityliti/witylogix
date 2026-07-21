@@ -82,7 +82,7 @@ export const StatusTimeline = forwardRef<HTMLDivElement, StatusTimelineProps>(
                     {/* Dot */}
                     <div
                       className={cn(
-                        "w-4 h-4 rounded-full border-2 bg-wl-bg-primary",
+                        "w-4 h-4 rounded-full border-2 bg-wl-bg-elevated",
                         "relative z-10 flex items-center justify-center",
                         "transition-all duration-300",
                         index <= currentStep && "ring-4 ring-wl-success-100 dark:ring-wl-success-900",
@@ -128,7 +128,7 @@ export const StatusTimeline = forwardRef<HTMLDivElement, StatusTimelineProps>(
                 {/* Dot */}
                 <div
                   className={cn(
-                    "w-4 h-4 rounded-full border-2 bg-wl-bg-primary",
+                    "w-4 h-4 rounded-full border-2 bg-wl-bg-elevated",
                     "relative z-10 flex items-center justify-center",
                     "transition-all duration-300",
                     isActive && "ring-4 ring-wl-primary-100 dark:ring-wl-primary-900"

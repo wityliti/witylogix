@@ -173,7 +173,7 @@ export default function TemplateEditorPage() {
 
   if (templateLoading) {
     return (
-      <div className="min-h-screen bg-wl-bg-primary">
+      <div className="min-h-screen bg-wl-bg-elevated">
         <Header title="Edit Notification Template" subtitle="Loading template…" />
         <LoadingSkeleton />
       </div>
@@ -219,7 +219,7 @@ export default function TemplateEditorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-wl-bg-primary">
+    <div className="min-h-screen bg-wl-bg-elevated">
       <Header
         title="Edit Notification Template"
         subtitle="Customize template content for different channels"

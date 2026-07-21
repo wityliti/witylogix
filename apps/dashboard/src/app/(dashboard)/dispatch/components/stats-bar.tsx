@@ -51,7 +51,7 @@ export function StatsBar({ stats, isLoading = false }: StatsBarProps) {
   );
 
   return (
-    <div className="bg-wl-bg-primary border-b border-wl-border-subtle">
+    <div className="bg-wl-bg-elevated border-b border-wl-border-subtle">
       <div className="max-w-full mx-auto px-6 py-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {cards.map((card, index) => (

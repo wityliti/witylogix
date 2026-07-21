@@ -50,7 +50,7 @@ export default function FreightCompliancePage() {
   const filtered = filterStatus === 'All' ? shipments : shipments.slice(0, 10);
 
   return (
-    <div className="flex flex-col min-h-screen bg-wl-bg-primary p-6">
+    <div className="flex flex-col min-h-screen bg-wl-bg-elevated p-6">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-wl-text-primary">Carrier Compliance</h1>

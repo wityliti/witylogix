@@ -97,7 +97,7 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-wl-bg-primary">
+    <div className="min-h-screen bg-wl-bg-elevated">
       <Header
         title="Notification Preferences"
         subtitle="Configure how and when you receive notifications"

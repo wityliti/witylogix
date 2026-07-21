@@ -64,27 +64,24 @@ export default function FreightRatesPage() {
     setCalcError(null);
     setCalculating(true);
 
-    // Compute quotes from active shipping profiles (client-side, using real profile data)
-    setTimeout(() => {
-      const value = parseFloat(orderValue) || 0;
-      const results: QuoteResult[] = profiles
-        .filter((p) => p.isActive)
-        .map((p) => {
-          const isFree = !!(p.freeShippingAbove && value >= p.freeShippingAbove) || p.flatRate === 0;
-          const estimatedCost = isFree ? 0 : (p.flatRate ?? 0);
-          return { profile: p, estimatedCost, isFree };
-        })
-        .sort((a, b) => a.estimatedCost - b.estimatedCost);
-      setQuoteResults(results);
-      setCalculating(false);
-    }, 600);
+    const value = parseFloat(orderValue) || 0;
+    const results: QuoteResult[] = profiles
+      .filter((p) => p.isActive)
+      .map((p) => {
+        const isFree = !!(p.freeShippingAbove && value >= p.freeShippingAbove) || p.flatRate === 0;
+        const estimatedCost = isFree ? 0 : (p.flatRate ?? 0);
+        return { profile: p, estimatedCost, isFree };
+      })
+      .sort((a, b) => a.estimatedCost - b.estimatedCost);
+    setQuoteResults(results);
+    setCalculating(false);
   };
 
   if (loading || profilesLoading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
-    <div className="flex flex-col min-h-screen bg-wl-bg-primary p-6">
+    <div className="flex flex-col min-h-screen bg-wl-bg-elevated p-6">
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between gap-4 mb-4">

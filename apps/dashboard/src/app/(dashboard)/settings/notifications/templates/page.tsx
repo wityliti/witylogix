@@ -110,7 +110,7 @@ export default function NotificationTemplatesPage() {
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
-    <div className="min-h-screen bg-wl-bg-primary">
+    <div className="min-h-screen bg-wl-bg-elevated">
       <Header
         title="Notification Templates"
         subtitle="Manage and customize notification templates"

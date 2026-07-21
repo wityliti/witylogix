@@ -58,7 +58,7 @@ const Timeline = forwardRef<HTMLDivElement, TimelineProps>(
                   {/* Dot */}
                   <div
                     className={cn(
-                      "w-4 h-4 rounded-full border-2 bg-wl-bg-primary",
+                      "w-4 h-4 rounded-full border-2 bg-wl-bg-elevated",
                       "flex items-center justify-center",
                       "relative z-10",
                       config.dot

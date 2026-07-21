@@ -189,7 +189,7 @@ All components use Witylogix design tokens:
 
 ```typescript
 // Color system
-"bg-wl-bg-primary"      // Main background
+"bg-wl-bg-elevated"      // Main background
 "bg-wl-bg-surface"      // Card/surface background
 "text-wl-text-primary"  // Main text
 "text-wl-text-secondary" // Secondary text

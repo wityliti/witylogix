@@ -88,9 +88,9 @@ export default function ModelsPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-wl-bg-primary">
+    <div className="flex flex-col min-h-screen bg-wl-bg-elevated">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-wl-bg-primary/95 backdrop-blur border-b border-wl-border-default">
+      <div className="sticky top-0 z-10 bg-wl-bg-elevated/95 backdrop-blur border-b border-wl-border-default">
         <div className="p-6">
           <div className="flex items-center justify-between gap-4">
             <div>

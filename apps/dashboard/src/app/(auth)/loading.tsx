@@ -28,14 +28,14 @@ export default function AuthLoading() {
           }}
         >
           <div
-            className="flex items-center justify-center w-14 h-14 rounded-lg mb-4 bg-wl-bg-primary"
+            className="flex items-center justify-center w-14 h-14 rounded-lg mb-4 bg-wl-bg-elevated"
             style={{
               background: "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
               boxShadow: "0 8px 24px rgba(245, 166, 35, 0.2)",
             }}
           />
-          <div className="h-8 bg-wl-bg-primary rounded w-32 mb-1" />
-          <div className="h-4 bg-wl-bg-primary rounded w-40" />
+          <div className="h-8 bg-wl-bg-elevated rounded w-32 mb-1" />
+          <div className="h-4 bg-wl-bg-elevated rounded w-40" />
         </div>
 
         {/* Loading form card */}
@@ -52,24 +52,24 @@ export default function AuthLoading() {
           <div className="space-y-4">
             {/* Email/username field */}
             <div className="space-y-1">
-              <div className="h-4 bg-wl-bg-primary rounded w-24" />
-              <div className="h-10 bg-wl-bg-primary rounded" />
+              <div className="h-4 bg-wl-bg-elevated rounded w-24" />
+              <div className="h-10 bg-wl-bg-elevated rounded" />
             </div>
 
             {/* Password field */}
             <div className="space-y-1">
-              <div className="h-4 bg-wl-bg-primary rounded w-20" />
-              <div className="h-10 bg-wl-bg-primary rounded" />
+              <div className="h-4 bg-wl-bg-elevated rounded w-20" />
+              <div className="h-10 bg-wl-bg-elevated rounded" />
             </div>
 
             {/* Remember me / forgot password */}
             <div className="flex items-center justify-between">
-              <div className="h-4 bg-wl-bg-primary rounded w-32" />
-              <div className="h-4 bg-wl-bg-primary rounded w-28" />
+              <div className="h-4 bg-wl-bg-elevated rounded w-32" />
+              <div className="h-4 bg-wl-bg-elevated rounded w-28" />
             </div>
 
             {/* Submit button */}
-            <div className="h-10 bg-wl-bg-primary rounded mt-6" />
+            <div className="h-10 bg-wl-bg-elevated rounded mt-6" />
 
             {/* Divider and social login */}
             <div className="relative my-6">
@@ -79,7 +79,7 @@ export default function AuthLoading() {
             </div>
 
             {/* Sign up link */}
-            <div className="h-4 bg-wl-bg-primary rounded w-full" />
+            <div className="h-4 bg-wl-bg-elevated rounded w-full" />
           </div>
         </div>
 
@@ -91,7 +91,7 @@ export default function AuthLoading() {
             animationDelay: "300ms",
           }}
         >
-          <div className="h-4 bg-wl-bg-primary rounded w-64 mx-auto animate-pulse" />
+          <div className="h-4 bg-wl-bg-elevated rounded w-64 mx-auto animate-pulse" />
         </div>
       </div>
     </div>
