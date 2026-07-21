@@ -103,27 +103,27 @@ export default function DispatchPage() {
   const selectedTechData = selectedTech ? allTechs.find((t) => t.id === selectedTech) : null;
 
   return (
-    <div className="min-h-screen bg-surface-primary p-6">
+    <div className="min-h-screen bg-wl-bg-surface p-6">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-content-primary mb-2">Dispatch Management</h1>
-            <p className="text-content-secondary">
+            <h1 className="text-3xl font-bold text-wl-text-primary mb-2">Dispatch Management</h1>
+            <p className="text-wl-text-secondary">
               {allTechs.filter((t) => t.status === 'busy').length} in field ·{' '}
               {orders.length} active jobs
             </p>
           </div>
           <div className="flex items-center gap-3">
             {/* View Toggle */}
-            <div className="flex rounded-lg border border-border-subtle overflow-hidden">
+            <div className="flex rounded-lg border border-wl-border-subtle overflow-hidden">
               <button
                 onClick={() => setView('map')}
                 className={cn(
                   'px-3 py-2 text-xs font-medium flex items-center gap-1.5 transition-colors',
                   view === 'map'
-                    ? 'bg-brand-primary text-white'
-                    : 'bg-surface-secondary text-content-secondary hover:text-content-primary'
+                    ? 'bg-wl-primary-500 text-white'
+                    : 'bg-wl-bg-elevated text-wl-text-secondary hover:text-wl-text-primary'
                 )}
               >
                 <Map size={14} /> Map
@@ -133,8 +133,8 @@ export default function DispatchPage() {
                 className={cn(
                   'px-3 py-2 text-xs font-medium flex items-center gap-1.5 transition-colors',
                   view === 'list'
-                    ? 'bg-brand-primary text-white'
-                    : 'bg-surface-secondary text-content-secondary hover:text-content-primary'
+                    ? 'bg-wl-primary-500 text-white'
+                    : 'bg-wl-bg-elevated text-wl-text-secondary hover:text-wl-text-primary'
                 )}
               >
                 <List size={14} /> List
@@ -152,22 +152,22 @@ export default function DispatchPage() {
         <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-content-secondary text-sm font-medium">Active Jobs</span>
-              <MapPin className="text-brand-primary" size={20} />
+              <span className="text-wl-text-secondary text-sm font-medium">Active Jobs</span>
+              <MapPin className="text-wl-primary-500" size={20} />
             </div>
-            <p className="text-3xl font-bold text-content-primary">{orders.length}</p>
-            <p className="text-content-tertiary text-xs mt-2">Dispatch queue</p>
+            <p className="text-3xl font-bold text-wl-text-primary">{orders.length}</p>
+            <p className="text-wl-text-tertiary text-xs mt-2">Dispatch queue</p>
           </div>
         </Card>
 
         <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-content-secondary text-sm font-medium">Technicians</span>
-              <Users className="text-success" size={20} />
+              <span className="text-wl-text-secondary text-sm font-medium">Technicians</span>
+              <Users className="text-wl-success-500" size={20} />
             </div>
-            <p className="text-3xl font-bold text-content-primary">{allTechs.length}</p>
-            <p className="text-content-tertiary text-xs mt-2">
+            <p className="text-3xl font-bold text-wl-text-primary">{allTechs.length}</p>
+            <p className="text-wl-text-tertiary text-xs mt-2">
               {allTechs.filter((t) => t.status === 'available').length} available
             </p>
           </div>
@@ -176,13 +176,13 @@ export default function DispatchPage() {
         <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-content-secondary text-sm font-medium">Unassigned</span>
-              <div className="w-5 h-5 rounded-full bg-warning" />
+              <span className="text-wl-text-secondary text-sm font-medium">Unassigned</span>
+              <div className="w-5 h-5 rounded-full bg-wl-warning-500" />
             </div>
-            <p className="text-3xl font-bold text-content-primary">
+            <p className="text-3xl font-bold text-wl-text-primary">
               {orders.filter((j) => !j.status || j.status === 'PENDING').length}
             </p>
-            <p className="text-content-tertiary text-xs mt-2">Pending dispatch</p>
+            <p className="text-wl-text-tertiary text-xs mt-2">Pending dispatch</p>
           </div>
         </Card>
       </div>
@@ -192,7 +192,7 @@ export default function DispatchPage() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-5 mb-6">
           {/* Map Card */}
           <Card>
-            <CardHeader className="border-b border-border-subtle">
+            <CardHeader className="border-b border-wl-border-subtle">
               <CardTitle>Live Dispatch Map</CardTitle>
             </CardHeader>
             <div className="p-4" style={{ height: '500px' }}>
@@ -209,7 +209,7 @@ export default function DispatchPage() {
           <div className="space-y-4">
             {/* Status Filter */}
             <Card>
-              <CardHeader className="border-b border-border-subtle">
+              <CardHeader className="border-b border-wl-border-subtle">
                 <CardTitle className="text-base">Filter by Status</CardTitle>
               </CardHeader>
               <div className="p-3 space-y-2">
@@ -225,15 +225,15 @@ export default function DispatchPage() {
                       className={cn(
                         'w-full px-3 py-2 rounded text-xs font-medium text-left transition-all',
                         statusFilter === status
-                          ? 'bg-brand-primary text-white'
-                          : 'bg-surface-secondary text-content-secondary hover:bg-surface-tertiary'
+                          ? 'bg-wl-primary-500 text-white'
+                          : 'bg-wl-bg-elevated text-wl-text-secondary hover:bg-wl-bg-overlay'
                       )}
                     >
                       <div className="flex justify-between">
                         <span className="capitalize">
                           {status === 'all' ? 'All' : status.replace(/_/g, ' ')}
                         </span>
-                        <span className="text-content-muted">({count})</span>
+                        <span className="text-wl-text-tertiary">({count})</span>
                       </div>
                     </button>
                   );
@@ -243,12 +243,12 @@ export default function DispatchPage() {
 
             {/* Technician List */}
             <Card>
-              <CardHeader className="border-b border-border-subtle">
+              <CardHeader className="border-b border-wl-border-subtle">
                 <CardTitle className="text-base">Technicians</CardTitle>
               </CardHeader>
               <div className="p-3 space-y-2 max-h-64 overflow-y-auto">
                 {filteredTechs.length === 0 ? (
-                  <div className="text-center py-6 text-content-tertiary text-sm">
+                  <div className="text-center py-6 text-wl-text-tertiary text-sm">
                     No technicians match this filter
                   </div>
                 ) : (
@@ -261,14 +261,14 @@ export default function DispatchPage() {
                       className={cn(
                         'w-full p-3 rounded-md border text-left transition-all',
                         selectedTechData?.id === tech.id
-                          ? 'border-brand-primary bg-brand-subtle'
-                          : 'border-border-subtle bg-surface-secondary hover:bg-surface-tertiary'
+                          ? 'border-wl-primary-500 bg-wl-primary-500/10'
+                          : 'border-wl-border-subtle bg-wl-bg-elevated hover:bg-wl-bg-overlay'
                       )}
                     >
                       <div className="flex justify-between items-center">
                         <div>
-                          <div className="text-sm font-medium text-content-primary">{tech.name}</div>
-                          <div className="text-xs text-content-tertiary">{tech.location}</div>
+                          <div className="text-sm font-medium text-wl-text-primary">{tech.name}</div>
+                          <div className="text-xs text-wl-text-tertiary">{tech.location}</div>
                         </div>
                         <Badge variant={techStatusVariant(tech.status as TechnicianStatus)}>
                           {tech.status}
@@ -287,7 +287,7 @@ export default function DispatchPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Active Assignments */}
         <Card>
-          <CardHeader className="border-b border-border-subtle">
+          <CardHeader className="border-b border-wl-border-subtle">
             <CardTitle>Active Assignments</CardTitle>
           </CardHeader>
           <div className="p-4 space-y-2 max-h-64 overflow-y-auto">
@@ -297,20 +297,20 @@ export default function DispatchPage() {
               .map((job) => (
                 <div
                   key={job.id}
-                  className="p-3 bg-surface-secondary rounded-md border-l-4 border-brand-primary hover:bg-surface-tertiary transition-colors cursor-pointer"
+                  className="p-3 bg-wl-bg-elevated rounded-md border-l-4 border-wl-primary-500 hover:bg-wl-bg-overlay transition-colors cursor-pointer"
                 >
                   <div className="flex justify-between items-start gap-2 mb-1">
                     <div className="min-w-0">
-                      <div className="text-sm font-semibold text-content-primary">
+                      <div className="text-sm font-semibold text-wl-text-primary">
                         {job.orderNumber}
                       </div>
-                      <div className="text-xs text-content-secondary truncate">
+                      <div className="text-xs text-wl-text-secondary truncate">
                         {job.customerName}
                       </div>
                     </div>
                     <Badge variant="info">{job.status.replace(/_/g, ' ')}</Badge>
                   </div>
-                  <div className="text-xs text-content-tertiary">{job.address}</div>
+                  <div className="text-xs text-wl-text-tertiary">{job.address}</div>
                 </div>
               ))}
             {orders.filter(
@@ -319,7 +319,7 @@ export default function DispatchPage() {
                 j.status === 'PICKED_UP' ||
                 j.status === 'OUT_FOR_DELIVERY'
             ).length === 0 && (
-              <div className="text-center py-8 text-content-tertiary text-sm">
+              <div className="text-center py-8 text-wl-text-tertiary text-sm">
                 No active assignments
               </div>
             )}
@@ -328,7 +328,7 @@ export default function DispatchPage() {
 
         {/* Pending Dispatch */}
         <Card>
-          <CardHeader className="border-b border-border-subtle">
+          <CardHeader className="border-b border-wl-border-subtle">
             <CardTitle>Pending Dispatch</CardTitle>
           </CardHeader>
           <div className="p-4 space-y-2 max-h-64 overflow-y-auto">
@@ -338,24 +338,24 @@ export default function DispatchPage() {
               .map((job) => (
                 <div
                   key={job.id}
-                  className="p-3 bg-surface-secondary rounded-md border-l-4 border-warning hover:bg-surface-tertiary transition-colors"
+                  className="p-3 bg-wl-bg-elevated rounded-md border-l-4 border-wl-warning-500 hover:bg-wl-bg-overlay transition-colors"
                 >
                   <div className="flex justify-between items-start gap-2 mb-1">
                     <div className="min-w-0">
-                      <div className="text-sm font-semibold text-content-primary">
+                      <div className="text-sm font-semibold text-wl-text-primary">
                         {job.orderNumber}
                       </div>
-                      <div className="text-xs text-content-secondary truncate">
+                      <div className="text-xs text-wl-text-secondary truncate">
                         {job.customerName}
                       </div>
                     </div>
                     <Badge variant="warning">{job.priority}</Badge>
                   </div>
                   <div className="flex gap-2 mt-2">
-                    <button className="flex-1 px-2 py-1 text-xs bg-brand-primary hover:bg-brand-primary-hover text-white rounded transition-colors">
+                    <button className="flex-1 px-2 py-1 text-xs bg-wl-primary-500 hover:bg-wl-primary-600 text-white rounded transition-colors">
                       Auto Assign
                     </button>
-                    <button className="flex-1 px-2 py-1 text-xs bg-surface-tertiary hover:bg-surface-overlay text-content-secondary rounded transition-colors">
+                    <button className="flex-1 px-2 py-1 text-xs bg-wl-bg-overlay hover:bg-wl-bg-overlay text-wl-text-secondary rounded transition-colors">
                       Assign
                     </button>
                   </div>
@@ -364,7 +364,7 @@ export default function DispatchPage() {
             {orders.filter(
               (j) => j.status === 'PENDING' || j.status === 'ACCEPTED'
             ).length === 0 && (
-              <div className="text-center py-8 text-content-tertiary text-sm">
+              <div className="text-center py-8 text-wl-text-tertiary text-sm">
                 All jobs assigned!
               </div>
             )}

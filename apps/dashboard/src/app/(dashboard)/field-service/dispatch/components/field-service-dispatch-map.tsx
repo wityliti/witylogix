@@ -143,11 +143,11 @@ export default function FieldServiceDispatchMap({
   return (
     <div className="relative w-full h-full rounded-lg overflow-hidden">
       {driverMarkers.length === 0 && orderPins.length === 0 ? (
-        <div className="w-full h-full flex items-center justify-center bg-surface-secondary rounded-lg border border-border-subtle">
-          <div className="text-center text-content-tertiary">
+        <div className="w-full h-full flex items-center justify-center bg-wl-bg-elevated rounded-lg border border-wl-border-subtle">
+          <div className="text-center text-wl-text-tertiary">
             <div className="text-3xl mb-2">📍</div>
             <p className="text-sm">No location data available</p>
-            <p className="text-xs mt-1 text-content-muted">Assign technicians to see them on the map</p>
+            <p className="text-xs mt-1 text-wl-text-tertiary">Assign technicians to see them on the map</p>
           </div>
         </div>
       ) : (
@@ -165,21 +165,21 @@ export default function FieldServiceDispatchMap({
 
       {/* Legend */}
       <div className="absolute bottom-3 left-3 flex flex-col gap-2 pointer-events-none">
-        <div className="bg-surface-overlay/90 backdrop-blur-sm rounded px-3 py-2 border border-border-subtle text-xs space-y-1">
-          <p className="text-content-secondary font-semibold mb-1">Technicians</p>
+        <div className="bg-wl-bg-overlay/90 backdrop-blur-sm rounded px-3 py-2 border border-wl-border-subtle text-xs space-y-1">
+          <p className="text-wl-text-secondary font-semibold mb-1">Technicians</p>
           {STATUS_LEGEND.map((l) => (
             <div key={l.label} className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: l.color }} />
-              <span className="text-content-tertiary">{l.label}</span>
+              <span className="text-wl-text-tertiary">{l.label}</span>
             </div>
           ))}
         </div>
-        <div className="bg-surface-overlay/90 backdrop-blur-sm rounded px-3 py-2 border border-border-subtle text-xs space-y-1">
-          <p className="text-content-secondary font-semibold mb-1">Jobs</p>
+        <div className="bg-wl-bg-overlay/90 backdrop-blur-sm rounded px-3 py-2 border border-wl-border-subtle text-xs space-y-1">
+          <p className="text-wl-text-secondary font-semibold mb-1">Jobs</p>
           {JOB_LEGEND.map((l) => (
             <div key={l.label} className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-sm flex-shrink-0" style={{ background: l.color }} />
-              <span className="text-content-tertiary">{l.label}</span>
+              <span className="text-wl-text-tertiary">{l.label}</span>
             </div>
           ))}
         </div>

@@ -188,24 +188,24 @@ export default function JobsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface-primary p-6">
+    <div className="min-h-screen bg-wl-bg-surface p-6">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-content-primary mb-2">Work Order Management</h1>
-            <p className="text-content-secondary">
+            <h1 className="text-3xl font-bold text-wl-text-primary mb-2">Work Order Management</h1>
+            <p className="text-wl-text-secondary">
               {filteredOrders.length} orders ·{' '}
               {allOrders.filter((o) => o.status === 'completed').length} completed today
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex rounded overflow-hidden border border-border-subtle">
+            <div className="flex rounded overflow-hidden border border-wl-border-subtle">
               <button
                 onClick={() => setView('list')}
                 className={cn(
                   'px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors',
-                  view === 'list' ? 'bg-brand-primary text-white' : 'bg-transparent text-content-secondary hover:text-content-primary',
+                  view === 'list' ? 'bg-wl-primary-500 text-white' : 'bg-transparent text-wl-text-secondary hover:text-wl-text-primary',
                 )}
               >
                 <List size={13} /> List
@@ -213,8 +213,8 @@ export default function JobsPage() {
               <button
                 onClick={() => setView('map')}
                 className={cn(
-                  'px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors border-l border-border-subtle',
-                  view === 'map' ? 'bg-brand-primary text-white' : 'bg-transparent text-content-secondary hover:text-content-primary',
+                  'px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors border-l border-wl-border-subtle',
+                  view === 'map' ? 'bg-wl-primary-500 text-white' : 'bg-transparent text-wl-text-secondary hover:text-wl-text-primary',
                 )}
               >
                 <Map size={13} /> Map
@@ -241,19 +241,19 @@ export default function JobsPage() {
         <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-content-secondary text-sm font-medium">Total Orders</span>
-              <ClipboardList className="text-brand-primary" size={20} />
+              <span className="text-wl-text-secondary text-sm font-medium">Total Orders</span>
+              <ClipboardList className="text-wl-primary-500" size={20} />
             </div>
-            <p className="text-3xl font-bold text-content-primary">{allOrders.length}</p>
+            <p className="text-3xl font-bold text-wl-text-primary">{allOrders.length}</p>
           </div>
         </Card>
         <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-content-secondary text-sm font-medium">In Progress</span>
-              <div className="w-5 h-5 rounded-full bg-warning" />
+              <span className="text-wl-text-secondary text-sm font-medium">In Progress</span>
+              <div className="w-5 h-5 rounded-full bg-wl-warning-500" />
             </div>
-            <p className="text-3xl font-bold text-content-primary">
+            <p className="text-3xl font-bold text-wl-text-primary">
               {allOrders.filter((o) => o.status === 'in_progress').length}
             </p>
           </div>
@@ -261,10 +261,10 @@ export default function JobsPage() {
         <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-content-secondary text-sm font-medium">Completed</span>
-              <div className="w-5 h-5 rounded-full bg-success" />
+              <span className="text-wl-text-secondary text-sm font-medium">Completed</span>
+              <div className="w-5 h-5 rounded-full bg-wl-success-500" />
             </div>
-            <p className="text-3xl font-bold text-content-primary">
+            <p className="text-3xl font-bold text-wl-text-primary">
               {allOrders.filter((o) => o.status === 'completed').length}
             </p>
           </div>
@@ -272,10 +272,10 @@ export default function JobsPage() {
         <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-content-secondary text-sm font-medium">Urgent</span>
-              <div className="w-5 h-5 rounded-full bg-danger" />
+              <span className="text-wl-text-secondary text-sm font-medium">Urgent</span>
+              <div className="w-5 h-5 rounded-full bg-wl-danger-500" />
             </div>
-            <p className="text-3xl font-bold text-content-primary">
+            <p className="text-3xl font-bold text-wl-text-primary">
               {allOrders.filter((o) => o.priority === 'urgent').length}
             </p>
           </div>
@@ -286,12 +286,12 @@ export default function JobsPage() {
       {showCreateForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <CardHeader className="border-b border-border-subtle">
+            <CardHeader className="border-b border-wl-border-subtle">
               <div className="flex justify-between items-center">
                 <CardTitle>Create New Work Order</CardTitle>
                 <button
                   onClick={() => setShowCreateForm(false)}
-                  className="text-content-tertiary hover:text-content-primary transition-colors"
+                  className="text-wl-text-tertiary hover:text-wl-text-primary transition-colors"
                 >
                   <X size={20} />
                 </button>
@@ -299,7 +299,7 @@ export default function JobsPage() {
             </CardHeader>
             <form onSubmit={handleCreateOrder} className="p-6 space-y-4">
               {submitError && (
-                <div className="p-3 bg-danger-subtle border border-danger-border rounded text-sm text-danger">
+                <div className="p-3 bg-wl-danger-500/10 border border-wl-danger-500/30 rounded text-sm text-wl-danger-500">
                   {submitError}
                 </div>
               )}
@@ -307,20 +307,20 @@ export default function JobsPage() {
               {/* Customer Info */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-content-secondary block mb-1">
-                    Customer Name <span className="text-danger">*</span>
+                  <label className="text-sm font-medium text-wl-text-secondary block mb-1">
+                    Customer Name <span className="text-wl-danger-500">*</span>
                   </label>
                   <input
                     type="text"
                     placeholder="John Smith"
                     value={form.customerName}
                     onChange={(e) => updateForm('customerName', e.target.value)}
-                    className="w-full px-3 py-2 rounded border border-border-subtle bg-surface-primary text-content-primary text-sm focus:border-brand-primary focus:outline-none transition-colors"
+                    className="w-full px-3 py-2 rounded border border-wl-border-subtle bg-wl-bg-surface text-wl-text-primary text-sm focus:border-wl-primary-500 focus:outline-none transition-colors"
                     required
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-content-secondary block mb-1">
+                  <label className="text-sm font-medium text-wl-text-secondary block mb-1">
                     Phone
                   </label>
                   <input
@@ -328,7 +328,7 @@ export default function JobsPage() {
                     placeholder="+1 555-0000"
                     value={form.customerPhone}
                     onChange={(e) => updateForm('customerPhone', e.target.value)}
-                    className="w-full px-3 py-2 rounded border border-border-subtle bg-surface-primary text-content-primary text-sm focus:border-brand-primary focus:outline-none transition-colors"
+                    className="w-full px-3 py-2 rounded border border-wl-border-subtle bg-wl-bg-surface text-wl-text-primary text-sm focus:border-wl-primary-500 focus:outline-none transition-colors"
                   />
                 </div>
               </div>
@@ -336,7 +336,7 @@ export default function JobsPage() {
               {/* Service Details */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-content-secondary block mb-1">
+                  <label className="text-sm font-medium text-wl-text-secondary block mb-1">
                     Service Type
                   </label>
                   <select
@@ -344,7 +344,7 @@ export default function JobsPage() {
                     onChange={(e) =>
                       updateForm('serviceType', e.target.value as WorkOrderType)
                     }
-                    className="w-full px-3 py-2 rounded border border-border-subtle bg-surface-primary text-content-primary text-sm focus:border-brand-primary focus:outline-none transition-colors"
+                    className="w-full px-3 py-2 rounded border border-wl-border-subtle bg-wl-bg-surface text-wl-text-primary text-sm focus:border-wl-primary-500 focus:outline-none transition-colors"
                   >
                     <option value="installation">Installation</option>
                     <option value="maintenance">Maintenance</option>
@@ -353,7 +353,7 @@ export default function JobsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-content-secondary block mb-1">
+                  <label className="text-sm font-medium text-wl-text-secondary block mb-1">
                     Priority
                   </label>
                   <select
@@ -361,7 +361,7 @@ export default function JobsPage() {
                     onChange={(e) =>
                       updateForm('priority', e.target.value as WorkOrderPriority)
                     }
-                    className="w-full px-3 py-2 rounded border border-border-subtle bg-surface-primary text-content-primary text-sm focus:border-brand-primary focus:outline-none transition-colors"
+                    className="w-full px-3 py-2 rounded border border-wl-border-subtle bg-wl-bg-surface text-wl-text-primary text-sm focus:border-wl-primary-500 focus:outline-none transition-colors"
                   >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
@@ -370,44 +370,44 @@ export default function JobsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-content-secondary block mb-1">
+                  <label className="text-sm font-medium text-wl-text-secondary block mb-1">
                     Preferred Date
                   </label>
                   <input
                     type="date"
                     value={form.preferredDate}
                     onChange={(e) => updateForm('preferredDate', e.target.value)}
-                    className="w-full px-3 py-2 rounded border border-border-subtle bg-surface-primary text-content-primary text-sm focus:border-brand-primary focus:outline-none transition-colors"
+                    className="w-full px-3 py-2 rounded border border-wl-border-subtle bg-wl-bg-surface text-wl-text-primary text-sm focus:border-wl-primary-500 focus:outline-none transition-colors"
                   />
                 </div>
               </div>
 
               {/* Description */}
               <div>
-                <label className="text-sm font-medium text-content-secondary block mb-1">
-                  Description <span className="text-danger">*</span>
+                <label className="text-sm font-medium text-wl-text-secondary block mb-1">
+                  Description <span className="text-wl-danger-500">*</span>
                 </label>
                 <textarea
                   placeholder="Describe the work needed..."
                   rows={4}
                   value={form.description}
                   onChange={(e) => updateForm('description', e.target.value)}
-                  className="w-full px-3 py-2 rounded border border-border-subtle bg-surface-primary text-content-primary text-sm focus:border-brand-primary focus:outline-none transition-colors"
+                  className="w-full px-3 py-2 rounded border border-wl-border-subtle bg-wl-bg-surface text-wl-text-primary text-sm focus:border-wl-primary-500 focus:outline-none transition-colors"
                   required
                 />
               </div>
 
               {/* Location */}
               <div>
-                <label className="text-sm font-medium text-content-secondary block mb-1">
-                  Location <span className="text-danger">*</span>
+                <label className="text-sm font-medium text-wl-text-secondary block mb-1">
+                  Location <span className="text-wl-danger-500">*</span>
                 </label>
                 <input
                   type="text"
                   placeholder="123 Main St, New York, NY"
                   value={form.location}
                   onChange={(e) => updateForm('location', e.target.value)}
-                  className="w-full px-3 py-2 rounded border border-border-subtle bg-surface-primary text-content-primary text-sm focus:border-brand-primary focus:outline-none transition-colors"
+                  className="w-full px-3 py-2 rounded border border-wl-border-subtle bg-wl-bg-surface text-wl-text-primary text-sm focus:border-wl-primary-500 focus:outline-none transition-colors"
                   required
                 />
               </div>
@@ -444,10 +444,10 @@ export default function JobsPage() {
             placeholder="Search by job #, customer, or description..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 pl-10 rounded-lg border border-border-subtle bg-surface-secondary text-content-primary text-sm placeholder-content-muted focus:border-brand-primary focus:outline-none transition-colors"
+            className="w-full px-4 py-2 pl-10 rounded-lg border border-wl-border-subtle bg-wl-bg-elevated text-wl-text-primary text-sm placeholder:text-wl-text-tertiary focus:border-wl-primary-500 focus:outline-none transition-colors"
           />
           <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-content-muted"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-wl-text-tertiary"
             size={16}
           />
         </div>
@@ -471,8 +471,8 @@ export default function JobsPage() {
                 className={cn(
                   'px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border',
                   statusFilter === status
-                    ? 'bg-brand-primary text-white border-brand-primary'
-                    : 'border-border-subtle bg-transparent text-content-secondary hover:border-border-default'
+                    ? 'bg-wl-primary-500 text-white border-wl-primary-500'
+                    : 'border-wl-border-subtle bg-transparent text-wl-text-secondary hover:border-wl-border-default'
                 )}
               >
                 {status === 'all' ? 'All Status' : status.replace(/_/g, ' ')}
@@ -489,8 +489,8 @@ export default function JobsPage() {
                 className={cn(
                   'px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border',
                   priorityFilter === priority
-                    ? 'bg-warning text-white border-warning'
-                    : 'border-border-subtle bg-transparent text-content-secondary hover:border-border-default'
+                    ? 'bg-wl-warning-500 text-white border-wl-warning-500'
+                    : 'border-wl-border-subtle bg-transparent text-wl-text-secondary hover:border-wl-border-default'
                 )}
               >
                 {priority === 'all' ? 'All Priority' : priority}
@@ -509,8 +509,8 @@ export default function JobsPage() {
                 className={cn(
                   'px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border',
                   typeFilter === type
-                    ? 'bg-info text-white border-info'
-                    : 'border-border-subtle bg-transparent text-content-secondary hover:border-border-default'
+                    ? 'bg-wl-info-500 text-white border-wl-info-500'
+                    : 'border-wl-border-subtle bg-transparent text-wl-text-secondary hover:border-wl-border-default'
                 )}
               >
                 {type === 'all' ? 'All Types' : type}
@@ -523,11 +523,11 @@ export default function JobsPage() {
       {/* Map View */}
       {view === 'map' && (
         <div
-          className="relative rounded-lg overflow-hidden border border-border-subtle mb-5"
+          className="relative rounded-lg overflow-hidden border border-wl-border-subtle mb-5"
           style={{ height: 'calc(100vh - 400px)', minHeight: '400px' }}
         >
           {jobPins.length === 0 ? (
-            <div className="flex items-center justify-center h-full bg-surface-secondary text-content-tertiary text-sm">
+            <div className="flex items-center justify-center h-full bg-wl-bg-elevated text-wl-text-tertiary text-sm">
               <div className="text-center">
                 <MapPin size={28} className="mx-auto mb-2 opacity-40" />
                 <p>No geocoded jobs to display</p>
@@ -553,62 +553,62 @@ export default function JobsPage() {
       >
         {/* Table Card */}
         <Card>
-          <CardHeader className="border-b border-border-subtle">
+          <CardHeader className="border-b border-wl-border-subtle">
             <CardTitle>Work Orders ({filteredOrders.length})</CardTitle>
           </CardHeader>
 
           {filteredOrders.length === 0 ? (
-            <div className="p-12 text-center text-content-tertiary">
-              <ClipboardList className="mx-auto mb-3 text-content-muted" size={32} />
-              <p className="font-medium text-content-secondary">No work orders found</p>
+            <div className="p-12 text-center text-wl-text-tertiary">
+              <ClipboardList className="mx-auto mb-3 text-wl-text-tertiary" size={32} />
+              <p className="font-medium text-wl-text-secondary">No work orders found</p>
               <p className="text-sm mt-1">Try adjusting your filters or create a new work order</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="border-b border-border-subtle bg-surface-secondary">
+                <thead className="border-b border-wl-border-subtle bg-wl-bg-elevated">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-content-tertiary">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-wl-text-tertiary">
                       Job #
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-content-tertiary">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-wl-text-tertiary">
                       Customer
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-content-tertiary">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-wl-text-tertiary">
                       Type
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-content-tertiary">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-wl-text-tertiary">
                       Priority
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-content-tertiary">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-wl-text-tertiary">
                       Status
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-content-tertiary">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-wl-text-tertiary">
                       Tech
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-content-tertiary">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-wl-text-tertiary">
                       ETA
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border-subtle">
+                <tbody className="divide-y divide-wl-border-subtle">
                   {filteredOrders.map((order) => (
                     <tr
                       key={order.id}
                       onClick={() => setSelectedJob(order.id)}
                       className={cn(
-                        'hover:bg-surface-secondary transition-colors cursor-pointer',
-                        selectedJobData?.id === order.id && 'bg-surface-secondary'
+                        'hover:bg-wl-bg-elevated transition-colors cursor-pointer',
+                        selectedJobData?.id === order.id && 'bg-wl-bg-elevated'
                       )}
                     >
-                      <td className="px-4 py-3 text-content-primary font-mono text-xs">
+                      <td className="px-4 py-3 text-wl-text-primary font-mono text-xs">
                         {order.jobNumber}
                       </td>
-                      <td className="px-4 py-3 text-content-secondary">
+                      <td className="px-4 py-3 text-wl-text-secondary">
                         <div>{order.customerName}</div>
-                        <div className="text-xs text-content-tertiary">{order.customerPhone}</div>
+                        <div className="text-xs text-wl-text-tertiary">{order.customerPhone}</div>
                       </td>
-                      <td className="px-4 py-3 text-content-secondary capitalize text-xs">
+                      <td className="px-4 py-3 text-wl-text-secondary capitalize text-xs">
                         {order.serviceType.replace(/_/g, ' ')}
                       </td>
                       <td className="px-4 py-3">
@@ -621,10 +621,10 @@ export default function JobsPage() {
                           {order.status.replace(/_/g, ' ')}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-content-secondary text-xs">
+                      <td className="px-4 py-3 text-wl-text-secondary text-xs">
                         {order.assignedTechName || '—'}
                       </td>
-                      <td className="px-4 py-3 text-content-secondary text-xs">
+                      <td className="px-4 py-3 text-wl-text-secondary text-xs">
                         {order.eta || '—'}
                       </td>
                     </tr>
@@ -641,12 +641,12 @@ export default function JobsPage() {
             className="sticky overflow-y-auto"
             style={{ top: '24px', maxHeight: 'calc(100vh - 200px)' }}
           >
-            <CardHeader className="border-b border-border-subtle">
+            <CardHeader className="border-b border-wl-border-subtle">
               <div className="flex justify-between items-center">
                 <CardTitle>Job Details</CardTitle>
                 <button
                   onClick={() => setSelectedJob(null)}
-                  className="text-content-tertiary hover:text-content-primary transition-colors"
+                  className="text-wl-text-tertiary hover:text-wl-text-primary transition-colors"
                 >
                   <X size={20} />
                 </button>
@@ -654,7 +654,7 @@ export default function JobsPage() {
             </CardHeader>
             <div className="p-4 space-y-4">
               <div>
-                <div className="text-lg font-bold text-content-primary mb-1">
+                <div className="text-lg font-bold text-wl-text-primary mb-1">
                   {selectedJobData.jobNumber}
                 </div>
                 <div className="flex gap-2 mb-3">
@@ -667,39 +667,39 @@ export default function JobsPage() {
                 </div>
               </div>
 
-              <div className="h-px bg-border-subtle" />
+              <div className="h-px bg-wl-border-subtle" />
 
               <div>
-                <div className="text-xs font-semibold text-content-tertiary uppercase mb-2">
+                <div className="text-xs font-semibold text-wl-text-tertiary uppercase mb-2">
                   Customer
                 </div>
-                <div className="text-sm text-content-primary font-medium">
+                <div className="text-sm text-wl-text-primary font-medium">
                   {selectedJobData.customerName}
                 </div>
-                <div className="text-xs text-content-secondary mt-1">
+                <div className="text-xs text-wl-text-secondary mt-1">
                   {selectedJobData.customerPhone}
                 </div>
               </div>
 
-              <div className="h-px bg-border-subtle" />
+              <div className="h-px bg-wl-border-subtle" />
 
               <div>
-                <div className="text-xs font-semibold text-content-tertiary uppercase mb-2">
+                <div className="text-xs font-semibold text-wl-text-tertiary uppercase mb-2">
                   Location
                 </div>
-                <div className="text-sm text-content-primary">{selectedJobData.location}</div>
+                <div className="text-sm text-wl-text-primary">{selectedJobData.location}</div>
               </div>
 
-              <div className="h-px bg-border-subtle" />
+              <div className="h-px bg-wl-border-subtle" />
 
               <div>
-                <div className="text-xs font-semibold text-content-tertiary uppercase mb-2">
+                <div className="text-xs font-semibold text-wl-text-tertiary uppercase mb-2">
                   Description
                 </div>
-                <div className="text-sm text-content-secondary">{selectedJobData.description}</div>
+                <div className="text-sm text-wl-text-secondary">{selectedJobData.description}</div>
               </div>
 
-              <div className="h-px bg-border-subtle" />
+              <div className="h-px bg-wl-border-subtle" />
 
               <div className="space-y-2">
                 <Button variant="primary" size="sm" className="w-full text-xs">
