@@ -230,7 +230,7 @@ const Body = ({
             "w-full px-3 py-2 rounded-md",
             "bg-wl-bg-elevated text-[var(--wl-text-primary)]",
             "border border-wl-border-default",
-            "focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]/40",
+            "focus:outline-none focus:ring-2 focus:ring-wl-primary-500/40",
             "placeholder:text-[var(--wl-text-secondary)]",
             "font-mono text-sm"
           )}
@@ -355,7 +355,7 @@ const Tabs = ({ children }: TabsProps) => {
               "px-4 py-2 text-sm font-medium transition-colors",
               "border-b-2 -mb-[2px]",
               channel === ch
-                ? "text-[var(--wl-primary)] border-[var(--wl-primary)]"
+                ? "text-wl-primary-500 border-wl-primary-500"
                 : "text-[var(--wl-text-secondary)] border-transparent hover:text-[var(--wl-text-primary)]"
             )}
           >

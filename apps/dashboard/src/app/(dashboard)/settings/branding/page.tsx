@@ -99,7 +99,7 @@ export default function BrandingPage() {
   };
 
   const colorFields = [
-    { label: 'Primary Color', value: primaryColor, onChange: setPrimaryColor, previewClass: 'bg-[var(--wl-primary)]' },
+    { label: 'Primary Color', value: primaryColor, onChange: setPrimaryColor, previewClass: 'bg-wl-primary-500' },
     { label: 'Secondary Color', value: secondaryColor, onChange: setSecondaryColor, previewClass: 'bg-violet-400' },
     { label: 'Accent Color', value: accentColor, onChange: setAccentColor, previewClass: 'bg-wl-warning-500' },
     { label: 'Success Color', value: successColor, onChange: setSuccessColor, previewClass: 'bg-wl-success-500' },

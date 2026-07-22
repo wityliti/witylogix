@@ -199,7 +199,7 @@ export const ChannelToggleMatrix = ({
                         "transition-colors uppercase tracking-wide",
                         UNAVAILABLE_CHANNELS[channel]
                           ? "text-[var(--wl-text-secondary)] opacity-40 cursor-not-allowed"
-                          : "text-[var(--wl-primary)] hover:bg-wl-bg-elevated"
+                          : "text-wl-primary-500 hover:bg-wl-bg-elevated"
                       )}
                     >
                       {channel}
@@ -231,9 +231,9 @@ export const ChannelToggleMatrix = ({
                     onClick={() => handleRowSelectAll(category)}
                     className={cn(
                       "text-left text-sm font-medium transition-colors",
-                      "hover:text-[var(--wl-primary)] hover:underline",
+                      "hover:text-wl-primary-500 hover:underline",
                       categoryEnabled === availableCount
-                        ? "text-[var(--wl-primary)]"
+                        ? "text-wl-primary-500"
                         : "text-[var(--wl-text-primary)]"
                     )}
                     title="Click to toggle all available channels"

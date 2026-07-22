@@ -38,7 +38,7 @@ const STATUS_CONFIG: Record<
 > = {
   sent: {
     icon: Zap,
-    color: "text-[var(--wl-primary)]",
+    color: "text-wl-primary-500",
     label: "Sent",
   },
   delivered: {

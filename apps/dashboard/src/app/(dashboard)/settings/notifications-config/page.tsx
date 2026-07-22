@@ -290,7 +290,7 @@ export default function NotificationsConfigPage() {
               <input
                 type="url"
                 placeholder="https://example.com/webhooks/notifications"
-                className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-wl-primary-500"
               />
               <p className="text-xs text-[var(--wl-text-tertiary)] mt-2">
                 We'll send POST requests to this URL for enabled events
@@ -306,7 +306,7 @@ export default function NotificationsConfigPage() {
                   type="password"
                   value="••••••••••••••••"
                   disabled
-                  className="flex-1 px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                  className="flex-1 px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-wl-primary-500"
                 />
                 <Button
                   variant="secondary"
@@ -324,7 +324,7 @@ export default function NotificationsConfigPage() {
               <label className="block text-sm font-medium text-[var(--wl-text-primary)] mb-2">
                 Retry Policy
               </label>
-              <select className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
+              <select className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-wl-primary-500">
                 <option>Retry up to 3 times (default)</option>
                 <option>Retry up to 5 times</option>
                 <option>Retry up to 10 times</option>
@@ -356,7 +356,7 @@ export default function NotificationsConfigPage() {
               <label className="block text-sm font-medium text-[var(--wl-text-primary)] mb-2">
                 Digest Frequency
               </label>
-              <select className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
+              <select className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-wl-primary-500">
                 <option>Real-time (immediate)</option>
                 <option>Hourly</option>
                 <option>Daily at 9:00 AM</option>
@@ -373,7 +373,7 @@ export default function NotificationsConfigPage() {
                 type="number"
                 defaultValue="5"
                 min="1"
-                className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-wl-primary-500"
               />
               <p className="text-xs text-[var(--wl-text-tertiary)] mt-2">
                 Only send digest if there are at least this many alerts
@@ -415,7 +415,7 @@ export default function NotificationsConfigPage() {
           >
             Cancel
           </Button>
-          <Button className="bg-[var(--wl-primary)] hover:bg-[var(--wl-primary)]/90">
+          <Button className="bg-wl-primary-500 hover:bg-wl-primary-600">
             Save Preferences
           </Button>
         </div>

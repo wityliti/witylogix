@@ -107,10 +107,10 @@ function LoginPageInner() {
 
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-wl-bg">
+      <div className="flex items-center justify-center min-h-screen bg-wl-bg-root">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-full border-2 border-wl-border border-t-wl-primary animate-spin" />
-          <p className="text-wl-text">Loading...</p>
+          <div className="w-12 h-12 rounded-full border-2 border-wl-border-default border-t-wl-primary-500 animate-spin" />
+          <p className="text-wl-text-primary">Loading...</p>
         </div>
       </div>
     );
@@ -415,7 +415,7 @@ function LoginPageInner() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center items-center min-h-screen bg-wl-bg"><Loader2 size={32} className="animate-spin" style={{ color: "var(--wl-primary, #6C63FF)" }} /></div>}>
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen bg-wl-bg-root"><Loader2 size={32} className="animate-spin" style={{ color: "var(--wl-primary-500)" }} /></div>}>
       <LoginPageInner />
     </Suspense>
   );

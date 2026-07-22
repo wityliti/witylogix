@@ -99,15 +99,15 @@ export default function SettingsLayout({
                 className={cn(
                   "flex items-center justify-between gap-3 px-3 py-3 rounded-lg transition-all no-underline",
                   isActive
-                    ? "bg-[var(--wl-primary)] bg-opacity-10 text-[var(--wl-primary)] border border-[var(--wl-primary)] border-opacity-30"
-                    : "text-[var(--wl-text-secondary)] hover:bg-wl-bg-elevated hover:text-[var(--wl-text-primary)]"
+                    ? "bg-wl-primary-500/10 text-wl-primary-500 border border-wl-primary-500/30"
+                    : "text-wl-text-secondary hover:bg-wl-bg-elevated hover:text-wl-text-primary"
                 )}
               >
                 <div className="flex items-center gap-3">
                   <span className={cn(
                     "p-2 rounded-lg",
                     isActive
-                      ? "bg-[var(--wl-primary)] text-white"
+                      ? "bg-wl-primary-500 text-white"
                       : "bg-wl-bg-elevated text-[var(--wl-text-secondary)]"
                   )}>
                     {link.icon}

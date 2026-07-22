@@ -147,16 +147,13 @@ export default function RegisterPage() {
 
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-wl-bg">
+      <div className="flex items-center justify-center min-h-screen bg-wl-bg-root">
         <div className="flex flex-col items-center gap-4">
           <div
-            className="w-12 h-12 rounded-full border-2 border-wl-border animate-spin"
-            style={{
-              borderTopColor: "var(--wl-primary)",
-            }}
+            className="w-12 h-12 rounded-full border-2 border-wl-border-default border-t-wl-primary-500 animate-spin"
           />
 
-          <p className="text-wl-text">Loading...</p>
+          <p className="text-wl-text-primary">Loading...</p>
         </div>
       </div>
     );
