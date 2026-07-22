@@ -84,7 +84,7 @@ export default function DVIRPage() {
             <span className="text-xs font-semibold text-wl-text-secondary uppercase">Total Defects</span>
             <Wrench className="w-4 h-4 text-wl-info-500" />
           </div>
-          <p className="text-2xl font-bold text-white">{defects.length}</p>
+          <p className="text-2xl font-bold text-wl-text-primary">{defects.length}</p>
           <p className="text-xs text-wl-text-secondary mt-1">{openDefectsCount} open</p>
         </div>
 
@@ -150,7 +150,7 @@ export default function DVIRPage() {
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value as DefectStatus | "ALL")}
-                  className="h-9 px-3 text-xs rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white"
+                  className="h-9 px-3 text-xs rounded-lg bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary"
                 >
                   <option value="ALL">All Statuses</option>
                   <option value="REPORTED">Reported</option>
@@ -206,7 +206,7 @@ export default function DVIRPage() {
                           onChange={(e) =>
                             updateDefectStatus({ id: defect.id, status: e.target.value as DefectStatus })
                           }
-                          className="h-8 px-2 text-xs rounded bg-wl-bg-elevated border border-wl-border-default text-white"
+                          className="h-8 px-2 text-xs rounded bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary"
                         >
                           <option value="REPORTED">Reported</option>
                           <option value="ACKNOWLEDGED">Acknowledged</option>
@@ -241,7 +241,7 @@ export default function DVIRPage() {
               <div className="mt-4 relative">
                 <button
                   onClick={() => setShowVehicleSearch(!showVehicleSearch)}
-                  className="w-full h-9 px-3 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-white text-left flex items-center justify-between hover:bg-wl-bg-root transition-colors text-sm"
+                  className="w-full h-9 px-3 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-wl-text-primary text-left flex items-center justify-between hover:bg-wl-bg-root transition-colors text-sm"
                 >
                   <span>
                     {selectedVehicle ? `Vehicle: ${selectedVehicle}` : "All vehicles"}

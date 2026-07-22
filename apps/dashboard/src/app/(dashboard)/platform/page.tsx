@@ -199,7 +199,7 @@ function MetricCard({ label, value, unit, sublabel }: {
           {value == null ? (
             <span className="text-2xl font-bold text-wl-text-tertiary">—</span>
           ) : (
-            <span className="text-2xl font-bold text-white">{value}</span>
+            <span className="text-2xl font-bold text-wl-text-primary">{value}</span>
           )}
           {unit && value != null && <span className="text-xs text-wl-text-secondary">{unit}</span>}
         </div>

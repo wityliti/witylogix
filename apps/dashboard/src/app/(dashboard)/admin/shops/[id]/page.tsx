@@ -166,7 +166,7 @@ export default function AdminShopDetail() {
           <CardContent className="p-6">
             <div className="flex justify-between items-start mb-5">
               <div>
-                <h1 className="text-2xl font-bold text-white mb-2">
+                <h1 className="text-2xl font-bold text-wl-text-primary mb-2">
                   {shop.name}
                 </h1>
                 <p className="text-wl-text-secondary text-sm">
@@ -199,19 +199,19 @@ export default function AdminShopDetail() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-wl-border-default">
               <div>
                 <p className="text-wl-text-secondary mb-1 text-xs">Store ID</p>
-                <p className="text-white text-sm font-medium font-mono">{shop.id.slice(0, 8)}…</p>
+                <p className="text-wl-text-primary text-sm font-medium font-mono">{shop.id.slice(0, 8)}…</p>
               </div>
               <div>
                 <p className="text-wl-text-secondary mb-1 text-xs">Email</p>
-                <p className="text-white text-sm font-medium">{shop.email || "—"}</p>
+                <p className="text-wl-text-primary text-sm font-medium">{shop.email || "—"}</p>
               </div>
               <div>
                 <p className="text-wl-text-secondary mb-1 text-xs">Plan Status</p>
-                <p className="text-white text-sm font-medium">{shop.subscription?.status || "—"}</p>
+                <p className="text-wl-text-primary text-sm font-medium">{shop.subscription?.status || "—"}</p>
               </div>
               <div>
                 <p className="text-wl-text-secondary mb-1 text-xs">Member Since</p>
-                <p className="text-white text-sm font-medium">
+                <p className="text-wl-text-primary text-sm font-medium">
                   {new Date(shop.createdAt).toLocaleDateString()}
                 </p>
               </div>
@@ -244,7 +244,7 @@ export default function AdminShopDetail() {
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-wl-text-secondary mb-2 text-xs">Total Orders</p>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-2xl font-bold text-wl-text-primary">
                     {shop.usage.orders.toLocaleString()}
                   </p>
                 </div>
@@ -258,7 +258,7 @@ export default function AdminShopDetail() {
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-wl-text-secondary mb-2 text-xs">Team Users</p>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-2xl font-bold text-wl-text-primary">
                     {shop.usage.users.toLocaleString()}
                   </p>
                 </div>
@@ -272,7 +272,7 @@ export default function AdminShopDetail() {
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-wl-text-secondary mb-2 text-xs">Drivers</p>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-2xl font-bold text-wl-text-primary">
                     {shop.usage.drivers}
                   </p>
                 </div>
@@ -286,7 +286,7 @@ export default function AdminShopDetail() {
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-wl-text-secondary mb-2 text-xs">Next Billing</p>
-                  <p className="text-sm font-bold text-white">
+                  <p className="text-sm font-bold text-wl-text-primary">
                     {shop.subscription?.billingCycleEnd
                       ? new Date(shop.subscription.billingCycleEnd).toLocaleDateString()
                       : "—"}
@@ -301,7 +301,7 @@ export default function AdminShopDetail() {
         {/* Admin Actions */}
         <Card className="bg-wl-bg-surface border border-wl-border-default mb-6">
           <CardContent className="p-5">
-            <h3 className="text-base font-semibold text-white mb-4">Admin Actions</h3>
+            <h3 className="text-base font-semibold text-wl-text-primary mb-4">Admin Actions</h3>
             <div className="flex gap-3 flex-wrap">
               <Button variant="primary" size="sm" className="flex items-center gap-2">
                 <Crown size={16} />
@@ -352,7 +352,7 @@ export default function AdminShopDetail() {
               <div className="mt-4 p-3 bg-wl-warning-500/10 border border-wl-warning-500/20 rounded">
                 <div className="flex gap-2 items-start mb-3">
                   <AlertTriangle size={16} className="text-wl-warning-500 flex-shrink-0" />
-                  <p className="text-white m-0 text-sm">
+                  <p className="text-wl-text-primary m-0 text-sm">
                     Suspending this shop will disable all access and API calls. This action can be reversed.
                   </p>
                 </div>
@@ -366,7 +366,7 @@ export default function AdminShopDetail() {
                   </button>
                   <button
                     onClick={() => setShowSuspendConfirm(false)}
-                    className="bg-wl-bg-elevated text-white border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90"
+                    className="bg-wl-bg-elevated text-wl-text-primary border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90"
                   >
                     Cancel
                   </button>
@@ -378,7 +378,7 @@ export default function AdminShopDetail() {
               <div className="mt-4 p-3 bg-wl-danger-500/10 border border-wl-danger-500/20 rounded">
                 <div className="flex gap-2 items-start mb-3">
                   <AlertTriangle size={16} className="text-wl-danger-500 flex-shrink-0" />
-                  <p className="text-white m-0 text-sm">
+                  <p className="text-wl-text-primary m-0 text-sm">
                     Deleting this account is permanent and cannot be undone. All data will be lost.
                   </p>
                 </div>
@@ -388,7 +388,7 @@ export default function AdminShopDetail() {
                   </button>
                   <button
                     onClick={() => setShowDeleteConfirm(false)}
-                    className="bg-wl-bg-elevated text-white border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90"
+                    className="bg-wl-bg-elevated text-wl-text-primary border-none px-4 py-2 rounded text-xs cursor-pointer hover:opacity-90"
                   >
                     Cancel
                   </button>
@@ -401,7 +401,7 @@ export default function AdminShopDetail() {
         {/* Activity Log */}
         <Card className="bg-wl-bg-surface border border-wl-border-default">
           <CardContent className="p-5">
-            <h3 className="text-base font-semibold text-white mb-4">Platform Activity Log</h3>
+            <h3 className="text-base font-semibold text-wl-text-primary mb-4">Platform Activity Log</h3>
             {activityLoading ? (
               <LoadingSkeleton />
             ) : activityLogs.length === 0 ? (
@@ -415,7 +415,7 @@ export default function AdminShopDetail() {
                   >
                     <div className="flex-shrink-0 rounded-full w-2 h-2 mt-1.5 bg-wl-info-500" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-white mb-1 text-sm">{log.action}</p>
+                      <p className="text-wl-text-primary mb-1 text-sm">{log.action}</p>
                       <div className="flex gap-3 items-center">
                         <span className="text-wl-text-secondary text-xs">By: {log.userName}</span>
                         <span className="text-wl-text-secondary text-xs">

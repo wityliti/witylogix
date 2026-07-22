@@ -151,7 +151,7 @@ function StepTimeline({ steps }: { steps: WorkflowStep[] }) {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xs text-wl-text-secondary font-semibold">Step {step.number}</span>
-                    <h4 className="m-0 text-sm font-semibold text-white">{step.name}</h4>
+                    <h4 className="m-0 text-sm font-semibold text-wl-text-primary">{step.name}</h4>
                     <Badge variant={step.status === "completed" ? "success" : step.status === "failed" ? "danger" : step.status === "running" ? "info" : "warning"}>
                       {step.status}
                     </Badge>
@@ -259,7 +259,7 @@ export default function WorkflowExecutionDetailPage() {
             Back
           </Button>
           <div>
-            <h1 className="text-xl font-bold text-white m-0 tracking-tight">{execution.workflowName}</h1>
+            <h1 className="text-xl font-bold text-wl-text-primary m-0 tracking-tight">{execution.workflowName}</h1>
             <p className="text-sm text-wl-text-secondary m-0 mt-0.5">{execution.executionId}</p>
           </div>
           <Badge variant={getStatusBadgeVariant(execution.status)}>{execution.status.toUpperCase()}</Badge>
@@ -291,7 +291,7 @@ export default function WorkflowExecutionDetailPage() {
 
         <Card className="mb-6 bg-wl-bg-surface border border-wl-border-default">
           <CardHeader>
-            <CardTitle className="text-white">Step Timeline</CardTitle>
+            <CardTitle className="text-wl-text-primary">Step Timeline</CardTitle>
           </CardHeader>
           <CardContent>
             <StepTimeline steps={steps} />
@@ -301,20 +301,20 @@ export default function WorkflowExecutionDetailPage() {
         <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-4 mb-6">
           {execution.input && (
             <Card className="bg-wl-bg-surface border border-wl-border-default">
-              <CardHeader><CardTitle className="text-white">Input Data</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-wl-text-primary">Input Data</CardTitle></CardHeader>
               <CardContent><JsonViewer data={execution.input as Record<string, any>} /></CardContent>
             </Card>
           )}
 
           {execution.metadata && (
             <Card className="bg-wl-bg-surface border border-wl-border-default">
-              <CardHeader><CardTitle className="text-white">Execution Context</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-wl-text-primary">Execution Context</CardTitle></CardHeader>
               <CardContent>
                 <div className="flex flex-col gap-3">
                   {Object.entries(execution.metadata).map(([key, value]) => (
                     <div key={key} className="flex gap-2">
                       <span className="text-xs font-semibold text-wl-text-secondary min-w-20 uppercase tracking-wider">{key}</span>
-                      <span className="text-sm text-white font-mono">{String(value)}</span>
+                      <span className="text-sm text-wl-text-primary font-mono">{String(value)}</span>
                     </div>
                   ))}
                 </div>
@@ -323,7 +323,7 @@ export default function WorkflowExecutionDetailPage() {
           )}
 
           <Card className="bg-wl-bg-surface border border-wl-border-default">
-            <CardHeader><CardTitle className="text-white">Timeline</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-wl-text-primary">Timeline</CardTitle></CardHeader>
             <CardContent>
               <div className="flex flex-col gap-3">
                 <div>
@@ -331,7 +331,7 @@ export default function WorkflowExecutionDetailPage() {
                     <Calendar size={14} className="text-wl-text-secondary" />
                     <span className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">Started</span>
                   </div>
-                  <span className="text-sm text-white block ml-5">{formatDateTime(execution.startedAt)}</span>
+                  <span className="text-sm text-wl-text-primary block ml-5">{formatDateTime(execution.startedAt)}</span>
                 </div>
                 {execution.completedAt && (
                   <div>
@@ -339,7 +339,7 @@ export default function WorkflowExecutionDetailPage() {
                       <CheckCircle2 size={14} className="text-wl-success-500" />
                       <span className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">Completed</span>
                     </div>
-                    <span className="text-sm text-white block ml-5">{formatDateTime(execution.completedAt)}</span>
+                    <span className="text-sm text-wl-text-primary block ml-5">{formatDateTime(execution.completedAt)}</span>
                   </div>
                 )}
                 <div>
@@ -347,7 +347,7 @@ export default function WorkflowExecutionDetailPage() {
                     <User size={14} className="text-wl-text-secondary" />
                     <span className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider">Created</span>
                   </div>
-                  <span className="text-sm text-white block ml-5">{formatDateTime(execution.createdAt)}</span>
+                  <span className="text-sm text-wl-text-primary block ml-5">{formatDateTime(execution.createdAt)}</span>
                 </div>
               </div>
             </CardContent>

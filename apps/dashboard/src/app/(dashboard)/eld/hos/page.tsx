@@ -190,7 +190,7 @@ export default function HOSPage() {
           <div className="relative">
             <button
               onClick={() => setShowSearch(!showSearch)}
-              className="w-full h-10 px-3 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-white text-left flex items-center justify-between hover:bg-wl-bg-root transition-colors"
+              className="w-full h-10 px-3 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-wl-text-primary text-left flex items-center justify-between hover:bg-wl-bg-root transition-colors"
             >
               <span className="text-sm font-medium">{selectedDriver?.name}</span>
               <ChevronDown
@@ -277,7 +277,7 @@ export default function HOSPage() {
                               : "bg-wl-neutral-400"
                       )}
                     />
-                    <p className="text-sm font-semibold text-white">{hos.currentStatus.replace(/_/g, " ")}</p>
+                    <p className="text-sm font-semibold text-wl-text-primary">{hos.currentStatus.replace(/_/g, " ")}</p>
                   </div>
                 </div>
 
@@ -290,7 +290,7 @@ export default function HOSPage() {
 
                 <div>
                   <p className="text-xs text-wl-text-secondary uppercase tracking-wide font-semibold mb-1">Last Updated</p>
-                  <p className="text-xs text-white">
+                  <p className="text-xs text-wl-text-primary">
                     {new Date(hos.lastStatusChange).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>
@@ -311,7 +311,7 @@ export default function HOSPage() {
                     onChange={(e) => setPersonalConveyance(e.target.checked)}
                     className="w-4 h-4 rounded border-wl-border-default"
                   />
-                  <span className="text-xs text-white font-medium">Personal Conveyance</span>
+                  <span className="text-xs text-wl-text-primary font-medium">Personal Conveyance</span>
                 </label>
 
                 <label className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-wl-bg-elevated transition-colors">
@@ -321,7 +321,7 @@ export default function HOSPage() {
                     onChange={(e) => setYardMove(e.target.checked)}
                     className="w-4 h-4 rounded border-wl-border-default"
                   />
-                  <span className="text-xs text-white font-medium">Yard Move</span>
+                  <span className="text-xs text-wl-text-primary font-medium">Yard Move</span>
                 </label>
 
                 <p className="text-xs text-wl-text-secondary pt-2 border-t border-wl-border-default">
@@ -473,10 +473,10 @@ export default function HOSPage() {
                   <tbody>
                     {eightDayRecap.map((entry, idx) => (
                       <tr key={idx} className="border-b border-wl-border-default hover:bg-wl-bg-elevated">
-                        <td className="py-2 px-3 font-semibold text-white">{entry.day}</td>
-                        <td className="py-2 px-3 text-center text-white">{entry.driving.toFixed(1)}h</td>
-                        <td className="py-2 px-3 text-center text-white">{entry.onDuty.toFixed(1)}h</td>
-                        <td className="py-2 px-3 text-center text-white font-semibold">
+                        <td className="py-2 px-3 font-semibold text-wl-text-primary">{entry.day}</td>
+                        <td className="py-2 px-3 text-center text-wl-text-primary">{entry.driving.toFixed(1)}h</td>
+                        <td className="py-2 px-3 text-center text-wl-text-primary">{entry.onDuty.toFixed(1)}h</td>
+                        <td className="py-2 px-3 text-center text-wl-text-primary font-semibold">
                           {entry.total.toFixed(1)}h
                         </td>
                         <td className="py-2 px-3 text-center">
@@ -494,7 +494,7 @@ export default function HOSPage() {
                                   ? "text-wl-danger-500"
                                   : entry.total > 60
                                     ? "text-wl-warning-500"
-                                    : "text-white"
+                                    : "text-wl-text-primary"
                               )}
                             >
                               {entry.total.toFixed(1)}h
@@ -526,7 +526,7 @@ export default function HOSPage() {
               <div className="space-y-3">
                 <div className="p-3 rounded-lg bg-wl-bg-elevated border border-wl-border-default">
                   <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wide mb-2">How It Works</p>
-                  <ol className="space-y-2 text-xs text-white">
+                  <ol className="space-y-2 text-xs text-wl-text-primary">
                     <li>1. Driver submits log edit request with reason and time</li>
                     <li>2. Fleet manager reviews request and documentation</li>
                     <li>3. Manager approves or rejects with feedback</li>

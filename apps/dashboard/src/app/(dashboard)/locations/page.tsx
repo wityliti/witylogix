@@ -437,7 +437,7 @@ export default function LocationsPage() {
               placeholder="Search locations, cities, addresses..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className={cn("w-full p-2 px-4 bg-wl-bg-surface border border-wl-border-default rounded-md text-white text-sm font-sans outline-none")}
+              className={cn("w-full p-2 px-4 bg-wl-bg-surface border border-wl-border-default rounded-md text-wl-text-primary text-sm font-sans outline-none")}
             />
           </div>
 
@@ -506,7 +506,7 @@ export default function LocationsPage() {
                   <div className={cn("flex justify-between items-start")}>
                     <div className={cn("flex-1 min-w-0")}>
                       <div className={cn("flex gap-2 items-center mb-1")}>
-                        <span className={cn("text-base font-bold text-white truncate")}>
+                        <span className={cn("text-base font-bold text-wl-text-primary truncate")}>
                           {location.name}
                         </span>
                         {location.isDefault && (
@@ -523,7 +523,7 @@ export default function LocationsPage() {
                   </div>
 
                   <div>
-                    <div className={cn("text-sm text-white font-medium")}>{location.addressLine1}</div>
+                    <div className={cn("text-sm text-wl-text-primary font-medium")}>{location.addressLine1}</div>
                     <div className={cn("text-xs text-wl-text-secondary mt-0.5")}>
                       {location.city}, {location.province} {location.postalCode}
                     </div>
@@ -598,7 +598,7 @@ export default function LocationsPage() {
               >
                 <div className={cn("flex justify-between items-start")}>
                   <div>
-                    <div className={cn("text-base font-bold text-white mb-1")}>
+                    <div className={cn("text-base font-bold text-wl-text-primary mb-1")}>
                       {selectedLocation.name}
                     </div>
                     <Badge variant={typeVariant(selectedLocation.type)} dot>
@@ -631,7 +631,7 @@ export default function LocationsPage() {
                   >
                     Address
                   </div>
-                  <div className={cn("text-sm text-white font-medium")}>
+                  <div className={cn("text-sm text-wl-text-primary font-medium")}>
                     {selectedLocation.addressLine1}
                   </div>
                   <div className={cn("text-sm text-wl-neutral-300")}>
@@ -709,7 +709,7 @@ export default function LocationsPage() {
                                 "py-1.5",
                                 hours.open === "closed"
                                   ? "text-wl-text-secondary"
-                                  : "text-white font-mono"
+                                  : "text-wl-text-primary font-mono"
                               )}
                             >
                               {hours.open === "closed"

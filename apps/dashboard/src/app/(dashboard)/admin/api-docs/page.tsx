@@ -312,7 +312,7 @@ function EndpointCard({
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
             <MethodBadge method={endpoint.method} />
-            <code className="text-sm font-mono text-white break-all">
+            <code className="text-sm font-mono text-wl-text-primary break-all">
               {endpoint.path}
             </code>
           </div>
@@ -336,7 +336,7 @@ function EndpointCard({
           {/* Parameters */}
           {endpoint.parameters && endpoint.parameters.length > 0 && (
             <div>
-              <h4 className="text-sm font-semibold text-white mb-3">
+              <h4 className="text-sm font-semibold text-wl-text-primary mb-3">
                 Parameters
               </h4>
               <div className="space-y-3">
@@ -368,7 +368,7 @@ function EndpointCard({
           {/* Request Body */}
           {endpoint.requestBody && (
             <div>
-              <h4 className="text-sm font-semibold text-white mb-3">
+              <h4 className="text-sm font-semibold text-wl-text-primary mb-3">
                 Request Body
               </h4>
               <div className="relative">
@@ -393,7 +393,7 @@ function EndpointCard({
 
           {/* Responses */}
           <div>
-            <h4 className="text-sm font-semibold text-white mb-3">
+            <h4 className="text-sm font-semibold text-wl-text-primary mb-3">
               Responses
             </h4>
             <div className="space-y-3">
@@ -442,7 +442,7 @@ function EndpointCard({
 
           {/* Try It Out */}
           <div className="p-4 bg-wl-info-bg rounded-lg border border-wl-primary-600/20">
-            <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+            <h4 className="text-sm font-semibold text-wl-text-primary mb-3 flex items-center gap-2">
               <Code className="w-4 h-4" />
               Try It Out
             </h4>
@@ -529,7 +529,7 @@ export default function ApiDocsPage() {
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-wl-success-500 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-sm font-semibold text-wl-text-primary">
                     REST API
                   </p>
                   <p className="text-sm text-wl-text-secondary mt-0.5">
@@ -540,7 +540,7 @@ export default function ApiDocsPage() {
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-wl-success-500 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-sm font-semibold text-wl-text-primary">
                     Authentication
                   </p>
                   <p className="text-sm text-wl-text-secondary mt-0.5">
@@ -551,7 +551,7 @@ export default function ApiDocsPage() {
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-wl-success-500 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-sm font-semibold text-wl-text-primary">
                     Rate Limiting
                   </p>
                   <p className="text-sm text-wl-text-secondary mt-0.5">

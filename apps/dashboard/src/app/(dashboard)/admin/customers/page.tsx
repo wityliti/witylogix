@@ -81,7 +81,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                   : [...expandedSections, "overview"]
               )
             }
-            className="bg-transparent border-none text-white font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
+            className="bg-transparent border-none text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
           >
             {expandedSections.includes("overview") ? <ChevronUp /> : <ChevronDown />}
             Overview
@@ -92,7 +92,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Name
                 </p>
-                <p className="text-white text-sm font-medium m-0">
+                <p className="text-wl-text-primary text-sm font-medium m-0">
                   {customer.name}
                 </p>
               </div>
@@ -116,7 +116,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Phone
                 </p>
-                <p className="text-white text-sm font-medium m-0">
+                <p className="text-wl-text-primary text-sm font-medium m-0">
                   {customer.phone}
                 </p>
               </div>
@@ -124,7 +124,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Store
                 </p>
-                <p className="text-white text-sm font-medium m-0">
+                <p className="text-wl-text-primary text-sm font-medium m-0">
                   {customer.store}
                 </p>
               </div>
@@ -132,7 +132,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Joined
                 </p>
-                <p className="text-white text-sm font-medium m-0">
+                <p className="text-wl-text-primary text-sm font-medium m-0">
                   {customer.joined}
                 </p>
               </div>
@@ -150,7 +150,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                   : [...expandedSections, "orders"]
               )
             }
-            className="bg-transparent border-none text-white font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
+            className="bg-transparent border-none text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
           >
             {expandedSections.includes("orders") ? <ChevronUp /> : <ChevronDown />}
             Order History
@@ -161,7 +161,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Total Orders
                 </p>
-                <p className="text-white text-lg font-bold m-0">
+                <p className="text-wl-text-primary text-lg font-bold m-0">
                   {customer.ordersCount}
                 </p>
               </div>
@@ -177,7 +177,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                 <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                   Last Order
                 </p>
-                <p className="text-white text-sm font-medium m-0">
+                <p className="text-wl-text-primary text-sm font-medium m-0">
                   {customer.lastOrder}
                 </p>
               </div>
@@ -195,7 +195,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                   : [...expandedSections, "addresses"]
               )
             }
-            className="bg-transparent border-none text-white font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
+            className="bg-transparent border-none text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
           >
             {expandedSections.includes("addresses") ? <ChevronUp /> : <ChevronDown />}
             Addresses ({customer.addresses.length})
@@ -210,7 +210,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                   <p className="text-xs text-wl-text-secondary m-0 font-semibold uppercase mb-1">
                     {addr.type}
                   </p>
-                  <p className="text-white text-sm m-0">
+                  <p className="text-wl-text-primary text-sm m-0">
                     {addr.address}
                   </p>
                 </div>
@@ -229,7 +229,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                   : [...expandedSections, "tags"]
               )
             }
-            className="bg-transparent border-none text-white font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
+            className="bg-transparent border-none text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
           >
             {expandedSections.includes("tags") ? <ChevronUp /> : <ChevronDown />}
             Tags ({customer.tags.length})
@@ -255,7 +255,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose }: { customer: Customer
                   : [...expandedSections, "notes"]
               )
             }
-            className="bg-transparent border-none text-white font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
+            className="bg-transparent border-none text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 p-2"
           >
             {expandedSections.includes("notes") ? <ChevronUp /> : <ChevronDown />}
             Notes
@@ -321,7 +321,7 @@ const StatsBar = ({ customers, loading }: { customers: Customer[]; loading: bool
                 <p className="text-wl-text-secondary text-xs font-semibold m-0 uppercase tracking-wide">
                   {stat.label}
                 </p>
-                <p className="text-white text-lg font-bold m-0 mt-1">
+                <p className="text-wl-text-primary text-lg font-bold m-0 mt-1">
                   {stat.value}
                 </p>
               </div>
@@ -405,7 +405,7 @@ export default function AdminCustomersPage() {
                 placeholder="Search by name, email, or phone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full p-2 pl-8 bg-wl-bg-root min-h-screen text-white border border-wl-border-default rounded-md text-sm"
+                className="w-full p-2 pl-8 bg-wl-bg-root min-h-screen text-wl-text-primary border border-wl-border-default rounded-md text-sm"
               />
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-secondary pointer-events-none" />
             </div>
@@ -421,7 +421,7 @@ export default function AdminCustomersPage() {
               <select
                 value={storeFilter}
                 onChange={(e) => setStoreFilter(e.target.value)}
-                className="px-3 py-1 bg-wl-bg-root min-h-screen text-white border border-wl-border-default rounded-md text-xs cursor-pointer"
+                className="px-3 py-1 bg-wl-bg-root min-h-screen text-wl-text-primary border border-wl-border-default rounded-md text-xs cursor-pointer"
               >
                 {stores.map((store) => (
                   <option key={store} value={store}>
@@ -445,7 +445,7 @@ export default function AdminCustomersPage() {
                     "px-3 py-1 border rounded-md text-xs font-semibold cursor-pointer transition-all capitalize",
                     statusFilter === status
                       ? "bg-wl-info-500 text-white border-wl-info-500"
-                      : "bg-wl-bg-root min-h-screen text-white border-wl-border-default"
+                      : "bg-wl-bg-root min-h-screen text-wl-text-primary border-wl-border-default"
                   )}
                 >
                   {status === "all" ? "All" : status}
@@ -496,7 +496,7 @@ export default function AdminCustomersPage() {
                           }}
                           onClick={() => handleCustomerClick(customer)}
                         >
-                          <td className="p-3 text-white font-medium">
+                          <td className="p-3 text-wl-text-primary font-medium">
                             {customer.name}
                           </td>
                           <td className="p-3 text-wl-text-secondary text-xs">
@@ -505,10 +505,10 @@ export default function AdminCustomersPage() {
                           <td className="p-3 text-wl-text-secondary text-xs">
                             {customer.phone}
                           </td>
-                          <td className="p-3 text-white text-sm">
+                          <td className="p-3 text-wl-text-primary text-sm">
                             {customer.store}
                           </td>
-                          <td className="p-3 text-white font-medium">
+                          <td className="p-3 text-wl-text-primary font-medium">
                             {customer.ordersCount}
                           </td>
                           <td className="p-3 text-wl-info-500 font-semibold">
@@ -540,7 +540,7 @@ export default function AdminCustomersPage() {
           ) : (
             <CardContent className="p-12 text-center flex flex-col items-center justify-center">
               <AlertCircle className="w-12 h-12 text-wl-text-secondary mb-3 opacity-30" />
-              <p className="text-white font-medium m-0 mb-1">
+              <p className="text-wl-text-primary font-medium m-0 mb-1">
                 No customers found
               </p>
               <p className="text-wl-text-secondary text-sm m-0">
