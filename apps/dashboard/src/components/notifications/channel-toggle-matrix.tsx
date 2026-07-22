@@ -181,13 +181,13 @@ export const ChannelToggleMatrix = ({
       <table className="w-full border-collapse">
         <thead>
           <tr>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--wl-text-primary)] border-b border-[var(--wl-border)]">
+            <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--wl-text-primary)] border-b border-wl-border-default">
               Category
             </th>
             {CHANNELS.map((channel) => (
               <th
                 key={channel}
-                className="px-4 py-3 text-center border-b border-[var(--wl-border)]"
+                className="px-4 py-3 text-center border-b border-wl-border-default"
               >
                 <div className="flex flex-col items-center gap-2">
                   <Tooltip content={CHANNEL_DESCRIPTIONS[channel]}>
@@ -199,7 +199,7 @@ export const ChannelToggleMatrix = ({
                         "transition-colors uppercase tracking-wide",
                         UNAVAILABLE_CHANNELS[channel]
                           ? "text-[var(--wl-text-secondary)] opacity-40 cursor-not-allowed"
-                          : "text-[var(--wl-primary)] hover:bg-[var(--wl-bg-secondary)]"
+                          : "text-[var(--wl-primary)] hover:bg-wl-bg-elevated"
                       )}
                     >
                       {channel}
@@ -225,7 +225,7 @@ export const ChannelToggleMatrix = ({
             ).length;
 
             return (
-              <tr key={category} className="border-b border-[var(--wl-border)]">
+              <tr key={category} className="border-b border-wl-border-default">
                 <td className="px-4 py-3">
                   <button
                     onClick={() => handleRowSelectAll(category)}
@@ -270,7 +270,7 @@ export const ChannelToggleMatrix = ({
       </table>
 
       {Object.values(UNAVAILABLE_CHANNELS).some((v) => v) && (
-        <div className="mt-4 px-4 py-3 rounded-md bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)]">
+        <div className="mt-4 px-4 py-3 rounded-md bg-wl-bg-elevated border border-wl-border-default">
           <p className="text-xs text-[var(--wl-text-secondary)]">
             <span className="font-semibold">Note:</span> Some channels are
             disabled and require configuration.

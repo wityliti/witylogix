@@ -117,7 +117,7 @@ export function FreightTimeline({
             {Math.round(progress)}%
           </span>
         </div>
-        <div className="h-2 bg-wl-bg-secondary rounded-full overflow-hidden">
+        <div className="h-2 bg-wl-bg-elevated rounded-full overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-wl-primary-500 to-wl-primary-400 transition-all duration-500"
             style={{ width: `${progress}%` }}
@@ -146,7 +146,7 @@ export function FreightTimeline({
                         ? "bg-wl-success-500/20 border-wl-success-400"
                         : isCurrentStatus
                           ? "bg-wl-primary-500/20 border-wl-primary-400 animate-pulse"
-                          : "bg-wl-bg-secondary border-wl-border-default"
+                          : "bg-wl-bg-elevated border-wl-border-default"
                     )}
                   >
                     {milestone.isCompleted ? "✓" : getMilestoneIcon(milestone.status)}
@@ -227,7 +227,7 @@ export function FreightTimeline({
                     ? "bg-wl-success-500/20 text-wl-success-400"
                     : milestone.status === currentStatus
                       ? "bg-wl-primary-500/20 text-wl-primary-400"
-                      : "bg-wl-bg-secondary text-wl-text-secondary"
+                      : "bg-wl-bg-elevated text-wl-text-secondary"
                 )}
               >
                 {getMilestoneIcon(milestone.status)} {milestone.label}

@@ -173,7 +173,7 @@ export default function NotificationsConfigPage() {
                       <input
                         type="checkbox"
                         defaultChecked
-                        className="w-4 h-4 rounded border-[var(--wl-border)]"
+                        className="w-4 h-4 rounded border-wl-border-default"
                       />
                       <span className="text-sm text-[var(--wl-text-secondary)]">
                         Enabled
@@ -245,28 +245,28 @@ export default function NotificationsConfigPage() {
                         <input
                           type="checkbox"
                           defaultChecked={event.channels.email}
-                          className="w-4 h-4 rounded border-[var(--wl-border)] cursor-pointer"
+                          className="w-4 h-4 rounded border-wl-border-default cursor-pointer"
                         />
                       </td>
                       <td className="py-4 px-4 text-center">
                         <input
                           type="checkbox"
                           defaultChecked={event.channels.sms}
-                          className="w-4 h-4 rounded border-[var(--wl-border)] cursor-pointer"
+                          className="w-4 h-4 rounded border-wl-border-default cursor-pointer"
                         />
                       </td>
                       <td className="py-4 px-4 text-center">
                         <input
                           type="checkbox"
                           defaultChecked={event.channels.push}
-                          className="w-4 h-4 rounded border-[var(--wl-border)] cursor-pointer"
+                          className="w-4 h-4 rounded border-wl-border-default cursor-pointer"
                         />
                       </td>
                       <td className="py-4 px-4 text-center">
                         <input
                           type="checkbox"
                           defaultChecked={event.channels.webhook}
-                          className="w-4 h-4 rounded border-[var(--wl-border)] cursor-pointer"
+                          className="w-4 h-4 rounded border-wl-border-default cursor-pointer"
                         />
                       </td>
                     </tr>
@@ -290,7 +290,7 @@ export default function NotificationsConfigPage() {
               <input
                 type="url"
                 placeholder="https://example.com/webhooks/notifications"
-                className="w-full px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
               />
               <p className="text-xs text-[var(--wl-text-tertiary)] mt-2">
                 We'll send POST requests to this URL for enabled events
@@ -306,11 +306,11 @@ export default function NotificationsConfigPage() {
                   type="password"
                   value="••••••••••••••••"
                   disabled
-                  className="flex-1 px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                  className="flex-1 px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
                 />
                 <Button
                   variant="secondary"
-                  className="border-[var(--wl-border)] text-[var(--wl-text-primary)] hover:bg-[var(--wl-bg-tertiary)]"
+                  className="border-wl-border-default text-[var(--wl-text-primary)] hover:bg-[var(--wl-bg-tertiary)]"
                 >
                   Regenerate
                 </Button>
@@ -324,7 +324,7 @@ export default function NotificationsConfigPage() {
               <label className="block text-sm font-medium text-[var(--wl-text-primary)] mb-2">
                 Retry Policy
               </label>
-              <select className="w-full px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
+              <select className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
                 <option>Retry up to 3 times (default)</option>
                 <option>Retry up to 5 times</option>
                 <option>Retry up to 10 times</option>
@@ -338,7 +338,7 @@ export default function NotificationsConfigPage() {
               </label>
               <Button
                 variant="secondary"
-                className="border-[var(--wl-border)] text-[var(--wl-text-primary)] hover:bg-[var(--wl-bg-tertiary)]"
+                className="border-wl-border-default text-[var(--wl-text-primary)] hover:bg-[var(--wl-bg-tertiary)]"
               >
                 Send Test Event
               </Button>
@@ -356,7 +356,7 @@ export default function NotificationsConfigPage() {
               <label className="block text-sm font-medium text-[var(--wl-text-primary)] mb-2">
                 Digest Frequency
               </label>
-              <select className="w-full px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
+              <select className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]">
                 <option>Real-time (immediate)</option>
                 <option>Hourly</option>
                 <option>Daily at 9:00 AM</option>
@@ -373,7 +373,7 @@ export default function NotificationsConfigPage() {
                 type="number"
                 defaultValue="5"
                 min="1"
-                className="w-full px-4 py-2 rounded-lg border border-[var(--wl-border)] bg-[var(--wl-bg-secondary)] text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
+                className="w-full px-4 py-2 rounded-lg border border-wl-border-default bg-wl-bg-elevated text-[var(--wl-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]"
               />
               <p className="text-xs text-[var(--wl-text-tertiary)] mt-2">
                 Only send digest if there are at least this many alerts
@@ -395,7 +395,7 @@ export default function NotificationsConfigPage() {
                     <input
                       type="checkbox"
                       defaultChecked
-                      className="w-4 h-4 rounded border-[var(--wl-border)]"
+                      className="w-4 h-4 rounded border-wl-border-default"
                     />
                     <span className="text-sm text-[var(--wl-text-secondary)]">
                       {item}
@@ -411,7 +411,7 @@ export default function NotificationsConfigPage() {
         <div className="flex gap-4 justify-end mt-8">
           <Button
             variant="secondary"
-            className="border-[var(--wl-border)] text-[var(--wl-text-primary)] hover:bg-[var(--wl-bg-tertiary)]"
+            className="border-wl-border-default text-[var(--wl-text-primary)] hover:bg-[var(--wl-bg-tertiary)]"
           >
             Cancel
           </Button>

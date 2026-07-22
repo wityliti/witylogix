@@ -103,7 +103,7 @@ const TimelineItem = React.memo(
                 "w-0.5 h-12",
                 attempt.status === "failed"
                   ? "bg-[var(--wl-danger)]/20"
-                  : "bg-[var(--wl-border)]"
+                  : "bg-[var(--wl-border-default)]"
               )}
             />
           )}
@@ -179,7 +179,7 @@ export const DeliveryTimeline = React.memo(
         <div
           className={cn(
             "flex items-center justify-center p-8 rounded-md",
-            "bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)]",
+            "bg-wl-bg-elevated border border-wl-border-default",
             className
           )}
         >
@@ -194,7 +194,7 @@ export const DeliveryTimeline = React.memo(
       <div className={cn("space-y-6", className)}>
         {/* Summary Stats */}
         <div className="grid grid-cols-3 gap-4">
-          <div className="px-4 py-3 rounded-md bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)]">
+          <div className="px-4 py-3 rounded-md bg-wl-bg-elevated border border-wl-border-default">
             <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase">
               Channel
             </p>
@@ -202,7 +202,7 @@ export const DeliveryTimeline = React.memo(
               {channel}
             </p>
           </div>
-          <div className="px-4 py-3 rounded-md bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)]">
+          <div className="px-4 py-3 rounded-md bg-wl-bg-elevated border border-wl-border-default">
             <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase">
               Total Time
             </p>
@@ -210,7 +210,7 @@ export const DeliveryTimeline = React.memo(
               {formatDuration(stats.totalDuration)}
             </p>
           </div>
-          <div className="px-4 py-3 rounded-md bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)]">
+          <div className="px-4 py-3 rounded-md bg-wl-bg-elevated border border-wl-border-default">
             <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase">
               Attempts
             </p>

@@ -109,7 +109,7 @@ export function EfficiencyHeatmap({
                           className={cn(
                             "w-8 h-8 rounded-sm transition-all cursor-pointer border border-wl-neutral-700",
                             "hover:scale-110 hover:shadow-lg",
-                            cell ? getColor(efficiency) : "bg-wl-bg-secondary"
+                            cell ? getColor(efficiency) : "bg-wl-bg-elevated"
                           )}
                           title={
                             cell

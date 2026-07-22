@@ -117,7 +117,7 @@ export function NotificationStatsWidget({ className }: NotificationStatsWidgetPr
   return (
     <div className={cn("space-y-6", className)}>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border border-[var(--wl-border)]">
+        <Card className="border border-wl-border-default">
           <CardContent className="pt-6">
             <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">Sent Today</p>
             <div className="flex items-end gap-2">
@@ -131,7 +131,7 @@ export function NotificationStatsWidget({ className }: NotificationStatsWidgetPr
           </CardContent>
         </Card>
 
-        <Card className="border border-[var(--wl-border)]">
+        <Card className="border border-wl-border-default">
           <CardContent className="pt-6">
             <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">Delivery Rate</p>
             <p className="text-2xl font-bold text-[var(--wl-success)]">
@@ -141,7 +141,7 @@ export function NotificationStatsWidget({ className }: NotificationStatsWidgetPr
           </CardContent>
         </Card>
 
-        <Card className="border border-[var(--wl-border)]">
+        <Card className="border border-wl-border-default">
           <CardContent className="pt-6">
             <p className="text-xs font-semibold text-[var(--wl-text-secondary)] uppercase tracking-wide mb-2">Bounce Rate</p>
             <p className="text-2xl font-bold text-[var(--wl-warning)]">{summary.failureRate}%</p>
@@ -150,7 +150,7 @@ export function NotificationStatsWidget({ className }: NotificationStatsWidgetPr
         </Card>
       </div>
 
-      <Card className="border border-[var(--wl-border)]">
+      <Card className="border border-wl-border-default">
         <CardHeader>
           <CardTitle className="text-sm">Notifications — Last 7 Days</CardTitle>
         </CardHeader>
@@ -166,7 +166,7 @@ export function NotificationStatsWidget({ className }: NotificationStatsWidgetPr
       </Card>
 
       {Object.keys(data.channelBreakdown).length > 0 && (
-        <Card className="border border-[var(--wl-border)]">
+        <Card className="border border-wl-border-default">
           <CardHeader>
             <CardTitle className="text-sm">Channel Breakdown</CardTitle>
           </CardHeader>
@@ -177,14 +177,14 @@ export function NotificationStatsWidget({ className }: NotificationStatsWidgetPr
       )}
 
       {data.failedTemplates.length > 0 && (
-        <Card className="border border-[var(--wl-border)]">
+        <Card className="border border-wl-border-default">
           <CardHeader>
             <CardTitle className="text-sm">Top Failed Templates</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {data.failedTemplates.map((t, idx) => (
-                <div key={idx} className="flex items-start justify-between p-3 bg-[var(--wl-bg-secondary)] rounded-lg border border-[var(--wl-border)]">
+                <div key={idx} className="flex items-start justify-between p-3 bg-wl-bg-elevated rounded-lg border border-wl-border-default">
                   <div className="flex items-start gap-2 flex-1">
                     <AlertCircle className="w-4 h-4 text-[var(--wl-danger)] flex-shrink-0 mt-0.5" />
                     <div>

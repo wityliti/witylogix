@@ -172,7 +172,7 @@ export function CarrierScorecard({
               cy={y}
               r="3"
               fill="rgb(59, 130, 246)"
-              stroke="var(--wl-bg-primary)"
+              stroke="var(--wl-bg-elevated)"
               strokeWidth="1"
             />
           );
@@ -288,7 +288,7 @@ export function CarrierScorecard({
             <div key={metric.label} className="flex items-center justify-between">
               <span className="text-xs text-wl-text-secondary">{metric.label}</span>
               <div className="flex items-center gap-2">
-                <div className="h-1.5 bg-wl-bg-secondary rounded-full w-20">
+                <div className="h-1.5 bg-wl-bg-elevated rounded-full w-20">
                   <div
                     className={cn("h-full rounded-full", `bg-${metric.color}`)}
                     style={{
@@ -315,7 +315,7 @@ export function CarrierScorecard({
           <div className="flex items-end gap-2">
             {quarterlyTrends.slice(-4).map((q, i) => (
               <div key={q.q} className="flex-1 text-center">
-                <div className="h-12 bg-wl-bg-secondary rounded flex items-end justify-center mb-2">
+                <div className="h-12 bg-wl-bg-elevated rounded flex items-end justify-center mb-2">
                   <div
                     className="w-2/3 rounded-t bg-wl-primary-500"
                     style={{ height: `${(q.score / 100) * 100}%` }}
@@ -336,7 +336,7 @@ export function CarrierScorecard({
         {onViewDetails && (
           <button
             onClick={() => onViewDetails(carrierId)}
-            className="text-xs px-3 py-1.5 rounded bg-wl-bg-secondary text-wl-text-primary hover:bg-wl-border-default transition-colors font-medium"
+            className="text-xs px-3 py-1.5 rounded bg-wl-bg-elevated text-wl-text-primary hover:bg-wl-border-default transition-colors font-medium"
           >
             View Details
           </button>

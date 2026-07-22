@@ -12,7 +12,7 @@ function makeLoader<T>(loader: () => Promise<{ default: T }>): () => Promise<{ d
 }
 
 const ChartLoadingFallback = () => (
-  <div className="h-64 bg-wl-bg-secondary animate-pulse rounded-lg border border-wl-neutral-800" />
+  <div className="h-64 bg-wl-bg-elevated animate-pulse rounded-lg border border-wl-neutral-800" />
 );
 
 export const LazyLineChart = dynamic(

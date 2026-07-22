@@ -49,7 +49,7 @@ export function LanguageSwitcher({
               'px-3 py-1 rounded-md text-sm transition-all',
               currentLocale === locale
                 ? 'bg-wl-primary text-white'
-                : 'bg-wl-bg-secondary text-wl-text-secondary hover:bg-wl-bg-tertiary'
+                : 'bg-wl-bg-elevated text-wl-text-secondary hover:bg-wl-bg-tertiary'
             )}
             title={metadata.nativeName}
             aria-label={`Switch to ${metadata.name}`}
@@ -70,7 +70,7 @@ export function LanguageSwitcher({
           disabled={isPending}
           className={cn(
             'flex items-center gap-2 px-3 py-2 rounded-lg',
-            'bg-wl-bg-secondary text-wl-text-primary',
+            'bg-wl-bg-elevated text-wl-text-primary',
             'hover:bg-wl-bg-tertiary transition-colors',
             'disabled:opacity-50 disabled:cursor-not-allowed'
           )}
@@ -89,7 +89,7 @@ export function LanguageSwitcher({
         <div
           className={cn(
             'absolute right-0 mt-2 w-48 rounded-lg',
-            'bg-wl-bg-secondary border border-wl-border',
+            'bg-wl-bg-elevated border border-wl-border-default',
             'shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible',
             'transition-all duration-200 z-50'
           )}

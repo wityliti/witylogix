@@ -210,7 +210,7 @@ export function DVIRForm({
   const isValid = failedItems.length === defects.length && isSignatureDone;
 
   return (
-    <Card className="border-[var(--wl-border)]">
+    <Card className="border-wl-border-default">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -242,7 +242,7 @@ export function DVIRForm({
               {group.items.map((item, itemIdx) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between p-2 rounded-lg bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)]"
+                  className="flex items-center justify-between p-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default"
                 >
                   <label className="flex items-center gap-3 flex-1 cursor-pointer">
                     <span className="text-sm text-wl-text-primary flex-1">{item.name}</span>
@@ -290,7 +290,7 @@ export function DVIRForm({
         ))}
 
         {/* Defects section */}
-        <div className="border-t border-[var(--wl-border)] pt-6 space-y-4">
+        <div className="border-t border-wl-border-default pt-6 space-y-4">
           <h4 className="text-sm font-semibold text-wl-text-primary">Defects & Issues</h4>
 
           {defects.length > 0 && (
@@ -298,7 +298,7 @@ export function DVIRForm({
               {defects.map((defect) => (
                 <div
                   key={defect.id}
-                  className="p-3 rounded-lg bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)] flex items-start justify-between gap-3"
+                  className="p-3 rounded-lg bg-wl-bg-elevated border border-wl-border-default flex items-start justify-between gap-3"
                 >
                   <div className="flex-1">
                     <p className="text-sm font-medium text-wl-text-primary">
@@ -336,7 +336,7 @@ export function DVIRForm({
           )}
 
           {/* New defect form */}
-          <div className="p-4 rounded-lg bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)] space-y-3">
+          <div className="p-4 rounded-lg bg-wl-bg-elevated border border-wl-border-default space-y-3">
             <div className="grid grid-cols-2 gap-2">
               <Input
                 placeholder="Component"
@@ -352,7 +352,7 @@ export function DVIRForm({
                     severity: e.target.value as "CRITICAL" | "MAJOR" | "MINOR",
                   }))
                 }
-                className="h-8 text-xs px-2 rounded bg-[var(--wl-bg-primary)] border border-[var(--wl-border)] text-wl-text-primary"
+                className="h-8 text-xs px-2 rounded bg-wl-bg-sunken border border-wl-border-default text-wl-text-primary"
               >
                 <option value="MINOR">Minor</option>
                 <option value="MAJOR">Major</option>
@@ -364,7 +364,7 @@ export function DVIRForm({
               placeholder="Describe the defect..."
               value={newDefect.description}
               onChange={(e) => setNewDefect((prev) => ({ ...prev, description: e.target.value }))}
-              className="w-full h-20 p-2 text-xs rounded bg-[var(--wl-bg-primary)] border border-[var(--wl-border)] text-wl-text-primary placeholder:text-wl-text-secondary resize-none"
+              className="w-full h-20 p-2 text-xs rounded bg-wl-bg-sunken border border-wl-border-default text-wl-text-primary placeholder:text-wl-text-secondary resize-none"
             />
 
             <div className="flex items-center gap-2">
@@ -392,7 +392,7 @@ export function DVIRForm({
         </div>
 
         {/* Signature section */}
-        <div className="border-t border-[var(--wl-border)] pt-6 space-y-4">
+        <div className="border-t border-wl-border-default pt-6 space-y-4">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-semibold text-wl-text-primary">Driver Signature</h4>
             {isSignatureDone && <Badge variant="success">✓ Signed</Badge>}
@@ -417,7 +417,7 @@ export function DVIRForm({
                   onMouseDown={startSignature}
                   onMouseMove={drawSignature}
                   onMouseUp={finishSignature}
-                  className="w-full border border-[var(--wl-border)] rounded bg-[var(--wl-bg-primary)] cursor-crosshair"
+                  className="w-full border border-wl-border-default rounded bg-wl-bg-sunken cursor-crosshair"
                 />
                 <div className="flex gap-2">
                   <Button
@@ -445,7 +445,7 @@ export function DVIRForm({
         </div>
 
         {/* Actions */}
-        <div className="border-t border-[var(--wl-border)] pt-6 flex gap-2">
+        <div className="border-t border-wl-border-default pt-6 flex gap-2">
           <Button
             variant="secondary"
             className="h-9"

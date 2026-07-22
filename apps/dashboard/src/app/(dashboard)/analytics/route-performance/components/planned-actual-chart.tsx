@@ -87,7 +87,7 @@ export function PlannedActualChart({
       </CardHeader>
       <CardContent>
         <div className="w-full h-80">
-          <Suspense fallback={<div className="h-80 bg-wl-bg-secondary animate-pulse rounded-lg border border-wl-neutral-800" />}>
+          <Suspense fallback={<div className="h-80 bg-wl-bg-elevated animate-pulse rounded-lg border border-wl-neutral-800" />}>
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
                 <defs>
@@ -113,7 +113,7 @@ export function PlannedActualChart({
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "var(--wl-bg-secondary)",
+                    backgroundColor: "var(--wl-bg-elevated)",
                     border: "1px solid var(--wl-neutral-700)",
                     borderRadius: "var(--wl-radius-md)",
                     color: "var(--wl-text-primary)",
@@ -166,7 +166,7 @@ export function PlannedActualChart({
 
         {/* Summary stats below chart */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 bg-wl-bg-secondary rounded-lg border border-wl-neutral-800">
+          <div className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-neutral-800">
             <p className="text-sm text-wl-text-secondary mb-1">Avg Planned Time</p>
             <p className="text-lg font-semibold text-wl-text-primary">
               {chartData.length > 0
@@ -177,7 +177,7 @@ export function PlannedActualChart({
               m
             </p>
           </div>
-          <div className="p-4 bg-wl-bg-secondary rounded-lg border border-wl-neutral-800">
+          <div className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-neutral-800">
             <p className="text-sm text-wl-text-secondary mb-1">Avg Actual Time</p>
             <p className="text-lg font-semibold text-wl-text-primary">
               {chartData.length > 0
@@ -188,7 +188,7 @@ export function PlannedActualChart({
               m
             </p>
           </div>
-          <div className="p-4 bg-wl-bg-secondary rounded-lg border border-wl-neutral-800">
+          <div className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-neutral-800">
             <p className="text-sm text-wl-text-secondary mb-1">Avg On-Time %</p>
             <p className="text-lg font-semibold text-wl-text-primary">
               {chartData.length > 0

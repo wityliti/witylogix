@@ -56,7 +56,7 @@ export function CO2Tracker({ data, dateRange, isLoading, onExport }: CO2TrackerP
           </div>
           <button
             onClick={onExport}
-            className="p-2 hover:bg-wl-bg-secondary rounded-md transition-colors text-wl-text-secondary hover:text-wl-text-primary"
+            className="p-2 hover:bg-wl-bg-elevated rounded-md transition-colors text-wl-text-secondary hover:text-wl-text-primary"
             title="Export CO2 data"
           >
             <Download className="w-5 h-5" />
@@ -67,7 +67,7 @@ export function CO2Tracker({ data, dateRange, isLoading, onExport }: CO2TrackerP
         {/* Main metrics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           {/* Planned CO2 */}
-          <div className="p-4 bg-wl-bg-secondary rounded-lg border border-wl-neutral-800">
+          <div className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-neutral-800">
             <p className="text-xs text-wl-text-secondary uppercase tracking-wide mb-2">
               Planned Emissions
             </p>
@@ -78,7 +78,7 @@ export function CO2Tracker({ data, dateRange, isLoading, onExport }: CO2TrackerP
           </div>
 
           {/* Actual CO2 */}
-          <div className="p-4 bg-wl-bg-secondary rounded-lg border border-wl-neutral-800">
+          <div className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-neutral-800">
             <p className="text-xs text-wl-text-secondary uppercase tracking-wide mb-2">
               Actual Emissions
             </p>
@@ -89,7 +89,7 @@ export function CO2Tracker({ data, dateRange, isLoading, onExport }: CO2TrackerP
           </div>
 
           {/* Savings */}
-          <div className="p-4 bg-wl-bg-secondary rounded-lg border border-wl-neutral-800 border-wl-success-700">
+          <div className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-neutral-800 border-wl-success-700">
             <p className="text-xs text-wl-text-secondary uppercase tracking-wide mb-2">
               Total Saved
             </p>
@@ -100,7 +100,7 @@ export function CO2Tracker({ data, dateRange, isLoading, onExport }: CO2TrackerP
           </div>
 
           {/* Avg Daily */}
-          <div className="p-4 bg-wl-bg-secondary rounded-lg border border-wl-neutral-800">
+          <div className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-neutral-800">
             <p className="text-xs text-wl-text-secondary uppercase tracking-wide mb-2">
               Avg Daily Savings
             </p>
@@ -122,7 +122,7 @@ export function CO2Tracker({ data, dateRange, isLoading, onExport }: CO2TrackerP
               {Math.round(targetProgress)}%
             </Badge>
           </div>
-          <div className="w-full h-3 bg-wl-bg-secondary rounded-full overflow-hidden border border-wl-neutral-800">
+          <div className="w-full h-3 bg-wl-bg-elevated rounded-full overflow-hidden border border-wl-neutral-800">
             <div
               className={`h-full transition-all duration-300 ${
                 targetProgress >= 100 ? "bg-wl-success-500" : "bg-wl-primary-500"
@@ -139,7 +139,7 @@ export function CO2Tracker({ data, dateRange, isLoading, onExport }: CO2TrackerP
             {data.vehicleBreakdown.map((vehicle, index) => (
               <div
                 key={index}
-                className="p-3 bg-wl-bg-secondary rounded-lg border border-wl-neutral-800"
+                className="p-3 bg-wl-bg-elevated rounded-lg border border-wl-neutral-800"
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-wl-text-primary">{vehicle.type}</span>

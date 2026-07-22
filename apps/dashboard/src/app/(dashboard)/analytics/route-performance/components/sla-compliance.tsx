@@ -82,7 +82,7 @@ export function SLACompliance({ data, dateRange, isLoading }: SLAComplianceProps
           </div>
 
           {/* Progress bar */}
-          <div className="w-full h-4 bg-wl-bg-secondary rounded-full overflow-hidden border border-wl-neutral-800">
+          <div className="w-full h-4 bg-wl-bg-elevated rounded-full overflow-hidden border border-wl-neutral-800">
             <div
               className={`h-full transition-all duration-300 ${
                 data.overall >= 95
@@ -98,7 +98,7 @@ export function SLACompliance({ data, dateRange, isLoading }: SLAComplianceProps
 
         {/* Tier breakdown */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="p-4 bg-wl-bg-secondary rounded-lg border border-wl-neutral-800">
+          <div className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-neutral-800">
             <p className="text-xs uppercase tracking-wide text-wl-success-400 font-semibold mb-2">
               Premium
             </p>
@@ -110,7 +110,7 @@ export function SLACompliance({ data, dateRange, isLoading }: SLAComplianceProps
             </p>
           </div>
 
-          <div className="p-4 bg-wl-bg-secondary rounded-lg border border-wl-neutral-800">
+          <div className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-neutral-800">
             <p className="text-xs uppercase tracking-wide text-wl-primary-400 font-semibold mb-2">
               Standard
             </p>
@@ -122,7 +122,7 @@ export function SLACompliance({ data, dateRange, isLoading }: SLAComplianceProps
             </p>
           </div>
 
-          <div className="p-4 bg-wl-bg-secondary rounded-lg border border-wl-neutral-800">
+          <div className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-neutral-800">
             <p className="text-xs uppercase tracking-wide text-wl-info-400 font-semibold mb-2">
               Economy
             </p>
@@ -139,7 +139,7 @@ export function SLACompliance({ data, dateRange, isLoading }: SLAComplianceProps
         {trendData.length > 0 && (
           <div>
             <p className="text-sm font-semibold text-wl-text-primary mb-4">14-Day Trend</p>
-            <Suspense fallback={<div className="h-64 bg-wl-bg-secondary animate-pulse rounded-lg border border-wl-neutral-800" />}>
+            <Suspense fallback={<div className="h-64 bg-wl-bg-elevated animate-pulse rounded-lg border border-wl-neutral-800" />}>
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={trendData}>
                   <CartesianGrid
@@ -160,7 +160,7 @@ export function SLACompliance({ data, dateRange, isLoading }: SLAComplianceProps
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "var(--wl-bg-secondary)",
+                      backgroundColor: "var(--wl-bg-elevated)",
                       border: "1px solid var(--wl-neutral-700)",
                       borderRadius: "var(--wl-radius-md)",
                       color: "var(--wl-text-primary)",

@@ -114,9 +114,9 @@ export const PrioritySelector = React.memo(
                     isSelected
                       ? cn(config.bgColor, config.color, config.borderColor)
                       : cn(
-                          "bg-[var(--wl-bg-secondary)]",
+                          "bg-wl-bg-elevated",
                           "text-[var(--wl-text-primary)]",
-                          "border-[var(--wl-border)]",
+                          "border-wl-border-default",
                           "hover:border-[var(--wl-primary)]"
                         )
                   )}
@@ -135,7 +135,7 @@ export const PrioritySelector = React.memo(
         <div
           className={cn(
             "px-4 py-3 rounded-md border-2",
-            "bg-[var(--wl-bg-secondary)]",
+            "bg-wl-bg-elevated",
             currentConfig.borderColor
           )}
         >

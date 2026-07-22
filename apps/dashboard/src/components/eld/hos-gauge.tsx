@@ -167,7 +167,7 @@ export function HOSGauge({
         {/* Background arc (full) */}
         <path
           d={createArcPath(startAngle, startAngle + totalAngle, config.radius, config.radius - 4)}
-          fill="var(--wl-bg-secondary)"
+          fill="var(--wl-bg-elevated)"
           opacity="0.5"
         />
 
@@ -183,7 +183,7 @@ export function HOSGauge({
           cx={centerX}
           cy={centerY}
           r={config.inner}
-          fill="var(--wl-bg-primary)"
+          fill="var(--wl-bg-sunken)"
           stroke="var(--wl-border-default)"
           strokeWidth="1"
         />

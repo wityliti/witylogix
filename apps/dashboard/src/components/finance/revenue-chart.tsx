@@ -207,7 +207,7 @@ export const RevenueChart = memo(function RevenueChart({
 
       {/* Chart */}
       <Suspense fallback={<div className="w-full" style={{ height }}>
-        <div className="w-full h-full bg-wl-bg-secondary animate-pulse rounded-lg border border-wl-neutral-800" />
+        <div className="w-full h-full bg-wl-bg-elevated animate-pulse rounded-lg border border-wl-neutral-800" />
       </div>}>
         <ResponsiveContainer width="100%" height={height}>
           <ComposedChart

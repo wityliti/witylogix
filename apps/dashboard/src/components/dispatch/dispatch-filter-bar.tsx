@@ -70,7 +70,7 @@ export function DispatchFilterBar({
   return (
     <div
       className={cn(
-        "space-y-3 p-4 bg-wl-bg-secondary rounded-lg border border-wl-border-subtle",
+        "space-y-3 p-4 bg-wl-bg-elevated rounded-lg border border-wl-border-subtle",
         className
       )}
     >
@@ -126,7 +126,7 @@ export function DispatchFilterBar({
                   className={cn(
                     "w-full text-left px-4 py-2.5 text-sm",
                     "border-b border-wl-border-subtle last:border-b-0",
-                    "hover:bg-wl-bg-secondary transition-colors",
+                    "hover:bg-wl-bg-elevated transition-colors",
                     selectedStatus === option.value && "bg-wl-primary-100 dark:bg-wl-primary-900"
                   )}
                 >
@@ -167,7 +167,7 @@ export function DispatchFilterBar({
                   className={cn(
                     "w-full text-left px-4 py-2.5 text-sm",
                     "border-b border-wl-border-subtle last:border-b-0",
-                    "hover:bg-wl-bg-secondary transition-colors",
+                    "hover:bg-wl-bg-elevated transition-colors",
                     selectedSort === option.value && "bg-wl-primary-100 dark:bg-wl-primary-900"
                   )}
                 >
