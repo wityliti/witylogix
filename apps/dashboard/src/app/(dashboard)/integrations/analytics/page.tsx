@@ -273,9 +273,9 @@ export default function AnalyticsIntegrationsPage() {
                       className={cn(
                         'p-4 rounded-lg border cursor-pointer transition-all',
                         connection?.status === 'connected'
-                          ? 'border-wl-success-400 border-opacity-30 bg-[rgba(16,185,129,0.08)]'
+                          ? 'border-wl-success-400 border-opacity-30 bg-wl-success-500/[0.08]'
                           : connection?.status === 'error'
-                            ? 'border-wl-danger-400 border-opacity-30 bg-[rgba(239,68,68,0.08)]'
+                            ? 'border-wl-danger-400 border-opacity-30 bg-wl-danger-500/[0.08]'
                             : 'border-wl-border-default hover:border-wl-info-400'
                       )}
                       onClick={() => setSelectedProvider(provider.slug)}
@@ -378,7 +378,7 @@ export default function AnalyticsIntegrationsPage() {
                         </div>
 
                         {connection.status === 'error' && connection.errorMessage && (
-                          <div className={cn('mb-3 p-2 rounded bg-[rgba(239,68,68,0.1)] border border-wl-danger-400 border-opacity-30')}>
+                          <div className={cn('mb-3 p-2 rounded bg-wl-danger-500/10 border border-wl-danger-400 border-opacity-30')}>
                             <p className={cn('text-xs text-wl-danger-400')}>
                               {connection.errorMessage}
                             </p>

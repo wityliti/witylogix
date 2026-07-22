@@ -35,10 +35,10 @@ interface FleetVehiclesMapViewProps {
 }
 
 const STATUS_LEGEND: { status: VehicleMapStatus; color: string; label: string }[] = [
-  { status: 'ACTIVE', color: '#10b981', label: 'Active' },
-  { status: 'IDLE', color: '#f59e0b', label: 'Idle' },
-  { status: 'MAINTENANCE', color: '#3b82f6', label: 'Maintenance' },
-  { status: 'OFFLINE', color: '#6b7280', label: 'Offline' },
+  { status: 'ACTIVE', color: 'var(--wl-success-500)', label: 'Active' },
+  { status: 'IDLE', color: 'var(--wl-warning-500)', label: 'Idle' },
+  { status: 'MAINTENANCE', color: 'var(--wl-info-500)', label: 'Maintenance' },
+  { status: 'OFFLINE', color: 'var(--wl-neutral-500)', label: 'Offline' },
 ];
 
 function normaliseStatus(s: string): VehicleMapStatus {

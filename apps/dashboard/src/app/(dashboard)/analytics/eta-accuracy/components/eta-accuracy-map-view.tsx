@@ -113,12 +113,12 @@ export default function EtaAccuracyMapView({ zoneGeoJSON, accuracyData, loading,
         <p className="text-[10px] text-wl-text-tertiary mb-1.5 uppercase tracking-wide">On-time (±5 min)</p>
         <div className="space-y-1">
           {[
-            { color: '#10b981', label: '≥90%' },
-            { color: '#22c55e', label: '≥75%' },
-            { color: '#f59e0b', label: '≥60%' },
-            { color: '#f97316', label: '≥45%' },
-            { color: '#ef4444', label: '<45%' },
-            { color: '#6b7280', label: 'No data' },
+            { color: 'var(--wl-success-500)', label: '≥90%' },
+            { color: 'var(--wl-chart-green)', label: '≥75%' },
+            { color: 'var(--wl-warning-500)', label: '≥60%' },
+            { color: 'var(--wl-chart-orange)', label: '≥45%' },
+            { color: 'var(--wl-danger-500)', label: '<45%' },
+            { color: 'var(--wl-neutral-500)', label: 'No data' },
           ].map(({ color, label }) => (
             <div key={label} className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: color }} />

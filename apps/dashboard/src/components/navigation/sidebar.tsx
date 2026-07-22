@@ -96,7 +96,7 @@ function SearchBox({ value, onChange }: SearchBoxProps) {
           "bg-white/[0.05] border border-white/[0.08]",
           "rounded-md outline-none",
           "transition-colors duration-150",
-          "focus:border-[rgba(245,166,35,0.4)] focus:bg-white/[0.07]"
+          "focus:border-wl-primary-500/40 focus:bg-white/[0.07]"
         )}
       />
       {value && (

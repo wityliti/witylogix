@@ -167,7 +167,7 @@ export default function ForgotPasswordPage() {
           onMouseEnter={(e) => {
             if (!isLoading && countdown === 0) {
               (e.currentTarget as HTMLButtonElement).style.background = "var(--wl-primary-600)";
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 12px rgba(108, 99, 255, 0.25)";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 12px rgba(245, 166, 35, 0.25)";
             }
           }}
           onMouseLeave={(e) => {
@@ -250,11 +250,11 @@ export default function ForgotPasswordPage() {
                   e.currentTarget.style.borderColor = emailError ? "var(--wl-danger-500)" : "var(--wl-primary-500)";
                   e.currentTarget.style.boxShadow = emailError
                     ? "0 0 0 3px rgba(239, 68, 68, 0.1)"
-                    : "0 0 0 3px rgba(108, 99, 255, 0.1)";
+                    : "0 0 0 3px rgba(245, 166, 35, 0.1)";
                 }
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = emailError ? "var(--wl-danger-500)" : "1px solid var(--wl-border-default)";
+                e.currentTarget.style.borderColor = emailError ? "var(--wl-danger-500)" : "var(--wl-border-default)";
                 e.currentTarget.style.boxShadow = "none";
               }}
             />
@@ -285,17 +285,17 @@ export default function ForgotPasswordPage() {
             background: isLoading
               ? "var(--wl-primary-600)"
               : "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
-            boxShadow: "0 4px 12px rgba(108, 99, 255, 0.25)",
+            boxShadow: "0 4px 12px rgba(245, 166, 35, 0.25)",
           }}
           onMouseEnter={(e) => {
             if (!isLoading) {
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 20px rgba(108, 99, 255, 0.35)";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 20px rgba(245, 166, 35, 0.35)";
               (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)";
             }
           }}
           onMouseLeave={(e) => {
             if (!isLoading) {
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 12px rgba(108, 99, 255, 0.25)";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 12px rgba(245, 166, 35, 0.25)";
               (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)";
             }
           }}

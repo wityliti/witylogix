@@ -259,7 +259,7 @@ export default function OrderImportPage() {
                     "relative p-4 rounded-lg border-2 transition-all cursor-pointer",
                     "bg-wl-bg-root hover:border-wl-info-500",
                     selectedPlatform === platform.id
-                      ? "border-wl-info-500 bg-[rgba(59,82,255,0.08)]"
+                      ? "border-wl-info-500 bg-wl-info-500/[0.08]"
                       : "border-wl-border-default"
                   )}
                   onClick={() => isConnected && handlePlatformSelect(platform.id)}
@@ -430,7 +430,7 @@ export default function OrderImportPage() {
 
                     {/* Error message */}
                     {job.errorMessage && (
-                      <div className="p-2 rounded bg-[rgba(255,69,69,0.1)] border border-wl-danger-400/20 mb-3">
+                      <div className="p-2 rounded bg-wl-danger-500/10 border border-wl-danger-400/20 mb-3">
                         <div className="text-xs text-wl-danger-400 font-mono">
                           {job.errorMessage}
                         </div>
@@ -462,7 +462,7 @@ export default function OrderImportPage() {
 
         {/* Error Log */}
         {failedJobs.length > 0 && (
-          <Card className="p-6 border-wl-danger-400/20 bg-[rgba(255,69,69,0.05)]">
+          <Card className="p-6 border-wl-danger-400/20 bg-wl-danger-500/[0.05]">
             <div className="flex items-center gap-2 mb-4">
               <span className="text-xl">⚠️</span>
               <h2 className="text-lg font-bold text-wl-danger-400">Failed Sync Jobs ({failedJobs.length})</h2>
@@ -510,7 +510,7 @@ export default function OrderImportPage() {
 
         {/* Wizard: Platform Selection */}
         {wizardStep === "select" && (
-          <Card className="p-6 border-wl-primary-400/30 bg-[rgba(245,166,35,0.05)]">
+          <Card className="p-6 border-wl-primary-400/30 bg-wl-primary-500/[0.05]">
             <h2 className="text-lg font-bold text-wl-text-primary mb-4">
               Select Platform to Import
             </h2>
@@ -557,7 +557,7 @@ export default function OrderImportPage() {
 
         {/* Wizard: Configure Step */}
         {wizardStep === "configure" && selectedPlatform && (
-          <Card className="p-6 border-wl-primary-400/30 bg-[rgba(245,166,35,0.05)]">
+          <Card className="p-6 border-wl-primary-400/30 bg-wl-primary-500/[0.05]">
             <h2 className="text-lg font-bold text-wl-text-primary mb-4">
               Configure {PLATFORMS.find((p) => p.id === selectedPlatform)?.name} Sync
             </h2>
@@ -619,7 +619,7 @@ export default function OrderImportPage() {
 
         {/* Wizard: Preview Step */}
         {wizardStep === "preview" && selectedPlatform && (
-          <Card className="p-6 border-wl-primary-400/30 bg-[rgba(245,166,35,0.05)]">
+          <Card className="p-6 border-wl-primary-400/30 bg-wl-primary-500/[0.05]">
             <h2 className="text-lg font-bold text-wl-text-primary mb-4">
               Preview Import
             </h2>
@@ -668,7 +668,7 @@ export default function OrderImportPage() {
 
         {/* Wizard: Import Step */}
         {wizardStep === "import" && selectedPlatform && (
-          <Card className="p-6 border-wl-primary-400/30 bg-[rgba(245,166,35,0.05)]">
+          <Card className="p-6 border-wl-primary-400/30 bg-wl-primary-500/[0.05]">
             <h2 className="text-lg font-bold text-wl-text-primary mb-4">
               Importing orders...
             </h2>
