@@ -408,19 +408,19 @@ export default function OrderImportPage() {
 
                     {/* Stats */}
                     <div className="grid grid-cols-3 gap-3 mb-3 text-xs">
-                      <div className="p-2 rounded bg-wl-bg border border-wl-border-subtle">
+                      <div className="p-2 rounded bg-wl-bg-sunkenborder border-wl-border-subtle">
                         <div className="text-wl-text-tertiary">Processed</div>
                         <div className="font-bold font-mono text-wl-text-primary">
                           {job.ordersProcessed}
                         </div>
                       </div>
-                      <div className="p-2 rounded bg-wl-bg border border-wl-border-subtle">
+                      <div className="p-2 rounded bg-wl-bg-sunkenborder border-wl-border-subtle">
                         <div className="text-wl-success-400">Created</div>
                         <div className="font-bold font-mono text-wl-text-primary">
                           {job.ordersCreated}
                         </div>
                       </div>
-                      <div className="p-2 rounded bg-wl-bg border border-wl-border-subtle">
+                      <div className="p-2 rounded bg-wl-bg-sunkenborder border-wl-border-subtle">
                         <div className="text-wl-danger-400">Failed</div>
                         <div className="font-bold font-mono text-wl-text-primary">
                           {job.ordersFailed}
@@ -497,7 +497,7 @@ export default function OrderImportPage() {
                     </div>
 
                     {job.errorMessage && (
-                      <div className="text-xs text-wl-danger-400 font-mono bg-wl-bg p-2 rounded border border-wl-danger-400/20 mt-2">
+                      <div className="text-xs text-wl-danger-400 font-mono bg-wl-bg-sunkenp-2 rounded border border-wl-danger-400/20 mt-2">
                         {job.errorMessage}
                       </div>
                     )}
@@ -529,7 +529,7 @@ export default function OrderImportPage() {
                       "p-4 rounded-lg border-2 transition-all text-center",
                       isConnected
                         ? "border-wl-primary-400 bg-wl-bg-surface hover:bg-wl-bg-elevated cursor-pointer"
-                        : "border-wl-border-subtle bg-wl-bg opacity-50 cursor-not-allowed"
+                        : "border-wl-border-subtle bg-wl-bg-sunkenopacity-50 cursor-not-allowed"
                     )}
                   >
                     <div className="text-3xl mb-2">{platform.icon}</div>
@@ -577,7 +577,7 @@ export default function OrderImportPage() {
                       <input
                         type="text"
                         placeholder={field}
-                        className="w-full px-3 py-2 mt-1 bg-wl-bg border border-wl-border-subtle rounded text-sm text-wl-text-primary outline-none"
+                        className="w-full px-3 py-2 mt-1 bg-wl-bg-sunkenborder border-wl-border-subtle rounded text-sm text-wl-text-primary outline-none"
                       />
                     </div>
                   ))}
@@ -624,7 +624,7 @@ export default function OrderImportPage() {
               Preview Import
             </h2>
 
-            <div className="bg-wl-bg p-4 rounded border border-wl-border-subtle mb-6 overflow-x-auto">
+            <div className="bg-wl-bg-sunkenp-4 rounded border border-wl-border-subtle mb-6 overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-wl-border-subtle">
@@ -673,7 +673,7 @@ export default function OrderImportPage() {
               Importing orders...
             </h2>
 
-            <div className="bg-wl-bg p-4 rounded border border-wl-border-subtle mb-4">
+            <div className="bg-wl-bg-sunkenp-4 rounded border border-wl-border-subtle mb-4">
               <div className="w-full h-2 bg-wl-border-subtle rounded overflow-hidden">
                 <div
                   className="h-full bg-wl-primary-500 transition-all"

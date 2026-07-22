@@ -94,7 +94,7 @@ function MagicLinkPageInner() {
     return (
       <div className="flex flex-col gap-6 text-center">
         <div className="flex justify-center">
-          <div className="w-12 h-12 rounded-full border-2 border-wl-border border-t-wl-primary animate-spin" />
+          <div className="w-12 h-12 rounded-full border-2 border-wl-border-default border-t-wl-primary-500 animate-spin" />
         </div>
         <div>
           <h2 className="text-2xl font-bold text-wl-text-primary mb-1">
@@ -228,7 +228,7 @@ function MagicLinkPageInner() {
 
 export default function MagicLinkPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center items-center min-h-screen bg-wl-bg"><Loader2 size={32} className="animate-spin" style={{ color: "var(--wl-primary, #6C63FF)" }} /></div>}>
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen bg-wl-bg-root"><Loader2 size={32} className="animate-spin" style={{ color: "var(--wl-primary-500)" }} /></div>}>
       <MagicLinkPageInner />
     </Suspense>
   );

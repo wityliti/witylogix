@@ -109,7 +109,7 @@ export const PrioritySelector = React.memo(
                     "inline-flex items-center gap-2 px-4 py-2 rounded-md",
                     "transition-all duration-200 font-medium text-sm",
                     "border-2",
-                    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--wl-primary)]",
+                    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wl-primary-500",
                     "disabled:opacity-50 disabled:cursor-not-allowed",
                     isSelected
                       ? cn(config.bgColor, config.color, config.borderColor)
@@ -117,7 +117,7 @@ export const PrioritySelector = React.memo(
                           "bg-wl-bg-elevated",
                           "text-[var(--wl-text-primary)]",
                           "border-wl-border-default",
-                          "hover:border-[var(--wl-primary)]"
+                          "hover:border-wl-primary-500"
                         )
                   )}
                   aria-pressed={isSelected}

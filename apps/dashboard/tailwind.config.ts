@@ -31,6 +31,7 @@ const config: Config = {
             900: 'var(--wl-neutral-900)',
           },
           primary: {
+            DEFAULT: 'var(--wl-primary-500)',
             50: 'var(--wl-primary-50)',
             100: 'var(--wl-primary-100)',
             200: 'var(--wl-primary-200)',

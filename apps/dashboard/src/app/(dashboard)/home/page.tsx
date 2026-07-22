@@ -81,9 +81,9 @@ function KPICard({
   }
 
   const accentColor = {
-    default: 'var(--wl-primary)',
-    primary: 'var(--wl-primary)',
-    success: 'var(--wl-success)',
+    default: 'var(--wl-primary-500)',
+    primary: 'var(--wl-primary-500)',
+    success: 'var(--wl-success-500)',
     warning: 'var(--wl-warning-400)',
   }[variant];
 
