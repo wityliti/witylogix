@@ -168,7 +168,7 @@ export default function WorkflowExecutionsPage() {
                 className={cn(
                   "px-3 py-2 text-sm font-medium cursor-pointer bg-transparent border-0 border-b-2 transition-all capitalize",
                   isActive
-                    ? "text-white border-b-wl-info-500"
+                    ? "text-wl-text-primary border-b-wl-info-500"
                     : "text-wl-text-secondary border-b-transparent"
                 )}
               >
@@ -189,7 +189,7 @@ export default function WorkflowExecutionsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             aria-label="Search workflows"
-            className="w-full max-w-md px-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm font-sans outline-none transition-all focus:border-wl-info-500 focus:ring-3 focus:ring-wl-info-500/10"
+            className="w-full max-w-md px-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-wl-text-primary text-sm font-sans outline-none transition-all focus:border-wl-info-500 focus:ring-3 focus:ring-wl-info-500/10"
           />
         </div>
 
@@ -264,7 +264,7 @@ export default function WorkflowExecutionsPage() {
                       onClick={() => router.push(`/admin/workflows/${execution.executionId}`)}
                     >
                       <td className="p-3 px-4">
-                        <div className="font-medium text-white">{execution.workflowName}</div>
+                        <div className="font-medium text-wl-text-primary">{execution.workflowName}</div>
                         <div className="text-[11px] text-wl-text-tertiary font-mono mt-0.5">{execution.executionId}</div>
                       </td>
                       <td className="p-3 px-4 text-center">
@@ -301,7 +301,7 @@ export default function WorkflowExecutionsPage() {
           <Card className="text-center p-8 bg-wl-bg-surface border border-wl-border-default">
             <div className="text-wl-text-secondary">
               <Activity size={40} className="mx-auto mb-3 opacity-50" />
-              <h3 className="text-base font-semibold m-0 mb-2 text-white">
+              <h3 className="text-base font-semibold m-0 mb-2 text-wl-text-primary">
                 No executions found
               </h3>
               <p className="text-sm m-0 text-wl-text-secondary">

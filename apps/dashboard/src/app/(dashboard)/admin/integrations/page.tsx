@@ -87,7 +87,7 @@ function IntegrationRow({
             <CategoryIcon category={integration.category} />
           </div>
           <div className="flex-1">
-            <h4 className="text-sm font-semibold text-white">{integration.name}</h4>
+            <h4 className="text-sm font-semibold text-wl-text-primary">{integration.name}</h4>
             <p className="text-xs text-wl-text-secondary mt-0.5">
               {integration.shopName ? `Store: ${integration.shopName} · ` : ""}
               {integration.lastSyncTime
@@ -97,11 +97,11 @@ function IntegrationRow({
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <p className="text-sm font-semibold text-white">{integration.successRate}%</p>
+              <p className="text-sm font-semibold text-wl-text-primary">{integration.successRate}%</p>
               <p className="text-xs text-wl-text-secondary">Success Rate</p>
             </div>
             <div className="text-right min-w-fit">
-              <p className="text-sm font-semibold text-white">{integration.errorCount}</p>
+              <p className="text-sm font-semibold text-wl-text-primary">{integration.errorCount}</p>
               <p className="text-xs text-wl-text-secondary">Errors</p>
             </div>
             <StatusBadge status={integration.status} />
@@ -120,7 +120,7 @@ function IntegrationRow({
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-sm text-wl-text-secondary">Total Syncs:</span>
-                  <span className="text-sm font-semibold text-white">{integration.totalSyncs.toLocaleString()}</span>
+                  <span className="text-sm font-semibold text-wl-text-primary">{integration.totalSyncs.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-wl-text-secondary">Success Rate:</span>
@@ -243,7 +243,7 @@ export default function IntegrationsPage() {
                 <CardContent className="pt-5">
                   <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-2">Avg Success Rate</p>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold text-white">{avgSuccessRate}%</span>
+                    <span className="text-3xl font-bold text-wl-text-primary">{avgSuccessRate}%</span>
                   </div>
                 </CardContent>
               </Card>

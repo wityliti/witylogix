@@ -73,7 +73,7 @@ export default function TestDashboardPage() {
         />
         <div className="container mx-auto px-4 py-16 max-w-2xl text-center">
           <Info className="w-12 h-12 text-wl-info-500 mx-auto mb-4 opacity-60" />
-          <h2 className="text-lg font-semibold text-white mb-2">No Test Results Available</h2>
+          <h2 className="text-lg font-semibold text-wl-text-primary mb-2">No Test Results Available</h2>
           <p className="text-sm text-wl-text-secondary mb-4">
             Test results are generated during CI runs. To populate this dashboard, run:
           </p>
@@ -114,7 +114,7 @@ export default function TestDashboardPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-wl-text-secondary mb-2">Total Tests</p>
-                  <p className="text-3xl font-bold text-white">{stats.total}</p>
+                  <p className="text-3xl font-bold text-wl-text-primary">{stats.total}</p>
                 </div>
               </div>
             </CardContent>
@@ -161,7 +161,7 @@ export default function TestDashboardPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-wl-text-secondary mb-2">Duration</p>
-                  <p className="text-3xl font-bold text-white">{stats.duration}s</p>
+                  <p className="text-3xl font-bold text-wl-text-primary">{stats.duration}s</p>
                 </div>
               </div>
             </CardContent>
@@ -179,7 +179,7 @@ export default function TestDashboardPage() {
                 {failedFiles.map((file, idx) => (
                   <div key={idx} className="p-3 bg-wl-danger-500/10 rounded-lg border border-wl-danger-500/20 flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-white font-mono">
+                      <p className="text-sm font-medium text-wl-text-primary font-mono">
                         {file.file.replace(process.env.NEXT_PUBLIC_APP_URL ?? '', '')}
                       </p>
                       <p className="text-xs text-wl-text-secondary mt-0.5">
@@ -218,7 +218,7 @@ export default function TestDashboardPage() {
                   <tbody>
                     {testResults.map((file, idx) => (
                       <tr key={idx} className="border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
-                        <td className="py-3 px-4 text-white font-mono text-xs max-w-sm truncate">
+                        <td className="py-3 px-4 text-wl-text-primary font-mono text-xs max-w-sm truncate">
                           {file.file.split('/').slice(-2).join('/')}
                         </td>
                         <td className="py-3 px-4 text-wl-text-secondary">{file.tests}</td>

@@ -92,7 +92,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
                   : [...expandedSections, "overview"]
               )
             }
-            className="bg-transparent border-0 text-white font-semibold text-sm cursor-pointer flex items-center gap-2 py-2"
+            className="bg-transparent border-0 text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 py-2"
           >
             {expandedSections.includes("overview") ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             Overview
@@ -103,7 +103,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
                 <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                   Name
                 </p>
-                <p className="text-white text-sm font-medium m-0">
+                <p className="text-wl-text-primary text-sm font-medium m-0">
                   {user.name}
                 </p>
               </div>
@@ -111,7 +111,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
                 <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                   Email
                 </p>
-                <p className="text-white text-sm font-medium m-0">
+                <p className="text-wl-text-primary text-sm font-medium m-0">
                   {user.email}
                 </p>
               </div>
@@ -135,7 +135,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
                 <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                   Store
                 </p>
-                <p className="text-white text-sm font-medium m-0">
+                <p className="text-wl-text-primary text-sm font-medium m-0">
                   {user.store}
                 </p>
               </div>
@@ -153,7 +153,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
                   : [...expandedSections, "activity"]
               )
             }
-            className="bg-transparent border-0 text-white font-semibold text-sm cursor-pointer flex items-center gap-2 py-2"
+            className="bg-transparent border-0 text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 py-2"
           >
             {expandedSections.includes("activity") ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             Activity
@@ -164,7 +164,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
                 <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                   Last Login
                 </p>
-                <p className="text-white text-sm font-medium m-0">
+                <p className="text-wl-text-primary text-sm font-medium m-0">
                   {user.lastLogin}
                 </p>
               </div>
@@ -172,7 +172,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
                 <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                   Created
                 </p>
-                <p className="text-white text-sm font-medium m-0">
+                <p className="text-wl-text-primary text-sm font-medium m-0">
                   {user.created}
                 </p>
               </div>
@@ -190,7 +190,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
                   : [...expandedSections, "permissions"]
               )
             }
-            className="bg-transparent border-0 text-white font-semibold text-sm cursor-pointer flex items-center gap-2 py-2"
+            className="bg-transparent border-0 text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 py-2"
           >
             {expandedSections.includes("permissions") ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             Permissions ({user.permissions.length})
@@ -216,7 +216,7 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
                   : [...expandedSections, "auth"]
               )
             }
-            className="bg-transparent border-0 text-white font-semibold text-sm cursor-pointer flex items-center gap-2 py-2"
+            className="bg-transparent border-0 text-wl-text-primary font-semibold text-sm cursor-pointer flex items-center gap-2 py-2"
           >
             {expandedSections.includes("auth") ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             Auth Providers ({user.authProviders.length})
@@ -302,7 +302,7 @@ export default function AdminUsersPage() {
                   <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                     Total Users
                   </p>
-                  <p className="text-white text-2xl font-bold m-0">
+                  <p className="text-wl-text-primary text-2xl font-bold m-0">
                     {users.length}
                   </p>
                 </div>
@@ -318,7 +318,7 @@ export default function AdminUsersPage() {
                   <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                     Active
                   </p>
-                  <p className="text-white text-2xl font-bold m-0">
+                  <p className="text-wl-text-primary text-2xl font-bold m-0">
                     {users.filter((u) => u.status === 'active').length}
                   </p>
                 </div>
@@ -334,7 +334,7 @@ export default function AdminUsersPage() {
                   <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                     Admins
                   </p>
-                  <p className="text-white text-2xl font-bold m-0">
+                  <p className="text-wl-text-primary text-2xl font-bold m-0">
                     {users.filter((u) => u.role === 'admin').length}
                   </p>
                 </div>
@@ -350,7 +350,7 @@ export default function AdminUsersPage() {
                   <p className="text-xs text-wl-text-secondary m-0 mb-1 font-semibold uppercase">
                     Pending Invites
                   </p>
-                  <p className="text-white text-2xl font-bold m-0">
+                  <p className="text-wl-text-primary text-2xl font-bold m-0">
                     {users.filter((u) => u.status === 'invited').length}
                   </p>
                 </div>
@@ -368,7 +368,7 @@ export default function AdminUsersPage() {
               placeholder="Search users..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full p-2 pl-8 bg-wl-bg-elevated text-white border border-wl-border-default rounded-md text-sm"
+              className="w-full p-2 pl-8 bg-wl-bg-elevated text-wl-text-primary border border-wl-border-default rounded-md text-sm"
             />
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-secondary pointer-events-none" />
           </div>
@@ -418,11 +418,11 @@ export default function AdminUsersPage() {
                   >
                     <td className="p-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-wl-bg-elevated flex items-center justify-center text-xs font-semibold text-white">
+                        <div className="w-8 h-8 rounded-full bg-wl-bg-elevated flex items-center justify-center text-xs font-semibold text-wl-text-primary">
                           {user.name.charAt(0)}
                         </div>
                         <div>
-                          <p className="text-white font-medium m-0">
+                          <p className="text-wl-text-primary font-medium m-0">
                             {user.name}
                           </p>
                           <p className="text-wl-text-secondary text-xs m-0">
@@ -444,7 +444,7 @@ export default function AdminUsersPage() {
                         {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                       </Badge>
                     </td>
-                    <td className="p-3 text-white text-sm">
+                    <td className="p-3 text-wl-text-primary text-sm">
                       {user.store}
                     </td>
                     <td className="p-3 text-center">

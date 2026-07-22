@@ -157,7 +157,7 @@ export default function ActivityPage() {
               <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-2">
                 Total Activities (24h)
               </p>
-              <span className="text-3xl font-bold text-white">
+              <span className="text-3xl font-bold text-wl-text-primary">
                 {activities.length}
               </span>
             </CardContent>
@@ -168,7 +168,7 @@ export default function ActivityPage() {
               <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-2">
                 Unique Users
               </p>
-              <span className="text-3xl font-bold text-white">
+              <span className="text-3xl font-bold text-wl-text-primary">
                 {new Set(activities.map(a => a.userId)).size}
               </span>
             </CardContent>
@@ -179,7 +179,7 @@ export default function ActivityPage() {
               <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-2">
                 Login/Logout
               </p>
-              <span className="text-3xl font-bold text-white">
+              <span className="text-3xl font-bold text-wl-text-primary">
                 {activities.filter(a => a.type === 'login' || a.type === 'logout').length}
               </span>
             </CardContent>
@@ -190,7 +190,7 @@ export default function ActivityPage() {
               <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-2">
                 Orders Created
               </p>
-              <span className="text-3xl font-bold text-white">
+              <span className="text-3xl font-bold text-wl-text-primary">
                 {activities.filter(a => a.type === 'order_created').length}
               </span>
             </CardContent>
@@ -241,7 +241,7 @@ export default function ActivityPage() {
                 <select
                   value={dateRange}
                   onChange={(e) => setDateRange(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg text-sm bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-wl-border-default-focus"
+                  className="w-full px-3 py-2 rounded-lg text-sm bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary focus:outline-none focus:border-wl-border-default-focus"
                 >
                   <option value="all">All Time</option>
                   <option value="24h">Last 24 Hours</option>
@@ -287,7 +287,7 @@ export default function ActivityPage() {
                         <div className="flex items-center gap-2 mb-1">
                           <UserAvatar name={activity.userName} />
                           <div>
-                            <p className="text-sm font-semibold text-white">
+                            <p className="text-sm font-semibold text-wl-text-primary">
                               {activity.userName}
                             </p>
                             <p className="text-xs text-wl-text-secondary">

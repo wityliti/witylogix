@@ -254,7 +254,7 @@ export default function ActivityPage() {
                 className={cn(
                   "pl-10 pr-4 py-2.5 w-full",
                   "bg-wl-bg-surface border border-wl-border-default",
-                  "text-white placeholder-wl-text-tertiary",
+                  "text-wl-text-primary placeholder-wl-text-tertiary",
                   "focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/20",
                   "rounded-md transition-all duration-200"
                 )}
@@ -420,7 +420,7 @@ export default function ActivityPage() {
                       <p className="text-xs font-semibold text-wl-neutral-300 uppercase tracking-wider mb-2">
                         Description
                       </p>
-                      <p className="text-sm text-white">
+                      <p className="text-sm text-wl-text-primary">
                         {selectedEvent.description}
                       </p>
                     </div>
@@ -435,7 +435,7 @@ export default function ActivityPage() {
                             <AvatarFallback name={selectedEvent.user.name} />
                           </Avatar>
                           <div>
-                            <p className="text-sm font-medium text-white">
+                            <p className="text-sm font-medium text-wl-text-primary">
                               {selectedEvent.user.name}
                             </p>
                             <p className="text-xs text-wl-text-secondary">
@@ -469,7 +469,7 @@ export default function ActivityPage() {
                       <p className="text-xs font-semibold text-wl-neutral-300 uppercase tracking-wider mb-2">
                         Timestamp
                       </p>
-                      <p className="text-sm text-white">
+                      <p className="text-sm text-wl-text-primary">
                         {new Date(selectedEvent.timestamp).toLocaleString()}
                       </p>
                     </div>
@@ -487,7 +487,7 @@ export default function ActivityPage() {
                                   <span className="text-wl-neutral-300">
                                     {key}:
                                   </span>
-                                  <span className="text-white ml-2">
+                                  <span className="text-wl-text-primary ml-2">
                                     {String(value)}
                                   </span>
                                 </div>

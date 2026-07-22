@@ -85,7 +85,7 @@ function ServiceCard({ service }: { service: ServiceHealth }) {
               <Icon className="w-5 h-5 text-wl-info-500" />
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-white">{service.name}</h4>
+              <h4 className="text-sm font-semibold text-wl-text-primary">{service.name}</h4>
               <p className="text-xs text-wl-text-secondary mt-0.5">{service.responseTime}ms avg response</p>
             </div>
           </div>
@@ -95,15 +95,15 @@ function ServiceCard({ service }: { service: ServiceHealth }) {
         <div className="grid grid-cols-3 gap-3 py-4 border-t border-wl-border-default">
           <div>
             <p className="text-xs text-wl-text-secondary uppercase tracking-wider">24h Uptime</p>
-            <p className="text-sm font-semibold text-white mt-1">{service.uptime24h}%</p>
+            <p className="text-sm font-semibold text-wl-text-primary mt-1">{service.uptime24h}%</p>
           </div>
           <div>
             <p className="text-xs text-wl-text-secondary uppercase tracking-wider">7d Uptime</p>
-            <p className="text-sm font-semibold text-white mt-1">{service.uptime7d}%</p>
+            <p className="text-sm font-semibold text-wl-text-primary mt-1">{service.uptime7d}%</p>
           </div>
           <div>
             <p className="text-xs text-wl-text-secondary uppercase tracking-wider">30d Uptime</p>
-            <p className="text-sm font-semibold text-white mt-1">{service.uptime30d}%</p>
+            <p className="text-sm font-semibold text-wl-text-primary mt-1">{service.uptime30d}%</p>
           </div>
         </div>
 
@@ -202,7 +202,7 @@ export default function SystemPage() {
           <>
             {/* Service Status Grid */}
             <div>
-              <h2 className="text-lg font-bold text-white mb-4">Service Status</h2>
+              <h2 className="text-lg font-bold text-wl-text-primary mb-4">Service Status</h2>
               {services.length === 0 ? (
                 <p className="text-wl-text-secondary text-sm">No services reporting. Check API connectivity.</p>
               ) : (
@@ -223,7 +223,7 @@ export default function SystemPage() {
                   <CardContent className="pt-5">
                     <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-4">Process Uptime</p>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold text-white">
+                      <span className="text-3xl font-bold text-wl-text-primary">
                         {formatUptime(metrics.uptimeSeconds)}
                       </span>
                     </div>
@@ -244,22 +244,22 @@ export default function SystemPage() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
                       <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-1">Version</p>
-                      <p className="text-sm font-semibold text-white flex items-center gap-2">
+                      <p className="text-sm font-semibold text-wl-text-primary flex items-center gap-2">
                         <CheckCircle2 className="w-4 h-4 text-wl-success-500" />
                         {metrics.deploymentVersion}
                       </p>
                     </div>
                     <div>
                       <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-1">Node.js</p>
-                      <p className="text-sm font-semibold text-white">{metrics.nodeVersion}</p>
+                      <p className="text-sm font-semibold text-wl-text-primary">{metrics.nodeVersion}</p>
                     </div>
                     <div>
                       <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-1">Platform</p>
-                      <p className="text-sm font-semibold text-white">{metrics.platform}</p>
+                      <p className="text-sm font-semibold text-wl-text-primary">{metrics.platform}</p>
                     </div>
                     <div>
                       <p className="text-xs text-wl-text-secondary uppercase tracking-wider mb-1">Checked At</p>
-                      <p className="text-sm font-semibold text-white">
+                      <p className="text-sm font-semibold text-wl-text-primary">
                         {new Date(metrics.deploymentTime).toLocaleTimeString()}
                       </p>
                     </div>

@@ -562,7 +562,7 @@ export default function InvoiceDetailPage() {
                   Bill To
                 </h3>
                 <div className="flex flex-col gap-1">
-                  <p className="font-semibold text-white">
+                  <p className="font-semibold text-wl-text-primary">
                     {invoice.customerName}
                   </p>
                   {invoice.customerEmail && (
@@ -584,7 +584,7 @@ export default function InvoiceDetailPage() {
                     <p className="text-xs uppercase text-wl-text-secondary">
                       Invoice Date
                     </p>
-                    <p className="font-semibold text-white">
+                    <p className="font-semibold text-wl-text-primary">
                       {invoice.createdDate.toLocaleDateString()}
                     </p>
                   </div>
@@ -597,7 +597,7 @@ export default function InvoiceDetailPage() {
                         "font-semibold",
                         isOverdue
                           ? "text-wl-danger-500"
-                          : "text-white"
+                          : "text-wl-text-primary"
                       )}
                     >
                       {invoice.dueDate.toLocaleDateString()}
@@ -653,7 +653,7 @@ export default function InvoiceDetailPage() {
                 <div className="w-full">
                   <div className="flex justify-between mb-2">
                     <span className="text-wl-text-secondary">Subtotal</span>
-                    <span className="text-white">
+                    <span className="text-wl-text-primary">
                       ${invoice.subtotal.toFixed(2)}
                     </span>
                   </div>
@@ -665,12 +665,12 @@ export default function InvoiceDetailPage() {
                   )}
                   <div className="flex justify-between mb-2 border-t border-wl-border-default pt-2">
                     <span className="text-wl-text-secondary">Tax</span>
-                    <span className="text-white">
+                    <span className="text-wl-text-primary">
                       ${invoice.taxAmount.toFixed(2)}
                     </span>
                   </div>
                   <div className="flex justify-between text-lg font-bold border-t-2 border-wl-border-default pt-3 mt-3">
-                    <span className="text-white">Total</span>
+                    <span className="text-wl-text-primary">Total</span>
                     <span className="text-wl-info-500">
                       ${invoice.total.toFixed(2)}
                     </span>
@@ -688,7 +688,7 @@ export default function InvoiceDetailPage() {
                   <h3 className="text-sm font-semibold uppercase text-wl-text-secondary mb-2">
                     Notes
                   </h3>
-                  <p className="text-sm text-white">
+                  <p className="text-sm text-wl-text-primary">
                     {invoice.notes}
                   </p>
                 </div>
@@ -698,7 +698,7 @@ export default function InvoiceDetailPage() {
                   <h3 className="text-sm font-semibold uppercase text-wl-text-secondary mb-2">
                     Terms & Conditions
                   </h3>
-                  <p className="text-sm text-white">
+                  <p className="text-sm text-wl-text-primary">
                     {invoice.terms}
                   </p>
                 </div>
@@ -719,7 +719,7 @@ export default function InvoiceDetailPage() {
                 <p className="text-xs uppercase text-wl-text-secondary">
                   Total Amount
                 </p>
-                <p className="text-xl font-bold text-white">
+                <p className="text-xl font-bold text-wl-text-primary">
                   ${invoice.total.toFixed(2)}
                 </p>
               </div>
@@ -762,7 +762,7 @@ export default function InvoiceDetailPage() {
                     className="border-b border-wl-border-default pb-3 last:border-b-0 last:pb-0"
                   >
                     <div className="flex justify-between mb-1">
-                      <p className="text-sm font-medium text-white">
+                      <p className="text-sm font-medium text-wl-text-primary">
                         ${payment.amount.toFixed(2)}
                       </p>
                       <span className="text-xs text-wl-text-secondary">
