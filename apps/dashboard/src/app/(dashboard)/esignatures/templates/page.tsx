@@ -66,7 +66,7 @@ function TemplateGrid({ templates, viewMode }: { templates: Template[]; viewMode
                       className="border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors cursor-pointer"
                       onClick={() => setSelectedTemplate(tpl)}
                     >
-                      <td className="py-3 px-4 text-white font-medium">
+                      <td className="py-3 px-4 text-wl-text-primary font-medium">
                         <button className="hover:underline text-wl-info-500">
                           {tpl.name}
                         </button>
@@ -194,7 +194,7 @@ function TemplateDetailCard({
               </div>
               <div>
                 <p className="text-wl-text-secondary text-xs mb-1">Description</p>
-                <p className="text-white text-sm">{template.description}</p>
+                <p className="text-wl-text-primary text-sm">{template.description}</p>
               </div>
               <div>
                 <p className="text-wl-text-secondary text-xs">Status</p>
@@ -211,12 +211,12 @@ function TemplateDetailCard({
             <div className="space-y-3">
               <div className="p-3 bg-wl-bg-elevated rounded-lg border border-wl-border-default">
                 <p className="text-xs text-wl-text-secondary mb-1">Total Usage</p>
-                <p className="text-2xl font-bold text-white">{template.usageCount}</p>
+                <p className="text-2xl font-bold text-wl-text-primary">{template.usageCount}</p>
                 <p className="text-xs text-wl-text-secondary mt-1">times used</p>
               </div>
               <div className="p-3 bg-wl-bg-elevated rounded-lg border border-wl-border-default">
                 <p className="text-xs text-wl-text-secondary mb-1">Last Used</p>
-                <p className="text-sm font-medium text-white">
+                <p className="text-sm font-medium text-wl-text-primary">
                   {template.lastUsed
                     ? new Date(template.lastUsed).toLocaleDateString()
                     : "Never"}
@@ -231,19 +231,19 @@ function TemplateDetailCard({
             <div className="space-y-3 text-sm">
               <div>
                 <p className="text-wl-text-secondary text-xs">Version</p>
-                <p className="text-white font-medium mt-1">v{template.version}</p>
+                <p className="text-wl-text-primary font-medium mt-1">v{template.version}</p>
               </div>
               <div>
                 <p className="text-wl-text-secondary text-xs">Documents</p>
-                <p className="text-white font-medium mt-1">{template.documentCount}</p>
+                <p className="text-wl-text-primary font-medium mt-1">{template.documentCount}</p>
               </div>
               <div>
                 <p className="text-wl-text-secondary text-xs">Signature Fields</p>
-                <p className="text-white font-medium mt-1">{template.signatureFields}</p>
+                <p className="text-wl-text-primary font-medium mt-1">{template.signatureFields}</p>
               </div>
               <div>
                 <p className="text-wl-text-secondary text-xs">Created</p>
-                <p className="text-white text-xs mt-1">
+                <p className="text-wl-text-primary text-xs mt-1">
                   {new Date(template.createdDate).toLocaleDateString()}
                 </p>
               </div>
@@ -308,7 +308,7 @@ export default function TemplatesPage() {
               <span className="text-wl-text-secondary text-sm font-medium">Total Templates</span>
               <FileText className="text-wl-info-500" size={20} />
             </div>
-            <p className="text-3xl font-bold text-white">{data.length}</p>
+            <p className="text-3xl font-bold text-wl-text-primary">{data.length}</p>
             <p className="text-wl-text-secondary text-xs mt-2">Available templates</p>
           </CardContent>
         </Card>
@@ -319,7 +319,7 @@ export default function TemplatesPage() {
               <span className="text-wl-text-secondary text-sm font-medium">Active</span>
               <div className="w-5 h-5 rounded-full bg-wl-success-500"></div>
             </div>
-            <p className="text-3xl font-bold text-white">
+            <p className="text-3xl font-bold text-wl-text-primary">
               {data.filter(t => t.isActive).length}
             </p>
             <p className="text-wl-text-secondary text-xs mt-2">Ready to use</p>
@@ -332,7 +332,7 @@ export default function TemplatesPage() {
               <span className="text-wl-text-secondary text-sm font-medium">Avg. Usage</span>
               <div className="w-5 h-5 rounded-full bg-wl-info-500"></div>
             </div>
-            <p className="text-3xl font-bold text-white">
+            <p className="text-3xl font-bold text-wl-text-primary">
               {data.length > 0 ? Math.round(data.reduce((sum, t) => sum + t.usageCount, 0) / data.length) : 0}
             </p>
             <p className="text-wl-text-secondary text-xs mt-2">Times used</p>

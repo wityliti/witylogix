@@ -262,10 +262,10 @@ export default function DriverPerformancePage() {
                   {topThree[1] && (
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-20 h-28 bg-gradient-to-br from-gray-400 to-gray-600 rounded-t-lg flex items-end justify-center pb-2">
-                        <span className="text-xl font-bold text-white">2</span>
+                        <span className="text-xl font-bold text-wl-text-primary">2</span>
                       </div>
                       <div className="text-center">
-                        <p className="text-sm font-semibold text-white">
+                        <p className="text-sm font-semibold text-wl-text-primary">
                           {topThree[1].name}
                         </p>
                         <p className="text-xs text-wl-neutral-300">
@@ -279,12 +279,12 @@ export default function DriverPerformancePage() {
                   {topThree[0] && (
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-24 h-36 bg-gradient-to-br from-amber-500 to-amber-700 rounded-t-lg flex items-end justify-center pb-2 shadow-lg">
-                        <span className="text-2xl font-bold text-white">
+                        <span className="text-2xl font-bold text-wl-text-primary">
                           🏆
                         </span>
                       </div>
                       <div className="text-center">
-                        <p className="text-sm font-semibold text-white">
+                        <p className="text-sm font-semibold text-wl-text-primary">
                           {topThree[0].name}
                         </p>
                         <p className="text-xs text-wl-neutral-300">
@@ -298,10 +298,10 @@ export default function DriverPerformancePage() {
                   {topThree[2] && (
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-20 h-24 bg-gradient-to-br from-orange-500 to-orange-700 rounded-t-lg flex items-end justify-center pb-2">
-                        <span className="text-xl font-bold text-white">3</span>
+                        <span className="text-xl font-bold text-wl-text-primary">3</span>
                       </div>
                       <div className="text-center">
-                        <p className="text-sm font-semibold text-white">
+                        <p className="text-sm font-semibold text-wl-text-primary">
                           {topThree[2].name}
                         </p>
                         <p className="text-xs text-wl-neutral-300">
@@ -365,14 +365,14 @@ export default function DriverPerformancePage() {
                               "bg-wl-bg-surface ring-1 ring-wl-info-500",
                           )}
                         >
-                          <td className="p-3 px-4 text-center font-bold text-white">
+                          <td className="p-3 px-4 text-center font-bold text-wl-text-primary">
                             #{driver.rank}
                           </td>
-                          <td className="p-3 px-4 text-white font-semibold">
+                          <td className="p-3 px-4 text-wl-text-primary font-semibold">
                             {driver.name}
                           </td>
                           <td className="p-3 px-4 text-center">
-                            <span className="font-bold text-white">
+                            <span className="font-bold text-wl-text-primary">
                               {driver.compositeScore.toFixed(1)}
                             </span>
                             <span className="text-xs text-wl-text-secondary ml-1">
@@ -387,18 +387,18 @@ export default function DriverPerformancePage() {
                               {driver.tier}
                             </Badge>
                           </td>
-                          <td className="p-3 px-4 text-center text-white font-semibold">
+                          <td className="p-3 px-4 text-center text-wl-text-primary font-semibold">
                             {driver.onTimePercent.toFixed(1)}%
                           </td>
                           <td className="p-3 px-4 text-center">
                             <div className="flex items-center justify-center gap-1">
-                              <span className="text-white font-semibold">
+                              <span className="text-wl-text-primary font-semibold">
                                 {formatRating(driver.customerRating)}
                               </span>
                               <span className="text-wl-neutral-300">⭐</span>
                             </div>
                           </td>
-                          <td className="p-3 px-4 text-center text-white font-semibold">
+                          <td className="p-3 px-4 text-center text-wl-text-primary font-semibold">
                             {driver.podCompliance.toFixed(1)}%
                           </td>
                           <td
@@ -412,7 +412,7 @@ export default function DriverPerformancePage() {
                               driver.trendPercent,
                             )}
                           </td>
-                          <td className="p-3 px-4 text-center text-white font-semibold">
+                          <td className="p-3 px-4 text-center text-wl-text-primary font-semibold">
                             {driver.deliveriesCount}
                           </td>
                           <td className="p-3 px-4 text-center">
@@ -443,7 +443,7 @@ export default function DriverPerformancePage() {
                         }}
                       >
                         <div className="w-20 h-20 rounded-full bg-wl-bg-surface flex items-center justify-center">
-                          <span className="font-bold text-white">
+                          <span className="font-bold text-wl-text-primary">
                             {selectedDriver.onTimePercent.toFixed(0)}
                           </span>
                         </div>
@@ -462,7 +462,7 @@ export default function DriverPerformancePage() {
                         }}
                       >
                         <div className="w-20 h-20 rounded-full bg-wl-bg-surface flex items-center justify-center">
-                          <span className="font-bold text-white">
+                          <span className="font-bold text-wl-text-primary">
                             {formatRating(selectedDriver.customerRating)}
                           </span>
                         </div>
@@ -481,7 +481,7 @@ export default function DriverPerformancePage() {
                         }}
                       >
                         <div className="w-20 h-20 rounded-full bg-wl-bg-surface flex items-center justify-center">
-                          <span className="font-bold text-white">
+                          <span className="font-bold text-wl-text-primary">
                             {selectedDriver.podCompliance.toFixed(0)}
                           </span>
                         </div>
@@ -494,7 +494,7 @@ export default function DriverPerformancePage() {
                     {/* Deliveries */}
                     <div className="flex flex-col items-center gap-3">
                       <div className="w-24 h-24 rounded-full border-4 border-wl-border-default flex items-center justify-center bg-wl-bg-elevated">
-                        <span className="text-2xl font-bold text-white">
+                        <span className="text-2xl font-bold text-wl-text-primary">
                           {selectedDriver.deliveriesCount}
                         </span>
                       </div>
@@ -512,7 +512,7 @@ export default function DriverPerformancePage() {
                         }}
                       >
                         <div className="w-20 h-20 rounded-full bg-wl-bg-surface flex items-center justify-center flex-col">
-                          <span className="font-bold text-white">
+                          <span className="font-bold text-wl-text-primary">
                             {selectedDriver.compositeScore.toFixed(0)}
                           </span>
                           <span className="text-xs text-wl-text-secondary">

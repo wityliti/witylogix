@@ -299,7 +299,7 @@ export default function CreateInvoicePage() {
             {selectedCustomer ? (
               <div className={cn("flex items-center justify-between p-4 bg-wl-bg-elevated rounded border border-wl-border-default")}>
                 <div>
-                  <p className="font-semibold text-white">
+                  <p className="font-semibold text-wl-text-primary">
                     {selectedCustomer.name}
                   </p>
                   <p className="text-sm text-wl-text-secondary">
@@ -343,7 +343,7 @@ export default function CreateInvoicePage() {
                   type="date"
                   value={billingStartDate}
                   onChange={(e) => setBillingStartDate(e.target.value)}
-                  className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white"
+                  className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-text-primary"
                 />
               </div>
               <div>
@@ -354,7 +354,7 @@ export default function CreateInvoicePage() {
                   type="date"
                   value={billingEndDate}
                   onChange={(e) => setBillingEndDate(e.target.value)}
-                  className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white"
+                  className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-text-primary"
                 />
               </div>
             </div>
@@ -440,7 +440,7 @@ export default function CreateInvoicePage() {
                           )
                         }
                         placeholder="Item description"
-                        className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-white"
+                        className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-wl-text-primary"
                       />
                     </div>
 
@@ -460,7 +460,7 @@ export default function CreateInvoicePage() {
                             parseFloat(e.target.value)
                           )
                         }
-                        className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-white"
+                        className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-wl-text-primary"
                       />
                     </div>
 
@@ -480,7 +480,7 @@ export default function CreateInvoicePage() {
                             parseFloat(e.target.value)
                           )
                         }
-                        className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-white"
+                        className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-wl-text-primary"
                       />
                     </div>
 
@@ -488,7 +488,7 @@ export default function CreateInvoicePage() {
                       <label className="block text-xs font-medium text-wl-text-secondary mb-1">
                         Amount
                       </label>
-                      <p className="font-semibold text-white">
+                      <p className="font-semibold text-wl-text-primary">
                         ${(item.quantity * item.rate).toFixed(2)}
                       </p>
                     </div>
@@ -546,7 +546,7 @@ export default function CreateInvoicePage() {
                     setDueDate(e.target.value);
                     setDueDatePreset("custom");
                   }}
-                  className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white"
+                  className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-text-primary"
                 />
               </div>
             </div>
@@ -567,7 +567,7 @@ export default function CreateInvoicePage() {
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Add any notes for the customer..."
                   rows={3}
-                  className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-white"
+                  className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-wl-text-primary"
                 />
               </div>
               <div>
@@ -579,7 +579,7 @@ export default function CreateInvoicePage() {
                   onChange={(e) => setTerms(e.target.value)}
                   placeholder="Add any terms and conditions..."
                   rows={3}
-                  className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-white"
+                  className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-wl-text-primary"
                 />
               </div>
             </div>
@@ -597,7 +597,7 @@ export default function CreateInvoicePage() {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-wl-text-secondary">Subtotal</span>
-                <span className="font-medium text-white">
+                <span className="font-medium text-wl-text-primary">
                   ${subtotal.toFixed(2)}
                 </span>
               </div>
@@ -618,7 +618,7 @@ export default function CreateInvoicePage() {
                     max="100"
                     value={discountPercentage}
                     onChange={(e) => setDiscountPercentage(e.target.value)}
-                    className="w-full px-2 py-1 bg-wl-bg-elevated border border-wl-border-default rounded text-xs text-white"
+                    className="w-full px-2 py-1 bg-wl-bg-elevated border border-wl-border-default rounded text-xs text-wl-text-primary"
                   />
                 </div>
               )}
@@ -634,7 +634,7 @@ export default function CreateInvoicePage() {
                     max="100"
                     value={discountPercentage}
                     onChange={(e) => setDiscountPercentage(e.target.value)}
-                    className="w-full px-2 py-1 bg-wl-bg-elevated border border-wl-border-default rounded text-xs text-white"
+                    className="w-full px-2 py-1 bg-wl-bg-elevated border border-wl-border-default rounded text-xs text-wl-text-primary"
                   />
                 </div>
               )}
@@ -644,7 +644,7 @@ export default function CreateInvoicePage() {
                   <span className="text-wl-text-secondary">
                     Tax ({taxRate}%)
                   </span>
-                  <span className="font-medium text-white">
+                  <span className="font-medium text-wl-text-primary">
                     ${taxAmount.toFixed(2)}
                   </span>
                 </div>
@@ -655,13 +655,13 @@ export default function CreateInvoicePage() {
                   step="0.5"
                   value={taxRate}
                   onChange={(e) => setTaxRate(e.target.value)}
-                  className="w-full px-2 py-1 bg-wl-bg-elevated border border-wl-border-default rounded text-xs text-white"
+                  className="w-full px-2 py-1 bg-wl-bg-elevated border border-wl-border-default rounded text-xs text-wl-text-primary"
                 />
               </div>
 
               <div className="border-t-2 border-wl-border-default pt-3">
                 <div className="flex justify-between">
-                  <span className="font-semibold text-white">
+                  <span className="font-semibold text-wl-text-primary">
                     Total
                   </span>
                   <span className="text-2xl font-bold text-wl-info-500">
@@ -705,7 +705,7 @@ export default function CreateInvoicePage() {
                     onClick={() => handleSelectCustomer(customer)}
                     className={cn("w-full text-left p-3 rounded border border-wl-border-default hover:bg-wl-bg-elevated transition-colors")}
                   >
-                    <p className="font-medium text-white">
+                    <p className="font-medium text-wl-text-primary">
                       {customer.name}
                     </p>
                     <p className="text-sm text-wl-text-secondary">

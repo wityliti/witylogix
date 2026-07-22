@@ -50,7 +50,7 @@ function KPICardComponent({ card }: { card: KPICard }) {
               {card.label}
             </p>
             <div className={cn("flex items-baseline gap-2")}>
-              <span className={cn("text-3xl font-bold text-white")}>
+              <span className={cn("text-3xl font-bold text-wl-text-primary")}>
                 {card.value}
               </span>
               {card.unit && (
@@ -86,13 +86,13 @@ function CompletionRateChart({ rate }: { rate: number }) {
   return (
     <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
       <CardHeader>
-        <CardTitle className={cn("text-base text-white")}>Completion Rate</CardTitle>
+        <CardTitle className={cn("text-base text-wl-text-primary")}>Completion Rate</CardTitle>
       </CardHeader>
       <CardContent>
         <div className={cn("space-y-4")}>
           <div className={cn("flex items-end justify-between")}>
             <div>
-              <p className={cn("text-4xl font-bold text-white")}>
+              <p className={cn("text-4xl font-bold text-wl-text-primary")}>
                 {Math.round(rate)}%
               </p>
               <p className={cn("text-sm text-wl-text-secondary mt-1")}>
@@ -142,7 +142,7 @@ function RecentEnvelopesTable({ envelopes }: { envelopes: Envelope[] }) {
   return (
     <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
       <CardHeader>
-        <CardTitle className={cn("text-base text-white")}>Recent Envelopes</CardTitle>
+        <CardTitle className={cn("text-base text-wl-text-primary")}>Recent Envelopes</CardTitle>
       </CardHeader>
       <CardContent>
         <div className={cn("overflow-x-auto")}>
@@ -171,7 +171,7 @@ function RecentEnvelopesTable({ envelopes }: { envelopes: Envelope[] }) {
                     "border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors"
                   )}
                 >
-                  <td className={cn("py-3 px-4 text-white font-medium")}>
+                  <td className={cn("py-3 px-4 text-wl-text-primary font-medium")}>
                     {env.name}
                   </td>
                   <td className={cn("py-3 px-4 text-wl-text-secondary")}>
@@ -219,7 +219,7 @@ function TemplateUsageCard({ templates }: { templates: Array<{ name: string; cou
   return (
     <Card className={cn("bg-wl-bg-surface border-wl-border-default")}>
       <CardHeader>
-        <CardTitle className={cn("text-base text-white")}>Template Usage</CardTitle>
+        <CardTitle className={cn("text-base text-wl-text-primary")}>Template Usage</CardTitle>
       </CardHeader>
       <CardContent>
         <div className={cn("space-y-4")}>
@@ -231,7 +231,7 @@ function TemplateUsageCard({ templates }: { templates: Array<{ name: string; cou
               <span className={cn("text-sm text-wl-text-secondary")}>
                 {tpl.name}
               </span>
-              <span className={cn("text-sm font-medium text-white")}>
+              <span className={cn("text-sm font-medium text-wl-text-primary")}>
                 {tpl.count}
               </span>
             </div>
@@ -299,7 +299,7 @@ export default function ESignaturesPage() {
       {/* Header with Action */}
       <div className={cn("flex items-center justify-between")}>
         <div>
-          <h1 className={cn("text-2xl font-bold text-white")}>
+          <h1 className={cn("text-2xl font-bold text-wl-text-primary")}>
             E-Signature Overview
           </h1>
           <p className={cn("text-sm text-wl-text-secondary mt-1")}>
@@ -338,7 +338,7 @@ export default function ESignaturesPage() {
             <p className={cn("text-sm font-medium text-wl-text-secondary mb-2")}>
               Decline Rate
             </p>
-            <p className={cn("text-2xl font-bold text-white")}>
+            <p className={cn("text-2xl font-bold text-wl-text-primary")}>
               {analytics?.declineRate || 0}%
             </p>
             <p className={cn("text-xs text-wl-text-secondary mt-2")}>
@@ -351,7 +351,7 @@ export default function ESignaturesPage() {
             <p className={cn("text-sm font-medium text-wl-text-secondary mb-2")}>
               Avg Signers per Envelope
             </p>
-            <p className={cn("text-2xl font-bold text-white")}>
+            <p className={cn("text-2xl font-bold text-wl-text-primary")}>
               {analytics?.avgSignersPerEnvelope || 0}
             </p>
             <p className={cn("text-xs text-wl-text-secondary mt-2")}>
@@ -364,7 +364,7 @@ export default function ESignaturesPage() {
             <p className={cn("text-sm font-medium text-wl-text-secondary mb-2")}>
               Active Templates
             </p>
-            <p className={cn("text-2xl font-bold text-white")}>
+            <p className={cn("text-2xl font-bold text-wl-text-primary")}>
               {signingTemplates.filter((t: { isActive: boolean }) => t.isActive).length}
             </p>
             <p className={cn("text-xs text-wl-text-secondary mt-2")}>

@@ -356,7 +356,7 @@ export default function DemandPage() {
                 className={cn(
                   'px-3 py-2 rounded-md text-sm font-medium',
                   'bg-wl-bg-elevated border border-wl-border-default',
-                  'text-white',
+                  'text-wl-text-primary',
                   'focus:outline-none focus:ring-2 focus:ring-wl-info-500',
                   'cursor-pointer hover:border-wl-info-500/50 transition-colors'
                 )}
@@ -383,7 +383,7 @@ export default function DemandPage() {
                 className={cn(
                   'px-3 py-2 rounded-md text-sm font-medium',
                   'bg-wl-bg-elevated border border-wl-border-default',
-                  'text-white',
+                  'text-wl-text-primary',
                   'focus:outline-none focus:ring-2 focus:ring-wl-info-500',
                   'cursor-pointer hover:border-wl-info-500/50 transition-colors'
                 )}
@@ -423,7 +423,7 @@ export default function DemandPage() {
 
           {/* Map legend */}
           <div className="absolute bottom-6 left-6 bg-wl-bg-surface/90 backdrop-blur border border-wl-border-default rounded-xl p-4 text-xs">
-            <p className="font-semibold text-white mb-2">Demand Intensity</p>
+            <p className="font-semibold text-wl-text-primary mb-2">Demand Intensity</p>
             {[
               { color: 'var(--wl-info-500)', label: 'Low' },
               { color: 'var(--wl-success-500)', label: 'Moderate' },
@@ -440,13 +440,13 @@ export default function DemandPage() {
 
           {/* Zone summary overlay */}
           <div className="absolute top-4 right-4 bg-wl-bg-surface/90 backdrop-blur border border-wl-border-default rounded-xl p-4 max-w-xs">
-            <p className="text-xs font-semibold text-white mb-3">Zone Summary</p>
+            <p className="text-xs font-semibold text-wl-text-primary mb-3">Zone Summary</p>
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {zones.slice(0, 8).map((z) => (
                 <div key={z.id} className="flex items-center justify-between gap-3">
                   <span className="text-xs text-wl-neutral-300 truncate">{z.name}</span>
                   <div className="flex items-center gap-1.5 shrink-0">
-                    <span className="text-xs font-mono text-white">{z.predictedVolume}</span>
+                    <span className="text-xs font-mono text-wl-text-primary">{z.predictedVolume}</span>
                     {z.trend === 'up' ? (
                       <TrendingUp className="w-3 h-3 text-wl-success-400" />
                     ) : z.trend === 'down' ? (
@@ -470,7 +470,7 @@ export default function DemandPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
               <p className="text-xs font-medium text-wl-text-secondary uppercase tracking-wide">Total Predicted</p>
-              <p className="text-3xl font-bold text-white mt-3">
+              <p className="text-3xl font-bold text-wl-text-primary mt-3">
                 {((metrics?.totalPredicted ?? 0) / 1000).toFixed(1)}k
               </p>
               <p className="text-xs text-wl-text-tertiary mt-2">Volume units</p>
@@ -478,7 +478,7 @@ export default function DemandPage() {
 
             <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
               <p className="text-xs font-medium text-wl-text-secondary uppercase tracking-wide">Current Actual</p>
-              <p className="text-3xl font-bold text-white mt-3">
+              <p className="text-3xl font-bold text-wl-text-primary mt-3">
                 {((metrics?.totalActual ?? 0) / 1000).toFixed(1)}k
               </p>
               <div className="flex items-center gap-2 mt-2">
@@ -498,13 +498,13 @@ export default function DemandPage() {
 
             <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
               <p className="text-xs font-medium text-wl-text-secondary uppercase tracking-wide">Avg Confidence</p>
-              <p className="text-3xl font-bold text-white mt-3">{metrics?.avgConfidence}%</p>
+              <p className="text-3xl font-bold text-wl-text-primary mt-3">{metrics?.avgConfidence}%</p>
               <p className="text-xs text-wl-text-tertiary mt-2">Prediction accuracy</p>
             </Card>
 
             <Card className="p-6 bg-wl-bg-surface border border-wl-border-default hover:bg-wl-bg-elevated transition-colors">
               <p className="text-xs font-medium text-wl-text-secondary uppercase tracking-wide">Anomalies Detected</p>
-              <p className="text-3xl font-bold text-white mt-3">{metrics?.anomalyCount}</p>
+              <p className="text-3xl font-bold text-wl-text-primary mt-3">{metrics?.anomalyCount}</p>
               <Badge variant="warning" className="mt-2 text-xs">
                 Active Alerts
               </Badge>
@@ -565,7 +565,7 @@ export default function DemandPage() {
                         idx % 2 === 0 ? 'bg-wl-bg-sunken' : 'bg-transparent'
                       )}
                     >
-                      <td className="px-4 py-3 font-medium text-white">{zone.name}</td>
+                      <td className="px-4 py-3 font-medium text-wl-text-primary">{zone.name}</td>
                       <td className="text-right px-4 py-3 text-wl-neutral-300">
                         {zone.predictedVolume.toLocaleString()}
                       </td>
@@ -645,7 +645,7 @@ export default function DemandPage() {
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <Badge variant={severityBadgeVariant}>{anomaly.severity}</Badge>
-                            <span className="text-sm font-medium text-white capitalize">
+                            <span className="text-sm font-medium text-wl-text-primary capitalize">
                               {anomaly.type.replace(/_/g, ' ')}
                             </span>
                             <span className="text-xs text-wl-text-tertiary">in {anomaly.zone}</span>
