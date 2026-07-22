@@ -322,7 +322,7 @@ export default function ConflictsPage() {
                     className={cn(
                       "rounded-lg border transition-all",
                       isExpanded
-                        ? "border-wl-info-500 bg-[rgba(59,82,255,0.08)]"
+                        ? "border-wl-info-500 bg-wl-info-500/[0.08]"
                         : "border-wl-border-default bg-wl-bg-root hover:border-wl-info-500"
                     )}
                   >
@@ -456,7 +456,7 @@ export default function ConflictsPage() {
 
         {/* Error State */}
         {error && (
-          <Card className="p-4 border-wl-danger-500/20 bg-[rgba(255,69,69,0.05)] border border-wl-danger-500/20">
+          <Card className="p-4 border-wl-danger-500/20 bg-wl-danger-500/[0.05] border border-wl-danger-500/20">
             <div className="flex items-center gap-2 text-wl-danger-500">
               <span>⚠️</span>
               <span className="text-sm font-medium">{error}</span>

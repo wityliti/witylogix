@@ -184,7 +184,7 @@ function ResetPasswordPageInner() {
           className="py-3 px-4 rounded-lg border-none text-wl-text-inverse text-sm font-semibold flex items-center justify-center gap-2 transition-all"
           style={{
             background: "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
-            boxShadow: "0 4px 12px rgba(108, 99, 255, 0.25)",
+            boxShadow: "0 4px 12px rgba(245, 166, 35, 0.25)",
           }}
         >
           Request new reset link
@@ -226,7 +226,7 @@ function ResetPasswordPageInner() {
             className="py-3 px-4 rounded-lg border-none text-wl-text-inverse text-sm font-semibold flex items-center justify-center gap-2 transition-all"
             style={{
               background: "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
-              boxShadow: "0 4px 12px rgba(108, 99, 255, 0.25)",
+              boxShadow: "0 4px 12px rgba(245, 166, 35, 0.25)",
             }}
           >
             Sign in now
@@ -287,11 +287,11 @@ function ResetPasswordPageInner() {
                   e.currentTarget.style.borderColor = passwordError ? "var(--wl-danger-500)" : "var(--wl-primary-500)";
                   e.currentTarget.style.boxShadow = passwordError
                     ? "0 0 0 3px rgba(239, 68, 68, 0.1)"
-                    : "0 0 0 3px rgba(108, 99, 255, 0.1)";
+                    : "0 0 0 3px rgba(245, 166, 35, 0.1)";
                 }
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = passwordError ? "var(--wl-danger-500)" : "1px solid var(--wl-border-default)";
+                e.currentTarget.style.borderColor = passwordError ? "var(--wl-danger-500)" : "var(--wl-border-default)";
                 e.currentTarget.style.boxShadow = "none";
               }}
             />
@@ -427,7 +427,7 @@ function ResetPasswordPageInner() {
                   e.currentTarget.style.boxShadow =
                     confirmError || (confirmPassword && password !== confirmPassword)
                       ? "0 0 0 3px rgba(239, 68, 68, 0.1)"
-                      : "0 0 0 3px rgba(108, 99, 255, 0.1)";
+                      : "0 0 0 3px rgba(245, 166, 35, 0.1)";
                 }
               }}
               onBlur={(e) => {
@@ -461,17 +461,17 @@ function ResetPasswordPageInner() {
             background: isLoading
               ? "var(--wl-primary-600)"
               : "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
-            boxShadow: "0 4px 12px rgba(108, 99, 255, 0.25)",
+            boxShadow: "0 4px 12px rgba(245, 166, 35, 0.25)",
           }}
           onMouseEnter={(e) => {
             if (!isLoading) {
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 20px rgba(108, 99, 255, 0.35)";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 20px rgba(245, 166, 35, 0.35)";
               (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)";
             }
           }}
           onMouseLeave={(e) => {
             if (!isLoading) {
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 12px rgba(108, 99, 255, 0.25)";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 12px rgba(245, 166, 35, 0.25)";
               (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)";
             }
           }}

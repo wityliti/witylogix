@@ -28,10 +28,10 @@ const TimeSlotZoneLayer = dynamic(
 );
 
 const LEGEND = [
-  { color: '#10b981', label: 'Good coverage' },
-  { color: '#f59e0b', label: 'Limited slots' },
-  { color: '#ef4444', label: 'No active slots' },
-  { color: '#6b7280', label: 'No slots assigned' },
+  { color: 'var(--wl-success-500)', label: 'Good coverage' },
+  { color: 'var(--wl-warning-500)', label: 'Limited slots' },
+  { color: 'var(--wl-danger-500)', label: 'No active slots' },
+  { color: 'var(--wl-neutral-500)', label: 'No slots assigned' },
 ];
 
 export function TimeSlotsZoneMap() {

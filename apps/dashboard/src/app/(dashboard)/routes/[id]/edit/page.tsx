@@ -174,19 +174,6 @@ export default function EditRoutePage() {
   const estimatedDistance = currentFormData.stops.length * 3.5;
   const estimatedDuration = currentFormData.stops.length * 15 + 30;
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "#ff6b6b";
-      case "medium":
-        return "#ffd93d";
-      case "low":
-        return "#6bcf7f";
-      default:
-        return "#8888a0";
-    }
-  };
-
   return (
     <div className="min-h-screen bg-wl-bg-root p-6 text-wl-text-primary">
       <div className="mb-8">

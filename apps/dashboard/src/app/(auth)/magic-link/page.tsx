@@ -132,7 +132,7 @@ function MagicLinkPageInner() {
             className="py-3 px-4 rounded-lg border-none text-wl-text-inverse text-sm font-semibold flex items-center justify-center gap-2 transition-all"
             style={{
               background: "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
-              boxShadow: "0 4px 12px rgba(108, 99, 255, 0.25)",
+              boxShadow: "0 4px 12px rgba(245, 166, 35, 0.25)",
             }}
           >
             Go to dashboard
@@ -166,7 +166,7 @@ function MagicLinkPageInner() {
           className="py-3 px-4 rounded-lg border-none text-wl-text-inverse text-sm font-semibold flex items-center justify-center gap-2 transition-all"
           style={{
             background: "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
-            boxShadow: "0 4px 12px rgba(108, 99, 255, 0.25)",
+            boxShadow: "0 4px 12px rgba(245, 166, 35, 0.25)",
           }}
         >
           Request new magic link
@@ -207,7 +207,7 @@ function MagicLinkPageInner() {
           className="py-3 px-4 rounded-lg border-none text-wl-text-inverse text-sm font-semibold flex items-center justify-center gap-2 transition-all"
           style={{
             background: "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
-            boxShadow: "0 4px 12px rgba(108, 99, 255, 0.25)",
+            boxShadow: "0 4px 12px rgba(245, 166, 35, 0.25)",
           }}
         >
           Back to sign in
