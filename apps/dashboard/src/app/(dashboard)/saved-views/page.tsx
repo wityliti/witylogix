@@ -196,11 +196,11 @@ export default function SavedViewsPage() {
                       <div className="mb-4">
                         <div className="flex justify-between mb-2">
                           <span className="text-xs text-wl-text-secondary">Filters</span>
-                          <span className="text-sm font-semibold text-white">{view.filters?.length ?? 0}</span>
+                          <span className="text-sm font-semibold text-wl-text-primary">{view.filters?.length ?? 0}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-xs text-wl-text-secondary">Visible Columns</span>
-                          <span className="text-sm font-semibold text-white">{view.visibleColumns?.length ?? 0}</span>
+                          <span className="text-sm font-semibold text-wl-text-primary">{view.visibleColumns?.length ?? 0}</span>
                         </div>
                       </div>
                       <div className="flex gap-2 flex-wrap">
@@ -259,7 +259,7 @@ export default function SavedViewsPage() {
                     placeholder="e.g., Today's Priority Orders"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
+                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-wl-text-primary text-sm placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
                   />
                 </div>
 
@@ -268,7 +268,7 @@ export default function SavedViewsPage() {
                   <select
                     value={formData.targetTable}
                     onChange={(e) => handleTableChange(e.target.value)}
-                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm focus:outline-none focus:border-wl-info-500 cursor-pointer transition-colors"
+                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-wl-text-primary text-sm focus:outline-none focus:border-wl-info-500 cursor-pointer transition-colors"
                   >
                     {TABLE_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
                   </select>
@@ -282,7 +282,7 @@ export default function SavedViewsPage() {
                         <select
                           value={filter.column}
                           onChange={(e) => updateFilter(idx, 'column', e.target.value)}
-                          className="flex-1 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm focus:outline-none focus:border-wl-info-500 cursor-pointer transition-colors"
+                          className="flex-1 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-wl-text-primary text-sm focus:outline-none focus:border-wl-info-500 cursor-pointer transition-colors"
                         >
                           <option value="">Select Column</option>
                           {availableColumns.map((col) => <option key={col} value={col}>{col}</option>)}
@@ -290,7 +290,7 @@ export default function SavedViewsPage() {
                         <select
                           value={filter.operator}
                           onChange={(e) => updateFilter(idx, 'operator', e.target.value)}
-                          className="px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm focus:outline-none focus:border-wl-info-500 cursor-pointer transition-colors"
+                          className="px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-wl-text-primary text-sm focus:outline-none focus:border-wl-info-500 cursor-pointer transition-colors"
                         >
                           <option value="equals">equals</option>
                           <option value="not_equals">not equals</option>
@@ -304,7 +304,7 @@ export default function SavedViewsPage() {
                           placeholder="Value"
                           value={filter.value}
                           onChange={(e) => updateFilter(idx, 'value', e.target.value)}
-                          className="flex-1 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 transition-colors"
+                          className="flex-1 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-wl-text-primary text-sm placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 transition-colors"
                         />
                         {formData.filters.length > 1 && (
                           <Button variant="danger" size="sm" onClick={() => removeFilter(idx)}>Remove</Button>
@@ -340,7 +340,7 @@ export default function SavedViewsPage() {
                     <select
                       value={formData.sortColumn}
                       onChange={(e) => setFormData({ ...formData, sortColumn: e.target.value })}
-                      className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm focus:outline-none focus:border-wl-info-500 cursor-pointer transition-colors"
+                      className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-wl-text-primary text-sm focus:outline-none focus:border-wl-info-500 cursor-pointer transition-colors"
                     >
                       <option value="">None</option>
                       {availableColumns.map((col) => <option key={col} value={col}>{col}</option>)}
@@ -351,7 +351,7 @@ export default function SavedViewsPage() {
                     <select
                       value={formData.sortDirection}
                       onChange={(e) => setFormData({ ...formData, sortDirection: e.target.value as 'asc' | 'desc' })}
-                      className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm focus:outline-none focus:border-wl-info-500 cursor-pointer transition-colors"
+                      className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-wl-text-primary text-sm focus:outline-none focus:border-wl-info-500 cursor-pointer transition-colors"
                     >
                       <option value="asc">Ascending</option>
                       <option value="desc">Descending</option>

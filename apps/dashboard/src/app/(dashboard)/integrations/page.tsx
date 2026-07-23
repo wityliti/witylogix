@@ -179,7 +179,7 @@ export default function IntegrationsPage() {
           <CardContent className="pt-6">
             <div className="space-y-2">
               <p className="text-sm text-wl-text-secondary">Total Providers</p>
-              <p className="text-3xl font-bold text-white">
+              <p className="text-3xl font-bold text-wl-text-primary">
                 {health?.totalProviders ?? 0}
               </p>
             </div>
@@ -263,7 +263,7 @@ export default function IntegrationsPage() {
                       <AlertCircle className="w-5 h-5 text-wl-info-400 flex-shrink-0 mt-0.5" />
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium text-white truncate">
+                      <p className="font-medium text-wl-text-primary truncate">
                         {alert.title}
                       </p>
                       <p className="text-sm text-wl-text-secondary mt-1">
@@ -347,7 +347,7 @@ export default function IntegrationsPage() {
               placeholder="Search providers..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-lg bg-wl-bg-surface border border-wl-border-default text-white placeholder-wl-text-secondary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500"
+              className="w-full pl-10 pr-4 py-2 rounded-lg bg-wl-bg-surface border border-wl-border-default text-wl-text-primary placeholder-wl-text-secondary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500"
             />
           </div>
         </div>
@@ -360,7 +360,7 @@ export default function IntegrationsPage() {
               onChange={(e) =>
                 setSelectedCategory(e.target.value || null)
               }
-              className="px-3 py-2 rounded-lg bg-wl-bg-surface border border-wl-border-default text-white text-sm focus:outline-none focus:border-wl-info-500"
+              className="px-3 py-2 rounded-lg bg-wl-bg-surface border border-wl-border-default text-wl-text-primary text-sm focus:outline-none focus:border-wl-info-500"
             >
               <option value="">All Categories</option>
               {categories.map((cat) => (
@@ -376,7 +376,7 @@ export default function IntegrationsPage() {
           <select
             value={selectedStatus ?? ""}
             onChange={(e) => setSelectedStatus(e.target.value || null)}
-            className="px-3 py-2 rounded-lg bg-wl-bg-surface border border-wl-border-default text-white text-sm focus:outline-none focus:border-wl-info-500"
+            className="px-3 py-2 rounded-lg bg-wl-bg-surface border border-wl-border-default text-wl-text-primary text-sm focus:outline-none focus:border-wl-info-500"
           >
             <option value="">All Status</option>
             {statuses.map((status) => (
@@ -425,7 +425,7 @@ export default function IntegrationsPage() {
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-wl-text-secondary">Uptime</span>
-                    <span className="text-sm font-medium text-white">
+                    <span className="text-sm font-medium text-wl-text-secondary">
                       {provider.uptime.toFixed(1)}%
                     </span>
                   </div>
@@ -447,13 +447,13 @@ export default function IntegrationsPage() {
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
                     <p className="text-wl-text-secondary">Health Score</p>
-                    <p className="font-medium text-white">
+                    <p className="font-medium text-wl-text-primary">
                       {provider.healthScore}
                     </p>
                   </div>
                   <div>
                     <p className="text-wl-text-secondary">Errors</p>
-                    <p className="font-medium text-white">
+                    <p className="font-medium text-wl-text-primary">
                       {provider.errorCount}
                     </p>
                   </div>

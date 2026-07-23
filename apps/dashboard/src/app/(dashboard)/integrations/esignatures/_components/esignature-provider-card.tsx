@@ -59,16 +59,16 @@ export function ESignatureProviderCard({ provider }: ESignatureProviderCardProps
             <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-wl-border-default">
               <div>
                 <p className="text-xs font-medium text-wl-text-tertiary uppercase">Templates</p>
-                <p className="text-2xl font-bold text-white mt-1">{provider.templates}</p>
+                <p className="text-2xl font-bold text-wl-text-primary mt-1">{provider.templates}</p>
               </div>
               <div>
                 <p className="text-xs font-medium text-wl-text-tertiary uppercase">Envelopes</p>
-                <p className="text-2xl font-bold text-white mt-1">{provider.envelopes?.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-wl-text-primary mt-1">{provider.envelopes?.toLocaleString()}</p>
               </div>
             </div>
             <div className="mb-6">
               <p className="text-xs font-medium text-wl-text-tertiary uppercase">Last Sync</p>
-              <p className="text-sm text-white mt-1 flex items-center gap-2">
+              <p className="text-sm text-wl-text-secondary mt-1 flex items-center gap-2">
                 <Clock className="w-3 h-3 text-wl-success-500" />
                 {provider.lastSync}
               </p>

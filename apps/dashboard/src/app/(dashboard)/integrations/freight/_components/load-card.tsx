@@ -35,7 +35,7 @@ export function LoadCard({ load, onBook, onDetails }: LoadCardProps) {
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
               <MapPin className="w-4 h-4 text-wl-text-secondary" />
-              <span className="text-sm font-semibold text-white">
+              <span className="text-sm font-semibold text-wl-text-primary">
                 {load.origin}
               </span>
             </div>
@@ -55,23 +55,23 @@ export function LoadCard({ load, onBook, onDetails }: LoadCardProps) {
         <div className="grid grid-cols-2 gap-3 mb-4 text-xs">
           <div>
             <span className="text-wl-text-secondary">Distance:</span>
-            <p className="text-white font-medium">{load.distance} mi</p>
+            <p className="text-wl-text-primary font-medium">{load.distance} mi</p>
           </div>
           <div>
             <span className="text-wl-text-secondary">Weight:</span>
-            <p className="text-white font-medium">{load.weight} lbs</p>
+            <p className="text-wl-text-primary font-medium">{load.weight} lbs</p>
           </div>
           <div>
             <span className="text-wl-text-secondary">Equipment:</span>
-            <p className="text-white font-medium">{load.equipment}</p>
+            <p className="text-wl-text-primary font-medium">{load.equipment}</p>
           </div>
           <div>
             <span className="text-wl-text-secondary">Carriers:</span>
-            <p className="text-white font-medium">{load.carriers}</p>
+            <p className="text-wl-text-primary font-medium">{load.carriers}</p>
           </div>
           <div className="col-span-2">
             <span className="text-wl-text-secondary">Pickup:</span>
-            <p className="text-white font-medium">{load.pickup}</p>
+            <p className="text-wl-text-primary font-medium">{load.pickup}</p>
           </div>
         </div>
 

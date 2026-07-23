@@ -162,7 +162,7 @@ const ColorPaletteSection = () => {
                       style={{ backgroundColor: hexValue }}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="m-0 text-xs font-semibold text-white mb-0.5">
+                      <p className="m-0 text-xs font-semibold text-wl-text-primary mb-0.5">
                         {tokenName}
                       </p>
                       <code className="text-xs text-wl-text-secondary font-mono flex items-center gap-1 justify-between">
@@ -202,7 +202,7 @@ const TypographySection = () => {
                 </code>
               </div>
               <div className="flex-1">
-                <div style={{ fontSize: sample.size as any, fontWeight: sample.weight as any }} className="text-white">
+                <div style={{ fontSize: sample.size as any, fontWeight: sample.weight as any }} className="text-wl-text-primary">
                   {sample.text}
                 </div>
               </div>
@@ -303,13 +303,13 @@ const ComponentsShowcase = () => {
         <CardContent>
           <div className="grid gap-4 max-w-md">
             <div>
-              <label className="text-sm font-medium text-white block mb-2">
+              <label className="text-sm font-medium text-wl-text-secondary block mb-2">
                 Input Field
               </label>
               <Input placeholder="Enter text..." />
             </div>
             <div>
-              <label className="text-sm font-medium text-white block mb-2">
+              <label className="text-sm font-medium text-wl-text-secondary block mb-2">
                 Select Field
               </label>
               <Select
@@ -390,7 +390,7 @@ const ComponentsShowcase = () => {
           {modalOpen && (
             <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
               <div className="p-6">
-                <h2 className="text-xl font-bold text-white m-0 mb-3">
+                <h2 className="text-xl font-bold text-wl-text-primary m-0 mb-3">
                   Modal Example
                 </h2>
                 <p className="text-wl-text-secondary m-0 mb-4">

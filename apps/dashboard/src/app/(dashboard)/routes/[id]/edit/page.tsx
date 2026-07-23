@@ -288,7 +288,7 @@ export default function EditRoutePage() {
                         <span>⋮</span>
                       </div>
                       <div className="min-w-0">
-                        <div className="text-white text-xs font-semibold mb-0.5">
+                        <div className="text-wl-text-primary text-xs font-semibold mb-0.5">
                           {idx + 1}. {stop.orderId}
                         </div>
                         <div className="text-wl-text-secondary text-xs overflow-hidden text-ellipsis whitespace-nowrap">
@@ -335,7 +335,7 @@ export default function EditRoutePage() {
                           onClick={() => handleAddStop(order)}
                         >
                           <div className="flex justify-between items-center mb-1.5">
-                            <span className="font-semibold text-white">{order.id}</span>
+                            <span className="font-semibold text-wl-text-primary">{order.id}</span>
                             <Badge>{order.priority.toUpperCase()}</Badge>
                           </div>
                           <div className="text-wl-text-secondary mb-1">
@@ -360,7 +360,7 @@ export default function EditRoutePage() {
               </CardHeader>
               <CardContent>
                 <div className="p-3 rounded-md bg-wl-bg-root border border-wl-border-default">
-                  <div className="text-white text-sm font-semibold mb-2">
+                  <div className="text-wl-text-primary text-sm font-semibold mb-2">
                     {driversList.find((d) => d.id === currentFormData.driverId)?.name}
                   </div>
                   <div className="text-wl-text-secondary text-xs leading-relaxed">
@@ -377,7 +377,7 @@ export default function EditRoutePage() {
               </CardHeader>
               <CardContent>
                 <div className="p-3 rounded-md bg-wl-bg-root border border-wl-border-default">
-                  <div className="text-white text-sm font-semibold mb-2">
+                  <div className="text-wl-text-primary text-sm font-semibold mb-2">
                     {vehiclesList.find((v) => v.id === currentFormData.vehicleId)?.name}
                   </div>
                   <div className="text-wl-text-secondary text-xs leading-relaxed">

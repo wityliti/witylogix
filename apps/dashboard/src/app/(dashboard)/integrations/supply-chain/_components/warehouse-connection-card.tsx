@@ -53,11 +53,11 @@ export function WarehouseConnectionCard({ warehouse }: WarehouseConnectionCardPr
         <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-wl-border-default">
           <div>
             <p className="text-xs font-medium text-wl-text-tertiary uppercase">Last Sync</p>
-            <p className="text-sm font-semibold text-white mt-1">{warehouse.lastSync}</p>
+            <p className="text-sm font-semibold text-wl-text-primary mt-1">{warehouse.lastSync}</p>
           </div>
           <div>
             <p className="text-xs font-medium text-wl-text-tertiary uppercase">Next Sync</p>
-            <p className="text-sm font-semibold text-white mt-1">{warehouse.nextSync}</p>
+            <p className="text-sm font-semibold text-wl-text-primary mt-1">{warehouse.nextSync}</p>
           </div>
         </div>
 

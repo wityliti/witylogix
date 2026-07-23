@@ -83,7 +83,7 @@ export function ProviderConfig({
                 className="p-4 bg-wl-bg-surface rounded-lg border border-wl-border-default"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <div className="font-mono text-sm text-white">
+                  <div className="font-mono text-sm text-wl-text-secondary">
                     {domain.domain}
                   </div>
                   <Badge variant={domain.verified ? 'success' : 'warning'}>
@@ -121,7 +121,7 @@ export function ProviderConfig({
               <div className="text-xs text-wl-text-tertiary uppercase tracking-wide">
                 Per Day
               </div>
-              <div className="text-lg font-bold text-white mt-1">
+              <div className="text-lg font-bold text-wl-text-primary mt-1">
                 {sendingLimits.perDay.toLocaleString()}
               </div>
             </div>
@@ -129,7 +129,7 @@ export function ProviderConfig({
               <div className="text-xs text-wl-text-tertiary uppercase tracking-wide">
                 Per Second
               </div>
-              <div className="text-lg font-bold text-white mt-1">
+              <div className="text-lg font-bold text-wl-text-primary mt-1">
                 {sendingLimits.perSecond}
               </div>
             </div>
@@ -137,7 +137,7 @@ export function ProviderConfig({
               <div className="text-xs text-wl-text-tertiary uppercase tracking-wide">
                 Sent (24h)
               </div>
-              <div className="text-lg font-bold text-white mt-1">
+              <div className="text-lg font-bold text-wl-text-primary mt-1">
                 {sendingLimits.sent.toLocaleString()}
               </div>
             </div>

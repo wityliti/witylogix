@@ -71,7 +71,7 @@ export default function RecordsPage() {
               <span className="text-wl-text-secondary text-sm font-medium">Total Records</span>
               <FileText className="text-wl-info-500" size={20} />
             </div>
-            <p className="text-3xl font-bold text-white">{records.length}</p>
+            <p className="text-3xl font-bold text-wl-text-primary">{records.length}</p>
             <p className="text-wl-text-secondary text-xs mt-2">All documents</p>
           </CardContent>
         </Card>
@@ -82,7 +82,7 @@ export default function RecordsPage() {
               <span className="text-wl-text-secondary text-sm font-medium">Signed Records</span>
               <div className="w-5 h-5 rounded-full bg-wl-success-500"></div>
             </div>
-            <p className="text-3xl font-bold text-white">{records.filter(r => r.isSigned).length}</p>
+            <p className="text-3xl font-bold text-wl-text-primary">{records.filter(r => r.isSigned).length}</p>
             <p className="text-wl-text-secondary text-xs mt-2">Completed</p>
           </CardContent>
         </Card>
@@ -93,7 +93,7 @@ export default function RecordsPage() {
               <span className="text-wl-text-secondary text-sm font-medium">Unsigned</span>
               <div className="w-5 h-5 rounded-full bg-wl-warning-500"></div>
             </div>
-            <p className="text-3xl font-bold text-white">{records.filter(r => !r.isSigned).length}</p>
+            <p className="text-3xl font-bold text-wl-text-primary">{records.filter(r => !r.isSigned).length}</p>
             <p className="text-wl-text-secondary text-xs mt-2">Pending review</p>
           </CardContent>
         </Card>
@@ -160,7 +160,7 @@ export default function RecordsPage() {
                     className="border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors cursor-pointer"
                     onClick={() => setSelectedRecordId(record.id)}
                   >
-                    <td className="py-3 px-4 text-white font-medium">
+                    <td className="py-3 px-4 text-wl-text-primary font-medium">
                       <button className="hover:underline text-wl-info-500">{record.title}</button>
                     </td>
                     <td className="py-3 px-4">
@@ -237,15 +237,15 @@ OBR||${selectedRecord.id}|LAB001|85025^CBC|||202603101430|||||||202603101430|`}
                     </div>
                     <div>
                       <p className="text-wl-text-secondary text-xs mb-1">Patient</p>
-                      <p className="text-white font-medium">{selectedRecord.patientName}</p>
+                      <p className="text-wl-text-primary font-medium">{selectedRecord.patientName}</p>
                     </div>
                     <div>
                       <p className="text-wl-text-secondary text-xs mb-1">Author</p>
-                      <p className="text-white font-medium">{selectedRecord.author}</p>
+                      <p className="text-wl-text-primary font-medium">{selectedRecord.author}</p>
                     </div>
                     <div>
                       <p className="text-wl-text-secondary text-xs mb-1">Date</p>
-                      <p className="text-white font-medium">
+                      <p className="text-wl-text-primary font-medium">
                         {new Date(selectedRecord.date).toLocaleString()}
                       </p>
                     </div>

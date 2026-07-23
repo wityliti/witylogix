@@ -125,7 +125,7 @@ function DriverCard({ driver, isSelected, isCurrentDriver, onSelect }: DriverCar
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-semibold text-white text-sm">{driver.name}</span>
+              <span className="font-semibold text-wl-text-primary text-sm">{driver.name}</span>
               {isCurrentDriver && (
                 <Badge variant="primary" className="text-xs">
                   Current
@@ -330,7 +330,7 @@ export default function RouteAssignPage() {
                     <User className="w-4 h-4 text-wl-info-400" />
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-white">{route.driver.name}</div>
+                    <div className="text-sm font-medium text-wl-text-secondary">{route.driver.name}</div>
                     <div className="text-xs text-wl-text-secondary">{route.driver.vehicleType}</div>
                   </div>
                 </div>
@@ -359,7 +359,7 @@ export default function RouteAssignPage() {
                         {stop.sequence + 1}
                       </div>
                       <div>
-                        <div className="text-white font-medium">
+                        <div className="text-wl-text-primary font-medium">
                           {stop.customerName ?? `Stop ${stop.sequence + 1}`}
                         </div>
                         {stop.address && (
@@ -387,12 +387,12 @@ export default function RouteAssignPage() {
               <div className="text-xs text-wl-text-secondary space-y-1">
                 <div className="flex justify-between">
                   <span>Stops</span>
-                  <span className="text-white">{route.stops.length}</span>
+                  <span className="text-wl-text-primary">{route.stops.length}</span>
                 </div>
                 {route.totalDistance && (
                   <div className="flex justify-between">
                     <span>Distance</span>
-                    <span className="text-white">
+                    <span className="text-wl-text-primary">
                       {Number(route.totalDistance).toFixed(1)} km
                     </span>
                   </div>
@@ -400,7 +400,7 @@ export default function RouteAssignPage() {
                 {route.totalDuration && (
                   <div className="flex justify-between">
                     <span>Est. Duration</span>
-                    <span className="text-white">
+                    <span className="text-wl-text-primary">
                       {Math.round(route.totalDuration / 60)} min
                     </span>
                   </div>

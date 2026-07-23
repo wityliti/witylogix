@@ -125,7 +125,7 @@ function LayerButton({
       className={cn(
         'flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all',
         active
-          ? 'bg-white/[0.08] text-white'
+          ? 'bg-white/[0.08] text-wl-text-primary'
           : 'text-wl-text-tertiary hover:text-wl-text-secondary hover:bg-white/[0.04]',
       )}
     >
@@ -180,7 +180,7 @@ function DetailPanel({
 
       {selected.type === 'order' && (
         <div className="space-y-2">
-          <div className="text-sm font-semibold text-white truncate">
+          <div className="text-sm font-semibold text-wl-text-primary truncate">
             {selected.item.externalOrderNumber ?? selected.item.id.slice(0, 8)}
           </div>
           {selected.item.customerName && (
@@ -208,7 +208,7 @@ function DetailPanel({
 
       {selected.type === 'driver' && (
         <div className="space-y-2">
-          <div className="text-sm font-semibold text-white">{selected.item.name}</div>
+          <div className="text-sm font-semibold text-wl-text-primary">{selected.item.name}</div>
           <Badge variant={statusBadgeVariant(selected.item.status)} className="text-[10px]">
             {selected.item.status.replace(/_/g, ' ')}
           </Badge>
@@ -234,7 +234,7 @@ function DetailPanel({
 
       {selected.type === 'route' && (
         <div className="space-y-2">
-          <div className="text-sm font-semibold text-white truncate">
+          <div className="text-sm font-semibold text-wl-text-primary truncate">
             {selected.item.name ?? selected.item.id.slice(0, 8)}
           </div>
           <Badge variant={statusBadgeVariant(selected.item.status)} className="text-[10px]">
@@ -426,7 +426,7 @@ export default function MapPage() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Layers className="w-4 h-4 text-wl-text-tertiary" />
-              <span className="text-sm font-semibold text-white">Map Layers</span>
+              <span className="text-sm font-semibold text-wl-text-primary">Map Layers</span>
             </div>
             <button
               onClick={handleRefresh}

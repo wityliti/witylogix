@@ -99,7 +99,7 @@ export function EnvelopeCard({ envelope }: EnvelopeCardProps) {
         <div className="mb-6 pb-6 border-b border-wl-border-default">
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs font-medium text-wl-text-tertiary uppercase">Completion</p>
-            <p className="text-sm font-bold text-white">{envelope.progress}%</p>
+            <p className="text-sm font-bold text-wl-text-primary">{envelope.progress}%</p>
           </div>
           <div className="w-full h-2 bg-wl-bg-surface rounded-full overflow-hidden">
             <div className="h-full bg-gradient-to-r from-blue-500 to-blue-500/70" style={{ width: `${envelope.progress}%` }} />
@@ -116,7 +116,7 @@ export function EnvelopeCard({ envelope }: EnvelopeCardProps) {
                     {signer.order}
                   </div>
                   <div>
-                    <p className="font-medium text-white">{signer.name}</p>
+                    <p className="font-medium text-wl-text-primary">{signer.name}</p>
                     <p className="text-xs text-wl-text-tertiary">{signer.email}</p>
                   </div>
                 </div>

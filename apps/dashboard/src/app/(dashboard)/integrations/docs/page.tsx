@@ -81,9 +81,9 @@ function SDKReference({
   return (
     <div className="space-y-6">
       <div>
-        <Label className="text-white">Select Provider</Label>
+        <Label className="text-wl-text-secondary">Select Provider</Label>
         <Select value={selectedProvider} onValueChange={setSelectedProvider}>
-          <SelectTrigger className="mt-2 w-64 bg-wl-bg-surface text-white">
+          <SelectTrigger className="mt-2 w-64 bg-wl-bg-surface text-wl-text-primary">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -120,7 +120,7 @@ function SDKReference({
               placeholder="Search methods..."
               value={methodSearch}
               onChange={(e) => setMethodSearch(e.target.value)}
-              className="mb-4 bg-wl-bg-root text-white"
+              className="mb-4 bg-wl-bg-root text-wl-text-primary"
             />
 
             <div className="space-y-4">
@@ -131,7 +131,7 @@ function SDKReference({
 
                   {method.parameters.length > 0 && (
                     <div className="mt-3">
-                      <div className="text-xs font-semibold text-white">Parameters:</div>
+                      <div className="text-xs font-semibold text-wl-text-primary">Parameters:</div>
                       <ul className="mt-2 space-y-1 text-xs text-wl-text-secondary">
                         {method.parameters.map((param) => (
                           <li key={param.name}>
@@ -144,7 +144,7 @@ function SDKReference({
                   )}
 
                   <div className="mt-3">
-                    <div className="text-xs font-semibold text-white">Example:</div>
+                    <div className="text-xs font-semibold text-wl-text-primary">Example:</div>
                     <code className="mt-2 block overflow-x-auto rounded bg-wl-bg-surface p-2 text-xs font-mono text-wl-info-500">
                       {method.example}
                     </code>
@@ -172,12 +172,12 @@ function WebhookCatalog({
   return (
     <div className="space-y-6">
       <div>
-        <Label className="text-white">Search Webhook Events</Label>
+        <Label className="text-wl-text-secondary">Search Webhook Events</Label>
         <Input
           placeholder="e.g., payment.success, refund.created"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="mt-2 bg-wl-bg-surface text-white"
+          className="mt-2 bg-wl-bg-surface text-wl-text-primary"
         />
       </div>
 
@@ -199,7 +199,7 @@ function WebhookCatalog({
                 </div>
 
                 <div className="mt-4">
-                  <div className="text-xs font-semibold text-white">Example Payload:</div>
+                  <div className="text-xs font-semibold text-wl-text-primary">Example Payload:</div>
                   <code className="mt-2 block overflow-x-auto rounded bg-wl-bg-root p-3 text-xs font-mono text-wl-info-500">
                     {event.example}
                   </code>
@@ -243,17 +243,17 @@ function RateLimitReference() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-wl-border-default">
-              <th className="px-4 py-2 text-left text-white">Provider</th>
-              <th className="px-4 py-2 text-left text-white">Per Second</th>
-              <th className="px-4 py-2 text-left text-white">Per Minute</th>
-              <th className="px-4 py-2 text-left text-white">Burst Capacity</th>
-              <th className="px-4 py-2 text-left text-white">Window</th>
+              <th className="px-4 py-2 text-left text-wl-text-secondary">Provider</th>
+              <th className="px-4 py-2 text-left text-wl-text-secondary">Per Second</th>
+              <th className="px-4 py-2 text-left text-wl-text-secondary">Per Minute</th>
+              <th className="px-4 py-2 text-left text-wl-text-secondary">Burst Capacity</th>
+              <th className="px-4 py-2 text-left text-wl-text-secondary">Window</th>
             </tr>
           </thead>
           <tbody>
             {rateLimits.map((limit) => (
               <tr key={limit.provider} className="border-b border-wl-border-default">
-                <td className="px-4 py-2 font-medium text-white">{limit.provider}</td>
+                <td className="px-4 py-2 font-medium text-wl-text-primary">{limit.provider}</td>
                 <td className="px-4 py-2 text-wl-text-secondary">{limit.requestsPerSecond}</td>
                 <td className="px-4 py-2 text-wl-text-secondary">{limit.requestsPerMinute}</td>
                 <td className="px-4 py-2 text-wl-text-secondary">{limit.burstCapacity}</td>
@@ -277,9 +277,9 @@ function ConfigurationGuides({
   return (
     <div className="space-y-6">
       <div>
-        <Label className="text-white">Select Provider</Label>
+        <Label className="text-wl-text-secondary">Select Provider</Label>
         <Select value={selectedProvider} onValueChange={setSelectedProvider}>
-          <SelectTrigger className="mt-2 w-64 bg-wl-bg-surface text-white">
+          <SelectTrigger className="mt-2 w-64 bg-wl-bg-surface text-wl-text-primary">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -356,12 +356,12 @@ function TroubleshootingSection({
   return (
     <div className="space-y-6">
       <div>
-        <Label className="text-white">Search Troubleshooting Guides</Label>
+        <Label className="text-wl-text-secondary">Search Troubleshooting Guides</Label>
         <Input
           placeholder="e.g., rate limit, authentication, timeout"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="mt-2 bg-wl-bg-surface text-white"
+          className="mt-2 bg-wl-bg-surface text-wl-text-primary"
         />
       </div>
 
@@ -427,9 +427,9 @@ function APIChangelog({
   return (
     <div className="space-y-6">
       <div>
-        <Label className="text-white">Select Provider</Label>
+        <Label className="text-wl-text-secondary">Select Provider</Label>
         <Select value={selectedProvider} onValueChange={setSelectedProvider}>
-          <SelectTrigger className="mt-2 w-64 bg-wl-bg-surface text-white">
+          <SelectTrigger className="mt-2 w-64 bg-wl-bg-surface text-wl-text-primary">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

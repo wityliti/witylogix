@@ -32,7 +32,7 @@ function KPICardComponent({ card }: { card: KPICard }) {
           <div className="flex-1">
             <p className="text-sm font-medium text-wl-text-secondary mb-2">{card.label}</p>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-white">{card.value}</span>
+              <span className="text-3xl font-bold text-wl-text-primary">{card.value}</span>
               {card.unit && (
                 <span className="text-sm text-wl-text-secondary">{card.unit}</span>
               )}
@@ -139,7 +139,7 @@ function RecentRecordsCard({ patients }: { patients: LocalPatient[] }) {
               >
                 <div className="flex items-start justify-between mb-2">
                   <div>
-                    <p className="text-sm font-medium text-white">
+                    <p className="text-sm font-medium text-wl-text-secondary">
                       {patient.firstName} {patient.lastName}
                     </p>
                     <p className="text-xs text-wl-text-tertiary mt-1">MRN: {patient.mrn || '—'}</p>
@@ -284,7 +284,7 @@ export default function HealthcarePage() {
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <p className="text-sm font-medium text-wl-text-secondary mb-2">Avg. Patient Age</p>
-            <p className="text-3xl font-bold text-white">
+            <p className="text-3xl font-bold text-wl-text-primary">
               {patients.length === 0
                 ? '—'
                 : Math.round(
@@ -325,7 +325,7 @@ export default function HealthcarePage() {
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <p className="text-sm font-medium text-wl-text-secondary mb-2">Inactive Patients</p>
-            <p className="text-3xl font-bold text-white">
+            <p className="text-3xl font-bold text-wl-text-primary">
               {patients.length - activePatients}
             </p>
             <p className="text-xs text-wl-text-tertiary mt-2">

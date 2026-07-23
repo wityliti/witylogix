@@ -218,7 +218,7 @@ function StopListItem({ stop, isSelected, onSelect, routeId, onStatusUpdated }: 
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
-            <span className="text-sm font-medium text-white truncate">
+            <span className="text-sm font-medium text-wl-text-secondary truncate">
               {stop.customerName ?? stop.address ?? `Stop ${stop.sequence + 1}`}
             </span>
             <div className="flex-shrink-0">{STOP_STATUS_ICON[stop.status]}</div>
@@ -502,7 +502,7 @@ export default function RouteDetailPage() {
 
             {/* Route summary overlay */}
             <div className="absolute bottom-4 right-4 bg-wl-bg-root/90 backdrop-blur-sm border border-wl-border-default rounded-lg px-4 py-3 text-xs">
-              <div className="font-semibold text-white mb-2">Route Summary</div>
+              <div className="font-semibold text-wl-text-primary mb-2">Route Summary</div>
               <div className="space-y-1 text-wl-text-secondary">
                 <div className="flex justify-between gap-6">
                   <span>Completed</span>
@@ -510,12 +510,12 @@ export default function RouteDetailPage() {
                 </div>
                 <div className="flex justify-between gap-6">
                   <span>Remaining</span>
-                  <span className="text-white font-medium">{totalStops - completedStops}</span>
+                  <span className="text-wl-text-primary font-medium">{totalStops - completedStops}</span>
                 </div>
                 {route.totalDistance && (
                   <div className="flex justify-between gap-6">
                     <span>Distance</span>
-                    <span className="text-white font-medium">
+                    <span className="text-wl-text-primary font-medium">
                       {Number(route.totalDistance).toFixed(1)} km
                     </span>
                   </div>
@@ -526,7 +526,7 @@ export default function RouteDetailPage() {
 
           {/* Stop sequence list */}
           <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-4">
-            <div className="text-sm font-semibold text-white mb-3">Stop Sequence</div>
+            <div className="text-sm font-semibold text-wl-text-primary mb-3">Stop Sequence</div>
             <div className="flex flex-col gap-2 max-h-72 overflow-y-auto pr-1">
               {route.stops.length === 0 ? (
                 <div className="text-sm text-wl-text-tertiary text-center py-4">No stops on this route.</div>
@@ -552,21 +552,21 @@ export default function RouteDetailPage() {
         <div className="flex flex-col gap-4">
           {/* Driver Card */}
           <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-4">
-            <div className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+            <div className="text-sm font-semibold text-wl-text-primary mb-3 flex items-center gap-2">
               <User className="w-4 h-4 text-wl-info-400" />
               Driver
             </div>
             {route.driver ? (
               <div className="space-y-2 text-sm">
-                <div className="text-white font-medium">{route.driver.name}</div>
+                <div className="text-wl-text-primary font-medium">{route.driver.name}</div>
                 <div className="text-wl-text-secondary text-xs space-y-1">
                   <div className="flex justify-between">
                     <span>Phone</span>
-                    <span className="text-white">{route.driver.phone}</span>
+                    <span className="text-wl-text-primary">{route.driver.phone}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Vehicle</span>
-                    <span className="text-white">
+                    <span className="text-wl-text-primary">
                       {route.driver.vehicleType}
                       {route.driver.vehiclePlate ? ` · ${route.driver.vehiclePlate}` : ''}
                     </span>
@@ -594,7 +594,7 @@ export default function RouteDetailPage() {
 
           {/* Route Timeline */}
           <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-4 flex-1">
-            <div className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+            <div className="text-sm font-semibold text-wl-text-primary mb-3 flex items-center gap-2">
               <Clock className="w-4 h-4 text-wl-warning-400" />
               Timeline
             </div>
@@ -636,7 +636,7 @@ export default function RouteDetailPage() {
                       <div className="text-xs text-wl-text-tertiary mb-0.5">
                         {formatTime(stop.estimatedArrival)}
                       </div>
-                      <div className="text-sm font-medium text-white">
+                      <div className="text-sm font-medium text-wl-text-secondary">
                         {stop.customerName ?? stop.address ?? `Stop ${stop.sequence + 1}`}
                       </div>
                       {stop.address && stop.customerName && (
@@ -664,7 +664,7 @@ export default function RouteDetailPage() {
 
           {/* Quick Actions */}
           <div className="bg-wl-bg-surface border border-wl-border-default rounded-xl p-4">
-            <div className="text-sm font-semibold text-white mb-3">Quick Actions</div>
+            <div className="text-sm font-semibold text-wl-text-primary mb-3">Quick Actions</div>
             <div className="flex flex-col gap-2">
               {route.status === 'IN_PROGRESS' && (
                 <Button

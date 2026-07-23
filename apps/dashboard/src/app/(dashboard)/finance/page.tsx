@@ -116,7 +116,7 @@ export default function FinancePage() {
               </Card>
               <Card className={cn('p-4 bg-wl-bg-surface border border-wl-border-default')}>
                 <p className="text-xs font-medium text-wl-text-secondary uppercase">Collected</p>
-                <p className="text-2xl font-bold text-white mt-2">
+                <p className="text-2xl font-bold text-wl-text-primary mt-2">
                   ${summary.totalPaid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </Card>
@@ -128,7 +128,7 @@ export default function FinancePage() {
               </Card>
               <Card className={cn('p-4 bg-wl-bg-surface border border-wl-border-default')}>
                 <p className="text-xs font-medium text-wl-text-secondary uppercase">Payment Rate</p>
-                <p className="text-2xl font-bold text-white mt-2">
+                <p className="text-2xl font-bold text-wl-text-primary mt-2">
                   {summary.paymentRate.toFixed(1)}%
                 </p>
               </Card>
@@ -158,7 +158,7 @@ export default function FinancePage() {
                                 ? 'text-wl-danger-500'
                                 : status === 'voided'
                                   ? 'text-wl-text-tertiary'
-                                  : 'text-white',
+                                  : 'text-wl-text-primary',
                           )}
                         >
                           {count}
@@ -191,10 +191,10 @@ export default function FinancePage() {
                             <td className="px-4 py-3 text-wl-neutral-300">
                               {new Date(payment.createdAt).toLocaleDateString()}
                             </td>
-                            <td className="px-4 py-3 text-white">
+                            <td className="px-4 py-3 text-wl-text-primary">
                               {payment.reference || payment.id.slice(0, 8)}
                             </td>
-                            <td className="text-right px-4 py-3 font-medium text-white">
+                            <td className="text-right px-4 py-3 font-medium text-wl-text-primary">
                               $
                               {parseFloat(payment.amount).toLocaleString(undefined, {
                                 minimumFractionDigits: 2,

@@ -327,7 +327,7 @@ export function ApiUsageChart({
           {tooltipData && hoveredIndex !== null && (
             <div
               className={cn(
-                "absolute -top-24 -translate-x-1/2 bg-wl-text-primary text-white rounded-lg p-3 text-sm shadow-lg whitespace-nowrap pointer-events-none z-10",
+                "absolute -top-24 -translate-x-1/2 bg-wl-text-primary text-wl-text-primary rounded-lg p-3 text-sm shadow-lg whitespace-nowrap pointer-events-none z-10",
                 "dark:bg-wl-text-primary"
               )}
               style={{
@@ -335,8 +335,8 @@ export function ApiUsageChart({
               }}
             >
               <div className="font-semibold">{formatTime(tooltipData.data.timestamp)}</div>
-              <div className="text-xs text-white/90">Requests: {tooltipData.requests.value}</div>
-              <div className="text-xs text-white/90">Errors: {tooltipData.errors.value}</div>
+              <div className="text-xs text-wl-text-tertiary/90">Requests: {tooltipData.requests.value}</div>
+              <div className="text-xs text-wl-text-tertiary/90">Errors: {tooltipData.errors.value}</div>
             </div>
           )}
         </div>

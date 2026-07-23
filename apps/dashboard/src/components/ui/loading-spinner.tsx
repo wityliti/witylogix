@@ -24,7 +24,7 @@ const sizeMap: Record<SpinnerSize, string> = {
 const colorMap: Record<string, string> = {
   primary: 'text-wl-primary-500',
   secondary: 'text-wl-text-secondary',
-  white: 'text-white',
+  white: 'text-wl-text-primary',
 };
 
 /**
@@ -203,7 +203,7 @@ export function LoadingSpinner({
         <div className="flex flex-col items-center gap-4">
           {spinner}
           {label && (
-            <p className="text-sm font-medium text-white">
+            <p className="text-sm font-medium text-wl-text-secondary">
               {label}
             </p>
           )}

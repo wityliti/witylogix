@@ -96,7 +96,7 @@ export default function MigrationWizard() {
       {/* Header */}
       <div className="border-b border-wl-border-default bg-wl-bg-root px-8 py-6">
         <h1 className="text-3xl font-bold text-wl-text-primary">Migration Wizard</h1>
-        <p className="mt-2 text-white">
+        <p className="mt-2 text-wl-text-primary">
           Safely migrate between payment and integration providers
         </p>
       </div>
@@ -111,8 +111,8 @@ export default function MigrationWizard() {
               className={cn(
                 'border-b-2 px-1 py-4 text-sm font-medium transition-colors',
                 activeTab === tab
-                  ? 'border-wl-border-default text-white'
-                  : 'border-transparent text-white hover:text-white'
+                  ? 'border-wl-border-default text-wl-text-primary'
+                  : 'border-transparent text-wl-text-secondary hover:text-wl-text-primary'
               )}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -134,8 +134,8 @@ export default function MigrationWizard() {
                     className={cn(
                       'flex h-10 w-10 items-center justify-center rounded-full font-semibold transition-colors',
                       currentStep >= step
-                        ? 'bg-wl-bg-root text-white'
-                        : 'bg-wl-bg-root text-white'
+                        ? 'bg-wl-bg-root text-wl-text-primary'
+                        : 'bg-wl-bg-root text-wl-text-primary'
                     )}
                   >
                     {step}
@@ -265,8 +265,8 @@ function ProviderSelection({
             className={cn(
               'rounded-lg border-2 px-4 py-6 text-center font-medium transition-all',
               selected === provider
-                ? 'border-wl-border-default bg-wl-bg-root bg-opacity-10 text-white'
-                : 'border-wl-border-default text-white hover:border-wl-border-default'
+                ? 'border-wl-border-default bg-wl-bg-root bg-opacity-10 text-wl-text-primary'
+                : 'border-wl-border-default text-wl-text-primary hover:border-wl-border-default'
             )}
           >
             {provider}
@@ -311,17 +311,17 @@ function FieldMappingEditor({
       <h3 className="mb-4 text-lg font-semibold text-wl-text-primary">Field Mapping</h3>
       <div className="space-y-4">
         {mappings.length === 0 ? (
-          <p className="text-sm text-white">No mappings configured yet.</p>
+          <p className="text-sm text-wl-text-secondary">No mappings configured yet.</p>
         ) : (
           mappings.map((mapping, idx) => (
             <div key={idx} className="flex items-end gap-3 rounded bg-wl-bg-root p-4">
               <div className="flex-1">
-                <Label className="text-sm text-white">Source Field</Label>
+                <Label className="text-sm text-wl-text-secondary">Source Field</Label>
                 <Select
                   value={mapping.sourceField}
                   onValueChange={(value) => handleUpdateMapping(idx, { sourceField: value })}
                 >
-                  <SelectTrigger className="mt-1 bg-wl-bg-root text-white">
+                  <SelectTrigger className="mt-1 bg-wl-bg-root text-wl-text-primary">
                     <SelectValue placeholder="Select field" />
                   </SelectTrigger>
                   <SelectContent>
@@ -334,12 +334,12 @@ function FieldMappingEditor({
                 </Select>
               </div>
               <div className="flex-1">
-                <Label className="text-sm text-white">Target Field</Label>
+                <Label className="text-sm text-wl-text-secondary">Target Field</Label>
                 <Select
                   value={mapping.targetField}
                   onValueChange={(value) => handleUpdateMapping(idx, { targetField: value })}
                 >
-                  <SelectTrigger className="mt-1 bg-wl-bg-root text-white">
+                  <SelectTrigger className="mt-1 bg-wl-bg-root text-wl-text-primary">
                     <SelectValue placeholder="Select field" />
                   </SelectTrigger>
                   <SelectContent>
@@ -358,7 +358,7 @@ function FieldMappingEditor({
                     handleUpdateMapping(idx, { required: checked as boolean })
                   }
                 />
-                <Label className="text-sm text-white">Required</Label>
+                <Label className="text-sm text-wl-text-secondary">Required</Label>
               </div>
             </div>
           ))
@@ -388,7 +388,7 @@ function ShadowModeSettings({
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold text-wl-text-primary">Shadow Mode</h3>
-            <p className="mt-1 text-sm text-white">
+            <p className="mt-1 text-sm text-wl-text-secondary">
               Run both providers in parallel and compare responses
             </p>
           </div>
@@ -398,7 +398,7 @@ function ShadowModeSettings({
         {enabled && comparisons.length > 0 && (
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-sm font-medium text-white">Match Rate</span>
+              <span className="text-sm font-medium text-wl-text-secondary">Match Rate</span>
               <Badge variant="success">{matchPercentage}%</Badge>
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-wl-bg-root">
@@ -430,24 +430,24 @@ function ReviewCutover({
       <h3 className="mb-6 text-lg font-semibold text-wl-text-primary">Review Migration Plan</h3>
       <div className="space-y-4">
         <div className="rounded bg-wl-bg-root p-4">
-          <div className="text-sm text-white">Source Provider</div>
-          <div className="text-lg font-semibold text-white">{sourceProvider}</div>
+          <div className="text-sm text-wl-text-secondary">Source Provider</div>
+          <div className="text-lg font-semibold text-wl-text-primary">{sourceProvider}</div>
         </div>
         <div className="rounded bg-wl-bg-root p-4">
-          <div className="text-sm text-white">Target Provider</div>
-          <div className="text-lg font-semibold text-white">{targetProvider}</div>
+          <div className="text-sm text-wl-text-secondary">Target Provider</div>
+          <div className="text-lg font-semibold text-wl-text-primary">{targetProvider}</div>
         </div>
         <div className="rounded bg-wl-bg-root p-4">
-          <div className="text-sm text-white">Shadow Mode</div>
-          <div className="text-lg font-semibold text-white">
+          <div className="text-sm text-wl-text-secondary">Shadow Mode</div>
+          <div className="text-lg font-semibold text-wl-text-primary">
             {shadowModeEnabled ? 'Enabled' : 'Disabled'}
           </div>
         </div>
         <div className="rounded bg-wl-bg-root p-4">
-          <div className="text-sm text-white">Field Mappings</div>
+          <div className="text-sm text-wl-text-secondary">Field Mappings</div>
           <div className="mt-2 space-y-1">
             {fieldMappings.map((mapping, idx) => (
-              <div key={idx} className="text-sm text-white">
+              <div key={idx} className="text-sm text-wl-text-secondary">
                 {mapping.sourceField} → {mapping.targetField}
               </div>
             ))}
@@ -478,8 +478,8 @@ function MigrationProgress({ migrationId, migrations }: { migrationId: string; m
       <div className="space-y-6">
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-sm font-medium text-white">Overall Progress</span>
-            <span className="text-sm font-semibold text-white">{migration.progress}%</span>
+            <span className="text-sm font-medium text-wl-text-secondary">Overall Progress</span>
+            <span className="text-sm font-semibold text-wl-text-primary">{migration.progress}%</span>
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-wl-bg-elevated">
             <div className="h-full bg-wl-info-500 rounded-full" style={{ width: `${migration.progress}%` }} />
@@ -506,23 +506,23 @@ function MigrationHistory({ migrations }: { migrations: Migration[] }) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-wl-border-default">
-              <th className="px-4 py-2 text-left text-white">Source</th>
-              <th className="px-4 py-2 text-left text-white">Target</th>
-              <th className="px-4 py-2 text-left text-white">Status</th>
-              <th className="px-4 py-2 text-left text-white">Progress</th>
-              <th className="px-4 py-2 text-left text-white">Error Rate</th>
+              <th className="px-4 py-2 text-left text-wl-text-secondary">Source</th>
+              <th className="px-4 py-2 text-left text-wl-text-secondary">Target</th>
+              <th className="px-4 py-2 text-left text-wl-text-secondary">Status</th>
+              <th className="px-4 py-2 text-left text-wl-text-secondary">Progress</th>
+              <th className="px-4 py-2 text-left text-wl-text-secondary">Error Rate</th>
             </tr>
           </thead>
           <tbody>
             {migrations.map((migration) => (
               <tr key={migration.id} className="border-b border-wl-border-default">
-                <td className="px-4 py-2 text-white">{migration.sourceProvider}</td>
-                <td className="px-4 py-2 text-white">{migration.targetProvider}</td>
+                <td className="px-4 py-2 text-wl-text-primary">{migration.sourceProvider}</td>
+                <td className="px-4 py-2 text-wl-text-primary">{migration.targetProvider}</td>
                 <td className="px-4 py-2">
                   <Badge variant={migration.status as any}>{migration.status}</Badge>
                 </td>
-                <td className="px-4 py-2 text-white">{migration.progress}%</td>
-                <td className="px-4 py-2 text-white">
+                <td className="px-4 py-2 text-wl-text-primary">{migration.progress}%</td>
+                <td className="px-4 py-2 text-wl-text-primary">
                   {(migration.errorRate * 100).toFixed(2)}%
                 </td>
               </tr>
@@ -537,8 +537,8 @@ function MigrationHistory({ migrations }: { migrations: Migration[] }) {
 function MetricCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded border border-wl-border-default bg-wl-bg-root p-4">
-      <div className="text-xs text-white">{label}</div>
-      <div className="mt-1 text-xl font-bold text-white">{value}</div>
+      <div className="text-xs text-wl-text-tertiary">{label}</div>
+      <div className="mt-1 text-xl font-bold text-wl-text-primary">{value}</div>
     </div>
   );
 }

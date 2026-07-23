@@ -277,7 +277,7 @@ export default function CustomerDetailPage() {
             {/* Profile card */}
             <Card className="p-6 bg-wl-bg-surface border border-wl-border-subtle text-center">
               <div
-                className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold mx-auto mb-4"
+                className="w-16 h-16 rounded-full flex items-center justify-center text-wl-text-primary text-xl font-bold mx-auto mb-4"
                 style={{ backgroundColor: avatarBg }}
               >
                 {initials}

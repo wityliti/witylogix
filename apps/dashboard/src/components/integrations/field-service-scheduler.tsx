@@ -316,7 +316,7 @@ export function FieldServiceScheduler({
                                 "flex items-center gap-1",
                                 conflictIds.includes(apt.id)
                                   ? "bg-wl-danger-bg/50 border border-wl-danger-400/50 text-wl-danger-400"
-                                  : "text-white border border-transparent hover:border-current/50",
+                                  : "text-wl-text-primary border border-transparent hover:border-current/50",
                                 hoveredAppointment === apt.id && "shadow-md ring-1 ring-wl-primary-400"
                               )}
                               style={{

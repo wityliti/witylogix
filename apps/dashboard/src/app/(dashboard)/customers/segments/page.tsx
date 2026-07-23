@@ -187,7 +187,7 @@ export default function CustomerSegmentsPage() {
                                 cfg.dotClass,
                               )}
                             />
-                            <span className="font-semibold text-white text-sm">
+                            <span className="font-semibold text-wl-text-primary text-sm">
                               {cfg.label}
                             </span>
                           </div>
@@ -196,7 +196,7 @@ export default function CustomerSegmentsPage() {
                           </Badge>
                         </div>
 
-                        <div className="text-3xl font-bold text-white mb-1">
+                        <div className="text-3xl font-bold text-wl-text-primary mb-1">
                           {(seg?.count ?? 0).toLocaleString()}
                         </div>
                         <div className="text-xs text-wl-text-tertiary mb-4">
@@ -281,7 +281,7 @@ export default function CustomerSegmentsPage() {
                             {fmtPct(count, total)}
                           </Badge>
                         </div>
-                        <div className="text-2xl font-bold text-white">
+                        <div className="text-2xl font-bold text-wl-text-primary">
                           {count.toLocaleString()}
                         </div>
                         <div className="text-xs text-wl-text-tertiary mt-1">
@@ -344,7 +344,7 @@ export default function CustomerSegmentsPage() {
                           TIER_CONFIG[tier].dotClass,
                         )}
                       />
-                      <span className="capitalize font-medium text-white">
+                      <span className="capitalize font-medium text-wl-text-primary">
                         {TIER_CONFIG[tier].label}
                       </span>
                     </div>
@@ -462,15 +462,15 @@ export default function CustomerSegmentsPage() {
                                       width: `${Math.max(4, (city.count / maxCount) * 60)}px`,
                                     }}
                                   />
-                                  <span className="text-white text-xs font-medium">
+                                  <span className="text-wl-text-primary text-xs font-medium">
                                     {city.city}
                                   </span>
                                 </div>
                               </td>
-                              <td className="p-3 px-4 text-center font-semibold text-white">
+                              <td className="p-3 px-4 text-center font-semibold text-wl-text-primary">
                                 {city.count.toLocaleString()}
                               </td>
-                              <td className="p-3 px-4 text-right text-white text-xs">
+                              <td className="p-3 px-4 text-right text-wl-text-primary text-xs">
                                 {fmt.format(city.totalSpent)}
                               </td>
                               <td className="p-3 px-4 text-center text-wl-neutral-300 text-xs">

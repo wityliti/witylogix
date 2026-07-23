@@ -263,7 +263,7 @@ export default function PartnersPage() {
           <select
             value={selectedStatus as string}
             onChange={(e) => setSelectedStatus((e.target.value as PartnerStatus) || "")}
-            className="px-3 py-2 bg-wl-bg-surface border border-wl-border-default rounded-md text-white text-sm cursor-pointer focus:outline-none"
+            className="px-3 py-2 bg-wl-bg-surface border border-wl-border-default rounded-md text-wl-text-primary text-sm cursor-pointer focus:outline-none"
             aria-label="Filter by status"
           >
             <option value="">All Status</option>
@@ -275,7 +275,7 @@ export default function PartnersPage() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as SortBy)}
-            className="px-3 py-2 bg-wl-bg-surface border border-wl-border-default rounded-md text-white text-sm cursor-pointer focus:outline-none"
+            className="px-3 py-2 bg-wl-bg-surface border border-wl-border-default rounded-md text-wl-text-primary text-sm cursor-pointer focus:outline-none"
             aria-label="Sort by"
           >
             <option value="name">Name</option>

@@ -131,7 +131,7 @@ export default function ShippingProfileDetailPage() {
               <input
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
-                className="text-3xl font-bold bg-transparent border-b border-wl-info-500 text-white outline-none mb-1 w-full"
+                className="text-3xl font-bold bg-transparent border-b border-wl-info-500 text-wl-text-primary outline-none mb-1 w-full"
               />
             ) : (
               <h1 className="text-4xl font-bold text-wl-text-primary mb-1">{profile.name}</h1>
@@ -191,7 +191,7 @@ export default function ShippingProfileDetailPage() {
             <p className="text-xs text-wl-text-secondary font-semibold mb-2 flex items-center gap-1.5">
               <Truck size={14} /> Delivery Method
             </p>
-            <p className="text-base text-white font-semibold">
+            <p className="text-base text-wl-text-primary font-semibold">
               {DELIVERY_METHOD_LABELS[profile.deliveryMethod] ?? profile.deliveryMethod}
             </p>
           </CardContent>
@@ -215,7 +215,7 @@ export default function ShippingProfileDetailPage() {
             <p className="text-xs text-wl-text-secondary font-semibold mb-2 flex items-center gap-1.5">
               <Settings size={14} /> Rate Type
             </p>
-            <p className="text-base text-white font-semibold">
+            <p className="text-base text-wl-text-primary font-semibold">
               {RATE_TYPE_LABELS[profile.rateType] ?? profile.rateType}
             </p>
           </CardContent>
@@ -225,7 +225,7 @@ export default function ShippingProfileDetailPage() {
             <p className="text-xs text-wl-text-secondary font-semibold mb-2 flex items-center gap-1.5">
               <Clock size={14} /> Processing Time
             </p>
-            <p className="text-base text-white font-semibold">
+            <p className="text-base text-wl-text-primary font-semibold">
               {profile.processingTimeHours}h
             </p>
           </CardContent>
@@ -245,7 +245,7 @@ export default function ShippingProfileDetailPage() {
               <textarea
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
-                className="w-full p-3 bg-wl-bg-root border border-wl-border-default rounded text-white text-sm outline-none resize-none focus:border-wl-info-500"
+                className="w-full p-3 bg-wl-bg-root border border-wl-border-default rounded text-wl-text-primary text-sm outline-none resize-none focus:border-wl-info-500"
                 rows={3}
                 placeholder="Profile description..."
               />
@@ -267,7 +267,7 @@ export default function ShippingProfileDetailPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div>
               <p className="text-xs text-wl-text-secondary mb-1">Flat Rate</p>
-              <p className="text-sm font-semibold text-white">
+              <p className="text-sm font-semibold text-wl-text-primary">
                 {profile.flatRate !== null
                   ? profile.flatRate > 0
                     ? formatCurrency(Number(profile.flatRate))
@@ -285,7 +285,7 @@ export default function ShippingProfileDetailPage() {
             </div>
             <div>
               <p className="text-xs text-wl-text-secondary mb-1">Min Order Amount</p>
-              <p className="text-sm font-semibold text-white">
+              <p className="text-sm font-semibold text-wl-text-primary">
                 {profile.minOrderAmount
                   ? formatCurrency(Number(profile.minOrderAmount))
                   : '—'}
@@ -316,7 +316,7 @@ export default function ShippingProfileDetailPage() {
                   className="p-3 rounded bg-wl-bg-root border border-wl-border-default flex justify-between items-start"
                 >
                   <div>
-                    <p className="text-sm text-white font-semibold">{location.name}</p>
+                    <p className="text-sm text-wl-text-secondary font-semibold">{location.name}</p>
                     <p className="text-xs text-wl-text-secondary mt-1">
                       {[location.city, location.province, location.country]
                         .filter(Boolean)
@@ -351,7 +351,7 @@ export default function ShippingProfileDetailPage() {
                   className="p-3 rounded bg-wl-bg-root border border-wl-border-default flex justify-between items-center"
                 >
                   <div>
-                    <p className="text-sm text-white font-semibold">{rule.name}</p>
+                    <p className="text-sm text-wl-text-secondary font-semibold">{rule.name}</p>
                     <p className="text-xs text-wl-text-secondary mt-1">
                       Type: {rule.type} · Priority: {rule.priority}
                     </p>

@@ -140,7 +140,7 @@ export function ChaosScenarioCard({
             </h3>
             <div className="flex items-center gap-2 flex-wrap">
               <span
-                className="px-2 py-1 rounded text-xs font-medium text-white"
+                className="px-2 py-1 rounded text-xs font-medium text-wl-text-primary"
                 style={{ backgroundColor: getSeverityColor(severity) }}
               >
                 {severity.charAt(0).toUpperCase() + severity.slice(1)}
@@ -149,7 +149,7 @@ export function ChaosScenarioCard({
                 {getFaultTypeLabel(faultType)}
               </span>
               <span
-                className="px-2 py-1 rounded text-xs font-medium text-white"
+                className="px-2 py-1 rounded text-xs font-medium text-wl-text-primary"
                 style={{ backgroundColor: getStatusColor(status) }}
               >
                 {getStatusLabel(status)}

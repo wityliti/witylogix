@@ -147,7 +147,7 @@ export default function WidgetConfigPage() {
                   <div className="flex items-center gap-3">
                     <Settings size={18} className="text-wl-info-400" />
                     <div>
-                      <p className="text-white text-sm font-medium">Cart Delivery Selector</p>
+                      <p className="text-wl-text-primary text-sm font-medium">Cart Delivery Selector</p>
                       <p className="text-wl-text-secondary text-xs">Show delivery options</p>
                     </div>
                   </div>
@@ -165,7 +165,7 @@ export default function WidgetConfigPage() {
                   <div className="flex items-center gap-3">
                     <Globe size={18} className="text-wl-info-400" />
                     <div>
-                      <p className="text-white text-sm font-medium">Shipping Calculator</p>
+                      <p className="text-wl-text-primary text-sm font-medium">Shipping Calculator</p>
                       <p className="text-wl-text-secondary text-xs">Calculate shipping costs</p>
                     </div>
                   </div>
@@ -195,7 +195,7 @@ export default function WidgetConfigPage() {
                   <select
                     value={widgetPosition}
                     onChange={(e) => setWidgetPosition(e.target.value)}
-                    className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-white text-xs cursor-pointer hover:border-wl-border-strong"
+                    className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-wl-text-primary text-xs cursor-pointer hover:border-wl-border-strong"
                   >
                     <option value="bottom-right">Bottom Right</option>
                     <option value="bottom-left">Bottom Left</option>
@@ -216,7 +216,7 @@ export default function WidgetConfigPage() {
                       onChange={(e) => setWidgetWidth(e.target.value)}
                       min="250"
                       max="600"
-                      className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-white text-xs"
+                      className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-wl-text-primary text-xs"
                     />
                   </div>
                   <div>
@@ -229,7 +229,7 @@ export default function WidgetConfigPage() {
                       onChange={(e) => setWidgetHeight(e.target.value)}
                       min="400"
                       max="900"
-                      className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-white text-xs"
+                      className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-wl-text-primary text-xs"
                     />
                   </div>
                 </div>
@@ -251,7 +251,7 @@ export default function WidgetConfigPage() {
 
                 {/* Shadow Toggle */}
                 <div className="flex items-center justify-between p-2.5 bg-wl-bg-root rounded">
-                  <span className="text-white text-xs">Drop Shadow</span>
+                  <span className="text-wl-text-primary text-xs">Drop Shadow</span>
                   <button
                     onClick={() => setShadowEnabled(!shadowEnabled)}
                     className={cn(
@@ -269,7 +269,7 @@ export default function WidgetConfigPage() {
                   <select
                     value={fontFamily}
                     onChange={(e) => setFontFamily(e.target.value)}
-                    className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-white text-xs cursor-pointer"
+                    className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-wl-text-primary text-xs cursor-pointer"
                   >
                     <option value="system">System Default</option>
                     <option value="inter">Inter</option>
@@ -286,7 +286,7 @@ export default function WidgetConfigPage() {
                   <select
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
-                    className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-white text-xs cursor-pointer"
+                    className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-wl-text-primary text-xs cursor-pointer"
                   >
                     <option value="en">English</option>
                     <option value="es">Spanish</option>
@@ -322,7 +322,7 @@ export default function WidgetConfigPage() {
                       type="text"
                       value={primaryColor}
                       onChange={(e) => setPrimaryColor(e.target.value)}
-                      className="flex-1 px-2.5 py-1.5 bg-wl-bg-root border border-wl-border-default rounded text-white text-xs font-mono"
+                      className="flex-1 px-2.5 py-1.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-text-primary text-xs font-mono"
                     />
                   </div>
                 </div>
@@ -342,7 +342,7 @@ export default function WidgetConfigPage() {
                       type="text"
                       value={backgroundColor}
                       onChange={(e) => setBackgroundColor(e.target.value)}
-                      className="flex-1 px-2.5 py-1.5 bg-wl-bg-root border border-wl-border-default rounded text-white text-xs font-mono"
+                      className="flex-1 px-2.5 py-1.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-text-primary text-xs font-mono"
                     />
                   </div>
                 </div>
@@ -362,7 +362,7 @@ export default function WidgetConfigPage() {
                       type="text"
                       value={textColor}
                       onChange={(e) => setTextColor(e.target.value)}
-                      className="flex-1 px-2.5 py-1.5 bg-wl-bg-root border border-wl-border-default rounded text-white text-xs font-mono"
+                      className="flex-1 px-2.5 py-1.5 bg-wl-bg-root border border-wl-border-default rounded text-wl-text-primary text-xs font-mono"
                     />
                   </div>
                 </div>
@@ -400,7 +400,7 @@ export default function WidgetConfigPage() {
 
                     {cartSelectorEnabled && (
                       <div
-                        className="p-2.5 rounded text-white text-xs font-medium"
+                        className="p-2.5 rounded text-wl-text-primary text-xs font-medium"
                         style={{ backgroundColor: primaryColor }}
                       >
                         Select Delivery
@@ -409,7 +409,7 @@ export default function WidgetConfigPage() {
 
                     {shippingCalcEnabled && (
                       <div
-                        className="p-2.5 rounded text-white text-xs font-medium"
+                        className="p-2.5 rounded text-wl-text-primary text-xs font-medium"
                         style={{ backgroundColor: primaryColor }}
                       >
                         Calculate Shipping
@@ -457,16 +457,16 @@ export default function WidgetConfigPage() {
               </CardHeader>
               <CardContent className="flex flex-col gap-2.5">
                 <div>
-                  <p className="text-white text-xs font-medium mb-1">
+                  <p className="text-wl-text-primary text-xs font-medium mb-1">
                     1. Copy the embed code above
                   </p>
-                  <p className="text-white text-xs font-medium mb-1">
+                  <p className="text-wl-text-primary text-xs font-medium mb-1">
                     2. Paste before closing &lt;/body&gt; tag
                   </p>
-                  <p className="text-white text-xs font-medium mb-1">
+                  <p className="text-wl-text-primary text-xs font-medium mb-1">
                     3. Replace &apos;your-api-key-here&apos; with your API key
                   </p>
-                  <p className="text-white text-xs font-medium">
+                  <p className="text-wl-text-primary text-xs font-medium">
                     4. Test on your website
                   </p>
                 </div>

@@ -199,7 +199,7 @@ export function RouteTimeline({
                       <div
                         className={cn(
                           "w-6 h-6 rounded-full border-2 transition-all duration-200",
-                          "flex items-center justify-center text-xs font-bold text-white",
+                          "flex items-center justify-center text-xs font-bold text-wl-text-primary",
                           selectedStop?.id === stop.id
                             ? "ring-2 ring-offset-2 ring-wl-primary-500"
                             : "group-hover:ring-2 group-hover:ring-offset-2 group-hover:ring-wl-primary-400"

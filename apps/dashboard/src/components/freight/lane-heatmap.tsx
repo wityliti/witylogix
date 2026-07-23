@@ -198,7 +198,7 @@ export function LaneHeatmap({
                   >
                     {lane && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center">
-                        <p className="text-xs font-semibold text-white">
+                        <p className="text-xs font-semibold text-wl-text-primary">
                           {view === "volume" ? lane.volume : `$${lane.costPerMile.toFixed(2)}`}
                         </p>
                         <p className="text-xs text-wl-neutral-300 mt-1">

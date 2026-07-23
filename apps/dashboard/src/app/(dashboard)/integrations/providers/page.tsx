@@ -58,7 +58,7 @@ function LatencyChart({ metrics }: { metrics: ProviderMetrics | null }) {
           />
           <div className="text-center text-xs">
             <p className="text-wl-text-secondary">P50</p>
-            <p className="font-medium text-white">
+            <p className="font-medium text-wl-text-primary">
               {metrics.latencyP50}ms
             </p>
           </div>
@@ -72,7 +72,7 @@ function LatencyChart({ metrics }: { metrics: ProviderMetrics | null }) {
           />
           <div className="text-center text-xs">
             <p className="text-wl-text-secondary">P95</p>
-            <p className="font-medium text-white">
+            <p className="font-medium text-wl-text-primary">
               {metrics.latencyP95}ms
             </p>
           </div>
@@ -86,7 +86,7 @@ function LatencyChart({ metrics }: { metrics: ProviderMetrics | null }) {
           />
           <div className="text-center text-xs">
             <p className="text-wl-text-secondary">P99</p>
-            <p className="font-medium text-white">
+            <p className="font-medium text-wl-text-primary">
               {metrics.latencyP99}ms
             </p>
           </div>
@@ -141,7 +141,7 @@ function ErrorBreakdown({ metrics }: { metrics: ProviderMetrics | null }) {
               <div className="text-center bg-wl-bg-surface rounded-full w-24 h-24 flex items-center justify-center">
                 <div>
                   <p className="text-sm text-wl-text-secondary">Total</p>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-2xl font-bold text-wl-text-primary">
                     {total}
                   </p>
                 </div>
@@ -158,7 +158,7 @@ function ErrorBreakdown({ metrics }: { metrics: ProviderMetrics | null }) {
                 className={cn("w-3 h-3 rounded", colors[idx % colors.length])}
               />
               <div className="flex-1">
-                <p className="text-sm font-medium text-white">
+                <p className="text-sm font-medium text-wl-text-secondary">
                   {entry[0]}
                 </p>
                 <p className="text-xs text-wl-text-secondary">
@@ -252,7 +252,7 @@ export default function ProvidersPage() {
         <select
           value={selectedProviderId}
           onChange={(e) => setSelectedProviderId(e.target.value)}
-          className="w-full md:w-80 px-3 py-2 rounded-lg bg-wl-bg-surface border border-wl-border-default text-white focus:outline-none focus:border-wl-info-500"
+          className="w-full md:w-80 px-3 py-2 rounded-lg bg-wl-bg-surface border border-wl-border-default text-wl-text-primary focus:outline-none focus:border-wl-info-500"
         >
           <optgroup label="Payment">
             <option value="stripe">Stripe</option>
@@ -276,7 +276,7 @@ export default function ProvidersPage() {
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardContent className="pt-6">
               <p className="text-sm text-wl-text-secondary mb-2">Uptime</p>
-              <p className="text-3xl font-bold text-white">
+              <p className="text-3xl font-bold text-wl-text-primary">
                 {metrics.uptime.toFixed(1)}%
               </p>
             </CardContent>
@@ -286,7 +286,7 @@ export default function ProvidersPage() {
             <CardContent className="pt-6">
               <p className="text-sm text-wl-text-secondary mb-2">SLA Target</p>
               <div className="flex items-baseline gap-2">
-                <p className="text-2xl font-bold text-white">
+                <p className="text-2xl font-bold text-wl-text-primary">
                   {metrics.slaTarget}%
                 </p>
                 {metrics.uptime >= metrics.slaTarget ? (
@@ -310,7 +310,7 @@ export default function ProvidersPage() {
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardContent className="pt-6">
               <p className="text-sm text-wl-text-secondary mb-2">Avg Latency</p>
-              <p className="text-2xl font-bold text-white">
+              <p className="text-2xl font-bold text-wl-text-primary">
                 {Math.round(metrics.latencyP50)}ms
               </p>
             </CardContent>
@@ -396,10 +396,10 @@ export default function ProvidersPage() {
                           {req.status}
                         </Badge>
                       </td>
-                      <td className="py-2 px-3 text-white font-mono text-xs">
+                      <td className="py-2 px-3 text-wl-text-primary font-mono text-xs">
                         {req.endpoint}
                       </td>
-                      <td className="py-2 px-3 text-white">
+                      <td className="py-2 px-3 text-wl-text-primary">
                         {req.latency}ms
                       </td>
                       <td className="py-2 px-3 text-wl-text-secondary text-xs">
@@ -441,7 +441,7 @@ export default function ProvidersPage() {
                     )}
                   </div>
                   <div className="flex-1 pt-1">
-                    <p className="font-medium text-white">
+                    <p className="font-medium text-wl-text-primary">
                       {incident.title}
                     </p>
                     <p className="text-xs text-wl-text-secondary mt-1">
@@ -489,7 +489,7 @@ export default function ProvidersPage() {
                 value={configFields.rateLimit}
                 onChange={(e) => setConfigFields((p) => ({ ...p, rateLimit: Number(e.target.value) }))}
                 disabled={!configMode}
-                className="w-full mt-2 px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white disabled:opacity-50"
+                className="w-full mt-2 px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary disabled:opacity-50"
               />
             </div>
 
@@ -502,7 +502,7 @@ export default function ProvidersPage() {
                 value={configFields.timeout}
                 onChange={(e) => setConfigFields((p) => ({ ...p, timeout: Number(e.target.value) }))}
                 disabled={!configMode}
-                className="w-full mt-2 px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white disabled:opacity-50"
+                className="w-full mt-2 px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary disabled:opacity-50"
               />
             </div>
 
@@ -514,7 +514,7 @@ export default function ProvidersPage() {
                 value={configFields.retryPolicy}
                 onChange={(e) => setConfigFields((p) => ({ ...p, retryPolicy: e.target.value }))}
                 disabled={!configMode}
-                className="w-full mt-2 px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white disabled:opacity-50"
+                className="w-full mt-2 px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary disabled:opacity-50"
               >
                 <option value="exponential">Exponential Backoff</option>
                 <option value="linear">Linear Backoff</option>
@@ -531,7 +531,7 @@ export default function ProvidersPage() {
                 value={configFields.circuitBreakerThreshold}
                 onChange={(e) => setConfigFields((p) => ({ ...p, circuitBreakerThreshold: Number(e.target.value) }))}
                 disabled={!configMode}
-                className="w-full mt-2 px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-white disabled:opacity-50"
+                className="w-full mt-2 px-3 py-2 rounded-lg bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary disabled:opacity-50"
               />
             </div>
 

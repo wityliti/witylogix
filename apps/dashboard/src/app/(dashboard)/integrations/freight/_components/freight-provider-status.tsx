@@ -55,19 +55,19 @@ export function FreightProviderStatusCard({
         <div className="space-y-3 text-sm">
           <div className="flex justify-between">
             <span className="text-wl-text-secondary">Loads Available:</span>
-            <span className="text-white font-medium">
+            <span className="text-wl-text-primary font-medium">
               {provider.loadsAvailable}
             </span>
           </div>
           <div className="flex justify-between">
             <span className="text-wl-text-secondary">Booked:</span>
-            <span className="text-white font-medium">
+            <span className="text-wl-text-primary font-medium">
               {provider.loadsBooked}
             </span>
           </div>
           <div className="flex justify-between">
             <span className="text-wl-text-secondary">Avg Rate:</span>
-            <span className="text-white font-medium">
+            <span className="text-wl-text-primary font-medium">
               ${provider.avgRate.toFixed(2)}/mile
             </span>
           </div>

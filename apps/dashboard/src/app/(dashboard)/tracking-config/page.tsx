@@ -180,7 +180,7 @@ export default function TrackingConfigPage() {
                       <div className="flex items-center gap-3">
                         <Icon size={18} className="text-wl-info-500 shrink-0" />
                         <div>
-                          <p className="text-white text-sm font-medium">{feature.label}</p>
+                          <p className="text-wl-text-primary text-sm font-medium">{feature.label}</p>
                           <p className="text-wl-text-secondary text-xs">{feature.desc}</p>
                         </div>
                       </div>
@@ -216,7 +216,7 @@ export default function TrackingConfigPage() {
                   value={config.customDomain}
                   onChange={(e) => update("customDomain", e.target.value)}
                   placeholder="track.yourshop.com"
-                  className="flex-1 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-sm font-mono focus:outline-none focus:border-wl-info-500/50"
+                  className="flex-1 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-text-primary text-sm font-mono focus:outline-none focus:border-wl-info-500/50"
                 />
                 <Button
                   onClick={handleCopyDomain}
@@ -244,7 +244,7 @@ export default function TrackingConfigPage() {
                     value={config.metaTitle}
                     onChange={(e) => update("metaTitle", e.target.value)}
                     maxLength={60}
-                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-xs focus:outline-none focus:border-wl-info-500/50"
+                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-text-primary text-xs focus:outline-none focus:border-wl-info-500/50"
                   />
                   <p className={cn("text-xs mt-1", config.metaTitle.length > 55 ? "text-wl-warning-400" : "text-wl-text-tertiary")}>
                     {config.metaTitle.length}/60 characters
@@ -256,7 +256,7 @@ export default function TrackingConfigPage() {
                     value={config.metaDescription}
                     onChange={(e) => update("metaDescription", e.target.value)}
                     maxLength={160}
-                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-white text-xs focus:outline-none focus:border-wl-info-500/50 resize-none"
+                    className="w-full px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-wl-text-primary text-xs focus:outline-none focus:border-wl-info-500/50 resize-none"
                     rows={3}
                   />
                   <p className={cn("text-xs mt-1", config.metaDescription.length > 150 ? "text-wl-warning-400" : "text-wl-text-tertiary")}>
@@ -290,7 +290,7 @@ export default function TrackingConfigPage() {
                   <code className="text-wl-info-400 text-xs font-mono truncate max-w-[180px]">{trackingPageUrl}</code>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-white text-sm font-semibold">Order #12345</p>
+                  <p className="text-wl-text-primary text-sm font-semibold">Order #12345</p>
                   <Badge variant="primary">In Transit</Badge>
                   {config.liveMap && (
                     <div className="p-3 rounded text-xs border border-white/10 bg-white/5 flex items-center gap-2">

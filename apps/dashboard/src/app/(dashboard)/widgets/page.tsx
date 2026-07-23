@@ -118,7 +118,7 @@ export default function WidgetsPage() {
                       <CardHeader className="pb-3">
                         <div className="flex gap-2 items-center flex-1">
                           <div
-                            className="p-2 rounded-md flex items-center justify-center text-white"
+                            className="p-2 rounded-md flex items-center justify-center text-wl-text-primary"
                             style={{ background: getWidgetColor(idx) }}
                           >
                             {getWidgetIcon(widget.type)}
@@ -169,7 +169,7 @@ export default function WidgetsPage() {
                         <CardHeader className="pb-3">
                           <div className="flex gap-2 items-center">
                             <div
-                              className="p-2 rounded-md flex items-center justify-center text-white"
+                              className="p-2 rounded-md flex items-center justify-center text-wl-text-primary"
                               style={{ background: getWidgetColor(idx) }}
                             >
                               {getWidgetIcon(widget.type)}

@@ -130,7 +130,7 @@ const TechnicianMarker = forwardRef<HTMLDivElement, TechnicianMarkerProps>(
           {/* Avatar */}
           <div
             className={cn(
-              "w-full h-full rounded-full flex items-center justify-center font-semibold text-sm text-white",
+              "w-full h-full rounded-full flex items-center justify-center font-semibold text-sm text-wl-text-secondary",
               status === "available"
                 ? "bg-wl-success-500"
                 : status === "busy"

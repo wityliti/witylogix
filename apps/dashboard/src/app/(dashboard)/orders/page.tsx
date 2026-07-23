@@ -442,7 +442,7 @@ export default function OrdersPage() {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className={cn('w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white', avatarColor(order.customerName))}>
+                            <div className={cn('w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-wl-text-primary', avatarColor(order.customerName))}>
                               {avatarInitials(order.customerName)}
                             </div>
                             <span className="text-wl-text-primary font-medium text-sm">{order.customerName}</span>

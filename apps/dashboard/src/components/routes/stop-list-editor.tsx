@@ -299,7 +299,7 @@ export function StopListEditor({
 
                   {/* Stop Number */}
                   <div
-                    className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                    className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-wl-text-primary"
                     style={{
                       backgroundColor: 'var(--wl-primary-500)',
                     }}

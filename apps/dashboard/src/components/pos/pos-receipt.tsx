@@ -113,7 +113,7 @@ const POSReceipt = forwardRef<HTMLDivElement, POSReceiptProps>(
             <div className="relative">
               <div
                 className={cn(
-                  "px-4 py-2 rounded-lg font-semibold text-lg text-white transform -rotate-12 shadow-lg",
+                  "px-4 py-2 rounded-lg font-semibold text-lg text-wl-text-primary transform -rotate-12 shadow-lg",
                   refundBadge ? "bg-wl-danger-500" : "bg-wl-text-secondary"
                 )}
               >

@@ -185,7 +185,7 @@ function MapShipmentCard({ shipment, onClose, onView }: MapShipmentCardProps) {
         <div className="space-y-3">
           <div>
             <div className="text-xs text-wl-text-tertiary mb-0.5">Recipient</div>
-            <div className="text-sm font-semibold text-white">
+            <div className="text-sm font-semibold text-wl-text-primary">
               {shipment.recipientName ?? "—"}
             </div>
           </div>
@@ -355,7 +355,7 @@ export default function ShipmentsPage() {
                     className={cn(
                       "text-[10px] px-1.5 rounded-full leading-tight py-0.5",
                       viewMode === "map"
-                        ? "bg-white/25 text-white"
+                        ? "bg-white/25 text-wl-text-primary"
                         : "bg-wl-info-500/20 text-wl-info-400",
                     )}
                   >
@@ -416,7 +416,7 @@ export default function ShipmentsPage() {
               onChange={(e) => setSearch(e.target.value)}
               className={cn(
                 "w-full p-2 px-4 bg-wl-bg-surface border border-wl-border-default rounded-md",
-                "text-white text-sm font-sans outline-none",
+                "text-wl-text-primary text-sm font-sans outline-none",
                 "focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/20",
                 "placeholder:text-wl-text-tertiary transition-colors",
               )}
@@ -620,11 +620,11 @@ export default function ShipmentsPage() {
                             )}
                           </td>
 
-                          <td className="p-4 font-mono font-medium text-white">
+                          <td className="p-4 font-mono font-medium text-wl-text-primary">
                             {shipment.shipmentNumber}
                           </td>
 
-                          <td className="p-4 text-white font-medium max-w-40 truncate">
+                          <td className="p-4 text-wl-text-primary font-medium max-w-40 truncate">
                             {shipment.recipientName ?? "—"}
                           </td>
 
@@ -658,7 +658,7 @@ export default function ShipmentsPage() {
                             {shipment.itemCount}
                           </td>
 
-                          <td className="p-4 font-mono font-semibold text-white">
+                          <td className="p-4 font-mono font-semibold text-wl-text-primary">
                             {shipment.shippingCost
                               ? formatCurrency(Number(shipment.shippingCost))
                               : "—"}

@@ -176,7 +176,7 @@ export default function CollectionsPage() {
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full pl-10 pr-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors duration-200"
+              className="w-full pl-10 pr-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-wl-text-primary text-sm placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors duration-200"
             />
           </div>
 
@@ -208,7 +208,7 @@ export default function CollectionsPage() {
               setSortBy(e.target.value as typeof sortBy);
               setCurrentPage(1);
             }}
-            className="px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm cursor-pointer focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors duration-200"
+            className="px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-wl-text-primary text-sm cursor-pointer focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors duration-200"
           >
             <option value="title">Sort by Title</option>
             <option value="productCount">Sort by Product Count</option>
@@ -245,11 +245,11 @@ export default function CollectionsPage() {
                           <ChevronDown size={18} />
                         )}
                       </td>
-                      <td className="p-3 px-4 text-white font-medium">{collection.title}</td>
+                      <td className="p-3 px-4 text-wl-text-primary font-medium">{collection.title}</td>
                       <td className="p-3 px-4 text-center">
                         <Badge variant={collection.type === "auto" ? "info" : "default"}>{collection.type}</Badge>
                       </td>
-                      <td className="p-3 px-4 text-center text-white font-semibold">{collection.productCount}</td>
+                      <td className="p-3 px-4 text-center text-wl-text-primary font-semibold">{collection.productCount}</td>
                       <td className="p-3 px-4 text-center">
                         <Badge variant={collection.status === "active" ? "success" : "warning"}>{collection.status}</Badge>
                       </td>
@@ -284,7 +284,7 @@ export default function CollectionsPage() {
                                     <div key={product.id} className="flex items-center gap-3 p-2 px-3 bg-wl-bg-elevated rounded-lg hover:bg-wl-bg-elevated/80 transition-colors">
                                       <GripVertical size={14} className="text-wl-text-tertiary cursor-grab" />
                                       <div className="flex-1">
-                                        <p className="text-sm text-white m-0 font-medium">{product.title}</p>
+                                        <p className="text-sm text-wl-text-secondary m-0 font-medium">{product.title}</p>
                                         <p className="text-xs text-wl-text-secondary m-0 mt-1">SKU: {product.sku}</p>
                                       </div>
                                       <Button

@@ -151,7 +151,7 @@ export default function DeliveryLogPage() {
             <Card className="bg-wl-bg-surface border-wl-border-default">
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-white">
+                  <div className="text-2xl font-bold text-wl-text-primary">
                     {stats.total}
                   </div>
                   <p className="text-sm text-wl-neutral-300 mt-1">
@@ -214,7 +214,7 @@ export default function DeliveryLogPage() {
                     placeholder="Search by message, recipient..."
                     value={debouncedQuery}
                     onChange={(e) => setDebouncedQuery(e.target.value)}
-                    className="bg-wl-bg-elevated border-wl-border-default text-white placeholder:text-wl-text-tertiary"
+                    className="bg-wl-bg-elevated border-wl-border-default text-wl-text-primary placeholder:text-wl-text-tertiary"
                   />
                 </div>
 
@@ -235,7 +235,7 @@ export default function DeliveryLogPage() {
                       className={cn(
                         "w-full px-4 py-2 rounded-md",
                         "bg-wl-bg-elevated border border-wl-border-default",
-                        "text-white",
+                        "text-wl-text-primary",
                         "focus:outline-none focus:border-wl-info-500",
                         "transition-colors duration-fast"
                       )}
@@ -264,7 +264,7 @@ export default function DeliveryLogPage() {
                       className={cn(
                         "w-full px-4 py-2 rounded-md",
                         "bg-wl-bg-elevated border border-wl-border-default",
-                        "text-white",
+                        "text-wl-text-primary",
                         "focus:outline-none focus:border-wl-info-500",
                         "transition-colors duration-fast"
                       )}
@@ -351,7 +351,7 @@ export default function DeliveryLogPage() {
                               isExpanded && "bg-wl-bg-surface"
                             )}
                           >
-                            <td className="py-4 px-6 text-white font-medium">
+                            <td className="py-4 px-6 text-wl-text-primary font-medium">
                               {entry.message}
                             </td>
                             <td className="py-4 px-6 text-wl-neutral-300">

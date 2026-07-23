@@ -254,7 +254,7 @@ export default function CapacityPage() {
           )}
           {/* Legend */}
           <div className="absolute bottom-6 left-6 bg-wl-bg-surface/90 backdrop-blur border border-wl-border-default rounded-xl p-4 text-xs z-10">
-            <p className="font-semibold text-white mb-2">Capacity Status</p>
+            <p className="font-semibold text-wl-text-primary mb-2">Capacity Status</p>
             {[
               { color: 'var(--wl-info-500)', label: 'No data' },
               { color: 'var(--wl-success-500)', label: 'Optimal' },
@@ -269,7 +269,7 @@ export default function CapacityPage() {
           </div>
           {/* Zone summary overlay */}
           <div className="absolute top-4 right-4 bg-wl-bg-surface/90 backdrop-blur border border-wl-border-default rounded-xl p-4 max-w-xs z-10">
-            <p className="text-xs font-semibold text-white mb-3">Zone Capacity Overview</p>
+            <p className="text-xs font-semibold text-wl-text-primary mb-3">Zone Capacity Overview</p>
             {capacityDemandData.length === 0 ? (
               <p className="text-xs text-wl-text-tertiary">No capacity data to map</p>
             ) : (

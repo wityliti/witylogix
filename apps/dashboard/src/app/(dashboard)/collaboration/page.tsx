@@ -395,7 +395,7 @@ function TeamCollaborationPage() {
                 "w-full text-left px-4 py-2 text-sm",
                 "hover:bg-wl-bg-elevated transition-colors",
                 "border-b border-wl-border-default last:border-b-0",
-                "text-white"
+                "text-wl-text-primary"
               )}
             >
               <div className="flex items-center gap-2">
@@ -456,7 +456,7 @@ function RightSidebar({
       <div className="px-4 py-4 border-b border-wl-border-default">
         <button
           onClick={() => setExpandedSection("pinned")}
-          className="text-xs font-semibold text-white uppercase tracking-wider w-full text-left mb-2"
+          className="text-xs font-semibold text-wl-text-primary uppercase tracking-wider w-full text-left mb-2"
         >
           📌 Pinned ({pinnedMessages.length})
         </button>
@@ -481,7 +481,7 @@ function RightSidebar({
       <div className="px-4 py-4">
         <button
           onClick={() => setExpandedSection("files")}
-          className="text-xs font-semibold text-white uppercase tracking-wider w-full text-left mb-2"
+          className="text-xs font-semibold text-wl-text-primary uppercase tracking-wider w-full text-left mb-2"
         >
           📎 Shared Files ({sharedFiles.length})
         </button>
@@ -541,7 +541,7 @@ function ThreadPanel({
       <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin scrollbar-thumb-wl-bg-elevated">
         {messages.map((msg) => (
           <div key={msg.id} className="text-xs">
-            <p className="font-medium text-white">{msg.userName}</p>
+            <p className="font-medium text-wl-text-primary">{msg.userName}</p>
             <p className="text-wl-neutral-300">{msg.content}</p>
             <p className="text-wl-text-secondary mt-1">
               {new Date(msg.createdAt).toLocaleTimeString()}
@@ -559,7 +559,7 @@ function ThreadPanel({
           className={cn(
             "w-full p-2 text-xs resize-none rounded",
             "bg-wl-bg-elevated border border-wl-border-default",
-            "text-white placeholder-wl-text-tertiary",
+            "text-wl-text-primary placeholder-wl-text-tertiary",
             "focus-visible:outline-none focus-visible:ring-2",
             "focus-visible:ring-wl-primary-500"
           )}
@@ -619,7 +619,7 @@ function CreateChannelModal({
               className={cn(
                 "w-full px-3 py-2 text-sm rounded",
                 "bg-wl-bg-surface border border-wl-border-default",
-                "text-white placeholder-wl-text-tertiary",
+                "text-wl-text-primary placeholder-wl-text-tertiary",
                 "focus-visible:outline-none focus-visible:ring-2",
                 "focus-visible:ring-wl-primary-500"
               )}
@@ -638,7 +638,7 @@ function CreateChannelModal({
               className={cn(
                 "w-full px-3 py-2 text-sm rounded",
                 "bg-wl-bg-surface border border-wl-border-default",
-                "text-white",
+                "text-wl-text-primary",
                 "focus-visible:outline-none focus-visible:ring-2",
                 "focus-visible:ring-wl-primary-500"
               )}

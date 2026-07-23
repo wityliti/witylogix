@@ -73,13 +73,13 @@ const platformConfig: Record<
     name: 'Square',
     initials: 'SQ',
     bgColor: 'bg-wl-bg-overlay',
-    textColor: 'text-white',
+    textColor: 'text-wl-text-primary',
   },
   amazon: {
     name: 'Amazon',
     initials: 'AM',
     bgColor: 'bg-amber-600',
-    textColor: 'text-white',
+    textColor: 'text-wl-text-primary',
   },
 };
 

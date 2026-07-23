@@ -39,11 +39,11 @@ export function InventorySyncCard({ sync }: InventorySyncCardProps) {
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <p className="text-xs font-medium text-wl-text-tertiary uppercase">Items Tracked</p>
-            <p className="text-lg font-bold text-white mt-1">{sync.itemsTracked.toLocaleString()}</p>
+            <p className="text-lg font-bold text-wl-text-primary mt-1">{sync.itemsTracked.toLocaleString()}</p>
           </div>
           <div>
             <p className="text-xs font-medium text-wl-text-tertiary uppercase">Success Rate</p>
-            <p className="text-lg font-bold text-white mt-1">{sync.successRate}%</p>
+            <p className="text-lg font-bold text-wl-text-primary mt-1">{sync.successRate}%</p>
           </div>
         </div>
 

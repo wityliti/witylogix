@@ -98,7 +98,7 @@ export default function MaintenancePage() {
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardContent className="pt-4">
               <div className="text-center">
-                <p className="text-3xl font-bold text-white">{statusCounts.scheduled}</p>
+                <p className="text-3xl font-bold text-wl-text-primary">{statusCounts.scheduled}</p>
                 <p className="text-xs text-wl-text-secondary mt-1">Scheduled</p>
               </div>
             </CardContent>
@@ -143,7 +143,7 @@ export default function MaintenancePage() {
                 {overdueMaintenance.slice(0, 3).map((item) => (
                   <div key={item.id} className="flex items-center justify-between p-3 bg-wl-danger-500/10 rounded-md border border-wl-border-default">
                     <div>
-                      <p className="text-sm font-medium text-white">{item.type.replace('-', ' ').toUpperCase()}</p>
+                      <p className="text-sm font-medium text-wl-text-secondary">{item.type.replace('-', ' ').toUpperCase()}</p>
                       <p className="text-xs text-wl-text-secondary">{item.vehicleName} • Due {formatDate(item.scheduledDate)}</p>
                     </div>
                     <Button variant="danger" size="sm">
@@ -216,10 +216,10 @@ export default function MaintenancePage() {
                   <tbody>
                     {paginatedMaintenance.map((item, idx) => (
                       <tr key={item.id} className={cn('border-b border-wl-border-default transition-colors hover:bg-wl-bg-elevated', idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-sunken')}>
-                        <td className="p-3 px-4 text-white font-semibold capitalize">{item.type.replace('-', ' ')}</td>
+                        <td className="p-3 px-4 text-wl-text-primary font-semibold capitalize">{item.type.replace('-', ' ')}</td>
                         <td className="p-3 px-4 text-wl-text-secondary text-xs">{item.vehicleName}</td>
                         <td className="p-3 px-4 text-center text-wl-text-secondary text-xs">{formatDate(item.scheduledDate)}</td>
-                        <td className="p-3 px-4 text-right text-white font-medium">{formatCurrency(item.actualCost || item.estimatedCost)}</td>
+                        <td className="p-3 px-4 text-right text-wl-text-primary font-medium">{formatCurrency(item.actualCost || item.estimatedCost)}</td>
                         <td className="p-3 px-4 text-center text-wl-text-secondary text-xs">{item.vendor}</td>
                         <td className="p-3 px-4 text-center">
                           <Badge variant={getStatusColor(item.status)}>{item.status === 'in-progress' ? 'In Progress' : item.status}</Badge>
@@ -273,7 +273,7 @@ export default function MaintenancePage() {
                     <div key={item.id} className="p-4 bg-wl-bg-elevated rounded-md border-l-4 border-wl-info-500">
                       <div className="flex items-start justify-between">
                         <div>
-                          <p className="text-sm font-semibold text-white">{item.type.replace('-', ' ').toUpperCase()}</p>
+                          <p className="text-sm font-semibold text-wl-text-primary">{item.type.replace('-', ' ').toUpperCase()}</p>
                           <p className="text-xs text-wl-text-secondary mt-1">{item.vehicleName}</p>
                         </div>
                         <Badge variant={getStatusColor(item.status)}>{item.status === 'in-progress' ? 'In Progress' : item.status}</Badge>

@@ -152,7 +152,7 @@ export default function ChaosDashboard() {
                     className="h-auto justify-between p-4 text-left"
                   >
                     <div>
-                      <div className="font-medium text-white">{scenario.name}</div>
+                      <div className="font-medium text-wl-text-primary">{scenario.name}</div>
                       <div className="text-xs text-wl-text-tertiary">{scenario.faultType}</div>
                     </div>
                     <Badge variant={scenario.severity as any}>{scenario.severity}</Badge>
@@ -169,21 +169,21 @@ export default function ChaosDashboard() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-white">Scenario Name</Label>
+                    <Label className="text-wl-text-secondary">Scenario Name</Label>
                     <Input
                       value={builderForm.name}
                       onChange={(e) => setBuilderForm({ ...builderForm, name: e.target.value })}
                       placeholder="e.g., Black Friday Load Test"
-                      className="mt-2 bg-wl-bg-root text-white"
+                      className="mt-2 bg-wl-bg-root text-wl-text-primary"
                     />
                   </div>
                   <div>
-                    <Label className="text-white">Provider</Label>
+                    <Label className="text-wl-text-secondary">Provider</Label>
                     <Select
                       value={builderForm.provider}
                       onValueChange={(value) => setBuilderForm({ ...builderForm, provider: value })}
                     >
-                      <SelectTrigger className="mt-2 bg-wl-bg-root text-white">
+                      <SelectTrigger className="mt-2 bg-wl-bg-root text-wl-text-primary">
                         <SelectValue placeholder="Select provider" />
                       </SelectTrigger>
                       <SelectContent>
@@ -199,12 +199,12 @@ export default function ChaosDashboard() {
 
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <Label className="text-white">Fault Type</Label>
+                    <Label className="text-wl-text-secondary">Fault Type</Label>
                     <Select
                       value={builderForm.faultType}
                       onValueChange={(value) => setBuilderForm({ ...builderForm, faultType: value })}
                     >
-                      <SelectTrigger className="mt-2 bg-wl-bg-root text-white">
+                      <SelectTrigger className="mt-2 bg-wl-bg-root text-wl-text-primary">
                         <SelectValue placeholder="Select fault type" />
                       </SelectTrigger>
                       <SelectContent>
@@ -217,12 +217,12 @@ export default function ChaosDashboard() {
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-white">Severity</Label>
+                    <Label className="text-wl-text-secondary">Severity</Label>
                     <Select
                       value={builderForm.severity}
                       onValueChange={(value) => setBuilderForm({ ...builderForm, severity: value })}
                     >
-                      <SelectTrigger className="mt-2 bg-wl-bg-root text-white">
+                      <SelectTrigger className="mt-2 bg-wl-bg-root text-wl-text-primary">
                         <SelectValue placeholder="Select severity" />
                       </SelectTrigger>
                       <SelectContent>
@@ -235,7 +235,7 @@ export default function ChaosDashboard() {
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-white">Duration (seconds)</Label>
+                    <Label className="text-wl-text-secondary">Duration (seconds)</Label>
                     <Input
                       type="number"
                       value={builderForm.duration}
@@ -244,18 +244,18 @@ export default function ChaosDashboard() {
                       }
                       min="10"
                       max="3600"
-                      className="mt-2 bg-wl-bg-root text-white"
+                      className="mt-2 bg-wl-bg-root text-wl-text-primary"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label className="text-white">Target Endpoints (comma-separated)</Label>
+                  <Label className="text-wl-text-secondary">Target Endpoints (comma-separated)</Label>
                   <Input
                     value={builderForm.endpoints}
                     onChange={(e) => setBuilderForm({ ...builderForm, endpoints: e.target.value })}
                     placeholder="/api/checkout, /api/payment"
-                    className="mt-2 bg-wl-bg-root text-white"
+                    className="mt-2 bg-wl-bg-root text-wl-text-primary"
                   />
                 </div>
 
@@ -273,9 +273,9 @@ export default function ChaosDashboard() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-white">Frequency</Label>
+                    <Label className="text-wl-text-secondary">Frequency</Label>
                     <Select value={recurringForm.frequency}>
-                      <SelectTrigger className="mt-2 bg-wl-bg-root text-white">
+                      <SelectTrigger className="mt-2 bg-wl-bg-root text-wl-text-primary">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -286,12 +286,12 @@ export default function ChaosDashboard() {
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-white">Time</Label>
+                    <Label className="text-wl-text-secondary">Time</Label>
                     <Input
                       type="time"
                       value={recurringForm.time}
                       onChange={(e) => setRecurringForm({ ...recurringForm, time: e.target.value })}
-                      className="mt-2 bg-wl-bg-root text-white"
+                      className="mt-2 bg-wl-bg-root text-wl-text-primary"
                     />
                   </div>
                 </div>
@@ -352,7 +352,7 @@ function ExecutionMonitor({ execution }: { execution: ChaosExecution }) {
                 key={idx}
                 className="flex items-center justify-between rounded border border-wl-border-default bg-wl-bg-root p-3"
               >
-                <div className="text-sm text-white">{assertion.name}</div>
+                <div className="text-sm text-wl-text-secondary">{assertion.name}</div>
                 <Badge variant={assertion.passed ? 'success' : 'danger'}>
                   {assertion.passed ? 'Passed' : 'Failed'}
                 </Badge>
@@ -389,17 +389,17 @@ function HistoryTable({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-wl-border-default">
-              <th className="px-4 py-2 text-left text-white">Name</th>
-              <th className="px-4 py-2 text-left text-white">Provider</th>
-              <th className="px-4 py-2 text-left text-white">Fault Type</th>
-              <th className="px-4 py-2 text-left text-white">Severity</th>
-              <th className="px-4 py-2 text-left text-white">Actions</th>
+              <th className="px-4 py-2 text-left text-wl-text-secondary">Name</th>
+              <th className="px-4 py-2 text-left text-wl-text-secondary">Provider</th>
+              <th className="px-4 py-2 text-left text-wl-text-secondary">Fault Type</th>
+              <th className="px-4 py-2 text-left text-wl-text-secondary">Severity</th>
+              <th className="px-4 py-2 text-left text-wl-text-secondary">Actions</th>
             </tr>
           </thead>
           <tbody>
             {scenarios.map((scenario) => (
               <tr key={scenario.id} className="border-b border-wl-border-default">
-                <td className="px-4 py-2 text-white">{scenario.name}</td>
+                <td className="px-4 py-2 text-wl-text-primary">{scenario.name}</td>
                 <td className="px-4 py-2 text-wl-text-tertiary">{scenario.provider}</td>
                 <td className="px-4 py-2 text-wl-text-tertiary">{scenario.faultType}</td>
                 <td className="px-4 py-2">

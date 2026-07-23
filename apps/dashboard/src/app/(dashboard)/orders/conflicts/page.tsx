@@ -141,7 +141,7 @@ export default function ConflictsPage() {
               <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2">
                 Total Conflicts
               </p>
-              <p className="text-3xl font-bold font-mono text-white">
+              <p className="text-3xl font-bold font-mono text-wl-text-primary">
                 {unresolved}
               </p>
               <p className="text-xs text-wl-text-secondary mt-2">
@@ -153,7 +153,7 @@ export default function ConflictsPage() {
               <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2">
                 Affected Platforms
               </p>
-              <p className="text-3xl font-bold font-mono text-white">
+              <p className="text-3xl font-bold font-mono text-wl-text-primary">
                 {Array.from(new Set(conflicts.filter((c) => !c.resolved).map((c) => c.platform))).length}
               </p>
               <p className="text-xs text-wl-text-secondary mt-2">
@@ -165,7 +165,7 @@ export default function ConflictsPage() {
               <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2">
                 Resolution Rate
               </p>
-              <p className="text-3xl font-bold font-mono text-white">
+              <p className="text-3xl font-bold font-mono text-wl-text-primary">
                 {conflicts.length > 0
                   ? Math.round(
                       ((conflicts.length - unresolved) / conflicts.length) * 100
@@ -193,7 +193,7 @@ export default function ConflictsPage() {
                 >
                   <div className="flex items-center gap-3 flex-1">
                     <div>
-                      <p className="font-medium text-white">{field}</p>
+                      <p className="font-medium text-wl-text-primary">{field}</p>
                       <p className="text-xs text-wl-text-secondary">
                         {count} conflict{count !== 1 ? "s" : ""}
                       </p>
@@ -338,7 +338,7 @@ export default function ConflictsPage() {
                       <div className="flex items-center gap-3 flex-1">
                         <span className="text-lg">{platform?.icon}</span>
                         <div className="flex-1">
-                          <p className="font-medium text-white">
+                          <p className="font-medium text-wl-text-primary">
                             {platform?.name} • Order {conflict.orderId}
                           </p>
                           <div className="flex gap-2 mt-1">

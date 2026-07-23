@@ -145,7 +145,7 @@ export default function OrderDetailPage() {
   if (!order) return (
     <div className="min-h-screen bg-wl-bg-root p-6 flex items-center justify-center">
       <div className="text-center">
-        <p className="text-2xl font-bold text-white mb-2">Order not found</p>
+        <p className="text-2xl font-bold text-wl-text-primary mb-2">Order not found</p>
         <p className="text-wl-text-secondary text-sm">This order may have been deleted or moved.</p>
       </div>
     </div>
@@ -172,7 +172,7 @@ export default function OrderDetailPage() {
   const shipment = order.primaryShipment;
 
   return (
-    <div className="min-h-screen bg-wl-bg-root p-6 text-white">
+    <div className="min-h-screen bg-wl-bg-root p-6 text-wl-text-primary">
       {/* Header */}
       <div className="flex flex-wrap justify-between items-start gap-4 mb-8">
         <div>

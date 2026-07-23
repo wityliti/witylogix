@@ -197,7 +197,7 @@ export default function TrackingMapView({
 
       {!hasLocation && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 backdrop-blur-sm rounded-xl">
-          <div className="text-center text-white">
+          <div className="text-center text-wl-text-primary">
             <p className="text-sm font-semibold mb-1">No location data</p>
             <p className="text-xs text-wl-text-secondary">Orders need delivery coordinates to appear on the map.</p>
           </div>

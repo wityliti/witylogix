@@ -56,7 +56,7 @@ export function ColorsSection() {
                   className="w-full h-32 rounded-md mb-2 border border-wl-border-default"
                   style={{ backgroundColor: "#34d399" }}
                 />
-                <p className="text-sm font-semibold text-white">
+                <p className="text-sm font-semibold text-wl-text-primary">
                   Success
                 </p>
                 <p className="text-xs font-mono text-wl-neutral-300">
@@ -72,7 +72,7 @@ export function ColorsSection() {
                   className="w-full h-32 rounded-md mb-2 border border-wl-border-default"
                   style={{ backgroundColor: "#fbbf24" }}
                 />
-                <p className="text-sm font-semibold text-white">
+                <p className="text-sm font-semibold text-wl-text-primary">
                   Warning
                 </p>
                 <p className="text-xs font-mono text-wl-neutral-300">
@@ -88,7 +88,7 @@ export function ColorsSection() {
                   className="w-full h-32 rounded-md mb-2 border border-wl-border-default"
                   style={{ backgroundColor: "#f87171" }}
                 />
-                <p className="text-sm font-semibold text-white">
+                <p className="text-sm font-semibold text-wl-text-primary">
                   Danger
                 </p>
                 <p className="text-xs font-mono text-wl-neutral-300">
@@ -104,7 +104,7 @@ export function ColorsSection() {
                   className="w-full h-32 rounded-md mb-2 border border-wl-border-default"
                   style={{ backgroundColor: "#60a5fa" }}
                 />
-                <p className="text-sm font-semibold text-white">
+                <p className="text-sm font-semibold text-wl-text-primary">
                   Info
                 </p>
                 <p className="text-xs font-mono text-wl-neutral-300">
@@ -135,7 +135,7 @@ export function ColorsSection() {
                     className="w-full h-20 rounded-md mb-2 border border-wl-border-default"
                     style={{ backgroundColor: color.hex }}
                   />
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-sm font-semibold text-wl-text-primary">
                     {color.name}
                   </p>
                   <p className="text-xs font-mono text-wl-neutral-300">

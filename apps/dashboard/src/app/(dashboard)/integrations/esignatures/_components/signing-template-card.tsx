@@ -39,11 +39,11 @@ export function SigningTemplateCard({ template }: SigningTemplateCardProps) {
         <div className="grid grid-cols-3 gap-4 mb-6 pb-6 border-b border-wl-border-default">
           <div>
             <p className="text-xs font-medium text-wl-text-tertiary uppercase">Fields</p>
-            <p className="text-lg font-bold text-white mt-1">{template.fields}</p>
+            <p className="text-lg font-bold text-wl-text-primary mt-1">{template.fields}</p>
           </div>
           <div>
             <p className="text-xs font-medium text-wl-text-tertiary uppercase">Signers</p>
-            <p className="text-lg font-bold text-white mt-1">{template.signers}</p>
+            <p className="text-lg font-bold text-wl-text-primary mt-1">{template.signers}</p>
           </div>
           <div>
             <p className="text-xs font-medium text-wl-text-tertiary uppercase">Status</p>

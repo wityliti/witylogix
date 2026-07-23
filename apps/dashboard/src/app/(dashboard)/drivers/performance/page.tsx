@@ -60,10 +60,10 @@ const getTierColor = (
 
 const getTierBg = (tier: DriverTier): string => {
   const bgMap: Record<DriverTier, string> = {
-    platinum: "bg-gradient-to-br from-purple-600 to-purple-800 text-white",
-    gold: "bg-gradient-to-br from-amber-500 to-amber-700 text-white",
-    silver: "bg-gradient-to-br from-gray-400 to-gray-600 text-white",
-    bronze: "bg-gradient-to-br from-orange-500 to-orange-700 text-white",
+    platinum: "bg-gradient-to-br from-purple-600 to-purple-800 text-wl-text-primary",
+    gold: "bg-gradient-to-br from-amber-500 to-amber-700 text-wl-text-primary",
+    silver: "bg-gradient-to-br from-gray-400 to-gray-600 text-wl-text-primary",
+    bronze: "bg-gradient-to-br from-orange-500 to-orange-700 text-wl-text-primary",
   };
   return bgMap[tier];
 };

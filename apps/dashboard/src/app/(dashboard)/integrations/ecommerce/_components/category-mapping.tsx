@@ -40,7 +40,7 @@ export function CategoryMapping() {
                   <div className="text-xs text-wl-text-tertiary uppercase tracking-wide">
                     Shopify
                   </div>
-                  <div className="text-sm font-medium text-white mt-1">
+                  <div className="text-sm font-medium text-wl-text-secondary mt-1">
                     {mapping.shopify}
                   </div>
                 </div>
@@ -51,7 +51,7 @@ export function CategoryMapping() {
                   <div className="text-xs text-wl-text-tertiary uppercase tracking-wide">
                     External
                   </div>
-                  <div className="text-sm font-medium text-white mt-1">
+                  <div className="text-sm font-medium text-wl-text-secondary mt-1">
                     {mapping.woo} / {mapping.amazon}
                   </div>
                 </div>

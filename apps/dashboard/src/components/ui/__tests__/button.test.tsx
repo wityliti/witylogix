@@ -225,14 +225,14 @@ describe('Button Component', () => {
 
     it('should apply custom className on top of variant styles', () => {
       const { container } = render(
-        <Button variant="primary" className="text-white">
+        <Button variant="primary" className="text-wl-text-primary">
           Custom Primary
         </Button>
       );
 
       const button = container.querySelector('button');
       expect(button?.className).toContain('from-wl-primary-500');
-      expect(button?.className).toContain('text-white');
+      expect(button?.className).toContain('text-wl-text-primary');
     });
 
     it('should apply custom className on top of size styles', () => {

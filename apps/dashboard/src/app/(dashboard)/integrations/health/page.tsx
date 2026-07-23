@@ -321,7 +321,7 @@ export default function IntegrationHealthPage() {
                         {categoryIcon(integration.category)}
                       </div>
                       <div className={cn("flex-1 min-w-0")}>
-                        <h3 className={cn("font-semibold text-white text-sm")}>
+                        <h3 className={cn("font-semibold text-wl-text-primary text-sm")}>
                           {integration.name}
                         </h3>
                       </div>

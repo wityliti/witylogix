@@ -17,16 +17,16 @@ export function TablesSection() {
           <table>
             <thead>
               <tr className="border-b border-wl-border-default">
-                <th className="text-left px-4 py-3 font-semibold text-white">
+                <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">
                   ID
                 </th>
-                <th className="text-left px-4 py-3 font-semibold text-white">
+                <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">
                   Name
                 </th>
-                <th className="text-left px-4 py-3 font-semibold text-white">
+                <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">
                   Status
                 </th>
-                <th className="text-left px-4 py-3 font-semibold text-white">
+                <th className="text-left px-4 py-3 font-semibold text-wl-text-secondary">
                   Date
                 </th>
               </tr>
@@ -59,7 +59,7 @@ export function TablesSection() {
                   <td className="px-4 py-3 text-wl-neutral-300">
                     {row.id}
                   </td>
-                  <td className="px-4 py-3 text-white">
+                  <td className="px-4 py-3 text-wl-text-primary">
                     {row.name}
                   </td>
                   <td className="px-4 py-3">

@@ -98,7 +98,7 @@ export default function CustomersMapView({ customers }: CustomersMapViewProps) {
           {selectedCustomer && (
             <div className="absolute top-4 right-4 bg-wl-bg-root/95 backdrop-blur-sm border border-wl-border-default rounded-lg p-4 z-10 min-w-52">
               <div className="flex items-start justify-between mb-2">
-                <p className="text-sm font-semibold text-white">{selectedCustomer.name}</p>
+                <p className="text-sm font-semibold text-wl-text-primary">{selectedCustomer.name}</p>
                 <button
                   onClick={() => setSelectedId(null)}
                   className="text-wl-text-tertiary hover:text-wl-neutral-300 transition-colors ml-2 leading-none"

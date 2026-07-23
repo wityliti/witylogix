@@ -197,7 +197,7 @@ export default function OrderImportPage() {
               <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2">
                 Total Synced
               </p>
-              <p className="text-3xl font-bold font-mono text-white">
+              <p className="text-3xl font-bold font-mono text-wl-text-primary">
                 {metrics.totalOrdersSynced}
               </p>
               <p className="text-xs text-wl-text-secondary mt-2">orders imported</p>
@@ -268,7 +268,7 @@ export default function OrderImportPage() {
                   <div className="flex items-center gap-3 mb-3">
                     <span className="text-2xl">{platform.icon}</span>
                     <div>
-                      <p className="font-semibold text-white">{platform.name}</p>
+                      <p className="font-semibold text-wl-text-primary">{platform.name}</p>
                       <p className="text-xs text-wl-text-secondary">
                         {isConnected ? "Connected" : "Disconnected"}
                       </p>

@@ -303,7 +303,7 @@ export default function AnomaliesPage() {
           )}
           {/* Legend */}
           <div className="absolute bottom-6 left-6 bg-wl-bg-surface/90 backdrop-blur border border-wl-border-default rounded-xl p-4 text-xs z-10">
-            <p className="font-semibold text-white mb-2">Anomaly Severity</p>
+            <p className="font-semibold text-wl-text-primary mb-2">Anomaly Severity</p>
             {[
               { color: 'var(--wl-info-500)', label: 'No anomalies' },
               { color: 'var(--wl-success-500)', label: 'Low' },
@@ -319,7 +319,7 @@ export default function AnomaliesPage() {
           </div>
           {/* Zone summary overlay */}
           <div className="absolute top-4 right-4 bg-wl-bg-surface/90 backdrop-blur border border-wl-border-default rounded-xl p-4 max-w-xs z-10">
-            <p className="text-xs font-semibold text-white mb-3">Zones with Anomalies</p>
+            <p className="text-xs font-semibold text-wl-text-primary mb-3">Zones with Anomalies</p>
             {anomalyDemandData.length === 0 ? (
               <p className="text-xs text-wl-text-tertiary">No anomaly data to map</p>
             ) : (
@@ -330,7 +330,7 @@ export default function AnomaliesPage() {
                   .map((z) => (
                     <div key={z.id} className="flex items-center justify-between gap-3">
                       <span className="text-xs text-wl-neutral-300 truncate">{z.name}</span>
-                      <span className="text-xs font-mono text-white shrink-0">{z.predictedVolume} pts</span>
+                      <span className="text-xs font-mono text-wl-text-primary shrink-0">{z.predictedVolume} pts</span>
                     </div>
                   ))}
               </div>

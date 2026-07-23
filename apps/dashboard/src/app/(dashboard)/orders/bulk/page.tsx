@@ -161,7 +161,7 @@ export default function BulkOperationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-wl-bg-root p-6 text-white">
+    <div className="min-h-screen bg-wl-bg-root p-6 text-wl-text-primary">
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">Bulk Operations</h1>
         <p className="text-sm text-wl-text-secondary">Perform bulk actions on multiple orders at once</p>
@@ -169,7 +169,7 @@ export default function BulkOperationsPage() {
 
       {/* Search and Filter */}
       <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6 mb-6">
-        <p className="text-base font-semibold mb-4 text-white">Search & Filter Orders</p>
+        <p className="text-base font-semibold mb-4 text-wl-text-primary">Search & Filter Orders</p>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-wl-neutral-300">Search Order ID or Customer</label>
@@ -225,7 +225,7 @@ export default function BulkOperationsPage() {
 
       {/* Orders Table */}
       <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6 mb-6">
-        <p className="text-base font-semibold mb-4 text-white">Orders ({filteredOrders.length})</p>
+        <p className="text-base font-semibold mb-4 text-wl-text-primary">Orders ({filteredOrders.length})</p>
         {filteredOrders.length > 0 ? (
           <table className="w-full border-collapse">
             <thead>
@@ -281,7 +281,7 @@ export default function BulkOperationsPage() {
       {/* Bulk Actions Section */}
       {selectedOrders.size > 0 && (
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6 mb-6">
-          <p className="text-base font-semibold mb-4 text-white">Bulk Actions</p>
+          <p className="text-base font-semibold mb-4 text-wl-text-primary">Bulk Actions</p>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium text-wl-neutral-300">Select Action</label>
@@ -334,7 +334,7 @@ export default function BulkOperationsPage() {
       {/* Confirmation Modal */}
       {showConfirmation && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-8 max-w-md w-11/12 text-white">
+          <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-8 max-w-md w-11/12 text-wl-text-primary">
             <h2 className="text-lg font-bold mb-4">Confirm Bulk Action</h2>
             <div className="text-sm text-wl-neutral-300 mb-5 leading-relaxed space-y-2">
               <div>Action: <strong>{bulkAction === 'update_status' ? `Update Status → ${newStatus}` : 'Cancel Orders'}</strong></div>
@@ -362,7 +362,7 @@ export default function BulkOperationsPage() {
       {/* Results Modal */}
       {operationResults && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-8 max-w-md w-11/12 text-white">
+          <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-8 max-w-md w-11/12 text-wl-text-primary">
             <h2 className="text-lg font-bold mb-4">Operation Complete</h2>
             <div className="text-sm text-wl-neutral-300 mb-5 space-y-1">
               <div className="text-wl-success-500 font-semibold">

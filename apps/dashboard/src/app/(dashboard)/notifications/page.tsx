@@ -375,7 +375,7 @@ export default function NotificationsPage() {
                               )
                             }
                           >
-                            <div className="font-medium text-white">
+                            <div className="font-medium text-wl-text-primary">
                               {notif.title}
                             </div>
                             <div className="text-sm text-wl-text-secondary truncate">

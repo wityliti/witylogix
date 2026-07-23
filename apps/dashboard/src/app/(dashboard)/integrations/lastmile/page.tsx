@@ -270,13 +270,13 @@ export default function LastMileIntegrationPage() {
                     <div className="space-y-2 text-xs text-wl-text-secondary mb-3">
                       <div className="flex justify-between">
                         <span>Active Deliveries:</span>
-                        <span className="text-white font-semibold">
+                        <span className="text-wl-text-primary font-semibold">
                           {stats?.activeDeliveries ?? '—'}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span>Total Deliveries:</span>
-                        <span className="text-white font-semibold">
+                        <span className="text-wl-text-primary font-semibold">
                           {stats?.totalDeliveries ?? '—'}
                         </span>
                       </div>
@@ -289,7 +289,7 @@ export default function LastMileIntegrationPage() {
                       {partner.lastSyncAt && (
                         <div className="flex justify-between">
                           <span>Last Sync:</span>
-                          <span className="text-white font-semibold">
+                          <span className="text-wl-text-primary font-semibold">
                             {formatRelative(partner.lastSyncAt)}
                           </span>
                         </div>
@@ -333,9 +333,9 @@ export default function LastMileIntegrationPage() {
                           idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-elevated/30'
                         )}
                       >
-                        <td className="p-3 text-white font-semibold capitalize">{stat.provider.replace(/_/g, ' ')}</td>
-                        <td className="p-3 text-center text-white font-semibold">{stat.activeDeliveries}</td>
-                        <td className="p-3 text-center text-white font-semibold">{stat.totalDeliveries}</td>
+                        <td className="p-3 text-wl-text-primary font-semibold capitalize">{stat.provider.replace(/_/g, ' ')}</td>
+                        <td className="p-3 text-center text-wl-text-primary font-semibold">{stat.activeDeliveries}</td>
+                        <td className="p-3 text-center text-wl-text-primary font-semibold">{stat.totalDeliveries}</td>
                         <td className="p-3 text-center">
                           {stat.successRate != null ? (
                             <Badge variant="success">{stat.successRate}%</Badge>
@@ -404,7 +404,7 @@ export default function LastMileIntegrationPage() {
                     >
                       <div className="flex items-start justify-between mb-1">
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-white truncate">
+                          <p className="text-xs font-semibold text-wl-text-primary truncate">
                             {d.externalId}
                           </p>
                           <p className="text-xs text-wl-text-secondary">{d.partner.name}</p>
@@ -474,7 +474,7 @@ export default function LastMileIntegrationPage() {
                     >
                       <div className="flex items-start justify-between mb-1">
                         <div>
-                          <p className="text-sm font-semibold text-white">{driver.name}</p>
+                          <p className="text-sm font-semibold text-wl-text-primary">{driver.name}</p>
                           <p className="text-xs text-wl-text-secondary">
                             {driver.vehicleType ?? 'Vehicle unknown'}
                           </p>

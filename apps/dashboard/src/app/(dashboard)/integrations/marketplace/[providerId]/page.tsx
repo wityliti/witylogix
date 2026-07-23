@@ -189,7 +189,7 @@ export default function ProviderDetailPage() {
 
               <div className={cn("flex-1 min-w-0")}>
                 <div className={cn("flex items-center gap-3 mb-3")}>
-                  <h1 className={cn("text-2xl font-bold text-white")}>{provider.name}</h1>
+                  <h1 className={cn("text-2xl font-bold text-wl-text-primary")}>{provider.name}</h1>
                   {provider.status === "BETA" && <Badge variant="info">Beta</Badge>}
                 </div>
 
@@ -247,7 +247,7 @@ export default function ProviderDetailPage() {
                     {provider.capabilities.map((cap) => (
                       <div key={cap} className={cn("flex items-center gap-2 p-2 rounded bg-wl-bg-elevated")}>
                         <CheckCircle className="w-4 h-4 text-wl-success-500 flex-shrink-0" />
-                        <span className="text-sm text-white">{cap}</span>
+                        <span className="text-sm text-wl-text-secondary">{cap}</span>
                       </div>
                     ))}
                   </div>
@@ -266,7 +266,7 @@ export default function ProviderDetailPage() {
                     {credentialFields.map((field) => (
                       <div key={field.key} className={cn("flex items-center gap-2 p-3 rounded border border-wl-border-default")}>
                         <Check className="w-4 h-4 text-wl-info-500 flex-shrink-0" />
-                        <span className="text-sm text-white">
+                        <span className="text-sm text-wl-text-secondary">
                           {field.label}
                           {field.required && <span className="text-wl-danger-400 ml-1">*</span>}
                         </span>
@@ -287,23 +287,23 @@ export default function ProviderDetailPage() {
               <CardContent className={cn("space-y-4")}>
                 <div>
                   <div className={cn("text-xs text-wl-text-tertiary uppercase tracking-wide mb-1")}>Category</div>
-                  <div className={cn("text-sm font-medium text-white")}>{provider.category}</div>
+                  <div className={cn("text-sm font-medium text-wl-text-secondary")}>{provider.category}</div>
                 </div>
                 {provider.subcategory && (
                   <div>
                     <div className={cn("text-xs text-wl-text-tertiary uppercase tracking-wide mb-1")}>Type</div>
-                    <div className={cn("text-sm font-medium text-white capitalize")}>{provider.subcategory}</div>
+                    <div className={cn("text-sm font-medium text-wl-text-secondary capitalize")}>{provider.subcategory}</div>
                   </div>
                 )}
                 <div>
                   <div className={cn("text-xs text-wl-text-tertiary uppercase tracking-wide mb-1")}>Authentication</div>
-                  <div className={cn("text-sm font-medium text-white")}>
+                  <div className={cn("text-sm font-medium text-wl-text-secondary")}>
                     {AUTH_LABEL[provider.authType] ?? provider.authType}
                   </div>
                 </div>
                 <div>
                   <div className={cn("text-xs text-wl-text-tertiary uppercase tracking-wide mb-1")}>Version</div>
-                  <div className={cn("text-sm font-mono text-white")}>{provider.version}</div>
+                  <div className={cn("text-sm font-mono text-wl-text-primary")}>{provider.version}</div>
                 </div>
               </CardContent>
             </Card>
@@ -349,17 +349,17 @@ export default function ProviderDetailPage() {
             <div className={cn("space-y-3 bg-wl-bg-elevated p-4 rounded-lg")}>
               <div>
                 <div className={cn("text-xs text-wl-text-tertiary uppercase tracking-wide")}>Provider</div>
-                <div className={cn("text-sm font-medium text-white")}>{provider.name}</div>
+                <div className={cn("text-sm font-medium text-wl-text-secondary")}>{provider.name}</div>
               </div>
               <div>
                 <div className={cn("text-xs text-wl-text-tertiary uppercase tracking-wide")}>Authentication Type</div>
-                <div className={cn("text-sm font-medium text-white")}>
+                <div className={cn("text-sm font-medium text-wl-text-secondary")}>
                   {AUTH_LABEL[provider.authType] ?? provider.authType}
                 </div>
               </div>
               <div>
                 <div className={cn("text-xs text-wl-text-tertiary uppercase tracking-wide")}>Permissions Requested</div>
-                <div className={cn("text-sm text-white space-y-1 mt-1")}>
+                <div className={cn("text-sm text-wl-text-secondary space-y-1 mt-1")}>
                   <div className={cn("flex items-center gap-2")}>
                     <Check className="w-3 h-3 text-wl-success-500" />
                     Read access to {provider.name} data
@@ -466,7 +466,7 @@ export default function ProviderDetailPage() {
         {authStep === "installing" && (
           <div className={cn("space-y-4 text-center py-6")}>
             <Loader2 className="w-8 h-8 mx-auto text-wl-info-500 animate-spin" />
-            <p className={cn("text-white font-medium")}>Installing integration…</p>
+            <p className={cn("text-wl-text-primary font-medium")}>Installing integration…</p>
             <p className={cn("text-sm text-wl-text-tertiary")}>Verifying credentials and connecting to {provider.name}</p>
           </div>
         )}
@@ -474,7 +474,7 @@ export default function ProviderDetailPage() {
         {authStep === "success" && (
           <div className={cn("space-y-4 text-center py-6")}>
             <CheckCircle className="w-12 h-12 mx-auto text-wl-success-500" />
-            <h3 className={cn("text-lg font-semibold text-white")}>All set!</h3>
+            <h3 className={cn("text-lg font-semibold text-wl-text-primary")}>All set!</h3>
             <p className={cn("text-sm text-wl-text-tertiary")}>
               {provider.name} has been successfully connected to your Witylogix account.
             </p>
@@ -487,7 +487,7 @@ export default function ProviderDetailPage() {
         {authStep === "error" && (
           <div className={cn("space-y-4 text-center py-6")}>
             <AlertCircle className="w-8 h-8 mx-auto text-wl-danger-500" />
-            <p className={cn("text-white font-medium")}>Connection failed</p>
+            <p className={cn("text-wl-text-primary font-medium")}>Connection failed</p>
             <p className={cn("text-sm text-wl-danger-400")}>{installError}</p>
             <Button variant="ghost" className="w-full mt-4" onClick={() => setAuthStep("credentials")}>
               Try Again

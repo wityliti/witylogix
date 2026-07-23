@@ -246,7 +246,7 @@ const JobCalendar = forwardRef<HTMLDivElement, JobCalendarProps>(
                             <div
                               key={job.id}
                               className={cn(
-                                "absolute inset-x-0.5 rounded p-0.5 text-xs font-medium text-white cursor-move hover:shadow-md transition-shadow",
+                                "absolute inset-x-0.5 rounded p-0.5 text-xs font-medium text-wl-text-primary cursor-move hover:shadow-md transition-shadow",
                                 job.status === "completed"
                                   ? "opacity-50"
                                   : job.status === "cancelled"

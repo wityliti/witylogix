@@ -315,7 +315,7 @@ export default function OnboardingPage() {
                   <p
                     className={cn(
                       "text-xs font-semibold",
-                      isActive ? "text-white" : "text-wl-text-secondary"
+                      isActive ? "text-wl-text-primary" : "text-wl-text-secondary"
                     )}
                   >
                     {step.label}

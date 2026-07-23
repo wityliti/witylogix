@@ -198,7 +198,7 @@ function TypographyPreview({ size }: { size: string }) {
   };
 
   return (
-    <div className={cn("font-sans text-white", sizeMap[size] || "text-base")}>
+    <div className={cn("font-sans text-wl-text-primary", sizeMap[size] || "text-base")}>
       The quick brown fox jumps over the lazy dog
     </div>
   );
@@ -288,7 +288,7 @@ export default function DesignTokensPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-wl-bg-root text-white">
+    <div className="min-h-screen bg-wl-bg-root text-wl-text-primary">
       {/* Header */}
       <div className="border-b border-wl-border-default sticky top-0 z-40 bg-wl-bg-root/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 py-8">
@@ -303,7 +303,7 @@ export default function DesignTokensPage() {
               placeholder="Search tokens by name, variable, or value..."
               value={searchQuery}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-              className="w-full bg-wl-bg-surface border-wl-border-default text-white placeholder-wl-text-secondary"
+              className="w-full bg-wl-bg-surface border-wl-border-default text-wl-text-primary placeholder-wl-text-secondary"
             />
           </div>
         </div>
@@ -357,7 +357,7 @@ export default function DesignTokensPage() {
                         </div>
                         <div className="space-y-2">
                           <div>
-                            <div className="text-sm font-semibold text-white">
+                            <div className="text-sm font-semibold text-wl-text-primary">
                               {token.name}
                             </div>
                             <div className="text-xs text-wl-text-secondary font-mono">
@@ -424,7 +424,7 @@ export default function DesignTokensPage() {
                       >
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <div className="text-sm font-semibold text-white mb-2">
+                            <div className="text-sm font-semibold text-wl-text-primary mb-2">
                               {token.name}
                             </div>
                             <div className="text-xs text-wl-text-secondary space-y-1 font-mono">
@@ -476,7 +476,7 @@ export default function DesignTokensPage() {
                         className="rounded-lg border border-wl-border-default p-4 bg-wl-bg-surface hover:border-wl-border-default transition-colors"
                       >
                         <div className="mb-3">
-                          <div className="text-sm font-semibold text-white mb-2">
+                          <div className="text-sm font-semibold text-wl-text-primary mb-2">
                             {token.name}
                           </div>
                           <div className="text-xs text-wl-text-secondary font-mono mb-3">
@@ -520,7 +520,7 @@ export default function DesignTokensPage() {
                       >
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <div className="text-sm font-semibold text-white mb-2">
+                            <div className="text-sm font-semibold text-wl-text-primary mb-2">
                               {token.name}
                             </div>
                             <div className="text-xs text-wl-text-secondary font-mono space-y-1">
@@ -566,7 +566,7 @@ export default function DesignTokensPage() {
                         className="rounded-lg border border-wl-border-default p-4 bg-wl-bg-surface hover:border-wl-border-default transition-colors"
                       >
                         <div className="mb-3">
-                          <div className="text-sm font-semibold text-white mb-2">
+                          <div className="text-sm font-semibold text-wl-text-primary mb-2">
                             {token.name}
                           </div>
                           <div className="text-xs text-wl-text-secondary font-mono mb-3">
@@ -610,7 +610,7 @@ export default function DesignTokensPage() {
                       >
                         <div className="flex items-center justify-between mb-3">
                           <div>
-                            <div className="text-sm font-semibold text-white">
+                            <div className="text-sm font-semibold text-wl-text-primary">
                               {token.name}
                             </div>
                             <div className="text-xs text-wl-text-secondary font-mono">

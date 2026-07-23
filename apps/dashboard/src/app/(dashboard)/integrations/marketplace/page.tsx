@@ -134,7 +134,7 @@ export default function MarketplacePage() {
               onChange={(e) => handleSearchChange(e.target.value)}
               className={cn(
                 'w-full pl-10 pr-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg',
-                'text-white text-sm focus:border-wl-info-500 outline-none transition-all',
+                'text-wl-text-primary text-sm focus:border-wl-info-500 outline-none transition-all',
               )}
             />
             {isSearching && (
@@ -172,7 +172,7 @@ export default function MarketplacePage() {
                     'px-3 py-1.5 text-sm rounded-lg border transition-all',
                     sortBy === s
                       ? 'bg-wl-info-500/15 text-wl-info-400 border-wl-info-500'
-                      : 'bg-wl-bg-elevated border-wl-border-default text-white hover:border-wl-info-500',
+                      : 'bg-wl-bg-elevated border-wl-border-default text-wl-text-primary hover:border-wl-info-500',
                   )}
                 >
                   {s.charAt(0).toUpperCase() + s.slice(1)}
@@ -219,7 +219,7 @@ export default function MarketplacePage() {
         <div className={cn('flex gap-6')}>
           <aside className={cn('w-56 flex-shrink-0')}>
             <div className={cn('sticky top-4')}>
-              <h3 className={cn('text-sm font-semibold text-white mb-3')}>Categories</h3>
+              <h3 className={cn('text-sm font-semibold text-wl-text-primary mb-3')}>Categories</h3>
               <div className={cn('space-y-1')}>
                 {loading
                   ? Array.from({ length: 6 }).map((_, i) => (
@@ -238,7 +238,7 @@ export default function MarketplacePage() {
                           onChange={() => toggleCategory(cat.key)}
                           className="w-4 h-4 rounded border-wl-border-default"
                         />
-                        <span className="text-sm text-white flex-1">{cat.label}</span>
+                        <span className="text-sm text-wl-text-secondary flex-1">{cat.label}</span>
                         <span className="text-xs text-wl-text-tertiary">{cat.count}</span>
                       </label>
                     ))}

@@ -156,7 +156,7 @@ export default function ConnectedIntegrationsPage() {
                   <div className="text-sm text-wl-text-tertiary mb-1">
                     Total Connected
                   </div>
-                  <div className="text-3xl font-bold text-white">
+                  <div className="text-3xl font-bold text-wl-text-primary">
                     {stats.connected}
                   </div>
                 </div>
@@ -208,7 +208,7 @@ export default function ConnectedIntegrationsPage() {
             placeholder="Search integrations..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-sm text-white placeholder:text-wl-text-tertiary focus:border-wl-info-500 outline-none"
+            className="w-full pl-10 pr-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-sm text-wl-text-primary placeholder:text-wl-text-tertiary focus:border-wl-info-500 outline-none"
           />
         </div>
 
@@ -232,7 +232,7 @@ export default function ConnectedIntegrationsPage() {
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as SortBy)}
-          className="px-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-sm text-white focus:border-wl-info-500 outline-none"
+          className="px-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-sm text-wl-text-primary focus:border-wl-info-500 outline-none"
         >
           <option value="name">Sort by Name</option>
           <option value="lastSync">Sort by Last Sync</option>
@@ -334,7 +334,7 @@ export default function ConnectedIntegrationsPage() {
                       <div className="text-xs text-wl-text-tertiary uppercase tracking-wide mb-1">
                         API Calls
                       </div>
-                      <div className="font-semibold text-white flex items-center gap-2">
+                      <div className="font-semibold text-wl-text-primary flex items-center gap-2">
                         <Gauge className="w-4 h-4" />
                         {connection.apiCallsCount}
                       </div>
@@ -356,7 +356,7 @@ export default function ConnectedIntegrationsPage() {
                       <span className="text-xs text-wl-text-tertiary">
                         Uptime
                       </span>
-                      <span className="text-sm font-semibold text-white">
+                      <span className="text-sm font-semibold text-wl-text-primary">
                         {connection.uptime}%
                       </span>
                     </div>

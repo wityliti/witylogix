@@ -295,7 +295,7 @@ export default function LocalOrdersPage() {
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-center mb-1">
-                          <p className="text-sm font-semibold text-white font-mono">
+                          <p className="text-sm font-semibold text-wl-text-primary font-mono">
                             #{order.id.slice(0, 8)}
                           </p>
                           <Badge variant={STATUS_VARIANT[order.status] ?? 'default'}>
@@ -354,7 +354,7 @@ export default function LocalOrdersPage() {
                   <p className="text-xs text-wl-text-secondary font-semibold mb-2 flex items-center gap-1.5">
                     <User size={14} /> Customer
                   </p>
-                  <p className="text-sm font-semibold text-white">{selectedOrder.customerName}</p>
+                  <p className="text-sm font-semibold text-wl-text-primary">{selectedOrder.customerName}</p>
                   {selectedOrder.customerPhone && (
                     <a
                       href={`tel:${selectedOrder.customerPhone}`}
@@ -394,7 +394,7 @@ export default function LocalOrdersPage() {
                 <div className="border-t border-wl-border-default pt-3">
                   <div className="mb-2">
                     <p className="text-xs text-wl-text-secondary mb-0.5">Items</p>
-                    <p className="text-sm font-semibold text-white">{selectedOrder.items.length}</p>
+                    <p className="text-sm font-semibold text-wl-text-primary">{selectedOrder.items.length}</p>
                   </div>
                   <div>
                     <p className="text-xs text-wl-text-secondary mb-0.5">Total</p>
@@ -408,7 +408,7 @@ export default function LocalOrdersPage() {
                 {selectedOrder.driver ? (
                   <div className="border-t border-wl-border-default pt-3 bg-wl-bg-root rounded p-3">
                     <p className="text-xs text-wl-text-secondary mb-1">Assigned Driver</p>
-                    <p className="text-sm font-semibold text-white">{selectedOrder.driver.name}</p>
+                    <p className="text-sm font-semibold text-wl-text-primary">{selectedOrder.driver.name}</p>
                     {selectedOrder.driver.phone && (
                       <a
                         href={`tel:${selectedOrder.driver.phone}`}
