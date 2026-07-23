@@ -21,7 +21,7 @@ const FEATURE_CARDS: FeatureCard[] = [
     name: 'ETA Prediction',
     description: 'AI-powered delivery time estimates using route history and live traffic.',
     href: '/analytics/route-performance',
-    statsPath: '/api/ai/eta/statistics',
+    statsPath: '/api/v4/ai/eta/statistics',
     status: 'active',
   },
   {
@@ -35,21 +35,21 @@ const FEATURE_CARDS: FeatureCard[] = [
     name: 'Driver Insights',
     description: 'Score and rank drivers based on performance, safety, and on-time delivery.',
     href: '/drivers',
-    statsPath: '/api/ai/analytics/leaderboard',
+    statsPath: '/api/v4/ai/analytics/leaderboard',
     status: 'active',
   },
   {
     name: 'Demand Forecasting',
     description: 'Predict order volumes by zone so you can staff and route proactively.',
     href: '/demand',
-    statsPath: '/api/ai/demand',
+    statsPath: '/api/v4/ai/slots/demand',
     status: 'active',
   },
   {
     name: 'Delivery Slot AI',
     description: 'Recommend optimal delivery windows to balance capacity and customer preference.',
     href: '/time-slots',
-    statsPath: '/api/ai/slots/recommend',
+    statsPath: '/api/v4/ai/slots/recommend',
     status: 'active',
   },
   {
@@ -65,10 +65,6 @@ interface EtaStats {
   totalPredictions30d?: number;
   count?: number;
 }
-interface LeaderboardStats {
-  totalEntries?: number;
-  count?: number;
-}
 interface DemandStats {
   totalForecasts?: number;
   count?: number;
@@ -78,11 +74,17 @@ interface SlotStats {
   count?: number;
 }
 
+interface LeaderboardResponse {
+  entries?: unknown[];
+  totalEntries?: number;
+  count?: number;
+}
+
 function useFeatureUsageCounts() {
-  const eta = useApiQuery<EtaStats>('/api/ai/eta/statistics');
-  const leaderboard = useApiQuery<LeaderboardStats>('/api/ai/analytics/leaderboard');
-  const demand = useApiQuery<DemandStats>('/api/ai/demand');
-  const slots = useApiQuery<SlotStats>('/api/ai/slots/recommend');
+  const eta = useApiQuery<EtaStats>('/api/v4/ai/eta/statistics');
+  const leaderboard = useApiQuery<LeaderboardResponse>('/api/v4/ai/analytics/leaderboard');
+  const demand = useApiQuery<DemandStats>('/api/v4/ai/slots/demand');
+  const slots = useApiQuery<SlotStats>('/api/v4/ai/slots/recommend');
 
   const isLoading = eta.loading || leaderboard.loading || demand.loading || slots.loading;
   const hasError = !isLoading && !!(eta.error || leaderboard.error || demand.error || slots.error);
@@ -91,10 +93,10 @@ function useFeatureUsageCounts() {
     isLoading,
     hasError,
     counts: {
-      '/api/ai/eta/statistics': eta.data?.totalPredictions30d ?? eta.data?.count ?? 0,
-      '/api/ai/analytics/leaderboard': leaderboard.data?.totalEntries ?? leaderboard.data?.count ?? 0,
-      '/api/ai/demand': demand.data?.totalForecasts ?? demand.data?.count ?? 0,
-      '/api/ai/slots/recommend': slots.data?.totalRecommendations ?? slots.data?.count ?? 0,
+      '/api/v4/ai/eta/statistics': eta.data?.totalPredictions30d ?? eta.data?.count ?? 0,
+      '/api/v4/ai/analytics/leaderboard': leaderboard.data?.entries?.length ?? leaderboard.data?.totalEntries ?? leaderboard.data?.count ?? 0,
+      '/api/v4/ai/slots/demand': demand.data?.totalForecasts ?? demand.data?.count ?? 0,
+      '/api/v4/ai/slots/recommend': slots.data?.totalRecommendations ?? slots.data?.count ?? 0,
     } as Record<string, number>,
   };
 }
