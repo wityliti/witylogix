@@ -60,7 +60,7 @@ function KPICard({ label, value, suffix, icon: Icon }: KPICardProps) {
   return (
     <Card className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold uppercase tracking-wider text-wl-neutral-300">
+        <span className="text-xs font-semibold uppercase tracking-wider text-wl-text-secondary">
           {label}
         </span>
         {Icon && (
@@ -71,7 +71,7 @@ function KPICard({ label, value, suffix, icon: Icon }: KPICardProps) {
       </div>
       <div className="flex items-baseline gap-1">
         <span className="text-2xl font-bold text-wl-text-primary">{value}</span>
-        {suffix && <span className="text-sm text-wl-neutral-300">{suffix}</span>}
+        {suffix && <span className="text-sm text-wl-text-secondary">{suffix}</span>}
       </div>
     </Card>
   );
@@ -135,7 +135,7 @@ export default function PartnerDetailPage() {
           Back
         </Button>
         <Card className="flex flex-col items-center gap-4 py-16">
-          <Settings className="w-12 h-12 text-wl-neutral-300/50" />
+          <Settings className="w-12 h-12 text-wl-text-secondary/50" />
           <p className="text-wl-text-secondary">Partner &quot;{params.id}&quot; not found or not installed.</p>
           <Button variant="primary" size="md" onClick={() => router.push("/partners/onboard")}>
             Install Partner
@@ -162,7 +162,7 @@ export default function PartnerDetailPage() {
         </Button>
         <div className="flex-1">
           <h1 className="text-3xl font-bold text-wl-text-primary">{partner.name}</h1>
-          <p className="text-wl-neutral-300 flex items-center gap-2">
+          <p className="text-wl-text-secondary flex items-center gap-2">
             {partner.category}
             <Badge
               variant={

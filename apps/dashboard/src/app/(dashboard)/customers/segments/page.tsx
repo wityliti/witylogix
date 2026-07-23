@@ -270,7 +270,7 @@ export default function CustomerSegmentsPage() {
                         )}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-wl-neutral-300 capitalize font-medium">
+                          <span className="text-sm text-wl-text-secondary capitalize font-medium">
                             {status}
                           </span>
                           <Badge
@@ -473,7 +473,7 @@ export default function CustomerSegmentsPage() {
                               <td className="p-3 px-4 text-right text-wl-text-primary text-xs">
                                 {fmt.format(city.totalSpent)}
                               </td>
-                              <td className="p-3 px-4 text-center text-wl-neutral-300 text-xs">
+                              <td className="p-3 px-4 text-center text-wl-text-secondary text-xs">
                                 {city.avgOrders.toFixed(1)}
                               </td>
                             </tr>
@@ -524,7 +524,7 @@ export default function CustomerSegmentsPage() {
                                           cfg.dotClass,
                                         )}
                                       />
-                                      <span className="text-wl-neutral-300 capitalize font-medium">
+                                      <span className="text-wl-text-secondary capitalize font-medium">
                                         {cfg.label}
                                       </span>
                                     </div>
@@ -584,7 +584,7 @@ export default function CustomerSegmentsPage() {
                                           cfg.dotClass,
                                         )}
                                       />
-                                      <span className="text-wl-neutral-300 capitalize font-medium">
+                                      <span className="text-wl-text-secondary capitalize font-medium">
                                         {cfg.label}
                                       </span>
                                     </div>

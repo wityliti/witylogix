@@ -82,7 +82,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                       className={cn(
                         'w-full flex items-center justify-between',
                         'px-3 py-2 rounded-md text-sm font-medium',
-                        'text-wl-neutral-300 bg-white/5 hover:bg-white/10',
+                        'text-wl-text-secondary bg-white/5 hover:bg-white/10',
                         'border border-white/10 transition-colors'
                       )}
                     >

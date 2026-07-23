@@ -433,7 +433,7 @@ export default function DemandPage() {
             ].map(({ color, label }) => (
               <div key={label} className="flex items-center gap-2 mt-1">
                 <div className="w-3 h-3 rounded-sm" style={{ background: color }} />
-                <span className="text-wl-neutral-300">{label}</span>
+                <span className="text-wl-text-secondary">{label}</span>
               </div>
             ))}
           </div>
@@ -444,7 +444,7 @@ export default function DemandPage() {
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {zones.slice(0, 8).map((z) => (
                 <div key={z.id} className="flex items-center justify-between gap-3">
-                  <span className="text-xs text-wl-neutral-300 truncate">{z.name}</span>
+                  <span className="text-xs text-wl-text-secondary truncate">{z.name}</span>
                   <div className="flex items-center gap-1.5 shrink-0">
                     <span className="text-xs font-mono text-wl-text-primary">{z.predictedVolume}</span>
                     {z.trend === 'up' ? (
@@ -566,10 +566,10 @@ export default function DemandPage() {
                       )}
                     >
                       <td className="px-4 py-3 font-medium text-wl-text-primary">{zone.name}</td>
-                      <td className="text-right px-4 py-3 text-wl-neutral-300">
+                      <td className="text-right px-4 py-3 text-wl-text-secondary">
                         {zone.predictedVolume.toLocaleString()}
                       </td>
-                      <td className="text-right px-4 py-3 text-wl-neutral-300">
+                      <td className="text-right px-4 py-3 text-wl-text-secondary">
                         {zone.actualVolume.toLocaleString()}
                       </td>
                       <td className="text-right px-4 py-3">
@@ -650,7 +650,7 @@ export default function DemandPage() {
                             </span>
                             <span className="text-xs text-wl-text-tertiary">in {anomaly.zone}</span>
                           </div>
-                          <p className="text-sm text-wl-neutral-300">{anomaly.description}</p>
+                          <p className="text-sm text-wl-text-secondary">{anomaly.description}</p>
 
                           {isExpanded && (
                             <div className="mt-3 pt-3 border-t border-wl-border-default text-xs text-wl-text-tertiary">

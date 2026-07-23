@@ -35,7 +35,7 @@ const VehicleStatusBadge = forwardRef<HTMLSpanElement, VehicleStatusBadgeProps &
       offline: {
         label: "Offline",
         bgColor: "bg-wl-neutral-500/12",
-        textColor: "text-wl-neutral-300",
+        textColor: "text-wl-text-secondary",
         dotColor: "bg-wl-neutral-400",
         animate: false,
       },

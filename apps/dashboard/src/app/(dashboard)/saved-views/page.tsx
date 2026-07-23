@@ -183,7 +183,7 @@ export default function SavedViewsPage() {
                           <CardTitle className="text-base mb-2 text-wl-text-primary">{view.name}</CardTitle>
                           <p className="text-sm text-wl-text-secondary">{view.tableName ?? view.targetTable}</p>
                         </div>
-                        <button className="bg-transparent border-0 cursor-pointer p-0 text-wl-text-tertiary hover:text-wl-neutral-300 transition-colors">
+                        <button className="bg-transparent border-0 cursor-pointer p-0 text-wl-text-tertiary hover:text-wl-text-secondary transition-colors">
                           <MoreVertical size={18} />
                         </button>
                       </div>
@@ -321,7 +321,7 @@ export default function SavedViewsPage() {
                   <label className="block text-sm font-semibold text-wl-text-primary mb-2">Visible Columns</label>
                   <div className="grid grid-cols-2 gap-3">
                     {availableColumns.map((col) => (
-                      <label key={col} className="flex items-center gap-2 cursor-pointer text-sm text-wl-neutral-300 hover:text-wl-text-primary transition-colors">
+                      <label key={col} className="flex items-center gap-2 cursor-pointer text-sm text-wl-text-secondary hover:text-wl-text-primary transition-colors">
                         <input
                           type="checkbox"
                           checked={formData.visibleColumns.includes(col)}
@@ -359,7 +359,7 @@ export default function SavedViewsPage() {
                   </div>
                 </div>
 
-                <label className="flex items-center gap-2 cursor-pointer text-sm text-wl-neutral-300 hover:text-wl-text-primary transition-colors">
+                <label className="flex items-center gap-2 cursor-pointer text-sm text-wl-text-secondary hover:text-wl-text-primary transition-colors">
                   <input
                     type="checkbox"
                     checked={formData.shareWithTeam}

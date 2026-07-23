@@ -184,7 +184,7 @@ export function FilterPanel({
       <div className="border-b border-wl-border-default p-4">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex w-full items-center justify-between text-lg font-semibold text-wl-text-primary hover:text-wl-neutral-300"
+          className="flex w-full items-center justify-between text-lg font-semibold text-wl-text-primary hover:text-wl-text-secondary"
         >
           <span>Filters</span>
           <svg
@@ -245,7 +245,7 @@ export function FilterPanel({
                     onChange={() => toggleStatus(status)}
                     className="h-4 w-4 rounded border-wl-border-strong bg-wl-bg-elevated checked:bg-wl-primary-500"
                   />
-                  <span className="text-sm text-wl-neutral-300">{status}</span>
+                  <span className="text-sm text-wl-text-secondary">{status}</span>
                 </label>
               ))}
             </div>
@@ -263,7 +263,7 @@ export function FilterPanel({
                     "w-full rounded px-3 py-2 text-left text-sm transition-colors",
                     selectedDateShortcut === shortcut
                       ? "bg-wl-primary-500 text-wl-text-inverse"
-                      : "bg-wl-bg-elevated text-wl-neutral-300 hover:bg-wl-bg-overlay"
+                      : "bg-wl-bg-elevated text-wl-text-secondary hover:bg-wl-bg-overlay"
                   )}
                 >
                   {shortcut}
@@ -315,7 +315,7 @@ export function FilterPanel({
               </button>
               <button
                 onClick={clearAllFilters}
-                className="w-full rounded bg-wl-bg-elevated px-4 py-2 text-sm font-medium text-wl-neutral-300 hover:bg-wl-bg-overlay"
+                className="w-full rounded bg-wl-bg-elevated px-4 py-2 text-sm font-medium text-wl-text-secondary hover:bg-wl-bg-overlay"
               >
                 Clear All Filters
               </button>
@@ -349,7 +349,7 @@ export function FilterPanel({
                   setShowSavePreset(false);
                   setPresetName("");
                 }}
-                className="flex-1 rounded bg-wl-bg-elevated px-4 py-2 text-wl-neutral-300 hover:bg-wl-bg-overlay"
+                className="flex-1 rounded bg-wl-bg-elevated px-4 py-2 text-wl-text-secondary hover:bg-wl-bg-overlay"
               >
                 Cancel
               </button>

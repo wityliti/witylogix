@@ -307,7 +307,7 @@ export default function CustomersPage() {
                               </div>
                             </td>
                             <td className="p-3 px-4">
-                              <div className="text-xs text-wl-neutral-300 truncate">{c.email ?? '—'}</div>
+                              <div className="text-xs text-wl-text-secondary truncate">{c.email ?? '—'}</div>
                               {c.phone && <div className="text-[10px] text-wl-text-tertiary mt-0.5">{c.phone}</div>}
                             </td>
                             <td className="p-3 px-4 text-center font-semibold text-wl-text-primary">{c.totalOrders}</td>

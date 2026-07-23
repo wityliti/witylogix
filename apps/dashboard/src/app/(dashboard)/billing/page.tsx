@@ -198,7 +198,7 @@ export default function BillingPage() {
                     return (
                       <div key={resource.name}>
                         <div className="flex items-center justify-between mb-3">
-                          <p className="text-sm font-semibold text-wl-neutral-300">{resource.name}</p>
+                          <p className="text-sm font-semibold text-wl-text-secondary">{resource.name}</p>
                           <div className="flex items-center gap-3">
                             <span className="text-sm font-mono text-wl-text-secondary">
                               {resource.current.toLocaleString()} / {fmt(resource.limit)}
@@ -291,7 +291,7 @@ export default function BillingPage() {
                             )}
                             <span className={cn(
                               'text-xs',
-                              feat.included ? 'text-wl-neutral-300' : 'text-wl-text-tertiary line-through'
+                              feat.included ? 'text-wl-text-secondary' : 'text-wl-text-tertiary line-through'
                             )}>
                               {feat.label}
                             </span>
@@ -339,7 +339,7 @@ export default function BillingPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {billing.billingAddress ? (
-              <div className="bg-wl-bg-elevated rounded-lg p-4 border border-wl-border-default text-sm text-wl-neutral-300">
+              <div className="bg-wl-bg-elevated rounded-lg p-4 border border-wl-border-default text-sm text-wl-text-secondary">
                 <p className="font-medium text-wl-text-primary mb-1">Billing Address</p>
                 <p>{billing.billingAddress.line1}</p>
                 {billing.billingAddress.line2 && <p>{billing.billingAddress.line2}</p>}
@@ -391,7 +391,7 @@ export default function BillingPage() {
                   <tbody className="divide-y divide-wl-border-default">
                     {billing.invoices.map((inv) => (
                       <tr key={inv.id} className="hover:bg-white/[0.02] transition-colors">
-                        <td className="py-3 text-wl-neutral-300">{inv.period}</td>
+                        <td className="py-3 text-wl-text-secondary">{inv.period}</td>
                         <td className="py-3 text-wl-text-secondary">
                           {new Date(inv.date).toLocaleDateString()}
                         </td>
@@ -431,7 +431,7 @@ export default function BillingPage() {
         {/* ── Auto-Renewal Notice ─────────────────────────────────────────── */}
         <div className="p-5 rounded-lg border border-wl-warning-500/30 bg-wl-warning-500/10 flex gap-4">
           <AlertCircle className="w-5 h-5 text-wl-warning-500 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-wl-neutral-300">
+          <p className="text-sm text-wl-text-secondary">
             Your subscription will automatically renew on{' '}
             <strong className="text-wl-text-primary">
               {new Date(billing.renewalDate).toLocaleDateString()}

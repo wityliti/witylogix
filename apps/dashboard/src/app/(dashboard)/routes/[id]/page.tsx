@@ -205,7 +205,7 @@ function StopListItem({ stop, isSelected, onSelect, routeId, onStatusUpdated }: 
                 ? 'bg-wl-danger-500 text-white'
                 : stop.status === 'EN_ROUTE' || stop.status === 'ARRIVED'
                   ? 'bg-wl-info-500 text-white'
-                  : 'bg-wl-bg-overlay text-wl-neutral-300',
+                  : 'bg-wl-bg-overlay text-wl-text-secondary',
           )}
         >
           {stop.status === 'COMPLETED' ? (
@@ -238,7 +238,7 @@ function StopListItem({ stop, isSelected, onSelect, routeId, onStatusUpdated }: 
 
         {/* Expand */}
         <button
-          className="text-wl-text-tertiary hover:text-wl-neutral-300 ml-1 flex-shrink-0"
+          className="text-wl-text-tertiary hover:text-wl-text-secondary ml-1 flex-shrink-0"
           onClick={(e) => {
             e.stopPropagation();
             setExpanded((v) => !v);

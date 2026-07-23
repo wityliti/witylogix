@@ -87,7 +87,7 @@ function tierColor(tier: string) {
   switch (tier) {
     case 'platinum': return { bg: 'bg-wl-primary-50', text: 'text-wl-primary-300', border: 'border-wl-primary-500/30' };
     case 'gold':     return { bg: 'bg-wl-warning-500/15',  text: 'text-wl-warning-400',  border: 'border-wl-warning-500/30' };
-    case 'silver':   return { bg: 'bg-wl-neutral-400/15',   text: 'text-wl-neutral-300',   border: 'border-wl-neutral-400/30' };
+    case 'silver':   return { bg: 'bg-wl-neutral-400/15',   text: 'text-wl-text-secondary',   border: 'border-wl-neutral-400/30' };
     case 'bronze':   return { bg: 'bg-wl-warning-bg', text: 'text-wl-warning-400', border: 'border-wl-warning-500/30' };
     default:         return { bg: 'bg-white/[0.05]',  text: 'text-wl-text-tertiary',   border: 'border-white/10' };
   }
@@ -95,7 +95,7 @@ function tierColor(tier: string) {
 
 function rankStyle(rank: number) {
   if (rank === 1) return 'bg-wl-warning-500/20 text-wl-warning-400';
-  if (rank === 2) return 'bg-wl-neutral-400/20 text-wl-neutral-300';
+  if (rank === 2) return 'bg-wl-neutral-400/20 text-wl-text-secondary';
   if (rank === 3) return 'bg-wl-warning-bg text-wl-warning-400';
   return 'bg-white/[0.05] text-wl-text-tertiary';
 }

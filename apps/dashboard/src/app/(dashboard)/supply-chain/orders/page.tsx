@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,14 @@ import { useApiList } from '@/hooks/use-api';
 import { Header } from '@/components/layout/header';
 import { TableSkeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
+import { EmptyState } from '@/components/ui/empty-state';
 import { api } from '@/lib/api';
+import { List, Map as MapIcon, ShoppingCart } from 'lucide-react';
+
+const SupplyChainOrdersMapView = dynamic(
+  () => import('./components/orders-map-view'),
+  { ssr: false }
+);
 
 interface FilterOptions {
   status: string;
@@ -72,6 +80,7 @@ export default function OrdersPage() {
   });
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState<'orders' | 'waves' | 'batches' | 'returns'>('orders');
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   const handleReturnAction = useCallback(async (id: string, action: 'approve' | 'reject') => {
     setReturnsActionLoading(`${id}:${action}`);
@@ -154,7 +163,7 @@ export default function OrdersPage() {
               <div className="text-2xl font-bold text-wl-text-primary">
                 {stat.value}
               </div>
-              <p className="text-xs text-wl-neutral-300 mt-1">
+              <p className="text-xs text-wl-text-tertiary mt-1">
                 {stat.label}
               </p>
             </CardContent>
@@ -173,7 +182,7 @@ export default function OrdersPage() {
                 'px-1 py-3 text-sm font-medium border-b-2 transition-colors capitalize',
                 selectedTab === tab
                   ? 'border-wl-info-500 text-wl-info-500'
-                  : 'border-transparent text-wl-neutral-300 hover:text-white'
+                  : 'border-transparent text-wl-text-tertiary hover:text-wl-text-primary'
               )}
             >
               {tab}
@@ -185,174 +194,227 @@ export default function OrdersPage() {
       {/* Orders Tab */}
       {selectedTab === 'orders' && (
         <div className="space-y-4">
-          {/* Filters */}
+          {/* Filters + View Toggle */}
           <Card>
             <CardContent className="pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                <input
-                  type="text"
-                  placeholder="Search order # or customer..."
-                  value={filters.searchTerm}
-                  onChange={(e) =>
-                    setFilters({ ...filters, searchTerm: e.target.value })
-                  }
-                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary placeholder-wl-text-tertiary focus:outline-none focus:border-wl-info-500"
-                />
+              <div className="flex flex-wrap gap-3">
+                <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                  <input
+                    type="text"
+                    placeholder="Search order # or customer..."
+                    value={filters.searchTerm}
+                    onChange={(e) =>
+                      setFilters({ ...filters, searchTerm: e.target.value })
+                    }
+                    className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary placeholder-wl-text-tertiary focus:outline-none focus:border-wl-info-500"
+                  />
 
-                <select
-                  value={filters.status}
-                  onChange={(e) =>
-                    setFilters({ ...filters, status: e.target.value })
-                  }
-                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary focus:outline-none focus:border-wl-info-500"
-                >
-                  {STATUS_OPTIONS.map((status) => (
-                    <option key={status} value={status.toLowerCase()}>
-                      {status}
-                    </option>
-                  ))}
-                </select>
+                  <select
+                    value={filters.status}
+                    onChange={(e) =>
+                      setFilters({ ...filters, status: e.target.value })
+                    }
+                    className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary focus:outline-none focus:border-wl-info-500"
+                  >
+                    {STATUS_OPTIONS.map((status) => (
+                      <option key={status} value={status.toLowerCase()}>
+                        {status}
+                      </option>
+                    ))}
+                  </select>
 
-                <select
-                  value={filters.priority}
-                  onChange={(e) =>
-                    setFilters({ ...filters, priority: e.target.value })
-                  }
-                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary focus:outline-none focus:border-wl-info-500"
-                >
-                  {PRIORITY_OPTIONS.map((priority) => (
-                    <option key={priority} value={priority.toLowerCase()}>
-                      {priority}
-                    </option>
-                  ))}
-                </select>
+                  <select
+                    value={filters.priority}
+                    onChange={(e) =>
+                      setFilters({ ...filters, priority: e.target.value })
+                    }
+                    className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary focus:outline-none focus:border-wl-info-500"
+                  >
+                    {PRIORITY_OPTIONS.map((priority) => (
+                      <option key={priority} value={priority.toLowerCase()}>
+                        {priority}
+                      </option>
+                    ))}
+                  </select>
 
-                <select
-                  value={filters.warehouse}
-                  onChange={(e) =>
-                    setFilters({ ...filters, warehouse: e.target.value })
-                  }
-                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary focus:outline-none focus:border-wl-info-500"
-                >
-                  {warehouseOptions.map((warehouse) => (
-                    <option key={warehouse} value={warehouse.toLowerCase()}>
-                      {warehouse}
-                    </option>
-                  ))}
-                </select>
+                  <select
+                    value={filters.warehouse}
+                    onChange={(e) =>
+                      setFilters({ ...filters, warehouse: e.target.value })
+                    }
+                    className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary focus:outline-none focus:border-wl-info-500"
+                  >
+                    {warehouseOptions.map((warehouse) => (
+                      <option key={warehouse} value={warehouse.toLowerCase()}>
+                        {warehouse}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* List / Map toggle */}
+                <div className="flex items-center gap-1 p-1 rounded-lg bg-wl-bg-surface border border-wl-border-default self-start">
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={cn(
+                      'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                      viewMode === 'list'
+                        ? 'bg-wl-bg-elevated text-wl-text-primary'
+                        : 'text-wl-text-tertiary hover:text-wl-text-primary'
+                    )}
+                  >
+                    <List className="w-3.5 h-3.5" />
+                    List
+                  </button>
+                  <button
+                    onClick={() => setViewMode('map')}
+                    className={cn(
+                      'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                      viewMode === 'map'
+                        ? 'bg-wl-bg-elevated text-wl-text-primary'
+                        : 'text-wl-text-tertiary hover:text-wl-text-primary'
+                    )}
+                  >
+                    <MapIcon className="w-3.5 h-3.5" />
+                    Map
+                  </button>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Orders Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredOrders.map((order) => (
-              <Card
-                key={order.id}
-                onClick={() =>
-                  setSelectedOrder(
-                    selectedOrder === order.id ? null : order.id
-                  )
-                }
-                className={cn(
-                  'cursor-pointer transition-all',
-                  selectedOrder === order.id &&
-                    'border-wl-info-500'
-                )}
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-base">
-                        {order.orderNumber}
-                      </CardTitle>
-                      <p className="text-xs text-wl-text-secondary mt-1">
-                        {order.customer}
-                      </p>
-                    </div>
-                    <Badge
-                      variant={
-                        order.status === 'delivered'
-                          ? 'success'
-                          : order.status === 'shipped'
-                          ? 'info'
-                          : 'warning'
-                      }
-                    >
-                      {order.status}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-xs mb-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-wl-neutral-300">Items:</span>
-                      <span className="font-semibold text-wl-text-primary">
-                        {order.items}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-wl-neutral-300">Total:</span>
-                      <span className="font-semibold text-wl-text-primary">
-                        ${order.total.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-wl-neutral-300">Priority:</span>
-                      <Badge
-                        variant={
-                          order.priority === 'expedited'
-                            ? 'danger'
-                            : order.priority === 'backorder'
-                            ? 'warning'
-                            : 'default'
-                        }
-                      >
-                        {order.priority}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-wl-neutral-300">Created:</span>
-                      <span className="text-wl-text-secondary">
-                        {new Date(order.createdDate).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-wl-neutral-300">Due:</span>
-                      <span className="text-wl-text-secondary">
-                        {new Date(order.dueDate).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
+          {/* Map View */}
+          {viewMode === 'map' && (
+            <SupplyChainOrdersMapView
+              orders={filteredOrders}
+              selectedOrderId={selectedOrder}
+              onOrderClick={(id) => setSelectedOrder(selectedOrder === id ? null : id)}
+            />
+          )}
 
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="w-full"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const statuses: Array<typeof order.status> = [
-                        'received',
-                        'picked',
-                        'packed',
-                        'shipped',
-                        'delivered',
-                      ];
-                      const currentIdx = statuses.indexOf(order.status);
-                      if (currentIdx < statuses.length - 1) {
-                        orders.updateOrderStatus(
-                          order.id,
-                          statuses[currentIdx + 1]
-                        );
+          {/* List View */}
+          {viewMode === 'list' && (
+            <>
+              {filteredOrders.length === 0 ? (
+                <EmptyState
+                  icon={<ShoppingCart className="w-10 h-10" />}
+                  title="No orders found"
+                  description="Try adjusting your filters or add new orders."
+                />
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredOrders.map((order) => (
+                    <Card
+                      key={order.id}
+                      onClick={() =>
+                        setSelectedOrder(
+                          selectedOrder === order.id ? null : order.id
+                        )
                       }
-                    }}
-                  >
-                    Advance Status
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                      className={cn(
+                        'cursor-pointer transition-all',
+                        selectedOrder === order.id &&
+                          'border-wl-info-500'
+                      )}
+                    >
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <CardTitle className="text-base">
+                              {order.orderNumber}
+                            </CardTitle>
+                            <p className="text-xs text-wl-text-secondary mt-1">
+                              {order.customer}
+                            </p>
+                          </div>
+                          <Badge
+                            variant={
+                              order.status === 'delivered'
+                                ? 'success'
+                                : order.status === 'shipped'
+                                ? 'info'
+                                : 'warning'
+                            }
+                          >
+                            {order.status}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2 text-xs mb-4">
+                          <div className="flex items-center justify-between">
+                            <span className="text-wl-text-tertiary">Items:</span>
+                            <span className="font-semibold text-wl-text-primary">
+                              {order.items}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-wl-text-tertiary">Total:</span>
+                            <span className="font-semibold text-wl-text-primary">
+                              ${order.total.toFixed(2)}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-wl-text-tertiary">Priority:</span>
+                            <Badge
+                              variant={
+                                order.priority === 'expedited'
+                                  ? 'danger'
+                                  : order.priority === 'backorder'
+                                  ? 'warning'
+                                  : 'default'
+                              }
+                            >
+                              {order.priority}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-wl-text-tertiary">Created:</span>
+                            <span className="text-wl-text-secondary">
+                              {new Date(order.createdDate).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-wl-text-tertiary">Due:</span>
+                            <span className="text-wl-text-secondary">
+                              {order.dueDate
+                                ? new Date(order.dueDate).toLocaleDateString()
+                                : '—'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="w-full"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const statuses: Array<typeof order.status> = [
+                              'received',
+                              'picked',
+                              'packed',
+                              'shipped',
+                              'delivered',
+                            ];
+                            const currentIdx = statuses.indexOf(order.status);
+                            if (currentIdx < statuses.length - 1) {
+                              orders.updateOrderStatus(
+                                order.id,
+                                statuses[currentIdx + 1]
+                              );
+                            }
+                          }}
+                        >
+                          Advance Status
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
         </div>
       )}
 
@@ -368,9 +430,9 @@ export default function OrdersPage() {
 
           {wavesLoading && <TableSkeleton rows={3} columns={4} />}
           {wavesError && <ErrorState message="Failed to load wave plans" onRetry={refetchWaves} />}
-          {!wavesLoading && !wavesError && wavePlans.length === 0 ? (
+          {!wavesLoading && !wavesError && wavePlans.length === 0 && (
             <div className="text-center py-10 text-wl-text-secondary">No wave plans found. Create a wave to start batch fulfillment.</div>
-          ) : null}
+          )}
           {wavePlans.map((wave) => (
             <Card key={wave.waveId}>
               <CardHeader>
@@ -419,9 +481,9 @@ export default function OrdersPage() {
 
           {batchesLoading && <TableSkeleton rows={3} columns={3} />}
           {batchesError && <ErrorState message="Failed to load batch picking tasks" onRetry={refetchBatches} />}
-          {!batchesLoading && !batchesError && batchPicking.length === 0 ? (
+          {!batchesLoading && !batchesError && batchPicking.length === 0 && (
             <div className="text-center py-10 text-wl-text-secondary">No batch picking tasks found.</div>
-          ) : null}
+          )}
           {batchPicking.map((batch) => (
             <Card key={batch.batchId}>
               <CardContent className="pt-6">
@@ -434,7 +496,7 @@ export default function OrdersPage() {
                       {batch.location}
                     </p>
                     {batch.assignedTo && (
-                      <p className="text-xs text-wl-neutral-300 mt-1">
+                      <p className="text-xs text-wl-text-tertiary mt-1">
                         Assigned to: {batch.assignedTo}
                       </p>
                     )}
@@ -454,7 +516,7 @@ export default function OrdersPage() {
 
                 <div className="mb-3">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-wl-neutral-300">
+                    <span className="text-xs text-wl-text-tertiary">
                       Progress: {batch.itemCount} items
                     </span>
                     <span className="text-xs font-semibold text-wl-text-primary">
@@ -489,9 +551,9 @@ export default function OrdersPage() {
 
           {returnsLoading && <TableSkeleton rows={3} columns={4} />}
           {returnsError && <ErrorState message="Failed to load returns" onRetry={refetchReturns} />}
-          {!returnsLoading && !returnsError && returnQueue.length === 0 ? (
+          {!returnsLoading && !returnsError && returnQueue.length === 0 && (
             <div className="text-center py-10 text-wl-text-secondary">No returns in queue.</div>
-          ) : null}
+          )}
           {returnQueue.map((returnItem) => (
             <Card key={returnItem.id}>
               <CardContent className="pt-6">
@@ -507,8 +569,24 @@ export default function OrdersPage() {
                 </div>
                 {returnItem.status === 'pending-approval' && (
                   <div className="flex gap-2 mt-3">
-                    <Button variant="secondary" size="sm" className="flex-1">Reject</Button>
-                    <Button variant="primary" size="sm" className="flex-1">Approve</Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="flex-1"
+                      disabled={returnsActionLoading !== null}
+                      onClick={() => handleReturnAction(returnItem.id, 'reject')}
+                    >
+                      Reject
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      className="flex-1"
+                      disabled={returnsActionLoading !== null}
+                      onClick={() => handleReturnAction(returnItem.id, 'approve')}
+                    >
+                      Approve
+                    </Button>
                   </div>
                 )}
               </CardContent>

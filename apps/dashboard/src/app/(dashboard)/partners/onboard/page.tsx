@@ -201,7 +201,7 @@ export default function OnboardPage() {
           <h1 className="text-3xl font-bold text-wl-text-primary mb-2">
             Onboard New Courier Partner
           </h1>
-          <p className="text-wl-neutral-300">
+          <p className="text-wl-text-secondary">
             Set up a new delivery partner integration in 3 easy steps
           </p>
         </div>
@@ -223,7 +223,7 @@ export default function OnboardPage() {
                         ? "bg-wl-success-500/20 text-wl-success-400"
                         : isActive
                           ? "bg-wl-info-500/20 text-wl-info-400 ring-2 ring-wl-info-400"
-                          : "bg-wl-bg-surface text-wl-neutral-300"
+                          : "bg-wl-bg-surface text-wl-text-secondary"
                     )}
                   >
                     {isCompleted ? (
@@ -232,7 +232,7 @@ export default function OnboardPage() {
                       <Icon className="w-5 h-5" />
                     )}
                   </div>
-                  <p className="text-xs font-medium text-center text-wl-neutral-300">
+                  <p className="text-xs font-medium text-center text-wl-text-secondary">
                     {config.title}
                   </p>
                 </div>
@@ -275,7 +275,7 @@ export default function OnboardPage() {
                           "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0",
                           isSelected
                             ? "bg-wl-info-500/20 text-wl-info-400"
-                            : "bg-wl-bg-surface text-wl-neutral-300"
+                            : "bg-wl-bg-surface text-wl-text-secondary"
                         )}
                       >
                         <Icon className="w-5 h-5" />
@@ -284,7 +284,7 @@ export default function OnboardPage() {
                         <h3 className="font-semibold text-wl-text-primary">
                           {partner.name}
                         </h3>
-                        <p className="text-sm text-wl-neutral-300">
+                        <p className="text-sm text-wl-text-secondary">
                           {partner.description}
                         </p>
                       </div>

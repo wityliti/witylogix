@@ -244,7 +244,7 @@ export default function ShipmentDetailPage() {
     return (
       <div className="p-6 min-h-screen bg-wl-bg-root flex items-center justify-center">
         <div className="text-center space-y-2">
-          <p className="text-lg font-semibold text-wl-neutral-300">
+          <p className="text-lg font-semibold text-wl-text-secondary">
             Shipment not found
           </p>
           <Link href="/shipments">
@@ -270,7 +270,7 @@ export default function ShipmentDetailPage() {
       <div className="mb-6">
         <Link
           href="/shipments"
-          className="inline-flex items-center gap-1 text-xs text-wl-text-tertiary hover:text-wl-neutral-300 transition-colors mb-3"
+          className="inline-flex items-center gap-1 text-xs text-wl-text-tertiary hover:text-wl-text-secondary transition-colors mb-3"
         >
           <ChevronLeft size={14} />
           Shipments
@@ -546,7 +546,7 @@ export default function ShipmentDetailPage() {
                   Delivery Notes
                 </h2>
                 <div className="p-3 rounded-lg bg-wl-bg-elevated border-l-4 border-l-wl-info-500">
-                  <p className="text-sm text-wl-neutral-300 leading-relaxed">
+                  <p className="text-sm text-wl-text-secondary leading-relaxed">
                     {shipment.notes}
                   </p>
                 </div>

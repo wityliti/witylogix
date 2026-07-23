@@ -164,7 +164,7 @@ export default function InventoryPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-wl-text-primary">Inventory Management</h2>
-          <p className="text-wl-neutral-300 mt-1">
+          <p className="text-wl-text-secondary mt-1">
             Monitor stock levels, ABC analysis, and reorder alerts
           </p>
         </div>
@@ -294,19 +294,19 @@ export default function InventoryPage() {
                   {/* Levels */}
                   <div className="space-y-1 text-xs">
                     <div className="flex items-center justify-between">
-                      <span className="text-wl-neutral-300">Current:</span>
+                      <span className="text-wl-text-secondary">Current:</span>
                       <span className="font-semibold text-wl-text-primary">
                         {gauge.current}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-wl-neutral-300">Min:</span>
+                      <span className="text-wl-text-secondary">Min:</span>
                       <span className="font-semibold text-wl-text-primary">
                         {gauge.minimum}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-wl-neutral-300">Max:</span>
+                      <span className="text-wl-text-secondary">Max:</span>
                       <span className="font-semibold text-wl-text-primary">
                         {gauge.maximum}
                       </span>
@@ -349,7 +349,7 @@ export default function InventoryPage() {
                       Suggested Order: {alert.suggestedOrder}
                     </span>
                   </div>
-                  <div className="flex items-center gap-4 mt-1 text-xs text-wl-neutral-300">
+                  <div className="flex items-center gap-4 mt-1 text-xs text-wl-text-secondary">
                     <span>Vendor: {alert.vendor}</span>
                     <span>Lead Time: {alert.leadTime} days</span>
                   </div>
@@ -468,25 +468,25 @@ export default function InventoryPage() {
 
                   <div className="space-y-1 text-xs mb-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-wl-neutral-300">Qty:</span>
+                      <span className="text-wl-text-secondary">Qty:</span>
                       <span className="font-semibold text-wl-text-primary">
                         {item.quantity}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-wl-neutral-300">Reorder:</span>
+                      <span className="text-wl-text-secondary">Reorder:</span>
                       <span className="font-semibold text-wl-text-primary">
                         {item.reorderPoint}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-wl-neutral-300">Unit Cost:</span>
+                      <span className="text-wl-text-secondary">Unit Cost:</span>
                       <span className="font-semibold text-wl-text-primary">
                         ${item.unitCost.toFixed(2)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-wl-neutral-300">Location:</span>
+                      <span className="text-wl-text-secondary">Location:</span>
                       <span className="font-semibold text-wl-text-primary">
                         {item.warehouse}
                       </span>

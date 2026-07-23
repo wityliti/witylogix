@@ -99,7 +99,7 @@ interface DriverProfile {
 const TIER_STYLE: Record<string, { bg: string; text: string; border: string; label: string }> = {
   platinum: { bg: 'bg-wl-primary-50', text: 'text-wl-primary-300', border: 'border-wl-primary-400/30', label: 'Platinum' },
   gold:     { bg: 'bg-wl-warning-500/15',  text: 'text-wl-warning-400',  border: 'border-wl-warning-400/30',  label: 'Gold' },
-  silver:   { bg: 'bg-wl-neutral-400/15',   text: 'text-wl-neutral-300',   border: 'border-wl-neutral-300/30',   label: 'Silver' },
+  silver:   { bg: 'bg-wl-neutral-400/15',   text: 'text-wl-text-secondary',   border: 'border-wl-neutral-300/30',   label: 'Silver' },
   bronze:   { bg: 'bg-wl-warning-bg', text: 'text-wl-warning-400', border: 'border-wl-warning-500/30', label: 'Bronze' },
 };
 

@@ -263,7 +263,7 @@ export default function CapacityPage() {
             ].map(({ color, label }) => (
               <div key={label} className="flex items-center gap-2 mt-1">
                 <div className="w-3 h-3 rounded-sm" style={{ background: color }} />
-                <span className="text-wl-neutral-300">{label}</span>
+                <span className="text-wl-text-secondary">{label}</span>
               </div>
             ))}
           </div>
@@ -281,7 +281,7 @@ export default function CapacityPage() {
                     const status = z.predictedVolume >= 100 ? 'understaffed' : z.predictedVolume >= 50 ? 'optimal' : 'overstaffed';
                     return (
                       <div key={z.id} className="flex items-center justify-between gap-3">
-                        <span className="text-xs text-wl-neutral-300 truncate">{z.name}</span>
+                        <span className="text-xs text-wl-text-secondary truncate">{z.name}</span>
                         <Badge variant={status === 'understaffed' ? 'danger' : status === 'optimal' ? 'success' : 'warning'} className="text-xs shrink-0">
                           {status}
                         </Badge>

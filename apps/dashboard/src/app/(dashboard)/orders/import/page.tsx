@@ -283,7 +283,7 @@ export default function OrderImportPage() {
                           className="w-2 h-2 rounded-full"
                           style={{ backgroundColor: getHealthColor(health.status) }}
                         />
-                        <span className="text-xs font-medium text-wl-neutral-300">
+                        <span className="text-xs font-medium text-wl-text-secondary">
                           {health.status === "healthy"
                             ? "Healthy"
                             : health.status === "warning"

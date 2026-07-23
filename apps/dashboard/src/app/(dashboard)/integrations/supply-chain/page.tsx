@@ -224,7 +224,7 @@ export default function SupplyChainIntegrationsPage() {
                 "px-3 py-1 rounded-sm border-none text-xs font-semibold cursor-pointer capitalize",
                 view === v
                   ? "bg-wl-info-500 text-white"
-                  : "bg-transparent text-wl-neutral-300"
+                  : "bg-transparent text-wl-text-secondary"
               )}
             >
               {v}
@@ -239,7 +239,7 @@ export default function SupplyChainIntegrationsPage() {
               <h3 className={cn("text-sm font-semibold text-wl-text-primary")}>
                 Warehouse Connections ({connections.length})
               </h3>
-              <span className={cn("text-xs text-wl-neutral-300")}>
+              <span className={cn("text-xs text-wl-text-secondary")}>
                 {syncedCount} synced
               </span>
             </div>
@@ -254,7 +254,7 @@ export default function SupplyChainIntegrationsPage() {
                   <div className={cn("flex-1")}>
                     <p className={cn("text-2xl mb-1")}>📥</p>
                     <p className={cn("text-xs font-semibold text-wl-text-primary")}>Inbound</p>
-                    <p className={cn("text-xs text-wl-neutral-300 mt-1")}>PO Receipt</p>
+                    <p className={cn("text-xs text-wl-text-secondary mt-1")}>PO Receipt</p>
                   </div>
                   <div className={cn("flex-1 flex justify-center")}>
                     <div className={cn("w-12 h-0.5 bg-gradient-to-r from-blue-400 to-transparent")} />
@@ -262,7 +262,7 @@ export default function SupplyChainIntegrationsPage() {
                   <div className={cn("flex-1")}>
                     <p className={cn("text-2xl mb-1")}>🏭</p>
                     <p className={cn("text-xs font-semibold text-wl-text-primary")}>Warehouse</p>
-                    <p className={cn("text-xs text-wl-neutral-300 mt-1")}>Storage & QC</p>
+                    <p className={cn("text-xs text-wl-text-secondary mt-1")}>Storage & QC</p>
                   </div>
                   <div className={cn("flex-1 flex justify-center")}>
                     <div className={cn("w-12 h-0.5 bg-gradient-to-r from-transparent to-emerald-400")} />
@@ -270,7 +270,7 @@ export default function SupplyChainIntegrationsPage() {
                   <div className={cn("flex-1")}>
                     <p className={cn("text-2xl mb-1")}>📤</p>
                     <p className={cn("text-xs font-semibold text-wl-text-primary")}>Outbound</p>
-                    <p className={cn("text-xs text-wl-neutral-300 mt-1")}>Shipping</p>
+                    <p className={cn("text-xs text-wl-text-secondary mt-1")}>Shipping</p>
                   </div>
                 </div>
               </div>
@@ -316,7 +316,7 @@ export default function SupplyChainIntegrationsPage() {
                           <p className={cn("text-sm font-semibold text-wl-text-primary")}>
                             {warehouse.name}
                           </p>
-                          <p className={cn("text-xs text-wl-neutral-300 mt-1")}>
+                          <p className={cn("text-xs text-wl-text-secondary mt-1")}>
                             {warehouse.warehouseCount} locations
                           </p>
                         </div>
@@ -332,7 +332,7 @@ export default function SupplyChainIntegrationsPage() {
                       </Badge>
                     </div>
 
-                    <div className={cn("flex items-center justify-between text-xs text-wl-neutral-300 mb-3")}>
+                    <div className={cn("flex items-center justify-between text-xs text-wl-text-secondary mb-3")}>
                       <span>Last sync: {warehouse.lastSync}</span>
                       {warehouse.errorCount > 0 && (
                         <span className={cn("text-wl-danger-500 font-semibold")}>
@@ -372,13 +372,13 @@ export default function SupplyChainIntegrationsPage() {
                           </p>
                           <div className={cn("grid grid-cols-2 gap-2 text-xs")}>
                             <div>
-                              <p className={cn("text-wl-neutral-300")}>Last Sync</p>
+                              <p className={cn("text-wl-text-secondary")}>Last Sync</p>
                               <p className={cn("font-semibold text-wl-text-primary")}>
                                 {warehouse.lastSync}
                               </p>
                             </div>
                             <div>
-                              <p className={cn("text-wl-neutral-300")}>Next Sync</p>
+                              <p className={cn("text-wl-text-secondary")}>Next Sync</p>
                               <p className={cn("font-semibold text-wl-text-primary")}>
                                 {warehouse.nextSync}
                               </p>
@@ -444,7 +444,7 @@ export default function SupplyChainIntegrationsPage() {
                       <p className={cn("text-sm font-semibold text-wl-text-primary")}>
                         {sync.warehouse}
                       </p>
-                      <div className={cn("flex items-center gap-3 mt-1 text-xs text-wl-neutral-300")}>
+                      <div className={cn("flex items-center gap-3 mt-1 text-xs text-wl-text-secondary")}>
                         <span className={cn("px-2 py-1 rounded bg-wl-bg-surface font-medium")}>
                           {sync.mode.replace(/_/g, " ")}
                         </span>
@@ -467,19 +467,19 @@ export default function SupplyChainIntegrationsPage() {
                   <div className={cn("bg-wl-bg-surface rounded p-3 mb-3")}>
                     <div className={cn("grid grid-cols-3 gap-3 text-xs")}>
                       <div>
-                        <p className={cn("text-wl-neutral-300 mb-1")}>Items Tracked</p>
+                        <p className={cn("text-wl-text-secondary mb-1")}>Items Tracked</p>
                         <p className={cn("font-bold text-wl-text-primary")}>
                           {(sync.itemsTracked / 1000).toFixed(1)}K
                         </p>
                       </div>
                       <div>
-                        <p className={cn("text-wl-neutral-300 mb-1")}>Last Update</p>
+                        <p className={cn("text-wl-text-secondary mb-1")}>Last Update</p>
                         <p className={cn("font-bold text-wl-text-primary")}>
                           {sync.lastUpdate}
                         </p>
                       </div>
                       <div>
-                        <p className={cn("text-wl-neutral-300 mb-1")}>Success Rate</p>
+                        <p className={cn("text-wl-text-secondary mb-1")}>Success Rate</p>
                         <p className={cn("font-bold text-wl-success-500")}>
                           {sync.successRate}%
                         </p>

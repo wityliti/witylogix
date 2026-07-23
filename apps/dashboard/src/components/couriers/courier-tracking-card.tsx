@@ -278,7 +278,7 @@ export const CourierTrackingCard = forwardRef<HTMLDivElement, CourierTrackingCar
         {/* Active indicator */}
         {!courier.isActive && (
           <div className="bg-wl-neutral-500/10 border border-wl-neutral-500/20 rounded px-2 py-1.5 mt-2">
-            <p className="text-xs text-wl-neutral-400 text-center">Courier offline</p>
+            <p className="text-xs text-wl-text-secondary text-center">Courier offline</p>
           </div>
         )}
       </div>

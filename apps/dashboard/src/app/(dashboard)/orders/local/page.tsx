@@ -378,7 +378,7 @@ export default function LocalOrdersPage() {
                   <p className="text-xs text-wl-text-secondary font-semibold mb-2 flex items-center gap-1.5">
                     <MapPin size={14} /> Delivery
                   </p>
-                  <p className="text-xs text-wl-neutral-300">{formatAddress(selectedOrder.deliveryAddress)}</p>
+                  <p className="text-xs text-wl-text-secondary">{formatAddress(selectedOrder.deliveryAddress)}</p>
                   <p className="text-xs text-wl-text-secondary mt-1 flex items-center gap-1">
                     <Clock size={12} />
                     {formatTimeWindow(selectedOrder.timeSlot, selectedOrder.deliveryDate)}

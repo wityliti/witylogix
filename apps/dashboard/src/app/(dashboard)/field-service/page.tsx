@@ -195,7 +195,7 @@ export default function FieldServicePage() {
                   <select
                     value={selectedTech ?? 'all'}
                     onChange={(e) => setSelectedTech(e.target.value === 'all' ? null : e.target.value)}
-                    className="px-3 py-2 text-xs rounded border border-wl-border-default bg-wl-bg-elevated text-wl-neutral-300 focus:outline-none focus:border-wl-info-500/50"
+                    className="px-3 py-2 text-xs rounded border border-wl-border-default bg-wl-bg-elevated text-wl-text-secondary focus:outline-none focus:border-wl-info-500/50"
                   >
                     <option value="all">All Technicians</option>
                     {technicians.map((t) => (

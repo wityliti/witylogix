@@ -526,7 +526,7 @@ export default function InvoicesPage() {
         <Card className="bg-wl-bg-surface border-wl-border-default flex flex-col items-center justify-center gap-4 py-16">
           <Search className="w-12 h-12 text-wl-text-tertiary" />
           <div className="flex flex-col items-center gap-2">
-            <h3 className="text-lg font-semibold text-wl-neutral-300">No invoices found</h3>
+            <h3 className="text-lg font-semibold text-wl-text-secondary">No invoices found</h3>
             <p className="text-sm text-wl-text-tertiary">Try adjusting your search or filters</p>
           </div>
         </Card>
@@ -571,7 +571,7 @@ export default function InvoicesPage() {
                   header: "Customer",
                   sortable: true,
                   width: 180,
-                  render: (item: Invoice) => <span className="text-wl-neutral-300">{item.customerName}</span>,
+                  render: (item: Invoice) => <span className="text-wl-text-secondary">{item.customerName}</span>,
                 },
                 {
                   key: "amount",
@@ -599,7 +599,7 @@ export default function InvoicesPage() {
                   key: "dueDate",
                   header: "Due Date",
                   render: (item: Invoice) => (
-                    <div className="text-sm text-wl-neutral-300">
+                    <div className="text-sm text-wl-text-secondary">
                       {new Date(item.dueDate).toLocaleDateString()}
                     </div>
                   ),

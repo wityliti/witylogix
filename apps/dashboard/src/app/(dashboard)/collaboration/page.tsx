@@ -440,7 +440,7 @@ function RightSidebar({
         <h2 className="text-sm font-semibold text-wl-text-primary mb-3">
           {channel.name}
         </h2>
-        <div className="space-y-2 text-xs text-wl-neutral-300">
+        <div className="space-y-2 text-xs text-wl-text-secondary">
           <p>
             <strong>Members:</strong> {memberCount}
           </p>
@@ -467,7 +467,7 @@ function RightSidebar({
                 key={msg.id}
                 className="p-2 rounded bg-wl-bg-elevated border border-wl-border-default text-xs"
               >
-                <p className="font-medium text-wl-neutral-300">
+                <p className="font-medium text-wl-text-secondary">
                   {msg.userName}
                 </p>
                 <p className="text-wl-text-secondary truncate">{msg.content}</p>
@@ -542,7 +542,7 @@ function ThreadPanel({
         {messages.map((msg) => (
           <div key={msg.id} className="text-xs">
             <p className="font-medium text-wl-text-primary">{msg.userName}</p>
-            <p className="text-wl-neutral-300">{msg.content}</p>
+            <p className="text-wl-text-secondary">{msg.content}</p>
             <p className="text-wl-text-secondary mt-1">
               {new Date(msg.createdAt).toLocaleTimeString()}
             </p>
@@ -608,7 +608,7 @@ function CreateChannelModal({
 
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-wl-neutral-300 mb-1">
+            <label className="block text-xs font-semibold text-wl-text-secondary mb-1">
               Channel Name
             </label>
             <input
@@ -627,7 +627,7 @@ function CreateChannelModal({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-wl-neutral-300 mb-1">
+            <label className="block text-xs font-semibold text-wl-text-secondary mb-1">
               Category
             </label>
             <select
