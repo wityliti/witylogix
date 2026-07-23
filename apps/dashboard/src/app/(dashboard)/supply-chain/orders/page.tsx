@@ -151,7 +151,7 @@ export default function OrdersPage() {
         ].map((stat) => (
           <Card key={stat.label}>
             <CardContent className="pt-4 text-center">
-              <div className="text-2xl font-bold text-white">
+              <div className="text-2xl font-bold text-wl-text-primary">
                 {stat.value}
               </div>
               <p className="text-xs text-wl-neutral-300 mt-1">
@@ -196,7 +196,7 @@ export default function OrdersPage() {
                   onChange={(e) =>
                     setFilters({ ...filters, searchTerm: e.target.value })
                   }
-                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white placeholder-wl-text-tertiary focus:outline-none focus:border-wl-info-500"
+                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary placeholder-wl-text-tertiary focus:outline-none focus:border-wl-info-500"
                 />
 
                 <select
@@ -204,7 +204,7 @@ export default function OrdersPage() {
                   onChange={(e) =>
                     setFilters({ ...filters, status: e.target.value })
                   }
-                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-wl-info-500"
+                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary focus:outline-none focus:border-wl-info-500"
                 >
                   {STATUS_OPTIONS.map((status) => (
                     <option key={status} value={status.toLowerCase()}>
@@ -218,7 +218,7 @@ export default function OrdersPage() {
                   onChange={(e) =>
                     setFilters({ ...filters, priority: e.target.value })
                   }
-                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-wl-info-500"
+                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary focus:outline-none focus:border-wl-info-500"
                 >
                   {PRIORITY_OPTIONS.map((priority) => (
                     <option key={priority} value={priority.toLowerCase()}>
@@ -232,7 +232,7 @@ export default function OrdersPage() {
                   onChange={(e) =>
                     setFilters({ ...filters, warehouse: e.target.value })
                   }
-                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-wl-info-500"
+                  className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary focus:outline-none focus:border-wl-info-500"
                 >
                   {warehouseOptions.map((warehouse) => (
                     <option key={warehouse} value={warehouse.toLowerCase()}>
@@ -287,13 +287,13 @@ export default function OrdersPage() {
                   <div className="space-y-2 text-xs mb-4">
                     <div className="flex items-center justify-between">
                       <span className="text-wl-neutral-300">Items:</span>
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold text-wl-text-primary">
                         {order.items}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-wl-neutral-300">Total:</span>
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold text-wl-text-primary">
                         ${order.total.toFixed(2)}
                       </span>
                     </div>
@@ -389,15 +389,15 @@ export default function OrdersPage() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                     <div>
                       <p className="text-xs text-wl-text-secondary">Orders</p>
-                      <p className="text-xl font-bold text-white">{wave.ordersCount}</p>
+                      <p className="text-xl font-bold text-wl-text-primary">{wave.ordersCount}</p>
                     </div>
                     <div>
                       <p className="text-xs text-wl-text-secondary">Items</p>
-                      <p className="text-xl font-bold text-white">{wave.itemsCount}</p>
+                      <p className="text-xl font-bold text-wl-text-primary">{wave.itemsCount}</p>
                     </div>
                     <div>
                       <p className="text-xs text-wl-text-secondary">Est. Completion</p>
-                      <p className="text-sm text-white">{new Date(wave.estimatedCompletionTime).toLocaleTimeString()}</p>
+                      <p className="text-sm text-wl-text-primary">{new Date(wave.estimatedCompletionTime).toLocaleTimeString()}</p>
                     </div>
                     <div>
                       <Button variant="secondary" size="sm" className="w-full">View Details</Button>
@@ -457,7 +457,7 @@ export default function OrdersPage() {
                     <span className="text-xs text-wl-neutral-300">
                       Progress: {batch.itemCount} items
                     </span>
-                    <span className="text-xs font-semibold text-white">
+                    <span className="text-xs font-semibold text-wl-text-primary">
                       {batch.completionRate}%
                     </span>
                   </div>

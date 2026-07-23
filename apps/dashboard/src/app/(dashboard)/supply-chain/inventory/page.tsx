@@ -295,19 +295,19 @@ export default function InventoryPage() {
                   <div className="space-y-1 text-xs">
                     <div className="flex items-center justify-between">
                       <span className="text-wl-neutral-300">Current:</span>
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold text-wl-text-primary">
                         {gauge.current}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-wl-neutral-300">Min:</span>
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold text-wl-text-primary">
                         {gauge.minimum}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-wl-neutral-300">Max:</span>
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold text-wl-text-primary">
                         {gauge.maximum}
                       </span>
                     </div>
@@ -387,7 +387,7 @@ export default function InventoryPage() {
                 onChange={(e) =>
                   setFilters({ ...filters, searchTerm: e.target.value })
                 }
-                className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white placeholder-wl-text-tertiary focus:outline-none focus:border-wl-info-500"
+                className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary placeholder-wl-text-tertiary focus:outline-none focus:border-wl-info-500"
               />
 
               <select
@@ -395,7 +395,7 @@ export default function InventoryPage() {
                 onChange={(e) =>
                   setFilters({ ...filters, warehouse: e.target.value })
                 }
-                className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-wl-info-500"
+                className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary focus:outline-none focus:border-wl-info-500"
               >
                 {warehouseNames.map((wh) => (
                   <option key={wh} value={wh}>
@@ -409,7 +409,7 @@ export default function InventoryPage() {
                 onChange={(e) =>
                   setFilters({ ...filters, abcClass: e.target.value })
                 }
-                className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-wl-info-500"
+                className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary focus:outline-none focus:border-wl-info-500"
               >
                 {ABC_CLASSES.map((cls) => (
                   <option key={cls.value} value={cls.value}>
@@ -423,7 +423,7 @@ export default function InventoryPage() {
                 onChange={(e) =>
                   setFilters({ ...filters, status: e.target.value })
                 }
-                className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-white focus:outline-none focus:border-wl-info-500"
+                className="px-3 py-2 rounded-lg hover:bg-wl-bg-elevated border border-wl-border-default text-wl-text-primary focus:outline-none focus:border-wl-info-500"
               >
                 {STATUS_FILTERS.map((st) => (
                   <option key={st.value} value={st.value}>
@@ -469,25 +469,25 @@ export default function InventoryPage() {
                   <div className="space-y-1 text-xs mb-3">
                     <div className="flex items-center justify-between">
                       <span className="text-wl-neutral-300">Qty:</span>
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold text-wl-text-primary">
                         {item.quantity}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-wl-neutral-300">Reorder:</span>
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold text-wl-text-primary">
                         {item.reorderPoint}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-wl-neutral-300">Unit Cost:</span>
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold text-wl-text-primary">
                         ${item.unitCost.toFixed(2)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-wl-neutral-300">Location:</span>
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold text-wl-text-primary">
                         {item.warehouse}
                       </span>
                     </div>

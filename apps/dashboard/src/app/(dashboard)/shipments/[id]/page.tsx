@@ -398,7 +398,7 @@ export default function ShipmentDetailPage() {
                         )}
                       </div>
                       <div className="pt-0.5 pb-4 flex-1">
-                        <p className="text-sm font-semibold text-white">
+                        <p className="text-sm font-semibold text-wl-text-primary">
                           {event.label}
                         </p>
                         <p className="text-xs text-wl-text-secondary mt-0.5 font-mono">
@@ -425,13 +425,13 @@ export default function ShipmentDetailPage() {
                   <p className="text-xs text-wl-text-secondary mb-1 flex items-center gap-1.5">
                     <Weight size={12} /> Weight
                   </p>
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-sm font-semibold text-wl-text-primary">
                     {shipment.weight ? `${shipment.weight} kg` : '—'}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-wl-text-secondary mb-1">Dimensions</p>
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-sm font-semibold text-wl-text-primary">
                     {shipment.dimensions
                       ? `${shipment.dimensions.length} × ${shipment.dimensions.width} × ${shipment.dimensions.height} cm`
                       : '—'}
@@ -439,13 +439,13 @@ export default function ShipmentDetailPage() {
                 </div>
                 <div>
                   <p className="text-xs text-wl-text-secondary mb-1">Item Count</p>
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-sm font-semibold text-wl-text-primary">
                     {shipment.itemCount}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-wl-text-secondary mb-1">Delivery Method</p>
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-sm font-semibold text-wl-text-primary">
                     {shipment.deliveryMethod.replace(/_/g, ' ')}
                   </p>
                 </div>
@@ -463,7 +463,7 @@ export default function ShipmentDetailPage() {
                         className="flex justify-between p-2.5 rounded-lg bg-wl-bg-elevated"
                       >
                         <div>
-                          <p className="text-xs font-semibold text-white">
+                          <p className="text-xs font-semibold text-wl-text-primary">
                             {item.name}
                           </p>
                           <p className="text-xs text-wl-text-secondary">
@@ -494,7 +494,7 @@ export default function ShipmentDetailPage() {
               <div className="space-y-4">
                 <div>
                   <p className="text-xs text-wl-text-secondary mb-1">Name</p>
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-sm font-semibold text-wl-text-primary">
                     {shipment.recipientName ?? '—'}
                   </p>
                 </div>
@@ -503,7 +503,7 @@ export default function ShipmentDetailPage() {
                     <MapPin size={12} className="text-wl-info-500" />
                     Delivery Address
                   </p>
-                  <p className="text-sm text-white leading-relaxed">
+                  <p className="text-sm text-wl-text-primary leading-relaxed">
                     {[
                       shipment.addressLine1,
                       shipment.addressLine2,
@@ -520,7 +520,7 @@ export default function ShipmentDetailPage() {
                     <p className="text-xs text-wl-text-secondary mb-1 flex items-center gap-1">
                       <Phone size={12} /> Phone
                     </p>
-                    <p className="text-sm text-white font-mono">
+                    <p className="text-sm text-wl-text-primary font-mono">
                       {shipment.recipientPhone ?? '—'}
                     </p>
                   </div>
@@ -528,7 +528,7 @@ export default function ShipmentDetailPage() {
                     <p className="text-xs text-wl-text-secondary mb-1 flex items-center gap-1">
                       <Mail size={12} /> Email
                     </p>
-                    <p className="text-sm text-white truncate">
+                    <p className="text-sm text-wl-text-primary truncate">
                       {shipment.recipientEmail ?? '—'}
                     </p>
                   </div>
@@ -718,7 +718,7 @@ export default function ShipmentDetailPage() {
                   <Truck size={13} /> Assigned Driver
                 </p>
                 <div className="p-3 rounded-lg bg-wl-bg-elevated space-y-1">
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-sm font-semibold text-wl-text-primary">
                     {shipment.driver.name}
                   </p>
                   {shipment.driver.vehicleType && (
@@ -758,7 +758,7 @@ export default function ShipmentDetailPage() {
                   <MapPin size={13} /> Origin Location
                 </p>
                 <div className="p-3 rounded-lg bg-wl-bg-elevated">
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-sm font-semibold text-wl-text-primary">
                     {shipment.location.name}
                   </p>
                   <p className="text-xs text-wl-text-secondary mt-0.5">
@@ -811,7 +811,7 @@ function InfoRow({ label, value, mono, className }: InfoRowProps) {
   return (
     <div>
       <p className="text-xs text-wl-text-secondary">{label}</p>
-      <p className={cn('text-xs font-semibold text-white mt-0.5', mono && 'font-mono', className)}>
+      <p className={cn('text-xs font-semibold text-wl-text-primary mt-0.5', mono && 'font-mono', className)}>
         {value}
       </p>
     </div>

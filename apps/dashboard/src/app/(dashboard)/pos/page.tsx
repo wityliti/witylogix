@@ -161,7 +161,7 @@ export default function POSPage() {
                     <span className="text-lg">{paymentMethodIcon.cash}</span>
                     <span className="text-sm font-medium text-wl-text-secondary">Cash</span>
                   </div>
-                  <span className="text-sm font-bold text-white">
+                  <span className="text-sm font-bold text-wl-text-primary">
                     {paymentBreakdownPercentages.cash}%
                   </span>
                 </div>
@@ -183,7 +183,7 @@ export default function POSPage() {
                     <span className="text-lg">{paymentMethodIcon.card}</span>
                     <span className="text-sm font-medium text-wl-text-secondary">Card</span>
                   </div>
-                  <span className="text-sm font-bold text-white">
+                  <span className="text-sm font-bold text-wl-text-primary">
                     {paymentBreakdownPercentages.card}%
                   </span>
                 </div>
@@ -205,7 +205,7 @@ export default function POSPage() {
                     <span className="text-lg">{paymentMethodIcon.mobile}</span>
                     <span className="text-sm font-medium text-wl-text-secondary">Mobile</span>
                   </div>
-                  <span className="text-sm font-bold text-white">
+                  <span className="text-sm font-bold text-wl-text-primary">
                     {paymentBreakdownPercentages.mobile}%
                   </span>
                 </div>
@@ -228,7 +228,7 @@ export default function POSPage() {
                       <span className="text-lg">💳</span>
                       <span className="text-sm font-medium text-wl-text-secondary">Other</span>
                     </div>
-                    <span className="text-sm font-bold text-white">
+                    <span className="text-sm font-bold text-wl-text-primary">
                       {paymentBreakdownPercentages.other}%
                     </span>
                   </div>
@@ -277,7 +277,7 @@ export default function POSPage() {
                               <span className="text-lg">
                                 {paymentMethodIcon[txn.paymentMethod]}
                               </span>
-                              <span className="text-sm font-semibold text-white truncate">
+                              <span className="text-sm font-semibold text-wl-text-primary truncate">
                                 {txn.customerName || "Guest"}
                               </span>
                             </div>
@@ -337,7 +337,7 @@ export default function POSPage() {
                   {topItems.map((item, idx) => (
                     <tr key={item.id} className="hover:bg-wl-bg-elevated transition-colors">
                       <td className="px-4 py-3">
-                        <div className="text-white font-medium">{item.name}</div>
+                        <div className="text-wl-text-primary font-medium">{item.name}</div>
                         <div className="text-xs text-wl-text-tertiary">{item.sku}</div>
                       </td>
                       <td className="px-4 py-3 text-wl-text-secondary font-mono">
@@ -417,7 +417,7 @@ export default function POSPage() {
                       >
                         <div className="flex justify-between items-start mb-2">
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm font-semibold text-white flex items-center gap-2">
+                            <div className="text-sm font-semibold text-wl-text-primary flex items-center gap-2">
                               <span>🖥️</span>
                               <span className="truncate">{terminal.name}</span>
                             </div>
@@ -433,19 +433,19 @@ export default function POSPage() {
                         <div className="grid grid-cols-3 gap-2 text-center text-xs mt-2">
                           <div>
                             <div className="text-wl-text-secondary text-xs">Sales</div>
-                            <div className="text-white font-bold">
+                            <div className="text-wl-text-primary font-bold">
                               ${terminal.totalSales.toFixed(0)}
                             </div>
                           </div>
                           <div>
                             <div className="text-wl-text-secondary text-xs">Txns</div>
-                            <div className="text-white font-bold">
+                            <div className="text-wl-text-primary font-bold">
                               {terminal.totalTransactions}
                             </div>
                           </div>
                           <div>
                             <div className="text-wl-text-secondary text-xs">Last Activity</div>
-                            <div className="text-white font-bold">
+                            <div className="text-wl-text-primary font-bold">
                               {terminal.lastActivity}
                             </div>
                           </div>

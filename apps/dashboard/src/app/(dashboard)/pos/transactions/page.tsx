@@ -131,7 +131,7 @@ export default function TransactionsPage() {
                   <label className="text-sm font-medium text-wl-neutral-300 block mb-1">
                     Transaction
                   </label>
-                  <div className="px-3 py-2 rounded border border-wl-border-default bg-wl-bg-root text-white text-sm">
+                  <div className="px-3 py-2 rounded border border-wl-border-default bg-wl-bg-root text-wl-text-primary text-sm">
                     {selectedTxnData.transactionId}
                   </div>
                 </div>
@@ -140,7 +140,7 @@ export default function TransactionsPage() {
                   <label className="text-sm font-medium text-wl-neutral-300 block mb-1">
                     Amount
                   </label>
-                  <div className="px-3 py-2 rounded border border-wl-border-default bg-wl-bg-root text-white text-sm font-bold text-wl-success-500">
+                  <div className="px-3 py-2 rounded border border-wl-border-default bg-wl-bg-root text-wl-text-primary text-sm font-bold text-wl-success-500">
                     ${selectedTxnData.amount.toFixed(2)}
                   </div>
                 </div>
@@ -152,7 +152,7 @@ export default function TransactionsPage() {
                   <select
                     value={refundReason}
                     onChange={(e) => setRefundReason(e.target.value)}
-                    className="w-full px-3 py-2 rounded border border-wl-border-default bg-wl-bg-elevated text-white text-sm focus:outline-none focus:border-wl-info-500"
+                    className="w-full px-3 py-2 rounded border border-wl-border-default bg-wl-bg-elevated text-wl-text-primary text-sm focus:outline-none focus:border-wl-info-500"
                   >
                     <option value="">Select reason...</option>
                     <option value="customer_request">Customer Request</option>
@@ -197,7 +197,7 @@ export default function TransactionsPage() {
             placeholder="Search by transaction ID, receipt, or customer name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 rounded border border-wl-border-default bg-wl-bg-surface text-white text-sm placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500"
+            className="w-full px-4 py-2 rounded border border-wl-border-default bg-wl-bg-surface text-wl-text-primary text-sm placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500"
           />
 
           {/* Filter Pills */}
@@ -257,7 +257,7 @@ export default function TransactionsPage() {
                 onChange={(e) =>
                   setAmountRange({ ...amountRange, min: Math.max(0, parseInt(e.target.value) || 0) })
                 }
-                className="w-full px-3 py-2 rounded border border-wl-border-default bg-wl-bg-surface text-white text-sm focus:outline-none focus:border-wl-info-500"
+                className="w-full px-3 py-2 rounded border border-wl-border-default bg-wl-bg-surface text-wl-text-primary text-sm focus:outline-none focus:border-wl-info-500"
               />
             </div>
             <div>
@@ -270,7 +270,7 @@ export default function TransactionsPage() {
                 onChange={(e) =>
                   setAmountRange({ ...amountRange, max: Math.max(0, parseInt(e.target.value) || 10000) })
                 }
-                className="w-full px-3 py-2 rounded border border-wl-border-default bg-wl-bg-surface text-white text-sm focus:outline-none focus:border-wl-info-500"
+                className="w-full px-3 py-2 rounded border border-wl-border-default bg-wl-bg-surface text-wl-text-primary text-sm focus:outline-none focus:border-wl-info-500"
               />
             </div>
           </div>
@@ -323,7 +323,7 @@ export default function TransactionsPage() {
                         selectedTxnData?.id === txn.id && "bg-wl-bg-elevated"
                       )}
                     >
-                      <td className="px-4 py-3 text-white font-mono text-xs">
+                      <td className="px-4 py-3 text-wl-text-primary font-mono text-xs">
                         {txn.transactionId}
                       </td>
                       <td className="px-4 py-3 text-wl-neutral-300">
@@ -373,7 +373,7 @@ export default function TransactionsPage() {
               <div className="p-4 space-y-4">
                 {/* Header */}
                 <div>
-                  <div className="text-lg font-bold text-white mb-2">
+                  <div className="text-lg font-bold text-wl-text-primary mb-2">
                     {selectedTxnData.transactionId}
                   </div>
                   <Badge variant={txnStatusVariant(selectedTxnData.status)}>
@@ -388,7 +388,7 @@ export default function TransactionsPage() {
                   <div className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">
                     Customer
                   </div>
-                  <div className="text-sm text-white">
+                  <div className="text-sm text-wl-text-primary">
                     {selectedTxnData.customerName || "Guest"}
                   </div>
                   {selectedTxnData.customerEmail && (
@@ -405,7 +405,7 @@ export default function TransactionsPage() {
                   <div className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">
                     Transaction Info
                   </div>
-                  <div className="text-sm text-white">
+                  <div className="text-sm text-wl-text-primary">
                     {selectedTxnData.terminalName}
                   </div>
                   <div className="text-xs text-wl-text-secondary mt-1">
@@ -444,7 +444,7 @@ export default function TransactionsPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-wl-text-secondary">Subtotal</span>
-                    <span className="text-white">
+                    <span className="text-wl-text-primary">
                       ${selectedTxnData.subtotal.toFixed(2)}
                     </span>
                   </div>
@@ -458,12 +458,12 @@ export default function TransactionsPage() {
                   )}
                   <div className="flex justify-between text-sm">
                     <span className="text-wl-text-secondary">Tax</span>
-                    <span className="text-white">
+                    <span className="text-wl-text-primary">
                       ${selectedTxnData.tax.toFixed(2)}
                     </span>
                   </div>
                   <div className="flex justify-between text-base font-bold border-t border-wl-border-default pt-2">
-                    <span className="text-white">Total</span>
+                    <span className="text-wl-text-primary">Total</span>
                     <span className="text-wl-success-500">
                       ${selectedTxnData.amount.toFixed(2)}
                     </span>
@@ -481,7 +481,7 @@ export default function TransactionsPage() {
                     <span className="text-lg">
                       {paymentMethodIcon[selectedTxnData.paymentMethod]}
                     </span>
-                    <span className="text-sm text-white capitalize">
+                    <span className="text-sm text-wl-text-primary capitalize">
                       {selectedTxnData.paymentMethod.replace(/_/g, " ")}
                     </span>
                   </div>

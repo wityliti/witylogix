@@ -152,7 +152,7 @@ export function SearchCommandPalette(): React.ReactElement {
             {...search.register}
             autoFocus
             placeholder="Search orders, drivers, deliveries..."
-            className="w-full bg-transparent text-lg text-white outline-none placeholder:text-wl-text-tertiary"
+            className="w-full bg-transparent text-lg text-wl-text-primary outline-none placeholder:text-wl-text-tertiary"
           />
           {search.isLoading && (
             <div className="mt-2 flex items-center gap-2 text-sm text-wl-text-secondary">
@@ -274,7 +274,7 @@ export function SearchCommandPalette(): React.ReactElement {
                       >
                         <div className="flex items-center justify-between">
                           <div>
-                            <div className="text-sm font-medium text-white">
+                            <div className="text-sm font-medium text-wl-text-primary">
                               {result.title}
                             </div>
                             {result.description && (

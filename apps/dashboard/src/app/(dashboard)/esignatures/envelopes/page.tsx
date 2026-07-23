@@ -114,7 +114,7 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
                         className="w-4 h-4 rounded border-wl-border-default accent-wl-info-500"
                       />
                     </td>
-                    <td className="py-3 px-4 text-white font-medium">
+                    <td className="py-3 px-4 text-wl-text-primary font-medium">
                       <button
                         onClick={() => setDetailEnvelopeId(env.id)}
                         className="hover:underline text-wl-info-500"
@@ -203,7 +203,7 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
                         className="p-3 bg-wl-bg-elevated rounded-lg border border-wl-border-default"
                       >
                         <div className="flex items-center justify-between mb-1">
-                          <p className="text-sm font-medium text-white">
+                          <p className="text-sm font-medium text-wl-text-primary">
                             {r.name}
                           </p>
                           <Badge variant={r.status === "SIGNED" ? "success" : "warning"}>
@@ -228,14 +228,14 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-wl-text-secondary">Created:</span>
-                      <span className="text-white font-medium">
+                      <span className="text-wl-text-primary font-medium">
                         {new Date(selectedEnvelope.createdDate).toLocaleDateString()}
                       </span>
                     </div>
                     {selectedEnvelope.sentDate && (
                       <div className="flex justify-between">
                         <span className="text-wl-text-secondary">Sent:</span>
-                        <span className="text-white font-medium">
+                        <span className="text-wl-text-primary font-medium">
                           {new Date(selectedEnvelope.sentDate).toLocaleDateString()}
                         </span>
                       </div>
@@ -243,14 +243,14 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
                     {selectedEnvelope.completedDate && (
                       <div className="flex justify-between">
                         <span className="text-wl-text-secondary">Completed:</span>
-                        <span className="text-white font-medium">
+                        <span className="text-wl-text-primary font-medium">
                           {new Date(selectedEnvelope.completedDate).toLocaleDateString()}
                         </span>
                       </div>
                     )}
                     <div className="flex justify-between">
                       <span className="text-wl-text-secondary">Documents:</span>
-                      <span className="text-white font-medium">
+                      <span className="text-wl-text-primary font-medium">
                         {selectedEnvelope.documentCount}
                       </span>
                     </div>
@@ -326,7 +326,7 @@ export default function EnvelopesPage() {
               <span className="text-wl-text-secondary text-sm font-medium">Total Envelopes</span>
               <FileText className="text-wl-info-500" size={20} />
             </div>
-            <p className="text-3xl font-bold text-white">{data.length}</p>
+            <p className="text-3xl font-bold text-wl-text-primary">{data.length}</p>
           </CardContent>
         </Card>
 
@@ -336,7 +336,7 @@ export default function EnvelopesPage() {
               <span className="text-wl-text-secondary text-sm font-medium">Completed</span>
               <div className="w-5 h-5 rounded-full bg-wl-success-500"></div>
             </div>
-            <p className="text-3xl font-bold text-white">
+            <p className="text-3xl font-bold text-wl-text-primary">
               {data.filter(e => e.status === 'COMPLETED').length}
             </p>
           </CardContent>
@@ -348,7 +348,7 @@ export default function EnvelopesPage() {
               <span className="text-wl-text-secondary text-sm font-medium">Pending</span>
               <div className="w-5 h-5 rounded-full bg-wl-warning-500"></div>
             </div>
-            <p className="text-3xl font-bold text-white">
+            <p className="text-3xl font-bold text-wl-text-primary">
               {data.filter(e => ['DRAFT', 'SENT', 'VIEWED'].includes(e.status)).length}
             </p>
           </CardContent>
@@ -360,7 +360,7 @@ export default function EnvelopesPage() {
               <span className="text-wl-text-secondary text-sm font-medium">Avg. Completion</span>
               <div className="w-5 h-5 rounded-full bg-wl-info-500"></div>
             </div>
-            <p className="text-3xl font-bold text-white">
+            <p className="text-3xl font-bold text-wl-text-primary">
               {data.length > 0 ? Math.round(data.reduce((sum, e) => sum + e.completionRate, 0) / data.length) : 0}%
             </p>
           </CardContent>

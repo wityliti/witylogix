@@ -127,7 +127,7 @@ export function ConnectionStatusBadge({
             className={cn(
               "absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-10",
               "px-2 py-1 rounded text-xs whitespace-nowrap",
-              "bg-wl-bg-surface text-white dark:bg-wl-bg-elevated",
+              "bg-wl-bg-surface text-wl-text-primary dark:bg-wl-bg-elevated",
               "shadow-lg"
             )}
           >
@@ -162,7 +162,7 @@ export function ConnectionStatusBadge({
           className={cn(
             "absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-10",
             "px-2 py-1 rounded text-xs whitespace-nowrap",
-            "bg-wl-bg-surface text-white dark:bg-wl-bg-elevated",
+            "bg-wl-bg-surface text-wl-text-primary dark:bg-wl-bg-elevated",
             "shadow-lg"
           )}
         >

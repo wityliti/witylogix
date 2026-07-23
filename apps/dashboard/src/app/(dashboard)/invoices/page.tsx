@@ -345,7 +345,7 @@ export default function InvoicesPage() {
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <p className="text-sm font-medium text-wl-text-secondary mb-2">Total Outstanding</p>
-            <p className="text-3xl font-bold text-white">${stats.totalOutstanding.toFixed(2)}</p>
+            <p className="text-3xl font-bold text-wl-text-primary">${stats.totalOutstanding.toFixed(2)}</p>
           </CardContent>
         </Card>
         <Card className="bg-wl-bg-surface border-wl-border-default">
@@ -371,7 +371,7 @@ export default function InvoicesPage() {
       {/* Bulk Actions */}
       {selectedInvoices.size > 0 && (
         <Card className="bg-wl-bg-surface border-wl-border-default flex items-center justify-between gap-4 p-4">
-          <span className="text-sm font-medium text-white">{selectedInvoices.size} selected</span>
+          <span className="text-sm font-medium text-wl-text-primary">{selectedInvoices.size} selected</span>
           <div className="flex gap-2">
             <Button variant="secondary" size="sm" onClick={handleBulkSend} disabled={isSending}>
               <Send className="w-4 h-4 mr-2" />
@@ -398,7 +398,7 @@ export default function InvoicesPage() {
                   setCurrentPage(1);
                 }}
                 icon={<Search className="w-4 h-4" />}
-                className="w-full bg-wl-bg-elevated border-wl-border-default text-white placeholder:text-wl-text-tertiary"
+                className="w-full bg-wl-bg-elevated border-wl-border-default text-wl-text-primary placeholder:text-wl-text-tertiary"
               />
             </div>
 
@@ -409,7 +409,7 @@ export default function InvoicesPage() {
                 setCurrentPage(1);
               }}
               label="Status"
-              className="w-40 bg-wl-bg-elevated border-wl-border-default text-white"
+              className="w-40 bg-wl-bg-elevated border-wl-border-default text-wl-text-primary"
             >
               <option value="">All Status</option>
               <option value='draft'>Draft</option>
@@ -426,7 +426,7 @@ export default function InvoicesPage() {
                 setCurrentPage(1);
               }}
               label="Customer"
-              className="w-40 bg-wl-bg-elevated border-wl-border-default text-white"
+              className="w-40 bg-wl-bg-elevated border-wl-border-default text-wl-text-primary"
             >
               <option value="">All Customers</option>
               {customers.map((name) => (
@@ -442,7 +442,7 @@ export default function InvoicesPage() {
                 setSortBy(value as "date" | "amount" | "status" | "due")
               }
               label="Sort By"
-              className="w-32 bg-wl-bg-elevated border-wl-border-default text-white"
+              className="w-32 bg-wl-bg-elevated border-wl-border-default text-wl-text-primary"
             >
               <option value='date'>Date</option>
               <option value='amount'>Amount</option>
@@ -479,7 +479,7 @@ export default function InvoicesPage() {
                   setDateFrom(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-white"
+                className="px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-wl-text-primary"
               />
               <span className="text-wl-text-secondary">to</span>
               <input
@@ -489,7 +489,7 @@ export default function InvoicesPage() {
                   setDateTo(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-white"
+                className="px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-wl-text-primary"
               />
             </div>
 
@@ -503,7 +503,7 @@ export default function InvoicesPage() {
                   setAmountMin(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-20 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-white placeholder:text-wl-text-tertiary"
+                className="w-20 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-wl-text-primary placeholder:text-wl-text-tertiary"
               />
               <span className="text-wl-text-secondary">-</span>
               <input
@@ -514,7 +514,7 @@ export default function InvoicesPage() {
                   setAmountMax(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-20 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-white placeholder:text-wl-text-tertiary"
+                className="w-20 px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-wl-text-primary placeholder:text-wl-text-tertiary"
               />
             </div>
           </div>
@@ -577,7 +577,7 @@ export default function InvoicesPage() {
                   key: "amount",
                   header: "Amount",
                   render: (item: Invoice) => (
-                    <div className="font-medium text-white">
+                    <div className="font-medium text-wl-text-primary">
                       ${item.amount.toFixed(2)}
                     </div>
                   ),
@@ -651,7 +651,7 @@ export default function InvoicesPage() {
                   setCurrentPage(1);
                 }}
                 label="Page Size"
-                className="w-24 bg-wl-bg-elevated border-wl-border-default text-white"
+                className="w-24 bg-wl-bg-elevated border-wl-border-default text-wl-text-primary"
               >
                 <option value="5">5</option>
                 <option value="10">10</option>
