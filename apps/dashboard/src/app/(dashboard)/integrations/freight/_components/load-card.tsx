@@ -41,7 +41,7 @@ export function LoadCard({ load, onBook, onDetails }: LoadCardProps) {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xs text-wl-text-secondary">→</span>
-              <span className="text-sm text-wl-neutral-300">{load.destination}</span>
+              <span className="text-sm text-wl-text-secondary">{load.destination}</span>
             </div>
           </div>
           <div className="text-right">

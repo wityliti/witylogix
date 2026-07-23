@@ -188,7 +188,7 @@ export default function FinancePage() {
                       <tbody>
                         {payments.slice(0, 10).map((payment) => (
                           <tr key={payment.id} className="border-b border-wl-border-default hover:bg-wl-bg-elevated">
-                            <td className="px-4 py-3 text-wl-neutral-300">
+                            <td className="px-4 py-3 text-wl-text-secondary">
                               {new Date(payment.createdAt).toLocaleDateString()}
                             </td>
                             <td className="px-4 py-3 text-wl-text-primary">

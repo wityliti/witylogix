@@ -128,7 +128,7 @@ export default function TransactionsPage() {
 
               <div className="p-6 space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-wl-neutral-300 block mb-1">
+                  <label className="text-sm font-medium text-wl-text-secondary block mb-1">
                     Transaction
                   </label>
                   <div className="px-3 py-2 rounded border border-wl-border-default bg-wl-bg-root text-wl-text-primary text-sm">
@@ -137,7 +137,7 @@ export default function TransactionsPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-wl-neutral-300 block mb-1">
+                  <label className="text-sm font-medium text-wl-text-secondary block mb-1">
                     Amount
                   </label>
                   <div className="px-3 py-2 rounded border border-wl-border-default bg-wl-bg-root text-wl-text-primary text-sm font-bold text-wl-success-500">
@@ -146,7 +146,7 @@ export default function TransactionsPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-wl-neutral-300 block mb-1">
+                  <label className="text-sm font-medium text-wl-text-secondary block mb-1">
                     Refund Reason
                   </label>
                   <select
@@ -326,7 +326,7 @@ export default function TransactionsPage() {
                       <td className="px-4 py-3 text-wl-text-primary font-mono text-xs">
                         {txn.transactionId}
                       </td>
-                      <td className="px-4 py-3 text-wl-neutral-300">
+                      <td className="px-4 py-3 text-wl-text-secondary">
                         {txn.customerName || "Guest"}
                       </td>
                       <td className="px-4 py-3 text-wl-success-500 font-bold">
@@ -424,7 +424,7 @@ export default function TransactionsPage() {
                       </div>
                       <div className="space-y-1">
                         {selectedTxnData.items.map((item) => (
-                          <div key={item.id} className="text-xs text-wl-neutral-300 flex justify-between">
+                          <div key={item.id} className="text-xs text-wl-text-secondary flex justify-between">
                             <span>
                               {item.name} x{item.quantity}
                             </span>

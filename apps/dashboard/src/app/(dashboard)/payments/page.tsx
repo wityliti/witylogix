@@ -590,7 +590,7 @@ export default function PaymentsPage() {
                 key: "method",
                 header: "Method",
                 render: (item) => (
-                  <div className="text-sm text-wl-neutral-300">
+                  <div className="text-sm text-wl-text-secondary">
                     {getMethodLabel(item.method)}
                   </div>
                 ),
@@ -610,7 +610,7 @@ export default function PaymentsPage() {
                 key: "date",
                 header: "Date",
                 render: (item) => (
-                  <div className="text-sm text-wl-neutral-300">
+                  <div className="text-sm text-wl-text-secondary">
                     {new Date(item.date).toLocaleDateString()}
                   </div>
                 ),

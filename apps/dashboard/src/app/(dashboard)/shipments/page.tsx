@@ -202,7 +202,7 @@ function MapShipmentCard({ shipment, onClose, onView }: MapShipmentCardProps) {
           {shipment.driver?.name && (
             <div>
               <div className="text-xs text-wl-text-tertiary mb-0.5">Driver</div>
-              <div className="text-xs text-wl-neutral-300">{shipment.driver.name}</div>
+              <div className="text-xs text-wl-text-secondary">{shipment.driver.name}</div>
             </div>
           )}
 

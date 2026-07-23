@@ -412,13 +412,13 @@ export default function ProductsPage() {
                     <td className={cn("p-3 px-4 text-wl-text-primary font-semibold")}>
                       {product.title}
                     </td>
-                    <td className={cn("p-3 px-4 text-wl-neutral-300")}>
+                    <td className={cn("p-3 px-4 text-wl-text-secondary")}>
                       {product.productType}
                     </td>
-                    <td className={cn("p-3 px-4 text-wl-neutral-300")}>
+                    <td className={cn("p-3 px-4 text-wl-text-secondary")}>
                       {product.vendor}
                     </td>
-                    <td className={cn("p-3 px-4 text-center text-wl-neutral-300")}>
+                    <td className={cn("p-3 px-4 text-center text-wl-text-secondary")}>
                       {product.weight ? `${product.weight} ${product.weightUnit}` : (
                         <span className="text-wl-danger-400 font-semibold">Missing</span>
                       )}

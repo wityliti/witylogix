@@ -136,6 +136,7 @@ async function supplyChainRoutes(fastify: FastifyInstance): Promise<void> {
           totalPrice: true,
           itemCount: true,
           deliveryDate: true,
+          deliveryLocation: true,
           createdAt: true,
           tags: true,
         },
@@ -143,18 +144,23 @@ async function supplyChainRoutes(fastify: FastifyInstance): Promise<void> {
       request.tenantDb.order.count({ where: where as any }),
     ]);
 
-    const mapped = orders.map((o) => ({
-      id: o.id,
-      orderNumber: o.externalOrderNumber ?? o.externalOrderId,
-      status: mapOrderStatus(String(o.status)),
-      customer: o.customerName ?? o.customerEmail ?? "Unknown",
-      items: o.itemCount,
-      total: Number(o.totalPrice ?? 0),
-      createdDate: o.createdAt.toISOString(),
-      dueDate: o.deliveryDate?.toISOString() ?? null,
-      warehouse: "Main",
-      priority: (o.tags as string[]).includes("expedited") ? "expedited" : "standard",
-    }));
+    const mapped = orders.map((o) => {
+      const loc = o.deliveryLocation as { lat?: number; lng?: number } | null;
+      return {
+        id: o.id,
+        orderNumber: o.externalOrderNumber ?? o.externalOrderId,
+        status: mapOrderStatus(String(o.status)),
+        customer: o.customerName ?? o.customerEmail ?? "Unknown",
+        items: o.itemCount,
+        total: Number(o.totalPrice ?? 0),
+        createdDate: o.createdAt.toISOString(),
+        dueDate: o.deliveryDate?.toISOString() ?? null,
+        warehouse: "Main",
+        priority: (o.tags as string[]).includes("expedited") ? "expedited" : "standard",
+        deliveryLat: loc?.lat ?? null,
+        deliveryLng: loc?.lng ?? null,
+      };
+    });
 
     return { data: mapped, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } };
   });

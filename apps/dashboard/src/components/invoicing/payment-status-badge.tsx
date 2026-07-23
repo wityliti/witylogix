@@ -47,7 +47,7 @@ const statusConfig: Record<
   },
   refunded: {
     bgClass: "bg-white/6",
-    textClass: "text-wl-neutral-400",
+    textClass: "text-wl-text-secondary",
     indicatorClass: "bg-wl-neutral-500",
     label: "Refunded",
   },

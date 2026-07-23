@@ -249,16 +249,16 @@ export default function RoutesPage() {
                           )}
                         </Link>
                       </td>
-                      <td className="px-6 py-4 text-wl-neutral-300">
+                      <td className="px-6 py-4 text-wl-text-secondary">
                         {route.stopsCount}
                       </td>
-                      <td className="px-6 py-4 text-wl-neutral-300 font-mono">
+                      <td className="px-6 py-4 text-wl-text-secondary font-mono">
                         {route.totalDistance.toFixed(1)} km
                       </td>
-                      <td className="px-6 py-4 text-wl-neutral-300">
+                      <td className="px-6 py-4 text-wl-text-secondary">
                         {formatDuration(route.totalDuration)}
                       </td>
-                      <td className="px-6 py-4 text-wl-neutral-300">
+                      <td className="px-6 py-4 text-wl-text-secondary">
                         {route.assignedDriver ?? '—'}
                       </td>
                       <td className="px-6 py-4">

@@ -73,7 +73,7 @@ export function FreightProviderStatusCard({
           </div>
           <div className="flex justify-between text-xs">
             <span className="text-wl-text-secondary">Last Sync:</span>
-            <span className="text-wl-neutral-300">{provider.lastSync}</span>
+            <span className="text-wl-text-secondary">{provider.lastSync}</span>
           </div>
         </div>
 

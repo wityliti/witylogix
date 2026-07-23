@@ -55,7 +55,7 @@ const statusConfig: Record<
   inactive: {
     icon: Package,
     label: "Inactive",
-    color: "text-wl-neutral-400 bg-wl-neutral-500/12",
+    color: "text-wl-text-secondary bg-wl-neutral-500/12",
   },
 };
 

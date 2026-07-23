@@ -209,7 +209,7 @@ export default function RecordsPage() {
                 <div>
                   <h3 className="text-sm font-semibold text-wl-text-secondary mb-2">Summary</h3>
                   <div className="p-4 bg-wl-bg-elevated rounded-lg border border-wl-border-default">
-                    <p className="text-sm text-wl-neutral-300 leading-relaxed">{selectedRecord.summary}</p>
+                    <p className="text-sm text-wl-text-secondary leading-relaxed">{selectedRecord.summary}</p>
                   </div>
                 </div>
 

@@ -154,7 +154,7 @@ export default function DeliveryLogPage() {
                   <div className="text-2xl font-bold text-wl-text-primary">
                     {stats.total}
                   </div>
-                  <p className="text-sm text-wl-neutral-300 mt-1">
+                  <p className="text-sm text-wl-text-secondary mt-1">
                     Total Sent
                   </p>
                 </div>
@@ -167,7 +167,7 @@ export default function DeliveryLogPage() {
                   <div className="text-2xl font-bold text-wl-success-500">
                     {stats.delivered}
                   </div>
-                  <p className="text-sm text-wl-neutral-300 mt-1">
+                  <p className="text-sm text-wl-text-secondary mt-1">
                     Delivered
                   </p>
                 </div>
@@ -180,7 +180,7 @@ export default function DeliveryLogPage() {
                   <div className="text-2xl font-bold text-wl-danger-500">
                     {stats.failed}
                   </div>
-                  <p className="text-sm text-wl-neutral-300 mt-1">
+                  <p className="text-sm text-wl-text-secondary mt-1">
                     Failed
                   </p>
                 </div>
@@ -193,7 +193,7 @@ export default function DeliveryLogPage() {
                   <div className="text-2xl font-bold text-wl-warning-500">
                     {stats.rate}%
                   </div>
-                  <p className="text-sm text-wl-neutral-300 mt-1">
+                  <p className="text-sm text-wl-text-secondary mt-1">
                     Success Rate
                   </p>
                 </div>
@@ -312,7 +312,7 @@ export default function DeliveryLogPage() {
               {entries.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <Calendar className="w-12 h-12 text-wl-text-secondary mb-3" />
-                  <p className="text-wl-neutral-300">
+                  <p className="text-wl-text-secondary">
                     No delivery logs found
                   </p>
                 </div>
@@ -354,10 +354,10 @@ export default function DeliveryLogPage() {
                             <td className="py-4 px-6 text-wl-text-primary font-medium">
                               {entry.message}
                             </td>
-                            <td className="py-4 px-6 text-wl-neutral-300">
+                            <td className="py-4 px-6 text-wl-text-secondary">
                               <Badge variant="info">{entry.channel}</Badge>
                             </td>
-                            <td className="py-4 px-6 text-wl-neutral-300 text-xs font-mono">
+                            <td className="py-4 px-6 text-wl-text-secondary text-xs font-mono">
                               {truncate(entry.recipient, 30)}
                             </td>
                             <td className="py-4 px-6">
@@ -365,7 +365,7 @@ export default function DeliveryLogPage() {
                                 {entry.status}
                               </Badge>
                             </td>
-                            <td className="py-4 px-6 text-wl-neutral-300 text-sm">
+                            <td className="py-4 px-6 text-wl-text-secondary text-sm">
                               {formatDateTime(entry.timestamp)}
                             </td>
                             <td
@@ -406,7 +406,7 @@ export default function DeliveryLogPage() {
                       <p className="text-wl-text-secondary uppercase text-xs font-semibold tracking-wide mb-1">
                         Full Recipient
                       </p>
-                      <p className="font-mono text-wl-neutral-300 break-all">
+                      <p className="font-mono text-wl-text-secondary break-all">
                         {entry.recipient}
                       </p>
                     </div>
@@ -415,7 +415,7 @@ export default function DeliveryLogPage() {
                       <p className="text-wl-text-secondary uppercase text-xs font-semibold tracking-wide mb-1">
                         Sent At
                       </p>
-                      <p className="text-wl-neutral-300">
+                      <p className="text-wl-text-secondary">
                         {new Date(entry.timestamp).toLocaleString()}
                       </p>
                     </div>
@@ -448,7 +448,7 @@ export default function DeliveryLogPage() {
                       <p className="text-wl-text-secondary uppercase text-xs font-semibold tracking-wide mb-1">
                         Retries
                       </p>
-                      <p className="text-wl-neutral-300">
+                      <p className="text-wl-text-secondary">
                         {entry.retryCount}
                       </p>
                     </div>

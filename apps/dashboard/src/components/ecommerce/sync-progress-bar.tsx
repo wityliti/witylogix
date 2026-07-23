@@ -109,7 +109,7 @@ const SyncProgressBar = forwardRef<HTMLDivElement, SyncProgressBarProps>(
                   'text-sm font-semibold truncate',
                   state === 'error' && 'text-wl-danger-600',
                   state === 'success' && 'text-wl-success-600',
-                  state !== 'error' && state !== 'success' && 'text-wl-text-primary dark:text-wl-neutral-300'
+                  state !== 'error' && state !== 'success' && 'text-wl-text-primary dark:text-wl-text-secondary'
                 )}
               >
                 {operationLabel || 'Synchronizing...'}
@@ -176,7 +176,7 @@ const SyncProgressBar = forwardRef<HTMLDivElement, SyncProgressBarProps>(
 
           {/* Progress percentage */}
           <div
-            className="text-xs font-semibold text-wl-text-primary dark:text-wl-neutral-300"
+            className="text-xs font-semibold text-wl-text-primary dark:text-wl-text-secondary"
             aria-live="polite"
             aria-atomic="true"
           >

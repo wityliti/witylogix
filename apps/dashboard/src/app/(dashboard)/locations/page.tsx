@@ -546,7 +546,7 @@ export default function LocationsPage() {
                     </div>
                     <div>
                       <div className={cn("text-xs text-wl-text-secondary mb-1")}>Prep</div>
-                      <div className={cn("text-lg font-bold font-mono text-wl-neutral-300")}>
+                      <div className={cn("text-lg font-bold font-mono text-wl-text-secondary")}>
                         {location.avgPrepTime}m
                       </div>
                     </div>
@@ -634,7 +634,7 @@ export default function LocationsPage() {
                   <div className={cn("text-sm text-wl-text-primary font-medium")}>
                     {selectedLocation.addressLine1}
                   </div>
-                  <div className={cn("text-sm text-wl-neutral-300")}>
+                  <div className={cn("text-sm text-wl-text-secondary")}>
                     {selectedLocation.city}, {selectedLocation.province}{" "}
                     {selectedLocation.postalCode}
                   </div>
@@ -653,12 +653,12 @@ export default function LocationsPage() {
                       Contact
                     </div>
                     {selectedLocation.phone && (
-                      <div className={cn("text-sm text-wl-neutral-300 font-mono mb-1")}>
+                      <div className={cn("text-sm text-wl-text-secondary font-mono mb-1")}>
                         {selectedLocation.phone}
                       </div>
                     )}
                     {selectedLocation.email && (
-                      <div className={cn("text-sm text-wl-neutral-300")}>
+                      <div className={cn("text-sm text-wl-text-secondary")}>
                         {selectedLocation.email}
                       </div>
                     )}
@@ -682,7 +682,7 @@ export default function LocationsPage() {
                   </div>
                   <div>
                     <div className={cn("text-xs text-wl-text-secondary mb-1")}>Prep</div>
-                    <div className={cn("text-lg font-bold font-mono text-wl-neutral-300")}>
+                    <div className={cn("text-lg font-bold font-mono text-wl-text-secondary")}>
                       {selectedLocation.avgPrepTime}m
                     </div>
                   </div>
@@ -701,7 +701,7 @@ export default function LocationsPage() {
                       <tbody>
                         {Object.entries(selectedLocation.operatingHours).map(([day, hours]) => (
                           <tr key={day} className={cn("border-b border-wl-border-default")}>
-                            <td className={cn("py-1.5 pr-3 text-wl-neutral-300 font-medium whitespace-nowrap")}>
+                            <td className={cn("py-1.5 pr-3 text-wl-text-secondary font-medium whitespace-nowrap")}>
                               {day}
                             </td>
                             <td

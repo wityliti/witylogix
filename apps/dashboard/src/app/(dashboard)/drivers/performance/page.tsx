@@ -186,7 +186,7 @@ export default function DriverPerformancePage() {
                 "px-4 py-2 rounded-md text-sm font-medium transition-all duration-fast",
                 period === p
                   ? "bg-wl-info-500 text-white"
-                  : "bg-wl-bg-elevated text-wl-neutral-300 hover:text-white",
+                  : "bg-wl-bg-elevated text-wl-text-secondary hover:text-white",
               )}
             >
               {p === "daily" && "Daily"}
@@ -268,7 +268,7 @@ export default function DriverPerformancePage() {
                         <p className="text-sm font-semibold text-wl-text-primary">
                           {topThree[1].name}
                         </p>
-                        <p className="text-xs text-wl-neutral-300">
+                        <p className="text-xs text-wl-text-secondary">
                           {topThree[1].compositeScore}
                         </p>
                       </div>
@@ -287,7 +287,7 @@ export default function DriverPerformancePage() {
                         <p className="text-sm font-semibold text-wl-text-primary">
                           {topThree[0].name}
                         </p>
-                        <p className="text-xs text-wl-neutral-300">
+                        <p className="text-xs text-wl-text-secondary">
                           {topThree[0].compositeScore}
                         </p>
                       </div>
@@ -304,7 +304,7 @@ export default function DriverPerformancePage() {
                         <p className="text-sm font-semibold text-wl-text-primary">
                           {topThree[2].name}
                         </p>
-                        <p className="text-xs text-wl-neutral-300">
+                        <p className="text-xs text-wl-text-secondary">
                           {topThree[2].compositeScore}
                         </p>
                       </div>
@@ -319,34 +319,34 @@ export default function DriverPerformancePage() {
                   <table className="w-full border-collapse text-sm">
                     <thead>
                       <tr className="border-b border-wl-border-default bg-wl-bg-elevated">
-                        <th className="p-3 px-4 text-center font-semibold text-wl-neutral-300 w-12">
+                        <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary w-12">
                           Rank
                         </th>
-                        <th className="p-3 px-4 text-left font-semibold text-wl-neutral-300">
+                        <th className="p-3 px-4 text-left font-semibold text-wl-text-secondary">
                           Driver Name
                         </th>
-                        <th className="p-3 px-4 text-center font-semibold text-wl-neutral-300">
+                        <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                           Composite Score
                         </th>
-                        <th className="p-3 px-4 text-center font-semibold text-wl-neutral-300">
+                        <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                           Tier
                         </th>
-                        <th className="p-3 px-4 text-center font-semibold text-wl-neutral-300">
+                        <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                           On-Time %
                         </th>
-                        <th className="p-3 px-4 text-center font-semibold text-wl-neutral-300">
+                        <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                           Rating
                         </th>
-                        <th className="p-3 px-4 text-center font-semibold text-wl-neutral-300">
+                        <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                           POD %
                         </th>
-                        <th className="p-3 px-4 text-center font-semibold text-wl-neutral-300">
+                        <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                           Trend
                         </th>
-                        <th className="p-3 px-4 text-center font-semibold text-wl-neutral-300">
+                        <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                           Deliveries
                         </th>
-                        <th className="p-3 px-4 text-center font-semibold text-wl-neutral-300">
+                        <th className="p-3 px-4 text-center font-semibold text-wl-text-secondary">
                           Actions
                         </th>
                       </tr>
@@ -395,7 +395,7 @@ export default function DriverPerformancePage() {
                               <span className="text-wl-text-primary font-semibold">
                                 {formatRating(driver.customerRating)}
                               </span>
-                              <span className="text-wl-neutral-300">⭐</span>
+                              <span className="text-wl-text-secondary">⭐</span>
                             </div>
                           </td>
                           <td className="p-3 px-4 text-center text-wl-text-primary font-semibold">
@@ -448,7 +448,7 @@ export default function DriverPerformancePage() {
                           </span>
                         </div>
                       </div>
-                      <p className="text-sm font-semibold text-wl-neutral-300">
+                      <p className="text-sm font-semibold text-wl-text-secondary">
                         On-Time
                       </p>
                     </div>
@@ -467,7 +467,7 @@ export default function DriverPerformancePage() {
                           </span>
                         </div>
                       </div>
-                      <p className="text-sm font-semibold text-wl-neutral-300">
+                      <p className="text-sm font-semibold text-wl-text-secondary">
                         Rating
                       </p>
                     </div>
@@ -486,7 +486,7 @@ export default function DriverPerformancePage() {
                           </span>
                         </div>
                       </div>
-                      <p className="text-sm font-semibold text-wl-neutral-300">
+                      <p className="text-sm font-semibold text-wl-text-secondary">
                         POD %
                       </p>
                     </div>
@@ -498,7 +498,7 @@ export default function DriverPerformancePage() {
                           {selectedDriver.deliveriesCount}
                         </span>
                       </div>
-                      <p className="text-sm font-semibold text-wl-neutral-300">
+                      <p className="text-sm font-semibold text-wl-text-secondary">
                         Deliveries
                       </p>
                     </div>
@@ -520,7 +520,7 @@ export default function DriverPerformancePage() {
                           </span>
                         </div>
                       </div>
-                      <p className="text-sm font-semibold text-wl-neutral-300">
+                      <p className="text-sm font-semibold text-wl-text-secondary">
                         Score
                       </p>
                     </div>

@@ -151,7 +151,7 @@ const InventoryLevelIndicator = forwardRef<
         {/* Header with title and alert */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-wl-text-primary dark:text-wl-neutral-300">
+            <span className="text-sm font-semibold text-wl-text-primary dark:text-wl-text-secondary">
               Stock Level
             </span>
             {showAlert && isLowStock && (
@@ -161,7 +161,7 @@ const InventoryLevelIndicator = forwardRef<
           <span
             className={cn(
               'text-xs font-semibold px-2 py-1 rounded',
-              isOutOfStock && 'bg-wl-bg-surface dark:bg-wl-bg-elevated text-wl-text-primary dark:text-wl-neutral-300',
+              isOutOfStock && 'bg-wl-bg-surface dark:bg-wl-bg-elevated text-wl-text-primary dark:text-wl-text-secondary',
               isLowStock && 'bg-wl-warning-bg text-wl-warning-500',
               !isLowStock && !isOutOfStock && 'bg-wl-success-bg text-wl-success-600'
             )}
@@ -188,7 +188,7 @@ const InventoryLevelIndicator = forwardRef<
           </div>
           <div className="flex justify-between mt-1 text-xs text-wl-text-tertiary dark:text-wl-text-secondary">
             <span>0</span>
-            <span className="font-semibold text-wl-text-primary dark:text-wl-neutral-300">
+            <span className="font-semibold text-wl-text-primary dark:text-wl-text-secondary">
               {level} / {maxLevel}
             </span>
             <span>{maxLevel}</span>
@@ -236,7 +236,7 @@ const InventoryLevelIndicator = forwardRef<
                     key={wh.warehouseId}
                     className="text-xs p-2 bg-wl-bg-elevated rounded border border-wl-border-default"
                   >
-                    <div className="font-semibold text-wl-text-primary dark:text-wl-neutral-300 mb-1">
+                    <div className="font-semibold text-wl-text-primary dark:text-wl-text-secondary mb-1">
                       {wh.warehouseName}
                     </div>
                     <div className="h-1.5 bg-wl-neutral-200 dark:bg-wl-bg-overlay rounded-full overflow-hidden mb-1">
@@ -255,7 +255,7 @@ const InventoryLevelIndicator = forwardRef<
                     <div className="flex justify-between text-wl-text-tertiary dark:text-wl-text-secondary">
                       <span>{wh.available} avail</span>
                       <span>{wh.reserved} reserved</span>
-                      <span className="font-semibold text-wl-text-primary dark:text-wl-neutral-300">
+                      <span className="font-semibold text-wl-text-primary dark:text-wl-text-secondary">
                         {wh.total} total
                       </span>
                     </div>

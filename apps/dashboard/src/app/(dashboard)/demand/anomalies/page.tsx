@@ -313,7 +313,7 @@ export default function AnomaliesPage() {
             ].map(({ color, label }) => (
               <div key={label} className="flex items-center gap-2 mt-1">
                 <div className="w-3 h-3 rounded-sm" style={{ background: color }} />
-                <span className="text-wl-neutral-300">{label}</span>
+                <span className="text-wl-text-secondary">{label}</span>
               </div>
             ))}
           </div>
@@ -329,7 +329,7 @@ export default function AnomaliesPage() {
                   .slice(0, 8)
                   .map((z) => (
                     <div key={z.id} className="flex items-center justify-between gap-3">
-                      <span className="text-xs text-wl-neutral-300 truncate">{z.name}</span>
+                      <span className="text-xs text-wl-text-secondary truncate">{z.name}</span>
                       <span className="text-xs font-mono text-wl-text-primary shrink-0">{z.predictedVolume} pts</span>
                     </div>
                   ))}

@@ -327,7 +327,7 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
 
             {/* Line items preview */}
             <div>
-              <h4 className="text-xs font-semibold text-wl-text-primary dark:text-wl-neutral-300 mb-2 uppercase">
+              <h4 className="text-xs font-semibold text-wl-text-primary dark:text-wl-text-secondary mb-2 uppercase">
                 Items ({lineItems.length})
               </h4>
               <div className="space-y-1">
@@ -365,7 +365,7 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
             {/* Order total */}
             <div className="pt-2 border-t border-wl-border-subtle">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-wl-text-primary dark:text-wl-neutral-300">
+                <span className="text-sm font-semibold text-wl-text-primary dark:text-wl-text-secondary">
                   Total
                 </span>
                 <span className="text-lg font-bold text-wl-text-primary dark:text-white">

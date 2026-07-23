@@ -179,7 +179,7 @@ export default function OrderDetailPage() {
           <h1 className="text-3xl font-bold text-wl-text-primary">{displayNumber}</h1>
           <p className="text-sm text-wl-text-secondary mt-1">
             Created {new Date(order.createdAt).toLocaleDateString()} · Source:{' '}
-            <span className="text-wl-neutral-300">{order.source}</span>
+            <span className="text-wl-text-secondary">{order.source}</span>
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
@@ -333,10 +333,10 @@ export default function OrderDetailPage() {
                   const itemTotal = item.total ?? item.lineTotal ?? unit * qty;
                   return (
                     <tr key={item.id ?? idx} className="hover:bg-wl-bg-elevated transition-colors">
-                      <td className="border-b border-wl-border-default p-3 text-sm text-wl-neutral-300">{name}</td>
+                      <td className="border-b border-wl-border-default p-3 text-sm text-wl-text-secondary">{name}</td>
                       <td className="border-b border-wl-border-default p-3 text-sm text-wl-text-secondary">{sku}</td>
-                      <td className="border-b border-wl-border-default p-3 text-sm text-wl-neutral-300">{qty}</td>
-                      <td className="border-b border-wl-border-default p-3 text-sm text-wl-neutral-300">
+                      <td className="border-b border-wl-border-default p-3 text-sm text-wl-text-secondary">{qty}</td>
+                      <td className="border-b border-wl-border-default p-3 text-sm text-wl-text-secondary">
                         {unit ? `₹${Number(unit).toLocaleString()}` : '—'}
                       </td>
                       <td className="border-b border-wl-border-default p-3 text-sm text-wl-text-primary font-medium">
@@ -354,7 +354,7 @@ export default function OrderDetailPage() {
             <div className="text-right">
               <div className="flex items-center gap-8 py-2 text-sm text-wl-text-secondary">
                 <span>Items</span>
-                <span className="text-wl-neutral-300">{order.itemCount}</span>
+                <span className="text-wl-text-secondary">{order.itemCount}</span>
               </div>
               <div className="flex items-center gap-8 py-2 border-t border-wl-border-default text-base font-bold text-wl-info-400">
                 <span>Total</span>
@@ -386,7 +386,7 @@ export default function OrderDetailPage() {
                     }`}
                   />
                   <p className="text-xs text-wl-text-tertiary">{new Date(log.createdAt).toLocaleString()}</p>
-                  <p className="text-sm text-wl-neutral-300 font-medium mt-0.5">
+                  <p className="text-sm text-wl-text-secondary font-medium mt-0.5">
                     {log.type.replace(/_/g, ' ')}
                   </p>
                   {log.recipient && (
@@ -403,7 +403,7 @@ export default function OrderDetailPage() {
           <h3 className="text-sm font-semibold text-wl-text-primary mb-4">Internal Notes</h3>
           {order.notes ? (
             <div className="bg-wl-bg-root border border-wl-border-default rounded-lg p-4 mb-4">
-              <p className="text-sm text-wl-neutral-300 leading-relaxed whitespace-pre-wrap">
+              <p className="text-sm text-wl-text-secondary leading-relaxed whitespace-pre-wrap">
                 {order.notes}
               </p>
             </div>
@@ -414,7 +414,7 @@ export default function OrderDetailPage() {
             {order.notes ? 'Update Notes' : 'Add Notes'}
           </label>
           <textarea
-            className="w-full p-3 bg-wl-bg-root border border-wl-border-default rounded-lg text-wl-neutral-300 text-sm min-h-[80px] resize-y focus:outline-none focus:border-wl-info-500 transition-colors"
+            className="w-full p-3 bg-wl-bg-root border border-wl-border-default rounded-lg text-wl-text-secondary text-sm min-h-[80px] resize-y focus:outline-none focus:border-wl-info-500 transition-colors"
             placeholder="Add internal notes…"
             value={noteInput}
             onChange={(e) => setNoteInput(e.target.value)}

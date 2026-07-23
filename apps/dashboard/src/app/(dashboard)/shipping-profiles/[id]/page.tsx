@@ -250,7 +250,7 @@ export default function ShippingProfileDetailPage() {
                 placeholder="Profile description..."
               />
             ) : (
-              <p className="text-sm text-wl-neutral-300">{profile.description}</p>
+              <p className="text-sm text-wl-text-secondary">{profile.description}</p>
             )}
           </CardContent>
         </Card>

@@ -133,7 +133,7 @@ export function SearchCommandPalette(): React.ReactElement {
           />
         </svg>
         <span className="hidden sm:inline">Search...</span>
-        <kbd className="rounded border border-wl-border-strong bg-wl-bg-elevated px-2 py-1 text-xs font-semibold text-wl-neutral-300">
+        <kbd className="rounded border border-wl-border-strong bg-wl-bg-elevated px-2 py-1 text-xs font-semibold text-wl-text-secondary">
           Cmd K
         </kbd>
       </button>
@@ -185,7 +185,7 @@ export function SearchCommandPalette(): React.ReactElement {
                       "w-full rounded-lg px-4 py-2 text-left text-sm transition-colors",
                       search.selectedIndex === index
                         ? "bg-wl-primary-500 text-wl-text-inverse"
-                        : "text-wl-neutral-300 hover:bg-wl-bg-elevated"
+                        : "text-wl-text-secondary hover:bg-wl-bg-elevated"
                     )}
                   >
                     {action.label}
@@ -204,7 +204,7 @@ export function SearchCommandPalette(): React.ReactElement {
                 </div>
                 <button
                   onClick={() => search.clearRecentSearches()}
-                  className="text-xs text-wl-text-tertiary hover:text-wl-neutral-300"
+                  className="text-xs text-wl-text-tertiary hover:text-wl-text-secondary"
                 >
                   Clear
                 </button>
@@ -292,7 +292,7 @@ export function SearchCommandPalette(): React.ReactElement {
                                   ? "bg-wl-success-500/20 text-wl-success-400"
                                   : entity === "deliveries"
                                     ? "bg-wl-primary-500/20 text-wl-primary-400"
-                                    : "bg-wl-bg-overlay text-wl-neutral-300"
+                                    : "bg-wl-bg-overlay text-wl-text-secondary"
                             )}
                           >
                             {entity}

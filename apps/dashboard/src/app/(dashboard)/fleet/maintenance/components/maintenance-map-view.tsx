@@ -128,7 +128,7 @@ export default function MaintenanceMapView({ maintenance }: MaintenanceMapViewPr
       <div className="w-full h-full bg-wl-bg-root flex flex-col items-center justify-center gap-3 rounded-xl border border-wl-border-default">
         <Wrench className="w-10 h-10 text-wl-text-tertiary" />
         <div className="text-center">
-          <p className="text-sm font-medium text-wl-neutral-300">No vehicles with maintenance data</p>
+          <p className="text-sm font-medium text-wl-text-secondary">No vehicles with maintenance data</p>
           <p className="text-xs text-wl-text-tertiary mt-1 max-w-xs">
             Vehicles that have live location data and maintenance records will appear here.
           </p>
@@ -156,7 +156,7 @@ export default function MaintenanceMapView({ maintenance }: MaintenanceMapViewPr
             return (
               <div key={status} className="flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: STATUS_DOT[status] }} />
-                <span className="text-xs text-wl-neutral-300">{STATUS_LABEL[status]}</span>
+                <span className="text-xs text-wl-text-secondary">{STATUS_LABEL[status]}</span>
                 <span className="text-xs font-mono text-wl-text-tertiary ml-auto pl-3">{count}</span>
               </div>
             );
@@ -166,7 +166,7 @@ export default function MaintenanceMapView({ maintenance }: MaintenanceMapViewPr
 
       {/* Count badge */}
       <div className="absolute top-4 left-4 bg-wl-bg-root/90 backdrop-blur-sm border border-wl-border-default rounded-lg px-3 py-1.5 z-10">
-        <span className="text-xs font-semibold text-wl-neutral-300">
+        <span className="text-xs font-semibold text-wl-text-secondary">
           {vehicles.length} vehicle{vehicles.length !== 1 ? 's' : ''} on map
         </span>
       </div>
@@ -178,7 +178,7 @@ export default function MaintenanceMapView({ maintenance }: MaintenanceMapViewPr
             <p className="text-sm font-semibold text-wl-text-primary">{selectedVehicle.name}</p>
             <button
               onClick={() => setSelectedVehicle(null)}
-              className="text-wl-text-tertiary hover:text-wl-neutral-300 transition-colors ml-2 leading-none"
+              className="text-wl-text-tertiary hover:text-wl-text-secondary transition-colors ml-2 leading-none"
               aria-label="Close"
             >
               ×

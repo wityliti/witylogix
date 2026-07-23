@@ -139,7 +139,7 @@ export default function CarriersSettingsPage() {
                       <p className="text-xs text-wl-text-tertiary uppercase tracking-wider mb-1">
                         Coverage
                       </p>
-                      <p className="text-sm text-wl-neutral-300">{carrier.meta.coverage}</p>
+                      <p className="text-sm text-wl-text-secondary">{carrier.meta.coverage}</p>
                     </div>
 
                     <div>

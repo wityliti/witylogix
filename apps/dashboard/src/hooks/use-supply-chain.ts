@@ -31,6 +31,8 @@ export interface Order {
   dueDate: string;
   warehouse: string;
   priority: 'standard' | 'expedited' | 'backorder';
+  deliveryLat?: number | null;
+  deliveryLng?: number | null;
 }
 
 export interface FulfillmentItem {

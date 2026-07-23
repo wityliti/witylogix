@@ -194,7 +194,7 @@ export default function ActivityPage() {
               <h1 className="text-3xl font-bold text-wl-text-primary tracking-tight">
                 Activity Log
               </h1>
-              <p className="text-sm text-wl-neutral-300 mt-2">
+              <p className="text-sm text-wl-text-secondary mt-2">
                 Real-time monitoring of system events and operations
               </p>
             </div>
@@ -222,7 +222,7 @@ export default function ActivityPage() {
                     "text-xs font-medium",
                     isLiveMode
                       ? "text-wl-success-500"
-                      : "text-wl-neutral-300"
+                      : "text-wl-text-secondary"
                   )}
                 >
                   {isLiveMode ? "Live" : "Paused"}
@@ -262,7 +262,7 @@ export default function ActivityPage() {
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-wl-text-secondary hover:text-wl-neutral-300 transition-colors"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-wl-text-secondary hover:text-wl-text-secondary transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -395,7 +395,7 @@ export default function ActivityPage() {
                     <div>
                       <button
                         onClick={() => setSelectedEventId(null)}
-                        className="text-xs text-wl-neutral-300 hover:text-white transition-colors mb-3 flex items-center gap-1"
+                        className="text-xs text-wl-text-secondary hover:text-white transition-colors mb-3 flex items-center gap-1"
                       >
                         <X className="w-3 h-3" />
                         Close
@@ -417,7 +417,7 @@ export default function ActivityPage() {
                     </div>
 
                     <div className="border-t border-wl-border-default pt-4">
-                      <p className="text-xs font-semibold text-wl-neutral-300 uppercase tracking-wider mb-2">
+                      <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2">
                         Description
                       </p>
                       <p className="text-sm text-wl-text-primary">
@@ -427,7 +427,7 @@ export default function ActivityPage() {
 
                     {selectedEvent.user && (
                       <div className="border-t border-wl-border-default pt-4">
-                        <p className="text-xs font-semibold text-wl-neutral-300 uppercase tracking-wider mb-3">
+                        <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-3">
                           Triggered by
                         </p>
                         <div className="flex items-center gap-3">
@@ -448,11 +448,11 @@ export default function ActivityPage() {
 
                     {selectedEvent.entity && (
                       <div className="border-t border-wl-border-default pt-4">
-                        <p className="text-xs font-semibold text-wl-neutral-300 uppercase tracking-wider mb-3">
+                        <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-3">
                           Related entity
                         </p>
                         <div className="bg-wl-bg-surface rounded-md p-3 border border-wl-border-default">
-                          <p className="text-xs text-wl-neutral-300 mb-1">
+                          <p className="text-xs text-wl-text-secondary mb-1">
                             {selectedEvent.entity.type.toUpperCase()}
                           </p>
                           <p className="text-sm font-medium text-wl-info-400">
@@ -466,7 +466,7 @@ export default function ActivityPage() {
                     )}
 
                     <div className="border-t border-wl-border-default pt-4">
-                      <p className="text-xs font-semibold text-wl-neutral-300 uppercase tracking-wider mb-2">
+                      <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-2">
                         Timestamp
                       </p>
                       <p className="text-sm text-wl-text-primary">
@@ -477,14 +477,14 @@ export default function ActivityPage() {
                     {selectedEvent.metadata &&
                       Object.keys(selectedEvent.metadata).length > 0 && (
                         <div className="border-t border-wl-border-default pt-4">
-                          <p className="text-xs font-semibold text-wl-neutral-300 uppercase tracking-wider mb-3">
+                          <p className="text-xs font-semibold text-wl-text-secondary uppercase tracking-wider mb-3">
                             Metadata
                           </p>
                           <div className="space-y-2">
                             {Object.entries(selectedEvent.metadata).map(
                               ([key, value]) => (
                                 <div key={key} className="text-xs">
-                                  <span className="text-wl-neutral-300">
+                                  <span className="text-wl-text-secondary">
                                     {key}:
                                   </span>
                                   <span className="text-wl-text-primary ml-2">

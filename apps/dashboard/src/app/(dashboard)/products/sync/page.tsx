@@ -262,7 +262,7 @@ export default function ProductSyncPage() {
                     <h4 className="font-semibold text-wl-text-primary">
                       {platform.name}
                     </h4>
-                    <p className="text-sm text-wl-neutral-300">
+                    <p className="text-sm text-wl-text-secondary">
                       {platform.platform} • {platform.productCount} products
                     </p>
                   </div>
@@ -287,7 +287,7 @@ export default function ProductSyncPage() {
                         platform.status.slice(1)}
                     </Badge>
                     {platform.lastSyncAt && (
-                      <span className="text-xs text-wl-neutral-300">
+                      <span className="text-xs text-wl-text-secondary">
                         {new Date(platform.lastSyncAt).toLocaleTimeString()}
                       </span>
                     )}
@@ -295,7 +295,7 @@ export default function ProductSyncPage() {
 
                   <ChevronRight
                     className={cn(
-                      'w-5 h-5 text-wl-neutral-300 transition-transform',
+                      'w-5 h-5 text-wl-text-secondary transition-transform',
                       effectivePlatformId === platform.id && 'rotate-90'
                     )}
                   />
@@ -319,7 +319,7 @@ export default function ProductSyncPage() {
                   'px-4 py-3 font-medium text-sm transition-colors border-b-2',
                   activeTab === tab
                     ? 'border-wl-info-500 text-wl-info-500'
-                    : 'border-transparent text-wl-neutral-300 hover:text-white'
+                    : 'border-transparent text-wl-text-secondary hover:text-white'
                 )}
               >
                 {tab === 'mapping' && 'Field Mapping'}
@@ -358,7 +358,7 @@ export default function ProductSyncPage() {
                       <h4 className="font-semibold text-wl-warning-500 mb-1">
                         Unmapped Required Fields
                       </h4>
-                      <p className="text-sm text-wl-neutral-300">
+                      <p className="text-sm text-wl-text-secondary">
                         {unmappedRequired.map((f) => f.name).join(', ')}
                       </p>
                     </div>
@@ -395,7 +395,7 @@ export default function ProductSyncPage() {
                       className={cn(
                         'flex-1 px-3 py-2 text-sm rounded-md',
                         'bg-wl-bg-surface border border-wl-border-default',
-                        'text-wl-text-primary placeholder:text-wl-neutral-300',
+                        'text-wl-text-primary placeholder:text-wl-text-secondary',
                         'focus:outline-none focus:ring-2 focus:ring-wl-info-500'
                       )}
                     />
@@ -489,7 +489,7 @@ export default function ProductSyncPage() {
                   <div className="grid grid-cols-2 gap-4">
                     {/* Source */}
                     <div>
-                      <h5 className="text-sm font-medium text-wl-neutral-300 mb-3">
+                      <h5 className="text-sm font-medium text-wl-text-secondary mb-3">
                         Source ({selectedPlatform.name})
                       </h5>
                       <div className="space-y-2 text-sm">
@@ -499,7 +499,7 @@ export default function ProductSyncPage() {
                               key={key}
                               className="flex justify-between p-2 bg-wl-bg-elevated rounded"
                             >
-                              <span className="text-wl-neutral-300">{key}:</span>
+                              <span className="text-wl-text-secondary">{key}:</span>
                               <span className="text-wl-text-primary font-medium">
                                 {String(value)}
                               </span>
@@ -510,7 +510,7 @@ export default function ProductSyncPage() {
 
                     {/* Target */}
                     <div>
-                      <h5 className="text-sm font-medium text-wl-neutral-300 mb-3">
+                      <h5 className="text-sm font-medium text-wl-text-secondary mb-3">
                         Target (Witylogix)
                       </h5>
                       <div className="space-y-2 text-sm">
@@ -520,7 +520,7 @@ export default function ProductSyncPage() {
                               key={key}
                               className="flex justify-between p-2 bg-wl-bg-elevated rounded"
                             >
-                              <span className="text-wl-neutral-300">{key}:</span>
+                              <span className="text-wl-text-secondary">{key}:</span>
                               <span className="text-wl-text-primary font-medium">
                                 {String(value)}
                               </span>
@@ -534,7 +534,7 @@ export default function ProductSyncPage() {
                 {testSyncInProgress && (
                   <div className="p-4 bg-wl-info-500/20 border border-wl-info-500/30 rounded-lg flex items-center gap-3">
                     <RefreshCw className="w-5 h-5 text-wl-info-500 animate-spin" />
-                    <span className="text-sm text-wl-neutral-300">
+                    <span className="text-sm text-wl-text-secondary">
                       Testing sync with 5 sample products...
                     </span>
                   </div>

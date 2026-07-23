@@ -281,7 +281,7 @@ export default function ShippingProfilesPage() {
                 {/* Description */}
                 {profile.description && (
                   <div
-                    className={cn("text-xs text-wl-neutral-300 mb-3 leading-relaxed")}
+                    className={cn("text-xs text-wl-text-secondary mb-3 leading-relaxed")}
                   >
                     {profile.description}
                   </div>
@@ -350,7 +350,7 @@ export default function ShippingProfilesPage() {
                       Processing Time
                     </div>
                     <div
-                      className={cn("text-base font-bold font-mono text-wl-neutral-300")}
+                      className={cn("text-base font-bold font-mono text-wl-text-secondary")}
                     >
                       {profile.processingTimeHours}h
                     </div>
@@ -361,7 +361,7 @@ export default function ShippingProfilesPage() {
                       Min Order
                     </div>
                     <div
-                      className={cn("text-base font-bold font-mono text-wl-neutral-300")}
+                      className={cn("text-base font-bold font-mono text-wl-text-secondary")}
                     >
                       {profile.minOrderAmount
                         ? formatCurrency(Number(profile.minOrderAmount))

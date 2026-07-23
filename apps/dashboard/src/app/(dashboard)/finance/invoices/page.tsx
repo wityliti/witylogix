@@ -139,11 +139,11 @@ export default function InvoicesPage() {
                   {filtered.map((inv) => (
                     <tr key={inv.id} className="border-b border-wl-border-default hover:bg-wl-bg-elevated">
                       <td className="px-4 py-3 font-medium text-wl-text-primary">{inv.invoiceNumber}</td>
-                      <td className="px-4 py-3 text-wl-neutral-300">{inv.customer}</td>
+                      <td className="px-4 py-3 text-wl-text-secondary">{inv.customer}</td>
                       <td className="text-right px-4 py-3 font-medium text-wl-text-primary">
                         ${inv.amount.toLocaleString()}
                       </td>
-                      <td className="px-4 py-3 text-wl-neutral-300">
+                      <td className="px-4 py-3 text-wl-text-secondary">
                         {new Date(inv.dueDate).toLocaleDateString()}
                       </td>
                       <td className="text-center px-4 py-3">

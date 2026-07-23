@@ -26,7 +26,7 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 const variantClasses: Record<BadgeVariant, string> = {
-  default: "text-wl-neutral-300 bg-white/6",
+  default: "text-wl-text-secondary bg-white/6",
   success: "text-wl-success-400 bg-wl-success-bg",
   warning: "text-wl-warning-400 bg-wl-warning-bg",
   danger: "text-wl-danger-400 bg-wl-danger-bg",
@@ -99,7 +99,7 @@ const statusConfig: Record<DeliveryStatus, StatusConfig> = {
     animated: false,
   },
   cancelled: {
-    color: "text-wl-neutral-400 bg-white/6",
+    color: "text-wl-text-secondary bg-white/6",
     icon: AlertCircle,
     label: "Cancelled",
     animated: false,

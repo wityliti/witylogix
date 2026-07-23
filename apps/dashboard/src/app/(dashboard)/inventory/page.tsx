@@ -223,7 +223,7 @@ export default function InventoryPage() {
               {/* Legend */}
               {!warehouseLoading && !warehouseError && warehousePins.length > 0 && (
                 <div className={cn("flex items-center gap-4 px-4 py-3 border-t border-wl-border-default text-xs text-wl-text-secondary flex-wrap")}>
-                  <span className="font-medium text-wl-neutral-300">Stock stress:</span>
+                  <span className="font-medium text-wl-text-secondary">Stock stress:</span>
                   {[
                     { color: "var(--wl-info-500)", label: "Healthy (0%)" },
                     { color: "var(--wl-chart-green)", label: "Moderate (50%)" },
