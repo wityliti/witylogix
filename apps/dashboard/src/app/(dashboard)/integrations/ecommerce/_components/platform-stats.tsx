@@ -19,14 +19,14 @@ export function PlatformStats({
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       <Card className="bg-wl-bg-elevated border-wl-border-default">
         <CardContent className="pt-6">
-          <div className="text-3xl font-bold text-white">{connected}</div>
+          <div className="text-3xl font-bold text-wl-text-primary">{connected}</div>
           <p className="text-sm text-wl-text-tertiary mt-1">Connected Platforms</p>
         </CardContent>
       </Card>
 
       <Card className="bg-wl-bg-elevated border-wl-border-default">
         <CardContent className="pt-6">
-          <div className="text-3xl font-bold text-white">
+          <div className="text-3xl font-bold text-wl-text-primary">
             {totalProducts.toLocaleString()}
           </div>
           <p className="text-sm text-wl-text-tertiary mt-1">Total Products Synced</p>
@@ -35,7 +35,7 @@ export function PlatformStats({
 
       <Card className="bg-wl-bg-elevated border-wl-border-default">
         <CardContent className="pt-6">
-          <div className="text-3xl font-bold text-white">
+          <div className="text-3xl font-bold text-wl-text-primary">
             {totalOrders.toLocaleString()}
           </div>
           <p className="text-sm text-wl-text-tertiary mt-1">Total Orders Synced</p>
@@ -44,7 +44,7 @@ export function PlatformStats({
 
       <Card className="bg-wl-bg-elevated border-wl-border-default">
         <CardContent className="pt-6">
-          <div className="text-3xl font-bold text-white">{syncErrors}</div>
+          <div className="text-3xl font-bold text-wl-text-primary">{syncErrors}</div>
           <p className="text-sm text-wl-text-tertiary mt-1">Sync Errors</p>
         </CardContent>
       </Card>

@@ -183,7 +183,7 @@ export default function CreateRoutePage() {
   const selectedVehicle = vehicles.find((v) => v.id === formData.vehicleId);
 
   return (
-    <div className="min-h-screen bg-wl-bg-root p-6 text-white">
+    <div className="min-h-screen bg-wl-bg-root p-6 text-wl-text-primary">
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-wl-text-primary mb-2">Create New Route</h1>
         <p className="text-sm text-wl-text-secondary">Set up a new delivery route with multiple stops</p>
@@ -233,7 +233,7 @@ export default function CreateRoutePage() {
                     value={formData.name}
                     onChange={handleInputChange}
                     placeholder="e.g., Downtown Delivery Route A"
-                    className="w-full px-3 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-white text-sm box-border"
+                    className="w-full px-3 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-wl-text-primary text-sm box-border"
                   />
                 </div>
                 <div>
@@ -243,7 +243,7 @@ export default function CreateRoutePage() {
                     name="date"
                     value={formData.date}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-white text-sm box-border"
+                    className="w-full px-3 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-wl-text-primary text-sm box-border"
                   />
                 </div>
               </div>
@@ -255,7 +255,7 @@ export default function CreateRoutePage() {
                     value={formData.driverId}
                     onChange={handleInputChange}
                     disabled={driversLoading}
-                    className="w-full px-3 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-white text-sm box-border disabled:opacity-60"
+                    className="w-full px-3 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-wl-text-primary text-sm box-border disabled:opacity-60"
                   >
                     <option value="">
                       {driversLoading ? 'Loading drivers…' : driversError ? 'Error loading drivers' : 'Select a driver'}
@@ -277,7 +277,7 @@ export default function CreateRoutePage() {
                     value={formData.vehicleId}
                     onChange={handleInputChange}
                     disabled={vehiclesLoading}
-                    className="w-full px-3 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-white text-sm box-border disabled:opacity-60"
+                    className="w-full px-3 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-wl-text-primary text-sm box-border disabled:opacity-60"
                   >
                     <option value="">
                       {vehiclesLoading ? 'Loading vehicles…' : vehiclesError ? 'Error loading vehicles' : 'Select a vehicle'}
@@ -305,7 +305,7 @@ export default function CreateRoutePage() {
                   placeholder="Search by order ID or address..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-white text-sm mb-4 box-border"
+                  className="w-full px-3 py-2.5 rounded-md bg-wl-bg-root border border-wl-border-default text-wl-text-primary text-sm mb-4 box-border"
                 />
               </div>
 
@@ -332,7 +332,7 @@ export default function CreateRoutePage() {
                         className="p-4 rounded-lg bg-wl-bg-surface border border-wl-border-default cursor-pointer transition-all hover:border-wl-info-500 hover:bg-wl-bg-surface"
                       >
                         <div className="flex justify-between items-start mb-2">
-                          <span className="text-white font-semibold text-sm">
+                          <span className="text-wl-text-primary font-semibold text-sm">
                             {getOrderLabel(order)}
                           </span>
                           {order.priority && <Badge>{order.priority.toUpperCase()}</Badge>}
@@ -378,7 +378,7 @@ export default function CreateRoutePage() {
                           <span>::::</span>
                         </div>
                         <div className="flex-1">
-                          <div className="text-white text-sm font-semibold">
+                          <div className="text-wl-text-primary text-sm font-semibold">
                             {stop.orderId}
                           </div>
                           <div className="text-wl-text-secondary text-xs">{stop.address}</div>
@@ -460,7 +460,7 @@ export default function CreateRoutePage() {
                         {formData.stops.map((stop, idx) => (
                           <div
                             key={stop.id}
-                            className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                            className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-wl-text-primary"
                             style={{ backgroundColor: getPriorityColor(stop.priority) }}
                           >
                             {idx + 1}
@@ -487,7 +487,7 @@ export default function CreateRoutePage() {
                       }}
                     >
                       <div
-                        className="w-6 h-6 rounded flex items-center justify-center text-white text-xs font-bold"
+                        className="w-6 h-6 rounded flex items-center justify-center text-wl-text-primary text-xs font-bold"
                         style={{
                           backgroundColor: getPriorityColor(stop.priority)
                         }}
@@ -495,7 +495,7 @@ export default function CreateRoutePage() {
                         {idx + 1}
                       </div>
                       <div>
-                        <div className="text-white text-sm font-semibold">
+                        <div className="text-wl-text-primary text-sm font-semibold">
                           {stop.orderId}
                         </div>
                         <div className="text-wl-text-secondary text-xs mt-0.5">
@@ -539,7 +539,7 @@ export default function CreateRoutePage() {
                       "p-4 rounded-lg border text-center cursor-pointer transition-all",
                       formData.optimizationMode === (option.id as RouteFormData['optimizationMode'])
                         ? "bg-wl-primary-500 text-white border-wl-primary-500"
-                        : "bg-wl-bg-surface text-white border-wl-border-default"
+                        : "bg-wl-bg-surface text-wl-text-primary border-wl-border-default"
                     )}
                     onClick={() =>
                       setFormData((prev) => ({

@@ -137,7 +137,7 @@ export default function FieldServicePage() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm font-medium text-wl-text-secondary mb-2">Active Jobs</p>
-                  <p className="text-3xl font-bold text-white">{overview.activeJobs}</p>
+                  <p className="text-3xl font-bold text-wl-text-primary">{overview.activeJobs}</p>
                   <p className="text-xs text-wl-text-secondary mt-2">in progress now</p>
                 </div>
                 <TrendingUp className="w-8 h-8 text-wl-info-500/30" />
@@ -150,7 +150,7 @@ export default function FieldServicePage() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm font-medium text-wl-text-secondary mb-2">In Field</p>
-                  <p className="text-3xl font-bold text-white">{overview.techniciansInField}</p>
+                  <p className="text-3xl font-bold text-wl-text-primary">{overview.techniciansInField}</p>
                   <p className="text-xs text-wl-text-secondary mt-2">dispatched technicians</p>
                 </div>
                 <Users className="w-8 h-8 text-wl-info-500/30" />
@@ -163,7 +163,7 @@ export default function FieldServicePage() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm font-medium text-wl-text-secondary mb-2">Completion Rate</p>
-                  <p className="text-3xl font-bold text-white">{overview.completionRate}%</p>
+                  <p className="text-3xl font-bold text-wl-text-primary">{overview.completionRate}%</p>
                   <p className="text-xs text-wl-text-secondary mt-2">last 30 days</p>
                 </div>
                 <CheckCircle2 className="w-8 h-8 text-wl-success-500/30" />
@@ -176,7 +176,7 @@ export default function FieldServicePage() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm font-medium text-wl-text-secondary mb-2">Completed Today</p>
-                  <p className="text-3xl font-bold text-white">{overview.completedToday}</p>
+                  <p className="text-3xl font-bold text-wl-text-primary">{overview.completedToday}</p>
                   <p className="text-xs text-wl-text-secondary mt-2">jobs finished</p>
                 </div>
                 <Clock className="w-8 h-8 text-wl-warning-500/30" />
@@ -220,7 +220,7 @@ export default function FieldServicePage() {
                         </div>
                         <div className="w-2 h-2 rounded-full bg-wl-info-500 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-semibold text-white">{item.jobNumber}</div>
+                          <div className="text-sm font-semibold text-wl-text-primary">{item.jobNumber}</div>
                           <div className="text-xs text-wl-text-secondary mt-0.5">
                             {item.customerName} · {item.location}
                           </div>
@@ -289,7 +289,7 @@ export default function FieldServicePage() {
                     >
                       <div className="flex justify-between items-start gap-2 mb-2">
                         <div>
-                          <div className="text-sm font-semibold text-white">{job.jobNumber}</div>
+                          <div className="text-sm font-semibold text-wl-text-primary">{job.jobNumber}</div>
                           <div className="text-xs text-wl-text-secondary">{job.customerName}</div>
                         </div>
                         <Badge variant={priorityVariant(job.priority)}>

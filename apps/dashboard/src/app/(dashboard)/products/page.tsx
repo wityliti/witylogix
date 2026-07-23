@@ -202,7 +202,7 @@ export default function ProductsPage() {
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              className={cn("w-full p-2 px-4 bg-wl-bg-elevated border border-wl-border-default rounded-md text-white text-sm font-sans outline-none")}
+              className={cn("w-full p-2 px-4 bg-wl-bg-elevated border border-wl-border-default rounded-md text-wl-text-primary text-sm font-sans outline-none")}
             />
           </div>
 
@@ -212,7 +212,7 @@ export default function ProductsPage() {
               setSortBy(e.target.value as typeof sortBy);
               setCurrentPage(1);
             }}
-            className={cn("p-1 px-3 bg-wl-bg-elevated border border-wl-border-default rounded-md text-white text-sm font-sans cursor-pointer outline-none")}
+            className={cn("p-1 px-3 bg-wl-bg-elevated border border-wl-border-default rounded-md text-wl-text-primary text-sm font-sans cursor-pointer outline-none")}
           >
             <option value="title">Sort by Title</option>
             <option value="type">Sort by Type</option>
@@ -291,7 +291,7 @@ export default function ProductsPage() {
           <Card className={cn("mb-5 p-4 border", deleteConfirm ? "bg-wl-danger-bg border-wl-danger-600" : "bg-wl-info-500 border-wl-primary-600")}>
             {deleteConfirm ? (
               <div className="flex gap-4 items-center justify-between">
-                <div className="text-white text-sm font-semibold">
+                <div className="text-wl-text-primary text-sm font-semibold">
                   Delete {selectedProducts.size} product{selectedProducts.size !== 1 ? "s" : ""}? This cannot be undone.
                 </div>
                 <div className="flex gap-2 items-center">
@@ -333,7 +333,7 @@ export default function ProductsPage() {
               </div>
             ) : (
               <div className="flex gap-4 items-center justify-between">
-                <div className="text-white text-sm font-semibold">
+                <div className="text-wl-text-primary text-sm font-semibold">
                   {selectedProducts.size} product{selectedProducts.size !== 1 ? "s" : ""} selected
                 </div>
                 <div className="flex gap-2">
@@ -409,7 +409,7 @@ export default function ProductsPage() {
                         className="cursor-pointer"
                       />
                     </td>
-                    <td className={cn("p-3 px-4 text-white font-semibold")}>
+                    <td className={cn("p-3 px-4 text-wl-text-primary font-semibold")}>
                       {product.title}
                     </td>
                     <td className={cn("p-3 px-4 text-wl-neutral-300")}>
@@ -428,7 +428,7 @@ export default function ProductsPage() {
                         {product.requiresShipping ? "Yes" : "No"}
                       </Badge>
                     </td>
-                    <td className={cn("p-3 px-4 text-center text-white font-semibold")}>
+                    <td className={cn("p-3 px-4 text-center text-wl-text-primary font-semibold")}>
                       {product.inventoryQty}
                     </td>
                     <td className={cn("p-3 px-4 text-wl-text-tertiary text-xs")}>

@@ -109,25 +109,25 @@ export function PlatformCard({
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div>
                 <div className="text-sm text-wl-text-tertiary">Products Synced</div>
-                <div className="text-2xl font-bold text-white mt-1">
+                <div className="text-2xl font-bold text-wl-text-primary mt-1">
                   {platform.productsSynced.toLocaleString()}
                 </div>
               </div>
               <div>
                 <div className="text-sm text-wl-text-tertiary">Orders Synced</div>
-                <div className="text-2xl font-bold text-white mt-1">
+                <div className="text-2xl font-bold text-wl-text-primary mt-1">
                   {platform.ordersSynced.toLocaleString()}
                 </div>
               </div>
               <div>
                 <div className="text-sm text-wl-text-tertiary">Product Sync</div>
-                <div className="text-sm font-medium text-white mt-1">
+                <div className="text-sm font-medium text-wl-text-secondary mt-1">
                   {platform.syncSettings.productSync.direction.toUpperCase()}
                 </div>
               </div>
               <div>
                 <div className="text-sm text-wl-text-tertiary">Order Sync</div>
-                <div className="text-sm font-medium text-white mt-1">
+                <div className="text-sm font-medium text-wl-text-secondary mt-1">
                   {platform.syncSettings.orderSync.direction.toUpperCase()}
                 </div>
               </div>

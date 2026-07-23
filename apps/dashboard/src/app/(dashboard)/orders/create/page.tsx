@@ -165,7 +165,7 @@ export default function CreateOrderPage() {
 
   if (successOrderId) {
     return (
-      <div className="min-h-screen bg-wl-bg-root p-6 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-wl-bg-root p-6 text-wl-text-primary flex items-center justify-center">
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-8 max-w-md w-full text-center">
           <div className="text-4xl mb-4">✓</div>
           <h2 className="text-xl font-bold mb-2">Order Created</h2>
@@ -197,7 +197,7 @@ export default function CreateOrderPage() {
   }
 
   return (
-    <div className="min-h-screen bg-wl-bg-root p-6 text-white">
+    <div className="min-h-screen bg-wl-bg-root p-6 text-wl-text-primary">
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">Create Order</h1>
         <p className="text-sm text-wl-text-secondary">Create and manage new orders with customer and delivery information</p>
@@ -263,7 +263,7 @@ export default function CreateOrderPage() {
                         setCustomerSearchApi('');
                       }}
                     >
-                      <p className="font-medium text-white">{c.name}</p>
+                      <p className="font-medium text-wl-text-primary">{c.name}</p>
                       <p className="text-xs text-wl-text-secondary">{c.email}</p>
                     </div>
                   ))}

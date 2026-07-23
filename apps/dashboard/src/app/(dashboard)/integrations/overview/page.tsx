@@ -208,7 +208,7 @@ export default function IntegrationOverviewPage() {
               ) : (
                 <div className="space-y-3">
                   <div className="flex items-end gap-2">
-                    <span className="text-4xl font-bold text-white">{totalActive}</span>
+                    <span className="text-4xl font-bold text-wl-text-primary">{totalActive}</span>
                     <span className="text-wl-text-secondary text-sm mb-1">of {totalProviders}</span>
                   </div>
                   <div className="w-full h-2 bg-wl-bg-root rounded-full overflow-hidden">
@@ -273,7 +273,7 @@ export default function IntegrationOverviewPage() {
               placeholder="Search integrations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-sm text-white placeholder:text-wl-text-tertiary focus:border-wl-info-500 outline-none"
+              className="w-full pl-10 pr-4 py-2 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-sm text-wl-text-primary placeholder:text-wl-text-tertiary focus:border-wl-info-500 outline-none"
             />
           </div>
 
@@ -359,7 +359,7 @@ export default function IntegrationOverviewPage() {
                           <div className="text-xs text-wl-text-tertiary uppercase tracking-wide">
                             Active
                           </div>
-                          <div className="font-bold text-white mt-1">{category.active}</div>
+                          <div className="font-bold text-wl-text-primary mt-1">{category.active}</div>
                         </div>
                         <div>
                           <div className="text-xs text-wl-text-tertiary uppercase tracking-wide">
@@ -368,7 +368,7 @@ export default function IntegrationOverviewPage() {
                           <div
                             className={cn(
                               'font-bold mt-1',
-                              category.error > 0 ? 'text-wl-danger-400' : 'text-white'
+                              category.error > 0 ? 'text-wl-danger-400' : 'text-wl-text-primary'
                             )}
                           >
                             {category.error}

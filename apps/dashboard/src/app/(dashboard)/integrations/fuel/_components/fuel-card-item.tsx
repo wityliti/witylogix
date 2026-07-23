@@ -73,22 +73,22 @@ export function FuelCardItem({
         <div className="space-y-2 text-xs mb-4">
           <div className="flex justify-between">
             <span className="text-wl-text-secondary">Assigned to:</span>
-            <span className="text-white font-medium">{card.assignedTo}</span>
+            <span className="text-wl-text-primary font-medium">{card.assignedTo}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-wl-text-secondary">Last Used:</span>
-            <span className="text-white font-medium">{card.lastUsed}</span>
+            <span className="text-wl-text-primary font-medium">{card.lastUsed}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-wl-text-secondary">Transactions:</span>
-            <span className="text-white font-medium">{card.transactions}</span>
+            <span className="text-wl-text-primary font-medium">{card.transactions}</span>
           </div>
         </div>
 
         <div className="mb-4">
           <div className="flex justify-between mb-2">
             <span className="text-xs text-wl-text-secondary">Monthly Spend</span>
-            <span className="text-xs text-white font-medium">
+            <span className="text-xs text-wl-text-tertiary font-medium">
               ${card.monthlySpend} / ${card.monthlyLimit}
             </span>
           </div>

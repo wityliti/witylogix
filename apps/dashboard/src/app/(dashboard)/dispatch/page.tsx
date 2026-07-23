@@ -148,7 +148,7 @@ function OrderCard({
           {order.priority === 'high' && (
             <AlertCircle className="w-3.5 h-3.5 text-wl-danger-400 flex-shrink-0" />
           )}
-          <span className="text-sm font-bold text-white truncate">
+          <span className="text-sm font-bold text-wl-text-primary truncate">
             {order.orderNumber}
           </span>
           <Badge
@@ -723,7 +723,7 @@ export default function DispatchPage() {
           ) : (
             <div className="grid grid-cols-5 gap-0 w-full">
               {[
-                { value: stats.unassigned, label: 'Unassigned', color: 'text-white' },
+                { value: stats.unassigned, label: 'Unassigned', color: 'text-wl-text-primary' },
                 { value: stats.inTransit, label: 'In Transit', color: 'text-wl-info-400' },
                 { value: stats.completedToday, label: 'Completed', color: 'text-wl-success-400' },
                 { value: `${stats.avgDeliveryTime}m`, label: 'Avg Delivery', color: 'text-wl-warning-400' },

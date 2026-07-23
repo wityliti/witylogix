@@ -101,7 +101,7 @@ export function DVIRReportCard({ report }: DVIRReportCardProps) {
                   )} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="font-semibold text-sm text-white">
+                      <p className="font-semibold text-sm text-wl-text-secondary">
                         {issue.category}
                       </p>
                       <Badge variant="default" className={cn("text-xs capitalize", getSeverityColor(issue.severity))}>

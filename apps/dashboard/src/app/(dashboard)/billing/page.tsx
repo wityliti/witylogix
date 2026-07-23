@@ -275,7 +275,7 @@ export default function BillingPage() {
                       <h3 className="text-lg font-bold text-wl-text-primary mb-1">{plan.displayName}</h3>
                       <p className="text-xs text-wl-text-secondary mb-3">{plan.description}</p>
                       <div className="flex items-baseline gap-1 mb-5">
-                        <span className="text-3xl font-bold text-white">
+                        <span className="text-3xl font-bold text-wl-text-primary">
                           ${plan.features.monthlyPrice}
                         </span>
                         <span className="text-wl-text-secondary">/month</span>
@@ -340,7 +340,7 @@ export default function BillingPage() {
           <CardContent className="space-y-4">
             {billing.billingAddress ? (
               <div className="bg-wl-bg-elevated rounded-lg p-4 border border-wl-border-default text-sm text-wl-neutral-300">
-                <p className="font-medium text-white mb-1">Billing Address</p>
+                <p className="font-medium text-wl-text-primary mb-1">Billing Address</p>
                 <p>{billing.billingAddress.line1}</p>
                 {billing.billingAddress.line2 && <p>{billing.billingAddress.line2}</p>}
                 <p>{billing.billingAddress.city}, {billing.billingAddress.state} {billing.billingAddress.postalCode}</p>
@@ -395,7 +395,7 @@ export default function BillingPage() {
                         <td className="py-3 text-wl-text-secondary">
                           {new Date(inv.date).toLocaleDateString()}
                         </td>
-                        <td className="py-3 text-right font-mono font-semibold text-white">
+                        <td className="py-3 text-right font-mono font-semibold text-wl-text-primary">
                           ${Number(inv.amount).toFixed(2)}{' '}
                           <span className="text-xs font-normal text-wl-text-tertiary">
                             {inv.currency?.toUpperCase()}
@@ -433,7 +433,7 @@ export default function BillingPage() {
           <AlertCircle className="w-5 h-5 text-wl-warning-500 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-wl-neutral-300">
             Your subscription will automatically renew on{' '}
-            <strong className="text-white">
+            <strong className="text-wl-text-primary">
               {new Date(billing.renewalDate).toLocaleDateString()}
             </strong>{' '}
             at ${billing.monthlyPrice.toLocaleString()}/month. You can manage your subscription

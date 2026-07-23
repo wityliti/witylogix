@@ -395,7 +395,7 @@ export default function PaymentsPage() {
               <p className="text-sm text-wl-text-secondary mb-1">
                 {item.month}
               </p>
-              <p className="text-lg font-bold text-white">
+              <p className="text-lg font-bold text-wl-text-primary">
                 ${item.revenue.toLocaleString()}
               </p>
               <p className="text-xs text-wl-text-secondary">
@@ -527,14 +527,14 @@ export default function PaymentsPage() {
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
-              className="px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-white"
+              className="px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-wl-text-primary"
             />
             <span className="text-wl-text-secondary">to</span>
             <input
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
-              className="px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-white"
+              className="px-3 py-2 bg-wl-bg-elevated border border-wl-border-default rounded text-sm text-wl-text-primary"
             />
           </div>
         </div>
@@ -578,7 +578,7 @@ export default function PaymentsPage() {
                 key: "amount",
                 header: "Amount",
                 render: (item) => (
-                  <div className="font-medium text-white">
+                  <div className="font-medium text-wl-text-primary">
                     ${item.amount.toFixed(2)}
                   </div>
                 ),
@@ -645,7 +645,7 @@ export default function PaymentsPage() {
               className={cn("flex items-center justify-between p-4 rounded border border-wl-border-default hover:bg-wl-bg-elevated transition-colors")}
             >
               <div className="flex-1">
-                <p className="font-medium text-white">
+                <p className="font-medium text-wl-text-primary">
                   {payment.customerName}
                 </p>
                 <p className="text-xs text-wl-text-secondary">
@@ -654,7 +654,7 @@ export default function PaymentsPage() {
               </div>
 
               <div className="text-right">
-                <p className="font-bold text-white">
+                <p className="font-bold text-wl-text-primary">
                   ${payment.amount.toFixed(2)}
                 </p>
                 <div className="flex items-center gap-2 justify-end mt-1">

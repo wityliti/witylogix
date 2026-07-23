@@ -102,7 +102,7 @@ export default function InvoicesPage() {
               className={cn(
                 'px-3 py-2 rounded-md text-sm font-medium',
                 'bg-wl-bg-elevated border border-wl-border-default',
-                'text-white',
+                'text-wl-text-primary',
                 'focus:outline-none focus:ring-2 focus:ring-wl-info-500'
               )}
             >

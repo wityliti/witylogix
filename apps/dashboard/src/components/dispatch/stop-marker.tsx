@@ -47,7 +47,7 @@ export function StopMarker({
       )}
       style={{ backgroundColor: color }}
     >
-      <div className={cn("flex items-center justify-center text-white", sizeConfig.container)}>
+      <div className={cn("flex items-center justify-center text-wl-text-primary", sizeConfig.container)}>
         {isDelivered ? (
           <span className={cn("font-bold", sizeConfig.text)}>{checkIcon}</span>
         ) : (

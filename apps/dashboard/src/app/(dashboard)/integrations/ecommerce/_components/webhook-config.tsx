@@ -45,7 +45,7 @@ export function WebhookConfig({ platforms }: WebhookConfigProps) {
                       className="flex items-center justify-between p-3 bg-wl-bg-surface rounded"
                     >
                       <div>
-                        <div className="text-sm font-medium text-white">
+                        <div className="text-sm font-medium text-wl-text-secondary">
                           {hook.event}
                         </div>
                         <div className="text-xs text-wl-text-tertiary mt-1">

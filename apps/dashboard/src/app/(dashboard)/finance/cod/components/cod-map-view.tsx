@@ -102,7 +102,7 @@ export function CodMapView({ points, driverFilter }: Props) {
           {selected.driverName && (
             <p className="text-xs text-wl-text-secondary mt-1">{selected.driverName}</p>
           )}
-          <span className={`inline-block mt-2 px-2 py-0.5 rounded text-xs font-medium text-white ${STATUS_COLORS[selected.status]}`}>
+          <span className={`inline-block mt-2 px-2 py-0.5 rounded text-xs font-medium text-wl-text-primary ${STATUS_COLORS[selected.status]}`}>
             {STATUS_LABELS[selected.status]}
           </span>
         </div>

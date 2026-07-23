@@ -86,7 +86,7 @@ const CrmPlatformCard = memo(function CrmPlatformCard({
               strokeWidth="3"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="text-white"
+              className="text-wl-text-primary"
             >
               <polyline points="20 6 9 17 4 12"></polyline>
             </svg>

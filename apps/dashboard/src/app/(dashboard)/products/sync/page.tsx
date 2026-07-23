@@ -395,7 +395,7 @@ export default function ProductSyncPage() {
                       className={cn(
                         'flex-1 px-3 py-2 text-sm rounded-md',
                         'bg-wl-bg-surface border border-wl-border-default',
-                        'text-white placeholder:text-wl-neutral-300',
+                        'text-wl-text-primary placeholder:text-wl-neutral-300',
                         'focus:outline-none focus:ring-2 focus:ring-wl-info-500'
                       )}
                     />
@@ -500,7 +500,7 @@ export default function ProductSyncPage() {
                               className="flex justify-between p-2 bg-wl-bg-elevated rounded"
                             >
                               <span className="text-wl-neutral-300">{key}:</span>
-                              <span className="text-white font-medium">
+                              <span className="text-wl-text-primary font-medium">
                                 {String(value)}
                               </span>
                             </div>
@@ -521,7 +521,7 @@ export default function ProductSyncPage() {
                               className="flex justify-between p-2 bg-wl-bg-elevated rounded"
                             >
                               <span className="text-wl-neutral-300">{key}:</span>
-                              <span className="text-white font-medium">
+                              <span className="text-wl-text-primary font-medium">
                                 {String(value)}
                               </span>
                             </div>

@@ -209,19 +209,19 @@ export default function CRMIntegrationPage() {
                   <div className="space-y-2 text-xs text-wl-text-secondary mb-3">
                     <div className="flex justify-between">
                       <span>Contacts:</span>
-                      <span className="text-white font-semibold">
+                      <span className="text-wl-text-primary font-semibold">
                         {provider.contactsCount.toLocaleString()}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Deals:</span>
-                      <span className="text-white font-semibold">
+                      <span className="text-wl-text-primary font-semibold">
                         {provider.dealsCount}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Syncs:</span>
-                      <span className="text-white font-semibold">
+                      <span className="text-wl-text-primary font-semibold">
                         {provider.syncCount}
                       </span>
                     </div>
@@ -293,7 +293,7 @@ export default function CRMIntegrationPage() {
                         className="cursor-pointer"
                       />
                       <div>
-                        <span className="text-sm font-medium text-white capitalize">
+                        <span className="text-sm font-medium text-wl-text-secondary capitalize">
                           {option === 'witylogix' ? 'Prefer Witylogix' : option === 'crm' ? 'Prefer CRM' : 'Manual Review'}
                         </span>
                         <p className="text-xs text-wl-text-tertiary">
@@ -346,7 +346,7 @@ export default function CRMIntegrationPage() {
                         idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-elevated/30'
                       )}
                     >
-                      <td className="p-3 text-white font-medium">
+                      <td className="p-3 text-wl-text-primary font-medium">
                         {mapping.witylogixField}
                         {mapping.customMapping && (
                           <Badge variant="info" className="ml-2">
@@ -444,7 +444,7 @@ export default function CRMIntegrationPage() {
                             ({log.direction})
                           </span>
                         </div>
-                        <p className="text-sm text-white mb-1">{log.details}</p>
+                        <p className="text-sm text-wl-text-secondary mb-1">{log.details}</p>
                         <div className="flex items-center gap-3 text-xs text-wl-text-tertiary">
                           <span>{formatDateTime(log.timestamp)}</span>
                           <span>•</span>

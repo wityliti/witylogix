@@ -31,7 +31,7 @@ export function DeliveryStats({ stats }: DeliveryStatsProps) {
                     <p className="text-xs font-medium text-wl-text-tertiary uppercase">
                       Sent
                     </p>
-                    <p className="text-xl font-bold text-white mt-1">
+                    <p className="text-xl font-bold text-wl-text-primary mt-1">
                       {stat.sent.toLocaleString()}
                     </p>
                   </div>
@@ -74,7 +74,7 @@ export function DeliveryStats({ stats }: DeliveryStatsProps) {
                   <p className="text-xs font-medium text-wl-text-tertiary uppercase">
                     Avg Latency
                   </p>
-                  <p className="text-lg font-bold text-white mt-1">
+                  <p className="text-lg font-bold text-wl-text-primary mt-1">
                     {stat.avgLatency}
                   </p>
                 </div>

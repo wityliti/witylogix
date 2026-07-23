@@ -224,23 +224,23 @@ export default function ComparePage() {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-wl-text-secondary">Price Range:</span>
-                      <span className="text-white font-medium">
+                      <span className="text-wl-text-primary font-medium">
                         ${courier.priceRange.min} – ${courier.priceRange.max}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-wl-text-secondary">Speed:</span>
-                      <span className="text-white font-medium">{courier.deliverySpeed}</span>
+                      <span className="text-wl-text-primary font-medium">{courier.deliverySpeed}</span>
                     </div>
                     {courier.coverageAreas > 0 && (
                       <div className="flex justify-between">
                         <span className="text-wl-text-secondary">Coverage:</span>
-                        <span className="text-white font-medium">{courier.coverageAreas} areas</span>
+                        <span className="text-wl-text-primary font-medium">{courier.coverageAreas} areas</span>
                       </div>
                     )}
                     <div className="flex justify-between">
                       <span className="text-wl-text-secondary">Success Rate:</span>
-                      <span className="text-white font-medium">
+                      <span className="text-wl-text-primary font-medium">
                         {courier.successRate > 0 ? `${courier.successRate}%` : "—"}
                       </span>
                     </div>
@@ -289,9 +289,9 @@ export default function ComparePage() {
                 </thead>
                 <tbody className="divide-y divide-wl-border-subtle">
                   <tr>
-                    <td className="px-4 py-3 font-semibold text-white">Price Range</td>
+                    <td className="px-4 py-3 font-semibold text-wl-text-primary">Price Range</td>
                     {comparisonCouriers.map((courier) => (
-                      <td key={courier.id} className="px-4 py-3 text-center text-white">
+                      <td key={courier.id} className="px-4 py-3 text-center text-wl-text-primary">
                         <span className="inline-flex items-center px-2 py-1 rounded bg-wl-info-500/20 text-wl-info-400 text-xs font-semibold">
                           ${courier.priceRange.min} – ${courier.priceRange.max}
                         </span>
@@ -299,27 +299,27 @@ export default function ComparePage() {
                     ))}
                   </tr>
                   <tr>
-                    <td className="px-4 py-3 font-semibold text-white">Delivery Speed</td>
+                    <td className="px-4 py-3 font-semibold text-wl-text-primary">Delivery Speed</td>
                     {comparisonCouriers.map((courier) => (
-                      <td key={courier.id} className="px-4 py-3 text-center text-white">
+                      <td key={courier.id} className="px-4 py-3 text-center text-wl-text-primary">
                         {courier.deliverySpeed}
                       </td>
                     ))}
                   </tr>
                   {comparisonCouriers.some((c) => c.coverageAreas > 0) && (
                     <tr>
-                      <td className="px-4 py-3 font-semibold text-white">Coverage Areas</td>
+                      <td className="px-4 py-3 font-semibold text-wl-text-primary">Coverage Areas</td>
                       {comparisonCouriers.map((courier) => (
-                        <td key={courier.id} className="px-4 py-3 text-center text-white">
+                        <td key={courier.id} className="px-4 py-3 text-center text-wl-text-primary">
                           {courier.coverageAreas > 0 ? courier.coverageAreas : "—"}
                         </td>
                       ))}
                     </tr>
                   )}
                   <tr>
-                    <td className="px-4 py-3 font-semibold text-white">Success Rate</td>
+                    <td className="px-4 py-3 font-semibold text-wl-text-primary">Success Rate</td>
                     {comparisonCouriers.map((courier) => (
-                      <td key={courier.id} className="px-4 py-3 text-center text-white">
+                      <td key={courier.id} className="px-4 py-3 text-center text-wl-text-primary">
                         {courier.successRate > 0 ? (
                           <span className="inline-flex items-center px-2 py-1 rounded bg-wl-success-500/20 text-wl-success-400 text-xs font-semibold">
                             {courier.successRate}%
@@ -331,9 +331,9 @@ export default function ComparePage() {
                     ))}
                   </tr>
                   <tr>
-                    <td className="px-4 py-3 font-semibold text-white">Rating</td>
+                    <td className="px-4 py-3 font-semibold text-wl-text-primary">Rating</td>
                     {comparisonCouriers.map((courier) => (
-                      <td key={courier.id} className="px-4 py-3 text-center text-white">
+                      <td key={courier.id} className="px-4 py-3 text-center text-wl-text-primary">
                         {courier.rating > 0 ? (
                           <div className="flex items-center justify-center gap-2">
                             <div className="flex items-center gap-1">
@@ -358,9 +358,9 @@ export default function ComparePage() {
                     ))}
                   </tr>
                   <tr>
-                    <td className="px-4 py-3 font-semibold text-white">Real-time Tracking</td>
+                    <td className="px-4 py-3 font-semibold text-wl-text-primary">Real-time Tracking</td>
                     {comparisonCouriers.map((courier) => (
-                      <td key={courier.id} className="px-4 py-3 text-center text-white">
+                      <td key={courier.id} className="px-4 py-3 text-center text-wl-text-primary">
                         {courier.features.realTimeTracking ? (
                           <span className="inline-flex items-center px-2 py-1 rounded bg-wl-success-500/20 text-wl-success-400 text-xs font-semibold gap-1">
                             <CheckCircle className="w-3 h-3" />
@@ -373,9 +373,9 @@ export default function ComparePage() {
                     ))}
                   </tr>
                   <tr>
-                    <td className="px-4 py-3 font-semibold text-white">Proof of Delivery</td>
+                    <td className="px-4 py-3 font-semibold text-wl-text-primary">Proof of Delivery</td>
                     {comparisonCouriers.map((courier) => (
-                      <td key={courier.id} className="px-4 py-3 text-center text-white">
+                      <td key={courier.id} className="px-4 py-3 text-center text-wl-text-primary">
                         {courier.features.proofOfDelivery ? (
                           <span className="inline-flex items-center px-2 py-1 rounded bg-wl-success-500/20 text-wl-success-400 text-xs font-semibold gap-1">
                             <CheckCircle className="w-3 h-3" />
@@ -388,9 +388,9 @@ export default function ComparePage() {
                     ))}
                   </tr>
                   <tr>
-                    <td className="px-4 py-3 font-semibold text-white">Insurance</td>
+                    <td className="px-4 py-3 font-semibold text-wl-text-primary">Insurance</td>
                     {comparisonCouriers.map((courier) => (
-                      <td key={courier.id} className="px-4 py-3 text-center text-white">
+                      <td key={courier.id} className="px-4 py-3 text-center text-wl-text-primary">
                         {courier.features.insurance ? (
                           <span className="inline-flex items-center px-2 py-1 rounded bg-wl-success-500/20 text-wl-success-400 text-xs font-semibold gap-1">
                             <CheckCircle className="w-3 h-3" />

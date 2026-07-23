@@ -128,7 +128,7 @@ export default function CalendarPage() {
           className={cn(
             "px-3 py-2 rounded-md text-sm font-medium",
             "bg-wl-bg-surface border border-wl-border-default",
-            "text-white",
+            "text-wl-text-primary",
             "focus:outline-none focus:ring-2 focus:ring-wl-primary-500"
           )}
         >
@@ -222,7 +222,7 @@ export default function CalendarPage() {
                   placeholder="e.g. Christmas Blackout"
                   className={cn(
                     "w-full px-3 py-2 rounded-md bg-wl-bg-root border border-wl-border-default",
-                    "text-white placeholder:text-wl-text-tertiary text-sm",
+                    "text-wl-text-primary placeholder:text-wl-text-tertiary text-sm",
                     "focus:outline-none focus:ring-2 focus:ring-wl-info-500"
                   )}
                 />
@@ -237,7 +237,7 @@ export default function CalendarPage() {
                   onChange={(e) => setFormData((p) => ({ ...p, type: e.target.value as CalendarRule["type"] }))}
                   className={cn(
                     "w-full px-3 py-2 rounded-md bg-wl-bg-root border border-wl-border-default",
-                    "text-white text-sm focus:outline-none focus:ring-2 focus:ring-wl-info-500"
+                    "text-wl-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-wl-info-500"
                   )}
                 >
                   <option value="BLACKOUT">Blackout</option>
@@ -258,7 +258,7 @@ export default function CalendarPage() {
                     onChange={(e) => setFormData((p) => ({ ...p, effectiveFrom: e.target.value }))}
                     className={cn(
                       "w-full px-3 py-2 rounded-md bg-wl-bg-root border border-wl-border-default",
-                      "text-white text-sm focus:outline-none focus:ring-2 focus:ring-wl-info-500"
+                      "text-wl-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-wl-info-500"
                     )}
                   />
                 </div>
@@ -272,7 +272,7 @@ export default function CalendarPage() {
                     onChange={(e) => setFormData((p) => ({ ...p, effectiveTo: e.target.value }))}
                     className={cn(
                       "w-full px-3 py-2 rounded-md bg-wl-bg-root border border-wl-border-default",
-                      "text-white text-sm focus:outline-none focus:ring-2 focus:ring-wl-info-500"
+                      "text-wl-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-wl-info-500"
                     )}
                   />
                 </div>
@@ -314,7 +314,7 @@ export default function CalendarPage() {
                     placeholder="e.g. 50"
                     className={cn(
                       "w-full px-3 py-2 rounded-md bg-wl-bg-root border border-wl-border-default",
-                      "text-white text-sm focus:outline-none focus:ring-2 focus:ring-wl-info-500"
+                      "text-wl-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-wl-info-500"
                     )}
                   />
                 </div>

@@ -86,7 +86,7 @@ function SummaryCard({
           <p className="mt-0.5 text-xs text-wl-text-tertiary">{count} deliveries</p>
         </div>
         <div className={cn('p-2 rounded-lg', color)}>
-          <Icon className="w-5 h-5 text-white" />
+          <Icon className="w-5 h-5 text-wl-text-primary" />
         </div>
       </div>
     </Card>

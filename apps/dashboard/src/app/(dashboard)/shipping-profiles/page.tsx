@@ -187,7 +187,7 @@ export default function ShippingProfilesPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className={cn(
-                "w-full p-2 px-4 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-white text-sm font-sans outline-none",
+                "w-full p-2 px-4 bg-wl-bg-elevated border border-wl-border-default rounded-lg text-wl-text-primary text-sm font-sans outline-none",
               )}
             />
           </div>
@@ -258,7 +258,7 @@ export default function ShippingProfilesPage() {
                 <div className={cn("flex justify-between items-start mb-3")}>
                   <div className={cn("flex-1 min-w-0")}>
                     <div className={cn("flex gap-2 items-center mb-1")}>
-                      <span className={cn("text-base font-bold text-white")}>
+                      <span className={cn("text-base font-bold text-wl-text-primary")}>
                         {profile.name}
                       </span>
                       {profile.isDefault && (

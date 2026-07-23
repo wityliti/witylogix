@@ -167,10 +167,10 @@ export default function ProfilePage() {
                     type="text"
                     value={editForm.firstName}
                     onChange={(e) => handleEditChange("firstName", e.target.value)}
-                    className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
+                    className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-wl-text-primary text-sm placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
                   />
                 ) : (
-                  <p className="text-white">{profile.firstName}</p>
+                  <p className="text-wl-text-primary">{profile.firstName}</p>
                 )}
               </div>
 
@@ -183,10 +183,10 @@ export default function ProfilePage() {
                     type="text"
                     value={editForm.lastName}
                     onChange={(e) => handleEditChange("lastName", e.target.value)}
-                    className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
+                    className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-wl-text-primary text-sm placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
                   />
                 ) : (
-                  <p className="text-white">{profile.lastName}</p>
+                  <p className="text-wl-text-primary">{profile.lastName}</p>
                 )}
               </div>
 
@@ -199,10 +199,10 @@ export default function ProfilePage() {
                     type="email"
                     value={editForm.email}
                     onChange={(e) => handleEditChange("email", e.target.value)}
-                    className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
+                    className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-wl-text-primary text-sm placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
                   />
                 ) : (
-                  <p className="text-white">{profile.email}</p>
+                  <p className="text-wl-text-primary">{profile.email}</p>
                 )}
               </div>
 
@@ -215,10 +215,10 @@ export default function ProfilePage() {
                     type="tel"
                     value={editForm.phone}
                     onChange={(e) => handleEditChange("phone", e.target.value)}
-                    className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
+                    className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-wl-text-primary text-sm placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
                   />
                 ) : (
-                  <p className="text-white">{profile.phone}</p>
+                  <p className="text-wl-text-primary">{profile.phone}</p>
                 )}
               </div>
 
@@ -230,7 +230,7 @@ export default function ProfilePage() {
                   <select
                     value={editForm.timezone}
                     onChange={(e) => handleEditChange("timezone", e.target.value)}
-                    className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 cursor-pointer transition-colors"
+                    className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-wl-text-primary text-sm focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 cursor-pointer transition-colors"
                   >
                     <option>America/New_York</option>
                     <option>America/Chicago</option>
@@ -238,7 +238,7 @@ export default function ProfilePage() {
                     <option>America/Los_Angeles</option>
                   </select>
                 ) : (
-                  <p className="text-white">{profile.timezone}</p>
+                  <p className="text-wl-text-primary">{profile.timezone}</p>
                 )}
               </div>
 
@@ -246,7 +246,7 @@ export default function ProfilePage() {
                 <label className="block text-sm font-medium text-wl-text-secondary mb-2">
                   Role
                 </label>
-                <p className="text-white">{profile.role}</p>
+                <p className="text-wl-text-primary">{profile.role}</p>
               </div>
             </div>
 
@@ -293,7 +293,7 @@ export default function ProfilePage() {
                       onChange={(e) =>
                         setPasswordForm((prev) => ({ ...prev, current: e.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm pr-10 placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
+                      className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-wl-text-primary text-sm pr-10 placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
                     />
                     <button
                       onClick={() => setShowPassword(!showPassword)}
@@ -315,7 +315,7 @@ export default function ProfilePage() {
                       onChange={(e) =>
                         setPasswordForm((prev) => ({ ...prev, new: e.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm pr-10 placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
+                      className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-wl-text-primary text-sm pr-10 placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
                     />
                     <button
                       onClick={() => setShowNewPassword(!showNewPassword)}
@@ -337,7 +337,7 @@ export default function ProfilePage() {
                       onChange={(e) =>
                         setPasswordForm((prev) => ({ ...prev, confirm: e.target.value }))
                       }
-                      className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-white text-sm pr-10 placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
+                      className="w-full px-3 py-2 bg-wl-bg-overlay border border-wl-border-default rounded text-wl-text-primary text-sm pr-10 placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500 focus:ring-1 focus:ring-wl-info-500/30 transition-colors"
                     />
                     <button
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -391,7 +391,7 @@ export default function ProfilePage() {
                 <Smartphone size={20} className="text-wl-info-400 flex-shrink-0" />
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <p className="text-sm font-medium text-white">Current session</p>
+                    <p className="text-sm font-medium text-wl-text-secondary">Current session</p>
                     <Badge variant="success" className="text-xs">Active</Badge>
                   </div>
                   <p className="text-xs text-wl-text-muted">Signed in as {profile.email || '—'}</p>
@@ -423,7 +423,7 @@ export default function ProfilePage() {
             )}
             {showDeleteConfirm && (
               <div className="p-4 bg-wl-bg-overlay rounded border border-wl-danger-500/30">
-                <p className="text-white text-sm mb-4">
+                <p className="text-wl-text-primary text-sm mb-4">
                   Are you absolutely sure? This action cannot be undone.
                 </p>
                 <div className="flex gap-3">

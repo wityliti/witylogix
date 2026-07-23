@@ -39,7 +39,7 @@ export function PresenceGrid({ indicators }: PresenceGridProps) {
               <div className="flex items-center gap-3 flex-1">
                 <div
                   className={cn(
-                    'w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold',
+                    'w-12 h-12 rounded-full flex items-center justify-center text-wl-text-primary font-semibold',
                     getStatusColor(indicator.status)
                   )}
                 >

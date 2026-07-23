@@ -32,7 +32,7 @@ export function TemplateList({
               : 'bg-wl-bg-elevated border-wl-border-default hover:border-wl-info-500/50'
           )}
         >
-          <div className="font-medium text-white">{template.name}</div>
+          <div className="font-medium text-wl-text-primary">{template.name}</div>
           <div className="text-xs text-wl-text-tertiary mt-1">
             {template.type.replace(/_/g, ' ')}
           </div>

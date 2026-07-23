@@ -49,7 +49,7 @@ function VaultStatusCard({
         <div className="space-y-3">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <p className="font-medium text-white">{name}</p>
+              <p className="font-medium text-wl-text-primary">{name}</p>
               <p className="text-xs text-wl-text-secondary mt-1">{type}</p>
             </div>
             <Badge
@@ -61,7 +61,7 @@ function VaultStatusCard({
 
           <div className="flex items-center justify-between">
             <span className="text-xs text-wl-text-secondary">Health Score</span>
-            <span className="text-sm font-medium text-white">
+            <span className="text-sm font-medium text-wl-text-secondary">
               {healthScore}%
             </span>
           </div>
@@ -113,7 +113,7 @@ function RotationTimeline({ schedules }: { schedules: RotationSchedule[] }) {
               )}
             </div>
             <div className="flex-1 pt-1">
-              <p className="font-medium text-white">
+              <p className="font-medium text-wl-text-primary">
                 {schedule.provider}
               </p>
               <p className="text-xs text-wl-text-secondary mt-1">
@@ -316,7 +316,7 @@ export default function CredentialsPage() {
                             : "Expired"}
                       </Badge>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-white truncate">
+                        <p className="text-sm font-medium text-wl-text-secondary truncate">
                           {credential.provider}
                         </p>
                         <p className="text-xs text-wl-text-secondary truncate mt-0.5">
@@ -327,7 +327,7 @@ export default function CredentialsPage() {
                     <div className="flex items-center gap-3 flex-shrink-0">
                       <div className="text-right text-xs">
                         <p className="text-wl-text-secondary">Health</p>
-                        <p className="font-medium text-white">
+                        <p className="font-medium text-wl-text-primary">
                           {credential.healthScore}%
                         </p>
                       </div>
@@ -345,13 +345,13 @@ export default function CredentialsPage() {
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
                           <p className="text-wl-text-secondary mb-1">Vault</p>
-                          <p className="font-medium text-white">
+                          <p className="font-medium text-wl-text-primary">
                             {credential.vault}
                           </p>
                         </div>
                         <div>
                           <p className="text-wl-text-secondary mb-1">Last Rotated</p>
-                          <p className="font-medium text-white">
+                          <p className="font-medium text-wl-text-primary">
                             {new Date(credential.lastRotated).toLocaleDateString()}
                           </p>
                         </div>
@@ -370,7 +370,7 @@ export default function CredentialsPage() {
                         </div>
                         <div>
                           <p className="text-wl-text-secondary mb-1">Expiry Date</p>
-                          <p className="font-medium text-white">
+                          <p className="font-medium text-wl-text-primary">
                             {new Date(credential.expiryDate).toLocaleDateString()}
                           </p>
                         </div>
@@ -404,7 +404,7 @@ export default function CredentialsPage() {
                             type="datetime-local"
                             value={scheduleDateInput}
                             onChange={(e) => setScheduleDateInput(e.target.value)}
-                            className="w-full px-2 py-1 text-sm rounded bg-wl-bg-surface border border-wl-border-default text-white focus:outline-none focus:border-wl-info-500"
+                            className="w-full px-2 py-1 text-sm rounded bg-wl-bg-surface border border-wl-border-default text-wl-text-primary focus:outline-none focus:border-wl-info-500"
                           />
                           <div className="flex gap-2">
                             <Button
@@ -457,7 +457,7 @@ export default function CredentialsPage() {
             <div className="p-3 bg-wl-bg-surface border border-wl-border-default rounded-lg">
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div>
-                  <p className="font-medium text-white">
+                  <p className="font-medium text-wl-text-primary">
                     AWS_SECRET_ACCESS_KEY exposed in commit abc123
                   </p>
                   <p className="text-xs text-wl-text-secondary mt-1">
@@ -483,7 +483,7 @@ export default function CredentialsPage() {
             <div className="p-3 bg-wl-bg-surface border border-wl-border-default rounded-lg">
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div>
-                  <p className="font-medium text-white">
+                  <p className="font-medium text-wl-text-primary">
                     STRIPE_API_KEY detected in .env.local
                   </p>
                   <p className="text-xs text-wl-text-secondary mt-1">

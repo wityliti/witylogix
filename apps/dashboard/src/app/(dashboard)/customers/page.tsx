@@ -160,7 +160,7 @@ export default function CustomersPage() {
               {s.value === null ? (
                 <Skeleton type="text" className="w-24 h-7 mb-1" />
               ) : (
-                <div className="text-2xl font-bold text-white">{s.value}</div>
+                <div className="text-2xl font-bold text-wl-text-primary">{s.value}</div>
               )}
               {s.change && <div className="text-xs text-wl-text-tertiary mt-1">{s.change}</div>}
             </Card>
@@ -180,7 +180,7 @@ export default function CustomersPage() {
             value={search}
             onChange={(e) => handleSearch(e.target.value)}
             aria-label="Search customers"
-            className="w-72 px-4 py-2 bg-wl-bg-surface border border-wl-border-default rounded-md text-white text-sm outline-none focus:border-wl-info-500/50 transition-colors"
+            className="w-72 px-4 py-2 bg-wl-bg-surface border border-wl-border-default rounded-md text-wl-text-primary text-sm outline-none focus:border-wl-info-500/50 transition-colors"
           />
 
           <div className="flex gap-1">
@@ -292,12 +292,12 @@ export default function CustomersPage() {
                             <td className="p-3 px-4">
                               <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center flex-shrink-0">
-                                  <span className="text-xs font-semibold text-white">
+                                  <span className="text-xs font-semibold text-wl-text-primary">
                                     {c.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
                                   </span>
                                 </div>
                                 <div className="min-w-0">
-                                  <div className="font-semibold text-white text-sm truncate">{c.name}</div>
+                                  <div className="font-semibold text-wl-text-primary text-sm truncate">{c.name}</div>
                                   {c.tags.length > 0 && (
                                     <div className="text-[10px] text-wl-text-tertiary mt-0.5 truncate">
                                       {c.tags.slice(0, 2).join(', ')}
@@ -310,8 +310,8 @@ export default function CustomersPage() {
                               <div className="text-xs text-wl-neutral-300 truncate">{c.email ?? '—'}</div>
                               {c.phone && <div className="text-[10px] text-wl-text-tertiary mt-0.5">{c.phone}</div>}
                             </td>
-                            <td className="p-3 px-4 text-center font-semibold text-white">{c.totalOrders}</td>
-                            <td className="p-3 px-4 text-right font-semibold text-white">{fmt.format(c.totalSpent)}</td>
+                            <td className="p-3 px-4 text-center font-semibold text-wl-text-primary">{c.totalOrders}</td>
+                            <td className="p-3 px-4 text-right font-semibold text-wl-text-primary">{fmt.format(c.totalSpent)}</td>
                             <td className="p-3 px-4 text-center">
                               <Badge variant={TIER_BADGE_VARIANT[c.tier]}>{c.tier}</Badge>
                             </td>

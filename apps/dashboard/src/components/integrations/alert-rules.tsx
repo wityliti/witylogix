@@ -141,7 +141,7 @@ export function AlertRules({ rules, onSave, onDelete, onToggle, className }: Ale
                           : 'border-wl-border-subtle hover:border-wl-border-default'
                       )}
                     >
-                      {rule.enabled && <span className="text-white text-xs">✓</span>}
+                      {rule.enabled && <span className="text-wl-text-primary text-xs">✓</span>}
                     </div>
                   </button>
                 </div>
@@ -302,7 +302,7 @@ export function AlertRules({ rules, onSave, onDelete, onToggle, className }: Ale
                     className={cn(
                       'px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                       (editingRule?.priority || current.priority) === priority
-                        ? `text-white`
+                        ? `text-wl-text-primary`
                         : 'bg-wl-surface-hover text-wl-text-primary hover:bg-wl-border-subtle',
                       (editingRule?.priority || current.priority) === priority && 'ring-2 ring-wl-primary-500/20'
                     )}

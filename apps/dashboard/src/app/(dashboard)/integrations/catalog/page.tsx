@@ -343,7 +343,7 @@ export default function IntegrationCatalogPage() {
                         <div className={cn('flex items-start gap-3 mb-3')}>
                           <CatalogIntegrationLogo integrationId={app.slug} name={app.name} />
                           <div className={cn('flex-1 min-w-0')}>
-                            <h3 className={cn('font-bold text-white text-sm')}>{app.name}</h3>
+                            <h3 className={cn('font-bold text-wl-text-primary text-sm')}>{app.name}</h3>
                             {app.subcategory && (
                               <p className={cn('text-xs text-wl-text-tertiary mt-0.5 capitalize')}>
                                 {app.subcategory.replace(/_/g, ' ')}
@@ -404,7 +404,7 @@ export default function IntegrationCatalogPage() {
                           <div className={cn('border-t border-wl-border-default pt-3 mt-3 space-y-3')}>
                             {app.capabilities.length > 0 && (
                               <div>
-                                <p className={cn('text-xs font-semibold text-white mb-2')}>
+                                <p className={cn('text-xs font-semibold text-wl-text-primary mb-2')}>
                                   Capabilities:
                                 </p>
                                 <div className={cn('flex flex-wrap gap-1')}>

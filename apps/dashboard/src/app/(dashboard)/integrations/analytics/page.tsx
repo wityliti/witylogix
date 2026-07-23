@@ -259,7 +259,7 @@ export default function AnalyticsIntegrationsPage() {
           <div className={cn('space-y-4')}>
             {/* Provider Grid */}
             <div className={cn('mb-8')}>
-              <h3 className={cn('text-sm font-semibold text-white mb-4')}>
+              <h3 className={cn('text-sm font-semibold text-wl-text-primary mb-4')}>
                 Available Providers
               </h3>
               <div className={cn('grid grid-cols-1 md:grid-cols-5 gap-3')}>
@@ -288,7 +288,7 @@ export default function AnalyticsIntegrationsPage() {
                           </Badge>
                         )}
                       </div>
-                      <p className={cn('text-sm font-semibold text-white')}>
+                      <p className={cn('text-sm font-semibold text-wl-text-primary')}>
                         {provider.name}
                       </p>
                       <p className={cn('text-xs text-wl-text-tertiary mt-1')}>
@@ -303,7 +303,7 @@ export default function AnalyticsIntegrationsPage() {
             {/* Connection Cards */}
             <div className={cn('space-y-3')}>
               <div className={cn('flex items-center justify-between mb-4')}>
-                <h3 className={cn('text-sm font-semibold text-white')}>
+                <h3 className={cn('text-sm font-semibold text-wl-text-primary')}>
                   Configured Connections ({connections.length})
                 </h3>
                 {errorConnections.length > 0 && (
@@ -349,7 +349,7 @@ export default function AnalyticsIntegrationsPage() {
                           <div className={cn('flex items-center gap-3 flex-1')}>
                             <span className={cn('text-2xl')}>{provider?.icon}</span>
                             <div className={cn('flex-1 min-w-0')}>
-                              <p className={cn('text-sm font-semibold text-white')}>
+                              <p className={cn('text-sm font-semibold text-wl-text-primary')}>
                                 {connection.name}
                               </p>
                               <p className={cn('text-xs text-wl-text-tertiary mt-1')}>
@@ -390,13 +390,13 @@ export default function AnalyticsIntegrationsPage() {
                             <div className={cn('grid grid-cols-3 gap-3 mb-4')}>
                               <div>
                                 <p className={cn('text-xs text-wl-text-tertiary mb-1')}>Dashboards</p>
-                                <p className={cn('text-lg font-bold text-white')}>
+                                <p className={cn('text-lg font-bold text-wl-text-primary')}>
                                   {connection.dashboardCount}
                                 </p>
                               </div>
                               <div>
                                 <p className={cn('text-xs text-wl-text-tertiary mb-1')}>Embeds</p>
-                                <p className={cn('text-lg font-bold text-white')}>
+                                <p className={cn('text-lg font-bold text-wl-text-primary')}>
                                   {connection.embedCount}
                                 </p>
                               </div>
@@ -451,7 +451,7 @@ export default function AnalyticsIntegrationsPage() {
         {view === 'reports' && (
           <div className={cn('space-y-3')}>
             <div className={cn('flex items-center justify-between mb-4')}>
-              <h3 className={cn('text-sm font-semibold text-white')}>
+              <h3 className={cn('text-sm font-semibold text-wl-text-primary')}>
                 Scheduled Reports ({reports.length})
               </h3>
               <Button variant="primary" size="sm" onClick={() => setShowReportForm(true)}>
@@ -486,7 +486,7 @@ export default function AnalyticsIntegrationsPage() {
                         <div className={cn('flex items-center gap-3 flex-1 min-w-0')}>
                           <span className={cn('text-xl shrink-0')}>{provider?.icon}</span>
                           <div className={cn('min-w-0')}>
-                            <p className={cn('text-sm font-semibold text-white truncate')}>
+                            <p className={cn('text-sm font-semibold text-wl-text-primary truncate')}>
                               {report.title}
                             </p>
                             <p className={cn('text-xs text-wl-text-tertiary mt-1')}>
@@ -512,13 +512,13 @@ export default function AnalyticsIntegrationsPage() {
                         <div className={cn('grid grid-cols-2 gap-3 text-xs')}>
                           <div>
                             <p className={cn('text-wl-text-tertiary mb-1')}>Next Run</p>
-                            <p className={cn('font-semibold text-white')}>
+                            <p className={cn('font-semibold text-wl-text-primary')}>
                               {report.nextRun}
                             </p>
                           </div>
                           <div>
                             <p className={cn('text-wl-text-tertiary mb-1')}>Last Run</p>
-                            <p className={cn('font-semibold text-white')}>
+                            <p className={cn('font-semibold text-wl-text-primary')}>
                               {report.lastRun}
                             </p>
                           </div>
@@ -578,7 +578,7 @@ export default function AnalyticsIntegrationsPage() {
         {/* Metrics View */}
         {view === 'metrics' && (
           <div className={cn('space-y-4')}>
-            <h3 className={cn('text-sm font-semibold text-white mb-4')}>
+            <h3 className={cn('text-sm font-semibold text-wl-text-primary mb-4')}>
               Data Source Sync Status
             </h3>
 
@@ -611,7 +611,7 @@ export default function AnalyticsIntegrationsPage() {
                           )}
                         />
                         <div className={cn('min-w-0')}>
-                          <p className={cn('text-sm font-semibold text-white')}>
+                          <p className={cn('text-sm font-semibold text-wl-text-primary')}>
                             {source.name}
                           </p>
                           <p className={cn('text-xs text-wl-text-tertiary mt-0.5')}>
@@ -622,7 +622,7 @@ export default function AnalyticsIntegrationsPage() {
                       <div className={cn('flex items-center gap-3 text-right shrink-0')}>
                         <div>
                           <p className={cn('text-xs text-wl-text-tertiary')}>Last Refresh</p>
-                          <p className={cn('text-xs font-semibold text-white')}>
+                          <p className={cn('text-xs font-semibold text-wl-text-primary')}>
                             {source.lastRefresh}
                           </p>
                         </div>

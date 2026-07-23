@@ -70,7 +70,7 @@ function KPICard({ label, value, suffix, icon: Icon }: KPICardProps) {
         )}
       </div>
       <div className="flex items-baseline gap-1">
-        <span className="text-2xl font-bold text-white">{value}</span>
+        <span className="text-2xl font-bold text-wl-text-primary">{value}</span>
         {suffix && <span className="text-sm text-wl-neutral-300">{suffix}</span>}
       </div>
     </Card>
@@ -261,15 +261,15 @@ export default function PartnerDetailPage() {
               <dl className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <dt className="text-wl-text-secondary mb-1">Slug</dt>
-                  <dd className="text-white font-mono">{partner.slug}</dd>
+                  <dd className="text-wl-text-primary font-mono">{partner.slug}</dd>
                 </div>
                 <div>
                   <dt className="text-wl-text-secondary mb-1">Category</dt>
-                  <dd className="text-white">{partner.category}</dd>
+                  <dd className="text-wl-text-primary">{partner.category}</dd>
                 </div>
                 <div>
                   <dt className="text-wl-text-secondary mb-1">Last Sync</dt>
-                  <dd className="text-white">
+                  <dd className="text-wl-text-primary">
                     {partner.lastSyncAt
                       ? new Date(partner.lastSyncAt).toLocaleString()
                       : "Never"}
@@ -277,7 +277,7 @@ export default function PartnerDetailPage() {
                 </div>
                 <div>
                   <dt className="text-wl-text-secondary mb-1">Last Updated</dt>
-                  <dd className="text-white">{new Date(partner.updatedAt).toLocaleString()}</dd>
+                  <dd className="text-wl-text-primary">{new Date(partner.updatedAt).toLocaleString()}</dd>
                 </div>
               </dl>
               {partner.description && (
@@ -460,7 +460,7 @@ export default function PartnerDetailPage() {
                   <span className="text-xs font-semibold uppercase tracking-wider text-wl-text-secondary">
                     Max Delivery Time
                   </span>
-                  <p className="text-2xl font-bold text-white mt-2">
+                  <p className="text-2xl font-bold text-wl-text-primary mt-2">
                     {maxDeliveryTime != null ? `${maxDeliveryTime} min` : "Not configured"}
                   </p>
                 </div>
@@ -468,7 +468,7 @@ export default function PartnerDetailPage() {
                   <span className="text-xs font-semibold uppercase tracking-wider text-wl-text-secondary">
                     Max Distance
                   </span>
-                  <p className="text-2xl font-bold text-white mt-2">
+                  <p className="text-2xl font-bold text-wl-text-primary mt-2">
                     {maxDistance != null ? `${maxDistance} km` : "Not configured"}
                   </p>
                 </div>

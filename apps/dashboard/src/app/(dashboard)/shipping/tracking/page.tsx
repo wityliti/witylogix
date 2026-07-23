@@ -231,7 +231,7 @@ export default function TrackingPage() {
                           idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-sunken',
                         )}
                       >
-                        <td className="p-3 px-4 text-white font-mono text-xs">
+                        <td className="p-3 px-4 text-wl-text-primary font-mono text-xs">
                           {shipment.trackingNumber ?? shipment.shipmentNumber}
                         </td>
                         <td className="p-3 px-4 text-wl-text-secondary text-sm">

@@ -95,7 +95,7 @@ export function RouteSummary({ result, stops, className }: RouteSummaryProps) {
               {/* Timeline Dot & Line */}
               <div className="flex flex-col items-center flex-shrink-0">
                 <div
-                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-wl-text-primary"
                   style={{
                     backgroundColor: 'var(--wl-primary-500)',
                   }}

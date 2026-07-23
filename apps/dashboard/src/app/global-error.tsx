@@ -53,7 +53,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                 <div className="flex items-center gap-3 mb-6">
                   <AlertTriangle className="w-6 h-6 text-wl-danger-500" />
                   <div>
-                    <h1 className="text-xl font-bold text-white">
+                    <h1 className="text-xl font-bold text-wl-text-primary">
                       Critical Error
                     </h1>
                     <p className="text-sm text-wl-text-secondary">
@@ -64,7 +64,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
 
                 {/* Error message */}
                 <div className="mb-6 p-4 rounded-md bg-wl-danger-bg border border-wl-danger-500/30">
-                  <p className="text-sm text-white mb-2 break-words">
+                  <p className="text-sm text-wl-text-primary mb-2 break-words">
                     {error.message || 'An unexpected error occurred'}
                   </p>
                   {error.digest && (

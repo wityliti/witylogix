@@ -76,7 +76,7 @@ export default function CreateLabelPage() {
                     value={formData.destination}
                     onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
                     placeholder="City, State"
-                    className="w-full p-2 border border-wl-border-default rounded bg-wl-bg-root text-white placeholder:text-wl-text-tertiary"
+                    className="w-full p-2 border border-wl-border-default rounded bg-wl-bg-root text-wl-text-primary placeholder:text-wl-text-tertiary"
                   />
                 </div>
                 <div>
@@ -85,7 +85,7 @@ export default function CreateLabelPage() {
                     type="number"
                     value={formData.weight}
                     onChange={(e) => setFormData({ ...formData, weight: parseFloat(e.target.value) })}
-                    className="w-full p-2 border border-wl-border-default rounded bg-wl-bg-root text-white"
+                    className="w-full p-2 border border-wl-border-default rounded bg-wl-bg-root text-wl-text-primary"
                   />
                 </div>
               </div>
@@ -101,7 +101,7 @@ export default function CreateLabelPage() {
                       formData.carrier === carrier ? 'border-wl-primary-500 bg-wl-primary-500/10' : 'border-wl-border-default bg-wl-bg-sunken'
                     }`}
                   >
-                    <p className="font-medium text-white">{carrier}</p>
+                    <p className="font-medium text-wl-text-primary">{carrier}</p>
                   </div>
                 ))}
               </div>
@@ -117,7 +117,7 @@ export default function CreateLabelPage() {
                       formData.service === service ? 'border-wl-primary-500 bg-wl-primary-500/10' : 'border-wl-border-default bg-wl-bg-sunken'
                     }`}
                   >
-                    <p className="font-medium text-white">{service}</p>
+                    <p className="font-medium text-wl-text-primary">{service}</p>
                     <p className="text-xs text-wl-text-secondary">${{ Ground: "15.00", Express: "35.00", Overnight: "65.00" }[service] ?? "—"}</p>
                   </div>
                 ))}

@@ -97,7 +97,7 @@ export default function FuelPage() {
                 {analytics.anomalies.slice(0, 3).map((anomaly) => (
                   <div key={anomaly.id} className="flex items-center justify-between p-3 bg-wl-danger-500/10 rounded-md border border-wl-border-default">
                     <div>
-                      <p className="text-sm font-medium text-white">Anomaly Detected</p>
+                      <p className="text-sm font-medium text-wl-text-secondary">Anomaly Detected</p>
                       <p className="text-xs text-wl-text-secondary">{formatCurrency(anomaly.amount)} • {anomaly.gallons.toFixed(1)} gal • {formatDate(anomaly.date)}</p>
                     </div>
                     <Button variant="danger" size="sm">Review</Button>
@@ -122,7 +122,7 @@ export default function FuelPage() {
                   return (
                     <div key={item.vehicleId}>
                       <div className="flex items-center justify-between mb-1">
-                        <p className="text-sm font-medium text-white">{idx + 1}. Vehicle {idx + 1}</p>
+                        <p className="text-sm font-medium text-wl-text-secondary">{idx + 1}. Vehicle {idx + 1}</p>
                         <p className="text-xs font-semibold text-wl-text-secondary">{formatCurrency(item.spend)}</p>
                       </div>
                       <div className="h-2 bg-wl-bg-elevated rounded-full overflow-hidden">
@@ -144,15 +144,15 @@ export default function FuelPage() {
               <div className="space-y-3">
                 <div>
                   <p className="text-xs text-wl-text-secondary mb-1">Total Fuel Spend</p>
-                  <p className="text-lg font-bold text-white">{formatCurrency(analytics.totalSpend)}</p>
+                  <p className="text-lg font-bold text-wl-text-primary">{formatCurrency(analytics.totalSpend)}</p>
                 </div>
                 <div>
                   <p className="text-xs text-wl-text-secondary mb-1">Transactions</p>
-                  <p className="text-lg font-bold text-white">{transactions.length}</p>
+                  <p className="text-lg font-bold text-wl-text-primary">{transactions.length}</p>
                 </div>
                 <div>
                   <p className="text-xs text-wl-text-secondary mb-1">Flagged</p>
-                  <p className="text-lg font-bold text-white">{analytics.anomalies.length}</p>
+                  <p className="text-lg font-bold text-wl-text-primary">{analytics.anomalies.length}</p>
                 </div>
               </div>
             </CardContent>
@@ -192,7 +192,7 @@ export default function FuelPage() {
                 {paginatedTransactions.map((tx, idx) => (
                   <tr key={tx.id} className={cn('border-b border-wl-border-default transition-colors hover:bg-wl-bg-elevated', idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-sunken')}>
                     <td className="p-3 px-4 text-wl-text-secondary text-xs">{formatDate(tx.date)}</td>
-                    <td className="p-3 px-4 text-white font-semibold">
+                    <td className="p-3 px-4 text-wl-text-primary font-semibold">
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-md bg-wl-info-500/10 flex items-center justify-center text-wl-info-400 text-xs">
                           <Fuel className="w-3 h-3" />
@@ -201,8 +201,8 @@ export default function FuelPage() {
                       </div>
                     </td>
                     <td className="p-3 px-4 text-center text-wl-text-secondary text-xs">{tx.station}</td>
-                    <td className="p-3 px-4 text-center text-white font-medium">{tx.gallons.toFixed(1)}</td>
-                    <td className="p-3 px-4 text-right text-white font-semibold">{formatCurrency(tx.amount)}</td>
+                    <td className="p-3 px-4 text-center text-wl-text-primary font-medium">{tx.gallons.toFixed(1)}</td>
+                    <td className="p-3 px-4 text-right text-wl-text-primary font-semibold">{formatCurrency(tx.amount)}</td>
                     <td className="p-3 px-4 text-center text-wl-text-secondary text-xs">{formatCurrency(tx.price)}</td>
                     <td className="p-3 px-4 text-center">
                       <Badge variant={tx.mpg >= 20 ? 'success' : tx.mpg >= 15 ? 'warning' : 'danger'}>

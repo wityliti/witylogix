@@ -236,7 +236,7 @@ export default function SupplyChainIntegrationsPage() {
         {view === "warehouses" && (
           <div className={cn("space-y-3")}>
             <div className={cn("flex items-center justify-between mb-4")}>
-              <h3 className={cn("text-sm font-semibold text-white")}>
+              <h3 className={cn("text-sm font-semibold text-wl-text-primary")}>
                 Warehouse Connections ({connections.length})
               </h3>
               <span className={cn("text-xs text-wl-neutral-300")}>
@@ -247,13 +247,13 @@ export default function SupplyChainIntegrationsPage() {
             {/* Order Flow Diagram */}
             <Card className={cn("mb-6 bg-wl-bg-root")}>
               <div className={cn("p-4")}>
-                <p className={cn("text-xs font-semibold text-white mb-4")}>
+                <p className={cn("text-xs font-semibold text-wl-text-primary mb-4")}>
                   Order Flow Pipeline
                 </p>
                 <div className={cn("flex items-center justify-between text-center")}>
                   <div className={cn("flex-1")}>
                     <p className={cn("text-2xl mb-1")}>📥</p>
-                    <p className={cn("text-xs font-semibold text-white")}>Inbound</p>
+                    <p className={cn("text-xs font-semibold text-wl-text-primary")}>Inbound</p>
                     <p className={cn("text-xs text-wl-neutral-300 mt-1")}>PO Receipt</p>
                   </div>
                   <div className={cn("flex-1 flex justify-center")}>
@@ -261,7 +261,7 @@ export default function SupplyChainIntegrationsPage() {
                   </div>
                   <div className={cn("flex-1")}>
                     <p className={cn("text-2xl mb-1")}>🏭</p>
-                    <p className={cn("text-xs font-semibold text-white")}>Warehouse</p>
+                    <p className={cn("text-xs font-semibold text-wl-text-primary")}>Warehouse</p>
                     <p className={cn("text-xs text-wl-neutral-300 mt-1")}>Storage & QC</p>
                   </div>
                   <div className={cn("flex-1 flex justify-center")}>
@@ -269,7 +269,7 @@ export default function SupplyChainIntegrationsPage() {
                   </div>
                   <div className={cn("flex-1")}>
                     <p className={cn("text-2xl mb-1")}>📤</p>
-                    <p className={cn("text-xs font-semibold text-white")}>Outbound</p>
+                    <p className={cn("text-xs font-semibold text-wl-text-primary")}>Outbound</p>
                     <p className={cn("text-xs text-wl-neutral-300 mt-1")}>Shipping</p>
                   </div>
                 </div>
@@ -313,7 +313,7 @@ export default function SupplyChainIntegrationsPage() {
                       <div className={cn("flex items-center gap-3 flex-1 min-w-0")}>
                         <span className={cn("text-2xl shrink-0")}>{provider?.icon}</span>
                         <div className={cn("min-w-0")}>
-                          <p className={cn("text-sm font-semibold text-white")}>
+                          <p className={cn("text-sm font-semibold text-wl-text-primary")}>
                             {warehouse.name}
                           </p>
                           <p className={cn("text-xs text-wl-neutral-300 mt-1")}>
@@ -345,7 +345,7 @@ export default function SupplyChainIntegrationsPage() {
                       <div className={cn("border-t border-wl-border-default pt-3 mt-3 space-y-3")}>
                         {/* Location Mapping */}
                         <div>
-                          <p className={cn("text-xs font-semibold text-white mb-2")}>
+                          <p className={cn("text-xs font-semibold text-wl-text-primary mb-2")}>
                             Mapped Locations
                           </p>
                           <div className={cn("grid grid-cols-2 gap-2")}>
@@ -367,19 +367,19 @@ export default function SupplyChainIntegrationsPage() {
 
                         {/* Sync Configuration */}
                         <div className={cn("bg-wl-bg-surface rounded p-3")}>
-                          <p className={cn("text-xs font-semibold text-white mb-2")}>
+                          <p className={cn("text-xs font-semibold text-wl-text-primary mb-2")}>
                             Sync Details
                           </p>
                           <div className={cn("grid grid-cols-2 gap-2 text-xs")}>
                             <div>
                               <p className={cn("text-wl-neutral-300")}>Last Sync</p>
-                              <p className={cn("font-semibold text-white")}>
+                              <p className={cn("font-semibold text-wl-text-primary")}>
                                 {warehouse.lastSync}
                               </p>
                             </div>
                             <div>
                               <p className={cn("text-wl-neutral-300")}>Next Sync</p>
-                              <p className={cn("font-semibold text-white")}>
+                              <p className={cn("font-semibold text-wl-text-primary")}>
                                 {warehouse.nextSync}
                               </p>
                             </div>
@@ -419,7 +419,7 @@ export default function SupplyChainIntegrationsPage() {
         {/* Inventory View */}
         {view === "inventory" && (
           <div className={cn("space-y-3")}>
-            <h3 className={cn("text-sm font-semibold text-white mb-4")}>
+            <h3 className={cn("text-sm font-semibold text-wl-text-primary mb-4")}>
               Inventory Sync Configuration
             </h3>
 
@@ -441,7 +441,7 @@ export default function SupplyChainIntegrationsPage() {
                 <div className={cn("p-4")}>
                   <div className={cn("flex items-start justify-between mb-3")}>
                     <div className={cn("flex-1 min-w-0")}>
-                      <p className={cn("text-sm font-semibold text-white")}>
+                      <p className={cn("text-sm font-semibold text-wl-text-primary")}>
                         {sync.warehouse}
                       </p>
                       <div className={cn("flex items-center gap-3 mt-1 text-xs text-wl-neutral-300")}>
@@ -468,13 +468,13 @@ export default function SupplyChainIntegrationsPage() {
                     <div className={cn("grid grid-cols-3 gap-3 text-xs")}>
                       <div>
                         <p className={cn("text-wl-neutral-300 mb-1")}>Items Tracked</p>
-                        <p className={cn("font-bold text-white")}>
+                        <p className={cn("font-bold text-wl-text-primary")}>
                           {(sync.itemsTracked / 1000).toFixed(1)}K
                         </p>
                       </div>
                       <div>
                         <p className={cn("text-wl-neutral-300 mb-1")}>Last Update</p>
-                        <p className={cn("font-bold text-white")}>
+                        <p className={cn("font-bold text-wl-text-primary")}>
                           {sync.lastUpdate}
                         </p>
                       </div>
@@ -517,7 +517,7 @@ export default function SupplyChainIntegrationsPage() {
         {/* Fulfillment View */}
         {view === "fulfillment" && (
           <div className={cn("space-y-4")}>
-            <h3 className={cn("text-sm font-semibold text-white mb-4")}>
+            <h3 className={cn("text-sm font-semibold text-wl-text-primary mb-4")}>
               Fulfillment SLA Dashboard
             </h3>
             <div className={cn("py-12 text-center text-wl-text-secondary text-sm")}>
@@ -529,7 +529,7 @@ export default function SupplyChainIntegrationsPage() {
         {/* Health View */}
         {view === "health" && (
           <div className={cn("space-y-3")}>
-            <h3 className={cn("text-sm font-semibold text-white mb-4")}>
+            <h3 className={cn("text-sm font-semibold text-wl-text-primary mb-4")}>
               Integration Health & Error Logs
             </h3>
             <div className={cn("py-12 text-center text-wl-text-secondary text-sm")}>

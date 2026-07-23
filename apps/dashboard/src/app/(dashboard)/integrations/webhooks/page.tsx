@@ -77,13 +77,13 @@ function EndpointCard({
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div>
               <p className="text-wl-text-secondary">Success Rate</p>
-              <p className="font-medium text-white mt-1">
+              <p className="font-medium text-wl-text-primary mt-1">
                 {endpoint.successRate.toFixed(1)}%
               </p>
             </div>
             <div>
               <p className="text-wl-text-secondary">Last Delivery</p>
-              <p className="font-medium text-white mt-1 truncate">
+              <p className="font-medium text-wl-text-primary mt-1 truncate">
                 {new Date(endpoint.lastDeliveryTime).toLocaleString()}
               </p>
             </div>
@@ -229,7 +229,7 @@ export default function WebhooksPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, url: e.target.value })
                   }
-                  className="w-full px-3 py-2 rounded-lg bg-wl-bg-sunken border border-wl-border-default text-white placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500"
+                  className="w-full px-3 py-2 rounded-lg bg-wl-bg-sunken border border-wl-border-default text-wl-text-primary placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500"
                 />
               </div>
 
@@ -264,7 +264,7 @@ export default function WebhooksPage() {
                         }}
                         className="w-4 h-4 rounded"
                       />
-                      <span className="text-sm text-white">{event}</span>
+                      <span className="text-sm text-wl-text-secondary">{event}</span>
                     </label>
                   ))}
                 </div>
@@ -282,7 +282,7 @@ export default function WebhooksPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, secret: e.target.value })
                     }
-                    className="w-full px-3 py-2 rounded-lg bg-wl-bg-sunken border border-wl-border-default text-white placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500"
+                    className="w-full px-3 py-2 rounded-lg bg-wl-bg-sunken border border-wl-border-default text-wl-text-primary placeholder:text-wl-text-tertiary focus:outline-none focus:border-wl-info-500"
                   />
                   <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-wl-text-secondary" />
                 </div>
@@ -298,7 +298,7 @@ export default function WebhooksPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, retryPolicy: e.target.value })
                     }
-                    className="w-full px-3 py-2 rounded-lg bg-wl-bg-sunken border border-wl-border-default text-white focus:outline-none focus:border-wl-info-500"
+                    className="w-full px-3 py-2 rounded-lg bg-wl-bg-sunken border border-wl-border-default text-wl-text-primary focus:outline-none focus:border-wl-info-500"
                   >
                     <option value="exponential">Exponential Backoff</option>
                     <option value="linear">Linear Backoff</option>
@@ -318,7 +318,7 @@ export default function WebhooksPage() {
                         maxRetries: parseInt(e.target.value),
                       })
                     }
-                    className="w-full px-3 py-2 rounded-lg bg-wl-bg-sunken border border-wl-border-default text-white focus:outline-none focus:border-wl-info-500"
+                    className="w-full px-3 py-2 rounded-lg bg-wl-bg-sunken border border-wl-border-default text-wl-text-primary focus:outline-none focus:border-wl-info-500"
                   />
                 </div>
               </div>
@@ -391,7 +391,7 @@ export default function WebhooksPage() {
               </div>
               <div>
                 <p className="text-sm text-wl-text-secondary">Successful Deliveries</p>
-                <p className="text-3xl font-bold text-white mt-2">
+                <p className="text-3xl font-bold text-wl-text-primary mt-2">
                   {successfulDeliveries.length}
                 </p>
               </div>
@@ -416,7 +416,7 @@ export default function WebhooksPage() {
               const maxTotal = Math.max(1, ...hourly.map((h) => h.success + h.failed));
               return (
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-white">Hourly Delivery Status</p>
+                  <p className="text-sm font-medium text-wl-text-secondary">Hourly Delivery Status</p>
                   <div className="flex items-end gap-1 h-32 px-2 py-4 bg-wl-bg-root rounded-lg border border-wl-border-default">
                     {hourly.map((bucket, i) => {
                       const total = bucket.success + bucket.failed;
@@ -472,7 +472,7 @@ export default function WebhooksPage() {
                         {delivery.status}
                       </Badge>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-white truncate">
+                        <p className="text-sm font-medium text-wl-text-secondary truncate">
                           {delivery.eventType}
                         </p>
                         <p className="text-xs text-wl-text-secondary truncate">
@@ -502,7 +502,7 @@ export default function WebhooksPage() {
                         <p className="text-xs font-medium text-wl-text-secondary mb-1">
                           Timestamp
                         </p>
-                        <p className="text-sm text-white">
+                        <p className="text-sm text-wl-text-secondary">
                           {new Date(delivery.timestamp).toLocaleString()}
                         </p>
                       </div>
@@ -511,7 +511,7 @@ export default function WebhooksPage() {
                           <p className="text-xs font-medium text-wl-text-secondary mb-1">
                             Payload
                           </p>
-                          <pre className="text-xs bg-wl-bg-surface p-2 rounded border border-wl-border-default overflow-x-auto text-white">
+                          <pre className="text-xs bg-wl-bg-surface p-2 rounded border border-wl-border-default overflow-x-auto text-wl-text-primary">
                             {JSON.stringify(delivery.payload, null, 2)}
                           </pre>
                         </div>

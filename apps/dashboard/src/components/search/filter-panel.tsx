@@ -184,7 +184,7 @@ export function FilterPanel({
       <div className="border-b border-wl-border-default p-4">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex w-full items-center justify-between text-lg font-semibold text-white hover:text-wl-neutral-300"
+          className="flex w-full items-center justify-between text-lg font-semibold text-wl-text-primary hover:text-wl-neutral-300"
         >
           <span>Filters</span>
           <svg

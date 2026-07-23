@@ -185,7 +185,7 @@ export default function IntegrationDetailPage() {
                 <div className="text-xs text-wl-text-tertiary uppercase tracking-wide mb-2">
                   {metric.label} ({metric.period})
                 </div>
-                <div className="text-2xl font-bold text-white">
+                <div className="text-2xl font-bold text-wl-text-primary">
                   {metric.value.toLocaleString()}
                 </div>
                 <div className="text-xs text-wl-text-tertiary mt-1">
@@ -279,7 +279,7 @@ export default function IntegrationDetailPage() {
                     <AlertCircle className="w-5 h-5 text-wl-danger-500 flex-shrink-0 mt-0.5" />
                   )}
                   <div className="flex-1">
-                    <p className="text-sm text-white">
+                    <p className="text-sm text-wl-text-secondary">
                       {showTestResult.message}
                     </p>
                     <button
@@ -337,7 +337,7 @@ export default function IntegrationDetailPage() {
                     >
                       <div className="flex items-start justify-between">
                         <div>
-                          <p className="text-sm font-medium text-white">
+                          <p className="text-sm font-medium text-wl-text-secondary">
                             {entry.type.replace(/_/g, " ")}
                           </p>
                           <p className="text-xs text-wl-text-tertiary mt-1">
@@ -477,13 +477,13 @@ export default function IntegrationDetailPage() {
             <CardContent className="space-y-3 text-sm">
               <div>
                 <p className="text-wl-text-tertiary mb-1">Provider</p>
-                <p className="text-white font-medium">
+                <p className="text-wl-text-primary font-medium">
                   {connection.providerName}
                 </p>
               </div>
               <div>
                 <p className="text-wl-text-tertiary mb-1">Category</p>
-                <p className="text-white font-medium capitalize">
+                <p className="text-wl-text-primary font-medium capitalize">
                   {connection.category}
                 </p>
               </div>
@@ -494,7 +494,7 @@ export default function IntegrationDetailPage() {
               {connection.credentialsExpireAt && (
                 <div>
                   <p className="text-wl-text-tertiary mb-1">Credentials Expire</p>
-                  <p className="text-white font-medium">
+                  <p className="text-wl-text-primary font-medium">
                     {new Date(connection.credentialsExpireAt).toLocaleDateString()}
                   </p>
                 </div>

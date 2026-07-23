@@ -65,7 +65,7 @@ export function ViolationAlertCard({ alert }: ViolationAlertCardProps) {
           </Badge>
         </div>
 
-        <p className="text-sm text-white mb-4 p-3 bg-wl-bg-surface rounded">
+        <p className="text-sm text-wl-text-secondary mb-4 p-3 bg-wl-bg-surface rounded">
           {alert.details}
         </p>
 

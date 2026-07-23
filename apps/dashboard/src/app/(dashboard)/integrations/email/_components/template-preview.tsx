@@ -47,7 +47,7 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
           <label className="text-xs uppercase tracking-wide text-wl-text-tertiary font-semibold">
             Subject
           </label>
-          <div className="text-sm text-white mt-2 p-3 bg-wl-bg-surface rounded border border-wl-border-default font-mono">
+          <div className="text-sm text-wl-text-secondary mt-2 p-3 bg-wl-bg-surface rounded border border-wl-border-default font-mono">
             {template.subject}
           </div>
         </div>
@@ -86,7 +86,7 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
               <input
                 type="email"
                 placeholder="test@example.com"
-                className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-white placeholder-wl-text-tertiary"
+                className="w-full px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-sm text-wl-text-primary placeholder-wl-text-tertiary"
               />
             </div>
             <div className="flex gap-2">

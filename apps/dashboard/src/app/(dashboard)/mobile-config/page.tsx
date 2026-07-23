@@ -241,7 +241,7 @@ export default function MobileConfigPage() {
                   className="border-2 border-dashed border-wl-border-default rounded-lg p-8 text-center cursor-pointer transition-all bg-wl-bg-elevated hover:border-wl-info-500 hover:bg-wl-info-500/8"
                 >
                   <Upload className="w-8 h-8 mx-auto mb-2 text-wl-text-secondary" />
-                  <p className="text-sm font-medium text-white">
+                  <p className="text-sm font-medium text-wl-text-secondary">
                     Drag logo or click to upload
                   </p>
                   <p className="text-xs text-wl-text-secondary mt-1">
@@ -271,7 +271,7 @@ export default function MobileConfigPage() {
                   type="text"
                   value={appName}
                   onChange={(e) => setAppName(e.target.value)}
-                  className="w-full px-3 py-2 border border-wl-border-default rounded-lg bg-wl-bg-elevated text-white text-sm outline-none transition-colors focus:border-wl-info-500"
+                  className="w-full px-3 py-2 border border-wl-border-default rounded-lg bg-wl-bg-elevated text-wl-text-primary text-sm outline-none transition-colors focus:border-wl-info-500"
                 />
                 <p className="text-xs text-wl-text-secondary mt-1">
                   Displayed on home screen
@@ -294,7 +294,7 @@ export default function MobileConfigPage() {
                     type="text"
                     value={primaryColor}
                     onChange={(e) => setPrimaryColor(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-wl-border-default rounded-lg bg-wl-bg-elevated text-white text-sm font-mono outline-none transition-colors focus:border-wl-info-500"
+                    className="flex-1 px-3 py-2 border border-wl-border-default rounded-lg bg-wl-bg-elevated text-wl-text-primary text-sm font-mono outline-none transition-colors focus:border-wl-info-500"
                   />
                 </div>
               </div>
@@ -318,7 +318,7 @@ export default function MobileConfigPage() {
                   className="flex items-center justify-between p-3 bg-wl-bg-elevated rounded-lg border border-wl-border-default"
                 >
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-white">
+                    <p className="text-sm font-semibold text-wl-text-primary">
                       {feature.name}
                     </p>
                     <p className="text-xs text-wl-text-secondary mt-1">
@@ -376,7 +376,7 @@ export default function MobileConfigPage() {
                   className="flex items-center justify-between p-3 bg-wl-bg-elevated rounded-lg border border-wl-border-default"
                 >
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-white">
+                    <p className="text-sm font-semibold text-wl-text-primary">
                       {notification.name}
                     </p>
                     <p className="text-xs text-wl-text-secondary mt-1">
@@ -520,7 +520,7 @@ export default function MobileConfigPage() {
                 <p className="text-xs text-wl-text-secondary">
                   Features Enabled
                 </p>
-                <p className="text-lg font-bold text-white mt-1">
+                <p className="text-lg font-bold text-wl-text-primary mt-1">
                   {features.filter((f) => f.enabled).length} / {features.length}
                 </p>
               </div>
@@ -528,7 +528,7 @@ export default function MobileConfigPage() {
                 <p className="text-xs text-wl-text-secondary">
                   Notifications Enabled
                 </p>
-                <p className="text-lg font-bold text-white mt-1">
+                <p className="text-lg font-bold text-wl-text-primary mt-1">
                   {notifications.filter((n) => n.enabled).length} / {notifications.length}
                 </p>
               </div>

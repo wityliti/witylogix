@@ -111,7 +111,7 @@ export function ProviderList({
                   <p className="text-xs font-medium text-wl-text-tertiary uppercase">
                     Last Sync
                   </p>
-                  <p className="text-sm text-white mt-1 flex items-center gap-1">
+                  <p className="text-sm text-wl-text-secondary mt-1 flex items-center gap-1">
                     <Clock className="w-3 h-3 text-wl-success-500" />
                     {provider.lastSync}
                   </p>
@@ -120,7 +120,7 @@ export function ProviderList({
                   <p className="text-xs font-medium text-wl-text-tertiary uppercase">
                     Channels
                   </p>
-                  <p className="text-sm text-white mt-1">
+                  <p className="text-sm text-wl-text-secondary mt-1">
                     {provider.config.channels?.length || 0} channels
                   </p>
                 </div>
@@ -140,7 +140,7 @@ export function ProviderList({
                         <Badge
                           key={channel}
                           variant="default"
-                          className="bg-wl-bg-surface text-white"
+                          className="bg-wl-bg-surface text-wl-text-primary"
                         >
                           {channel}
                         </Badge>
