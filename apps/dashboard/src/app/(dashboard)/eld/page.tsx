@@ -7,7 +7,21 @@ import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { cn } from "@/lib/utils";
 import { useFleetCompliance, useViolations, useELDEvents, DutyStatus } from "@/hooks/use-eld";
-import { useApiList, ApiFilters } from "@/hooks/use-api";
+import { useApiList } from "@/hooks/use-api";
+
+type DriverComplianceStatus = "COMPLIANT" | "WARNING" | "VIOLATION" | "OFFLINE";
+type DriverStatus = DriverComplianceStatus;
+
+interface DriverStatusInfo {
+  driverId: string;
+  name: string;
+  status: DriverComplianceStatus;
+  currentDuty: DutyStatus;
+  drivingRemaining: number;
+  breakStatus: "TAKEN" | "NEEDED";
+  violations: number;
+  lastUpdate: string;
+}
 import { TableSkeleton } from "@/components/ui/loading-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 
@@ -86,8 +100,6 @@ export default function ELDOverviewPage() {
   const violationsLoading = violationsResult.loading;
   const events            = eventsResult.items;
   const eventsLoading     = eventsResult.loading;
-  const drivers           = driversResult.items;
-  const driversLoading    = driversResult.loading;
 
   if (driversLoading && !apiDrivers.length) return <TableSkeleton rows={10} columns={6} />;
   if (driversError) return <ErrorState message={driversError.message} onRetry={driversRefetch} />;
@@ -247,10 +259,10 @@ export default function ELDOverviewPage() {
                           minute: "2-digit",
                         })}
                       </div>
-                    </button>
-                  ))}
-                </div>
-              )}
+                    </div>
+                  </button>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>

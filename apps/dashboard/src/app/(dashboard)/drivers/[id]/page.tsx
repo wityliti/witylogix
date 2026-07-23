@@ -17,7 +17,6 @@ import {
   BarChart3,
   RefreshCw,
   AlertCircle,
-  Truck,
   Phone,
   Mail,
 } from 'lucide-react';
@@ -381,22 +380,6 @@ export default function DriverDetailPage() {
               </div>
             </div>
 
-            {profileData && (
-              <div className="rounded-xl bg-wl-bg-surface border border-white/[0.06] p-5">
-                <h3 className="text-sm font-semibold text-white/60 tracking-wide mb-4">Vehicle</h3>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-white/[0.04] flex items-center justify-center">
-                    <Truck className="w-5 h-5 text-blue-400/70" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-white/70">{profileData.vehicleType || 'Unknown'}</p>
-                    {profileData.vehiclePlate && (
-                      <p className="text-xs font-mono text-white/30">{profileData.vehiclePlate}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>

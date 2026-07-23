@@ -78,20 +78,14 @@ export function StopListEditor({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleAddressChange = (value: string) => {
+  const handleAddressChange = useCallback((value: string) => {
     setNewAddress(value);
-    // Autocomplete suggestions require a geocoding API integration
-    setShowSuggestions(false);
-    setSuggestions([]);
-  };
-
     if (value.length < 3) {
       setSuggestions([]);
       setShowSuggestions(false);
       setIsSearching(false);
       return;
     }
-
     setIsSearching(true);
     searchTimerRef.current = setTimeout(async () => {
       const results = await searchAddresses(value);

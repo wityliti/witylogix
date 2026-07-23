@@ -40,15 +40,16 @@ interface ActiveDeliveryMapProps {
   className?: string;
 }
 
-const STATUS_MAP: Record<string, DriverStatus> = {
-  available: "available",
-  AVAILABLE: "available",
-  on_route: "busy",
-  ON_ROUTE: "busy",
-  on_break: "break",
-  ON_BREAK: "break",
-  offline: "offline",
-  OFFLINE: "offline",
+const driverStatusColors: Record<Driver["status"], string> = {
+  available: "bg-wl-success-400",
+  "on-delivery": "bg-wl-primary-500",
+  offline: "bg-wl-text-secondary",
+};
+
+const driverStatusLabels: Record<Driver["status"], string> = {
+  available: "Available",
+  "on-delivery": "On Delivery",
+  offline: "Offline",
 };
 
 function mapApiStatus(status: string): Driver["status"] {
@@ -132,7 +133,7 @@ function SVGMap({ drivers, zoom }: { drivers: Driver[]; zoom: number }) {
       {drivers.filter((d) => d.latitude !== 0 || d.longitude !== 0).map((driver) => {
         const x = lngToX(driver.longitude);
         const y = latToY(driver.latitude);
-        const colorClass = driverStatusColors[driver.status];
+        const colorClass = driverStatusColors[driver.status] ?? "bg-wl-text-secondary";
 
         return (
           <g key={driver.id}>
@@ -242,13 +243,12 @@ export function ActiveDeliveryMap({ className }: ActiveDeliveryMapProps) {
   // Refresh every 30s
   useEffect(() => {
     const interval = setInterval(() => {
-      refetchDrivers();
-      refetchDeliveries();
+      refetch();
     }, 30000);
     return () => clearInterval(interval);
-  }, [refetchDrivers, refetchDeliveries]);
+  }, [refetch]);
 
-  const drivers = rawDrivers.map(toDriver);
+  const drivers = useMemo(() => rawDrivers.map(toDriver), [rawDrivers]);
   const activeDriverCount = drivers.filter((d) => d.status !== "offline").length;
 
   const handleDriverClick = (driver: Driver, e: React.MouseEvent) => {
@@ -256,8 +256,8 @@ export function ActiveDeliveryMap({ className }: ActiveDeliveryMapProps) {
     if (rect) {
       setPopoverPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
     }
-    return result;
-  }, [rawDrivers]);
+    setSelectedDriver(driver);
+  };
 
   return (
     <Card className={cn("flex flex-col h-full relative overflow-hidden", className)}>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
+import { BarChart2, Map as MapIcon } from "lucide-react";
 import { useApiQuery } from "@/hooks/use-api";
 import { Header } from "@/components/layout/header";
 import { StatCard } from "@/components/ui/stat-card";
