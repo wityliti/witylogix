@@ -151,20 +151,6 @@ const DriverCard = ({ driver, onLocate }: { driver: ApiDriver; onLocate?: () => 
   );
 };
 
-export default function DriversPage() {
-  const router = useRouter();
-  const [activeTab, setActiveTab] = useState('all');
-  const [viewMode, setViewMode] = useState<ViewMode>('cards');
-
-  const { items: driversData, loading: driversLoading, error: driversError, refetch: refetchDrivers } =
-    useApiList<ApiDriver>('/api/v4/drivers');
-
-  const { items: dispatchDrivers, loading: dispatchLoading } =
-    useApiList<DispatchDriver>('/api/v4/dispatch/drivers');
-
-  const loading = driversLoading;
-  const error = driversError;
-
 function MapLegend() {
   return (
     <div className="absolute top-3 left-3 z-[1000] bg-black/75 backdrop-blur rounded-lg px-3 py-2 text-xs space-y-1.5 pointer-events-auto">

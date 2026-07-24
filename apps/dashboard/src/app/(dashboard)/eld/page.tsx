@@ -247,10 +247,10 @@ export default function ELDOverviewPage() {
                           minute: "2-digit",
                         })}
                       </div>
+                    </div>
                     </button>
                   ))}
                 </div>
-              )}
             </CardContent>
           </Card>
         </div>

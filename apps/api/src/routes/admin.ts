@@ -225,7 +225,7 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
         name: (store as any).name,
         domain: (store as any).shopifyDomain ?? "",
         planTier: planTier.toLowerCase() as string,
-        status: (store as any).suspendedAt ? "suspended" : "active",
+        status: (store as any).suspendedAt ? "SUSPENDED" : "ACTIVE",
         owner: {
           name: (store as any).users?.[0]?.name ?? (store as any).email ?? "Owner",
           email: (store as any).email ?? "",
@@ -236,8 +236,17 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
           orders: (store as any)._count?.orders ?? 0,
           shipments: (store as any)._count?.orders ?? 0,
           drivers: (store as any)._count?.drivers ?? 0,
+          users: (store as any)._count?.users ?? 0,
           apiCalls: 0,
           apiCallsLimit: planTier === "ENTERPRISE" ? 1000000 : planTier === "GROWTH" ? 500000 : 100000,
+          ...((store as any).suspendedAt
+            ? {
+                suspension: {
+                  suspendedAt: (store as any).suspendedAt?.toISOString?.() ?? (store as any).suspendedAt,
+                  reason: (store as any).suspensionReason ?? null,
+                },
+              }
+            : {}),
         },
         billing: {
           currentPlan: planTier.charAt(0) + planTier.slice(1).toLowerCase(),
@@ -267,9 +276,9 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
     };
   });
 
-  // ── POST /stores/:id/suspend (Suspend store) ───────────────────
+  // ── PUT /stores/:id/suspend (Suspend store) ───────────────────
 
-  fastify.post(
+  fastify.put(
     "/stores/:id/suspend",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { id } = request.params as { id: string };
@@ -1121,14 +1130,6 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
     },
   );
 
-  // ── GET /system-health ──────────────────────────────────────
-  // Real system health: process metrics + DB/Redis latency + queue sizes.
-
-  const SYSTEM_START = Date.now();
-
-  fastify.get("/system-health", async (request: FastifyRequest, reply: FastifyReply) => {
-    const services: Record<string, any>[] = [];
-
   // ── GET /queues/jobs — recent jobs across all queues ──────────
 
   fastify.get("/queues/jobs", async (_request: FastifyRequest, _reply: FastifyReply) => {
@@ -1228,124 +1229,6 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
     }
 
     return { data: dlqItems };
-  });
-
-  // ── GET /system — system health check ─────────────────────────
-
-  fastify.get("/system", async (_request: FastifyRequest, _reply: FastifyReply) => {
-    const { execSync } = await import("child_process");
-    const { readFileSync } = await import("fs");
-    const { join, dirname } = await import("path");
-    const { fileURLToPath } = await import("url");
-
-    const now = Date.now();
-
-    // DB health check
-    let dbStatus: "healthy" | "critical" = "healthy";
-    let dbResponseTime = 0;
-    try {
-      const t0 = Date.now();
-      await prisma.$queryRaw`SELECT 1`;
-      dbResponseTime = Date.now() - t0;
-    } catch {
-      dbStatus = "critical";
-    }
-
-    // Redis health check
-    let redisStatus: "healthy" | "critical" = "healthy";
-    let redisResponseTime = 0;
-    try {
-      const redis = getRedis();
-      const t0 = Date.now();
-      await redis.ping();
-      redisResponseTime = Date.now() - t0;
-    } catch {
-      redisStatus = "degraded";
-    }
-
-    // Worker queues — sample one queue
-    let workerStatus: "healthy" | "degraded" = "healthy";
-    let activeJobs = 0;
-    try {
-      const q = getNotificationQueue();
-      const counts = await q.getJobCounts("active", "waiting", "failed");
-      activeJobs = (counts.active ?? 0) + (counts.waiting ?? 0);
-      if ((counts.failed ?? 0) > 50) workerStatus = "degraded";
-    } catch {
-      workerStatus = "degraded";
-    }
-
-    // Process memory
-    const mem = process.memoryUsage();
-    const memUsedMB = Math.round(mem.heapUsed / 1024 / 1024);
-    const memTotalMB = Math.round(mem.heapTotal / 1024 / 1024);
-    const memPct = memTotalMB > 0 ? Math.round((memUsedMB / memTotalMB) * 100) : 0;
-
-    // Version
-    let version = "4.x";
-    try {
-      const __filename = fileURLToPath(import.meta.url);
-      const __dirname = dirname(__filename);
-      const pkg = JSON.parse(readFileSync(join(__dirname, "../../../package.json"), "utf8"));
-      version = pkg.version ?? version;
-    } catch {
-      // ignore
-    }
-
-    const checkedAt = new Date(now).toISOString();
-
-    return {
-      data: {
-        services: [
-          {
-            name: "API Server",
-            status: "healthy" as const,
-            responseTime: Date.now() - now,
-            uptime24h: 100,
-            uptime7d: 100,
-            uptime30d: 100,
-            checkedAt,
-          },
-          {
-            name: "PostgreSQL",
-            status: dbStatus,
-            responseTime: dbResponseTime,
-            uptime24h: dbStatus === "healthy" ? 100 : 0,
-            uptime7d: dbStatus === "healthy" ? 100 : 0,
-            uptime30d: dbStatus === "healthy" ? 100 : 0,
-            checkedAt,
-          },
-          {
-            name: "Redis Cache",
-            status: redisStatus,
-            responseTime: redisResponseTime,
-            uptime24h: redisStatus === "healthy" ? 100 : 0,
-            uptime7d: redisStatus === "healthy" ? 100 : 0,
-            uptime30d: redisStatus === "healthy" ? 100 : 0,
-            checkedAt,
-          },
-          {
-            name: "Worker Queues",
-            status: workerStatus,
-            responseTime: 0,
-            uptime24h: workerStatus === "healthy" ? 100 : 95,
-            uptime7d: workerStatus === "healthy" ? 100 : 95,
-            uptime30d: workerStatus === "healthy" ? 100 : 95,
-            activeJobs,
-            checkedAt,
-          },
-        ],
-        metrics: {
-          memoryUsedMB,
-          memoryTotalMB,
-          memoryUsagePct: memPct,
-          processUptimeSec: Math.round(process.uptime()),
-          version,
-          nodeVersion: process.version,
-        },
-        checkedAt,
-      },
-    };
   });
 
   // ── GET /stores/:id/billing — store billing history ──────────

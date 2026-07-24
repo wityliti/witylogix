@@ -502,6 +502,7 @@ function LocationDetailPanel({ location: loc, onClose }: { location: Location; o
                     }]}
                     selectedId={loc.id}
                   />
+                )}
               </WLMap>
             </div>
             <div className={cn("text-xs font-mono text-gray-500 mt-1 text-center")}>
