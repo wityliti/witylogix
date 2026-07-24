@@ -11,29 +11,6 @@ import { useOrderStats, useOrders } from "@/hooks/use-orders";
 import { useDrivers } from "@/hooks/use-drivers";
 import { useDashboardStats } from "@/hooks/use-dashboard-stats";
 
-interface Order {
-  id: string;
-  customerId: string;
-  status:
-    | "pending"
-    | "confirmed"
-    | "assigned"
-    | "in_transit"
-    | "delivered"
-    | "cancelled";
-  eta?: string;
-  destination?: string;
-  createdAt: Date;
-}
-
-interface Driver {
-  id: string;
-  name: string;
-  status: "available" | "en-route" | "delivering" | "offline";
-  activeDeliveries: number;
-  utilization: number;
-}
-
 // Shapes matching the real API responses
 interface ApiOrder {
   id: string;
@@ -280,38 +257,21 @@ export default function HomePage() {
   } as any);
   const { items: drivers, loading: driversLoading } = useDrivers({ limit: 4 });
 
-  const recentOrders: Order[] = recentApiOrders.map((o: any) => ({
+  const recentOrders: ApiOrder[] = recentApiOrders.map((o: any) => ({
     id: o.id,
-    customerId: o.customerId,
-    status: (o.status as Order["status"]) ?? "pending",
-    eta: o.estimatedDelivery
-      ? new Date(o.estimatedDelivery).toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-        })
-      : undefined,
-    destination: o.deliveryAddress
-      ? `${o.deliveryAddress.street ?? ""}, ${o.deliveryAddress.city ?? ""}`
-          .trim()
-          .replace(/^,\s*/, "")
-      : undefined,
-    createdAt: new Date(o.createdAt),
+    customerName: o.customerName ?? null,
+    status: o.status ?? "PENDING",
+    addressLine1: o.deliveryAddress?.street ?? null,
+    city: o.deliveryAddress?.city ?? null,
+    estimatedArrival: o.estimatedDelivery ?? null,
+    createdAt: o.createdAt,
   }));
 
-  const displayDrivers: Driver[] = drivers.map((d: any) => ({
+  const displayDrivers: ApiDriver[] = drivers.map((d: any) => ({
     id: d.id,
     name: d.name,
-    status: (["available", "en-route", "delivering", "offline"].includes(
-      d.status,
-    )
-      ? d.status
-      : d.status === "on_delivery"
-        ? "delivering"
-        : d.status === "online"
-          ? "available"
-          : "offline") as Driver["status"],
-    activeDeliveries: d.activeDeliveries ?? 0,
-    utilization: d.completionRate ?? 0,
+    status: d.status ?? "OFFLINE",
+    _count: d._count ?? { orders: 0 },
   }));
 
   const totalOrders = dashStats?.totalOrders ?? 0;

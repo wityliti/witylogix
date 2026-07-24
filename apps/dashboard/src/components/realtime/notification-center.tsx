@@ -128,11 +128,11 @@ function mapApiNotification(n: ApiNotification): Notification {
   return {
     id: n.id,
     type,
-    title: n.title,
-    message: n.message,
+    title: n.title ?? "",
+    message: n.message ?? "",
     severity,
     read: n.status !== "UNREAD",
-    timestamp: new Date(n.timestamp),
+    timestamp: new Date(n.timestamp ?? new Date().toISOString()),
     actionUrl: n.actionUrl,
   };
 }
@@ -155,11 +155,11 @@ function NotificationItem({
   onMarkAsRead?: () => void;
 }) {
   const isUnread = notification.status === "UNREAD";
-  const icon = CATEGORY_ICON[notification.category] ?? (
+  const icon = CATEGORY_ICON[notification.category ?? "SYSTEM"] ?? (
     <Bell className="w-4 h-4" />
   );
   const colorCls =
-    CATEGORY_COLORS[notification.category] ??
+    CATEGORY_COLORS[notification.category ?? "SYSTEM"] ??
     "bg-wl-bg-surface text-wl-text-secondary";
 
   return (
@@ -243,24 +243,35 @@ export function NotificationCenter({
 
   const apiNotifs = useMemo<Notification[]>(
     () =>
-      rawNotifs.map((n) => ({
-        id: n.id,
-        category: (CATEGORY_MAP[n.type ?? n.category] ??
+      rawNotifs.map((n) => {
+        const rawCat = (CATEGORY_MAP[n.type ?? n.category] ??
           n.category ??
-          "SYSTEM") as Notification["category"],
-        channel: (n.channel ?? "EMAIL") as Notification["channel"],
-        iconChannel: (n.channel ?? "EMAIL") as Notification["channel"],
-        title: n.title ?? n.action ?? "Notification",
-        message: n.message ?? n.description ?? "",
-        status: ((n.read ?? n.status === "READ")
-          ? "READ"
-          : "UNREAD") as Notification["status"],
-        timestamp:
-          typeof n.timestamp === "string"
-            ? n.timestamp
-            : (n.createdAt ?? new Date().toISOString()),
-        actionUrl: n.actionUrl,
-      })),
+          "SYSTEM") as string;
+        const rawType = rawCat.toLowerCase();
+        const type: Notification["type"] = (
+          ["order", "delivery", "alert", "system"].includes(rawType)
+            ? rawType
+            : "system"
+        ) as Notification["type"];
+        const isRead = n.read ?? n.status === "READ";
+        return {
+          id: n.id,
+          type,
+          category: rawCat as Notification["category"],
+          channel: (n.channel ?? "EMAIL") as Notification["channel"],
+          title: n.title ?? n.action ?? "Notification",
+          message: n.message ?? n.description ?? "",
+          severity: "info" as Notification["severity"],
+          read: Boolean(isRead),
+          status: (isRead ? "READ" : "UNREAD") as Notification["status"],
+          timestamp: new Date(
+            typeof n.timestamp === "string"
+              ? n.timestamp
+              : (n.createdAt ?? new Date().toISOString()),
+          ),
+          actionUrl: n.actionUrl,
+        };
+      }),
     [rawNotifs],
   );
 
