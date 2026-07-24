@@ -157,14 +157,13 @@ export function LiveOrderFeed({
   className,
   onOrderClick,
 }: LiveOrderFeedProps) {
-  const [orders, setOrders] = useState<Order[]>([]);
   const [isScrolled, setIsScrolled] = useState(false);
   const [newOrderCount, setNewOrderCount] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const prevCountRef = useRef(rawOrders.length);
+  const prevCountRef = useRef(0);
 
-  const { items: orders, loading, error, refetch } =
-    useOrders({ limit: 10 });
+  const { items: rawOrders, loading, error, refetch } =
+    useApiList<ApiOrder>('/api/v4/orders', { limit: 10 });
 
   // Poll for new orders every 30 seconds
   useEffect(() => {

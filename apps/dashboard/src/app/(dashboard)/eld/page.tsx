@@ -86,9 +86,6 @@ export default function ELDOverviewPage() {
   const violationsLoading = violationsResult.loading;
   const events            = eventsResult.items;
   const eventsLoading     = eventsResult.loading;
-  const drivers           = driversResult.items;
-  const driversLoading    = driversResult.loading;
-
   if (driversLoading && !apiDrivers.length) return <TableSkeleton rows={10} columns={6} />;
   if (driversError) return <ErrorState message={driversError.message} onRetry={driversRefetch} />;
 
@@ -193,10 +190,10 @@ export default function ELDOverviewPage() {
                     onClick={() => setSelectedDriver(driver.driverId)}
                     className={cn(
                       "p-3 rounded-lg border transition-all text-left",
-                      "hover:border-blue-500/30 hover:bg-[#1a1a2e]",
+                      "hover:border-blue-500/30 hover:bg-wl-bg-elevated",
                       selectedDriver === driver.driverId
                         ? "border-blue-500/50 bg-blue-500/5"
-                        : "border-[#1e1e2e]"
+                        : "border-wl-border-default"
                     )}
                   >
                     <div className="flex items-start justify-between gap-2 mb-2">
@@ -247,10 +244,10 @@ export default function ELDOverviewPage() {
                           minute: "2-digit",
                         })}
                       </div>
+                    </div>
                     </button>
                   ))}
                 </div>
-              )}
             </CardContent>
           </Card>
         </div>

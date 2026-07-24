@@ -279,7 +279,7 @@ export default function TrackingConfigPage() {
               {/* Mini preview */}
               <div
                 className="rounded-lg border border-wl-border-default p-4 space-y-3"
-                style={{ background: "#111" }}
+                style={{ background: 'var(--wl-bg-sunken)' }}
               >
                 {config.logoUrl && (
                   <div className="pb-3 border-b border-white/10">

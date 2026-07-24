@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { MapPin } from 'lucide-react';
+import { AlertTriangle, MapPin } from 'lucide-react';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { WLMap } from '@/components/map/wl-map';
@@ -29,46 +29,9 @@ const DEFAULT_OVERLAYS: OverlayState = {
 };
 const DEFAULT_CENTER: [number, number] = [77.12, 28.65]; // per-org override to come later
 
-function ZoneCardSkeleton() {
-  return (
-    <div className="relative overflow-hidden bg-[#12121a] border border-[#1e1e2e] rounded-xl p-4 animate-pulse">
-      <div className="absolute top-0 left-0 right-0 h-1 bg-[#1e1e2e]" />
-      <div className="flex justify-between mb-4">
-        <div className="h-5 w-36 bg-[#1e1e2e] rounded" />
-        <div className="h-5 w-16 bg-[#1e1e2e] rounded" />
-      </div>
-      <div className="grid grid-cols-2 gap-3 p-3 bg-[#1a1a2e] rounded-md mb-4">
-        {[...Array(4)].map((_, j) => (
-          <div key={j}>
-            <div className="h-3 w-16 bg-[#1e1e2e] rounded mb-1" />
-            <div className="h-4 w-20 bg-[#1e1e2e] rounded" />
-          </div>
-        ))}
-      </div>
-      <div className="flex justify-between">
-        <div className="h-4 w-28 bg-[#1e1e2e] rounded" />
-        <div className="h-6 w-12 bg-[#1e1e2e] rounded" />
-      </div>
-    </div>
-  );
-}
-
-function EmptyZones() {
-  return (
-    <div className="flex flex-col items-center justify-center py-24 text-center">
-      <MapPin className="w-12 h-12 text-gray-600 mb-4" />
-      <h3 className="text-lg font-semibold text-gray-300 mb-2">No delivery zones yet</h3>
-      <p className="text-sm text-gray-500 mb-6 max-w-sm">
-        Create your first delivery zone to define service areas, set pricing rules, and manage time slots.
-      </p>
-      <Button variant="primary">Create Zone</Button>
-    </div>
-  );
-}
-
 export default function ZonesPage() {
   const router = useRouter();
-  const { data: geojson, refetch: refetchZones } = useZonesGeoJson();
+  const { data: geojson, error: zonesError, loading: zonesLoading, refetch: refetchZones } = useZonesGeoJson();
   const [overlays, setOverlays] = useState<OverlayState>(DEFAULT_OVERLAYS);
   const { data: overlaysData } = useZoneOverlays(overlays.window);
   const [mode, setMode] = useState<ZoneMode>('monitor');
@@ -128,6 +91,26 @@ export default function ZonesPage() {
         className="relative h-[calc(100vh-64px)] w-full"
         style={{ background: 'var(--wl-bg-root)' }}
       >
+        {zonesError && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-wl-bg-root/90 backdrop-blur-sm">
+            <div className="flex flex-col items-center gap-3 text-center p-8">
+              <AlertTriangle className="w-10 h-10 text-wl-warning-400" />
+              <p className="text-wl-text-primary font-semibold">Failed to load delivery zones</p>
+              <p className="text-wl-text-secondary text-sm">{zonesError.message}</p>
+              <Button variant="secondary" size="sm" onClick={() => void refetchZones()}>Retry</Button>
+            </div>
+          </div>
+        )}
+        {!zonesLoading && !zonesError && geojson && geojson.features.length === 0 && (
+          <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none">
+            <div className="pointer-events-auto flex flex-col items-center gap-3 text-center p-8 bg-wl-bg-elevated/90 backdrop-blur-sm rounded-2xl border border-wl-border-default shadow-xl">
+              <MapPin className="w-10 h-10 text-wl-text-tertiary" />
+              <p className="text-wl-text-primary font-semibold">No delivery zones yet</p>
+              <p className="text-wl-text-secondary text-sm max-w-xs">Create your first zone to define service areas, set pricing rules, and manage time slots.</p>
+              <Button variant="primary" size="sm" onClick={() => router.push('/zones/new')}>+ New Zone</Button>
+            </div>
+          </div>
+        )}
         <WLMap center={DEFAULT_CENTER} zoom={11}>
           {geojson && (
             <ZoneLayer zones={geojson} selectedId={selectedId} onSelect={setSelectedId} />

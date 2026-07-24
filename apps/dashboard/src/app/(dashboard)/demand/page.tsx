@@ -27,7 +27,7 @@ import type { ZonePoint } from '@/components/map/zone-heat-layer';
 
 const WLMap = dynamic(
   () => import('@/components/map/wl-map').then((m) => ({ default: m.WLMap })),
-  { ssr: false, loading: () => <div className="h-full bg-[#0d0d14] rounded-xl animate-pulse" /> },
+  { ssr: false, loading: () => <div className="h-full bg-wl-bg-sunken rounded-xl animate-pulse" /> },
 );
 const DemandZoneLayer = dynamic(
   () => import('@/components/map/demand-zone-layer').then((m) => m.DemandZoneLayer),
