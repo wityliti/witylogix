@@ -22,7 +22,11 @@
 // Import types only — erased at compile time, keeps IDE intellisense working.
 // The generated Prisma client lives at ./generated/prisma after running `pnpm db:generate`.
 // The stub at ./generated/prisma/index.ts satisfies TypeScript until then.
-import type { PrismaClient as PrismaClientType, Prisma as PrismaType, PlanTier as PlanTierType } from "./generated/prisma";
+import type {
+  PrismaClient as PrismaClientType,
+  Prisma as PrismaType,
+  PlanTier as PlanTierType,
+} from "./generated/prisma";
 
 // Use createRequire to load the CJS-generated Prisma client at runtime.
 // A static `import { PrismaClient }` here causes Rollup to follow the
@@ -71,7 +75,13 @@ export function forTenant(shopId: string) {
   return prisma.$extends({
     query: {
       $allModels: {
-        async $allOperations({ args, query }: { args: unknown; query: (args: unknown) => Promise<unknown> }) {
+        async $allOperations({
+          args,
+          query,
+        }: {
+          args: unknown;
+          query: (args: unknown) => Promise<unknown>;
+        }) {
           return prisma.$transaction(async (tx) => {
             await tx.$executeRaw`SELECT set_config('app.current_shop_id', ${shopId}, TRUE)`;
             return query(args);
@@ -91,7 +101,13 @@ export function forOrg(orgId: string) {
   return prisma.$extends({
     query: {
       $allModels: {
-        async $allOperations({ args, query }: { args: unknown; query: (args: unknown) => Promise<unknown> }) {
+        async $allOperations({
+          args,
+          query,
+        }: {
+          args: unknown;
+          query: (args: unknown) => Promise<unknown>;
+        }) {
           return prisma.$transaction(async (tx) => {
             await tx.$executeRaw`SELECT set_config('app.current_org_id', ${orgId}, TRUE)`;
             return query(args);
@@ -111,7 +127,13 @@ export function forTenantInOrg(shopId: string, orgId: string) {
   return prisma.$extends({
     query: {
       $allModels: {
-        async $allOperations({ args, query }: { args: unknown; query: (args: unknown) => Promise<unknown> }) {
+        async $allOperations({
+          args,
+          query,
+        }: {
+          args: unknown;
+          query: (args: unknown) => Promise<unknown>;
+        }) {
           return prisma.$transaction(async (tx) => {
             await tx.$executeRaw`SELECT set_config('app.current_shop_id', ${shopId}, TRUE)`;
             await tx.$executeRaw`SELECT set_config('app.current_org_id', ${orgId}, TRUE)`;

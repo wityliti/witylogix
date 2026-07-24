@@ -46,12 +46,15 @@ function inferType(eventType: string): Notification["type"] {
   const ev = eventType.toLowerCase();
   if (ev.includes("order")) return "order";
   if (ev.includes("delivery") || ev.includes("dispatch")) return "delivery";
-  if (ev.includes("alert") || ev.includes("violation") || ev.includes("fail")) return "alert";
+  if (ev.includes("alert") || ev.includes("violation") || ev.includes("fail"))
+    return "alert";
   return "system";
 }
 
 function inferTitle(eventType: string, channel: string): string {
-  const ev = eventType.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const ev = eventType
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
   return `${ev} via ${channel}`;
 }
 
@@ -61,7 +64,8 @@ function toNotification(raw: ApiNotification): Notification {
     type: inferType(raw.eventType),
     title: inferTitle(raw.eventType, raw.channel),
     message: `Sent to ${raw.recipient}`,
-    severity: raw.status === "FAILED" || raw.status === "BOUNCED" ? "warning" : "info",
+    severity:
+      raw.status === "FAILED" || raw.status === "BOUNCED" ? "warning" : "info",
     read: raw.status === "DELIVERED" || raw.status === "SENT",
     timestamp: new Date(raw.createdAt),
   };
@@ -75,12 +79,12 @@ const notificationIcons: Record<Notification["type"], React.ReactNode> = {
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
-  ORDERS:     "bg-wl-primary-500/12 text-wl-primary-400",
+  ORDERS: "bg-wl-primary-500/12 text-wl-primary-400",
   DELIVERIES: "bg-wl-info-bg text-wl-info-400",
-  ALERTS:     "bg-wl-warning-bg text-wl-warning-400",
-  SYSTEM:     "bg-wl-bg-surface text-wl-text-secondary",
-  DRIVERS:    "bg-wl-info-bg text-wl-info-400",
-  PAYMENTS:   "bg-wl-success-bg text-wl-success-400",
+  ALERTS: "bg-wl-warning-bg text-wl-warning-400",
+  SYSTEM: "bg-wl-bg-surface text-wl-text-secondary",
+  DRIVERS: "bg-wl-info-bg text-wl-info-400",
+  PAYMENTS: "bg-wl-success-bg text-wl-success-400",
 };
 
 const notificationTypeColors: Record<Notification["type"], string> = {
@@ -89,7 +93,6 @@ const notificationTypeColors: Record<Notification["type"], string> = {
   alert: "bg-wl-warning-bg text-wl-warning-400",
   system: "bg-wl-bg-surface text-wl-text-secondary",
 };
-
 
 function timeAgo(date: Date): string {
   const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
@@ -116,10 +119,15 @@ function NotificationItem({
       className={cn(
         "px-4 py-3 border-b border-wl-border-subtle flex items-start gap-3",
         "transition-colors duration-fast hover:bg-wl-bg-overlay cursor-pointer",
-        isUnread && "bg-wl-bg-surface"
+        isUnread && "bg-wl-bg-surface",
       )}
     >
-      <div className={cn("mt-1 p-2 rounded-lg flex-shrink-0", notificationTypeColors[notification.type])}>
+      <div
+        className={cn(
+          "mt-1 p-2 rounded-lg flex-shrink-0",
+          notificationTypeColors[notification.type],
+        )}
+      >
         {notificationIcons[notification.type]}
       </div>
       <div className="flex-1 min-w-0">
@@ -138,10 +146,15 @@ function NotificationItem({
           {notification.message}
         </p>
         <div className="flex items-center justify-between">
-          <span className="text-xs text-wl-text-secondary">{timeAgo(notification.timestamp)}</span>
+          <span className="text-xs text-wl-text-secondary">
+            {timeAgo(notification.timestamp)}
+          </span>
           {!notification.read && (
             <button
-              onClick={(e) => { e.stopPropagation(); onMarkAsRead?.(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onMarkAsRead?.();
+              }}
               className="text-xs font-semibold text-wl-primary-400 hover:text-wl-primary-500 transition-colors"
             >
               Mark as read
@@ -153,7 +166,6 @@ function NotificationItem({
   );
 }
 
-
 export function NotificationCenter({
   className,
   onNotificationClick,
@@ -164,23 +176,34 @@ export function NotificationCenter({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const { items: rawNotifs, loading: isLoading, refetch } = useApiList<any>('/api/v4/notifications', { limit: 20 });
+  const {
+    items: rawNotifs,
+    loading: isLoading,
+    refetch,
+  } = useApiList<any>("/api/v4/notifications", { limit: 20 });
 
-  const apiNotifs = useMemo<Notification[]>(() => rawNotifs.map(toNotification), [rawNotifs]);
+  const apiNotifs = useMemo<Notification[]>(
+    () => rawNotifs.map(toNotification),
+    [rawNotifs],
+  );
 
   // Local overlay for optimistic read/delete operations
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
 
-  const notifications = useMemo(() =>
-    apiNotifs
-      .filter((n) => !deletedIds.has(n.id))
-      .map((n) => readIds.has(n.id) ? { ...n, read: true } : n),
-  [apiNotifs, readIds, deletedIds]);
+  const notifications = useMemo(
+    () =>
+      apiNotifs
+        .filter((n) => !deletedIds.has(n.id))
+        .map((n) => (readIds.has(n.id) ? { ...n, read: true } : n)),
+    [apiNotifs, readIds, deletedIds],
+  );
 
   // Poll for new notifications every 60 seconds
   useEffect(() => {
     if (!isOpen) return;
-    const interval = setInterval(() => { refetch(); }, 60_000);
+    const interval = setInterval(() => {
+      refetch();
+    }, 60_000);
     return () => clearInterval(interval);
   }, [isOpen, refetch]);
 
@@ -202,7 +225,8 @@ export function NotificationCenter({
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  const markAsRead = (id: string) => setReadIds((prev) => new Set([...prev, id]));
+  const markAsRead = (id: string) =>
+    setReadIds((prev) => new Set([...prev, id]));
   const markAllAsRead = () => setReadIds(new Set(rawNotifs.map((r) => r.id)));
 
   const handleNotificationClick = (notification: Notification) => {
@@ -218,7 +242,7 @@ export function NotificationCenter({
         className={cn(
           "relative p-2 rounded-lg transition-colors duration-fast",
           "hover:bg-wl-bg-overlay active:bg-wl-bg-surface",
-          isOpen && "bg-wl-bg-overlay"
+          isOpen && "bg-wl-bg-overlay",
         )}
         aria-label="Notifications"
         aria-expanded={isOpen}
@@ -227,7 +251,11 @@ export function NotificationCenter({
         {unreadCount > 0 && (
           <Badge
             variant="danger"
-            className={cn("absolute -top-1 -right-1 h-5 w-5", "flex items-center justify-center rounded-full", "text-xs p-0")}
+            className={cn(
+              "absolute -top-1 -right-1 h-5 w-5",
+              "flex items-center justify-center rounded-full",
+              "text-xs p-0",
+            )}
           >
             {unreadCount > 9 ? "9+" : unreadCount}
           </Badge>
@@ -240,11 +268,13 @@ export function NotificationCenter({
           className={cn(
             "absolute right-0 top-12 w-96 max-w-[calc(100vw-1rem)]",
             "bg-wl-bg-elevated border border-wl-border-default rounded-lg shadow-xl",
-            "z-50 flex flex-col max-h-[28rem] overflow-hidden"
+            "z-50 flex flex-col max-h-[28rem] overflow-hidden",
           )}
         >
           <div className="flex items-center justify-between px-4 py-3 border-b border-wl-border-subtle">
-            <h3 className="font-semibold text-sm text-wl-text-primary">Notifications</h3>
+            <h3 className="font-semibold text-sm text-wl-text-primary">
+              Notifications
+            </h3>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setSoundEnabled(!soundEnabled)}
@@ -252,11 +282,15 @@ export function NotificationCenter({
                   "p-1.5 rounded transition-colors duration-fast",
                   soundEnabled
                     ? "bg-wl-primary-500/20 text-wl-primary-400 hover:bg-wl-primary-500/30"
-                    : "hover:bg-wl-bg-surface text-wl-text-secondary"
+                    : "hover:bg-wl-bg-surface text-wl-text-secondary",
                 )}
                 aria-label={soundEnabled ? "Disable sound" : "Enable sound"}
               >
-                {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+                {soundEnabled ? (
+                  <Volume2 className="w-4 h-4" />
+                ) : (
+                  <VolumeX className="w-4 h-4" />
+                )}
               </button>
               {unreadCount > 0 && (
                 <button
@@ -285,24 +319,33 @@ export function NotificationCenter({
               <div className="flex items-center justify-center h-32 text-center">
                 <div>
                   <Bell className="w-6 h-6 text-wl-text-secondary mx-auto mb-2 opacity-50" />
-                  <p className="text-xs text-wl-text-secondary">No notifications</p>
+                  <p className="text-xs text-wl-text-secondary">
+                    No notifications
+                  </p>
                 </div>
               </div>
             ) : (
-              notifications.slice(0, 20).map((n) => (
-                <NotificationItem
-                  key={n.id}
-                  notification={n}
-                  onClick={() => handleNotificationClick(n)}
-                  onMarkAsRead={() => markAsRead(n.id)}
-                />
-              ))
+              notifications
+                .slice(0, 20)
+                .map((n) => (
+                  <NotificationItem
+                    key={n.id}
+                    notification={n}
+                    onClick={() => handleNotificationClick(n)}
+                    onMarkAsRead={() => markAsRead(n.id)}
+                  />
+                ))
             )}
           </div>
 
           {notifications.length > 0 && (
             <div className="px-4 py-3 border-t border-wl-border-subtle">
-              <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => setIsOpen(false)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-xs"
+                onClick={() => setIsOpen(false)}
+              >
                 View All Notifications
               </Button>
             </div>

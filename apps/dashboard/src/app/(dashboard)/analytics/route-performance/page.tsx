@@ -26,11 +26,19 @@ import type { DeliveryPin } from "@/components/map/delivery-performance-layer";
 // Dynamically import map to avoid SSR
 const WLMap = dynamic(
   () => import("@/components/map/wl-map").then((m) => ({ default: m.WLMap })),
-  { ssr: false, loading: () => <div className="h-full w-full animate-pulse bg-wl-bg-elevated rounded-xl" /> }
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-full w-full animate-pulse bg-wl-bg-elevated rounded-xl" />
+    ),
+  },
 );
 const DeliveryPerformanceLayer = dynamic(
-  () => import("@/components/map/delivery-performance-layer").then((m) => ({ default: m.DeliveryPerformanceLayer })),
-  { ssr: false }
+  () =>
+    import("@/components/map/delivery-performance-layer").then((m) => ({
+      default: m.DeliveryPerformanceLayer,
+    })),
+  { ssr: false },
 );
 
 // ─── Types ────────────────────────────────────────────────────
@@ -52,7 +60,7 @@ function getPeriodDays(period: Period): number {
 function MapLegend() {
   const items = [
     { color: "var(--wl-success-500)", label: "On-Time" },
-    { color: "var(--wl-error-500)",   label: "Late" },
+    { color: "var(--wl-error-500)", label: "Late" },
     { color: "var(--wl-warning-500)", label: "In Flight" },
     { color: "var(--wl-text-tertiary)", label: "Failed" },
   ];
@@ -60,7 +68,10 @@ function MapLegend() {
     <div className="absolute bottom-4 left-4 z-10 bg-black/60 backdrop-blur-sm rounded-xl px-4 py-3 flex items-center gap-4">
       {items.map((item) => (
         <div key={item.label} className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+          <div
+            className="w-3 h-3 rounded-full"
+            style={{ backgroundColor: item.color }}
+          />
           <span className="text-xs text-white/70">{item.label}</span>
         </div>
       ))}
@@ -72,13 +83,19 @@ function MapLegend() {
 
 function MapStats({ pins }: { pins: DeliveryPin[] }) {
   const onTime = pins.filter((p) => p.onTime === true).length;
-  const late   = pins.filter((p) => p.onTime === false).length;
-  const rate   = pins.length > 0 ? Math.round((onTime / (onTime + late)) * 100) : 0;
+  const late = pins.filter((p) => p.onTime === false).length;
+  const rate =
+    pins.length > 0 ? Math.round((onTime / (onTime + late)) * 100) : 0;
   return (
     <div className="absolute top-4 right-4 z-10 bg-black/60 backdrop-blur-sm rounded-xl px-4 py-3 space-y-1 min-w-[140px]">
       <p className="text-xs text-white/40 font-medium">Delivery Map</p>
-      <p className="text-2xl font-bold text-white/90 font-mono">{rate}<span className="text-sm text-white/30">%</span></p>
-      <p className="text-xs text-white/35">on-time · {pins.length} deliveries</p>
+      <p className="text-2xl font-bold text-white/90 font-mono">
+        {rate}
+        <span className="text-sm text-white/30">%</span>
+      </p>
+      <p className="text-xs text-white/35">
+        on-time · {pins.length} deliveries
+      </p>
     </div>
   );
 }
@@ -97,25 +114,27 @@ export default function RoutePerformancePage() {
   const qs = `period=${period}&dateFrom=${dateRange.from.toISOString()}&dateTo=${dateRange.to.toISOString()}`;
 
   const summaryQ = useApiQuery<RoutePerformanceSummary>(
-    `/api/v4/analytics/route-performance?${qs}`
+    `/api/v4/analytics/route-performance?${qs}`,
   );
   const pvaQ = useApiQuery<PlannedVsActualDataPoint[]>(
-    `/api/v4/analytics/route-performance/planned-vs-actual?${qs}&granularity=daily`
+    `/api/v4/analytics/route-performance/planned-vs-actual?${qs}&granularity=daily`,
   );
   const driversQ = useApiQuery<DriverLeaderboardEntry[]>(
-    `/api/v4/analytics/route-performance/drivers?${qs}&limit=10`
+    `/api/v4/analytics/route-performance/drivers?${qs}&limit=10`,
   );
   const heatmapQ = useApiQuery<EfficiencyHeatmapCell[]>(
-    `/api/v4/analytics/route-performance/efficiency?${qs}`
+    `/api/v4/analytics/route-performance/efficiency?${qs}`,
   );
   const co2Q = useApiQuery<CO2TrackerData>(
-    `/api/v4/analytics/route-performance/co2?${qs}`
+    `/api/v4/analytics/route-performance/co2?${qs}`,
   );
   const slaQ = useApiQuery<SLAComplianceData>(
-    `/api/v4/analytics/route-performance/sla-compliance?${qs}`
+    `/api/v4/analytics/route-performance/sla-compliance?${qs}`,
   );
   const geoQ = useApiQuery<GeoResponse>(
-    view === "map" ? `/api/v4/analytics/route-performance/geo?${qs}&limit=1000` : null
+    view === "map"
+      ? `/api/v4/analytics/route-performance/geo?${qs}&limit=1000`
+      : null,
   );
 
   const summary = summaryQ.data;
@@ -124,12 +143,16 @@ export default function RoutePerformancePage() {
   const KPI = [
     {
       label: "On-Time Rate",
-      value: summary?.onTimePercentage != null ? `${summary.onTimePercentage.toFixed(1)}%` : "—",
+      value:
+        summary?.onTimePercentage != null
+          ? `${summary.onTimePercentage.toFixed(1)}%`
+          : "—",
       accentColor: "var(--wl-success-400)",
     },
     {
       label: "Avg Delivery Time",
-      value: summary?.avgDeliveryTime != null ? `${summary.avgDeliveryTime}m` : "—",
+      value:
+        summary?.avgDeliveryTime != null ? `${summary.avgDeliveryTime}m` : "—",
       accentColor: "var(--wl-info-400)",
     },
     {
@@ -139,7 +162,10 @@ export default function RoutePerformancePage() {
     },
     {
       label: "SLA Compliance",
-      value: summary?.slaCompliance != null ? `${summary.slaCompliance.toFixed(1)}%` : "—",
+      value:
+        summary?.slaCompliance != null
+          ? `${summary.slaCompliance.toFixed(1)}%`
+          : "—",
       accentColor: "var(--wl-primary-400)",
     },
   ];
@@ -164,7 +190,7 @@ export default function RoutePerformancePage() {
                     "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
                     view === "charts"
                       ? "bg-white/10 text-white/80"
-                      : "text-white/30 hover:text-white/50"
+                      : "text-white/30 hover:text-white/50",
                   )}
                 >
                   <BarChart2 className="w-3.5 h-3.5" />
@@ -176,7 +202,7 @@ export default function RoutePerformancePage() {
                     "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors border-l border-white/[0.08]",
                     view === "map"
                       ? "bg-white/10 text-white/80"
-                      : "text-white/30 hover:text-white/50"
+                      : "text-white/30 hover:text-white/50",
                   )}
                 >
                   <MapIcon className="w-3.5 h-3.5" />
@@ -212,12 +238,17 @@ export default function RoutePerformancePage() {
 
           {/* Map View */}
           {view === "map" && (
-            <div className="relative rounded-2xl overflow-hidden border border-white/[0.08] mb-8" style={{ height: 520 }}>
+            <div
+              className="relative rounded-2xl overflow-hidden border border-white/[0.08] mb-8"
+              style={{ height: 520 }}
+            >
               {geoQ.loading ? (
                 <div className="h-full w-full flex items-center justify-center bg-wl-bg-elevated">
                   <div className="flex flex-col items-center gap-3">
                     <div className="w-8 h-8 rounded-full border-2 border-wl-primary-400 border-t-transparent animate-spin" />
-                    <p className="text-sm text-white/40">Loading delivery map…</p>
+                    <p className="text-sm text-white/40">
+                      Loading delivery map…
+                    </p>
                   </div>
                 </div>
               ) : geoPins.length > 0 ? (
@@ -228,9 +259,12 @@ export default function RoutePerformancePage() {
                 <div className="h-full w-full flex items-center justify-center bg-wl-bg-elevated">
                   <div className="flex flex-col items-center gap-3 text-center max-w-xs">
                     <MapIcon className="w-10 h-10 text-white/10" />
-                    <p className="text-sm font-medium text-white/30">No geo-tagged deliveries</p>
+                    <p className="text-sm font-medium text-white/30">
+                      No geo-tagged deliveries
+                    </p>
                     <p className="text-xs text-white/15">
-                      Delivery map requires orders with lat/lng coordinates stored in the delivery location field.
+                      Delivery map requires orders with lat/lng coordinates
+                      stored in the delivery location field.
                     </p>
                   </div>
                 </div>
@@ -271,10 +305,18 @@ export default function RoutePerformancePage() {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {co2Q.data && (
-                  <CO2Tracker data={co2Q.data} dateRange={dateRange} isLoading={co2Q.loading} />
+                  <CO2Tracker
+                    data={co2Q.data}
+                    dateRange={dateRange}
+                    isLoading={co2Q.loading}
+                  />
                 )}
                 {slaQ.data && (
-                  <SLACompliance data={slaQ.data} dateRange={dateRange} isLoading={slaQ.loading} />
+                  <SLACompliance
+                    data={slaQ.data}
+                    dateRange={dateRange}
+                    isLoading={slaQ.loading}
+                  />
                 )}
               </div>
             </div>

@@ -5,13 +5,7 @@ import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useApiList } from "@/hooks/use-api";
-import {
-  Zap,
-  Navigation,
-  MapPin,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
+import { Zap, Navigation, MapPin, ChevronDown, ChevronUp } from "lucide-react";
 
 interface ApiDriver {
   id: string;
@@ -68,7 +62,9 @@ function toDriver(raw: ApiDriver): Driver {
     status: mapApiStatus(raw.status),
     latitude: lat,
     longitude: lng,
-    currentDelivery: raw.activeDeliveries ? `${raw.activeDeliveries} active` : undefined,
+    currentDelivery: raw.activeDeliveries
+      ? `${raw.activeDeliveries} active`
+      : undefined,
   };
 }
 
@@ -92,22 +88,25 @@ function SVGMap({ drivers, zoom }: { drivers: Driver[]; zoom: number }) {
   const lats = drivers.filter((d) => d.latitude !== 0).map((d) => d.latitude);
   const lngs = drivers.filter((d) => d.longitude !== 0).map((d) => d.longitude);
 
-  const bounds = lats.length > 0
-    ? {
-        minLat: Math.min(...lats) - 0.05,
-        maxLat: Math.max(...lats) + 0.05,
-        minLng: Math.min(...lngs) - 0.05,
-        maxLng: Math.max(...lngs) + 0.05,
-      }
-    : { minLat: 40.7, maxLat: 40.8, minLng: -74.0, maxLng: -73.9 };
+  const bounds =
+    lats.length > 0
+      ? {
+          minLat: Math.min(...lats) - 0.05,
+          maxLat: Math.max(...lats) + 0.05,
+          minLng: Math.min(...lngs) - 0.05,
+          maxLng: Math.max(...lngs) + 0.05,
+        }
+      : { minLat: 40.7, maxLat: 40.8, minLng: -74.0, maxLng: -73.9 };
 
   const latToY = (lat: number) => {
-    const normalized = (lat - bounds.minLat) / ((bounds.maxLat - bounds.minLat) || 1);
+    const normalized =
+      (lat - bounds.minLat) / (bounds.maxLat - bounds.minLat || 1);
     return mapHeight - normalized * mapHeight;
   };
 
   const lngToX = (lng: number) => {
-    const normalized = (lng - bounds.minLng) / ((bounds.maxLng - bounds.minLng) || 1);
+    const normalized =
+      (lng - bounds.minLng) / (bounds.maxLng - bounds.minLng || 1);
     return normalized * mapWidth;
   };
 
@@ -130,43 +129,46 @@ function SVGMap({ drivers, zoom }: { drivers: Driver[]; zoom: number }) {
       </defs>
       <rect width={mapWidth} height={mapHeight} fill="url(#grid)" />
 
-      {drivers.filter((d) => d.latitude !== 0 || d.longitude !== 0).map((driver) => {
-        const x = lngToX(driver.longitude);
-        const y = latToY(driver.latitude);
-        const colorClass = driverStatusColors[driver.status];
+      {drivers
+        .filter((d) => d.latitude !== 0 || d.longitude !== 0)
+        .map((driver) => {
+          const x = lngToX(driver.longitude);
+          const y = latToY(driver.latitude);
+          const colorClass = driverStatusColors[driver.status];
 
-        return (
-          <g key={driver.id}>
-            {driver.status === "on-delivery" && (
+          return (
+            <g key={driver.id}>
+              {driver.status === "on-delivery" && (
+                <circle
+                  cx={x}
+                  cy={y}
+                  r="20"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className="text-wl-primary-500 animate-pulse"
+                  opacity="0.3"
+                />
+              )}
               <circle
                 cx={x}
                 cy={y}
-                r="20"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className="text-wl-primary-500 animate-pulse"
-                opacity="0.3"
+                r="12"
+                fill="currentColor"
+                className={colorClass}
+                opacity="0.9"
               />
-            )}
-            <circle
-              cx={x}
-              cy={y}
-              r="12"
-              fill="currentColor"
-              className={colorClass}
-              opacity="0.9"
-            />
-            {driver.status === "on-delivery" && (
-              <g transform={`translate(${x - 4}, ${y - 4})`}>
-                <path d="M4 0 L8 8 L0 8 Z" fill="white" opacity="0.8" />
-              </g>
-            )}
-          </g>
-        );
-      })}
+              {driver.status === "on-delivery" && (
+                <g transform={`translate(${x - 4}, ${y - 4})`}>
+                  <path d="M4 0 L8 8 L0 8 Z" fill="white" opacity="0.8" />
+                </g>
+              )}
+            </g>
+          );
+        })}
 
-      {drivers.filter((d) => d.latitude === 0 && d.longitude === 0).length === drivers.length &&
+      {drivers.filter((d) => d.latitude === 0 && d.longitude === 0).length ===
+        drivers.length &&
         drivers.length > 0 && (
           <text
             x={mapWidth / 2}
@@ -195,7 +197,7 @@ function DriverPopover({
     <div
       className={cn(
         "absolute bg-wl-bg-elevated border border-wl-border-default rounded-lg p-3 z-10",
-        "shadow-lg w-56 text-sm"
+        "shadow-lg w-56 text-sm",
       )}
       style={{ left: `${position.x + 20}px`, top: `${position.y}px` }}
     >
@@ -208,7 +210,12 @@ function DriverPopover({
       <h4 className="font-semibold text-wl-text-primary mb-2">{driver.name}</h4>
       <div className="space-y-1 text-xs text-wl-text-secondary">
         <div className="flex items-center gap-2">
-          <div className={cn("w-2 h-2 rounded-full", driverStatusColors[driver.status])} />
+          <div
+            className={cn(
+              "w-2 h-2 rounded-full",
+              driverStatusColors[driver.status],
+            )}
+          />
           <span>{driverStatusLabels[driver.status]}</span>
         </div>
         {driver.currentDelivery && (
@@ -234,7 +241,11 @@ function DriverPopover({
 }
 
 export function ActiveDeliveryMap({ className }: ActiveDeliveryMapProps) {
-  const { items: rawDrivers, loading, refetch } = useApiList<ApiDriver>('/api/v4/dispatch/drivers', { limit: 50 });
+  const {
+    items: rawDrivers,
+    loading,
+    refetch,
+  } = useApiList<ApiDriver>("/api/v4/dispatch/drivers", { limit: 50 });
   const [zoom, setZoom] = useState(100);
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
   const [popoverPos, setPopoverPos] = useState({ x: 0, y: 0 });
@@ -249,7 +260,9 @@ export function ActiveDeliveryMap({ className }: ActiveDeliveryMapProps) {
   }, [refetch]);
 
   const drivers = rawDrivers.map(toDriver);
-  const activeDriverCount = drivers.filter((d) => d.status !== "offline").length;
+  const activeDriverCount = drivers.filter(
+    (d) => d.status !== "offline",
+  ).length;
 
   const handleDriverClick = (driver: Driver, e: React.MouseEvent) => {
     const rect = mapRef.current?.getBoundingClientRect();
@@ -260,28 +273,39 @@ export function ActiveDeliveryMap({ className }: ActiveDeliveryMapProps) {
   };
 
   return (
-    <Card className={cn("flex flex-col h-full relative overflow-hidden", className)}>
+    <Card
+      className={cn("flex flex-col h-full relative overflow-hidden", className)}
+    >
       <div className="flex items-center justify-between p-5 border-b border-wl-border-subtle">
         <div>
           <h3 className="text-sm font-semibold text-wl-text-primary tracking-wider uppercase">
             Live Delivery Map
           </h3>
-          <p className="text-xs text-wl-text-secondary mt-1">Real-time driver locations</p>
+          <p className="text-xs text-wl-text-secondary mt-1">
+            Real-time driver locations
+          </p>
         </div>
         <div className="flex items-center gap-2 px-3 py-1 bg-wl-bg-surface rounded-md border border-wl-border-subtle">
           <Zap className="w-3 h-3 text-wl-success-400" />
-          <span className="text-xs font-semibold text-wl-text-primary">{activeDriverCount} active</span>
+          <span className="text-xs font-semibold text-wl-text-primary">
+            {activeDriverCount} active
+          </span>
         </div>
       </div>
 
-      <div ref={mapRef} className="relative flex-1 overflow-hidden bg-wl-bg-surface">
+      <div
+        ref={mapRef}
+        className="relative flex-1 overflow-hidden bg-wl-bg-surface"
+      >
         {loading ? (
           <MapSkeleton />
         ) : drivers.length === 0 ? (
           <div className="w-full h-full flex items-center justify-center">
             <div className="text-center">
               <MapPin className="w-8 h-8 text-wl-text-secondary mx-auto mb-2 opacity-50" />
-              <p className="text-xs text-wl-text-secondary">No drivers online</p>
+              <p className="text-xs text-wl-text-secondary">
+                No drivers online
+              </p>
             </div>
           </div>
         ) : (
@@ -293,7 +317,7 @@ export function ActiveDeliveryMap({ className }: ActiveDeliveryMapProps) {
                 onClick={() => setZoom(Math.min(200, zoom + 20))}
                 className={cn(
                   "p-2 bg-wl-bg-elevated border border-wl-border-default rounded",
-                  "hover:bg-wl-bg-overlay transition-colors duration-fast"
+                  "hover:bg-wl-bg-overlay transition-colors duration-fast",
                 )}
                 aria-label="Zoom in"
               >
@@ -306,7 +330,7 @@ export function ActiveDeliveryMap({ className }: ActiveDeliveryMapProps) {
                 onClick={() => setZoom(Math.max(50, zoom - 20))}
                 className={cn(
                   "p-2 bg-wl-bg-elevated border border-wl-border-default rounded",
-                  "hover:bg-wl-bg-overlay transition-colors duration-fast"
+                  "hover:bg-wl-bg-overlay transition-colors duration-fast",
                 )}
                 aria-label="Zoom out"
               >

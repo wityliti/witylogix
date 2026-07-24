@@ -6,7 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { cn } from "@/lib/utils";
-import { useFleetCompliance, useViolations, useELDEvents, DutyStatus, DriverComplianceStatus, DriverStatusInfo } from "@/hooks/use-eld";
+import {
+  useFleetCompliance,
+  useViolations,
+  useELDEvents,
+  DutyStatus,
+  DriverComplianceStatus,
+  DriverStatusInfo,
+} from "@/hooks/use-eld";
 import { useApiList, ApiFilters } from "@/hooks/use-api";
 import { TableSkeleton } from "@/components/ui/loading-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
@@ -28,9 +35,12 @@ import {
 } from "lucide-react";
 
 const statusVariant = (
-  status: DriverComplianceStatus
+  status: DriverComplianceStatus,
 ): "success" | "warning" | "danger" | "info" | "default" => {
-  const map: Record<DriverComplianceStatus, "success" | "warning" | "danger" | "info" | "default"> = {
+  const map: Record<
+    DriverComplianceStatus,
+    "success" | "warning" | "danger" | "info" | "default"
+  > = {
     COMPLIANT: "success",
     WARNING: "warning",
     VIOLATION: "danger",
@@ -63,7 +73,10 @@ const dutyStatusColor = (duty: DutyStatus): string => {
   return colors[duty];
 };
 
-function deriveDriverStatus(driver: ApiDriver, violationCounts: Record<string, number>): DriverComplianceStatus {
+function deriveDriverStatus(
+  driver: ApiDriver,
+  violationCounts: Record<string, number>,
+): DriverComplianceStatus {
   const s = driver.status?.toLowerCase() ?? "";
   if (s === "offline" || s === "inactive") return "OFFLINE";
   const vCount = violationCounts[driver.id] ?? 0;
@@ -73,22 +86,31 @@ function deriveDriverStatus(driver: ApiDriver, violationCounts: Record<string, n
 }
 
 export default function ELDOverviewPage() {
-  const { items: apiDrivers, loading: driversLoading, error: driversError, refetch: driversRefetch } = useApiList<ApiDriver>('/api/v4/drivers');
+  const {
+    items: apiDrivers,
+    loading: driversLoading,
+    error: driversError,
+    refetch: driversRefetch,
+  } = useApiList<ApiDriver>("/api/v4/drivers");
   const complianceResult = useFleetCompliance();
   const violationsResult = useViolations(undefined);
   const eventsResult = useELDEvents(undefined);
   const [selectedDriver, setSelectedDriver] = useState<string | null>(null);
 
-  const compliance        = complianceResult.data;
+  const compliance = complianceResult.data;
   const complianceLoading = complianceResult.loading;
-  const complianceError   = complianceResult.error;
-  const violations        = violationsResult.items;
+  const complianceError = complianceResult.error;
+  const violations = violationsResult.items;
   const violationsLoading = violationsResult.loading;
-  const events            = eventsResult.items;
-  const eventsLoading     = eventsResult.loading;
+  const events = eventsResult.items;
+  const eventsLoading = eventsResult.loading;
 
-  if (driversLoading && !apiDrivers.length) return <TableSkeleton rows={10} columns={6} />;
-  if (driversError) return <ErrorState message={driversError.message} onRetry={driversRefetch} />;
+  if (driversLoading && !apiDrivers.length)
+    return <TableSkeleton rows={10} columns={6} />;
+  if (driversError)
+    return (
+      <ErrorState message={driversError.message} onRetry={driversRefetch} />
+    );
 
   // Build violation count per driverId
   const violationCounts: Record<string, number> = {};
@@ -194,7 +216,7 @@ export default function ELDOverviewPage() {
                       "hover:border-blue-500/30 hover:bg-[#1a1a2e]",
                       selectedDriver === driver.driverId
                         ? "border-blue-500/50 bg-blue-500/5"
-                        : "border-[#1e1e2e]"
+                        : "border-[#1e1e2e]",
                     )}
                   >
                     <div className="flex items-start justify-between gap-2 mb-2">
@@ -208,7 +230,12 @@ export default function ELDOverviewPage() {
                       </div>
 
                       <div className="flex items-center gap-2 text-xs mb-2">
-                        <span className={cn("text-lg", dutyStatusColor(driver.currentDuty))}>
+                        <span
+                          className={cn(
+                            "text-lg",
+                            dutyStatusColor(driver.currentDuty),
+                          )}
+                        >
                           {dutyStatusIcon[driver.currentDuty]}
                         </span>
                         <span className="text-gray-400">
@@ -226,7 +253,7 @@ export default function ELDOverviewPage() {
                                 ? "text-emerald-500"
                                 : driver.drivingRemaining > 2
                                   ? "text-amber-500"
-                                  : "text-red-500"
+                                  : "text-red-500",
                             )}
                           >
                             {driver.drivingRemaining.toFixed(1)}h
@@ -240,15 +267,16 @@ export default function ELDOverviewPage() {
                       </div>
 
                       <div className="text-xs text-gray-400 mt-2 pt-2 border-t border-wl-border-default">
-                        Updated {new Date(driver.lastUpdate).toLocaleTimeString([], {
+                        Updated{" "}
+                        {new Date(driver.lastUpdate).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
                       </div>
                     </div>
-                    </button>
-                  ))}
-                </div>
+                  </button>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -354,7 +382,11 @@ export default function ELDOverviewPage() {
               </div>
             </div>
 
-            <Button variant="primary" className="w-full h-8 text-xs" href="/eld/dvir">
+            <Button
+              variant="primary"
+              className="w-full h-8 text-xs"
+              href="/eld/dvir"
+            >
               <Wrench className="w-3 h-3 mr-2" />
               Manage DVIRs
             </Button>
@@ -380,7 +412,9 @@ export default function ELDOverviewPage() {
                 <div className="flex flex-col items-center justify-center py-12 text-wl-text-secondary">
                   <Activity className="w-12 h-12 mb-3 opacity-40" />
                   <p className="text-sm font-medium">No ELD events yet</p>
-                  <p className="text-xs mt-1">Events appear here as drivers update their status</p>
+                  <p className="text-xs mt-1">
+                    Events appear here as drivers update their status
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-2">

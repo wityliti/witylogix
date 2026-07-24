@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { api } from '@/lib/api';
+import { useState, useEffect, useCallback, useRef } from "react";
+import { api } from "@/lib/api";
 
 export interface TrackingEvent {
   id: string;
@@ -65,7 +65,7 @@ interface ApiShipment {
 interface UseShipmentTrackingReturn {
   trackingData: TrackingData | null;
   events: TrackingEvent[];
-  status: 'idle' | 'loading' | 'success' | 'error';
+  status: "idle" | "loading" | "success" | "error";
   eta: string | null;
   isLoading: boolean;
   error: string | null;
@@ -75,58 +75,62 @@ interface UseShipmentTrackingReturn {
 function mapShipmentToTrackingData(s: ApiShipment): TrackingData {
   const address = [s.addressLine1, s.city, s.province, s.postalCode]
     .filter(Boolean)
-    .join(', ');
+    .join(", ");
   return {
     trackingNumber: s.trackingNumber ?? s.id,
     orderId: s.orderId,
-    carrier: s.carrier ?? 'Witylogix',
+    carrier: s.carrier ?? "Witylogix",
     currentStatus: s.status,
     eta: s.estimatedArrival ?? s.deliveryDate ?? null,
-    lastLocation: s.city ?? s.location?.city ?? '',
-    origin: s.location?.name ?? 'Warehouse',
-    destination: s.city ?? '',
-    recipientName: s.recipientName ?? '',
+    lastLocation: s.city ?? s.location?.city ?? "",
+    origin: s.location?.name ?? "Warehouse",
+    destination: s.city ?? "",
+    recipientName: s.recipientName ?? "",
     recipientAddress: address,
     weight: s.weight ?? 0,
     dimensions: s.dimensions ?? { length: 0, width: 0, height: 0 },
-    serviceLevel: s.deliveryMethod ?? 'Standard',
+    serviceLevel: s.deliveryMethod ?? "Standard",
   };
 }
 
 function mapLogsToEvents(
-  logs: NonNullable<ApiShipment['activityLogs']>,
+  logs: NonNullable<ApiShipment["activityLogs"]>,
 ): TrackingEvent[] {
   return logs.map((log) => ({
     id: log.id,
     timestamp: log.timestamp,
-    location: log.location ?? '',
+    location: log.location ?? "",
     description: log.description,
-    status: log.status ?? 'info',
-    icon: '📦',
+    status: log.status ?? "info",
+    icon: "📦",
   }));
 }
 
-export function useShipmentTracking(trackingNumber: string): UseShipmentTrackingReturn {
+export function useShipmentTracking(
+  trackingNumber: string,
+): UseShipmentTrackingReturn {
   const [trackingData, setTrackingData] = useState<TrackingData | null>(null);
   const [events, setEvents] = useState<TrackingEvent[]>([]);
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const [error, setError] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
   const fetchTrackingData = useCallback(async () => {
     if (!trackingNumber) return;
 
-    setStatus('loading');
+    setStatus("loading");
     setError(null);
 
     try {
       const response = await fetch(`/api/tracking/${trackingNumber}`);
-      if (!response.ok) throw new Error('Failed to fetch tracking data');
+      if (!response.ok) throw new Error("Failed to fetch tracking data");
 
       const result = await response.json();
       const shipment = result.data?.[0];
       if (!shipment) {
-        throw new Error('Tracking number not found');
+        throw new Error("Tracking number not found");
       }
 
       // Fetch full detail (includes activityLogs)
@@ -136,19 +140,19 @@ export function useShipmentTracking(trackingNumber: string): UseShipmentTracking
 
       setTrackingData(mapShipmentToTrackingData(detail.data));
       setEvents(mapLogsToEvents(detail.data.activityLogs ?? []));
-      setStatus('success');
+      setStatus("success");
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : 'Failed to load tracking data';
+        err instanceof Error ? err.message : "Failed to load tracking data";
       setError(errorMessage);
-      setStatus('error');
+      setStatus("error");
     }
   }, [trackingNumber]);
 
   const subscribeToUpdates = useCallback(() => {
     if (!trackingNumber) return;
 
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000";
     try {
       wsRef.current = new WebSocket(`${wsUrl}/ws/tracking/${trackingNumber}`);
 
@@ -159,7 +163,9 @@ export function useShipmentTracking(trackingNumber: string): UseShipmentTracking
             events?: TrackingEvent[];
           };
           if (update.shipment) {
-            setTrackingData((prev) => (prev ? { ...prev, ...update.shipment } : null));
+            setTrackingData((prev) =>
+              prev ? { ...prev, ...update.shipment } : null,
+            );
           }
           if (update.events) {
             setEvents(update.events);
@@ -196,7 +202,7 @@ export function useShipmentTracking(trackingNumber: string): UseShipmentTracking
     events,
     status,
     eta: trackingData?.eta ?? null,
-    isLoading: status === 'loading',
+    isLoading: status === "loading",
     error,
     refetch: fetchTrackingData,
   };
