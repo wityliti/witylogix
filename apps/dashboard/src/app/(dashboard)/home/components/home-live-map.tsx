@@ -91,11 +91,11 @@ function MapLayers({
 // ── Main component ────────────────────────────────────────────
 
 export function HomeLiveMap() {
-  const { items: activeOrders, loading: ordersLoading } = useApiList<ApiOrder>(
+  const { items: activeOrders, loading: ordersLoading, error: ordersError } = useApiList<ApiOrder>(
     '/api/v4/orders',
     { status: 'ASSIGNED,PICKED_UP,OUT_FOR_DELIVERY,ARRIVED', limit: 50 },
   );
-  const { items: dispatchDrivers, loading: driversLoading } = useApiList<DispatchDriver>(
+  const { items: dispatchDrivers, loading: driversLoading, error: driversError } = useApiList<DispatchDriver>(
     '/api/v4/dispatch/drivers',
     { limit: 100 },
   );
@@ -133,12 +133,22 @@ export function HomeLiveMap() {
   );
 
   const isLoading = ordersLoading || driversLoading;
+  const hasError = !isLoading && (ordersError || driversError);
   const hasData = orderPins.length > 0 || driverMarkers.length > 0;
 
   if (isLoading) {
     return (
       <div className="h-[280px] rounded-xl bg-wl-bg-surface border border-wl-border-default animate-pulse flex items-center justify-center">
         <MapPin className="w-6 h-6 text-wl-text-tertiary" />
+      </div>
+    );
+  }
+
+  if (hasError) {
+    return (
+      <div className="h-[280px] rounded-xl bg-wl-bg-surface border border-wl-border-default flex flex-col items-center justify-center gap-2 text-wl-text-tertiary">
+        <MapPin className="w-8 h-8 text-wl-error-400" />
+        <p className="text-sm text-wl-error-400">Failed to load live map data</p>
       </div>
     );
   }

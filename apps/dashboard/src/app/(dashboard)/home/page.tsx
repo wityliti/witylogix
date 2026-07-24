@@ -187,8 +187,8 @@ function DriverStatusCard({ driver, loading = false }: { driver?: ApiDriver; loa
 
 export default function HomePage() {
   const { data: stats, loading: statsLoading, error: statsError } = useDashboardStats();
-  const { items: recentOrders, loading: ordersLoading } = useApiList<ApiOrder>('/api/v4/orders', { limit: 5 });
-  const { items: drivers, loading: driversLoading } = useApiList<ApiDriver>('/api/v4/drivers', { limit: 8 });
+  const { items: recentOrders, loading: ordersLoading, error: ordersError } = useApiList<ApiOrder>('/api/v4/orders', { limit: 5 });
+  const { items: drivers, loading: driversLoading, error: driversError } = useApiList<ApiDriver>('/api/v4/drivers', { limit: 8 });
 
   const driverUtilization =
     drivers.length > 0
@@ -312,6 +312,10 @@ export default function HomePage() {
                         <div key={i} className="h-16 bg-wl-bg-elevated rounded animate-pulse" />
                       ))}
                     </div>
+                  ) : ordersError ? (
+                    <div className="text-center py-8">
+                      <p className="text-sm text-wl-error-400">Failed to load orders</p>
+                    </div>
                   ) : recentOrders.length > 0 ? (
                     <div className="space-y-2">
                       {recentOrders.map((order) => (
@@ -349,14 +353,20 @@ export default function HomePage() {
                 <div className="grid gap-4">
                   {driversLoading
                     ? Array.from({ length: 4 }).map((_, i) => <DriverStatusCard key={i} loading={true} />)
-                    : drivers.length > 0
-                      ? drivers.slice(0, 4).map((driver) => <DriverStatusCard key={driver.id} driver={driver} />)
-                      : (
+                    : driversError
+                      ? (
                         <div className="text-center py-6">
-                          <Icon d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" size={32} className="mx-auto text-wl-text-tertiary mb-2" />
-                          <p className="text-sm text-wl-text-tertiary">No drivers found</p>
+                          <p className="text-sm text-wl-error-400">Failed to load drivers</p>
                         </div>
-                      )}
+                      )
+                      : drivers.length > 0
+                        ? drivers.slice(0, 4).map((driver) => <DriverStatusCard key={driver.id} driver={driver} />)
+                        : (
+                          <div className="text-center py-6">
+                            <Icon d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" size={32} className="mx-auto text-wl-text-tertiary mb-2" />
+                            <p className="text-sm text-wl-text-tertiary">No drivers found</p>
+                          </div>
+                        )}
                 </div>
                 {drivers.length > 0 && (
                   <div className="mt-4 pt-4 border-t border-wl-border-default">
