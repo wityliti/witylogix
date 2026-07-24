@@ -266,7 +266,9 @@ export class MailgunSDKClient {
   /**
    * Send batch message (up to 1000 recipients).
    */
-  async sendBatchMessage(message: MailgunBatchMessage): Promise<MailgunSendResponse> {
+  async sendBatchMessage(
+    message: MailgunBatchMessage,
+  ): Promise<MailgunSendResponse> {
     const endpoint = `/v3/${this.domain}/messages.mime`;
     return this.request("POST", endpoint, message);
   }
@@ -274,7 +276,9 @@ export class MailgunSDKClient {
   /**
    * Create a template.
    */
-  async createTemplate(template: MailgunTemplate): Promise<Record<string, unknown>> {
+  async createTemplate(
+    template: MailgunTemplate,
+  ): Promise<Record<string, unknown>> {
     const endpoint = `/v3/${this.domain}/templates`;
     return this.request("POST", endpoint, template);
   }
@@ -424,7 +428,9 @@ export class MailgunSDKClient {
   /**
    * Get domain verification status.
    */
-  async getDomainVerificationStatus(domain: string): Promise<Record<string, unknown>> {
+  async getDomainVerificationStatus(
+    domain: string,
+  ): Promise<Record<string, unknown>> {
     const endpoint = `/v3/domains/${domain}/verify`;
     return this.request("POST", endpoint);
   }
@@ -492,7 +498,11 @@ export class MailgunSDKClient {
   /**
    * Add bounce to suppression list.
    */
-  async addBounce(address: string, code?: string, error?: string): Promise<void> {
+  async addBounce(
+    address: string,
+    code?: string,
+    error?: string,
+  ): Promise<void> {
     const endpoint = `/v3/${this.domain}/bounces`;
     await this.request("POST", endpoint, { address, code, error });
   }
@@ -588,7 +598,9 @@ export class MailgunSDKClient {
   /**
    * Create a mailing list.
    */
-  async createMailingList(list: MailgunMailingList): Promise<Record<string, unknown>> {
+  async createMailingList(
+    list: MailgunMailingList,
+  ): Promise<Record<string, unknown>> {
     const endpoint = `/v3/lists`;
     return this.request("POST", endpoint, list);
   }

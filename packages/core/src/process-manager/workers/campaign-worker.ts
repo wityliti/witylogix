@@ -13,7 +13,11 @@ import { BaseWorker } from "../manager.js";
 
 interface CampaignJob {
   id: string;
-  type: "campaign.start" | "campaign.batch" | "campaign.complete" | "campaign.cancel";
+  type:
+    | "campaign.start"
+    | "campaign.batch"
+    | "campaign.complete"
+    | "campaign.cancel";
   payload: Record<string, unknown>;
 }
 
@@ -454,10 +458,7 @@ export class CampaignWorker extends BaseWorker {
       );
 
       const startTime = Date.now();
-      while (
-        this.activeJobs.size > 0 &&
-        Date.now() - startTime < 5000
-      ) {
+      while (this.activeJobs.size > 0 && Date.now() - startTime < 5000) {
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
 

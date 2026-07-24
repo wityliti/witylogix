@@ -2,7 +2,7 @@
 
 /**
  * Push Notification Service
- * 
+ *
  * Unified push notification system supporting:
  * - Firebase Cloud Messaging (FCM)
  * - Expo Push Notifications
@@ -25,17 +25,24 @@ export type {
   PushProvider,
   TenantPushConfig,
   DeployerPushConfig,
-} from './types';
+} from "./types";
 
-export { FCMProvider, resolveFCMCredentials } from './fcm-provider';
-export { ExpoProvider, resolveExpoCredentials } from './expo-provider';
+export { FCMProvider, resolveFCMCredentials } from "./fcm-provider";
+export { ExpoProvider, resolveExpoCredentials } from "./expo-provider";
 
-import type { PushProvider, PushPayload, PushResult, MulticastPushResult, TenantPushConfig, DeployerPushConfig } from './types';
-import { FCMProvider, resolveFCMCredentials } from './fcm-provider';
-import { ExpoProvider, resolveExpoCredentials } from './expo-provider';
+import type {
+  PushProvider,
+  PushPayload,
+  PushResult,
+  MulticastPushResult,
+  TenantPushConfig,
+  DeployerPushConfig,
+} from "./types";
+import { FCMProvider, resolveFCMCredentials } from "./fcm-provider";
+import { ExpoProvider, resolveExpoCredentials } from "./expo-provider";
 
 export interface PushServiceConfig {
-  type?: 'fcm' | 'expo' | 'none';
+  type?: "fcm" | "expo" | "none";
   tenantConfig?: TenantPushConfig;
   deployerConfig?: DeployerPushConfig;
 }
@@ -45,33 +52,39 @@ export interface PushServiceConfig {
  */
 class NoOpPushProvider implements PushProvider {
   async sendPush(token: string, payload: PushPayload): Promise<PushResult> {
-    return { success: false, error: 'Push notifications disabled' };
+    return { success: false, error: "Push notifications disabled" };
   }
 
-  async sendMulticast(tokens: string[], payload: PushPayload): Promise<MulticastPushResult> {
+  async sendMulticast(
+    tokens: string[],
+    payload: PushPayload,
+  ): Promise<MulticastPushResult> {
     return {
       successCount: 0,
       failureCount: tokens.length,
-      results: tokens.map(() => ({ success: false, error: 'Push notifications disabled' })),
+      results: tokens.map(() => ({
+        success: false,
+        error: "Push notifications disabled",
+      })),
     };
   }
 
   async subscribeTopic(token: string, topic: string): Promise<void> {
-    console.log('Push notifications disabled');
+    console.log("Push notifications disabled");
   }
 
   async unsubscribeTopic(token: string, topic: string): Promise<void> {
-    console.log('Push notifications disabled');
+    console.log("Push notifications disabled");
   }
 
   async sendToTopic(topic: string, payload: PushPayload): Promise<PushResult> {
-    return { success: false, error: 'Push notifications disabled' };
+    return { success: false, error: "Push notifications disabled" };
   }
 }
 
 /**
  * Create a push notification service with automatic provider detection
- * 
+ *
  * Priority:
  * 1. Explicit type if provided
  * 2. Tenant FCM credentials → FCMProvider
@@ -81,55 +94,72 @@ class NoOpPushProvider implements PushProvider {
  */
 export function createPushService(config: PushServiceConfig): PushProvider {
   // Explicit type provided
-  if (config.type === 'fcm') {
-    const fcmConfig = resolveFCMCredentials(config.tenantConfig, config.deployerConfig);
+  if (config.type === "fcm") {
+    const fcmConfig = resolveFCMCredentials(
+      config.tenantConfig,
+      config.deployerConfig,
+    );
     if (fcmConfig) {
       return new FCMProvider(fcmConfig);
     }
-    throw new Error('FCM type requested but no FCM credentials found');
+    throw new Error("FCM type requested but no FCM credentials found");
   }
 
-  if (config.type === 'expo') {
-    const expoConfig = resolveExpoCredentials(config.tenantConfig, config.deployerConfig);
+  if (config.type === "expo") {
+    const expoConfig = resolveExpoCredentials(
+      config.tenantConfig,
+      config.deployerConfig,
+    );
     if (expoConfig) {
       return new ExpoProvider(expoConfig);
     }
-    throw new Error('Expo type requested but no Expo credentials found');
+    throw new Error("Expo type requested but no Expo credentials found");
   }
 
-  if (config.type === 'none') {
+  if (config.type === "none") {
     return new NoOpPushProvider();
   }
 
   // Auto-detect: try FCM first
-  const fcmConfig = resolveFCMCredentials(config.tenantConfig, config.deployerConfig);
+  const fcmConfig = resolveFCMCredentials(
+    config.tenantConfig,
+    config.deployerConfig,
+  );
   if (fcmConfig) {
     return new FCMProvider(fcmConfig);
   }
 
   // Try Expo
-  const expoConfig = resolveExpoCredentials(config.tenantConfig, config.deployerConfig);
+  const expoConfig = resolveExpoCredentials(
+    config.tenantConfig,
+    config.deployerConfig,
+  );
   if (expoConfig) {
     return new ExpoProvider(expoConfig);
   }
 
   // Check deployer config for default type
-  if (config.deployerConfig?.defaultProvider === 'fcm') {
+  if (config.deployerConfig?.defaultProvider === "fcm") {
     const deployerFcm = resolveFCMCredentials(undefined, config.deployerConfig);
     if (deployerFcm) {
       return new FCMProvider(deployerFcm);
     }
   }
 
-  if (config.deployerConfig?.defaultProvider === 'expo') {
-    const deployerExpo = resolveExpoCredentials(undefined, config.deployerConfig);
+  if (config.deployerConfig?.defaultProvider === "expo") {
+    const deployerExpo = resolveExpoCredentials(
+      undefined,
+      config.deployerConfig,
+    );
     if (deployerExpo) {
       return new ExpoProvider(deployerExpo);
     }
   }
 
   // Fall back to no-op
-  console.warn('No push provider credentials configured. Using no-op provider.');
+  console.warn(
+    "No push provider credentials configured. Using no-op provider.",
+  );
   return new NoOpPushProvider();
 }
 
@@ -153,7 +183,10 @@ export class PushNotificationService {
   /**
    * Send a push notification to multiple devices
    */
-  async sendMulticast(tokens: string[], payload: PushPayload): Promise<MulticastPushResult> {
+  async sendMulticast(
+    tokens: string[],
+    payload: PushPayload,
+  ): Promise<MulticastPushResult> {
     return this.provider.sendMulticast(tokens, payload);
   }
 

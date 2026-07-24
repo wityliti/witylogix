@@ -1,4 +1,4 @@
-'use client';
+"use client";
 /**
  * ShipmentsMapView — wraps WLMap with a ShipmentMarkerLayer to show shipment
  * delivery locations as status-coloured pins.  Auto-fits bounds to all visible
@@ -8,13 +8,13 @@
  * because maplibre-gl cannot run in a server context.
  */
 
-import { useRef } from 'react';
-import { WLMap } from '@/components/map/wl-map';
-import { ShipmentMarkerLayer } from '@/components/map/shipment-marker-layer';
-import { useWLMap } from '@/components/map/wl-map-context';
-import { fitBounds } from '@/components/map/use-fit-bounds';
-import type { ShipmentMarkerStatus } from '@/components/map/shipment-marker-layer';
-import type { Shipment } from '@/components/shipments/shipment-utils';
+import { useRef } from "react";
+import { WLMap } from "@/components/map/wl-map";
+import { ShipmentMarkerLayer } from "@/components/map/shipment-marker-layer";
+import { useWLMap } from "@/components/map/wl-map-context";
+import { fitBounds } from "@/components/map/use-fit-bounds";
+import type { ShipmentMarkerStatus } from "@/components/map/shipment-marker-layer";
+import type { Shipment } from "@/components/shipments/shipment-utils";
 
 // ── Bounds auto-fitter child (needs map context) ─────────────────────────────
 
@@ -30,7 +30,7 @@ function BoundsFitter({ coords }: BoundsFitterProps) {
     fitted.current = true;
     const run = () => fitBounds(map, coords, 80);
     if (map.isStyleLoaded()) run();
-    else map.on('load', run);
+    else map.on("load", run);
   }
 
   return null;
@@ -53,8 +53,8 @@ export default function ShipmentsMapView({
     .filter(
       (s) =>
         s.deliveryLocation != null &&
-        typeof s.deliveryLocation.lat === 'number' &&
-        typeof s.deliveryLocation.lng === 'number',
+        typeof s.deliveryLocation.lat === "number" &&
+        typeof s.deliveryLocation.lng === "number",
     )
     .map((s) => ({
       id: s.id,

@@ -4,7 +4,12 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ChevronDownIcon, TrendingUpIcon, TrendingDownIcon, ActivityIcon } from "lucide-react";
+import {
+  ChevronDownIcon,
+  TrendingUpIcon,
+  TrendingDownIcon,
+  ActivityIcon,
+} from "lucide-react";
 
 interface VitalReading {
   timestamp: Date;
@@ -22,7 +27,6 @@ interface VitalsChartProps {
   className?: string;
 }
 
-
 interface VitalMetric {
   name: string;
   unit: string;
@@ -35,12 +39,66 @@ interface VitalMetric {
 }
 
 const getMetricsFromLatest = (latest: VitalReading): VitalMetric[] => [
-  { name: "Heart Rate", unit: "bpm", normalMin: 60, normalMax: 100, color: "wl-primary-400", value: latest.heartRate, trend: "stable", change: 0 },
-  { name: "BP Systolic", unit: "mmHg", normalMin: 90, normalMax: 120, color: "wl-info-400", value: latest.bpSystolic, trend: "stable", change: 0 },
-  { name: "BP Diastolic", unit: "mmHg", normalMin: 60, normalMax: 80, color: "wl-info-400", value: latest.bpDiastolic, trend: "stable", change: 0 },
-  { name: "Temperature", unit: "°F", normalMin: 97, normalMax: 99, color: "wl-warning-400", value: latest.temperature, trend: "stable", change: 0 },
-  { name: "SpO2", unit: "%", normalMin: 95, normalMax: 100, color: "wl-success-400", value: latest.spO2, trend: "stable", change: 0 },
-  { name: "Weight", unit: "lbs", normalMin: 150, normalMax: 180, color: "wl-danger-400", value: latest.weight, trend: "stable", change: 0 },
+  {
+    name: "Heart Rate",
+    unit: "bpm",
+    normalMin: 60,
+    normalMax: 100,
+    color: "wl-primary-400",
+    value: latest.heartRate,
+    trend: "stable",
+    change: 0,
+  },
+  {
+    name: "BP Systolic",
+    unit: "mmHg",
+    normalMin: 90,
+    normalMax: 120,
+    color: "wl-info-400",
+    value: latest.bpSystolic,
+    trend: "stable",
+    change: 0,
+  },
+  {
+    name: "BP Diastolic",
+    unit: "mmHg",
+    normalMin: 60,
+    normalMax: 80,
+    color: "wl-info-400",
+    value: latest.bpDiastolic,
+    trend: "stable",
+    change: 0,
+  },
+  {
+    name: "Temperature",
+    unit: "°F",
+    normalMin: 97,
+    normalMax: 99,
+    color: "wl-warning-400",
+    value: latest.temperature,
+    trend: "stable",
+    change: 0,
+  },
+  {
+    name: "SpO2",
+    unit: "%",
+    normalMin: 95,
+    normalMax: 100,
+    color: "wl-success-400",
+    value: latest.spO2,
+    trend: "stable",
+    change: 0,
+  },
+  {
+    name: "Weight",
+    unit: "lbs",
+    normalMin: 150,
+    normalMax: 180,
+    color: "wl-danger-400",
+    value: latest.weight,
+    trend: "stable",
+    change: 0,
+  },
 ];
 
 const isNormal = (metric: VitalMetric): boolean => {
@@ -86,7 +144,7 @@ const VitalsChart = ({
         : 30 * 24 * 60 * 60 * 1000;
 
   const filteredReadings = readings.filter(
-    (r) => now - r.timestamp.getTime() <= rangeMs
+    (r) => now - r.timestamp.getTime() <= rangeMs,
   );
 
   return (
@@ -113,7 +171,7 @@ const VitalsChart = ({
                         24 *
                         60 *
                         60 *
-                        1000
+                        1000,
                   );
                   onDateRangeChange(start, end);
                 }
@@ -155,7 +213,9 @@ const VitalsChart = ({
                     <p className="text-sm font-semibold text-wl-text-primary">
                       {metric.name}
                     </p>
-                    <p className="text-xs text-wl-text-tertiary">{metric.unit}</p>
+                    <p className="text-xs text-wl-text-tertiary">
+                      {metric.unit}
+                    </p>
                   </div>
                 </div>
 
@@ -167,7 +227,9 @@ const VitalsChart = ({
                     <div
                       className={cn(
                         "flex items-center gap-1 text-xs font-medium",
-                        metric.change > 0 ? "text-wl-danger-400" : "text-wl-success-400"
+                        metric.change > 0
+                          ? "text-wl-danger-400"
+                          : "text-wl-success-400",
                       )}
                     >
                       {metric.trend === "up" && (
@@ -189,7 +251,7 @@ const VitalsChart = ({
                     <ChevronDownIcon
                       className={cn(
                         "w-4 h-4 transition-transform",
-                        isExpanded && "rotate-180"
+                        isExpanded && "rotate-180",
                       )}
                     />
                   </Button>

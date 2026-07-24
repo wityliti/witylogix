@@ -275,7 +275,10 @@ export interface NormalizedDeliveryEvent {
   timestamp: Date;
 
   /** Raw provider payload for auditing */
-  rawPayload: OnfleetWebhookPayload | StuartWebhookPayload | UberDirectWebhookPayload;
+  rawPayload:
+    | OnfleetWebhookPayload
+    | StuartWebhookPayload
+    | UberDirectWebhookPayload;
 
   /** Additional metadata */
   metadata?: {

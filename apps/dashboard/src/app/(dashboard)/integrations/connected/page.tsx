@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { cn } from '@/lib/utils';
-import { useIntegrationStatus } from '@/hooks/use-integration-status';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/ui/empty-state';
-import { ErrorState } from '@/components/ui/error-state';
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { useIntegrationStatus } from "@/hooks/use-integration-status";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import {
   Search,
   Filter,
@@ -22,7 +22,7 @@ import {
   Clock,
   Gauge,
   AlertTriangle,
-} from 'lucide-react';
+} from "lucide-react";
 
 type StatusFilter = "all" | "healthy" | "warning" | "error";
 type SortBy = "name" | "lastSync" | "errorCount";
@@ -57,7 +57,7 @@ export default function ConnectedIntegrationsPage() {
    * Calculate health status based on error count and uptime
    */
   function getHealthStatus(
-    connection: typeof connections[0]
+    connection: (typeof connections)[0],
   ): "healthy" | "warning" | "error" {
     if (connection.status === "error") return "error";
     if (connection.errorCount > 10 || connection.uptime < 95) return "warning";
@@ -76,15 +76,13 @@ export default function ConnectedIntegrationsPage() {
       items = items.filter(
         (c) =>
           c.providerName.toLowerCase().includes(q) ||
-          c.category.toLowerCase().includes(q)
+          c.category.toLowerCase().includes(q),
       );
     }
 
     // Status filter
     if (statusFilter !== "all") {
-      items = items.filter(
-        (c) => getHealthStatus(c) === statusFilter
-      );
+      items = items.filter((c) => getHealthStatus(c) === statusFilter);
     }
 
     // Sorting
@@ -113,9 +111,8 @@ export default function ConnectedIntegrationsPage() {
   const stats: StatusStats = useMemo(() => {
     return {
       connected: connections.length,
-      healthy: connections.filter(
-        (c) => getHealthStatus(c) === "healthy"
-      ).length,
+      healthy: connections.filter((c) => getHealthStatus(c) === "healthy")
+        .length,
       errors: connections.filter((c) => getHealthStatus(c) === "error").length,
     };
   }, [connections]);
@@ -167,9 +164,7 @@ export default function ConnectedIntegrationsPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm text-gray-500 mb-1">
-                    Healthy
-                  </div>
+                  <div className="text-sm text-gray-500 mb-1">Healthy</div>
                   <div className="text-3xl font-bold text-emerald-500">
                     {stats.healthy}
                   </div>
@@ -183,9 +178,7 @@ export default function ConnectedIntegrationsPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm text-gray-500 mb-1">
-                    Errors
-                  </div>
+                  <div className="text-sm text-gray-500 mb-1">Errors</div>
                   <div className="text-3xl font-bold text-red-500">
                     {stats.errors}
                   </div>
@@ -219,7 +212,7 @@ export default function ConnectedIntegrationsPage() {
                 "px-4 py-2 rounded-lg border text-sm font-medium transition-all whitespace-nowrap",
                 statusFilter === status
                   ? "bg-blue-500 text-black border-blue-600"
-                  : "border-wl-border-default text-gray-400 hover:border-blue-500/50"
+                  : "border-wl-border-default text-gray-400 hover:border-blue-500/50",
               )}
             >
               {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -285,11 +278,11 @@ export default function ConnectedIntegrationsPage() {
                 key={connection.id}
                 className={cn(
                   "bg-wl-bg-elevated border-wl-border-default cursor-pointer transition-all hover:border-blue-500/50",
-                  selectedId === connection.id && "ring-1 ring-blue-500"
+                  selectedId === connection.id && "ring-1 ring-blue-500",
                 )}
                 onClick={() =>
                   setSelectedId(
-                    selectedId === connection.id ? null : connection.id
+                    selectedId === connection.id ? null : connection.id,
                   )
                 }
               >
@@ -351,9 +344,7 @@ export default function ConnectedIntegrationsPage() {
                   {/* Uptime */}
                   <div className="pt-2">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-gray-500">
-                        Uptime
-                      </span>
+                      <span className="text-xs text-gray-500">Uptime</span>
                       <span className="text-sm font-semibold text-white">
                         {connection.uptime}%
                       </span>
@@ -366,7 +357,7 @@ export default function ConnectedIntegrationsPage() {
                             ? "bg-emerald-500"
                             : connection.uptime >= 95
                               ? "bg-amber-500"
-                              : "bg-red-500"
+                              : "bg-red-500",
                         )}
                         style={{ width: `${connection.uptime}%` }}
                       />

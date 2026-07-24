@@ -16,7 +16,7 @@ interface VerifyEmailProps {
   onVerified: (data: OnboardingData) => void;
 }
 
-export function VerifyEmail ({
+export function VerifyEmail({
   data,
   displayEmail,
   token,
@@ -56,7 +56,7 @@ export function VerifyEmail ({
 
   const handleKeyDown = (
     index: number,
-    e: React.KeyboardEvent<HTMLInputElement>
+    e: React.KeyboardEvent<HTMLInputElement>,
   ) => {
     if (e.key === "Backspace" && !code[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
@@ -96,7 +96,7 @@ export function VerifyEmail ({
         setError(
           json.message ||
             json.error ||
-            "Invalid or expired code. Request a new code or try again."
+            "Invalid or expired code. Request a new code or try again.",
         );
         setCode(["", "", "", "", "", ""]);
         inputRefs.current[0]?.focus();
@@ -143,7 +143,7 @@ export function VerifyEmail ({
         setError(
           json.message ||
             json.error ||
-            "Could not resend verification email. Try again later."
+            "Could not resend verification email. Try again later.",
         );
         return;
       }
@@ -164,7 +164,7 @@ export function VerifyEmail ({
         <div
           className={cn(
             "w-12 h-12 rounded-lg flex items-center justify-center",
-            verified ? "bg-wl-success-500/20" : "bg-wl-primary-500/20"
+            verified ? "bg-wl-success-500/20" : "bg-wl-primary-500/20",
           )}
         >
           {verified ? (
@@ -212,7 +212,7 @@ export function VerifyEmail ({
                       ? "border-wl-primary-500 text-wl-text-primary"
                       : "border-wl-border-default text-wl-text-secondary hover:border-wl-border-strong",
                   "focus:border-wl-primary-500 focus:outline-none",
-                  "disabled:opacity-50 disabled:cursor-not-allowed"
+                  "disabled:opacity-50 disabled:cursor-not-allowed",
                 )}
               />
             ))}
@@ -254,7 +254,7 @@ export function VerifyEmail ({
                 "text-sm font-semibold transition-all",
                 resendTimer > 0 || resending
                   ? "text-wl-text-tertiary cursor-not-allowed"
-                  : "text-wl-primary-500 hover:text-wl-primary-400 cursor-pointer"
+                  : "text-wl-primary-500 hover:text-wl-primary-400 cursor-pointer",
               )}
             >
               {resending

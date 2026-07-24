@@ -4,7 +4,7 @@
  * Supports QuickBooks and Xero with provider registry pattern
  */
 
-import type { Invoice, PaymentRecord } from '../../invoicing/types.js';
+import type { Invoice, PaymentRecord } from "../../invoicing/types.js";
 
 /** Minimal subset of PrismaClient used by AccountingSyncService */
 type PrismaClient = {
@@ -21,15 +21,15 @@ type PrismaClient = {
     findUnique: (args: Record<string, unknown>) => Promise<unknown | null>;
   };
 };
-import { QuickBooksAdapter } from './quickbooks-adapter.js';
-import { XeroAdapter } from './xero-adapter.js';
+import { QuickBooksAdapter } from "./quickbooks-adapter.js";
+import { XeroAdapter } from "./xero-adapter.js";
 import type {
   AccountingConnection,
   AccountingProvider,
   SyncRecord,
   AccountingSyncResult,
   AccountingSyncStatus,
-} from './types.js';
+} from "./types.js";
 
 export interface SyncOptions {
   force?: boolean; // Force sync even if recently synced
@@ -45,7 +45,7 @@ export interface ReconciliationResult {
   reconciliationDate: Date;
   details: Array<{
     invoiceId: string;
-    status: 'synced' | 'failed' | 'pending';
+    status: "synced" | "failed" | "pending";
     errorMessage?: string;
   }>;
 }
@@ -56,7 +56,8 @@ export interface ReconciliationResult {
  */
 export class AccountingSyncService {
   private prisma: PrismaClient;
-  private adapters: Map<AccountingProvider, QuickBooksAdapter | XeroAdapter> = new Map();
+  private adapters: Map<AccountingProvider, QuickBooksAdapter | XeroAdapter> =
+    new Map();
 
   constructor(prisma: PrismaClient) {
     this.prisma = prisma;
@@ -65,14 +66,19 @@ export class AccountingSyncService {
   /**
    * Register an adapter for a provider
    */
-  registerAdapter(provider: AccountingProvider, adapter: QuickBooksAdapter | XeroAdapter): void {
+  registerAdapter(
+    provider: AccountingProvider,
+    adapter: QuickBooksAdapter | XeroAdapter,
+  ): void {
     this.adapters.set(provider, adapter);
   }
 
   /**
    * Get adapter for provider
    */
-  private getAdapter(provider: AccountingProvider): QuickBooksAdapter | XeroAdapter {
+  private getAdapter(
+    provider: AccountingProvider,
+  ): QuickBooksAdapter | XeroAdapter {
     const adapter = this.adapters.get(provider);
     if (!adapter) {
       throw new Error(`No adapter registered for provider: ${provider}`);
@@ -83,33 +89,46 @@ export class AccountingSyncService {
   /**
    * Sync invoice with accounting provider
    */
-  async syncInvoice(invoice: Invoice, provider: AccountingProvider, options: SyncOptions = {}): Promise<SyncRecord> {
+  async syncInvoice(
+    invoice: Invoice,
+    provider: AccountingProvider,
+    options: SyncOptions = {},
+  ): Promise<SyncRecord> {
     const { force = false, autoRetry = true, maxRetries = 3 } = options;
 
     // Get active connection for tenant
-    const connection = await this.getActiveConnection(invoice.tenantId, provider);
+    const connection = await this.getActiveConnection(
+      invoice.tenantId,
+      provider,
+    );
     if (!connection) {
-      throw new Error(`No active accounting connection for tenant ${invoice.tenantId}`);
+      throw new Error(
+        `No active accounting connection for tenant ${invoice.tenantId}`,
+      );
     }
 
     // Check if already synced recently
     const existingSync = await this.getSyncRecord(invoice.id, provider);
-    if (!force && existingSync && existingSync.syncStatus === 'synced') {
+    if (!force && existingSync && existingSync.syncStatus === "synced") {
       const oneHourAgo = new Date(Date.now() - 3600000);
       if (existingSync.syncedAt && existingSync.syncedAt > oneHourAgo) {
-        console.log(`[Sync] Invoice ${invoice.id} already synced recently, skipping`);
+        console.log(
+          `[Sync] Invoice ${invoice.id} already synced recently, skipping`,
+        );
         return existingSync;
       }
     }
 
     // Create or update sync record
-    let syncRecord = await this.getSyncRecord(invoice.id, provider) || (await this.createSyncRecord(
-      invoice.tenantId,
-      connection.id,
-      provider,
-      invoice.id,
-      'create',
-    ));
+    let syncRecord =
+      (await this.getSyncRecord(invoice.id, provider)) ||
+      (await this.createSyncRecord(
+        invoice.tenantId,
+        connection.id,
+        provider,
+        invoice.id,
+        "create",
+      ));
 
     try {
       // Get adapter and sync
@@ -118,7 +137,7 @@ export class AccountingSyncService {
 
       // Update sync record with success
       syncRecord = await this.updateSyncRecord(syncRecord.id, {
-        syncStatus: 'synced',
+        syncStatus: "synced",
         externalId: result.externalId,
         errorMessage: undefined,
         errorDetails: undefined,
@@ -131,15 +150,16 @@ export class AccountingSyncService {
 
       return syncRecord;
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      const errorMsg = error instanceof Error ? error.message : "Unknown error";
       const retryCount = syncRecord.metadata?.retryCount ?? 0;
 
       // Determine if retryable
-      const isRetryable = (error as any)?.retryable !== false && retryCount < maxRetries;
+      const isRetryable =
+        (error as any)?.retryable !== false && retryCount < maxRetries;
 
       // Update sync record with failure
       syncRecord = await this.updateSyncRecord(syncRecord.id, {
-        syncStatus: isRetryable ? 'pending' : 'failed',
+        syncStatus: isRetryable ? "pending" : "failed",
         errorMessage: errorMsg,
         errorDetails: {
           code: (error as any)?.code,
@@ -155,11 +175,20 @@ export class AccountingSyncService {
 
       // Retry if enabled and retryable
       if (autoRetry && isRetryable && retryCount < maxRetries) {
-        const delayMs = (options.retryDelayMs ?? 5000) * Math.pow(2, retryCount); // Exponential backoff
-        console.log(`[Sync] Retrying invoice ${invoice.id} in ${delayMs}ms (attempt ${retryCount + 1}/${maxRetries})`);
+        const delayMs =
+          (options.retryDelayMs ?? 5000) * Math.pow(2, retryCount); // Exponential backoff
+        console.log(
+          `[Sync] Retrying invoice ${invoice.id} in ${delayMs}ms (attempt ${retryCount + 1}/${maxRetries})`,
+        );
         setTimeout(() => {
-          this.syncInvoice(invoice, provider, { ...options, autoRetry: false }).catch(err => {
-            console.error(`[Sync] Async retry failed for invoice ${invoice.id}:`, err);
+          this.syncInvoice(invoice, provider, {
+            ...options,
+            autoRetry: false,
+          }).catch((err) => {
+            console.error(
+              `[Sync] Async retry failed for invoice ${invoice.id}:`,
+              err,
+            );
           });
         }, delayMs);
       }
@@ -176,25 +205,32 @@ export class AccountingSyncService {
     payment: PaymentRecord,
     provider: AccountingProvider,
   ): Promise<SyncRecord> {
-    const connection = await this.getActiveConnection(invoice.tenantId, provider);
+    const connection = await this.getActiveConnection(
+      invoice.tenantId,
+      provider,
+    );
     if (!connection) {
-      throw new Error(`No active accounting connection for tenant ${invoice.tenantId}`);
+      throw new Error(
+        `No active accounting connection for tenant ${invoice.tenantId}`,
+      );
     }
 
-    let syncRecord = await this.getSyncRecord(invoice.id, provider, 'sync_payment') || (await this.createSyncRecord(
-      invoice.tenantId,
-      connection.id,
-      provider,
-      invoice.id,
-      'sync_payment',
-    ));
+    let syncRecord =
+      (await this.getSyncRecord(invoice.id, provider, "sync_payment")) ||
+      (await this.createSyncRecord(
+        invoice.tenantId,
+        connection.id,
+        provider,
+        invoice.id,
+        "sync_payment",
+      ));
 
     try {
       const adapter = this.getAdapter(provider);
       const result = await adapter.syncPayment(invoice, payment, connection);
 
       syncRecord = await this.updateSyncRecord(syncRecord.id, {
-        syncStatus: 'synced',
+        syncStatus: "synced",
         externalId: result.externalId,
         syncedAt: new Date(),
       });
@@ -202,8 +238,8 @@ export class AccountingSyncService {
       return syncRecord;
     } catch (error) {
       syncRecord = await this.updateSyncRecord(syncRecord.id, {
-        syncStatus: 'failed',
-        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        syncStatus: "failed",
+        errorMessage: error instanceof Error ? error.message : "Unknown error",
       });
 
       throw error;
@@ -226,7 +262,9 @@ export class AccountingSyncService {
     // INTEGRATION: Query accounting provider for invoices in date range
     // Compare with local sync records and identify discrepancies
 
-    const syncRecords = await (this.prisma.accountingSyncRecord as any).findMany({
+    const syncRecords = await (
+      this.prisma.accountingSyncRecord as any
+    ).findMany({
       where: {
         tenantId,
         provider,
@@ -239,14 +277,24 @@ export class AccountingSyncService {
 
     const result: ReconciliationResult = {
       totalInvoices: syncRecords.length,
-      syncedInvoices: syncRecords.filter((r: { syncStatus: string }) => r.syncStatus === 'synced').length,
-      failedSyncs: syncRecords.filter((r: { syncStatus: string }) => r.syncStatus === 'failed').length,
+      syncedInvoices: syncRecords.filter(
+        (r: { syncStatus: string }) => r.syncStatus === "synced",
+      ).length,
+      failedSyncs: syncRecords.filter(
+        (r: { syncStatus: string }) => r.syncStatus === "failed",
+      ).length,
       reconciliationDate: new Date(),
-      details: syncRecords.map((record: { invoiceId: string; syncStatus: string; errorMessage?: string }) => ({
-        invoiceId: record.invoiceId,
-        status: record.syncStatus as 'synced' | 'failed' | 'pending',
-        errorMessage: record.errorMessage,
-      })),
+      details: syncRecords.map(
+        (record: {
+          invoiceId: string;
+          syncStatus: string;
+          errorMessage?: string;
+        }) => ({
+          invoiceId: record.invoiceId,
+          status: record.syncStatus as "synced" | "failed" | "pending",
+          errorMessage: record.errorMessage,
+        }),
+      ),
     };
 
     return result;
@@ -255,45 +303,55 @@ export class AccountingSyncService {
   /**
    * Get sync status for an invoice
    */
-  async getSyncStatus(invoiceId: string, provider?: AccountingProvider): Promise<AccountingSyncStatus[]> {
+  async getSyncStatus(
+    invoiceId: string,
+    provider?: AccountingProvider,
+  ): Promise<AccountingSyncStatus[]> {
     const where = { invoiceId } as any;
     if (provider) {
       where.provider = provider;
     }
 
-    const syncRecords = await (this.prisma.accountingSyncRecord as any).findMany({
+    const syncRecords = await (
+      this.prisma.accountingSyncRecord as any
+    ).findMany({
       where,
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
-    return syncRecords.map((record: {
-      invoiceId: string;
-      externalId?: string;
-      provider: AccountingProvider;
-      syncStatus: string;
-      syncedAt?: Date;
-      metadata?: { lastRetryAt?: Date; retryCount?: number };
-      errorMessage?: string;
-    }) => ({
-      invoiceId: record.invoiceId,
-      externalId: record.externalId,
-      provider: record.provider,
-      status: record.syncStatus as AccountingSyncStatus['status'],
-      lastSyncAt: record.syncedAt,
-      nextRetryAt: record.metadata?.lastRetryAt
-        ? new Date(record.metadata.lastRetryAt.getTime() + 5000)
-        : undefined,
-      retryCount: record.metadata?.retryCount ?? 0,
-      errorMessage: record.errorMessage,
-    }));
+    return syncRecords.map(
+      (record: {
+        invoiceId: string;
+        externalId?: string;
+        provider: AccountingProvider;
+        syncStatus: string;
+        syncedAt?: Date;
+        metadata?: { lastRetryAt?: Date; retryCount?: number };
+        errorMessage?: string;
+      }) => ({
+        invoiceId: record.invoiceId,
+        externalId: record.externalId,
+        provider: record.provider,
+        status: record.syncStatus as AccountingSyncStatus["status"],
+        lastSyncAt: record.syncedAt,
+        nextRetryAt: record.metadata?.lastRetryAt
+          ? new Date(record.metadata.lastRetryAt.getTime() + 5000)
+          : undefined,
+        retryCount: record.metadata?.retryCount ?? 0,
+        errorMessage: record.errorMessage,
+      }),
+    );
   }
 
   /**
    * Retry failed sync operations
    */
-  async retryFailedSync(invoiceId: string, provider: AccountingProvider): Promise<SyncRecord> {
+  async retryFailedSync(
+    invoiceId: string,
+    provider: AccountingProvider,
+  ): Promise<SyncRecord> {
     const syncRecord = await this.getSyncRecord(invoiceId, provider);
-    if (!syncRecord || syncRecord.syncStatus !== 'failed') {
+    if (!syncRecord || syncRecord.syncStatus !== "failed") {
       throw new Error(`No failed sync found for invoice ${invoiceId}`);
     }
 
@@ -318,14 +376,17 @@ export class AccountingSyncService {
   /**
    * Get active connection for tenant and provider
    */
-  private async getActiveConnection(tenantId: string, provider: AccountingProvider): Promise<AccountingConnection | null> {
+  private async getActiveConnection(
+    tenantId: string,
+    provider: AccountingProvider,
+  ): Promise<AccountingConnection | null> {
     return (this.prisma.accountingConnection as any).findFirst({
       where: {
         tenantId,
         provider,
         isActive: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -335,7 +396,7 @@ export class AccountingSyncService {
   private async getSyncRecord(
     invoiceId: string,
     provider: AccountingProvider,
-    syncType?: 'create' | 'update' | 'sync_payment',
+    syncType?: "create" | "update" | "sync_payment",
   ): Promise<SyncRecord | null> {
     const where = { invoiceId, provider } as any;
     if (syncType) {
@@ -344,7 +405,7 @@ export class AccountingSyncService {
 
     return (this.prisma.accountingSyncRecord as any).findFirst({
       where,
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -356,7 +417,7 @@ export class AccountingSyncService {
     connectionId: string,
     provider: AccountingProvider,
     invoiceId: string,
-    syncType: 'create' | 'update' | 'sync_payment',
+    syncType: "create" | "update" | "sync_payment",
   ): Promise<SyncRecord> {
     return (this.prisma.accountingSyncRecord as any).create({
       data: {
@@ -365,7 +426,7 @@ export class AccountingSyncService {
         provider,
         invoiceId,
         syncType,
-        syncStatus: 'pending',
+        syncStatus: "pending",
         metadata: {
           queuedAt: new Date(),
           retryCount: 0,
@@ -377,7 +438,10 @@ export class AccountingSyncService {
   /**
    * Update sync record
    */
-  private async updateSyncRecord(id: string, data: Partial<SyncRecord>): Promise<SyncRecord> {
+  private async updateSyncRecord(
+    id: string,
+    data: Partial<SyncRecord>,
+  ): Promise<SyncRecord> {
     return (this.prisma.accountingSyncRecord as any).update({
       where: { id },
       data: {

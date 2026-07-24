@@ -47,7 +47,8 @@ describe("HandlebarsCompiler", () => {
   });
 
   it("should skip conditionals with falsy values", () => {
-    const template = "{{#if premium}}Premium member{{else}}Standard member{{/if}}";
+    const template =
+      "{{#if premium}}Premium member{{else}}Standard member{{/if}}";
     const variables = { premium: false };
     const result = HandlebarsCompiler.compile(template, variables);
     expect(result).toBe("");
@@ -72,7 +73,8 @@ describe("HandlebarsCompiler", () => {
   });
 
   it("should provide @first flag in loops", () => {
-    const template = "{{#each items}}{{#if @first}}FIRST: {{/if}}{{.}} {{/each}}";
+    const template =
+      "{{#each items}}{{#if @first}}FIRST: {{/if}}{{.}} {{/each}}";
     const variables = { items: ["A", "B", "C"] };
     const result = HandlebarsCompiler.compile(template, variables);
     expect(result).toContain("FIRST: A");
@@ -80,7 +82,8 @@ describe("HandlebarsCompiler", () => {
   });
 
   it("should provide @last flag in loops", () => {
-    const template = "{{#each items}}{{.}}{{#if @last}} (LAST){{/if}} {{/each}}";
+    const template =
+      "{{#each items}}{{.}}{{#if @last}} (LAST){{/if}} {{/each}}";
     const variables = { items: ["A", "B", "C"] };
     const result = HandlebarsCompiler.compile(template, variables);
     expect(result).toContain("C (LAST)");
@@ -163,7 +166,10 @@ describe("ChannelFormatter", () => {
 
   it("should strip HTML from WhatsApp messages", () => {
     const content = "<em>Italic</em> message";
-    const result = ChannelFormatter.format(content, NotificationChannel.WHATSAPP);
+    const result = ChannelFormatter.format(
+      content,
+      NotificationChannel.WHATSAPP,
+    );
     expect(result).toBe("Italic message");
   });
 
@@ -484,7 +490,9 @@ describe("TemplateValidator", () => {
       updatedAt: new Date(),
     };
 
-    const errors = TemplateValidator.validateVariables(template, { orderId: "123" });
+    const errors = TemplateValidator.validateVariables(template, {
+      orderId: "123",
+    });
     expect(errors).toContain("Missing required variable: customerName");
   });
 
@@ -595,7 +603,11 @@ describe("TemplateLocalizer", () => {
     await localizer.registerLocale("t1", "en", enTemplate);
     await localizer.registerLocale("t1", "es", esTemplate);
 
-    const retrieved = await localizer.getLocalizedTemplate("t1", "es", enTemplate);
+    const retrieved = await localizer.getLocalizedTemplate(
+      "t1",
+      "es",
+      enTemplate,
+    );
     expect(retrieved.channels[0].body).toBe("Hola");
   });
 
@@ -633,7 +645,11 @@ describe("TemplateLocalizer", () => {
     await localizer.registerLocale("t1", "fr", frTemplate);
 
     // Request for Spanish (not registered) should fallback
-    const retrieved = await localizer.getLocalizedTemplate("t1", "es", enTemplate);
+    const retrieved = await localizer.getLocalizedTemplate(
+      "t1",
+      "es",
+      enTemplate,
+    );
     expect(retrieved.channels[0].body).toBe("Hello");
   });
 });
@@ -665,7 +681,9 @@ describe("TemplatePreview", () => {
       updatedAt: new Date(),
     };
 
-    const preview = TemplatePreview.generatePreview(template, { orderId: "12345" });
+    const preview = TemplatePreview.generatePreview(template, {
+      orderId: "12345",
+    });
 
     expect(preview[NotificationChannel.EMAIL]).toContain("12345");
     expect(preview[NotificationChannel.SMS]).toContain("12345");

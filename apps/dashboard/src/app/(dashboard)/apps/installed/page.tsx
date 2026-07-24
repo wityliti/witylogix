@@ -1,28 +1,28 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useState } from 'react';
-import { api } from '@/lib/api';
-import { Header } from '@/components/layout/header';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { useCallback, useEffect, useState } from "react";
+import { api } from "@/lib/api";
+import { Header } from "@/components/layout/header";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
   CardContent,
-} from '@/components/ui/card';
-import { TableSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { EmptyState } from '@/components/ui/empty-state';
-import { Package, Trash2, ExternalLink } from 'lucide-react';
+} from "@/components/ui/card";
+import { TableSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Package, Trash2, ExternalLink } from "lucide-react";
 
 interface InstalledApp {
   id: string;
   oauthClientId: string;
   orgId: string;
   shopId: string | null;
-  status: 'ACTIVE' | 'REVOKED';
+  status: "ACTIVE" | "REVOKED";
   scopes: string[];
   installedAt: string;
   revokedAt: string | null;
@@ -51,7 +51,9 @@ export default function InstalledAppsPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await api.get<InstallationsResponse>('/api/v4/oauth/installations');
+      const res = await api.get<InstallationsResponse>(
+        "/api/v4/oauth/installations",
+      );
       setInstallations(res.installations ?? []);
     } catch (err) {
       setError(err instanceof Error ? err : new Error(String(err)));
@@ -71,7 +73,9 @@ export default function InstalledAppsPage() {
       setRevokeError(null);
       await fetchInstallations();
     } catch (err) {
-      setRevokeError(err instanceof Error ? err.message : 'Failed to uninstall app');
+      setRevokeError(
+        err instanceof Error ? err.message : "Failed to uninstall app",
+      );
     } finally {
       setRevokingId(null);
     }
@@ -86,7 +90,9 @@ export default function InstalledAppsPage() {
 
       <div className="p-6 space-y-6">
         {loading && <TableSkeleton rows={3} />}
-        {error && <ErrorState message={error.message} onRetry={fetchInstallations} />}
+        {error && (
+          <ErrorState message={error.message} onRetry={fetchInstallations} />
+        )}
         {revokeError && (
           <div className="p-3 rounded-lg bg-red-900/20 border border-red-500/50 text-red-400 text-sm">
             {revokeError}
@@ -148,23 +154,31 @@ export default function InstalledAppsPage() {
                 <CardContent className="space-y-3">
                   <div className="flex flex-wrap gap-1.5">
                     {installation.scopes.map((scope) => (
-                      <Badge key={scope} variant="default" className="font-mono text-[11px]">
+                      <Badge
+                        key={scope}
+                        variant="default"
+                        className="font-mono text-[11px]"
+                      >
                         {scope}
                       </Badge>
                     ))}
                   </div>
                   <div className="text-xs text-wl-text-tertiary">
-                    Installed{' '}
-                    {new Date(installation.installedAt).toLocaleDateString(undefined, {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                    })}
+                    Installed{" "}
+                    {new Date(installation.installedAt).toLocaleDateString(
+                      undefined,
+                      {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      },
+                    )}
                   </div>
                   {confirmRevokeId === installation.id ? (
                     <div className="space-y-2">
                       <p className="text-xs text-wl-text-secondary">
-                        Uninstall <strong>{client.name}</strong>? Access tokens will be revoked and webhooks will stop.
+                        Uninstall <strong>{client.name}</strong>? Access tokens
+                        will be revoked and webhooks will stop.
                       </p>
                       <div className="flex gap-2">
                         <Button
@@ -180,9 +194,12 @@ export default function InstalledAppsPage() {
                           size="sm"
                           className="flex-1"
                           disabled={isRevoking}
-                          onClick={() => { setConfirmRevokeId(null); handleRevoke(installation); }}
+                          onClick={() => {
+                            setConfirmRevokeId(null);
+                            handleRevoke(installation);
+                          }}
                         >
-                          {isRevoking ? 'Uninstalling…' : 'Confirm'}
+                          {isRevoking ? "Uninstalling…" : "Confirm"}
                         </Button>
                       </div>
                     </div>

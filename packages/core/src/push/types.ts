@@ -2,7 +2,7 @@
 
 /**
  * Push Notification Provider Types and Interfaces
- * 
+ *
  * Defines contracts for push notification implementations.
  * Supports Firebase Cloud Messaging (FCM) and Expo Push Notifications.
  */
@@ -60,7 +60,10 @@ export interface PushProvider {
   /**
    * Send push notification to multiple devices (batched)
    */
-  sendMulticast(tokens: string[], payload: PushPayload): Promise<MulticastPushResult>;
+  sendMulticast(
+    tokens: string[],
+    payload: PushPayload,
+  ): Promise<MulticastPushResult>;
 
   /**
    * Subscribe a device token to a topic
@@ -90,7 +93,7 @@ export interface TenantPushConfig {
 }
 
 export interface DeployerPushConfig {
-  defaultProvider: 'fcm' | 'expo' | 'none';
+  defaultProvider: "fcm" | "expo" | "none";
   fcm?: {
     projectId: string;
     clientEmail: string;

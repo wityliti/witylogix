@@ -3,25 +3,25 @@
  */
 
 export type ShipmentStatus =
-  | 'PENDING'
-  | 'PROCESSING'
-  | 'READY_FOR_PICKUP'
-  | 'PICKED_UP'
-  | 'IN_TRANSIT'
-  | 'OUT_FOR_DELIVERY'
-  | 'ARRIVED'
-  | 'DELIVERED'
-  | 'FAILED'
-  | 'FAILED_ATTEMPT'
-  | 'RETURNED'
-  | 'CANCELLED';
+  | "PENDING"
+  | "PROCESSING"
+  | "READY_FOR_PICKUP"
+  | "PICKED_UP"
+  | "IN_TRANSIT"
+  | "OUT_FOR_DELIVERY"
+  | "ARRIVED"
+  | "DELIVERED"
+  | "FAILED"
+  | "FAILED_ATTEMPT"
+  | "RETURNED"
+  | "CANCELLED";
 
 export type DeliveryMethod =
-  | 'LOCAL_DELIVERY'
-  | 'STORE_PICKUP'
-  | 'STANDARD_SHIPPING'
-  | 'EXPRESS_SHIPPING'
-  | 'SAME_DAY';
+  | "LOCAL_DELIVERY"
+  | "STORE_PICKUP"
+  | "STANDARD_SHIPPING"
+  | "EXPRESS_SHIPPING"
+  | "SAME_DAY";
 
 /**
  * Lightweight shipment shape used by the list and map views.
@@ -60,27 +60,27 @@ export interface Shipment {
 }
 
 export type ShipmentBadgeVariant =
-  | 'success'
-  | 'warning'
-  | 'danger'
-  | 'info'
-  | 'primary'
-  | 'default';
+  | "success"
+  | "warning"
+  | "danger"
+  | "info"
+  | "primary"
+  | "default";
 
 export function statusVariant(s: string): ShipmentBadgeVariant {
   const map: Record<string, ShipmentBadgeVariant> = {
-    DELIVERED: 'success',
-    ARRIVED: 'success',
-    OUT_FOR_DELIVERY: 'primary',
-    IN_TRANSIT: 'primary',
-    PICKED_UP: 'primary',
-    PROCESSING: 'info',
-    READY_FOR_PICKUP: 'info',
-    PENDING: 'warning',
-    FAILED: 'danger',
-    FAILED_ATTEMPT: 'danger',
-    RETURNED: 'danger',
-    CANCELLED: 'default',
+    DELIVERED: "success",
+    ARRIVED: "success",
+    OUT_FOR_DELIVERY: "primary",
+    IN_TRANSIT: "primary",
+    PICKED_UP: "primary",
+    PROCESSING: "info",
+    READY_FOR_PICKUP: "info",
+    PENDING: "warning",
+    FAILED: "danger",
+    FAILED_ATTEMPT: "danger",
+    RETURNED: "danger",
+    CANCELLED: "default",
   };
-  return map[s] ?? 'default';
+  return map[s] ?? "default";
 }

@@ -9,10 +9,14 @@
  * - History tracking
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { ModelRetrainer, type TrainingDataPoint, type ModelPerformanceMetrics } from '../model-retrainer';
+import { describe, it, expect, beforeEach } from "vitest";
+import {
+  ModelRetrainer,
+  type TrainingDataPoint,
+  type ModelPerformanceMetrics,
+} from "../model-retrainer";
 
-describe('ModelRetrainer', () => {
+describe("ModelRetrainer", () => {
   let retrainer: ModelRetrainer;
 
   beforeEach(() => {
@@ -30,9 +34,9 @@ describe('ModelRetrainer', () => {
     });
   });
 
-  describe('Degradation Detection', () => {
-    it('should detect accuracy degradation', () => {
-      const zone = 'zone-1';
+  describe("Degradation Detection", () => {
+    it("should detect accuracy degradation", () => {
+      const zone = "zone-1";
 
       // Record baseline accuracy
       retrainer.recordAccuracy(zone, 10.0); // 10% MAPE
@@ -54,8 +58,8 @@ describe('ModelRetrainer', () => {
       expect(shouldRetrain).toBe(true);
     });
 
-    it('should not trigger retrain for minor changes', () => {
-      const zone = 'zone-2';
+    it("should not trigger retrain for minor changes", () => {
+      const zone = "zone-2";
 
       // Record baseline
       retrainer.recordAccuracy(zone, 10.0);
@@ -76,8 +80,8 @@ describe('ModelRetrainer', () => {
       expect(shouldRetrain).toBe(false);
     });
 
-    it('should trigger retrain if accuracy below minimum score', () => {
-      const zone = 'zone-3';
+    it("should trigger retrain if accuracy below minimum score", () => {
+      const zone = "zone-3";
 
       retrainer.recordAccuracy(zone, 10.0);
 
@@ -86,7 +90,7 @@ describe('ModelRetrainer', () => {
         rmse: 12.0,
         mape: 18.0, // Above min of 15%
         r2Score: 0.75,
-        precision: 0.80,
+        precision: 0.8,
         recall: 0.78,
       };
 
@@ -95,8 +99,8 @@ describe('ModelRetrainer', () => {
       expect(shouldRetrain).toBe(true);
     });
 
-    it('should return false for zone without baseline', () => {
-      const zone = 'new-zone';
+    it("should return false for zone without baseline", () => {
+      const zone = "new-zone";
 
       const currentMetrics: ModelPerformanceMetrics = {
         mae: 8.0,
@@ -113,50 +117,50 @@ describe('ModelRetrainer', () => {
     });
   });
 
-  describe('Scheduling', () => {
-    it('should schedule retrain for new zones', () => {
-      const zone = 'new-zone-schedule';
+  describe("Scheduling", () => {
+    it("should schedule retrain for new zones", () => {
+      const zone = "new-zone-schedule";
 
       const isScheduled = retrainer.isScheduledForRetraining(zone);
 
       expect(isScheduled).toBe(true);
     });
 
-    it('should respect retrain interval', () => {
-      const zone = 'zone-schedule-2';
+    it("should respect retrain interval", () => {
+      const zone = "zone-schedule-2";
 
       // Simulate previous retraining
-      retrainer['lastRetrainingTime'].set(zone, new Date());
+      retrainer["lastRetrainingTime"].set(zone, new Date());
 
       const isScheduled = retrainer.isScheduledForRetraining(zone);
 
       expect(isScheduled).toBe(false); // Too soon
     });
 
-    it('should schedule after interval passed', () => {
-      const zone = 'zone-schedule-3';
+    it("should schedule after interval passed", () => {
+      const zone = "zone-schedule-3";
 
       // Set last retrain to far past
       const oldDate = new Date(Date.now() - 200 * 60 * 60 * 1000);
-      retrainer['lastRetrainingTime'].set(zone, oldDate);
+      retrainer["lastRetrainingTime"].set(zone, oldDate);
 
       const isScheduled = retrainer.isScheduledForRetraining(zone);
 
       expect(isScheduled).toBe(true);
     });
 
-    it('should respect autoRetrain config', () => {
+    it("should respect autoRetrain config", () => {
       const noAutoRetrainer = new ModelRetrainer({ autoRetrain: false });
 
-      const isScheduled = noAutoRetrainer.isScheduledForRetraining('any-zone');
+      const isScheduled = noAutoRetrainer.isScheduledForRetraining("any-zone");
 
       expect(isScheduled).toBe(false);
     });
   });
 
-  describe('Data Collection', () => {
-    it('should collect training data points', () => {
-      const zone = 'zone-data-1';
+  describe("Data Collection", () => {
+    it("should collect training data points", () => {
+      const zone = "zone-data-1";
 
       const data = retrainer.collectTrainingData(zone, 30);
 
@@ -165,15 +169,15 @@ describe('ModelRetrainer', () => {
 
       // Check data structure
       if (data.length > 0) {
-        expect(data[0]).toHaveProperty('timestamp');
-        expect(data[0]).toHaveProperty('zoneId');
-        expect(data[0]).toHaveProperty('features');
-        expect(data[0]).toHaveProperty('actualVolume');
+        expect(data[0]).toHaveProperty("timestamp");
+        expect(data[0]).toHaveProperty("zoneId");
+        expect(data[0]).toHaveProperty("features");
+        expect(data[0]).toHaveProperty("actualVolume");
       }
     });
 
-    it('should respect maxDataDays config', () => {
-      const zone = 'zone-data-2';
+    it("should respect maxDataDays config", () => {
+      const zone = "zone-data-2";
 
       const data = retrainer.collectTrainingData(zone);
 
@@ -182,43 +186,43 @@ describe('ModelRetrainer', () => {
       expect(data.every((d) => d.timestamp >= maxDaysAgo)).toBe(true);
     });
 
-    it('should return sufficient training data', () => {
-      const zone = 'zone-data-3';
+    it("should return sufficient training data", () => {
+      const zone = "zone-data-3";
 
       const data = retrainer.collectTrainingData(zone);
 
       expect(data.length).toBeGreaterThanOrEqual(100);
     });
 
-    it('should include feature engineering', () => {
-      const zone = 'zone-data-4';
+    it("should include feature engineering", () => {
+      const zone = "zone-data-4";
 
       const data = retrainer.collectTrainingData(zone, 14);
 
       if (data.length > 0) {
         const features = data[0].features;
-        expect(features).toHaveProperty('hour');
-        expect(features).toHaveProperty('dayOfWeek');
-        expect(features).toHaveProperty('isWeekend');
+        expect(features).toHaveProperty("hour");
+        expect(features).toHaveProperty("dayOfWeek");
+        expect(features).toHaveProperty("isWeekend");
       }
     });
   });
 
-  describe('Model Retraining', () => {
-    it('should retrain model with training data', async () => {
-      const zone = 'zone-retrain-1';
+  describe("Model Retraining", () => {
+    it("should retrain model with training data", async () => {
+      const zone = "zone-retrain-1";
       const data = retrainer.collectTrainingData(zone, 30);
 
-      const job = await retrainer.retrain(zone, 'seasonal', data, 'manual');
+      const job = await retrainer.retrain(zone, "seasonal", data, "manual");
 
-      expect(job.status).toBe('completed');
+      expect(job.status).toBe("completed");
       expect(job.zoneId).toBe(zone);
-      expect(job.modelType).toBe('seasonal');
+      expect(job.modelType).toBe("seasonal");
       expect(job.newMetrics).toBeDefined();
     });
 
-    it('should reject insufficient training data', async () => {
-      const zone = 'zone-retrain-2';
+    it("should reject insufficient training data", async () => {
+      const zone = "zone-retrain-2";
       const insufficientData: TrainingDataPoint[] = [
         {
           timestamp: new Date(),
@@ -229,27 +233,34 @@ describe('ModelRetrainer', () => {
       ];
 
       try {
-        await retrainer.retrain(zone, 'regression', insufficientData, 'manual');
-        expect.fail('Should have thrown error');
+        await retrainer.retrain(zone, "regression", insufficientData, "manual");
+        expect.fail("Should have thrown error");
       } catch (error) {
-        expect((error as Error).message).toContain('Insufficient training data');
+        expect((error as Error).message).toContain(
+          "Insufficient training data",
+        );
       }
     });
 
-    it('should record retraining reason', async () => {
-      const zone = 'zone-retrain-3';
+    it("should record retraining reason", async () => {
+      const zone = "zone-retrain-3";
       const data = retrainer.collectTrainingData(zone, 30);
 
-      const job = await retrainer.retrain(zone, 'pattern', data, 'degradation_detected');
+      const job = await retrainer.retrain(
+        zone,
+        "pattern",
+        data,
+        "degradation_detected",
+      );
 
-      expect(job.reason).toBe('degradation_detected');
+      expect(job.reason).toBe("degradation_detected");
     });
 
-    it('should handle retraining completion', async () => {
-      const zone = 'zone-retrain-4';
+    it("should handle retraining completion", async () => {
+      const zone = "zone-retrain-4";
       const data = retrainer.collectTrainingData(zone, 30);
 
-      const job = await retrainer.retrain(zone, 'ensemble', data);
+      const job = await retrainer.retrain(zone, "ensemble", data);
 
       expect(job.completedAt).toBeDefined();
       expect(job.oldMetrics).toBeDefined();
@@ -258,8 +269,8 @@ describe('ModelRetrainer', () => {
     });
   });
 
-  describe('Model Validation', () => {
-    it('should validate retrained model improvement', () => {
+  describe("Model Validation", () => {
+    it("should validate retrained model improvement", () => {
       const oldMetrics: ModelPerformanceMetrics = {
         mae: 8.0,
         rmse: 10.0,
@@ -278,13 +289,17 @@ describe('ModelRetrainer', () => {
         recall: 0.87,
       };
 
-      const validation = retrainer.validateRetrained('zone-1', oldMetrics, newMetrics);
+      const validation = retrainer.validateRetrained(
+        "zone-1",
+        oldMetrics,
+        newMetrics,
+      );
 
       expect(validation.isImprovement).toBe(true);
       expect(validation.improvementPercent).toBeGreaterThan(0);
     });
 
-    it('should reject minimal improvement', () => {
+    it("should reject minimal improvement", () => {
       const oldMetrics: ModelPerformanceMetrics = {
         mae: 8.0,
         rmse: 10.0,
@@ -303,13 +318,17 @@ describe('ModelRetrainer', () => {
         recall: 0.86001,
       };
 
-      const validation = retrainer.validateRetrained('zone-2', oldMetrics, newMetrics);
+      const validation = retrainer.validateRetrained(
+        "zone-2",
+        oldMetrics,
+        newMetrics,
+      );
 
       expect(validation.isImprovement).toBe(false);
       expect(validation.improvementPercent).toBeLessThan(2);
     });
 
-    it('should include recommendation', () => {
+    it("should include recommendation", () => {
       const oldMetrics: ModelPerformanceMetrics = {
         mae: 8.0,
         rmse: 10.0,
@@ -324,23 +343,27 @@ describe('ModelRetrainer', () => {
         rmse: 9.0,
         mape: 11.0,
         r2Score: 0.87,
-        precision: 0.90,
+        precision: 0.9,
         recall: 0.88,
       };
 
-      const validation = retrainer.validateRetrained('zone-3', oldMetrics, newMetrics);
+      const validation = retrainer.validateRetrained(
+        "zone-3",
+        oldMetrics,
+        newMetrics,
+      );
 
       expect(validation.recommendation).toBeDefined();
       expect(validation.recommendation.length).toBeGreaterThan(0);
     });
   });
 
-  describe('Model Promotion', () => {
-    it('should promote improved model', async () => {
-      const zone = 'zone-promote-1';
+  describe("Model Promotion", () => {
+    it("should promote improved model", async () => {
+      const zone = "zone-promote-1";
       const data = retrainer.collectTrainingData(zone, 30);
 
-      const job = await retrainer.retrain(zone, 'seasonal', data);
+      const job = await retrainer.retrain(zone, "seasonal", data);
 
       const promoted = retrainer.promoteModel(job.id);
 
@@ -351,23 +374,23 @@ describe('ModelRetrainer', () => {
       expect(activeModel!.active).toBe(true);
     });
 
-    it('should not promote degraded model', () => {
-      const jobId = 'non-existent-job';
+    it("should not promote degraded model", () => {
+      const jobId = "non-existent-job";
 
       const promoted = retrainer.promoteModel(jobId);
 
       expect(promoted).toBe(false);
     });
 
-    it('should maintain model version history', async () => {
-      const zone = 'zone-promote-2';
+    it("should maintain model version history", async () => {
+      const zone = "zone-promote-2";
       const data = retrainer.collectTrainingData(zone, 30);
 
       // Retrain multiple times
-      const job1 = await retrainer.retrain(zone, 'regression', data);
+      const job1 = await retrainer.retrain(zone, "regression", data);
       retrainer.promoteModel(job1.id);
 
-      const job2 = await retrainer.retrain(zone, 'regression', data);
+      const job2 = await retrainer.retrain(zone, "regression", data);
       retrainer.promoteModel(job2.id);
 
       const versions = retrainer.getModelVersions(zone);
@@ -376,18 +399,18 @@ describe('ModelRetrainer', () => {
       expect(versions.filter((v) => v.active).length).toBeLessThanOrEqual(1);
     });
 
-    it('should prune old versions', async () => {
+    it("should prune old versions", async () => {
       const smallRetrainer = new ModelRetrainer({
         retainPreviousVersions: 2,
         minSamplesRequired: 100,
       });
 
-      const zone = 'zone-prune';
+      const zone = "zone-prune";
       const data = smallRetrainer.collectTrainingData(zone, 30);
 
       // Create 4 versions
       for (let i = 0; i < 4; i++) {
-        const job = await smallRetrainer.retrain(zone, 'seasonal', data);
+        const job = await smallRetrainer.retrain(zone, "seasonal", data);
         smallRetrainer.promoteModel(job.id);
       }
 
@@ -397,12 +420,12 @@ describe('ModelRetrainer', () => {
     });
   });
 
-  describe('Model Version Management', () => {
-    it('should get model versions for zone', async () => {
-      const zone = 'zone-version-1';
+  describe("Model Version Management", () => {
+    it("should get model versions for zone", async () => {
+      const zone = "zone-version-1";
       const data = retrainer.collectTrainingData(zone, 30);
 
-      const job = await retrainer.retrain(zone, 'seasonal', data);
+      const job = await retrainer.retrain(zone, "seasonal", data);
       retrainer.promoteModel(job.id);
 
       const versions = retrainer.getModelVersions(zone);
@@ -411,11 +434,11 @@ describe('ModelRetrainer', () => {
       expect(versions.length).toBeGreaterThan(0);
     });
 
-    it('should get active model version', async () => {
-      const zone = 'zone-active-1';
+    it("should get active model version", async () => {
+      const zone = "zone-active-1";
       const data = retrainer.collectTrainingData(zone, 30);
 
-      const job = await retrainer.retrain(zone, 'pattern', data);
+      const job = await retrainer.retrain(zone, "pattern", data);
       retrainer.promoteModel(job.id);
 
       const activeModel = retrainer.getActiveModel(zone);
@@ -424,8 +447,8 @@ describe('ModelRetrainer', () => {
       expect(activeModel!.active).toBe(true);
     });
 
-    it('should return null for zone with no model', () => {
-      const zone = 'zone-no-model';
+    it("should return null for zone with no model", () => {
+      const zone = "zone-no-model";
 
       const activeModel = retrainer.getActiveModel(zone);
 
@@ -433,12 +456,12 @@ describe('ModelRetrainer', () => {
     });
   });
 
-  describe('History & Statistics', () => {
-    it('should track retraining history', async () => {
-      const zone = 'zone-history-1';
+  describe("History & Statistics", () => {
+    it("should track retraining history", async () => {
+      const zone = "zone-history-1";
       const data = retrainer.collectTrainingData(zone, 30);
 
-      const job = await retrainer.retrain(zone, 'seasonal', data);
+      const job = await retrainer.retrain(zone, "seasonal", data);
       retrainer.promoteModel(job.id);
 
       const history = retrainer.getRetrainingHistory(zone);
@@ -447,15 +470,15 @@ describe('ModelRetrainer', () => {
       expect(history[0].jobId).toBe(job.id);
     });
 
-    it('should filter history by zone', async () => {
-      const zone1 = 'zone-history-filter-1';
-      const zone2 = 'zone-history-filter-2';
+    it("should filter history by zone", async () => {
+      const zone1 = "zone-history-filter-1";
+      const zone2 = "zone-history-filter-2";
       const data = retrainer.collectTrainingData(zone1, 30);
 
-      const job1 = await retrainer.retrain(zone1, 'seasonal', data);
+      const job1 = await retrainer.retrain(zone1, "seasonal", data);
       retrainer.promoteModel(job1.id);
 
-      const job2 = await retrainer.retrain(zone2, 'seasonal', data);
+      const job2 = await retrainer.retrain(zone2, "seasonal", data);
       retrainer.promoteModel(job2.id);
 
       const history1 = retrainer.getRetrainingHistory(zone1);
@@ -463,11 +486,11 @@ describe('ModelRetrainer', () => {
       expect(history1.every((h) => h.zoneId === zone1)).toBe(true);
     });
 
-    it('should limit history results', async () => {
-      const zone = 'zone-history-limit';
+    it("should limit history results", async () => {
+      const zone = "zone-history-limit";
       const data = retrainer.collectTrainingData(zone, 30);
 
-      const job = await retrainer.retrain(zone, 'seasonal', data);
+      const job = await retrainer.retrain(zone, "seasonal", data);
       retrainer.promoteModel(job.id);
 
       const history = retrainer.getRetrainingHistory(zone, 5);
@@ -475,65 +498,69 @@ describe('ModelRetrainer', () => {
       expect(history.length).toBeLessThanOrEqual(5);
     });
 
-    it('should provide statistics', () => {
+    it("should provide statistics", () => {
       const stats = retrainer.getStatistics();
 
-      expect(stats).toHaveProperty('totalJobsRun');
-      expect(stats).toHaveProperty('successfulJobs');
-      expect(stats).toHaveProperty('promotedModels');
-      expect(stats).toHaveProperty('averageImprovement');
-      expect(stats).toHaveProperty('activeModes');
+      expect(stats).toHaveProperty("totalJobsRun");
+      expect(stats).toHaveProperty("successfulJobs");
+      expect(stats).toHaveProperty("promotedModels");
+      expect(stats).toHaveProperty("averageImprovement");
+      expect(stats).toHaveProperty("activeModes");
 
-      expect(typeof stats.totalJobsRun).toBe('number');
-      expect(typeof stats.promotedModels).toBe('number');
+      expect(typeof stats.totalJobsRun).toBe("number");
+      expect(typeof stats.promotedModels).toBe("number");
     });
   });
 
-  describe('Accuracy Recording', () => {
-    it('should record accuracy metrics', () => {
-      const zone = 'zone-record-1';
+  describe("Accuracy Recording", () => {
+    it("should record accuracy metrics", () => {
+      const zone = "zone-record-1";
 
       retrainer.recordAccuracy(zone, 10.0);
       retrainer.recordAccuracy(zone, 10.2);
       retrainer.recordAccuracy(zone, 10.1);
 
-      const history = retrainer['accuracyHistory'].get(zone);
+      const history = retrainer["accuracyHistory"].get(zone);
 
       expect(history).toBeDefined();
       expect(history!.length).toBeGreaterThan(0);
     });
 
-    it('should prune old accuracy records', () => {
-      const zone = 'zone-record-prune';
+    it("should prune old accuracy records", () => {
+      const zone = "zone-record-prune";
 
       // Add old record
-      const history = retrainer['accuracyHistory'].get(zone) || [];
+      const history = retrainer["accuracyHistory"].get(zone) || [];
       history.push({
         accuracy: 10.0,
         timestamp: new Date(Date.now() - 100 * 24 * 60 * 60 * 1000),
       });
 
-      retrainer['accuracyHistory'].set(zone, history);
+      retrainer["accuracyHistory"].set(zone, history);
 
       // Record new
       retrainer.recordAccuracy(zone, 10.5);
 
-      const final = retrainer['accuracyHistory'].get(zone);
+      const final = retrainer["accuracyHistory"].get(zone);
 
       // Should only keep records from last 30 days
-      expect(final!.every((r) => r.timestamp > new Date(Date.now() - 31 * 24 * 60 * 60 * 1000))).toBe(true);
+      expect(
+        final!.every(
+          (r) => r.timestamp > new Date(Date.now() - 31 * 24 * 60 * 60 * 1000),
+        ),
+      ).toBe(true);
     });
   });
 
-  describe('Event Emission', () => {
-    it('should emit degradation_detected event', () => {
+  describe("Event Emission", () => {
+    it("should emit degradation_detected event", () => {
       let degradationEmitted = false;
 
-      retrainer.on('degradation_detected', () => {
+      retrainer.on("degradation_detected", () => {
         degradationEmitted = true;
       });
 
-      const zone = 'zone-event-1';
+      const zone = "zone-event-1";
       retrainer.recordAccuracy(zone, 10.0);
 
       const metrics: ModelPerformanceMetrics = {
@@ -541,7 +568,7 @@ describe('ModelRetrainer', () => {
         rmse: 12.0,
         mape: 18.0,
         r2Score: 0.75,
-        precision: 0.80,
+        precision: 0.8,
         recall: 0.78,
       };
 
@@ -550,34 +577,34 @@ describe('ModelRetrainer', () => {
       expect(degradationEmitted).toBe(true);
     });
 
-    it('should emit retraining_completed event', async () => {
+    it("should emit retraining_completed event", async () => {
       const eventPromise = new Promise<void>((resolve) => {
-        retrainer.on('retraining_completed', (job) => {
-          expect(job.status).toBe('completed');
+        retrainer.on("retraining_completed", (job) => {
+          expect(job.status).toBe("completed");
           resolve();
         });
       });
 
-      const zone = 'zone-event-2';
+      const zone = "zone-event-2";
       const data = retrainer.collectTrainingData(zone, 30);
 
-      retrainer.retrain(zone, 'seasonal', data);
+      retrainer.retrain(zone, "seasonal", data);
 
       await eventPromise;
     });
 
-    it('should emit model_promoted event', async () => {
+    it("should emit model_promoted event", async () => {
       const eventPromise = new Promise<void>((resolve) => {
-        retrainer.on('model_promoted', (event) => {
+        retrainer.on("model_promoted", (event) => {
           expect(event.zoneId).toBeDefined();
           resolve();
         });
       });
 
-      const zone = 'zone-event-3';
+      const zone = "zone-event-3";
       const data = retrainer.collectTrainingData(zone, 30);
 
-      const job = await retrainer.retrain(zone, 'seasonal', data);
+      const job = await retrainer.retrain(zone, "seasonal", data);
       retrainer.promoteModel(job.id);
 
       await eventPromise;

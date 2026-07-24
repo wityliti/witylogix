@@ -54,7 +54,10 @@ class RateLimiter {
     const now = Date.now();
     const timePassed = (now - this.lastRefillTime) / 1000;
     this.lastRefillTime = now;
-    this.tokens = Math.min(this.maxTokens, this.tokens + timePassed * this.refillRate);
+    this.tokens = Math.min(
+      this.maxTokens,
+      this.tokens + timePassed * this.refillRate,
+    );
 
     if (this.tokens < 1) {
       const waitTime = (1 - this.tokens) / this.refillRate;
@@ -128,7 +131,11 @@ class RetryHandler {
   private readonly backoffMultiplier: number;
   private readonly initialDelayMs: number;
 
-  constructor(maxAttempts: number = 3, backoffMultiplier: number = 2, initialDelayMs: number = 100) {
+  constructor(
+    maxAttempts: number = 3,
+    backoffMultiplier: number = 2,
+    initialDelayMs: number = 100,
+  ) {
     this.maxAttempts = maxAttempts;
     this.backoffMultiplier = backoffMultiplier;
     this.initialDelayMs = initialDelayMs;
@@ -144,7 +151,8 @@ class RetryHandler {
         lastError = error instanceof Error ? error : new Error(String(error));
 
         if (attempt < this.maxAttempts - 1) {
-          const delayMs = this.initialDelayMs * Math.pow(this.backoffMultiplier, attempt);
+          const delayMs =
+            this.initialDelayMs * Math.pow(this.backoffMultiplier, attempt);
           await new Promise((resolve) => setTimeout(resolve, delayMs));
         }
       }
@@ -178,8 +186,13 @@ export abstract class HealthcareAdapter {
   constructor(config: HealthcareConfig) {
     this.config = config;
     this.rateLimiter = new RateLimiter(config.rateLimit || 10);
-    this.circuitBreaker = new CircuitBreaker(config.circuitBreakerThreshold || 5);
-    this.retryHandler = new RetryHandler(config.retryMaxAttempts || 3, config.retryBackoffMultiplier || 2);
+    this.circuitBreaker = new CircuitBreaker(
+      config.circuitBreakerThreshold || 5,
+    );
+    this.retryHandler = new RetryHandler(
+      config.retryMaxAttempts || 3,
+      config.retryBackoffMultiplier || 2,
+    );
   }
 
   // ─── FHIR CRUD Operations ───────────────────────────────────────────────
@@ -187,17 +200,27 @@ export abstract class HealthcareAdapter {
   /**
    * Create a FHIR resource.
    */
-  abstract create<T extends FHIRResource>(resourceType: string, resource: Omit<T, "id">): Promise<T>;
+  abstract create<T extends FHIRResource>(
+    resourceType: string,
+    resource: Omit<T, "id">,
+  ): Promise<T>;
 
   /**
    * Read a FHIR resource by ID.
    */
-  abstract read<T extends FHIRResource>(resourceType: string, id: string): Promise<T>;
+  abstract read<T extends FHIRResource>(
+    resourceType: string,
+    id: string,
+  ): Promise<T>;
 
   /**
    * Update a FHIR resource.
    */
-  abstract update<T extends FHIRResource>(resourceType: string, id: string, resource: Partial<T>): Promise<T>;
+  abstract update<T extends FHIRResource>(
+    resourceType: string,
+    id: string,
+    resource: Partial<T>,
+  ): Promise<T>;
 
   /**
    * Delete a FHIR resource.
@@ -209,7 +232,7 @@ export abstract class HealthcareAdapter {
    */
   abstract search<T extends FHIRResource>(
     resourceType: string,
-    params: FHIRSearchParams
+    params: FHIRSearchParams,
   ): Promise<FHIRSearchResult<T>>;
 
   // ─── Specific Resource Operations ────────────────────────────────────────
@@ -224,7 +247,10 @@ export abstract class HealthcareAdapter {
   /**
    * Get observations for a patient.
    */
-  async getObservations(patientId: string, params?: FHIRSearchParams): Promise<FHIRSearchResult<Observation>> {
+  async getObservations(
+    patientId: string,
+    params?: FHIRSearchParams,
+  ): Promise<FHIRSearchResult<Observation>> {
     return this.search<Observation>("Observation", {
       ...params,
       filters: {
@@ -237,7 +263,10 @@ export abstract class HealthcareAdapter {
   /**
    * Get encounters for a patient.
    */
-  async getEncounters(patientId: string, params?: FHIRSearchParams): Promise<FHIRSearchResult<Encounter>> {
+  async getEncounters(
+    patientId: string,
+    params?: FHIRSearchParams,
+  ): Promise<FHIRSearchResult<Encounter>> {
     return this.search<Encounter>("Encounter", {
       ...params,
       filters: {
@@ -250,7 +279,10 @@ export abstract class HealthcareAdapter {
   /**
    * Get medication requests for a patient.
    */
-  async getMedicationRequests(patientId: string, params?: FHIRSearchParams): Promise<FHIRSearchResult<MedicationRequest>> {
+  async getMedicationRequests(
+    patientId: string,
+    params?: FHIRSearchParams,
+  ): Promise<FHIRSearchResult<MedicationRequest>> {
     return this.search<MedicationRequest>("MedicationRequest", {
       ...params,
       filters: {
@@ -263,7 +295,10 @@ export abstract class HealthcareAdapter {
   /**
    * Get diagnostic reports for a patient.
    */
-  async getDiagnosticReports(patientId: string, params?: FHIRSearchParams): Promise<FHIRSearchResult<DiagnosticReport>> {
+  async getDiagnosticReports(
+    patientId: string,
+    params?: FHIRSearchParams,
+  ): Promise<FHIRSearchResult<DiagnosticReport>> {
     return this.search<DiagnosticReport>("DiagnosticReport", {
       ...params,
       filters: {
@@ -276,7 +311,10 @@ export abstract class HealthcareAdapter {
   /**
    * Get conditions (diagnoses) for a patient.
    */
-  async getConditions(patientId: string, params?: FHIRSearchParams): Promise<FHIRSearchResult<Condition>> {
+  async getConditions(
+    patientId: string,
+    params?: FHIRSearchParams,
+  ): Promise<FHIRSearchResult<Condition>> {
     return this.search<Condition>("Condition", {
       ...params,
       filters: {
@@ -289,7 +327,10 @@ export abstract class HealthcareAdapter {
   /**
    * Get allergy intolerances for a patient.
    */
-  async getAllergies(patientId: string, params?: FHIRSearchParams): Promise<FHIRSearchResult<AllergyIntolerance>> {
+  async getAllergies(
+    patientId: string,
+    params?: FHIRSearchParams,
+  ): Promise<FHIRSearchResult<AllergyIntolerance>> {
     return this.search<AllergyIntolerance>("AllergyIntolerance", {
       ...params,
       filters: {
@@ -316,12 +357,18 @@ export abstract class HealthcareAdapter {
   /**
    * Get clinical documents (CCD, discharge summaries, etc.).
    */
-  abstract getDocuments(patientId: string, params?: FHIRSearchParams): Promise<ClinicalDocument[]>;
+  abstract getDocuments(
+    patientId: string,
+    params?: FHIRSearchParams,
+  ): Promise<ClinicalDocument[]>;
 
   /**
    * Retrieve a specific clinical document.
    */
-  abstract getDocument(documentId: string, format?: "pdf" | "xml" | "json"): Promise<ClinicalDocument>;
+  abstract getDocument(
+    documentId: string,
+    format?: "pdf" | "xml" | "json",
+  ): Promise<ClinicalDocument>;
 
   // ─── Consent Management ─────────────────────────────────────────────────
 
@@ -333,7 +380,9 @@ export abstract class HealthcareAdapter {
   /**
    * Create a new consent record.
    */
-  abstract createConsent(consent: Omit<ConsentRecord, "id" | "createdAt">): Promise<ConsentRecord>;
+  abstract createConsent(
+    consent: Omit<ConsentRecord, "id" | "createdAt">,
+  ): Promise<ConsentRecord>;
 
   /**
    * Revoke a consent.
@@ -343,7 +392,10 @@ export abstract class HealthcareAdapter {
   /**
    * Check if patient has consented to a specific purpose.
    */
-  async hasConsent(patientId: string, purpose: ConsentPurpose): Promise<boolean> {
+  async hasConsent(
+    patientId: string,
+    purpose: ConsentPurpose,
+  ): Promise<boolean> {
     const consents = await this.getConsents(patientId);
     const now = new Date();
 
@@ -354,7 +406,7 @@ export abstract class HealthcareAdapter {
         c.consentType === "OPT_IN" &&
         new Date(c.validFrom) <= now &&
         (!c.validUntil || new Date(c.validUntil) >= now) &&
-        !c.revokedAt
+        !c.revokedAt,
     );
   }
 
@@ -363,12 +415,18 @@ export abstract class HealthcareAdapter {
   /**
    * Log a HIPAA audit event.
    */
-  abstract logAuditEntry(entry: Omit<AuditEntry, "id" | "timestamp">): Promise<AuditEntry>;
+  abstract logAuditEntry(
+    entry: Omit<AuditEntry, "id" | "timestamp">,
+  ): Promise<AuditEntry>;
 
   /**
    * Get audit logs for a patient.
    */
-  abstract getAuditLogs(patientId: string, startDate?: string, endDate?: string): Promise<AuditEntry[]>;
+  abstract getAuditLogs(
+    patientId: string,
+    startDate?: string,
+    endDate?: string,
+  ): Promise<AuditEntry[]>;
 
   /**
    * Protected audit logging wrapper for sensitive operations.
@@ -378,7 +436,7 @@ export abstract class HealthcareAdapter {
     resourceType: string,
     resourceId: string,
     patientId: string | undefined,
-    details: Record<string, unknown>
+    details: Record<string, unknown>,
   ): Promise<void> {
     if (!this.config.auditLogging) {
       return;
@@ -411,13 +469,15 @@ export abstract class HealthcareAdapter {
   abstract getTerminologyMapping(
     sourceSystem: CodeSystem,
     sourceCode: string,
-    targetSystem: CodeSystem
+    targetSystem: CodeSystem,
   ): Promise<TerminologyMapping | null>;
 
   /**
    * Create a terminology mapping.
    */
-  abstract createTerminologyMapping(mapping: Omit<TerminologyMapping, "createdAt">): Promise<TerminologyMapping>;
+  abstract createTerminologyMapping(
+    mapping: Omit<TerminologyMapping, "createdAt">,
+  ): Promise<TerminologyMapping>;
 
   /**
    * Translate a code between systems.
@@ -425,9 +485,13 @@ export abstract class HealthcareAdapter {
   async translateCode(
     sourceSystem: CodeSystem,
     sourceCode: string,
-    targetSystem: CodeSystem
+    targetSystem: CodeSystem,
   ): Promise<string | null> {
-    const mapping = await this.getTerminologyMapping(sourceSystem, sourceCode, targetSystem);
+    const mapping = await this.getTerminologyMapping(
+      sourceSystem,
+      sourceCode,
+      targetSystem,
+    );
     return mapping?.targetCode || null;
   }
 
@@ -458,7 +522,14 @@ export abstract class HealthcareAdapter {
   /**
    * Exchange authorization code for access token.
    */
-  abstract exchangeAuthorizationCode(code: string, codeVerifier?: string): Promise<{ accessToken: string; expiresIn: number; context?: SMARTContext }>;
+  abstract exchangeAuthorizationCode(
+    code: string,
+    codeVerifier?: string,
+  ): Promise<{
+    accessToken: string;
+    expiresIn: number;
+    context?: SMARTContext;
+  }>;
 
   /**
    * Get SMART context from access token.
@@ -494,7 +565,9 @@ export abstract class HealthcareAdapter {
   /**
    * Execute with circuit breaker protection.
    */
-  protected async executeWithCircuitBreaker<T>(fn: () => Promise<T>): Promise<T> {
+  protected async executeWithCircuitBreaker<T>(
+    fn: () => Promise<T>,
+  ): Promise<T> {
     return this.circuitBreaker.execute(fn);
   }
 

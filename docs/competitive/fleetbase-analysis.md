@@ -1,4 +1,5 @@
 # Competitive Analysis: Fleetbase
+
 ## Witylogix vs. Fleetbase Market Assessment
 
 **Document Date:** March 8, 2026
@@ -12,6 +13,7 @@
 Fleetbase is a significant competitor in the open-source last-mile delivery and logistics space. As a modular, self-hostable platform with strong developer tooling, Fleetbase occupies a similar market position to Witylogix but with distinct architectural and business model differences.
 
 **Key Findings:**
+
 - Fleetbase is well-funded, production-ready, and gaining community traction (1,762 GitHub stars, 482 forks)
 - Stronger in developer experience, extensibility, and API-first design patterns
 - Weaker in e-commerce integration (lacks native Shopify integration)
@@ -30,6 +32,7 @@ Fleetbase is a significant competitor in the open-source last-mile delivery and 
 Fleetbase is a comprehensive open-source platform for building end-to-end logistics operations from first-mile to last-mile. It's designed to be framework-agnostic—usable by logistics companies to manage operations OR by developers to build custom logistics applications.
 
 **Target Market:**
+
 - Logistics companies and delivery networks
 - Developers building custom logistics systems
 - Enterprises needing on-premise or private cloud deployments
@@ -44,6 +47,7 @@ Fleetbase is a comprehensive open-source platform for building end-to-end logist
 Witylogix is a full-stack last-mile delivery platform optimized for **Shopify-first e-commerce merchants**. Unlike Fleetbase's generic "any logistics operation" approach, Witylogix is laser-focused on solving the post-purchase fulfillment problem for online retailers.
 
 **Key Difference:**
+
 - **Fleetbase:** "Generic logistics OS that any company can use"
 - **Witylogix:** "Shopify fulfillment network designed specifically for e-commerce"
 
@@ -53,34 +57,35 @@ Witylogix is a full-stack last-mile delivery platform optimized for **Shopify-fi
 
 ### 2.1 Fleetbase Architecture
 
-| Component | Technology | Notes |
-|-----------|-----------|-------|
-| **Frontend Console** | Ember.js | Uses ember-engines for modularity |
-| **Backend API** | Laravel (PHP) | Laravel Octane, Caddy server |
-| **Database** | MySQL | Primary data store |
-| **Queue System** | Redis | Background job processing |
-| **Cache** | Redis | Performance optimization |
-| **Real-Time Comms** | SocketCluster (Node.js) | WebSocket-based pub/sub messaging |
-| **Deployment** | Docker | Docker Compose configuration provided |
-| **Container Orchestration** | Kubernetes-ready | Via official Docker images |
+| Component                   | Technology              | Notes                                 |
+| --------------------------- | ----------------------- | ------------------------------------- |
+| **Frontend Console**        | Ember.js                | Uses ember-engines for modularity     |
+| **Backend API**             | Laravel (PHP)           | Laravel Octane, Caddy server          |
+| **Database**                | MySQL                   | Primary data store                    |
+| **Queue System**            | Redis                   | Background job processing             |
+| **Cache**                   | Redis                   | Performance optimization              |
+| **Real-Time Comms**         | SocketCluster (Node.js) | WebSocket-based pub/sub messaging     |
+| **Deployment**              | Docker                  | Docker Compose configuration provided |
+| **Container Orchestration** | Kubernetes-ready        | Via official Docker images            |
 
 **Architecture Style:** Modular monolith with service-oriented plugin system
 
 ### 2.2 Witylogix: Comparison
 
-| Component | Witylogix | Notes |
-|-----------|-----------|-------|
-| **Frontend** | React, Next.js | Modern, SSR-capable |
-| **Backend API** | Node.js / TypeScript | High-performance async |
-| **Database** | PostgreSQL | Multi-tenant support |
-| **Queue System** | Bull/Redis | Scalable job processing |
-| **Cache** | Redis | Distributed caching |
-| **Real-Time** | WebSocket/Socket.io | Real-time driver tracking |
-| **Deployment** | Docker, Kubernetes | Cloud-native design |
+| Component        | Witylogix            | Notes                     |
+| ---------------- | -------------------- | ------------------------- |
+| **Frontend**     | React, Next.js       | Modern, SSR-capable       |
+| **Backend API**  | Node.js / TypeScript | High-performance async    |
+| **Database**     | PostgreSQL           | Multi-tenant support      |
+| **Queue System** | Bull/Redis           | Scalable job processing   |
+| **Cache**        | Redis                | Distributed caching       |
+| **Real-Time**    | WebSocket/Socket.io  | Real-time driver tracking |
+| **Deployment**   | Docker, Kubernetes   | Cloud-native design       |
 
 **Architecture Style:** Modern microservices-ready, API-first design
 
 **Key Differences:**
+
 - Fleetbase: PHP-based monolith (Laravel) vs. Witylogix's Node.js TypeScript
 - Fleetbase: Ember.js frontend vs. Witylogix's React/Next.js
 - Witylogix: Built for cloud-native/Kubernetes from ground up
@@ -92,18 +97,19 @@ Witylogix is a full-stack last-mile delivery platform optimized for **Shopify-fi
 
 ### 3.1 Fleetbase Open Source Profile
 
-| Metric | Value | Assessment |
-|--------|-------|-----------|
-| **Repository** | [github.com/fleetbase/fleetbase](https://github.com/fleetbase/fleetbase) | Active, well-maintained |
-| **License** | AGPL-3.0 (with commercial license available) | Copyleft, strong IP protection |
-| **Stars** | 1,762 | Moderate community interest |
-| **Forks** | 482 | Good adoption signal |
-| **Contributors** | Not publicly specified | Core team appears ~5-10 active |
-| **Release Cadence** | Regular (v0.1 through v0.5+) | Active development |
-| **Sub-Repositories** | 10+ organization repos | Well-organized ecosystem |
-| **Documentation** | Comprehensive | docs.fleetbase.io, guides.github.io |
+| Metric               | Value                                                                    | Assessment                          |
+| -------------------- | ------------------------------------------------------------------------ | ----------------------------------- |
+| **Repository**       | [github.com/fleetbase/fleetbase](https://github.com/fleetbase/fleetbase) | Active, well-maintained             |
+| **License**          | AGPL-3.0 (with commercial license available)                             | Copyleft, strong IP protection      |
+| **Stars**            | 1,762                                                                    | Moderate community interest         |
+| **Forks**            | 482                                                                      | Good adoption signal                |
+| **Contributors**     | Not publicly specified                                                   | Core team appears ~5-10 active      |
+| **Release Cadence**  | Regular (v0.1 through v0.5+)                                             | Active development                  |
+| **Sub-Repositories** | 10+ organization repos                                                   | Well-organized ecosystem            |
+| **Documentation**    | Comprehensive                                                            | docs.fleetbase.io, guides.github.io |
 
 **Key Organization Repos:**
+
 - `fleetops` - Fleet & Transport Management Extension
 - `navigator-app` - Open-source driver app (React Native)
 - `storefront-app` - E-commerce app (React Native)
@@ -114,12 +120,12 @@ Witylogix is a full-stack last-mile delivery platform optimized for **Shopify-fi
 
 ### 3.2 Witylogix: Comparison
 
-| Metric | Witylogix | Notes |
-|--------|-----------|-------|
-| **Open Source** | Yes (check status) | Private or public beta? |
-| **License** | (TBD) | Likely MIT or Apache 2.0 |
-| **Stars** | (Growing) | New entrant advantage |
-| **Community** | Building | Strong technical positioning |
+| Metric          | Witylogix          | Notes                        |
+| --------------- | ------------------ | ---------------------------- |
+| **Open Source** | Yes (check status) | Private or public beta?      |
+| **License**     | (TBD)              | Likely MIT or Apache 2.0     |
+| **Stars**       | (Growing)          | New entrant advantage        |
+| **Community**   | Building           | Strong technical positioning |
 
 **Assessment:** Witylogix has opportunity to gain faster community adoption if positioned as "Shopify-native alternative to Fleetbase."
 
@@ -129,65 +135,65 @@ Witylogix is a full-stack last-mile delivery platform optimized for **Shopify-fi
 
 ### 4.1 Core Fleet Management
 
-| Feature | Fleetbase | Witylogix | Winner |
-|---------|-----------|-----------|--------|
-| Order Management | Full (pickups, deliveries, scheduling) | Yes | Tie |
-| Driver Management | Yes | Yes | Tie |
-| Vehicle Management | Yes | Yes | Tie |
-| Real-Time Tracking | SocketCluster-based | Socket.io-based | Tie |
-| Route Optimization | Yes (dynamic, real-time) | Yes | Tie |
-| Proof of Delivery | QR, signature, photo capture | Proof of delivery support | Tie |
-| Multi-vendor Support | Yes (Networks concept) | Yes | Tie |
-| Offline Capability | Yes (can deploy offline) | Unknown | Fleetbase |
+| Feature              | Fleetbase                              | Witylogix                 | Winner    |
+| -------------------- | -------------------------------------- | ------------------------- | --------- |
+| Order Management     | Full (pickups, deliveries, scheduling) | Yes                       | Tie       |
+| Driver Management    | Yes                                    | Yes                       | Tie       |
+| Vehicle Management   | Yes                                    | Yes                       | Tie       |
+| Real-Time Tracking   | SocketCluster-based                    | Socket.io-based           | Tie       |
+| Route Optimization   | Yes (dynamic, real-time)               | Yes                       | Tie       |
+| Proof of Delivery    | QR, signature, photo capture           | Proof of delivery support | Tie       |
+| Multi-vendor Support | Yes (Networks concept)                 | Yes                       | Tie       |
+| Offline Capability   | Yes (can deploy offline)               | Unknown                   | Fleetbase |
 
 ### 4.2 E-Commerce Integration
 
-| Feature | Fleetbase | Witylogix | Winner |
-|---------|-----------|-----------|--------|
-| **Shopify Integration** | None (pre-built) | Native, Checkout Extension | **Witylogix** |
-| **WooCommerce** | Not built-in | Possible roadmap | Tie |
-| **Inventory Sync** | Pallet extension | Likely built-in | **Witylogix** |
-| **Order Sync** | REST API + webhooks | Direct integration | **Witylogix** |
-| **Product Catalog** | Generic | Shopify product sync | **Witylogix** |
-| **Payment Processing** | Via extensions | Potential | Unknown |
-| **Storefront App** | Fleetbase Storefront (React Native) | Dashboard + driver app | Different models |
+| Feature                 | Fleetbase                           | Witylogix                  | Winner           |
+| ----------------------- | ----------------------------------- | -------------------------- | ---------------- |
+| **Shopify Integration** | None (pre-built)                    | Native, Checkout Extension | **Witylogix**    |
+| **WooCommerce**         | Not built-in                        | Possible roadmap           | Tie              |
+| **Inventory Sync**      | Pallet extension                    | Likely built-in            | **Witylogix**    |
+| **Order Sync**          | REST API + webhooks                 | Direct integration         | **Witylogix**    |
+| **Product Catalog**     | Generic                             | Shopify product sync       | **Witylogix**    |
+| **Payment Processing**  | Via extensions                      | Potential                  | Unknown          |
+| **Storefront App**      | Fleetbase Storefront (React Native) | Dashboard + driver app     | Different models |
 
 ### 4.3 Developer Experience & APIs
 
-| Feature | Fleetbase | Witylogix | Notes |
-|---------|-----------|-----------|-------|
-| **REST API** | Comprehensive | Yes | Both strong |
-| **API-First Design** | Yes (core principle) | Yes | Tie |
-| **WebSocket/Real-Time** | SocketCluster | Socket.io | Both real-time capable |
-| **Webhooks** | Full event-driven system | Likely supported | Fleetbase documented |
-| **SDK Availability** | JavaScript, Python, PHP | JavaScript (npm) | Fleetbase broader |
-| **CLI Tool** | Fleetbase CLI (extension management) | Unknown | **Fleetbase** |
-| **Documentation** | Extensive (guides.github.io) | Likely strong | Fleetbase edges ahead |
-| **Extension SDK** | Ember Engine + Laravel package | Unknown | **Fleetbase** |
-| **Postman/OpenAPI** | Yes (API Reference) | Unknown | Fleetbase documented |
+| Feature                 | Fleetbase                            | Witylogix        | Notes                  |
+| ----------------------- | ------------------------------------ | ---------------- | ---------------------- |
+| **REST API**            | Comprehensive                        | Yes              | Both strong            |
+| **API-First Design**    | Yes (core principle)                 | Yes              | Tie                    |
+| **WebSocket/Real-Time** | SocketCluster                        | Socket.io        | Both real-time capable |
+| **Webhooks**            | Full event-driven system             | Likely supported | Fleetbase documented   |
+| **SDK Availability**    | JavaScript, Python, PHP              | JavaScript (npm) | Fleetbase broader      |
+| **CLI Tool**            | Fleetbase CLI (extension management) | Unknown          | **Fleetbase**          |
+| **Documentation**       | Extensive (guides.github.io)         | Likely strong    | Fleetbase edges ahead  |
+| **Extension SDK**       | Ember Engine + Laravel package       | Unknown          | **Fleetbase**          |
+| **Postman/OpenAPI**     | Yes (API Reference)                  | Unknown          | Fleetbase documented   |
 
 ### 4.4 Mobile Applications
 
-| App | Fleetbase | Witylogix | Notes |
-|-----|-----------|-----------|-------|
-| **Navigator (Driver App)** | React Native, iOS/Android | React Native, iOS/Android | Both have driver apps |
-| **Features** | Order mgmt, GPS, POD, chat, fuel reports | Driver-focused | Fleetbase more featured |
-| **Storefront App** | React Native hyperlocal app | Merchant dashboard + driver app | Different user experiences |
-| **Customization** | Whitelabel capable | Likely | Both support branding |
-| **App Stores** | Available (App Store, Play Store) | Likely available | Fleetbase published |
+| App                        | Fleetbase                                | Witylogix                       | Notes                      |
+| -------------------------- | ---------------------------------------- | ------------------------------- | -------------------------- |
+| **Navigator (Driver App)** | React Native, iOS/Android                | React Native, iOS/Android       | Both have driver apps      |
+| **Features**               | Order mgmt, GPS, POD, chat, fuel reports | Driver-focused                  | Fleetbase more featured    |
+| **Storefront App**         | React Native hyperlocal app              | Merchant dashboard + driver app | Different user experiences |
+| **Customization**          | Whitelabel capable                       | Likely                          | Both support branding      |
+| **App Stores**             | Available (App Store, Play Store)        | Likely available                | Fleetbase published        |
 
 ### 4.5 Deployment & Infrastructure
 
-| Feature | Fleetbase | Witylogix | Notes |
-|---------|-----------|-----------|-------|
-| **Self-Hosted** | Yes (on-premise) | Yes | Both support |
-| **Cloud Options** | AWS, GCP, DO | AWS, GCP, likely others | Fleetbase documented |
-| **Docker Support** | Full Docker Compose | Likely | Fleetbase packaged |
-| **Kubernetes** | Official images available | Likely | Fleetbase documented |
-| **Database Flexibility** | MySQL | PostgreSQL | Different databases |
-| **Multi-Tenancy** | Yes (built-in) | Yes (core feature) | Both multi-tenant |
-| **Offline Mode** | Yes | Unknown | **Fleetbase** |
-| **AWS Marketplace** | Available | Unknown | **Fleetbase** |
+| Feature                  | Fleetbase                 | Witylogix               | Notes                |
+| ------------------------ | ------------------------- | ----------------------- | -------------------- |
+| **Self-Hosted**          | Yes (on-premise)          | Yes                     | Both support         |
+| **Cloud Options**        | AWS, GCP, DO              | AWS, GCP, likely others | Fleetbase documented |
+| **Docker Support**       | Full Docker Compose       | Likely                  | Fleetbase packaged   |
+| **Kubernetes**           | Official images available | Likely                  | Fleetbase documented |
+| **Database Flexibility** | MySQL                     | PostgreSQL              | Different databases  |
+| **Multi-Tenancy**        | Yes (built-in)            | Yes (core feature)      | Both multi-tenant    |
+| **Offline Mode**         | Yes                       | Unknown                 | **Fleetbase**        |
+| **AWS Marketplace**      | Available                 | Unknown                 | **Fleetbase**        |
 
 ---
 
@@ -230,6 +236,7 @@ Witylogix is a full-stack last-mile delivery platform optimized for **Shopify-fi
 ```
 
 **Architectural Style:** Modular Monolith with Plugin System
+
 - **Isolation:** Extensions run as isolated Ember Engines (frontend) + Laravel packages (backend)
 - **Communication:** REST APIs, WebSockets, Webhooks
 - **Scalability:** Vertical scaling (monolith) with horizontal possibilities via containerization
@@ -277,21 +284,22 @@ Witylogix is a full-stack last-mile delivery platform optimized for **Shopify-fi
 ```
 
 **Architectural Style:** Cloud-Native Microservices
+
 - **Isolation:** Distinct services with defined boundaries
 - **Communication:** REST APIs, WebSockets, asynchronous messaging
 - **Scalability:** Horizontal scaling built-in, cloud-native design
 
 ### 5.3 Architecture Comparison
 
-| Aspect | Fleetbase | Witylogix | Assessment |
-|--------|-----------|-----------|-----------|
-| **Pattern** | Modular Monolith | Microservices-Ready | Witylogix more scalable |
-| **Service Isolation** | Plugin-based | Process-based | Witylogix cleaner separation |
-| **Database** | Single MySQL | Postgres (per-tenant ready) | Witylogix better for SaaS |
-| **Frontend Framework** | Ember.js | React/Next.js | Witylogix more modern |
-| **Extensibility** | Ember Engine + Laravel | Plugin system | Fleetbase more documented |
-| **Real-Time** | SocketCluster | Socket.io/native WebSockets | Both capable, different stacks |
-| **Cloud-Native** | Docker-friendly | Kubernetes-first | Witylogix advantage |
+| Aspect                 | Fleetbase              | Witylogix                   | Assessment                     |
+| ---------------------- | ---------------------- | --------------------------- | ------------------------------ |
+| **Pattern**            | Modular Monolith       | Microservices-Ready         | Witylogix more scalable        |
+| **Service Isolation**  | Plugin-based           | Process-based               | Witylogix cleaner separation   |
+| **Database**           | Single MySQL           | Postgres (per-tenant ready) | Witylogix better for SaaS      |
+| **Frontend Framework** | Ember.js               | React/Next.js               | Witylogix more modern          |
+| **Extensibility**      | Ember Engine + Laravel | Plugin system               | Fleetbase more documented      |
+| **Real-Time**          | SocketCluster          | Socket.io/native WebSockets | Both capable, different stacks |
+| **Cloud-Native**       | Docker-friendly        | Kubernetes-first            | Witylogix advantage            |
 
 ---
 
@@ -300,6 +308,7 @@ Witylogix is a full-stack last-mile delivery platform optimized for **Shopify-fi
 ### 6.1 Fleetbase E-Commerce Story
 
 **Current Reality:**
+
 - Fleetbase Storefront: React Native app for building hyperlocal shopping experiences
 - Designed for: food delivery, services booking, multi-vendor marketplaces
 - **NOT** designed as a Shopify integration or checkout extension
@@ -308,12 +317,14 @@ Witylogix is a full-stack last-mile delivery platform optimized for **Shopify-fi
 Fleetbase positions itself as a foundation for building YOUR OWN e-commerce + delivery platform, not as a fulfillment layer for existing Shopify merchants.
 
 **Integrations:**
+
 - API-first REST endpoints
 - Custom integrations possible (via REST API + webhooks)
 - **No pre-built Shopify, WooCommerce, or BigCommerce connectors**
 
 **Gap for E-Commerce:**
 Shopify merchants must:
+
 1. Build custom integration (REST API calls)
 2. Sync orders manually or via third-party tools
 3. Build their own checkout experience
@@ -322,6 +333,7 @@ Shopify merchants must:
 ### 6.2 Witylogix E-Commerce Story
 
 **Current Reality:**
+
 - Built specifically for Shopify merchants
 - Shopify Checkout Extension for seamless post-purchase experience
 - Inventory and order sync built-in
@@ -331,6 +343,7 @@ Shopify merchants must:
 Witylogix = "Your Shopify store gets delivery fulfillment via local couriers"
 
 **Integrations:**
+
 - Native Shopify app + Checkout Extension
 - Automatic order sync from Shopify
 - Inventory management integration
@@ -341,14 +354,14 @@ Shopify merchants get out-of-box solution with minimal setup.
 
 ### 6.3 E-Commerce Verdict
 
-| Aspect | Fleetbase | Witylogix | Winner |
-|--------|-----------|-----------|--------|
-| **Shopify Ready** | No | Yes | **Witylogix** |
-| **Order Auto-Sync** | No (API manual) | Yes | **Witylogix** |
-| **Inventory Sync** | Pallet extension (generic) | Built-in | **Witylogix** |
-| **Checkout Experience** | Build your own | Checkout Extension | **Witylogix** |
-| **Multi-Platform** | Yes (generic) | Shopify-focused | Fleetbase (but irrelevant for Shopify) |
-| **Time to Deploy** | Weeks/months | Days | **Witylogix** |
+| Aspect                  | Fleetbase                  | Witylogix          | Winner                                 |
+| ----------------------- | -------------------------- | ------------------ | -------------------------------------- |
+| **Shopify Ready**       | No                         | Yes                | **Witylogix**                          |
+| **Order Auto-Sync**     | No (API manual)            | Yes                | **Witylogix**                          |
+| **Inventory Sync**      | Pallet extension (generic) | Built-in           | **Witylogix**                          |
+| **Checkout Experience** | Build your own             | Checkout Extension | **Witylogix**                          |
+| **Multi-Platform**      | Yes (generic)              | Shopify-focused    | Fleetbase (but irrelevant for Shopify) |
+| **Time to Deploy**      | Weeks/months               | Days               | **Witylogix**                          |
 
 **Strategic Implication:**
 Fleetbase is NOT a competitor for Shopify merchant fulfillment. They're competing for the "build your own delivery platform" market. Witylogix owns the "Shopify fulfillment" segment.
@@ -360,6 +373,7 @@ Fleetbase is NOT a competitor for Shopify merchant fulfillment. They're competin
 ### 7.1 Fleetbase Market Position
 
 **Company Profile:**
+
 - **Founded:** 2018
 - **Headquarters:** Singapore
 - **Industry:** Business/Productivity Software (Logistics SaaS)
@@ -371,6 +385,7 @@ Fleetbase is NOT a competitor for Shopify merchant fulfillment. They're competin
   - Services: Custom deployments, extension development
 
 **Target Customers:**
+
 1. **Developers:** Building custom logistics applications
 2. **Logistics Companies:** Need to deploy on-premise or private cloud
 3. **Platforms:** Building multi-vendor delivery networks (e.g., food delivery, gig economy)
@@ -382,6 +397,7 @@ Fleetbase is NOT a competitor for Shopify merchant fulfillment. They're competin
 ### 7.2 Witylogix Market Position
 
 **Target Customers:**
+
 1. **Shopify Merchants:** SMB to mid-market e-commerce stores
 2. **D2C Brands:** Direct-to-consumer businesses needing fulfillment
 3. **Quick Commerce:** High-frequency delivery networks
@@ -391,15 +407,15 @@ Fleetbase is NOT a competitor for Shopify merchant fulfillment. They're competin
 
 ### 7.3 Positioning Comparison
 
-| Aspect | Fleetbase | Witylogix |
-|--------|-----------|-----------|
-| **Entry Point** | "Build logistics OS" | "Add delivery to Shopify" |
-| **Customer Type** | Enterprise, Developer | SMB, e-commerce |
-| **Decision Maker** | CTO, VP Engineering | Store Owner, Head of Ops |
-| **Sales Motion** | Developer/Technical | Product-led, self-serve |
-| **Deployment Time** | Weeks/Months | Days/Hours |
-| **Initial Setup** | Infrastructure + development | Install app, configure |
-| **Ongoing Ops** | Own infrastructure | Witylogix manages |
+| Aspect              | Fleetbase                    | Witylogix                 |
+| ------------------- | ---------------------------- | ------------------------- |
+| **Entry Point**     | "Build logistics OS"         | "Add delivery to Shopify" |
+| **Customer Type**   | Enterprise, Developer        | SMB, e-commerce           |
+| **Decision Maker**  | CTO, VP Engineering          | Store Owner, Head of Ops  |
+| **Sales Motion**    | Developer/Technical          | Product-led, self-serve   |
+| **Deployment Time** | Weeks/Months                 | Days/Hours                |
+| **Initial Setup**   | Infrastructure + development | Install app, configure    |
+| **Ongoing Ops**     | Own infrastructure           | Witylogix manages         |
 
 **Conclusion:** Different market segments. Not direct head-to-head competitors, but overlapping in "open-source logistics platform" space.
 
@@ -409,59 +425,59 @@ Fleetbase is NOT a competitor for Shopify merchant fulfillment. They're competin
 
 ### 8.1 Fleetbase Strengths (vs. Witylogix)
 
-| Strength | Impact | Details |
-|----------|--------|---------|
-| **Mature Project** | HIGH | ~6 years development, production-ready |
-| **Community & Stars** | MEDIUM | 1,762 GitHub stars shows adoption |
-| **Modular Architecture** | HIGH | Ember Engines + Laravel packages are flexible |
-| **Extension Ecosystem** | HIGH | Pallet, Ledger, FleetOps, Registry all available |
-| **Developer Tooling** | HIGH | Fleetbase CLI, SDK (Python, PHP, JS), comprehensive docs |
-| **API-First Design** | HIGH | REST, WebSockets, Webhooks all documented |
-| **Deployment Flexibility** | HIGH | On-premise, cloud, AWS Marketplace, offline |
-| **Multi-Vendor Ready** | MEDIUM | "Networks" concept for multi-vendor support |
-| **Comprehensive Features** | MEDIUM | Order mgmt, routing, tracking, POD all built-in |
-| **Data Sovereignty** | HIGH | Can deploy on-premise (key for enterprises) |
+| Strength                   | Impact | Details                                                  |
+| -------------------------- | ------ | -------------------------------------------------------- |
+| **Mature Project**         | HIGH   | ~6 years development, production-ready                   |
+| **Community & Stars**      | MEDIUM | 1,762 GitHub stars shows adoption                        |
+| **Modular Architecture**   | HIGH   | Ember Engines + Laravel packages are flexible            |
+| **Extension Ecosystem**    | HIGH   | Pallet, Ledger, FleetOps, Registry all available         |
+| **Developer Tooling**      | HIGH   | Fleetbase CLI, SDK (Python, PHP, JS), comprehensive docs |
+| **API-First Design**       | HIGH   | REST, WebSockets, Webhooks all documented                |
+| **Deployment Flexibility** | HIGH   | On-premise, cloud, AWS Marketplace, offline              |
+| **Multi-Vendor Ready**     | MEDIUM | "Networks" concept for multi-vendor support              |
+| **Comprehensive Features** | MEDIUM | Order mgmt, routing, tracking, POD all built-in          |
+| **Data Sovereignty**       | HIGH   | Can deploy on-premise (key for enterprises)              |
 
 ### 8.2 Fleetbase Weaknesses (vs. Witylogix)
 
-| Weakness | Impact | Details |
-|----------|--------|---------|
-| **No Shopify Integration** | CRITICAL | Missing the largest e-commerce platform |
-| **Legacy Tech Stack** | MEDIUM | Ember.js (aging framework), PHP monolith |
-| **Steeper Learning Curve** | MEDIUM | Requires understanding Ember + Laravel + Docker |
-| **Slower Development Cycle** | MEDIUM | PHP monolith harder to iterate on than microservices |
-| **Scaling Challenges** | MEDIUM | Monolithic architecture limits horizontal scaling |
-| **E-Commerce Blind Spot** | HIGH | No understanding of Shopify merchant workflows |
-| **Unknown Funding** | LOW | Not clear if backed by serious investors |
-| **Database Lock-In** | MEDIUM | MySQL-only (less flexible than PostgreSQL) |
-| **Limited Mobile UX** | MEDIUM | React Native apps are functional but less polished |
+| Weakness                     | Impact   | Details                                              |
+| ---------------------------- | -------- | ---------------------------------------------------- |
+| **No Shopify Integration**   | CRITICAL | Missing the largest e-commerce platform              |
+| **Legacy Tech Stack**        | MEDIUM   | Ember.js (aging framework), PHP monolith             |
+| **Steeper Learning Curve**   | MEDIUM   | Requires understanding Ember + Laravel + Docker      |
+| **Slower Development Cycle** | MEDIUM   | PHP monolith harder to iterate on than microservices |
+| **Scaling Challenges**       | MEDIUM   | Monolithic architecture limits horizontal scaling    |
+| **E-Commerce Blind Spot**    | HIGH     | No understanding of Shopify merchant workflows       |
+| **Unknown Funding**          | LOW      | Not clear if backed by serious investors             |
+| **Database Lock-In**         | MEDIUM   | MySQL-only (less flexible than PostgreSQL)           |
+| **Limited Mobile UX**        | MEDIUM   | React Native apps are functional but less polished   |
 
 ### 8.3 Witylogix Strengths (vs. Fleetbase)
 
-| Strength | Impact | Details |
-|----------|--------|---------|
-| **Shopify-Native** | CRITICAL | Direct integration, Checkout Extension, auto-sync |
-| **E-Commerce Focus** | CRITICAL | Designed for merchant workflows, not generic logistics |
-| **Modern Tech Stack** | HIGH | Node.js, TypeScript, React, Next.js (current best practices) |
-| **Microservices Ready** | HIGH | Horizontal scaling, better for high growth |
-| **Cloud-Native** | HIGH | Kubernetes-first, serverless-friendly |
-| **Developer Experience** | HIGH | TypeScript reduces bugs, modern frameworks |
-| **Faster Iteration** | HIGH | Smaller services = faster deployment cycles |
-| **Merchant-Friendly UI** | MEDIUM | Built for store owners, not engineers |
-| **PostgreSQL** | LOW | More features than MySQL, better for multi-tenancy |
-| **Product-Led Growth** | MEDIUM | Can be adopted via app install (vs. months of setup) |
+| Strength                 | Impact   | Details                                                      |
+| ------------------------ | -------- | ------------------------------------------------------------ |
+| **Shopify-Native**       | CRITICAL | Direct integration, Checkout Extension, auto-sync            |
+| **E-Commerce Focus**     | CRITICAL | Designed for merchant workflows, not generic logistics       |
+| **Modern Tech Stack**    | HIGH     | Node.js, TypeScript, React, Next.js (current best practices) |
+| **Microservices Ready**  | HIGH     | Horizontal scaling, better for high growth                   |
+| **Cloud-Native**         | HIGH     | Kubernetes-first, serverless-friendly                        |
+| **Developer Experience** | HIGH     | TypeScript reduces bugs, modern frameworks                   |
+| **Faster Iteration**     | HIGH     | Smaller services = faster deployment cycles                  |
+| **Merchant-Friendly UI** | MEDIUM   | Built for store owners, not engineers                        |
+| **PostgreSQL**           | LOW      | More features than MySQL, better for multi-tenancy           |
+| **Product-Led Growth**   | MEDIUM   | Can be adopted via app install (vs. months of setup)         |
 
 ### 8.4 Witylogix Weaknesses (vs. Fleetbase)
 
-| Weakness | Impact | Details |
-|----------|--------|---------|
-| **Newer Project** | MEDIUM | Less battle-tested than Fleetbase's 6 years |
-| **Smaller Community** | MEDIUM | Fewer stars, less third-party ecosystem (currently) |
-| **Shopify Lock-In** | MEDIUM | Focus on Shopify limits addressable market |
-| **No On-Premise Option** | MEDIUM | Cloud-only may limit enterprise sales |
-| **Multi-Vendor Complexity** | MEDIUM | Less mature multi-vendor features than Fleetbase |
-| **Unclear Extensibility** | LOW | May lack Fleetbase's plugin ecosystem |
-| **Data Residency Issues** | MEDIUM | Cloud-hosted may not meet compliance needs |
+| Weakness                    | Impact | Details                                             |
+| --------------------------- | ------ | --------------------------------------------------- |
+| **Newer Project**           | MEDIUM | Less battle-tested than Fleetbase's 6 years         |
+| **Smaller Community**       | MEDIUM | Fewer stars, less third-party ecosystem (currently) |
+| **Shopify Lock-In**         | MEDIUM | Focus on Shopify limits addressable market          |
+| **No On-Premise Option**    | MEDIUM | Cloud-only may limit enterprise sales               |
+| **Multi-Vendor Complexity** | MEDIUM | Less mature multi-vendor features than Fleetbase    |
+| **Unclear Extensibility**   | LOW    | May lack Fleetbase's plugin ecosystem               |
+| **Data Residency Issues**   | MEDIUM | Cloud-hosted may not meet compliance needs          |
 
 ---
 
@@ -469,83 +485,83 @@ Fleetbase is NOT a competitor for Shopify merchant fulfillment. They're competin
 
 ### Comprehensive Feature Grid
 
-| Feature Category | Feature | Fleetbase | Witylogix | Notes |
-|-----------------|---------|-----------|-----------|-------|
-| **Order Management** | Order creation | ✓ | ✓ | Both full-featured |
-| | Order assignment | ✓ | ✓ | |
-| | Order tracking | ✓ | ✓ | |
-| | Order editing | ✓ | ✓ | |
-| | Bulk operations | ✓ | ? | Fleetbase documented |
-| | Custom fields | ✓ | ? | |
-| **Fleet Management** | Vehicle management | ✓ | ✓ | Core feature in both |
-| | Driver management | ✓ | ✓ | |
-| | Driver assignment | ✓ | ✓ | |
-| | Driver ratings | ✓ | ✓ | |
-| | Vehicle tracking | ✓ | ✓ | Real-time WebSocket |
-| **Routing & Optimization** | Route optimization | ✓ | ✓ | Dynamic routing |
-| | Real-time rerouting | ✓ | ✓ | |
-| | Multi-stop routes | ✓ | ✓ | |
-| | Time windows | ✓ | ✓ | |
-| | Custom constraints | ✓ | ? | |
-| **Tracking** | Live tracking | ✓ | ✓ | Map-based |
-| | Geofencing | ✓ | ? | |
-| | ETA calculation | ✓ | ✓ | |
-| | GPS accuracy | ✓ | ✓ | |
-| **Proof of Delivery** | Photo capture | ✓ | ✓ | |
-| | Digital signature | ✓ | ✓ | |
-| | QR code scanning | ✓ | ? | Fleetbase documented |
-| | Barcode scanning | ✓ | ? | |
-| | Custom fields | ✓ | ? | |
-| **Customer Integration** | Shopify sync | ✗ | ✓ | **Witylogix advantage** |
-| | WooCommerce sync | ✗ | ? | Neither documented |
-| | BigCommerce sync | ✗ | ? | |
-| | Inventory sync | Pallet extension | ✓ | Witylogix built-in |
-| | Order auto-import | REST API only | ✓ | **Witylogix advantage** |
-| | Customer notifications | Webhook-based | SMS/Email | Witylogix more ready |
-| **Marketplace Features** | Multi-vendor | ✓ Networks | ✓ | Both support |
-| | Vendor dashboard | ✓ | ✓ | |
-| | Commission management | Ledger extension | ? | |
-| | Vendor ratings | ✓ | ? | |
-| **Analytics** | Order analytics | ✓ | ✓ | |
-| | Driver performance | ✓ | ✓ | |
-| | Route efficiency | ✓ | ✓ | |
-| | Cost analysis | ✓ | ? | |
-| **Communications** | In-app chat | ✓ | ? | Fleetbase documented |
-| | SMS notifications | Via webhooks | Built-in | Witylogix advantage |
-| | Email notifications | Via webhooks | Built-in | Witylogix advantage |
-| | Driver-customer chat | ✓ | ✓ | |
-| **Mobile Apps** | Driver app (native) | ✓ React Native | ✓ React Native | Both available |
-| | Customer app | ✓ React Native | ✓ | |
-| | Merchant dashboard (mobile) | ? | ✓ | |
-| **API & Integration** | REST API | ✓ Comprehensive | ✓ | Both strong |
-| | GraphQL | ? | ? | Not documented |
-| | WebSocket | ✓ SocketCluster | ✓ Socket.io | Both real-time |
-| | Webhooks | ✓ Full event system | ✓ | Both event-driven |
-| | Postman collection | ✓ | ? | Fleetbase documented |
-| | SDK (JavaScript) | ✓ npm | ✓ npm | |
-| | SDK (Python) | ✓ | ? | Fleetbase documented |
-| | SDK (PHP) | ✓ | ? | Fleetbase documented |
-| **Deployment** | Docker | ✓ | ✓ | Both containerized |
-| | Docker Compose | ✓ | ✓ | |
-| | Kubernetes | ✓ Official images | ✓ | Witylogix native |
-| | AWS | ✓ Marketplace | ✓ | |
-| | GCP | ✓ | ✓ | |
-| | Azure | ? | ? | |
-| | On-Premise | ✓ Full support | ? | Fleetbase advantage |
-| | Private Cloud | ✓ | ✓ | |
-| | Self-Hosted | ✓ Free | ✓ | Both support |
-| **Multi-Tenancy** | Built-in multi-tenant | ✓ | ✓ | Both core features |
-| | Tenant isolation | ✓ | ✓ | |
-| | Custom branding | ✓ | ✓ | |
-| | White-label apps | ✓ | ? | |
-| **Extensions/Plugins** | Extension system | ✓ Ember + Laravel | ✓ | Fleetbase more mature |
-| | Extension registry | ✓ Official | ? | |
-| | Community extensions | ✓ Growing | ? | |
-| | Official extensions | ✓ Pallet, Ledger, FleetOps | ? | |
-| **Enterprise Features** | SSO/SAML | ✓ | ? | |
-| | Compliance/Audit logs | ✓ | ? | |
-| | Data residency | ✓ | ? | Fleetbase advantage |
-| | Offline capability | ✓ Yes | ? | Fleetbase unique |
+| Feature Category           | Feature                     | Fleetbase                  | Witylogix      | Notes                   |
+| -------------------------- | --------------------------- | -------------------------- | -------------- | ----------------------- |
+| **Order Management**       | Order creation              | ✓                          | ✓              | Both full-featured      |
+|                            | Order assignment            | ✓                          | ✓              |                         |
+|                            | Order tracking              | ✓                          | ✓              |                         |
+|                            | Order editing               | ✓                          | ✓              |                         |
+|                            | Bulk operations             | ✓                          | ?              | Fleetbase documented    |
+|                            | Custom fields               | ✓                          | ?              |                         |
+| **Fleet Management**       | Vehicle management          | ✓                          | ✓              | Core feature in both    |
+|                            | Driver management           | ✓                          | ✓              |                         |
+|                            | Driver assignment           | ✓                          | ✓              |                         |
+|                            | Driver ratings              | ✓                          | ✓              |                         |
+|                            | Vehicle tracking            | ✓                          | ✓              | Real-time WebSocket     |
+| **Routing & Optimization** | Route optimization          | ✓                          | ✓              | Dynamic routing         |
+|                            | Real-time rerouting         | ✓                          | ✓              |                         |
+|                            | Multi-stop routes           | ✓                          | ✓              |                         |
+|                            | Time windows                | ✓                          | ✓              |                         |
+|                            | Custom constraints          | ✓                          | ?              |                         |
+| **Tracking**               | Live tracking               | ✓                          | ✓              | Map-based               |
+|                            | Geofencing                  | ✓                          | ?              |                         |
+|                            | ETA calculation             | ✓                          | ✓              |                         |
+|                            | GPS accuracy                | ✓                          | ✓              |                         |
+| **Proof of Delivery**      | Photo capture               | ✓                          | ✓              |                         |
+|                            | Digital signature           | ✓                          | ✓              |                         |
+|                            | QR code scanning            | ✓                          | ?              | Fleetbase documented    |
+|                            | Barcode scanning            | ✓                          | ?              |                         |
+|                            | Custom fields               | ✓                          | ?              |                         |
+| **Customer Integration**   | Shopify sync                | ✗                          | ✓              | **Witylogix advantage** |
+|                            | WooCommerce sync            | ✗                          | ?              | Neither documented      |
+|                            | BigCommerce sync            | ✗                          | ?              |                         |
+|                            | Inventory sync              | Pallet extension           | ✓              | Witylogix built-in      |
+|                            | Order auto-import           | REST API only              | ✓              | **Witylogix advantage** |
+|                            | Customer notifications      | Webhook-based              | SMS/Email      | Witylogix more ready    |
+| **Marketplace Features**   | Multi-vendor                | ✓ Networks                 | ✓              | Both support            |
+|                            | Vendor dashboard            | ✓                          | ✓              |                         |
+|                            | Commission management       | Ledger extension           | ?              |                         |
+|                            | Vendor ratings              | ✓                          | ?              |                         |
+| **Analytics**              | Order analytics             | ✓                          | ✓              |                         |
+|                            | Driver performance          | ✓                          | ✓              |                         |
+|                            | Route efficiency            | ✓                          | ✓              |                         |
+|                            | Cost analysis               | ✓                          | ?              |                         |
+| **Communications**         | In-app chat                 | ✓                          | ?              | Fleetbase documented    |
+|                            | SMS notifications           | Via webhooks               | Built-in       | Witylogix advantage     |
+|                            | Email notifications         | Via webhooks               | Built-in       | Witylogix advantage     |
+|                            | Driver-customer chat        | ✓                          | ✓              |                         |
+| **Mobile Apps**            | Driver app (native)         | ✓ React Native             | ✓ React Native | Both available          |
+|                            | Customer app                | ✓ React Native             | ✓              |                         |
+|                            | Merchant dashboard (mobile) | ?                          | ✓              |                         |
+| **API & Integration**      | REST API                    | ✓ Comprehensive            | ✓              | Both strong             |
+|                            | GraphQL                     | ?                          | ?              | Not documented          |
+|                            | WebSocket                   | ✓ SocketCluster            | ✓ Socket.io    | Both real-time          |
+|                            | Webhooks                    | ✓ Full event system        | ✓              | Both event-driven       |
+|                            | Postman collection          | ✓                          | ?              | Fleetbase documented    |
+|                            | SDK (JavaScript)            | ✓ npm                      | ✓ npm          |                         |
+|                            | SDK (Python)                | ✓                          | ?              | Fleetbase documented    |
+|                            | SDK (PHP)                   | ✓                          | ?              | Fleetbase documented    |
+| **Deployment**             | Docker                      | ✓                          | ✓              | Both containerized      |
+|                            | Docker Compose              | ✓                          | ✓              |                         |
+|                            | Kubernetes                  | ✓ Official images          | ✓              | Witylogix native        |
+|                            | AWS                         | ✓ Marketplace              | ✓              |                         |
+|                            | GCP                         | ✓                          | ✓              |                         |
+|                            | Azure                       | ?                          | ?              |                         |
+|                            | On-Premise                  | ✓ Full support             | ?              | Fleetbase advantage     |
+|                            | Private Cloud               | ✓                          | ✓              |                         |
+|                            | Self-Hosted                 | ✓ Free                     | ✓              | Both support            |
+| **Multi-Tenancy**          | Built-in multi-tenant       | ✓                          | ✓              | Both core features      |
+|                            | Tenant isolation            | ✓                          | ✓              |                         |
+|                            | Custom branding             | ✓                          | ✓              |                         |
+|                            | White-label apps            | ✓                          | ?              |                         |
+| **Extensions/Plugins**     | Extension system            | ✓ Ember + Laravel          | ✓              | Fleetbase more mature   |
+|                            | Extension registry          | ✓ Official                 | ?              |                         |
+|                            | Community extensions        | ✓ Growing                  | ?              |                         |
+|                            | Official extensions         | ✓ Pallet, Ledger, FleetOps | ?              |                         |
+| **Enterprise Features**    | SSO/SAML                    | ✓                          | ?              |                         |
+|                            | Compliance/Audit logs       | ✓                          | ?              |                         |
+|                            | Data residency              | ✓                          | ?              | Fleetbase advantage     |
+|                            | Offline capability          | ✓ Yes                      | ?              | Fleetbase unique        |
 
 **Summary:** Witylogix dominates e-commerce integration; Fleetbase dominates extensibility and deployment flexibility.
 
@@ -688,6 +704,7 @@ Fleetbase is NOT a competitor for Shopify merchant fulfillment. They're competin
 ### 11.2 Customer Persona Comparison
 
 **Fleetbase Customer:**
+
 - Title: CTO, VP Engineering, Founder (technical)
 - Company: 50-5,000+ employees
 - Problem: "We need to build a custom logistics platform"
@@ -696,6 +713,7 @@ Fleetbase is NOT a competitor for Shopify merchant fulfillment. They're competin
 - Budget: $50k-500k+ annually
 
 **Witylogix Customer:**
+
 - Title: Store Owner, Head of Operations, E-commerce Manager
 - Company: 5-500 employees (SMB focus)
 - Problem: "Our Shopify store needs fast delivery options"
@@ -712,6 +730,7 @@ Fleetbase is NOT a competitor for Shopify merchant fulfillment. They're competin
 ### 12.1 Fleetbase Recent Activity
 
 **Latest Releases (v0.5.x series, as of March 2026):**
+
 - Route optimization enhancements with customizable routing engines
 - Performance improvements to FleetOps Order API
 - Official Docker images published (faster setup)
@@ -719,12 +738,14 @@ Fleetbase is NOT a competitor for Shopify merchant fulfillment. They're competin
 - Enhanced order management UI
 
 **Blog Activity:**
+
 - Fleetbase Storefront feature announcement (March 2026)
 - Hyperlocal app builder positioning
 - Open-source logistics industry trend pieces
 - Regular release notes with changelogs
 
 **Community Signals:**
+
 - Regular GitHub discussions and issues
 - Active releases every few weeks
 - Extensions being built by community
@@ -733,6 +754,7 @@ Fleetbase is NOT a competitor for Shopify merchant fulfillment. They're competin
 ### 12.2 Witylogix Competitive Intelligence Gathering
 
 **Recommended Ongoing Monitoring:**
+
 1. Watch Fleetbase GitHub releases (new features, tech decisions)
 2. Monitor Fleetbase blog (market positioning changes)
 3. Track Fleetbase funding announcements
@@ -749,15 +771,15 @@ Fleetbase is a **well-engineered, mature competitor** in the open-source logisti
 
 **Key Differentiators:**
 
-| Dimension | Winner | Why |
-|-----------|--------|-----|
-| **Shopify Integration** | Witylogix | Fleetbase has none |
-| **E-Commerce Focus** | Witylogix | Fleetbase is generic logistics |
-| **Time to Value** | Witylogix | Days vs. months |
-| **Extensibility** | Fleetbase | Mature plugin system |
-| **Developer Community** | Fleetbase | Larger, more documentation |
-| **On-Premise Option** | Fleetbase | Witylogix cloud-only |
-| **Ease of Use** | Witylogix | Built for merchants, not engineers |
+| Dimension               | Winner    | Why                                |
+| ----------------------- | --------- | ---------------------------------- |
+| **Shopify Integration** | Witylogix | Fleetbase has none                 |
+| **E-Commerce Focus**    | Witylogix | Fleetbase is generic logistics     |
+| **Time to Value**       | Witylogix | Days vs. months                    |
+| **Extensibility**       | Fleetbase | Mature plugin system               |
+| **Developer Community** | Fleetbase | Larger, more documentation         |
+| **On-Premise Option**   | Fleetbase | Witylogix cloud-only               |
+| **Ease of Use**         | Witylogix | Built for merchants, not engineers |
 
 ### 13.2 Strategic Implications
 
@@ -782,6 +804,7 @@ Fleetbase is a **well-engineered, mature competitor** in the open-source logisti
 - These are complementary, not competing
 
 **Next Steps:**
+
 1. Confirm Witylogix's Shopify-specific roadmap aligns with this
 2. Identify where Fleetbase could become a threat (e-commerce pivoting)
 3. Plan Shopify partnership / revenue-sharing agreements
@@ -824,6 +847,7 @@ Fleetbase is a **well-engineered, mature competitor** in the open-source logisti
 ### C. Methodology Notes
 
 This analysis was conducted through:
+
 1. Public web research of Fleetbase website, GitHub, documentation, and blog
 2. Detailed review of Fleetbase architecture and API documentation
 3. Comparative analysis against Witylogix's known positioning and tech stack

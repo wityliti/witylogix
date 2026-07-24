@@ -34,7 +34,7 @@ export function RouteStatsBadge({
         "px-4 py-2.5 rounded-full",
         "bg-wl-bg-elevated border border-wl-border-subtle",
         "text-sm font-medium text-wl-text-primary",
-        className
+        className,
       )}
     >
       {/* Stops */}

@@ -1,9 +1,9 @@
-import { test, expect } from '../fixtures/auth.fixture';
-import { LoginPage } from '../pages/login.page';
-import { DashboardPage } from '../pages/dashboard.page';
+import { test, expect } from "../fixtures/auth.fixture";
+import { LoginPage } from "../pages/login.page";
+import { DashboardPage } from "../pages/dashboard.page";
 
-test.describe('Authentication Flow', () => {
-  test('should login with valid credentials', async ({ page }) => {
+test.describe("Authentication Flow", () => {
+  test("should login with valid credentials", async ({ page }) => {
     const loginPage = new LoginPage(page);
     const dashboardPage = new DashboardPage(page);
 
@@ -14,21 +14,21 @@ test.describe('Authentication Flow', () => {
     await loginPage.expectLoginPage();
 
     // Login with valid credentials
-    await loginPage.login('admin@test.com', 'admin123');
+    await loginPage.login("admin@test.com", "admin123");
 
     // Verify redirect to dashboard
     await dashboardPage.expectDashboard();
-    await dashboardPage.expectPageTitle('Dashboard');
+    await dashboardPage.expectPageTitle("Dashboard");
   });
 
-  test('should show error with invalid email', async ({ page }) => {
+  test("should show error with invalid email", async ({ page }) => {
     const loginPage = new LoginPage(page);
 
     // Navigate to login
     await loginPage.navigate();
 
     // Fill invalid email and valid password
-    await loginPage.fillCredentials('invalid-email-format', 'password123');
+    await loginPage.fillCredentials("invalid-email-format", "password123");
     await loginPage.submit();
 
     // Verify error message appears
@@ -36,21 +36,21 @@ test.describe('Authentication Flow', () => {
     expect(errorMessage).toBeTruthy();
   });
 
-  test('should show error with invalid credentials', async ({ page }) => {
+  test("should show error with invalid credentials", async ({ page }) => {
     const loginPage = new LoginPage(page);
 
     // Navigate to login
     await loginPage.navigate();
 
     // Fill invalid credentials
-    await loginPage.fillCredentials('nonexistent@test.com', 'wrongpassword');
+    await loginPage.fillCredentials("nonexistent@test.com", "wrongpassword");
     await loginPage.submit();
 
     // Verify error message appears
     await loginPage.expectErrorMessage();
   });
 
-  test('should show error with empty credentials', async ({ page }) => {
+  test("should show error with empty credentials", async ({ page }) => {
     const loginPage = new LoginPage(page);
 
     // Navigate to login
@@ -69,7 +69,7 @@ test.describe('Authentication Flow', () => {
     }
   });
 
-  test('should logout successfully', async ({ adminPage }) => {
+  test("should logout successfully", async ({ adminPage }) => {
     const dashboardPage = new DashboardPage(adminPage);
 
     // Navigate to dashboard (already authenticated via fixture)
@@ -86,7 +86,7 @@ test.describe('Authentication Flow', () => {
     await loginPage.expectLoginPage();
   });
 
-  test('should persist session across page refresh', async ({ adminPage }) => {
+  test("should persist session across page refresh", async ({ adminPage }) => {
     const dashboardPage = new DashboardPage(adminPage);
 
     // Navigate to dashboard
@@ -106,9 +106,11 @@ test.describe('Authentication Flow', () => {
     await dashboardPage.expectDashboard();
   });
 
-  test('should redirect to login when accessing protected route without auth', async ({ page }) => {
+  test("should redirect to login when accessing protected route without auth", async ({
+    page,
+  }) => {
     // Attempt to access dashboard without authentication
-    await page.goto('/dashboard', { waitUntil: 'networkidle' });
+    await page.goto("/dashboard", { waitUntil: "networkidle" });
 
     // Should redirect to login
     await expect(page).toHaveURL(/login|auth/);
@@ -118,7 +120,9 @@ test.describe('Authentication Flow', () => {
     await loginPage.expectLoginPage();
   });
 
-  test('should show different content for dispatcher role', async ({ dispatcherPage }) => {
+  test("should show different content for dispatcher role", async ({
+    dispatcherPage,
+  }) => {
     const dashboardPage = new DashboardPage(dispatcherPage);
 
     // Navigate to dashboard
@@ -131,17 +135,19 @@ test.describe('Authentication Flow', () => {
     const links = await dashboardPage.getSidebarLinks();
 
     // Dispatcher should have orders and drivers links
-    expect(links.some((link) => link.toLowerCase().includes('order'))).toBeTruthy();
+    expect(
+      links.some((link) => link.toLowerCase().includes("order")),
+    ).toBeTruthy();
   });
 
-  test('should remember me checkbox persist login', async ({ page }) => {
+  test("should remember me checkbox persist login", async ({ page }) => {
     const loginPage = new LoginPage(page);
 
     // Navigate to login
     await loginPage.navigate();
 
     // Fill credentials
-    await loginPage.fillCredentials('admin@test.com', 'admin123');
+    await loginPage.fillCredentials("admin@test.com", "admin123");
 
     // Check remember me
     await loginPage.setRememberMe(true);
@@ -150,25 +156,25 @@ test.describe('Authentication Flow', () => {
     await loginPage.submit();
 
     // Wait for redirect
-    await page.waitForURL('/dashboard', { timeout: 10000 });
+    await page.waitForURL("/dashboard", { timeout: 10000 });
 
     // Session should be persisted even after page close/reopen
     expect(page.context()).toBeTruthy();
   });
 
-  test('should handle network errors gracefully', async ({ page }) => {
+  test("should handle network errors gracefully", async ({ page }) => {
     const loginPage = new LoginPage(page);
 
     // Navigate to login
     await loginPage.navigate();
 
     // Simulate network error by intercepting requests
-    await page.route('**/api/auth/login', (route) => {
-      route.abort('failed');
+    await page.route("**/api/auth/login", (route) => {
+      route.abort("failed");
     });
 
     // Try to login
-    await loginPage.fillCredentials('admin@test.com', 'admin123');
+    await loginPage.fillCredentials("admin@test.com", "admin123");
     await loginPage.submit();
 
     // Should show error or remain on login page

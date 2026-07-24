@@ -3,9 +3,7 @@
  * Converts platform-specific data formats to unified Witylogix schema
  */
 
-import {
-  PlatformSource,
-} from './types.js';
+import { PlatformSource } from "./types.js";
 import type {
   UnifiedOrder,
   UnifiedProduct,
@@ -14,14 +12,14 @@ import type {
   UnifiedAddress,
   NormalizationResult,
   NormalizationError,
-} from './types.js';
+} from "./types.js";
 import type {
   WCOrder,
   WCProduct,
   WCCustomer,
   WCAddress,
   WCLineItem,
-} from '../woocommerce/types.js';
+} from "../woocommerce/types.js";
 
 /**
  * Data Normalizer Class
@@ -32,7 +30,7 @@ export class DataNormalizer {
    */
   static normalizeOrder(
     source: PlatformSource,
-    rawOrder: unknown
+    rawOrder: unknown,
   ): NormalizationResult<UnifiedOrder> {
     try {
       switch (source) {
@@ -47,7 +45,7 @@ export class DataNormalizer {
             success: false,
             errors: [
               {
-                field: 'source',
+                field: "source",
                 value: source,
                 reason: `Unknown platform: ${source}`,
               },
@@ -59,9 +57,9 @@ export class DataNormalizer {
         success: false,
         errors: [
           {
-            field: 'order',
+            field: "order",
             value: rawOrder,
-            reason: error instanceof Error ? error.message : 'Unknown error',
+            reason: error instanceof Error ? error.message : "Unknown error",
           },
         ],
       };
@@ -73,7 +71,7 @@ export class DataNormalizer {
    */
   static normalizeProduct(
     source: PlatformSource,
-    rawProduct: unknown
+    rawProduct: unknown,
   ): NormalizationResult<UnifiedProduct> {
     try {
       switch (source) {
@@ -88,7 +86,7 @@ export class DataNormalizer {
             success: false,
             errors: [
               {
-                field: 'source',
+                field: "source",
                 value: source,
                 reason: `Unknown platform: ${source}`,
               },
@@ -100,9 +98,9 @@ export class DataNormalizer {
         success: false,
         errors: [
           {
-            field: 'product',
+            field: "product",
             value: rawProduct,
-            reason: error instanceof Error ? error.message : 'Unknown error',
+            reason: error instanceof Error ? error.message : "Unknown error",
           },
         ],
       };
@@ -114,7 +112,7 @@ export class DataNormalizer {
    */
   static normalizeCustomer(
     source: PlatformSource,
-    rawCustomer: unknown
+    rawCustomer: unknown,
   ): NormalizationResult<UnifiedCustomer> {
     try {
       switch (source) {
@@ -129,7 +127,7 @@ export class DataNormalizer {
             success: false,
             errors: [
               {
-                field: 'source',
+                field: "source",
                 value: source,
                 reason: `Unknown platform: ${source}`,
               },
@@ -141,9 +139,9 @@ export class DataNormalizer {
         success: false,
         errors: [
           {
-            field: 'customer',
+            field: "customer",
             value: rawCustomer,
-            reason: error instanceof Error ? error.message : 'Unknown error',
+            reason: error instanceof Error ? error.message : "Unknown error",
           },
         ],
       };
@@ -153,7 +151,9 @@ export class DataNormalizer {
   /**
    * WooCommerce Order Normalization
    */
-  private static normalizeWooCommerceOrder(order: WCOrder): NormalizationResult<UnifiedOrder> {
+  private static normalizeWooCommerceOrder(
+    order: WCOrder,
+  ): NormalizationResult<UnifiedOrder> {
     const errors: NormalizationError[] = [];
 
     try {
@@ -170,7 +170,7 @@ export class DataNormalizer {
           id: `wc-customer-${order.customer_id}`,
           externalId: order.customer_id.toString(),
           platform: PlatformSource.WOOCOMMERCE,
-          email: order.billing.email || '',
+          email: order.billing.email || "",
           firstName: order.billing.first_name,
           lastName: order.billing.last_name,
           phone: order.billing.phone,
@@ -183,12 +183,14 @@ export class DataNormalizer {
           metadata: {},
         },
         lineItems: order.line_items.map((item: WCLineItem) =>
-          this.normalizeWooCommerceLineItem(item)
+          this.normalizeWooCommerceLineItem(item),
         ),
         shippingAddress: this.normalizeWooCommerceAddress(order.shipping),
         billingAddress: this.normalizeWooCommerceAddress(order.billing),
         paymentMethod: order.payment_method_title,
-        subtotal: Math.round(parseFloat(order.total) * 100) - Math.round(parseFloat(order.total_tax) * 100),
+        subtotal:
+          Math.round(parseFloat(order.total) * 100) -
+          Math.round(parseFloat(order.total_tax) * 100),
         taxTotal: Math.round(parseFloat(order.total_tax) * 100),
         shippingTotal: Math.round(parseFloat(order.shipping_total) * 100),
         discountTotal: Math.round(parseFloat(order.discount_total) * 100),
@@ -204,9 +206,9 @@ export class DataNormalizer {
       };
     } catch (error) {
       errors.push({
-        field: 'order',
+        field: "order",
         value: order,
-        reason: error instanceof Error ? error.message : 'Unknown error',
+        reason: error instanceof Error ? error.message : "Unknown error",
       });
 
       return {
@@ -219,7 +221,9 @@ export class DataNormalizer {
   /**
    * WooCommerce Product Normalization
    */
-  private static normalizeWooCommerceProduct(product: WCProduct): NormalizationResult<UnifiedProduct> {
+  private static normalizeWooCommerceProduct(
+    product: WCProduct,
+  ): NormalizationResult<UnifiedProduct> {
     const errors: NormalizationError[] = [];
 
     try {
@@ -236,29 +240,29 @@ export class DataNormalizer {
           : undefined,
         cost: undefined,
         weight: product.weight ? parseFloat(product.weight) : undefined,
-        status: product.status as 'draft' | 'active' | 'archived',
+        status: product.status as "draft" | "active" | "archived",
         createdAt: new Date(product.date_created),
         modifiedAt: new Date(product.date_modified),
         images: product.images.map((img, index) => ({
           id: `wc-image-${product.id}-${img.id}`,
           externalId: img.id.toString(),
           url: img.src,
-          alt: img.alt || '',
+          alt: img.alt || "",
           position: index,
         })),
         variants: product.variations
-          ? product.variations.map(varId => ({
+          ? product.variations.map((varId) => ({
               id: `wc-variant-${product.id}-${varId}`,
               externalId: varId.toString(),
               title: `Variant ${varId}`,
-              sku: '',
+              sku: "",
               price: Math.round(parseFloat(product.price) * 100),
               inventory: product.stock_quantity || 0,
               metadata: {},
             }))
           : [],
-        categories: product.categories.map(cat => cat.name),
-        tags: product.tags.map(tag => tag.name),
+        categories: product.categories.map((cat) => cat.name),
+        tags: product.tags.map((tag) => tag.name),
         metadata: this.extractMetadata(product.meta_data),
       };
 
@@ -269,9 +273,9 @@ export class DataNormalizer {
       };
     } catch (error) {
       errors.push({
-        field: 'product',
+        field: "product",
         value: product,
-        reason: error instanceof Error ? error.message : 'Unknown error',
+        reason: error instanceof Error ? error.message : "Unknown error",
       });
 
       return {
@@ -284,7 +288,9 @@ export class DataNormalizer {
   /**
    * WooCommerce Customer Normalization
    */
-  private static normalizeWooCommerceCustomer(customer: WCCustomer): NormalizationResult<UnifiedCustomer> {
+  private static normalizeWooCommerceCustomer(
+    customer: WCCustomer,
+  ): NormalizationResult<UnifiedCustomer> {
     const errors: NormalizationError[] = [];
 
     try {
@@ -319,9 +325,9 @@ export class DataNormalizer {
       };
     } catch (error) {
       errors.push({
-        field: 'customer',
+        field: "customer",
         value: customer,
-        reason: error instanceof Error ? error.message : 'Unknown error',
+        reason: error instanceof Error ? error.message : "Unknown error",
       });
 
       return {
@@ -334,16 +340,23 @@ export class DataNormalizer {
   /**
    * Helper: Normalize WooCommerce Line Item
    */
-  private static normalizeWooCommerceLineItem(item: WCLineItem): UnifiedLineItem {
+  private static normalizeWooCommerceLineItem(
+    item: WCLineItem,
+  ): UnifiedLineItem {
     return {
       id: `wc-line-item-${item.id}`,
       externalId: item.id.toString(),
       productId: `wc-product-${item.product_id}`,
       productName: item.name,
-      variantId: item.variation_id > 0 ? `wc-variant-${item.product_id}-${item.variation_id}` : undefined,
+      variantId:
+        item.variation_id > 0
+          ? `wc-variant-${item.product_id}-${item.variation_id}`
+          : undefined,
       sku: item.sku,
       quantity: item.quantity,
-      unitPrice: Math.round(parseFloat(item.total.toString()) / item.quantity * 100),
+      unitPrice: Math.round(
+        (parseFloat(item.total.toString()) / item.quantity) * 100,
+      ),
       totalPrice: Math.round(parseFloat(item.total) * 100),
       taxTotal: Math.round(parseFloat(item.total_tax) * 100),
       metadata: this.extractMetadata(item.meta_data),
@@ -353,7 +366,9 @@ export class DataNormalizer {
   /**
    * Helper: Normalize WooCommerce Address
    */
-  private static normalizeWooCommerceAddress(address: WCAddress): UnifiedAddress {
+  private static normalizeWooCommerceAddress(
+    address: WCAddress,
+  ): UnifiedAddress {
     return {
       firstName: address.first_name,
       lastName: address.last_name,
@@ -372,111 +387,128 @@ export class DataNormalizer {
   /**
    * Helper: Map WooCommerce status to unified status
    */
-  private static mapWooCommerceOrderStatus(wcStatus: string): UnifiedOrder['status'] {
-    const statusMap: Record<string, UnifiedOrder['status']> = {
-      pending: 'pending',
-      processing: 'confirmed',
-      'on-hold': 'pending',
-      completed: 'delivered',
-      cancelled: 'cancelled',
-      refunded: 'returned',
-      failed: 'cancelled',
+  private static mapWooCommerceOrderStatus(
+    wcStatus: string,
+  ): UnifiedOrder["status"] {
+    const statusMap: Record<string, UnifiedOrder["status"]> = {
+      pending: "pending",
+      processing: "confirmed",
+      "on-hold": "pending",
+      completed: "delivered",
+      cancelled: "cancelled",
+      refunded: "returned",
+      failed: "cancelled",
     };
 
-    return statusMap[wcStatus] || 'pending';
+    return statusMap[wcStatus] || "pending";
   }
 
   /**
    * Helper: Extract metadata from platform meta_data format
    */
   private static extractMetadata(
-    metaData: Array<{ key: string; value: unknown }> | undefined
+    metaData: Array<{ key: string; value: unknown }> | undefined,
   ): Record<string, unknown> {
     if (!metaData) return {};
 
-    return metaData.reduce((acc, item) => {
-      acc[item.key] = item.value;
-      return acc;
-    }, {} as Record<string, unknown>);
+    return metaData.reduce(
+      (acc, item) => {
+        acc[item.key] = item.value;
+        return acc;
+      },
+      {} as Record<string, unknown>,
+    );
   }
 
   /**
    * Placeholder methods for other platforms
    */
-  private static normalizeShopifyOrder(order: any): NormalizationResult<UnifiedOrder> {
+  private static normalizeShopifyOrder(
+    order: any,
+  ): NormalizationResult<UnifiedOrder> {
     // TODO: Implement Shopify order normalization
     return {
       success: false,
       errors: [
         {
-          field: 'platform',
-          value: 'shopify',
-          reason: 'Shopify normalization not yet implemented',
+          field: "platform",
+          value: "shopify",
+          reason: "Shopify normalization not yet implemented",
         },
       ],
     };
   }
 
-  private static normalizeShopifyProduct(product: any): NormalizationResult<UnifiedProduct> {
+  private static normalizeShopifyProduct(
+    product: any,
+  ): NormalizationResult<UnifiedProduct> {
     return {
       success: false,
       errors: [
         {
-          field: 'platform',
-          value: 'shopify',
-          reason: 'Shopify product normalization not yet implemented',
+          field: "platform",
+          value: "shopify",
+          reason: "Shopify product normalization not yet implemented",
         },
       ],
     };
   }
 
-  private static normalizeShopifyCustomer(customer: any): NormalizationResult<UnifiedCustomer> {
+  private static normalizeShopifyCustomer(
+    customer: any,
+  ): NormalizationResult<UnifiedCustomer> {
     return {
       success: false,
       errors: [
         {
-          field: 'platform',
-          value: 'shopify',
-          reason: 'Shopify customer normalization not yet implemented',
+          field: "platform",
+          value: "shopify",
+          reason: "Shopify customer normalization not yet implemented",
         },
       ],
     };
   }
 
-  private static normalizeMagentoOrder(order: any): NormalizationResult<UnifiedOrder> {
+  private static normalizeMagentoOrder(
+    order: any,
+  ): NormalizationResult<UnifiedOrder> {
     return {
       success: false,
       errors: [
         {
-          field: 'platform',
-          value: 'magento',
-          reason: 'Magento normalization not yet implemented',
+          field: "platform",
+          value: "magento",
+          reason: "Magento normalization not yet implemented",
         },
       ],
     };
   }
 
-  private static normalizeMagentoProduct(product: any): NormalizationResult<UnifiedProduct> {
+  private static normalizeMagentoProduct(
+    product: any,
+  ): NormalizationResult<UnifiedProduct> {
     return {
       success: false,
       errors: [
         {
-          field: 'platform',
-          value: 'magento',
-          reason: 'Magento product normalization not yet implemented',
+          field: "platform",
+          value: "magento",
+          reason: "Magento product normalization not yet implemented",
         },
       ],
     };
   }
 
-  private static normalizeMagentoCustomer(customer: any): NormalizationResult<UnifiedCustomer> {
+  private static normalizeMagentoCustomer(
+    customer: any,
+  ): NormalizationResult<UnifiedCustomer> {
     return {
       success: false,
       errors: [
         {
-          field: 'platform',
-          value: 'magento',
-          reason: 'Magento customer normalization not yet implemented',
+          field: "platform",
+          value: "magento",
+          reason: "Magento customer normalization not yet implemented",
         },
       ],
     };

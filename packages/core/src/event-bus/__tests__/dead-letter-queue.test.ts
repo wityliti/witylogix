@@ -4,7 +4,7 @@
  * ~400 lines
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 // ───────────────────────────────────────────────────────────────────────────
 // TYPE DEFINITIONS
@@ -57,7 +57,11 @@ export interface DLQMetrics {
 }
 
 export interface DeadLetterQueue {
-  addFailedEvent(envelope: EventEnvelope, error: Error, retryCount: number): Promise<void>;
+  addFailedEvent(
+    envelope: EventEnvelope,
+    error: Error,
+    retryCount: number,
+  ): Promise<void>;
   getMetrics(): DLQMetrics;
   getEventsByType(eventType: string): DeadLetterEvent[];
   getEventsByTenant(tenantId: string): DeadLetterEvent[];
@@ -68,7 +72,9 @@ export interface DeadLetterQueue {
 
 export interface EventStream {
   publish(streamKey: string, event: DeadLetterEvent): Promise<string>;
-  getStreamMetrics(streamKey: string): Promise<{ size: number; events: DeadLetterEvent[] }>;
+  getStreamMetrics(
+    streamKey: string,
+  ): Promise<{ size: number; events: DeadLetterEvent[] }>;
 }
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -86,7 +92,9 @@ class InMemoryEventStream implements EventStream {
     return `dlq-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  async getStreamMetrics(streamKey: string): Promise<{ size: number; events: DeadLetterEvent[] }> {
+  async getStreamMetrics(
+    streamKey: string,
+  ): Promise<{ size: number; events: DeadLetterEvent[] }> {
     const events = this.streams.get(streamKey) || [];
     return { size: events.length, events: [...events] };
   }
@@ -116,7 +124,7 @@ class DeadLetterQueueImpl implements DeadLetterQueue {
   async addFailedEvent(
     envelope: EventEnvelope,
     error: Error,
-    retryCount: number
+    retryCount: number,
   ): Promise<void> {
     const dlqEventId = `dlq-${++this.dlqIdCounter}`;
     const now = new Date();
@@ -169,7 +177,7 @@ class DeadLetterQueueImpl implements DeadLetterQueue {
 
     const oneHourAgo = Date.now() - 3600000;
     const recentFailures = events.filter(
-      (e) => e.lastFailureAt.getTime() > oneHourAgo
+      (e) => e.lastFailureAt.getTime() > oneHourAgo,
     ).length;
 
     return {
@@ -183,13 +191,13 @@ class DeadLetterQueueImpl implements DeadLetterQueue {
 
   getEventsByType(eventType: string): DeadLetterEvent[] {
     return Object.values(this.dlqEvents).filter(
-      (e) => e.eventType === eventType
+      (e) => e.eventType === eventType,
     );
   }
 
   getEventsByTenant(tenantId: string): DeadLetterEvent[] {
     return Object.values(this.dlqEvents).filter(
-      (e) => e.metadata.tenantId === tenantId
+      (e) => e.metadata.tenantId === tenantId,
     );
   }
 
@@ -222,7 +230,7 @@ class DeadLetterQueueImpl implements DeadLetterQueue {
 // TEST SUITE
 // ───────────────────────────────────────────────────────────────────────────
 
-describe('Dead Letter Queue (DLQ)', () => {
+describe("Dead Letter Queue (DLQ)", () => {
   let dlq: DeadLetterQueueImpl;
   let eventStream: InMemoryEventStream;
 
@@ -239,22 +247,22 @@ describe('Dead Letter Queue (DLQ)', () => {
   // FAILED EVENTS GO TO DLQ AFTER RETRY EXHAUSTION
   // ─────────────────────────────────────────────────────────────────────────
 
-  describe('Failed Events Go to DLQ After Retry Exhaustion', () => {
-    it('should add failed event to DLQ after exhausting retries', async () => {
+  describe("Failed Events Go to DLQ After Retry Exhaustion", () => {
+    it("should add failed event to DLQ after exhausting retries", async () => {
       const envelope: EventEnvelope = {
         metadata: {
-          id: 'evt-1',
-          type: 'order.created',
-          source: 'api',
+          id: "evt-1",
+          type: "order.created",
+          source: "api",
           timestamp: new Date().toISOString(),
-          tenantId: 'shop-1',
-          correlationId: 'corr-1',
+          tenantId: "shop-1",
+          correlationId: "corr-1",
           version: 1,
         },
-        data: { orderId: '123', amount: 100 },
+        data: { orderId: "123", amount: 100 },
       };
 
-      const error = new Error('Database connection failed');
+      const error = new Error("Database connection failed");
       const retryCount = 3;
 
       await dlq.addFailedEvent(envelope, error, retryCount);
@@ -262,71 +270,71 @@ describe('Dead Letter Queue (DLQ)', () => {
       expect(dlq.getSize()).toBe(1);
     });
 
-    it('should preserve original event data in DLQ', async () => {
+    it("should preserve original event data in DLQ", async () => {
       const envelope: EventEnvelope = {
         metadata: {
-          id: 'evt-2',
-          type: 'order.updated',
-          source: 'webhook',
-          timestamp: '2024-02-01T10:00:00Z',
-          tenantId: 'shop-2',
-          correlationId: 'corr-2',
+          id: "evt-2",
+          type: "order.updated",
+          source: "webhook",
+          timestamp: "2024-02-01T10:00:00Z",
+          tenantId: "shop-2",
+          correlationId: "corr-2",
           version: 1,
         },
-        data: { orderId: '456', status: 'shipped' },
+        data: { orderId: "456", status: "shipped" },
       };
 
-      const error = new Error('Service unavailable');
+      const error = new Error("Service unavailable");
 
       await dlq.addFailedEvent(envelope, error, 3);
 
       const dlqEvents = dlq.getAllEvents();
       expect(dlqEvents).toHaveLength(1);
-      expect(dlqEvents[0].originalEventId).toBe('evt-2');
-      expect(dlqEvents[0].eventType).toBe('order.updated');
-      expect(dlqEvents[0].envelopeData.data.orderId).toBe('456');
+      expect(dlqEvents[0].originalEventId).toBe("evt-2");
+      expect(dlqEvents[0].eventType).toBe("order.updated");
+      expect(dlqEvents[0].envelopeData.data.orderId).toBe("456");
     });
 
-    it('should capture error details in DLQ entry', async () => {
+    it("should capture error details in DLQ entry", async () => {
       const envelope: EventEnvelope = {
         metadata: {
-          id: 'evt-3',
-          type: 'delivery.completed',
-          source: 'api',
+          id: "evt-3",
+          type: "delivery.completed",
+          source: "api",
           timestamp: new Date().toISOString(),
-          tenantId: 'shop-3',
-          correlationId: 'corr-3',
+          tenantId: "shop-3",
+          correlationId: "corr-3",
           version: 1,
         },
-        data: { deliveryId: '789' },
+        data: { deliveryId: "789" },
       };
 
-      const error = new Error('Network timeout after 30s');
-      error.stack = 'Error: Network timeout after 30s\n  at handler.ts:50';
+      const error = new Error("Network timeout after 30s");
+      error.stack = "Error: Network timeout after 30s\n  at handler.ts:50";
 
       await dlq.addFailedEvent(envelope, error, 5);
 
       const dlqEvents = dlq.getAllEvents();
-      expect(dlqEvents[0].errorMessage).toBe('Network timeout after 30s');
+      expect(dlqEvents[0].errorMessage).toBe("Network timeout after 30s");
       expect(dlqEvents[0].errorStack).toBeDefined();
       expect(dlqEvents[0].failureCount).toBe(5);
     });
 
-    it('should mark retries as exhausted', async () => {
+    it("should mark retries as exhausted", async () => {
       const envelope: EventEnvelope = {
         metadata: {
-          id: 'evt-4',
-          type: 'customer.registered',
-          source: 'api',
+          id: "evt-4",
+          type: "customer.registered",
+          source: "api",
           timestamp: new Date().toISOString(),
-          tenantId: 'shop-4',
-          correlationId: 'corr-4',
+          tenantId: "shop-4",
+          correlationId: "corr-4",
           version: 1,
         },
-        data: { customerId: '999' },
+        data: { customerId: "999" },
       };
 
-      const error = new Error('Permanent error');
+      const error = new Error("Permanent error");
 
       await dlq.addFailedEvent(envelope, error, 3);
 
@@ -334,21 +342,21 @@ describe('Dead Letter Queue (DLQ)', () => {
       expect(dlqEvents[0].metadata.retriesExhausted).toBe(true);
     });
 
-    it('should track failure timestamps', async () => {
+    it("should track failure timestamps", async () => {
       const envelope: EventEnvelope = {
         metadata: {
-          id: 'evt-5',
-          type: 'payment.processed',
-          source: 'api',
+          id: "evt-5",
+          type: "payment.processed",
+          source: "api",
           timestamp: new Date().toISOString(),
-          tenantId: 'shop-5',
-          correlationId: 'corr-5',
+          tenantId: "shop-5",
+          correlationId: "corr-5",
           version: 1,
         },
-        data: { paymentId: '555' },
+        data: { paymentId: "555" },
       };
 
-      const error = new Error('Payment gateway error');
+      const error = new Error("Payment gateway error");
       const beforeTime = Date.now();
 
       await dlq.addFailedEvent(envelope, error, 2);
@@ -366,54 +374,54 @@ describe('Dead Letter Queue (DLQ)', () => {
   // DLQ COUNTER INCREMENTS PER EVENT TYPE
   // ─────────────────────────────────────────────────────────────────────────
 
-  describe('DLQ Counter Increments Per Event Type', () => {
-    it('should increment counter for order.created events', async () => {
+  describe("DLQ Counter Increments Per Event Type", () => {
+    it("should increment counter for order.created events", async () => {
       const envelope1: EventEnvelope = {
         metadata: {
-          id: 'evt-6',
-          type: 'order.created',
-          source: 'api',
+          id: "evt-6",
+          type: "order.created",
+          source: "api",
           timestamp: new Date().toISOString(),
-          tenantId: 'shop-1',
-          correlationId: 'corr-6',
+          tenantId: "shop-1",
+          correlationId: "corr-6",
           version: 1,
         },
-        data: { orderId: '1' },
+        data: { orderId: "1" },
       };
 
       const envelope2: EventEnvelope = {
         metadata: {
-          id: 'evt-7',
-          type: 'order.created',
-          source: 'api',
+          id: "evt-7",
+          type: "order.created",
+          source: "api",
           timestamp: new Date().toISOString(),
-          tenantId: 'shop-1',
-          correlationId: 'corr-7',
+          tenantId: "shop-1",
+          correlationId: "corr-7",
           version: 1,
         },
-        data: { orderId: '2' },
+        data: { orderId: "2" },
       };
 
-      const error = new Error('Failed');
+      const error = new Error("Failed");
 
       await dlq.addFailedEvent(envelope1, error, 3);
       await dlq.addFailedEvent(envelope2, error, 3);
 
       const metrics = dlq.getMetrics();
-      expect(metrics.eventsByType['order.created']).toBe(2);
+      expect(metrics.eventsByType["order.created"]).toBe(2);
     });
 
-    it('should track different event types separately', async () => {
-      const error = new Error('Failed');
+    it("should track different event types separately", async () => {
+      const error = new Error("Failed");
 
       const orderEnvelope: EventEnvelope = {
         metadata: {
-          id: 'evt-8',
-          type: 'order.created',
-          source: 'api',
+          id: "evt-8",
+          type: "order.created",
+          source: "api",
           timestamp: new Date().toISOString(),
-          tenantId: 'shop-1',
-          correlationId: 'corr-8',
+          tenantId: "shop-1",
+          correlationId: "corr-8",
           version: 1,
         },
         data: {},
@@ -421,12 +429,12 @@ describe('Dead Letter Queue (DLQ)', () => {
 
       const deliveryEnvelope: EventEnvelope = {
         metadata: {
-          id: 'evt-9',
-          type: 'delivery.started',
-          source: 'api',
+          id: "evt-9",
+          type: "delivery.started",
+          source: "api",
           timestamp: new Date().toISOString(),
-          tenantId: 'shop-1',
-          correlationId: 'corr-9',
+          tenantId: "shop-1",
+          correlationId: "corr-9",
           version: 1,
         },
         data: {},
@@ -434,12 +442,12 @@ describe('Dead Letter Queue (DLQ)', () => {
 
       const paymentEnvelope: EventEnvelope = {
         metadata: {
-          id: 'evt-10',
-          type: 'payment.processed',
-          source: 'api',
+          id: "evt-10",
+          type: "payment.processed",
+          source: "api",
           timestamp: new Date().toISOString(),
-          tenantId: 'shop-1',
-          correlationId: 'corr-10',
+          tenantId: "shop-1",
+          correlationId: "corr-10",
           version: 1,
         },
         data: {},
@@ -450,23 +458,23 @@ describe('Dead Letter Queue (DLQ)', () => {
       await dlq.addFailedEvent(paymentEnvelope, error, 3);
 
       const metrics = dlq.getMetrics();
-      expect(metrics.eventsByType['order.created']).toBe(1);
-      expect(metrics.eventsByType['delivery.started']).toBe(1);
-      expect(metrics.eventsByType['payment.processed']).toBe(1);
+      expect(metrics.eventsByType["order.created"]).toBe(1);
+      expect(metrics.eventsByType["delivery.started"]).toBe(1);
+      expect(metrics.eventsByType["payment.processed"]).toBe(1);
       expect(metrics.totalEventsInDLQ).toBe(3);
     });
 
-    it('should retrieve events by type', async () => {
-      const error = new Error('Failed');
+    it("should retrieve events by type", async () => {
+      const error = new Error("Failed");
 
       for (let i = 0; i < 3; i++) {
         const envelope: EventEnvelope = {
           metadata: {
             id: `evt-${11 + i}`,
-            type: 'order.created',
-            source: 'api',
+            type: "order.created",
+            source: "api",
             timestamp: new Date().toISOString(),
-            tenantId: 'shop-1',
+            tenantId: "shop-1",
             correlationId: `corr-${11 + i}`,
             version: 1,
           },
@@ -479,10 +487,10 @@ describe('Dead Letter Queue (DLQ)', () => {
         const envelope: EventEnvelope = {
           metadata: {
             id: `evt-${20 + i}`,
-            type: 'delivery.completed',
-            source: 'api',
+            type: "delivery.completed",
+            source: "api",
             timestamp: new Date().toISOString(),
-            tenantId: 'shop-1',
+            tenantId: "shop-1",
             correlationId: `corr-${20 + i}`,
             version: 1,
           },
@@ -491,28 +499,36 @@ describe('Dead Letter Queue (DLQ)', () => {
         await dlq.addFailedEvent(envelope, error, 3);
       }
 
-      const orderEvents = dlq.getEventsByType('order.created');
-      const deliveryEvents = dlq.getEventsByType('delivery.completed');
+      const orderEvents = dlq.getEventsByType("order.created");
+      const deliveryEvents = dlq.getEventsByType("delivery.completed");
 
       expect(orderEvents).toHaveLength(3);
       expect(deliveryEvents).toHaveLength(2);
-      expect(orderEvents.every((e) => e.eventType === 'order.created')).toBe(true);
-      expect(deliveryEvents.every((e) => e.eventType === 'delivery.completed')).toBe(true);
+      expect(orderEvents.every((e) => e.eventType === "order.created")).toBe(
+        true,
+      );
+      expect(
+        deliveryEvents.every((e) => e.eventType === "delivery.completed"),
+      ).toBe(true);
     });
 
-    it('should filter by multiple event types correctly', async () => {
-      const error = new Error('Failed');
+    it("should filter by multiple event types correctly", async () => {
+      const error = new Error("Failed");
 
-      const eventTypes = ['order.created', 'order.updated', 'payment.processed'];
+      const eventTypes = [
+        "order.created",
+        "order.updated",
+        "payment.processed",
+      ];
 
       for (const eventType of eventTypes) {
         const envelope: EventEnvelope = {
           metadata: {
             id: `evt-${eventType}`,
             type: eventType,
-            source: 'api',
+            source: "api",
             timestamp: new Date().toISOString(),
-            tenantId: 'shop-1',
+            tenantId: "shop-1",
             correlationId: `corr-${eventType}`,
             version: 1,
           },
@@ -530,18 +546,18 @@ describe('Dead Letter Queue (DLQ)', () => {
   // GET_METRICS RETURNS CORRECT DLQ SIZE
   // ─────────────────────────────────────────────────────────────────────────
 
-  describe('getMetrics() Returns Correct DLQ Size', () => {
-    it('should return total events count', async () => {
-      const error = new Error('Failed');
+  describe("getMetrics() Returns Correct DLQ Size", () => {
+    it("should return total events count", async () => {
+      const error = new Error("Failed");
 
       for (let i = 0; i < 5; i++) {
         const envelope: EventEnvelope = {
           metadata: {
             id: `evt-${30 + i}`,
-            type: 'order.created',
-            source: 'api',
+            type: "order.created",
+            source: "api",
             timestamp: new Date().toISOString(),
-            tenantId: 'shop-1',
+            tenantId: "shop-1",
             correlationId: `corr-${30 + i}`,
             version: 1,
           },
@@ -554,18 +570,18 @@ describe('Dead Letter Queue (DLQ)', () => {
       expect(metrics.totalEventsInDLQ).toBe(5);
     });
 
-    it('should return breakdown by tenant', async () => {
-      const error = new Error('Failed');
+    it("should return breakdown by tenant", async () => {
+      const error = new Error("Failed");
 
-      const tenants = ['shop-1', 'shop-2', 'shop-3'];
+      const tenants = ["shop-1", "shop-2", "shop-3"];
 
       for (let i = 0; i < 3; i++) {
         for (const tenant of tenants) {
           const envelope: EventEnvelope = {
             metadata: {
               id: `evt-${40 + i}-${tenant}`,
-              type: 'order.created',
-              source: 'api',
+              type: "order.created",
+              source: "api",
               timestamp: new Date().toISOString(),
               tenantId: tenant,
               correlationId: `corr-${40 + i}-${tenant}`,
@@ -578,22 +594,22 @@ describe('Dead Letter Queue (DLQ)', () => {
       }
 
       const metrics = dlq.getMetrics();
-      expect(metrics.eventsByTenant['shop-1']).toBe(3);
-      expect(metrics.eventsByTenant['shop-2']).toBe(3);
-      expect(metrics.eventsByTenant['shop-3']).toBe(3);
+      expect(metrics.eventsByTenant["shop-1"]).toBe(3);
+      expect(metrics.eventsByTenant["shop-2"]).toBe(3);
+      expect(metrics.eventsByTenant["shop-3"]).toBe(3);
     });
 
-    it('should return oldest event age', async () => {
-      const error = new Error('Failed');
+    it("should return oldest event age", async () => {
+      const error = new Error("Failed");
 
       const envelope: EventEnvelope = {
         metadata: {
-          id: 'evt-oldest',
-          type: 'order.created',
-          source: 'api',
+          id: "evt-oldest",
+          type: "order.created",
+          source: "api",
           timestamp: new Date().toISOString(),
-          tenantId: 'shop-1',
-          correlationId: 'corr-oldest',
+          tenantId: "shop-1",
+          correlationId: "corr-oldest",
           version: 1,
         },
         data: {},
@@ -606,17 +622,17 @@ describe('Dead Letter Queue (DLQ)', () => {
       expect(metrics.oldestEventAge).toBeLessThan(1000); // Should be < 1s
     });
 
-    it('should track recent failures within last hour', async () => {
-      const error = new Error('Failed');
+    it("should track recent failures within last hour", async () => {
+      const error = new Error("Failed");
 
       const envelope: EventEnvelope = {
         metadata: {
-          id: 'evt-recent',
-          type: 'order.created',
-          source: 'api',
+          id: "evt-recent",
+          type: "order.created",
+          source: "api",
           timestamp: new Date().toISOString(),
-          tenantId: 'shop-1',
-          correlationId: 'corr-recent',
+          tenantId: "shop-1",
+          correlationId: "corr-recent",
           version: 1,
         },
         data: {},
@@ -628,10 +644,10 @@ describe('Dead Letter Queue (DLQ)', () => {
       expect(metrics.recentFailures).toBe(1);
     });
 
-    it('should include breakdown by event type in metrics', async () => {
-      const error = new Error('Failed');
+    it("should include breakdown by event type in metrics", async () => {
+      const error = new Error("Failed");
 
-      const types = ['order.created', 'delivery.started', 'payment.processed'];
+      const types = ["order.created", "delivery.started", "payment.processed"];
 
       for (const type of types) {
         for (let i = 0; i < 2; i++) {
@@ -639,9 +655,9 @@ describe('Dead Letter Queue (DLQ)', () => {
             metadata: {
               id: `evt-${type}-${i}`,
               type,
-              source: 'api',
+              source: "api",
               timestamp: new Date().toISOString(),
-              tenantId: 'shop-1',
+              tenantId: "shop-1",
               correlationId: `corr-${type}-${i}`,
               version: 1,
             },
@@ -652,9 +668,9 @@ describe('Dead Letter Queue (DLQ)', () => {
       }
 
       const metrics = dlq.getMetrics();
-      expect(metrics.eventsByType['order.created']).toBe(2);
-      expect(metrics.eventsByType['delivery.started']).toBe(2);
-      expect(metrics.eventsByType['payment.processed']).toBe(2);
+      expect(metrics.eventsByType["order.created"]).toBe(2);
+      expect(metrics.eventsByType["delivery.started"]).toBe(2);
+      expect(metrics.eventsByType["payment.processed"]).toBe(2);
     });
   });
 
@@ -662,61 +678,66 @@ describe('Dead Letter Queue (DLQ)', () => {
   // DLQ STREAM RECEIVES FAILED EVENTS WITH ERROR DETAILS
   // ─────────────────────────────────────────────────────────────────────────
 
-  describe('DLQ Stream Receives Failed Events With Error Details', () => {
-    it('should publish failed event to stream', async () => {
+  describe("DLQ Stream Receives Failed Events With Error Details", () => {
+    it("should publish failed event to stream", async () => {
       const envelope: EventEnvelope = {
         metadata: {
-          id: 'evt-stream-1',
-          type: 'order.created',
-          source: 'api',
+          id: "evt-stream-1",
+          type: "order.created",
+          source: "api",
           timestamp: new Date().toISOString(),
-          tenantId: 'shop-1',
-          correlationId: 'corr-stream-1',
+          tenantId: "shop-1",
+          correlationId: "corr-stream-1",
           version: 1,
         },
-        data: { orderId: '123' },
+        data: { orderId: "123" },
       };
 
-      const error = new Error('Processing failed');
+      const error = new Error("Processing failed");
       await dlq.addFailedEvent(envelope, error, 3);
 
-      const streamMetrics = await eventStream.getStreamMetrics('dlq:order.created');
+      const streamMetrics =
+        await eventStream.getStreamMetrics("dlq:order.created");
       expect(streamMetrics.size).toBe(1);
-      expect(streamMetrics.events[0].originalEventId).toBe('evt-stream-1');
+      expect(streamMetrics.events[0].originalEventId).toBe("evt-stream-1");
     });
 
-    it('should include error message in stream event', async () => {
+    it("should include error message in stream event", async () => {
       const envelope: EventEnvelope = {
         metadata: {
-          id: 'evt-stream-2',
-          type: 'delivery.started',
-          source: 'api',
+          id: "evt-stream-2",
+          type: "delivery.started",
+          source: "api",
           timestamp: new Date().toISOString(),
-          tenantId: 'shop-1',
-          correlationId: 'corr-stream-2',
+          tenantId: "shop-1",
+          correlationId: "corr-stream-2",
           version: 1,
         },
-        data: { deliveryId: '456' },
+        data: { deliveryId: "456" },
       };
 
-      const error = new Error('Delivery service unreachable');
+      const error = new Error("Delivery service unreachable");
       await dlq.addFailedEvent(envelope, error, 2);
 
-      const streamMetrics = await eventStream.getStreamMetrics('dlq:delivery.started');
-      expect(streamMetrics.events[0].errorMessage).toBe('Delivery service unreachable');
+      const streamMetrics = await eventStream.getStreamMetrics(
+        "dlq:delivery.started",
+      );
+      expect(streamMetrics.events[0].errorMessage).toBe(
+        "Delivery service unreachable",
+      );
     });
 
-    it('should publish multiple failed events to correct streams', async () => {
-      const error = new Error('Failed');
+    it("should publish multiple failed events to correct streams", async () => {
+      const error = new Error("Failed");
 
       const envelope1: EventEnvelope = {
         metadata: {
-          id: 'evt-multi-1',
-          type: 'order.created',
-          source: 'api',
+          id: "evt-multi-1",
+          type: "order.created",
+          source: "api",
           timestamp: new Date().toISOString(),
-          tenantId: 'shop-1',
-          correlationId: 'corr-multi-1',
+          tenantId: "shop-1",
+          correlationId: "corr-multi-1",
           version: 1,
         },
         data: {},
@@ -724,12 +745,12 @@ describe('Dead Letter Queue (DLQ)', () => {
 
       const envelope2: EventEnvelope = {
         metadata: {
-          id: 'evt-multi-2',
-          type: 'payment.processed',
-          source: 'api',
+          id: "evt-multi-2",
+          type: "payment.processed",
+          source: "api",
           timestamp: new Date().toISOString(),
-          tenantId: 'shop-1',
-          correlationId: 'corr-multi-2',
+          tenantId: "shop-1",
+          correlationId: "corr-multi-2",
           version: 1,
         },
         data: {},
@@ -738,36 +759,40 @@ describe('Dead Letter Queue (DLQ)', () => {
       await dlq.addFailedEvent(envelope1, error, 3);
       await dlq.addFailedEvent(envelope2, error, 3);
 
-      const orderStream = await eventStream.getStreamMetrics('dlq:order.created');
-      const paymentStream = await eventStream.getStreamMetrics('dlq:payment.processed');
+      const orderStream =
+        await eventStream.getStreamMetrics("dlq:order.created");
+      const paymentStream = await eventStream.getStreamMetrics(
+        "dlq:payment.processed",
+      );
 
       expect(orderStream.size).toBe(1);
       expect(paymentStream.size).toBe(1);
     });
 
-    it('should include cause chain in stream event', async () => {
+    it("should include cause chain in stream event", async () => {
       const envelope: EventEnvelope = {
         metadata: {
-          id: 'evt-cause',
-          type: 'order.created',
-          source: 'api',
+          id: "evt-cause",
+          type: "order.created",
+          source: "api",
           timestamp: new Date().toISOString(),
-          tenantId: 'shop-1',
-          correlationId: 'corr-cause',
+          tenantId: "shop-1",
+          correlationId: "corr-cause",
           version: 1,
         },
         data: {},
       };
 
-      const error = new Error('Connection timeout');
+      const error = new Error("Connection timeout");
       await dlq.addFailedEvent(envelope, error, 3);
 
-      const streamMetrics = await eventStream.getStreamMetrics('dlq:order.created');
+      const streamMetrics =
+        await eventStream.getStreamMetrics("dlq:order.created");
       const dlqEvent = streamMetrics.events[0];
 
       expect(dlqEvent.metadata.causeChain).toBeDefined();
       expect(dlqEvent.metadata.causeChain.length).toBeGreaterThan(0);
-      expect(dlqEvent.metadata.causeChain[0].error).toBe('Connection timeout');
+      expect(dlqEvent.metadata.causeChain[0].error).toBe("Connection timeout");
     });
   });
 
@@ -775,71 +800,73 @@ describe('Dead Letter Queue (DLQ)', () => {
   // ADDITIONAL OPERATIONS
   // ─────────────────────────────────────────────────────────────────────────
 
-  describe('DLQ Operations - Replay and Delete', () => {
-    it('should replay event from DLQ', async () => {
+  describe("DLQ Operations - Replay and Delete", () => {
+    it("should replay event from DLQ", async () => {
       const envelope: EventEnvelope = {
         metadata: {
-          id: 'evt-replay',
-          type: 'order.created',
-          source: 'api',
+          id: "evt-replay",
+          type: "order.created",
+          source: "api",
           timestamp: new Date().toISOString(),
-          tenantId: 'shop-1',
-          correlationId: 'corr-replay',
+          tenantId: "shop-1",
+          correlationId: "corr-replay",
           version: 1,
         },
-        data: { orderId: '789' },
+        data: { orderId: "789" },
       };
 
-      const error = new Error('Failed');
+      const error = new Error("Failed");
       await dlq.addFailedEvent(envelope, error, 3);
 
       const dlqEvents = dlq.getAllEvents();
-      const dlqEventId = Object.keys(dlq['dlqEvents'])[0];
+      const dlqEventId = Object.keys(dlq["dlqEvents"])[0];
 
       // Replay the event
       await expect(dlq.replayEvent(dlqEventId)).resolves.toBeUndefined();
     });
 
-    it('should delete event from DLQ', async () => {
+    it("should delete event from DLQ", async () => {
       const envelope: EventEnvelope = {
         metadata: {
-          id: 'evt-delete',
-          type: 'order.created',
-          source: 'api',
+          id: "evt-delete",
+          type: "order.created",
+          source: "api",
           timestamp: new Date().toISOString(),
-          tenantId: 'shop-1',
-          correlationId: 'corr-delete',
+          tenantId: "shop-1",
+          correlationId: "corr-delete",
           version: 1,
         },
-        data: { orderId: '999' },
+        data: { orderId: "999" },
       };
 
-      const error = new Error('Failed');
+      const error = new Error("Failed");
       await dlq.addFailedEvent(envelope, error, 3);
 
       expect(dlq.getSize()).toBe(1);
 
-      const dlqEventId = Object.keys(dlq['dlqEvents'])[0];
+      const dlqEventId = Object.keys(dlq["dlqEvents"])[0];
       await dlq.deleteEvent(dlqEventId);
 
       expect(dlq.getSize()).toBe(0);
     });
 
-    it('should throw error when deleting non-existent event', async () => {
-      await expect(dlq.deleteEvent('non-existent')).rejects.toThrow('DLQ event not found');
+    it("should throw error when deleting non-existent event", async () => {
+      await expect(dlq.deleteEvent("non-existent")).rejects.toThrow(
+        "DLQ event not found",
+      );
     });
 
-    it('should retrieve events by tenant', async () => {
-      const error = new Error('Failed');
+    it("should retrieve events by tenant", async () => {
+      const error = new Error("Failed");
 
       for (let i = 0; i < 3; i++) {
         const envelope: EventEnvelope = {
           metadata: {
             id: `evt-tenant-1-${i}`,
-            type: 'order.created',
-            source: 'api',
+            type: "order.created",
+            source: "api",
             timestamp: new Date().toISOString(),
-            tenantId: 'shop-1',
+            tenantId: "shop-1",
             correlationId: `corr-tenant-1-${i}`,
             version: 1,
           },
@@ -852,10 +879,10 @@ describe('Dead Letter Queue (DLQ)', () => {
         const envelope: EventEnvelope = {
           metadata: {
             id: `evt-tenant-2-${i}`,
-            type: 'order.created',
-            source: 'api',
+            type: "order.created",
+            source: "api",
             timestamp: new Date().toISOString(),
-            tenantId: 'shop-2',
+            tenantId: "shop-2",
             correlationId: `corr-tenant-2-${i}`,
             version: 1,
           },
@@ -864,14 +891,14 @@ describe('Dead Letter Queue (DLQ)', () => {
         await dlq.addFailedEvent(envelope, error, 3);
       }
 
-      const shop1Events = dlq.getEventsByTenant('shop-1');
-      const shop2Events = dlq.getEventsByTenant('shop-2');
+      const shop1Events = dlq.getEventsByTenant("shop-1");
+      const shop2Events = dlq.getEventsByTenant("shop-2");
 
       expect(shop1Events).toHaveLength(3);
       expect(shop2Events).toHaveLength(2);
     });
 
-    it('should handle empty DLQ operations gracefully', () => {
+    it("should handle empty DLQ operations gracefully", () => {
       const metrics = dlq.getMetrics();
       expect(metrics.totalEventsInDLQ).toBe(0);
       expect(Object.keys(metrics.eventsByType).length).toBe(0);

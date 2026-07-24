@@ -1,6 +1,13 @@
 "use client";
 
-import { useMemo, useCallback, useRef, useEffect, useState, ReactNode } from "react";
+import {
+  useMemo,
+  useCallback,
+  useRef,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 import { cn } from "@/lib/utils";
 import type { Message } from "@/hooks/use-collaboration";
 
@@ -25,7 +32,9 @@ interface GroupedMessage {
   timestamp: Date;
 }
 
-function groupMessagesBySender(messages: Message[]): (GroupedMessage | Message)[] {
+function groupMessagesBySender(
+  messages: Message[],
+): (GroupedMessage | Message)[] {
   const grouped: (GroupedMessage | Message)[] = [];
 
   for (const message of messages) {
@@ -118,7 +127,9 @@ interface ReactionBarProps {
 function ReactionBar({ reactions = {}, onReact }: ReactionBarProps) {
   if (Object.keys(reactions).length === 0) return null;
 
-  const emojis = Object.entries(reactions).sort((a, b) => b[1].length - a[1].length);
+  const emojis = Object.entries(reactions).sort(
+    (a, b) => b[1].length - a[1].length,
+  );
 
   return (
     <div className="flex flex-wrap gap-1 mt-1">
@@ -131,7 +142,7 @@ function ReactionBar({ reactions = {}, onReact }: ReactionBarProps) {
             "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs",
             "bg-wl-bg-overlay border border-wl-border-subtle",
             "hover:bg-wl-bg-surface hover:border-wl-border-default",
-            "transition-colors duration-fast ease-default"
+            "transition-colors duration-fast ease-default",
           )}
         >
           <span>{emoji}</span>
@@ -145,7 +156,7 @@ function ReactionBar({ reactions = {}, onReact }: ReactionBarProps) {
           "bg-transparent border border-wl-border-subtle",
           "hover:bg-wl-bg-overlay hover:border-wl-border-default",
           "text-wl-text-secondary hover:text-wl-text-primary",
-          "transition-colors duration-fast ease-default"
+          "transition-colors duration-fast ease-default",
         )}
       >
         +
@@ -218,7 +229,7 @@ function MessageItem({
                     "inline-flex items-center gap-1 px-2 py-1 rounded",
                     "bg-wl-bg-surface border border-wl-border-default",
                     "text-xs text-wl-primary-400 hover:text-wl-primary-300",
-                    "hover:border-wl-primary-500/30"
+                    "hover:border-wl-primary-500/30",
                   )}
                 >
                   📎 {att.name}
@@ -235,13 +246,33 @@ function MessageItem({
 
         {showActions && (
           <div className="flex items-center gap-1 ml-2">
-            <MessageAction icon="💬" title="Reply" onClick={() => onReply?.(message.id)} />
-            <MessageAction icon="😊" title="React" onClick={() => onReact?.(message.id, "👍")} />
-            <MessageAction icon="📌" title="Pin" onClick={() => onPin?.(message.id)} />
+            <MessageAction
+              icon="💬"
+              title="Reply"
+              onClick={() => onReply?.(message.id)}
+            />
+            <MessageAction
+              icon="😊"
+              title="React"
+              onClick={() => onReact?.(message.id, "👍")}
+            />
+            <MessageAction
+              icon="📌"
+              title="Pin"
+              onClick={() => onPin?.(message.id)}
+            />
             {isOwn && (
               <>
-                <MessageAction icon="✏️" title="Edit" onClick={() => onEdit?.(message.id, message.content)} />
-                <MessageAction icon="🗑️" title="Delete" onClick={() => onDelete?.(message.id)} />
+                <MessageAction
+                  icon="✏️"
+                  title="Edit"
+                  onClick={() => onEdit?.(message.id, message.content)}
+                />
+                <MessageAction
+                  icon="🗑️"
+                  title="Delete"
+                  onClick={() => onDelete?.(message.id)}
+                />
               </>
             )}
           </div>
@@ -267,7 +298,7 @@ function MessageAction({
       className={cn(
         "p-1 rounded text-sm hover:bg-wl-bg-surface",
         "text-wl-text-secondary hover:text-wl-text-primary",
-        "transition-colors duration-fast ease-default"
+        "transition-colors duration-fast ease-default",
       )}
     >
       {icon}
@@ -315,12 +346,13 @@ export function MessageList({
   const grouped = useMemo(() => groupMessagesBySender(messages), [messages]);
 
   const itemsWithDates = useMemo(() => {
-    const result: (GroupedMessage | Message | { type: "date"; date: Date })[] = [];
+    const result: (GroupedMessage | Message | { type: "date"; date: Date })[] =
+      [];
     let lastDate: Date | null = null;
 
     for (const item of grouped) {
       const itemDate = new Date(
-        "messages" in item ? item.timestamp : item.createdAt
+        "messages" in item ? item.timestamp : item.createdAt,
       );
       const itemDateStr = itemDate.toDateString();
       const lastDateStr = lastDate?.toDateString();
@@ -342,9 +374,11 @@ export function MessageList({
       if (el.scrollTop < 100 && !isLoadingOlder) {
         onLoadOlder?.();
       }
-      setShouldAutoScroll(el.scrollHeight - el.scrollTop - el.clientHeight < 100);
+      setShouldAutoScroll(
+        el.scrollHeight - el.scrollTop - el.clientHeight < 100,
+      );
     },
-    [isLoadingOlder, onLoadOlder]
+    [isLoadingOlder, onLoadOlder],
   );
 
   useEffect(() => {
@@ -360,7 +394,7 @@ export function MessageList({
       className={cn(
         "flex-1 overflow-y-auto",
         "bg-wl-bg-base",
-        "scrollbar-thin scrollbar-thumb-wl-border-strong scrollbar-track-wl-bg-surface"
+        "scrollbar-thin scrollbar-thumb-wl-border-strong scrollbar-track-wl-bg-surface",
       )}
     >
       {isLoadingOlder && (
@@ -376,7 +410,12 @@ export function MessageList({
       ) : (
         itemsWithDates.map((item, idx) => {
           if ("type" in item && item.type === "date") {
-            return <DateSeparator key={`date-${item.date.getTime()}`} date={item.date} />;
+            return (
+              <DateSeparator
+                key={`date-${item.date.getTime()}`}
+                date={item.date}
+              />
+            );
           }
 
           if ("isSystem" in item && item.isSystem) {

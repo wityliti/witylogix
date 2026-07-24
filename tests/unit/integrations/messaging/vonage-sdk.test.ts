@@ -6,8 +6,12 @@
  * rate limiting, and error handling.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { VonageSDKClient, type VonageMessage, type VonageDispatchConfig } from '../../../../packages/core/src/integrations/messaging/vonage-sdk-client';
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import {
+  VonageSDKClient,
+  type VonageMessage,
+  type VonageDispatchConfig,
+} from "../../../../packages/core/src/integrations/messaging/vonage-sdk-client";
 
 // ─── MOCKS ──────────────────────────────────────────────────────────
 
@@ -30,16 +34,16 @@ HgYNMGq4N0K3D0Q+DJmRf2lWE7xDK0oJ6JvMj3C5M3H8K3E0L0L4Z0E3H3F3E3F
 -----END PRIVATE KEY-----`;
 
 const mockConfig = {
-  applicationId: 'test-app-id-12345',
+  applicationId: "test-app-id-12345",
   privateKey: mockPrivateKey,
-  apiKey: 'test-api-key',
-  apiSecret: 'test-api-secret',
-  webhookSecret: 'test-webhook-secret',
+  apiKey: "test-api-key",
+  apiSecret: "test-api-secret",
+  webhookSecret: "test-webhook-secret",
 };
 
 // ─── TESTS ───────────────────────────────────────────────────────────
 
-describe('VonageSDKClient', () => {
+describe("VonageSDKClient", () => {
   let client: VonageSDKClient;
 
   beforeEach(() => {
@@ -50,24 +54,24 @@ describe('VonageSDKClient', () => {
 
   // ─── Configuration ──────────────────────────────────────────────
 
-  describe('Configuration', () => {
-    it('should initialize with required config', () => {
+  describe("Configuration", () => {
+    it("should initialize with required config", () => {
       expect(() => new VonageSDKClient(mockConfig)).not.toThrow();
     });
 
-    it('should throw error if applicationId is missing', () => {
-      expect(() => new VonageSDKClient({ ...mockConfig, applicationId: '' })).toThrow(
-        'Vonage applicationId is required'
-      );
+    it("should throw error if applicationId is missing", () => {
+      expect(
+        () => new VonageSDKClient({ ...mockConfig, applicationId: "" }),
+      ).toThrow("Vonage applicationId is required");
     });
 
-    it('should throw error if privateKey is missing', () => {
-      expect(() => new VonageSDKClient({ ...mockConfig, privateKey: '' })).toThrow(
-        'Vonage privateKey is required'
-      );
+    it("should throw error if privateKey is missing", () => {
+      expect(
+        () => new VonageSDKClient({ ...mockConfig, privateKey: "" }),
+      ).toThrow("Vonage privateKey is required");
     });
 
-    it('should use default cluster and base URL', () => {
+    it("should use default cluster and base URL", () => {
       const testClient = new VonageSDKClient(mockConfig);
       expect(testClient).toBeDefined();
     });
@@ -75,192 +79,203 @@ describe('VonageSDKClient', () => {
 
   // ─── SMS Sending ────────────────────────────────────────────────
 
-  describe('SMS Sending', () => {
-    it('should send SMS successfully', async () => {
+  describe("SMS Sending", () => {
+    it("should send SMS successfully", async () => {
       const mockResponse = {
         messages: [
           {
-            status: '0',
-            'message-id': 'msg-123',
-            'message-price': '0.05',
-            'network-code': '310410',
+            status: "0",
+            "message-id": "msg-123",
+            "message-price": "0.05",
+            "network-code": "310410",
           },
         ],
       };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        headers: new Headers({ 'content-type': 'application/json' }),
+        headers: new Headers({ "content-type": "application/json" }),
         json: () => Promise.resolve(mockResponse),
       });
 
-      const result = await client.sendSMS('+1234567890', 'AppName', 'Hello World', 'ref-123');
+      const result = await client.sendSMS(
+        "+1234567890",
+        "AppName",
+        "Hello World",
+        "ref-123",
+      );
 
       expect(result.success).toBe(true);
-      expect(result.messageId).toBe('msg-123');
-      expect(result.status).toBe('submitted');
+      expect(result.messageId).toBe("msg-123");
+      expect(result.status).toBe("submitted");
       expect(result.metadata?.price).toBeUndefined(); // SMS doesn't track price
     });
 
-    it('should handle SMS send failure', async () => {
+    it("should handle SMS send failure", async () => {
       const mockResponse = {
         messages: [
           {
-            status: '1',
-            'error-text': 'Invalid phone number',
+            status: "1",
+            "error-text": "Invalid phone number",
           },
         ],
       };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        headers: new Headers({ 'content-type': 'application/json' }),
+        headers: new Headers({ "content-type": "application/json" }),
         json: () => Promise.resolve(mockResponse),
       });
 
-      await expect(client.sendSMS('+invalid', 'AppName', 'Hello')).rejects.toThrow();
+      await expect(
+        client.sendSMS("+invalid", "AppName", "Hello"),
+      ).rejects.toThrow();
     });
   });
 
   // ─── MMS Sending ────────────────────────────────────────────────
 
-  describe('MMS Sending', () => {
-    it('should send MMS with image', async () => {
-      const mockResponse = { message_uuid: 'uuid-456' };
+  describe("MMS Sending", () => {
+    it("should send MMS with image", async () => {
+      const mockResponse = { message_uuid: "uuid-456" };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        headers: new Headers({ 'content-type': 'application/json' }),
+        headers: new Headers({ "content-type": "application/json" }),
         json: () => Promise.resolve(mockResponse),
       });
 
       const result = await client.sendMMS(
-        '+1234567890',
-        'AppName',
-        'https://example.com/image.jpg',
-        'image',
-        'Check this out'
+        "+1234567890",
+        "AppName",
+        "https://example.com/image.jpg",
+        "image",
+        "Check this out",
       );
 
       expect(result.success).toBe(true);
-      expect(result.messageId).toBe('uuid-456');
+      expect(result.messageId).toBe("uuid-456");
     });
 
-    it('should send MMS with video', async () => {
-      const mockResponse = { message_uuid: 'uuid-789' };
+    it("should send MMS with video", async () => {
+      const mockResponse = { message_uuid: "uuid-789" };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        headers: new Headers({ 'content-type': 'application/json' }),
+        headers: new Headers({ "content-type": "application/json" }),
         json: () => Promise.resolve(mockResponse),
       });
 
       const result = await client.sendMMS(
-        '+1234567890',
-        'AppName',
-        'https://example.com/video.mp4',
-        'video'
+        "+1234567890",
+        "AppName",
+        "https://example.com/video.mp4",
+        "video",
       );
 
       expect(result.success).toBe(true);
-      expect(result.messageId).toBe('uuid-789');
+      expect(result.messageId).toBe("uuid-789");
     });
   });
 
   // ─── WhatsApp Sending ───────────────────────────────────────────
 
-  describe('WhatsApp Sending', () => {
-    it('should send WhatsApp text message', async () => {
-      const mockResponse = { message_uuid: 'wa-msg-123' };
+  describe("WhatsApp Sending", () => {
+    it("should send WhatsApp text message", async () => {
+      const mockResponse = { message_uuid: "wa-msg-123" };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        headers: new Headers({ 'content-type': 'application/json' }),
+        headers: new Headers({ "content-type": "application/json" }),
         json: () => Promise.resolve(mockResponse),
       });
 
-      const message: Partial<VonageMessage> = { text: 'Hello via WhatsApp' };
+      const message: Partial<VonageMessage> = { text: "Hello via WhatsApp" };
 
-      const result = await client.sendWhatsApp('+1234567890', message);
+      const result = await client.sendWhatsApp("+1234567890", message);
 
       expect(result.success).toBe(true);
-      expect(result.messageId).toBe('wa-msg-123');
+      expect(result.messageId).toBe("wa-msg-123");
     });
 
-    it('should send WhatsApp template message', async () => {
-      const mockResponse = { message_uuid: 'wa-template-123' };
+    it("should send WhatsApp template message", async () => {
+      const mockResponse = { message_uuid: "wa-template-123" };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        headers: new Headers({ 'content-type': 'application/json' }),
+        headers: new Headers({ "content-type": "application/json" }),
         json: () => Promise.resolve(mockResponse),
       });
 
       const message: Partial<VonageMessage> = {
         template: {
-          name: 'hello_world',
-          language: 'en',
-          parameters: { '1': 'User' },
+          name: "hello_world",
+          language: "en",
+          parameters: { "1": "User" },
         },
       };
 
-      const result = await client.sendWhatsApp('+1234567890', message);
+      const result = await client.sendWhatsApp("+1234567890", message);
 
       expect(result.success).toBe(true);
     });
 
-    it('should reject WhatsApp message without content', async () => {
+    it("should reject WhatsApp message without content", async () => {
       const message: Partial<VonageMessage> = {};
 
-      await expect(client.sendWhatsApp('+1234567890', message)).rejects.toThrow(
-        'WhatsApp message must include'
+      await expect(client.sendWhatsApp("+1234567890", message)).rejects.toThrow(
+        "WhatsApp message must include",
       );
     });
   });
 
   // ─── Verify API ─────────────────────────────────────────────────
 
-  describe('Verify API (2FA)', () => {
-    it('should send verification code', async () => {
-      const mockResponse = { request_id: 'req-123', status: '0' };
+  describe("Verify API (2FA)", () => {
+    it("should send verification code", async () => {
+      const mockResponse = { request_id: "req-123", status: "0" };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        headers: new Headers({ 'content-type': 'application/json' }),
+        headers: new Headers({ "content-type": "application/json" }),
         json: () => Promise.resolve(mockResponse),
       });
 
-      const result = await client.sendVerificationCode('+1234567890', 'MyApp', 4);
+      const result = await client.sendVerificationCode(
+        "+1234567890",
+        "MyApp",
+        4,
+      );
 
-      expect(result.requestId).toBe('req-123');
-      expect(result.status).toBe('pending');
-      expect(result.to).toBe('+1234567890');
+      expect(result.requestId).toBe("req-123");
+      expect(result.status).toBe("pending");
+      expect(result.to).toBe("+1234567890");
     });
 
-    it('should verify code successfully', async () => {
-      const mockResponse = { status: '0' };
+    it("should verify code successfully", async () => {
+      const mockResponse = { status: "0" };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        headers: new Headers({ 'content-type': 'application/json' }),
+        headers: new Headers({ "content-type": "application/json" }),
         json: () => Promise.resolve(mockResponse),
       });
 
-      const result = await client.checkVerificationCode('req-123', '1234');
+      const result = await client.checkVerificationCode("req-123", "1234");
 
       expect(result).toBe(true);
     });
 
-    it('should fail verification for invalid code', async () => {
-      const mockResponse = { status: '16' }; // Invalid code
+    it("should fail verification for invalid code", async () => {
+      const mockResponse = { status: "16" }; // Invalid code
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        headers: new Headers({ 'content-type': 'application/json' }),
+        headers: new Headers({ "content-type": "application/json" }),
         json: () => Promise.resolve(mockResponse),
       });
 
-      const result = await client.checkVerificationCode('req-123', 'wrong');
+      const result = await client.checkVerificationCode("req-123", "wrong");
 
       expect(result).toBe(false);
     });
@@ -268,46 +283,55 @@ describe('VonageSDKClient', () => {
 
   // ─── Webhook Verification ──────────────────────────────────────
 
-  describe('Webhook Verification', () => {
-    it('should verify valid webhook signature', () => {
+  describe("Webhook Verification", () => {
+    it("should verify valid webhook signature", () => {
       const payload = {
-        eventType: 'delivery',
-        messageId: 'msg-123',
+        eventType: "delivery",
+        messageId: "msg-123",
         timestamp: 1647525600,
-        status: 'delivered',
+        status: "delivered",
       };
 
-      const signature = require('crypto')
-        .createHmac('sha256', mockConfig.webhookSecret)
+      const signature = require("crypto")
+        .createHmac("sha256", mockConfig.webhookSecret)
         .update(JSON.stringify(payload))
-        .digest('hex');
+        .digest("hex");
 
       const isValid = client.verifyWebhookSignature(payload, signature);
 
       expect(isValid).toBe(true);
     });
 
-    it('should reject invalid webhook signature', () => {
+    it("should reject invalid webhook signature", () => {
       const payload = {
-        eventType: 'delivery',
-        messageId: 'msg-123',
+        eventType: "delivery",
+        messageId: "msg-123",
         timestamp: 1647525600,
       };
 
-      const isValid = client.verifyWebhookSignature(payload, 'invalid-signature');
+      const isValid = client.verifyWebhookSignature(
+        payload,
+        "invalid-signature",
+      );
 
       expect(isValid).toBe(false);
     });
 
-    it('should reject webhook if no secret configured', () => {
-      const clientNoSecret = new VonageSDKClient({ ...mockConfig, webhookSecret: undefined });
+    it("should reject webhook if no secret configured", () => {
+      const clientNoSecret = new VonageSDKClient({
+        ...mockConfig,
+        webhookSecret: undefined,
+      });
 
       const payload = {
-        eventType: 'delivery',
-        messageId: 'msg-123',
+        eventType: "delivery",
+        messageId: "msg-123",
       };
 
-      const isValid = clientNoSecret.verifyWebhookSignature(payload, 'any-signature');
+      const isValid = clientNoSecret.verifyWebhookSignature(
+        payload,
+        "any-signature",
+      );
 
       expect(isValid).toBe(false);
     });
@@ -315,37 +339,37 @@ describe('VonageSDKClient', () => {
 
   // ─── Inbound Message Parsing ────────────────────────────────────
 
-  describe('Inbound Message Parsing', () => {
-    it('should parse inbound SMS', () => {
+  describe("Inbound Message Parsing", () => {
+    it("should parse inbound SMS", () => {
       const payload = {
-        message_id: 'inbound-123',
-        from: '+1234567890',
-        to: '+0987654321',
+        message_id: "inbound-123",
+        from: "+1234567890",
+        to: "+0987654321",
         timestamp: 1647525600,
-        text: 'Hello there',
-        type: 'sms',
+        text: "Hello there",
+        type: "sms",
       };
 
       const message = client.parseInboundWebhook(payload);
 
-      expect(message.messageId).toBe('inbound-123');
-      expect(message.from).toBe('+1234567890');
-      expect(message.text).toBe('Hello there');
-      expect(message.type).toBe('sms');
+      expect(message.messageId).toBe("inbound-123");
+      expect(message.from).toBe("+1234567890");
+      expect(message.text).toBe("Hello there");
+      expect(message.type).toBe("sms");
     });
   });
 
   // ─── Rate Limiting ──────────────────────────────────────────────
 
-  describe('Rate Limiting', () => {
-    it('should enforce rate limiting', async () => {
+  describe("Rate Limiting", () => {
+    it("should enforce rate limiting", async () => {
       const mockResponse = {
-        messages: [{ status: '0', 'message-id': 'msg-1' }],
+        messages: [{ status: "0", "message-id": "msg-1" }],
       };
 
       (global.fetch as any).mockResolvedValue({
         ok: true,
-        headers: new Headers({ 'content-type': 'application/json' }),
+        headers: new Headers({ "content-type": "application/json" }),
         json: () => Promise.resolve(mockResponse),
       });
 
@@ -354,7 +378,7 @@ describe('VonageSDKClient', () => {
       // Send multiple SMS to trigger rate limiting
       const promises = [];
       for (let i = 0; i < 3; i++) {
-        promises.push(client.sendSMS(`+123456789${i}`, 'App', 'Test'));
+        promises.push(client.sendSMS(`+123456789${i}`, "App", "Test"));
       }
 
       await Promise.all(promises);
@@ -366,23 +390,25 @@ describe('VonageSDKClient', () => {
 
   // ─── Error Handling ─────────────────────────────────────────────
 
-  describe('Error Handling', () => {
-    it('should handle API errors gracefully', async () => {
+  describe("Error Handling", () => {
+    it("should handle API errors gracefully", async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: false,
         status: 401,
-        statusText: 'Unauthorized',
+        statusText: "Unauthorized",
       });
 
-      await expect(client.sendSMS('+1234567890', 'App', 'Test')).rejects.toThrow(
-        'Vonage API error'
-      );
+      await expect(
+        client.sendSMS("+1234567890", "App", "Test"),
+      ).rejects.toThrow("Vonage API error");
     });
 
-    it('should handle network timeouts', async () => {
-      (global.fetch as any).mockRejectedValueOnce(new Error('Network timeout'));
+    it("should handle network timeouts", async () => {
+      (global.fetch as any).mockRejectedValueOnce(new Error("Network timeout"));
 
-      await expect(client.sendSMS('+1234567890', 'App', 'Test')).rejects.toThrow();
+      await expect(
+        client.sendSMS("+1234567890", "App", "Test"),
+      ).rejects.toThrow();
     });
   });
 });

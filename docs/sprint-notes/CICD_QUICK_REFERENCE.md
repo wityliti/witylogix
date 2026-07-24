@@ -20,15 +20,15 @@ witylogix-platform/
 
 ## Services in docker-compose.yml
 
-| Service | Port | Purpose | Health Check |
-|---------|------|---------|--------------|
-| postgres | 5432 | Database (PostGIS) | pg_isready |
-| redis | 6379 | Cache & queue | redis-cli ping |
-| api | 3001 | Fastify backend | /health |
-| dashboard | 3000 | Next.js admin | GET / |
-| shopify-app | 3002 | Shopify integration | GET / |
-| bull-board | 3100 | Queue dashboard | (optional) |
-| osrm | 5000 | Route engine | (phase2 only) |
+| Service     | Port | Purpose             | Health Check   |
+| ----------- | ---- | ------------------- | -------------- |
+| postgres    | 5432 | Database (PostGIS)  | pg_isready     |
+| redis       | 6379 | Cache & queue       | redis-cli ping |
+| api         | 3001 | Fastify backend     | /health        |
+| dashboard   | 3000 | Next.js admin       | GET /          |
+| shopify-app | 3002 | Shopify integration | GET /          |
+| bull-board  | 3100 | Queue dashboard     | (optional)     |
+| osrm        | 5000 | Route engine        | (phase2 only)  |
 
 ## CI Workflow (ci.yml)
 
@@ -69,11 +69,13 @@ Response: { status, memory, dependencies, timestamp }
 ## Quick Commands
 
 ### Development (hot-reload)
+
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 ```
 
 ### Production Build & Run
+
 ```bash
 docker compose build
 docker compose up -d
@@ -83,12 +85,14 @@ docker compose down
 ```
 
 ### Optional Services
+
 ```bash
 docker compose --profile tools up        # BullMQ Board
 docker compose --profile phase2 up       # OSRM route engine
 ```
 
 ### Database & Cache
+
 ```bash
 docker compose exec postgres psql -U witylogix witylogix
 docker compose exec redis redis-cli
@@ -97,6 +101,7 @@ docker compose exec redis redis-cli
 ## Environment Variables
 
 ### Required for API
+
 ```bash
 DATABASE_URL=postgresql://...
 REDIS_URL=redis://...
@@ -104,6 +109,7 @@ JWT_SECRET=your-secret-key
 ```
 
 ### Optional External APIs
+
 ```bash
 MAPBOX_ACCESS_TOKEN=pk_...
 STRIPE_SECRET_KEY=sk_...
@@ -114,27 +120,32 @@ SHOPIFY_API_SECRET=...
 ## Common Tasks
 
 ### Monitor CI/CD
+
 - Push to main → CI runs automatically
 - Check: GitHub Actions tab → ci.yml
 - Deploy automatically after CI passes
 
 ### Run Tests Locally
+
 ```bash
 docker compose exec api pnpm test --run
 ```
 
 ### Database Migrations
+
 ```bash
 docker compose exec api pnpm --filter @witylogix/db db:migrate
 ```
 
 ### View Live Logs
+
 ```bash
 docker compose logs -f api dashboard
 docker compose logs -f postgres
 ```
 
 ### Reset Everything
+
 ```bash
 docker compose down -v  # Removes volumes
 docker compose build --no-cache
@@ -171,6 +182,7 @@ docker compose up -d
 ## Troubleshooting
 
 **Images won't build**
+
 ```bash
 docker system prune -a  # Clear cache
 pnpm install --frozen-lockfile
@@ -178,18 +190,21 @@ docker compose build --no-cache
 ```
 
 **Health check failing**
+
 ```bash
 curl http://localhost:3001/health/ready
 docker compose logs api
 ```
 
 **Database connection refused**
+
 ```bash
 docker compose ps  # Check if postgres is running
 docker compose logs postgres
 ```
 
 **Port already in use**
+
 ```bash
 docker compose down -v
 docker ps -a | grep witylogix  # Check for lingering containers

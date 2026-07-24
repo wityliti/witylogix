@@ -2,7 +2,11 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { ProductWebhookConsumer } from "../consumers/product-webhook";
-import type { QueueJobPayload, QueueJobMetadata, ConsumerConfig } from "../types";
+import type {
+  QueueJobPayload,
+  QueueJobMetadata,
+  ConsumerConfig,
+} from "../types";
 
 /**
  * Integration test suite for product webhook consumer
@@ -121,14 +125,26 @@ describe("ProductWebhookConsumer", () => {
             product_type: "T",
             handle: "test",
             tags: [],
-            variants: [{ id: "v1", sku: "SKU-001", barcode: "", title: "S", inventory_quantity: 10, weight: 100, price: "10" }],
+            variants: [
+              {
+                id: "v1",
+                sku: "SKU-001",
+                barcode: "",
+                title: "S",
+                inventory_quantity: 10,
+                weight: 100,
+                price: "10",
+              },
+            ],
           },
         },
       };
 
       const result = await consumer.executeJob(job);
       expect(result.success).toBe(false);
-      expect(result.error?.message).toContain("missing shopId or externalProductId");
+      expect(result.error?.message).toContain(
+        "missing shopId or externalProductId",
+      );
     });
 
     it("should reject payload without required product fields", async () => {
@@ -200,8 +216,24 @@ describe("ProductWebhookConsumer", () => {
           handle: "awesome-tshirt",
           tags: ["shirt", "new"],
           variants: [
-            { id: "v1", sku: "SHIRT-S", barcode: "111", title: "Small", inventory_quantity: 50, weight: 200, price: "29.99" },
-            { id: "v2", sku: "SHIRT-M", barcode: "222", title: "Medium", inventory_quantity: 75, weight: 200, price: "29.99" },
+            {
+              id: "v1",
+              sku: "SHIRT-S",
+              barcode: "111",
+              title: "Small",
+              inventory_quantity: 50,
+              weight: 200,
+              price: "29.99",
+            },
+            {
+              id: "v2",
+              sku: "SHIRT-M",
+              barcode: "222",
+              title: "Medium",
+              inventory_quantity: 75,
+              weight: 200,
+              price: "29.99",
+            },
           ],
         },
       });
@@ -221,7 +253,7 @@ describe("ProductWebhookConsumer", () => {
         expect.objectContaining({
           where: { externalProductId: "ext_123456" },
           create: expect.objectContaining({ title: "Awesome T-Shirt" }),
-        })
+        }),
       );
     });
 
@@ -235,9 +267,33 @@ describe("ProductWebhookConsumer", () => {
           handle: "test",
           tags: [],
           variants: [
-            { id: "v1", sku: "SKU-001", barcode: "111", title: "A", inventory_quantity: 100, weight: 100, price: "10" },
-            { id: "v2", sku: "SKU-002", barcode: "222", title: "B", inventory_quantity: 50, weight: 100, price: "20" },
-            { id: "v3", sku: "SKU-003", barcode: "333", title: "C", inventory_quantity: 0, weight: 100, price: "30" },
+            {
+              id: "v1",
+              sku: "SKU-001",
+              barcode: "111",
+              title: "A",
+              inventory_quantity: 100,
+              weight: 100,
+              price: "10",
+            },
+            {
+              id: "v2",
+              sku: "SKU-002",
+              barcode: "222",
+              title: "B",
+              inventory_quantity: 50,
+              weight: 100,
+              price: "20",
+            },
+            {
+              id: "v3",
+              sku: "SKU-003",
+              barcode: "333",
+              title: "C",
+              inventory_quantity: 0,
+              weight: 100,
+              price: "30",
+            },
           ],
         },
       });
@@ -252,8 +308,11 @@ describe("ProductWebhookConsumer", () => {
       expect(mockPrisma.variant.upsert).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { externalVariantId: "v1" },
-          create: expect.objectContaining({ sku: "SKU-001", inventoryQuantity: 100 }),
-        })
+          create: expect.objectContaining({
+            sku: "SKU-001",
+            inventoryQuantity: 100,
+          }),
+        }),
       );
     });
   });
@@ -270,8 +329,24 @@ describe("ProductWebhookConsumer", () => {
           handle: "updated",
           tags: [],
           variants: [
-            { id: "v1", sku: "SHIRT-S", barcode: "111", title: "Small", inventory_quantity: 40, weight: 200, price: "29.99" },
-            { id: "v2", sku: "SHIRT-M", barcode: "222", title: "Medium", inventory_quantity: 80, weight: 200, price: "29.99" },
+            {
+              id: "v1",
+              sku: "SHIRT-S",
+              barcode: "111",
+              title: "Small",
+              inventory_quantity: 40,
+              weight: 200,
+              price: "29.99",
+            },
+            {
+              id: "v2",
+              sku: "SHIRT-M",
+              barcode: "222",
+              title: "Medium",
+              inventory_quantity: 80,
+              weight: 200,
+              price: "29.99",
+            },
           ],
         },
       });
@@ -300,7 +375,15 @@ describe("ProductWebhookConsumer", () => {
           handle: "stock",
           tags: [],
           variants: [
-            { id: "v1", sku: "SKU-001", barcode: "111", title: "A", inventory_quantity: 200, weight: 100, price: "10" },
+            {
+              id: "v1",
+              sku: "SKU-001",
+              barcode: "111",
+              title: "A",
+              inventory_quantity: 200,
+              weight: 100,
+              price: "10",
+            },
           ],
         },
       });
@@ -316,7 +399,7 @@ describe("ProductWebhookConsumer", () => {
           update: expect.objectContaining({
             inventoryQuantity: 200,
           }),
-        })
+        }),
       );
     });
   });
@@ -341,10 +424,15 @@ describe("ProductWebhookConsumer", () => {
     });
 
     it("should handle product not found on delete gracefully", async () => {
-      const job = makeProductJob({ action: "delete", externalProductId: "ext_999999" });
+      const job = makeProductJob({
+        action: "delete",
+        externalProductId: "ext_999999",
+      });
 
       // Simulate product not found — update throws
-      mockPrisma.product.update.mockRejectedValueOnce(new Error("Record not found"));
+      mockPrisma.product.update.mockRejectedValueOnce(
+        new Error("Record not found"),
+      );
 
       const result = await consumer.executeJob(job);
 
@@ -364,7 +452,17 @@ describe("ProductWebhookConsumer", () => {
           product_type: "T",
           handle: "test",
           tags: [],
-          variants: [{ id: "v1", sku: "SKU-001", barcode: "111", title: "A", inventory_quantity: 10, weight: 100, price: "10" }],
+          variants: [
+            {
+              id: "v1",
+              sku: "SKU-001",
+              barcode: "111",
+              title: "A",
+              inventory_quantity: 10,
+              weight: 100,
+              price: "10",
+            },
+          ],
           collections: ["coll_1", "coll_2"],
         },
       });
@@ -409,7 +507,9 @@ describe("ProductWebhookConsumer", () => {
     it("should report failure after max retries exceeded", async () => {
       const job = makeProductJob();
 
-      mockPrisma.product.upsert.mockRejectedValueOnce(new Error("Persistent failure"));
+      mockPrisma.product.upsert.mockRejectedValueOnce(
+        new Error("Persistent failure"),
+      );
 
       // attempt > maxAttempts means no more retries
       const result = await consumer.executeJob(job, 4);
@@ -446,7 +546,17 @@ describe("ProductWebhookConsumer", () => {
           product_type: "T",
           handle: "p1",
           tags: [],
-          variants: [{ id: "v1", sku: "SKU-001", barcode: "111", title: "A", inventory_quantity: 10, weight: 100, price: "10" }],
+          variants: [
+            {
+              id: "v1",
+              sku: "SKU-001",
+              barcode: "111",
+              title: "A",
+              inventory_quantity: 10,
+              weight: 100,
+              price: "10",
+            },
+          ],
         },
       });
 
@@ -460,7 +570,17 @@ describe("ProductWebhookConsumer", () => {
           product_type: "T",
           handle: "p2",
           tags: [],
-          variants: [{ id: "v2", sku: "SKU-002", barcode: "222", title: "B", inventory_quantity: 20, weight: 100, price: "20" }],
+          variants: [
+            {
+              id: "v2",
+              sku: "SKU-002",
+              barcode: "222",
+              title: "B",
+              inventory_quantity: 20,
+              weight: 100,
+              price: "20",
+            },
+          ],
         },
       });
 

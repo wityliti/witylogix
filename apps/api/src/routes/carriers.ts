@@ -14,7 +14,11 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import { carrierRateRequestSchema } from "@witylogix/validators";
-import { verifyCarrierRequest, requireAuth, requireRole } from "../middleware/auth.js";
+import {
+  verifyCarrierRequest,
+  requireAuth,
+  requireRole,
+} from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
 import { getCachedRate, setCachedRate } from "../lib/redis.js";
 import { ValidationError } from "../lib/errors.js";
@@ -105,7 +109,8 @@ async function carriersRoutes(fastify: FastifyInstance): Promise<void> {
         }
 
         // Base rate + weight surcharge
-        const weightSurcharge = totalWeightKg > 5 ? Math.ceil((totalWeightKg - 5) / 5) * 200 : 0;
+        const weightSurcharge =
+          totalWeightKg > 5 ? Math.ceil((totalWeightKg - 5) / 5) * 200 : 0;
         const rateInCents = Math.round(baseRate * 100) + weightSurcharge;
 
         return {
@@ -134,15 +139,25 @@ async function carriersRoutes(fastify: FastifyInstance): Promise<void> {
       const latencyStats = p95Tracker.stats("carrier_rates");
       const p95Warn = latencyStats && latencyStats.p95 > 500;
       request.log.info(
-        { elapsed, rateCount: rates.length, ...(latencyStats ? { p95: latencyStats.p95, p99: latencyStats.p99, sampleCount: latencyStats.count } : {}) },
+        {
+          elapsed,
+          rateCount: rates.length,
+          ...(latencyStats
+            ? {
+                p95: latencyStats.p95,
+                p99: latencyStats.p99,
+                sampleCount: latencyStats.count,
+              }
+            : {}),
+        },
         p95Warn
           ? "Carrier rates calculated — p95 EXCEEDS 500ms BFS threshold"
-          : "Carrier rates calculated"
+          : "Carrier rates calculated",
       );
       if (p95Warn) {
         request.log.warn(
           { p95: latencyStats!.p95, threshold: 500 },
-          "BFS p95 SLA breach: carrier_rates p95 > 500ms"
+          "BFS p95 SLA breach: carrier_rates p95 > 500ms",
         );
       }
 
@@ -202,15 +217,23 @@ async function carriersRoutes(fastify: FastifyInstance): Promise<void> {
       await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
 
       // Lazy-import to avoid hard dep when carriers not configured
-      let entries: Array<{ name: string; label: string; enabled: boolean; configSource: string }> = [];
+      let entries: Array<{
+        name: string;
+        label: string;
+        enabled: boolean;
+        configSource: string;
+      }> = [];
       try {
-        const { carrierRegistry } = await import("@witylogix/core/integrations/shipping");
-        entries = carrierRegistry.list().map(({ name, label, enabled, configSource }) => ({
-          name,
-          label,
-          enabled,
-          configSource,
-        }));
+        const { carrierRegistry } =
+          await import("@witylogix/core/integrations/shipping");
+        entries = carrierRegistry
+          .list()
+          .map(({ name, label, enabled, configSource }) => ({
+            name,
+            label,
+            enabled,
+            configSource,
+          }));
       } catch {
         // core not available or no adapters bootstrapped — return empty
       }

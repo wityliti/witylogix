@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Header } from '@/components/layout/header';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { useApiList } from '@/hooks/use-api';
-import Link from 'next/link';
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Header } from "@/components/layout/header";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { useApiList } from "@/hooks/use-api";
+import Link from "next/link";
 
 interface ShipmentWithLabel {
   id: string;
@@ -26,20 +26,20 @@ interface ShipmentWithLabel {
 
 const statusVariant = (
   s: string,
-): 'success' | 'warning' | 'danger' | 'info' | 'primary' | 'default' => {
+): "success" | "warning" | "danger" | "info" | "primary" | "default" => {
   const map: Record<
     string,
-    'success' | 'warning' | 'danger' | 'info' | 'primary' | 'default'
+    "success" | "warning" | "danger" | "info" | "primary" | "default"
   > = {
-    DELIVERED: 'success',
-    CANCELLED: 'default',
-    FAILED: 'danger',
-    PENDING: 'warning',
-    PROCESSING: 'info',
-    IN_TRANSIT: 'primary',
-    OUT_FOR_DELIVERY: 'primary',
+    DELIVERED: "success",
+    CANCELLED: "default",
+    FAILED: "danger",
+    PENDING: "warning",
+    PROCESSING: "info",
+    IN_TRANSIT: "primary",
+    OUT_FOR_DELIVERY: "primary",
   };
-  return map[s] ?? 'default';
+  return map[s] ?? "default";
 };
 
 export default function ShippingLabelsPage() {
@@ -50,7 +50,7 @@ export default function ShippingLabelsPage() {
     refetch,
     pagination,
     setPage,
-  } = useApiList<ShipmentWithLabel>('/api/v4/shipments', { limit: 20 });
+  } = useApiList<ShipmentWithLabel>("/api/v4/shipments", { limit: 20 });
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
@@ -62,7 +62,9 @@ export default function ShippingLabelsPage() {
         subtitle={`${pagination.total} shipments`}
         actions={
           <Link href="/shipping/labels/new">
-            <Button variant="primary" size="md">+ Create Label</Button>
+            <Button variant="primary" size="md">
+              + Create Label
+            </Button>
           </Link>
         }
       />
@@ -73,32 +75,52 @@ export default function ShippingLabelsPage() {
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-wl-border-default bg-wl-bg-elevated">
-                  <th className="p-3 px-4 text-left font-semibold text-gray-400">Tracking #</th>
-                  <th className="p-3 px-4 text-left font-semibold text-gray-400">Shipment #</th>
-                  <th className="p-3 px-4 text-left font-semibold text-gray-400">Carrier</th>
-                  <th className="p-3 px-4 text-left font-semibold text-gray-400">Destination</th>
-                  <th className="p-3 px-4 text-left font-semibold text-gray-400">Status</th>
-                  <th className="p-3 px-4 text-center font-semibold text-gray-400">Label</th>
-                  <th className="p-3 px-4 text-center font-semibold text-gray-400">Actions</th>
+                  <th className="p-3 px-4 text-left font-semibold text-gray-400">
+                    Tracking #
+                  </th>
+                  <th className="p-3 px-4 text-left font-semibold text-gray-400">
+                    Shipment #
+                  </th>
+                  <th className="p-3 px-4 text-left font-semibold text-gray-400">
+                    Carrier
+                  </th>
+                  <th className="p-3 px-4 text-left font-semibold text-gray-400">
+                    Destination
+                  </th>
+                  <th className="p-3 px-4 text-left font-semibold text-gray-400">
+                    Status
+                  </th>
+                  <th className="p-3 px-4 text-center font-semibold text-gray-400">
+                    Label
+                  </th>
+                  <th className="p-3 px-4 text-center font-semibold text-gray-400">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {shipments.map((shipment, idx) => (
                   <tr
                     key={shipment.id}
-                    className={`border-b border-wl-border-default transition-colors hover:bg-wl-bg-elevated ${idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-sunken'}`}
+                    className={`border-b border-wl-border-default transition-colors hover:bg-wl-bg-elevated ${idx % 2 === 0 ? "bg-transparent" : "bg-wl-bg-sunken"}`}
                   >
                     <td className="p-3 px-4 text-white font-mono text-xs">
-                      {shipment.trackingNumber ?? '—'}
+                      {shipment.trackingNumber ?? "—"}
                     </td>
-                    <td className="p-3 px-4 text-gray-400 text-sm">{shipment.shipmentNumber}</td>
-                    <td className="p-3 px-4 text-gray-400 text-sm">{shipment.carrier ?? '—'}</td>
                     <td className="p-3 px-4 text-gray-400 text-sm">
-                      {[shipment.city, shipment.province].filter(Boolean).join(', ') || '—'}
+                      {shipment.shipmentNumber}
+                    </td>
+                    <td className="p-3 px-4 text-gray-400 text-sm">
+                      {shipment.carrier ?? "—"}
+                    </td>
+                    <td className="p-3 px-4 text-gray-400 text-sm">
+                      {[shipment.city, shipment.province]
+                        .filter(Boolean)
+                        .join(", ") || "—"}
                     </td>
                     <td className="p-3 px-4">
                       <Badge variant={statusVariant(shipment.status)}>
-                        {shipment.status.replace(/_/g, ' ')}
+                        {shipment.status.replace(/_/g, " ")}
                       </Badge>
                     </td>
                     <td className="p-3 px-4 text-center">
@@ -110,21 +132,34 @@ export default function ShippingLabelsPage() {
                     </td>
                     <td className="p-3 px-4 text-center flex gap-1 justify-center">
                       {shipment.labelUrl ? (
-                        <a href={shipment.labelUrl} target="_blank" rel="noreferrer">
-                          <Button variant="secondary" size="sm">Print</Button>
+                        <a
+                          href={shipment.labelUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <Button variant="secondary" size="sm">
+                            Print
+                          </Button>
                         </a>
                       ) : (
-                        <Button variant="secondary" size="sm" disabled>Print</Button>
+                        <Button variant="secondary" size="sm" disabled>
+                          Print
+                        </Button>
                       )}
                       <Link href={`/shipments/${shipment.id}`}>
-                        <Button variant="ghost" size="sm">View</Button>
+                        <Button variant="ghost" size="sm">
+                          View
+                        </Button>
                       </Link>
                     </td>
                   </tr>
                 ))}
                 {shipments.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="p-8 text-center text-gray-500 text-sm">
+                    <td
+                      colSpan={7}
+                      className="p-8 text-center text-gray-500 text-sm"
+                    >
                       No shipments found
                     </td>
                   </tr>

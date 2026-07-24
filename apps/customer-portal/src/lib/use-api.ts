@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
 /**
  * Lightweight data-fetching hooks for the customer portal.
  * Uses React useState/useEffect without adding SWR dependency.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { api } from './api';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { api } from "./api";
 
 // ─── Generic query hook ──────────────────────────────────────
 
@@ -49,7 +49,7 @@ export function useQuery<T>(
       })
       .catch((err: unknown) => {
         if (!mountedRef.current) return;
-        if (err instanceof DOMException && err.name === 'AbortError') return;
+        if (err instanceof DOMException && err.name === "AbortError") return;
         setError(err instanceof Error ? err : new Error(String(err)));
         setLoading(false);
       });
@@ -78,11 +78,11 @@ export interface UseMutationResult<T> {
   reset: () => void;
 }
 
-type HttpMethod = 'POST' | 'PATCH' | 'PUT' | 'DELETE';
+type HttpMethod = "POST" | "PATCH" | "PUT" | "DELETE";
 
 export function useMutation<T>(
   path: string,
-  method: HttpMethod = 'POST',
+  method: HttpMethod = "POST",
 ): UseMutationResult<T> {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
@@ -97,13 +97,13 @@ export function useMutation<T>(
       try {
         let result: T;
         switch (method) {
-          case 'PATCH':
+          case "PATCH":
             result = await api.patch<T>(path, body);
             break;
-          case 'PUT':
+          case "PUT":
             result = await api.put<T>(path, body);
             break;
-          case 'DELETE':
+          case "DELETE":
             result = await api.delete<T>(path);
             break;
           default:

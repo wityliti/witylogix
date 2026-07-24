@@ -32,7 +32,10 @@ export { EventType } from "./types.js";
 
 // ─── Event Tracker ───────────────────────────────────────────────────
 
-export type { EventTrackerConfig, EventPersistHandler } from "./event-tracker.js";
+export type {
+  EventTrackerConfig,
+  EventPersistHandler,
+} from "./event-tracker.js";
 export { EventTracker, buildEvent } from "./event-tracker.js";
 
 // ─── Aggregator ──────────────────────────────────────────────────────

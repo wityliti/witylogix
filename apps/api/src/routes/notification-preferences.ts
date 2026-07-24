@@ -17,7 +17,14 @@ import { prisma } from "@witylogix/db";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-const CHANNELS = ["EMAIL", "SMS", "PUSH", "WHATSAPP", "WEBHOOK", "SLACK"] as const;
+const CHANNELS = [
+  "EMAIL",
+  "SMS",
+  "PUSH",
+  "WHATSAPP",
+  "WEBHOOK",
+  "SLACK",
+] as const;
 const CATEGORIES = [
   "ORDERS",
   "DELIVERIES",
@@ -102,7 +109,7 @@ function getPreferences(settings: unknown): Preferences {
 // ─── Plugin ─────────────────────────────────────────────────────────────────
 
 export default async function notificationPreferencesRoutes(
-  app: FastifyInstance
+  app: FastifyInstance,
 ) {
   app.addHook("preHandler", requireAuth);
   app.addHook("preHandler", tenantContext);
@@ -143,7 +150,7 @@ export default async function notificationPreferencesRoutes(
       where: { id: shopId },
       data: {
         settings: {
-          ...(shop?.settings as object ?? {}),
+          ...((shop?.settings as object) ?? {}),
           notificationPreferences: updated,
         },
       },

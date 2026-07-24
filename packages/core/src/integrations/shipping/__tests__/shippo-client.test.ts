@@ -14,7 +14,12 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { ShippoClient } from "../shippo-client.js";
-import type { ShippingConfig, ShipmentRequest, ShippingAddress, ShippingWebhookEvent } from "../types.js";
+import type {
+  ShippingConfig,
+  ShipmentRequest,
+  ShippingAddress,
+  ShippingWebhookEvent,
+} from "../types.js";
 
 describe("ShippoClient", () => {
   let client: ShippoClient;
@@ -37,7 +42,7 @@ describe("ShippoClient", () => {
       const invalidConfig: ShippingConfig = { apiKey: "" };
 
       expect(() => new ShippoClient(invalidConfig)).toThrow(
-        "Shippo API token is required"
+        "Shippo API token is required",
       );
     });
   });
@@ -98,10 +103,10 @@ describe("ShippoClient", () => {
 
       vi.spyOn(global, "fetch")
         .mockResolvedValueOnce(
-          new Response(JSON.stringify(mockShipment), { status: 201 })
+          new Response(JSON.stringify(mockShipment), { status: 201 }),
         )
         .mockResolvedValueOnce(
-          new Response(JSON.stringify(mockRates), { status: 200 })
+          new Response(JSON.stringify(mockRates), { status: 200 }),
         );
 
       const shipment: ShipmentRequest = {
@@ -146,10 +151,10 @@ describe("ShippoClient", () => {
 
       vi.spyOn(global, "fetch")
         .mockResolvedValueOnce(
-          new Response(JSON.stringify(mockShipment), { status: 201 })
+          new Response(JSON.stringify(mockShipment), { status: 201 }),
         )
         .mockResolvedValueOnce(
-          new Response(JSON.stringify(mockRates), { status: 200 })
+          new Response(JSON.stringify(mockRates), { status: 200 }),
         );
 
       const shipment: ShipmentRequest = {
@@ -226,7 +231,7 @@ describe("ShippoClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockTransaction), { status: 201 })
+        new Response(JSON.stringify(mockTransaction), { status: 201 }),
       );
 
       const label = await client.createShipment(baseRequest, "rate_123");
@@ -255,7 +260,7 @@ describe("ShippoClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockTransaction), { status: 201 })
+        new Response(JSON.stringify(mockTransaction), { status: 201 }),
       );
 
       const label = await client.createShipment(baseRequest, "rate_123");
@@ -277,12 +282,12 @@ describe("ShippoClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockTransaction), { status: 201 })
+        new Response(JSON.stringify(mockTransaction), { status: 201 }),
       );
 
-      await expect(client.createShipment(baseRequest, "rate_123")).rejects.toThrow(
-        "Shippo failed to generate label"
-      );
+      await expect(
+        client.createShipment(baseRequest, "rate_123"),
+      ).rejects.toThrow("Shippo failed to generate label");
     });
   });
 
@@ -340,7 +345,7 @@ describe("ShippoClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockTrack), { status: 200 })
+        new Response(JSON.stringify(mockTrack), { status: 200 }),
       );
 
       const tracking = await client.track("9400111111111111111111", "USPS");
@@ -376,7 +381,7 @@ describe("ShippoClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockTrack), { status: 200 })
+        new Response(JSON.stringify(mockTrack), { status: 200 }),
       );
 
       const tracking = await client.track("794643794398", "FEDEX");
@@ -410,7 +415,7 @@ describe("ShippoClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockValidated), { status: 201 })
+        new Response(JSON.stringify(mockValidated), { status: 201 }),
       );
 
       const address: ShippingAddress = {
@@ -441,13 +446,16 @@ describe("ShippoClient", () => {
         validation_results: {
           is_valid: false,
           messages: [
-            { text: "City/State/ZIP do not match", code: "CITY_STATE_ZIP_MISMATCH" },
+            {
+              text: "City/State/ZIP do not match",
+              code: "CITY_STATE_ZIP_MISMATCH",
+            },
           ],
         },
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockValidated), { status: 201 })
+        new Response(JSON.stringify(mockValidated), { status: 201 }),
       );
 
       const address: ShippingAddress = {
@@ -472,11 +480,41 @@ describe("ShippoClient", () => {
     });
 
     it("should create multiple labels", async () => {
-      const mockShipment1 = { object_id: "ship_1", status: "queued", parcels: [] };
-      const mockShipment2 = { object_id: "ship_2", status: "queued", parcels: [] };
+      const mockShipment1 = {
+        object_id: "ship_1",
+        status: "queued",
+        parcels: [],
+      };
+      const mockShipment2 = {
+        object_id: "ship_2",
+        status: "queued",
+        parcels: [],
+      };
 
-      const mockRates1 = { results: [{ object_id: "rate_1", carrier: "USPS", servicelevel: { name: "Priority" }, rate: "5.00", currency: "USD", estimated_days: 3 }] };
-      const mockRates2 = { results: [{ object_id: "rate_2", carrier: "USPS", servicelevel: { name: "Priority" }, rate: "6.00", currency: "USD", estimated_days: 3 }] };
+      const mockRates1 = {
+        results: [
+          {
+            object_id: "rate_1",
+            carrier: "USPS",
+            servicelevel: { name: "Priority" },
+            rate: "5.00",
+            currency: "USD",
+            estimated_days: 3,
+          },
+        ],
+      };
+      const mockRates2 = {
+        results: [
+          {
+            object_id: "rate_2",
+            carrier: "USPS",
+            servicelevel: { name: "Priority" },
+            rate: "6.00",
+            currency: "USD",
+            estimated_days: 3,
+          },
+        ],
+      };
 
       const mockTxn1 = {
         object_id: "txn_1",
@@ -490,12 +528,24 @@ describe("ShippoClient", () => {
       };
 
       vi.spyOn(global, "fetch")
-        .mockResolvedValueOnce(new Response(JSON.stringify(mockShipment1), { status: 201 }))
-        .mockResolvedValueOnce(new Response(JSON.stringify(mockRates1), { status: 200 }))
-        .mockResolvedValueOnce(new Response(JSON.stringify(mockTxn1), { status: 201 }))
-        .mockResolvedValueOnce(new Response(JSON.stringify(mockShipment2), { status: 201 }))
-        .mockResolvedValueOnce(new Response(JSON.stringify(mockRates2), { status: 200 }))
-        .mockResolvedValueOnce(new Response(JSON.stringify(mockTxn2), { status: 201 }));
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify(mockShipment1), { status: 201 }),
+        )
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify(mockRates1), { status: 200 }),
+        )
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify(mockTxn1), { status: 201 }),
+        )
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify(mockShipment2), { status: 201 }),
+        )
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify(mockRates2), { status: 200 }),
+        )
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify(mockTxn2), { status: 201 }),
+        );
 
       const shipments: ShipmentRequest[] = [
         {
@@ -579,7 +629,7 @@ describe("ShippoClient", () => {
   describe("health check", () => {
     it("should return true if API is healthy", async () => {
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify({ results: [] }), { status: 200 })
+        new Response(JSON.stringify({ results: [] }), { status: 200 }),
       );
 
       const result = await client.healthCheck();
@@ -589,7 +639,7 @@ describe("ShippoClient", () => {
 
     it("should return false if API is unhealthy", async () => {
       vi.spyOn(global, "fetch").mockRejectedValueOnce(
-        new Error("Connection timeout")
+        new Error("Connection timeout"),
       );
 
       const result = await client.healthCheck();

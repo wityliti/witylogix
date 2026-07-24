@@ -39,23 +39,98 @@ interface IntegrationTab {
 
 const INTEGRATION_TABS: IntegrationTab[] = [
   // Main tabs
-  { href: "/integrations", label: "Health Center", icon: <Activity className="w-4 h-4" />, group: "main" },
-  { href: "/integrations/catalog", label: "Catalog", icon: <ShoppingBag className="w-4 h-4" />, group: "main" },
-  { href: "/integrations/connected", label: "Connected", icon: <Link2 className="w-4 h-4" />, group: "main" },
+  {
+    href: "/integrations",
+    label: "Health Center",
+    icon: <Activity className="w-4 h-4" />,
+    group: "main",
+  },
+  {
+    href: "/integrations/catalog",
+    label: "Catalog",
+    icon: <ShoppingBag className="w-4 h-4" />,
+    group: "main",
+  },
+  {
+    href: "/integrations/connected",
+    label: "Connected",
+    icon: <Link2 className="w-4 h-4" />,
+    group: "main",
+  },
   // Category tabs
-  { href: "/integrations/shipping", label: "Shipping", icon: <Truck className="w-4 h-4" />, group: "categories" },
-  { href: "/integrations/payments", label: "Payments", icon: <CreditCard className="w-4 h-4" />, group: "categories" },
-  { href: "/integrations/crm", label: "CRM", icon: <Users className="w-4 h-4" />, group: "categories" },
-  { href: "/integrations/erp", label: "ERP", icon: <Building2 className="w-4 h-4" />, group: "categories" },
-  { href: "/integrations/ecommerce", label: "eCommerce", icon: <ShoppingCart className="w-4 h-4" />, group: "categories" },
-  { href: "/integrations/messaging", label: "Messaging", icon: <MessageSquare className="w-4 h-4" />, group: "categories" },
+  {
+    href: "/integrations/shipping",
+    label: "Shipping",
+    icon: <Truck className="w-4 h-4" />,
+    group: "categories",
+  },
+  {
+    href: "/integrations/payments",
+    label: "Payments",
+    icon: <CreditCard className="w-4 h-4" />,
+    group: "categories",
+  },
+  {
+    href: "/integrations/crm",
+    label: "CRM",
+    icon: <Users className="w-4 h-4" />,
+    group: "categories",
+  },
+  {
+    href: "/integrations/erp",
+    label: "ERP",
+    icon: <Building2 className="w-4 h-4" />,
+    group: "categories",
+  },
+  {
+    href: "/integrations/ecommerce",
+    label: "eCommerce",
+    icon: <ShoppingCart className="w-4 h-4" />,
+    group: "categories",
+  },
+  {
+    href: "/integrations/messaging",
+    label: "Messaging",
+    icon: <MessageSquare className="w-4 h-4" />,
+    group: "categories",
+  },
   // Tools tabs
-  { href: "/integrations/providers", label: "Providers", icon: <Plug className="w-4 h-4" />, group: "tools" },
-  { href: "/integrations/webhooks", label: "Webhooks", icon: <Webhook className="w-4 h-4" />, group: "tools" },
-  { href: "/integrations/credentials", label: "Credentials", icon: <Key className="w-4 h-4" />, group: "tools" },
-  { href: "/integrations/chaos", label: "Chaos Testing", icon: <Zap className="w-4 h-4" />, group: "tools" },
-  { href: "/integrations/migration", label: "Migration", icon: <GitBranch className="w-4 h-4" />, group: "tools" },
-  { href: "/integrations/docs", label: "Docs", icon: <BookOpen className="w-4 h-4" />, group: "tools" },
+  {
+    href: "/integrations/providers",
+    label: "Providers",
+    icon: <Plug className="w-4 h-4" />,
+    group: "tools",
+  },
+  {
+    href: "/integrations/webhooks",
+    label: "Webhooks",
+    icon: <Webhook className="w-4 h-4" />,
+    group: "tools",
+  },
+  {
+    href: "/integrations/credentials",
+    label: "Credentials",
+    icon: <Key className="w-4 h-4" />,
+    group: "tools",
+  },
+  {
+    href: "/integrations/chaos",
+    label: "Chaos Testing",
+    icon: <Zap className="w-4 h-4" />,
+    group: "tools",
+  },
+  {
+    href: "/integrations/migration",
+    label: "Migration",
+    icon: <GitBranch className="w-4 h-4" />,
+    group: "tools",
+  },
+  {
+    href: "/integrations/docs",
+    label: "Docs",
+    icon: <BookOpen className="w-4 h-4" />,
+    group: "tools",
+  },
 ];
 
 const GROUP_LABEL: Record<TabGroup, string> = {
@@ -70,7 +145,7 @@ function getBreadcrumbLabel(pathname: string): string {
 
   const segment = match[1];
   const tabLabel = INTEGRATION_TABS.find((tab) =>
-    tab.href.includes(segment)
+    tab.href.includes(segment),
   )?.label;
 
   return tabLabel || segment.charAt(0).toUpperCase() + segment.slice(1);
@@ -98,7 +173,7 @@ function TabLink({ tab, active }: TabLinkProps) {
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wl-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-wl-bg-root rounded-t-sm",
         active
           ? "border-wl-primary-500 text-wl-primary-400"
-          : "border-transparent text-wl-text-tertiary hover:text-wl-text-secondary"
+          : "border-transparent text-wl-text-tertiary hover:text-wl-text-secondary",
       )}
     >
       {tab.icon}
@@ -160,9 +235,7 @@ export default function IntegrationsLayout({
             <BreadcrumbLink href="/integrations">Integrations</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem isCurrentPage>
-            {currentTab}
-          </BreadcrumbItem>
+          <BreadcrumbItem isCurrentPage>{currentTab}</BreadcrumbItem>
         </Breadcrumb>
 
         {/* Tab Navigation — grouped, single accent */}
@@ -171,9 +244,19 @@ export default function IntegrationsLayout({
           className="flex items-center gap-1 mb-8 border-b border-wl-border-subtle overflow-x-auto scrollbar-none"
         >
           <TabGroupSection group="main" tabs={mainTabs} pathname={pathname} />
-          <div className="w-px h-5 bg-wl-border-subtle mx-1.5 shrink-0" aria-hidden="true" />
-          <TabGroupSection group="categories" tabs={categoryTabs} pathname={pathname} />
-          <div className="w-px h-5 bg-wl-border-subtle mx-1.5 shrink-0" aria-hidden="true" />
+          <div
+            className="w-px h-5 bg-wl-border-subtle mx-1.5 shrink-0"
+            aria-hidden="true"
+          />
+          <TabGroupSection
+            group="categories"
+            tabs={categoryTabs}
+            pathname={pathname}
+          />
+          <div
+            className="w-px h-5 bg-wl-border-subtle mx-1.5 shrink-0"
+            aria-hidden="true"
+          />
           <TabGroupSection group="tools" tabs={toolsTabs} pathname={pathname} />
         </nav>
 

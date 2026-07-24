@@ -1,5 +1,5 @@
-import { readFileSync } from 'fs';
-import { resolve } from 'path';
+import { readFileSync } from "fs";
+import { resolve } from "path";
 
 interface PackageJson {
   name?: string;
@@ -25,27 +25,24 @@ interface VerificationResult {
 }
 
 const PACKAGES = [
-  'framework',
-  'types',
-  'validators',
-  'workflows',
-  'carrier-service',
-  'extension-core',
+  "framework",
+  "types",
+  "validators",
+  "workflows",
+  "carrier-service",
+  "extension-core",
 ];
 
 const REQUIRED_PACKAGES = new Set([
-  'framework',
-  'types',
-  'validators',
-  'workflows',
+  "framework",
+  "types",
+  "validators",
+  "workflows",
 ]);
 
 function readPackageJson(packageName: string): PackageJson {
-  const path = resolve(
-    process.cwd(),
-    `packages/${packageName}/package.json`
-  );
-  const content = readFileSync(path, 'utf-8');
+  const path = resolve(process.cwd(), `packages/${packageName}/package.json`);
+  const content = readFileSync(path, "utf-8");
   return JSON.parse(content);
 }
 
@@ -113,7 +110,7 @@ function verifyPackage(packageName: string): VerificationResult {
     // Check for tsup.config.ts
     const tsupConfigPath = resolve(
       process.cwd(),
-      `packages/${packageName}/tsup.config.ts`
+      `packages/${packageName}/tsup.config.ts`,
     );
     result.hasTsupConfig = fileExists(tsupConfigPath);
     if (!result.hasTsupConfig && REQUIRED_PACKAGES.has(packageName)) {
@@ -135,14 +132,17 @@ function verifyPackage(packageName: string): VerificationResult {
     }
   } catch (error) {
     result.errors.push(
-      `Failed to read package: ${error instanceof Error ? error.message : String(error)}`
+      `Failed to read package: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
 
   return result;
 }
 
-function checkCircularDependencies(): { hasCircular: boolean; details: string[] } {
+function checkCircularDependencies(): {
+  hasCircular: boolean;
+  details: string[];
+} {
   const details: string[] = [];
   const hasCircular = false;
 
@@ -154,10 +154,13 @@ function checkCircularDependencies(): { hasCircular: boolean; details: string[] 
       const packageJson = readPackageJson(pkg);
       dependencyGraph[pkg] = new Set();
 
-      const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
+      const deps = {
+        ...packageJson.dependencies,
+        ...packageJson.devDependencies,
+      };
       for (const depName in deps) {
-        if (depName.startsWith('@witylogix/')) {
-          const depPackage = depName.replace('@witylogix/', '');
+        if (depName.startsWith("@witylogix/")) {
+          const depPackage = depName.replace("@witylogix/", "");
           if (PACKAGES.includes(depPackage)) {
             dependencyGraph[pkg].add(depPackage);
           }
@@ -169,7 +172,10 @@ function checkCircularDependencies(): { hasCircular: boolean; details: string[] 
     const visited = new Set<string>();
     const recursionStack = new Set<string>();
 
-    function hasCycle(node: string, graph: Record<string, Set<string>>): boolean {
+    function hasCycle(
+      node: string,
+      graph: Record<string, Set<string>>,
+    ): boolean {
       visited.add(node);
       recursionStack.add(node);
 
@@ -179,9 +185,7 @@ function checkCircularDependencies(): { hasCircular: boolean; details: string[] 
             return true;
           }
         } else if (recursionStack.has(neighbor)) {
-          details.push(
-            `Circular dependency detected: ${node} -> ${neighbor}`
-          );
+          details.push(`Circular dependency detected: ${node} -> ${neighbor}`);
           return true;
         }
       }
@@ -199,7 +203,7 @@ function checkCircularDependencies(): { hasCircular: boolean; details: string[] 
     }
   } catch (error) {
     details.push(
-      `Failed to check circular dependencies: ${error instanceof Error ? error.message : String(error)}`
+      `Failed to check circular dependencies: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
 
@@ -207,7 +211,7 @@ function checkCircularDependencies(): { hasCircular: boolean; details: string[] 
 }
 
 function formatResult(result: VerificationResult): string {
-  const status = result.errors.length === 0 ? '✓' : '✗';
+  const status = result.errors.length === 0 ? "✓" : "✗";
   const lines = [`${status} ${result.package}`];
 
   if (result.hasBuildScript) {
@@ -231,24 +235,24 @@ function formatResult(result: VerificationResult): string {
 
   if (result.errors.length > 0) {
     lines.push(`  Errors:`);
-    result.errors.forEach(error => {
+    result.errors.forEach((error) => {
       lines.push(`    ✗ ${error}`);
     });
   }
 
   if (result.warnings.length > 0) {
     lines.push(`  Warnings:`);
-    result.warnings.forEach(warning => {
+    result.warnings.forEach((warning) => {
       lines.push(`    ! ${warning}`);
     });
   }
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 function main() {
-  console.log('\n📦 Verifying Witylogix Packages\n');
-  console.log('='.repeat(50));
+  console.log("\n📦 Verifying Witylogix Packages\n");
+  console.log("=".repeat(50));
 
   const results: VerificationResult[] = [];
   let allPassed = true;
@@ -266,32 +270,32 @@ function main() {
   }
 
   // Check for circular dependencies
-  console.log('='.repeat(50));
-  console.log('\n🔄 Checking for Circular Dependencies\n');
+  console.log("=".repeat(50));
+  console.log("\n🔄 Checking for Circular Dependencies\n");
   const circularCheck = checkCircularDependencies();
 
   if (circularCheck.hasCircular) {
-    console.log('✗ Circular dependencies detected:');
-    circularCheck.details.forEach(detail => {
+    console.log("✗ Circular dependencies detected:");
+    circularCheck.details.forEach((detail) => {
       console.log(`  ${detail}`);
     });
     allPassed = false;
   } else {
-    console.log('✓ No circular dependencies detected');
+    console.log("✓ No circular dependencies detected");
   }
 
   // Summary
-  console.log('\n' + '='.repeat(50));
-  const passedCount = results.filter(r => r.errors.length === 0).length;
+  console.log("\n" + "=".repeat(50));
+  const passedCount = results.filter((r) => r.errors.length === 0).length;
   console.log(
-    `\nSummary: ${passedCount}/${results.length} packages passed verification`
+    `\nSummary: ${passedCount}/${results.length} packages passed verification`,
   );
 
   if (allPassed) {
-    console.log('\n✓ All checks passed!\n');
+    console.log("\n✓ All checks passed!\n");
     process.exit(0);
   } else {
-    console.log('\n✗ Some checks failed. Please fix the issues above.\n');
+    console.log("\n✗ Some checks failed. Please fix the issues above.\n");
     process.exit(1);
   }
 }

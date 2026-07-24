@@ -117,7 +117,10 @@ export class EmailRoutingEngine {
         if (!pattern.test(toEmail)) return false;
       }
 
-      if (rule.emailType && (message.priority as string | undefined) !== rule.emailType) {
+      if (
+        rule.emailType &&
+        (message.priority as string | undefined) !== rule.emailType
+      ) {
         return false;
       }
 
@@ -130,10 +133,10 @@ export class EmailRoutingEngine {
    */
   private selectFromProviders(
     providers: string[],
-    strategy: "round_robin" | "random" | "fixed" = "fixed"
+    strategy: "round_robin" | "random" | "fixed" = "fixed",
   ): string {
     const available = providers.filter(
-      (p) => this.providers.has(p) && this.isProviderHealthy(p)
+      (p) => this.providers.has(p) && this.isProviderHealthy(p),
     );
 
     if (available.length === 0) {
@@ -143,7 +146,8 @@ export class EmailRoutingEngine {
     switch (strategy) {
       case "round_robin": {
         const provider = available[this.loadBalancer[available[0]] || 0];
-        this.loadBalancer[available[0]] = (this.loadBalancer[available[0]] || 0) + 1;
+        this.loadBalancer[available[0]] =
+          (this.loadBalancer[available[0]] || 0) + 1;
         return provider;
       }
       case "random":
@@ -163,7 +167,10 @@ export class EmailRoutingEngine {
 
     // Provider is unhealthy if failure count is high and recent
     if (metrics.failureCount > 5) {
-      if (metrics.lastFailure && Date.now() - metrics.lastFailure.getTime() < 60000) {
+      if (
+        metrics.lastFailure &&
+        Date.now() - metrics.lastFailure.getTime() < 60000
+      ) {
         return false;
       }
     }
@@ -195,7 +202,7 @@ export class EmailRoutingEngine {
       const rule = applicableRules[0];
       const provider = this.selectFromProviders(
         rule.providers,
-        rule.strategy || "fixed"
+        rule.strategy || "fixed",
       );
       const adapter = this.providers.get(provider);
       if (adapter) {
@@ -377,7 +384,7 @@ export class EmailRoutingEngine {
       }
 
       throw new Error(
-        `Failed to send via all providers: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to send via all providers: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -514,7 +521,7 @@ export class EmailRoutingEngine {
   }> {
     const metrics = this.getMetrics();
     const healthyCount = metrics.filter((m) =>
-      this.isProviderHealthy(m.name)
+      this.isProviderHealthy(m.name),
     ).length;
 
     return {

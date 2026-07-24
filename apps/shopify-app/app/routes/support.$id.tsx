@@ -62,7 +62,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const ticketData: TicketDetail = {
     id: id || "ticket-001",
     subject: "Integration Setup Help Needed",
-    description: "Having trouble setting up the Shopify integration with our system.",
+    description:
+      "Having trouble setting up the Shopify integration with our system.",
     status: "open",
     priority: "high",
     category: "Technical",
@@ -107,7 +108,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
         id: "msg-005",
         author: "John Smith",
         authorRole: "customer",
-        content: "Perfect! That worked. The app is now connected and working great. Thanks so much!",
+        content:
+          "Perfect! That worked. The app is now connected and working great. Thanks so much!",
         createdAt: "2026-03-06T14:20:00Z",
       },
     ],
@@ -177,7 +179,10 @@ export default function SupportTicketDetail() {
   return (
     <Page
       title={ticket.subject}
-      backAction={{ content: "Back to Support", onAction: () => window.history.back() }}
+      backAction={{
+        content: "Back to Support",
+        onAction: () => window.history.back(),
+      }}
     >
       <Layout>
         {/* Ticket Header */}
@@ -202,7 +207,8 @@ export default function SupportTicketDetail() {
                       .join(" ")}
                   </Badge>
                   <Badge tone={getPriorityTone(ticket.priority)}>
-                    {ticket.priority.charAt(0).toUpperCase() + ticket.priority.slice(1)}
+                    {ticket.priority.charAt(0).toUpperCase() +
+                      ticket.priority.slice(1)}
                   </Badge>
                 </InlineStack>
               </InlineStack>
@@ -249,7 +255,8 @@ export default function SupportTicketDetail() {
                     <Button variant="secondary">Close</Button>
                   </>
                 )}
-                {(ticket.status === "resolved" || ticket.status === "closed") && (
+                {(ticket.status === "resolved" ||
+                  ticket.status === "closed") && (
                   <Button variant="secondary">Reopen</Button>
                 )}
               </InlineStack>
@@ -353,7 +360,11 @@ export default function SupportTicketDetail() {
                   autoComplete="off"
                 />
 
-                <Button variant="primary" onClick={handleSubmitReply} disabled={!replyText.trim()}>
+                <Button
+                  variant="primary"
+                  onClick={handleSubmitReply}
+                  disabled={!replyText.trim()}
+                >
                   Send Reply
                 </Button>
               </BlockStack>
@@ -386,7 +397,11 @@ export default function SupportTicketDetail() {
                       </Text>
                     ) : (
                       ticket.internalNotes.map((note, idx) => (
-                        <Box key={idx} padding="200" background="bg-surface-secondary">
+                        <Box
+                          key={idx}
+                          padding="200"
+                          background="bg-surface-secondary"
+                        >
                           <Text as="p" variant="bodySm">
                             {note}
                           </Text>
@@ -429,7 +444,10 @@ export function ErrorBoundary() {
   return (
     <Page
       title="Support Ticket"
-      backAction={{ content: "Back to Support", onAction: () => window.history.back() }}
+      backAction={{
+        content: "Back to Support",
+        onAction: () => window.history.back(),
+      }}
     >
       <Layout>
         <Layout.Section>
@@ -439,7 +457,8 @@ export function ErrorBoundary() {
                 Error Loading Ticket
               </Text>
               <Text as="p" variant="bodySm">
-                We encountered an error while loading this ticket. Please try refreshing the page.
+                We encountered an error while loading this ticket. Please try
+                refreshing the page.
               </Text>
             </BlockStack>
           </Card>

@@ -27,7 +27,9 @@ export function OAuthRedirectHandler({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [state, setState] = useState<"loading" | "success" | "error">("loading");
+  const [state, setState] = useState<"loading" | "success" | "error">(
+    "loading",
+  );
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [errorDescription, setErrorDescription] = useState<string>("");
   const [redirectCountdown, setRedirectCountdown] = useState<number>(3);
@@ -45,7 +47,7 @@ export function OAuthRedirectHandler({
       if (error) {
         setErrorMessage(error);
         setErrorDescription(
-          errorDesc || "An error occurred during OAuth authentication"
+          errorDesc || "An error occurred during OAuth authentication",
         );
         setState("error");
         onError?.(error, errorDesc || undefined);
@@ -72,28 +74,31 @@ export function OAuthRedirectHandler({
       // Validate CSRF state token
       try {
         const storedState = sessionStorage.getItem("oauth_state");
-        const storedProvider = sessionStorage.getItem("oauth_provider") || "Provider";
+        const storedProvider =
+          sessionStorage.getItem("oauth_provider") || "Provider";
 
         if (!storedState) {
           setErrorMessage("invalid_state");
           setErrorDescription(
-            "CSRF state token not found. Session may have expired."
+            "CSRF state token not found. Session may have expired.",
           );
           setState("error");
           onError?.(
             "invalid_state",
-            "CSRF state token validation failed - session expired"
+            "CSRF state token validation failed - session expired",
           );
           return;
         }
 
         if (storedState !== returnedState) {
           setErrorMessage("state_mismatch");
-          setErrorDescription("CSRF state token mismatch. Request may be unsafe.");
+          setErrorDescription(
+            "CSRF state token mismatch. Request may be unsafe.",
+          );
           setState("error");
           onError?.(
             "state_mismatch",
-            "CSRF state token does not match. Request rejected for security."
+            "CSRF state token does not match. Request rejected for security.",
           );
           return;
         }
@@ -136,14 +141,14 @@ export function OAuthRedirectHandler({
     <div
       className={cn(
         "flex items-center justify-center min-h-screen bg-wl-bg-default",
-        className
+        className,
       )}
     >
       <div
         className={cn(
           "w-full max-w-md rounded-lg border p-8",
           "bg-wl-bg-surface border-wl-border-subtle",
-          "shadow-lg"
+          "shadow-lg",
         )}
       >
         {state === "loading" && (
@@ -153,7 +158,7 @@ export function OAuthRedirectHandler({
                 className={cn(
                   "w-12 h-12 rounded-full border-4",
                   "border-wl-border-subtle border-t-wl-primary-500",
-                  "animate-spin"
+                  "animate-spin",
                 )}
               />
             </div>
@@ -173,7 +178,7 @@ export function OAuthRedirectHandler({
                 className={cn(
                   "w-12 h-12 rounded-full",
                   "bg-wl-success-100 dark:bg-wl-success-900/30",
-                  "flex items-center justify-center"
+                  "flex items-center justify-center",
                 )}
               >
                 <svg
@@ -193,7 +198,8 @@ export function OAuthRedirectHandler({
               Connected to {providerName}
             </h2>
             <p className="text-sm text-wl-text-secondary mb-6">
-              Your integration has been successfully connected. Redirecting to dashboard in{" "}
+              Your integration has been successfully connected. Redirecting to
+              dashboard in{" "}
               <span className="font-semibold">{redirectCountdown}s</span>...
             </p>
             <button
@@ -201,7 +207,7 @@ export function OAuthRedirectHandler({
               className={cn(
                 "w-full px-4 py-2 rounded font-medium text-sm transition-colors",
                 "bg-wl-primary-500 text-white hover:bg-wl-primary-600",
-                "dark:bg-wl-primary-600 dark:hover:bg-wl-primary-700"
+                "dark:bg-wl-primary-600 dark:hover:bg-wl-primary-700",
               )}
             >
               Return to Dashboard Now
@@ -216,7 +222,7 @@ export function OAuthRedirectHandler({
                 className={cn(
                   "w-12 h-12 rounded-full",
                   "bg-wl-danger-100 dark:bg-wl-danger-900/30",
-                  "flex items-center justify-center"
+                  "flex items-center justify-center",
                 )}
               >
                 <svg
@@ -239,15 +245,11 @@ export function OAuthRedirectHandler({
               className={cn(
                 "mb-6 p-3 rounded text-sm text-left",
                 "bg-wl-danger-100 text-wl-danger-700",
-                "dark:bg-wl-danger-900/30 dark:text-wl-danger-300"
+                "dark:bg-wl-danger-900/30 dark:text-wl-danger-300",
               )}
             >
-              <div className="font-semibold mb-1">
-                {errorMessage}
-              </div>
-              <div className="text-xs opacity-90">
-                {errorDescription}
-              </div>
+              <div className="font-semibold mb-1">{errorMessage}</div>
+              <div className="text-xs opacity-90">{errorDescription}</div>
             </div>
             <div className="flex gap-3">
               <button
@@ -255,7 +257,7 @@ export function OAuthRedirectHandler({
                 className={cn(
                   "flex-1 px-4 py-2 rounded font-medium text-sm transition-colors",
                   "bg-wl-surface-hover text-wl-text-primary hover:bg-wl-border-subtle",
-                  "dark:bg-wl-surface-hover dark:hover:bg-wl-border-default"
+                  "dark:bg-wl-surface-hover dark:hover:bg-wl-border-default",
                 )}
               >
                 Go Back
@@ -265,7 +267,7 @@ export function OAuthRedirectHandler({
                 className={cn(
                   "flex-1 px-4 py-2 rounded font-medium text-sm transition-colors",
                   "bg-wl-primary-500 text-white hover:bg-wl-primary-600",
-                  "dark:bg-wl-primary-600 dark:hover:bg-wl-primary-700"
+                  "dark:bg-wl-primary-600 dark:hover:bg-wl-primary-700",
                 )}
               >
                 Return to Dashboard

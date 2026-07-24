@@ -1,17 +1,10 @@
-'use client';
+"use client";
 
-import { useState, useRef, useEffect } from 'react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import {
-  ChevronDown,
-  X,
-  Copy,
-  ArrowUp,
-  ArrowDown,
-  Code2,
-} from 'lucide-react';
+import { useState, useRef, useEffect } from "react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ChevronDown, X, Copy, ArrowUp, ArrowDown, Code2 } from "lucide-react";
 
 /* ═══════════════════════════════════════════════════════════
    FIELD MAPPING EDITOR — Visual mapping with transformers
@@ -20,7 +13,7 @@ import {
 interface Field {
   id: string;
   name: string;
-  type: 'string' | 'number' | 'boolean' | 'date';
+  type: "string" | "number" | "boolean" | "date";
   required: boolean;
   sampleValue?: string;
 }
@@ -30,12 +23,12 @@ interface Mapping {
   sourceFieldId: string;
   targetFieldId: string;
   transformer:
-    | 'direct'
-    | 'uppercase'
-    | 'lowercase'
-    | 'currency'
-    | 'date'
-    | 'custom';
+    | "direct"
+    | "uppercase"
+    | "lowercase"
+    | "currency"
+    | "date"
+    | "custom";
   customJS?: string;
 }
 
@@ -47,23 +40,48 @@ interface FieldMappingEditorProps {
   onRemoveMapping: (mappingId: string) => void;
   onUpdateTransformer: (
     mappingId: string,
-    transformer: Mapping['transformer'],
-    customJS?: string
+    transformer: Mapping["transformer"],
+    customJS?: string,
   ) => void;
 }
 
 const TRANSFORMERS: Array<{
-  id: Mapping['transformer'];
+  id: Mapping["transformer"];
   name: string;
   description: string;
   icon: React.ReactNode;
 }> = [
-  { id: 'direct', name: 'Direct Copy', description: 'No transformation', icon: <Copy className="w-3 h-3" /> },
-  { id: 'uppercase', name: 'Uppercase', description: 'Convert to uppercase', icon: <ArrowUp className="w-3 h-3" /> },
-  { id: 'lowercase', name: 'Lowercase', description: 'Convert to lowercase', icon: <ArrowDown className="w-3 h-3" /> },
-  { id: 'currency', name: 'Currency', description: 'Format as currency', icon: null },
-  { id: 'date', name: 'Date Format', description: 'Format date', icon: null },
-  { id: 'custom', name: 'Custom JS', description: 'Custom transformation', icon: <Code2 className="w-3 h-3" /> },
+  {
+    id: "direct",
+    name: "Direct Copy",
+    description: "No transformation",
+    icon: <Copy className="w-3 h-3" />,
+  },
+  {
+    id: "uppercase",
+    name: "Uppercase",
+    description: "Convert to uppercase",
+    icon: <ArrowUp className="w-3 h-3" />,
+  },
+  {
+    id: "lowercase",
+    name: "Lowercase",
+    description: "Convert to lowercase",
+    icon: <ArrowDown className="w-3 h-3" />,
+  },
+  {
+    id: "currency",
+    name: "Currency",
+    description: "Format as currency",
+    icon: null,
+  },
+  { id: "date", name: "Date Format", description: "Format date", icon: null },
+  {
+    id: "custom",
+    name: "Custom JS",
+    description: "Custom transformation",
+    icon: <Code2 className="w-3 h-3" />,
+  },
 ];
 
 export function FieldMappingEditor({
@@ -88,7 +106,7 @@ export function FieldMappingEditor({
         width: containerRef.current.offsetWidth,
         height: Math.max(
           leftRef.current?.offsetHeight || 0,
-          rightRef.current?.offsetHeight || 0
+          rightRef.current?.offsetHeight || 0,
         ),
       });
     }
@@ -99,14 +117,14 @@ export function FieldMappingEditor({
           width: containerRef.current.offsetWidth,
           height: Math.max(
             leftRef.current?.offsetHeight || 0,
-            rightRef.current?.offsetHeight || 0
+            rightRef.current?.offsetHeight || 0,
           ),
         });
       }
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [mappings]);
 
   const handleSourceClick = (fieldId: string) => {
@@ -121,7 +139,8 @@ export function FieldMappingEditor({
     if (selectedSource && fieldId !== selectedSource) {
       // Check if mapping already exists
       const existing = mappings.find(
-        (m) => m.sourceFieldId === selectedSource && m.targetFieldId === fieldId
+        (m) =>
+          m.sourceFieldId === selectedSource && m.targetFieldId === fieldId,
       );
       if (!existing) {
         onAddMapping(selectedSource, fieldId);
@@ -151,10 +170,10 @@ export function FieldMappingEditor({
     if (leftRef.current && rightRef.current) {
       mappings.forEach((mapping) => {
         const sourceEl = leftRef.current?.querySelector(
-          `[data-field-id="${mapping.sourceFieldId}"]`
+          `[data-field-id="${mapping.sourceFieldId}"]`,
         ) as HTMLElement;
         const targetEl = rightRef.current?.querySelector(
-          `[data-field-id="${mapping.targetFieldId}"]`
+          `[data-field-id="${mapping.targetFieldId}"]`,
         ) as HTMLElement;
 
         if (sourceEl && targetEl) {
@@ -179,8 +198,9 @@ export function FieldMappingEditor({
       {/* Instructions */}
       <div className="p-3 bg-wl-bg-surface rounded-lg border border-wl-border-subtle">
         <p className="text-sm text-wl-text-secondary">
-          Click a field on the left (source) then click a field on the right (target) to create a mapping.
-          Click the connection line to edit transformations.
+          Click a field on the left (source) then click a field on the right
+          (target) to create a mapping. Click the connection line to edit
+          transformations.
         </p>
       </div>
 
@@ -188,8 +208,8 @@ export function FieldMappingEditor({
       <div
         ref={containerRef}
         className={cn(
-          'relative rounded-lg border border-wl-border-subtle bg-wl-bg-surface p-4',
-          isMobile ? 'space-y-4' : ''
+          "relative rounded-lg border border-wl-border-subtle bg-wl-bg-surface p-4",
+          isMobile ? "space-y-4" : "",
         )}
       >
         {!isMobile && (
@@ -197,7 +217,7 @@ export function FieldMappingEditor({
             className="absolute top-0 left-0 pointer-events-none"
             width={svgDimensions.width}
             height={svgDimensions.height}
-            style={{ overflow: 'visible' }}
+            style={{ overflow: "visible" }}
           >
             <defs>
               <marker
@@ -208,7 +228,11 @@ export function FieldMappingEditor({
                 refY="3"
                 orient="auto"
               >
-                <polygon points="0 0, 10 3, 0 6" fill="currentColor" className="text-wl-primary-500" />
+                <polygon
+                  points="0 0, 10 3, 0 6"
+                  fill="currentColor"
+                  className="text-wl-primary-500"
+                />
               </marker>
             </defs>
             {connectionPoints.map((point) => {
@@ -225,7 +249,7 @@ export function FieldMappingEditor({
                   strokeWidth="2"
                   className="text-wl-primary-400 opacity-60"
                   markerEnd="url(#arrowhead)"
-                  style={{ filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.1))' }}
+                  style={{ filter: "drop-shadow(0 0 2px rgba(0,0,0,0.1))" }}
                 />
               );
             })}
@@ -234,18 +258,18 @@ export function FieldMappingEditor({
 
         <div
           className={cn(
-            'grid gap-4 relative z-10',
-            isMobile ? 'grid-cols-1' : 'grid-cols-2'
+            "grid gap-4 relative z-10",
+            isMobile ? "grid-cols-1" : "grid-cols-2",
           )}
         >
           {/* Source Fields (Platform) */}
           <div ref={leftRef}>
             <h4 className="text-sm font-semibold text-wl-text-secondary mb-3 px-2">
-              {platformFields[0]?.id.includes('sf')
-                ? 'Shopify'
-                : platformFields[0]?.id.includes('wx')
-                  ? 'Wix'
-                  : 'Platform'}{' '}
+              {platformFields[0]?.id.includes("sf")
+                ? "Shopify"
+                : platformFields[0]?.id.includes("wx")
+                  ? "Wix"
+                  : "Platform"}{" "}
               Fields
             </h4>
             <div className="space-y-2">
@@ -257,12 +281,12 @@ export function FieldMappingEditor({
                     data-field-id={field.id}
                     onClick={() => handleSourceClick(field.id)}
                     className={cn(
-                      'w-full text-left p-3 rounded-lg border-2 transition-all',
+                      "w-full text-left p-3 rounded-lg border-2 transition-all",
                       selectedSource === field.id
-                        ? 'border-wl-primary-500 bg-wl-primary-500/10'
+                        ? "border-wl-primary-500 bg-wl-primary-500/10"
                         : isMapped
-                          ? 'border-wl-success-400/30 bg-wl-success-400/5'
-                          : 'border-transparent bg-wl-bg-elevated hover:border-wl-border-default'
+                          ? "border-wl-success-400/30 bg-wl-success-400/5"
+                          : "border-transparent bg-wl-bg-elevated hover:border-wl-border-default",
                     )}
                   >
                     <div className="flex items-center justify-between">
@@ -273,7 +297,10 @@ export function FieldMappingEditor({
                         <p className="text-xs text-wl-text-secondary mt-1">
                           {field.type}
                           {field.required && (
-                            <Badge variant="warning" className="ml-2 inline-block">
+                            <Badge
+                              variant="warning"
+                              className="ml-2 inline-block"
+                            >
                               Required
                             </Badge>
                           )}
@@ -308,27 +335,27 @@ export function FieldMappingEditor({
                     key={field.id}
                     data-field-id={field.id}
                     className={cn(
-                      'rounded-lg border-2 transition-all overflow-hidden',
+                      "rounded-lg border-2 transition-all overflow-hidden",
                       mapping
-                        ? 'border-wl-success-400/30 bg-wl-success-400/5'
+                        ? "border-wl-success-400/30 bg-wl-success-400/5"
                         : field.required
-                          ? 'border-wl-danger-400/30 bg-wl-danger-400/5'
-                          : 'border-transparent bg-wl-bg-elevated hover:border-wl-border-default'
+                          ? "border-wl-danger-400/30 bg-wl-danger-400/5"
+                          : "border-transparent bg-wl-bg-elevated hover:border-wl-border-default",
                     )}
                   >
                     <button
                       onClick={() => {
                         if (mapping) {
                           setExpandedMapping(
-                            expandedMapping === mapping.id ? null : mapping.id
+                            expandedMapping === mapping.id ? null : mapping.id,
                           );
                         } else {
                           handleTargetClick(field.id);
                         }
                       }}
                       className={cn(
-                        'w-full text-left p-3',
-                        mapping && 'cursor-pointer'
+                        "w-full text-left p-3",
+                        mapping && "cursor-pointer",
                       )}
                     >
                       <div className="flex items-center justify-between">
@@ -339,7 +366,10 @@ export function FieldMappingEditor({
                           <p className="text-xs text-wl-text-secondary mt-1">
                             {field.type}
                             {field.required && (
-                              <Badge variant="danger" className="ml-2 inline-block">
+                              <Badge
+                                variant="danger"
+                                className="ml-2 inline-block"
+                              >
                                 Required
                               </Badge>
                             )}
@@ -355,8 +385,8 @@ export function FieldMappingEditor({
                           <div className="flex items-center gap-1 ml-2">
                             <ChevronDown
                               className={cn(
-                                'w-4 h-4 text-wl-text-secondary transition-transform',
-                                expandedMapping === mapping.id && 'rotate-180'
+                                "w-4 h-4 text-wl-text-secondary transition-transform",
+                                expandedMapping === mapping.id && "rotate-180",
                               )}
                             />
                             <button
@@ -388,10 +418,10 @@ export function FieldMappingEditor({
                                   onUpdateTransformer(mapping.id, t.id)
                                 }
                                 className={cn(
-                                  'p-2 rounded-md border text-xs transition-all',
+                                  "p-2 rounded-md border text-xs transition-all",
                                   mapping.transformer === t.id
-                                    ? 'bg-wl-primary-500/20 border-wl-primary-500 text-wl-primary-600'
-                                    : 'bg-wl-bg-elevated border-wl-border-subtle hover:border-wl-border-default'
+                                    ? "bg-wl-primary-500/20 border-wl-primary-500 text-wl-primary-600"
+                                    : "bg-wl-bg-elevated border-wl-border-subtle hover:border-wl-border-default",
                                 )}
                                 title={t.description}
                               >
@@ -404,28 +434,28 @@ export function FieldMappingEditor({
                           </div>
                         </div>
 
-                        {mapping.transformer === 'custom' && (
+                        {mapping.transformer === "custom" && (
                           <div>
                             <label className="text-xs font-semibold text-wl-text-secondary uppercase mb-2 block">
                               Custom JavaScript
                             </label>
                             <textarea
-                              value={mapping.customJS || ''}
+                              value={mapping.customJS || ""}
                               onChange={(e) =>
                                 onUpdateTransformer(
                                   mapping.id,
-                                  'custom',
-                                  e.target.value
+                                  "custom",
+                                  e.target.value,
                                 )
                               }
                               placeholder="// value is available as input parameter
 // return the transformed value
 return value.toUpperCase();"
                               className={cn(
-                                'w-full p-2 rounded-md font-mono text-xs',
-                                'bg-wl-bg-elevated border border-wl-border-subtle',
-                                'text-wl-text-primary placeholder:text-wl-text-secondary',
-                                'focus:outline-none focus:ring-2 focus:ring-wl-primary-500'
+                                "w-full p-2 rounded-md font-mono text-xs",
+                                "bg-wl-bg-elevated border border-wl-border-subtle",
+                                "text-wl-text-primary placeholder:text-wl-text-secondary",
+                                "focus:outline-none focus:ring-2 focus:ring-wl-primary-500",
                               )}
                               rows={4}
                             />
@@ -450,13 +480,13 @@ return value.toUpperCase();"
           <div className="grid gap-2">
             {mappings.map((mapping) => {
               const source = platformFields.find(
-                (f) => f.id === mapping.sourceFieldId
+                (f) => f.id === mapping.sourceFieldId,
               );
               const target = witylogixFields.find(
-                (f) => f.id === mapping.targetFieldId
+                (f) => f.id === mapping.targetFieldId,
               );
               const transformer = TRANSFORMERS.find(
-                (t) => t.id === mapping.transformer
+                (t) => t.id === mapping.transformer,
               );
 
               return (

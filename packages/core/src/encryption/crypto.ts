@@ -11,14 +11,14 @@ import {
   randomBytes,
   scryptSync,
   timingSafeEqual,
-} from 'crypto';
+} from "crypto";
 import {
   EncryptionAlgorithm,
   EncryptedPayload,
   CryptoServiceConfig,
   DecryptionError,
   EncryptionError,
-} from './types.js';
+} from "./types.js";
 
 /**
  * Key derivation parameters for PBKDF-style derivation
@@ -40,11 +40,12 @@ export class CryptoService {
 
   constructor(config: CryptoServiceConfig) {
     if (!config.masterKey || config.masterKey.length === 0) {
-      throw new EncryptionError('Master key must be provided and non-empty');
+      throw new EncryptionError("Master key must be provided and non-empty");
     }
 
     this.masterKey = config.masterKey;
-    this.defaultAlgorithm = config.defaultAlgorithm || EncryptionAlgorithm.AES_256_GCM;
+    this.defaultAlgorithm =
+      config.defaultAlgorithm || EncryptionAlgorithm.AES_256_GCM;
     this.enableKeyRotation = config.enableKeyRotation ?? true;
     this.keyVersions = config.keyVersions || new Map();
   }
@@ -57,7 +58,7 @@ export class CryptoService {
   encrypt(plaintext: string, keyId?: string): EncryptedPayload {
     try {
       if (!plaintext) {
-        throw new EncryptionError('Plaintext cannot be empty');
+        throw new EncryptionError("Plaintext cannot be empty");
       }
 
       // Determine which key to use
@@ -71,18 +72,19 @@ export class CryptoService {
       const cipher = createCipheriv(this.defaultAlgorithm, derivedKey, iv);
 
       // Encrypt the plaintext
-      let ciphertext = cipher.update(plaintext, 'utf8', 'base64');
-      ciphertext += cipher.final('base64');
+      let ciphertext = cipher.update(plaintext, "utf8", "base64");
+      ciphertext += cipher.final("base64");
 
       // Get authentication tag (GCM only)
-      const authTag = this.defaultAlgorithm === EncryptionAlgorithm.AES_256_GCM
-        ? (cipher as any).getAuthTag()
-        : Buffer.alloc(0);
+      const authTag =
+        this.defaultAlgorithm === EncryptionAlgorithm.AES_256_GCM
+          ? (cipher as any).getAuthTag()
+          : Buffer.alloc(0);
 
       return {
         algorithm: this.defaultAlgorithm,
-        iv: iv.toString('base64'),
-        authTag: authTag.toString('base64'),
+        iv: iv.toString("base64"),
+        authTag: authTag.toString("base64"),
         data: ciphertext,
         keyId: keyId || this.getActiveKeyId(),
       };
@@ -91,7 +93,7 @@ export class CryptoService {
         throw error;
       }
       throw new EncryptionError(
-        `Encryption failed: ${error instanceof Error ? error.message : String(error)}`
+        `Encryption failed: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -106,19 +108,27 @@ export class CryptoService {
       let encryptedPayload: EncryptedPayload;
 
       // Handle string input (assume it's JSON-serialized)
-      if (typeof payload === 'string') {
+      if (typeof payload === "string") {
         encryptedPayload = JSON.parse(payload) as EncryptedPayload;
       } else {
         encryptedPayload = payload;
       }
 
       if (!encryptedPayload.data || !encryptedPayload.iv) {
-        throw new DecryptionError('Invalid encrypted payload: missing data or iv');
+        throw new DecryptionError(
+          "Invalid encrypted payload: missing data or iv",
+        );
       }
 
       // Validate algorithm
-      if (!Object.values(EncryptionAlgorithm).includes(encryptedPayload.algorithm as EncryptionAlgorithm)) {
-        throw new DecryptionError(`Unsupported algorithm: ${encryptedPayload.algorithm}`);
+      if (
+        !Object.values(EncryptionAlgorithm).includes(
+          encryptedPayload.algorithm as EncryptionAlgorithm,
+        )
+      ) {
+        throw new DecryptionError(
+          `Unsupported algorithm: ${encryptedPayload.algorithm}`,
+        );
       }
 
       // Derive the key used for encryption
@@ -126,14 +136,14 @@ export class CryptoService {
       const derivedKey = this.deriveKey(keyId);
 
       // Decode IV and ciphertext from base64
-      const iv = Buffer.from(encryptedPayload.iv, 'base64');
-      const ciphertext = Buffer.from(encryptedPayload.data, 'base64');
+      const iv = Buffer.from(encryptedPayload.iv, "base64");
+      const ciphertext = Buffer.from(encryptedPayload.data, "base64");
 
       // Create decipher based on algorithm
       const decipher = createDecipheriv(
         encryptedPayload.algorithm,
         derivedKey,
-        iv
+        iv,
       );
 
       // For GCM mode, set authentication tag before decryption
@@ -141,12 +151,12 @@ export class CryptoService {
         encryptedPayload.algorithm === EncryptionAlgorithm.AES_256_GCM &&
         encryptedPayload.authTag
       ) {
-        const authTag = Buffer.from(encryptedPayload.authTag, 'base64');
+        const authTag = Buffer.from(encryptedPayload.authTag, "base64");
         (decipher as any).setAuthTag(authTag);
       }
 
-      let plaintext = decipher.update(encryptedPayload.data, 'base64', 'utf8');
-      plaintext += decipher.final('utf8');
+      let plaintext = decipher.update(encryptedPayload.data, "base64", "utf8");
+      plaintext += decipher.final("utf8");
 
       return plaintext;
     } catch (error) {
@@ -154,7 +164,7 @@ export class CryptoService {
         throw error;
       }
       throw new DecryptionError(
-        `Decryption failed: ${error instanceof Error ? error.message : String(error)}`
+        `Decryption failed: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -172,7 +182,7 @@ export class CryptoService {
    * Used as default for encryption
    */
   getActiveKeyId(): string {
-    return 'default';
+    return "default";
   }
 
   /**
@@ -187,7 +197,7 @@ export class CryptoService {
       const keyMaterial = `${this.masterKey}:${keyId}`;
 
       // scryptSync(password, salt, keylen, options)
-      const derivedKey = scryptSync(keyMaterial, 'witylogix-salt', KEY_LENGTH, {
+      const derivedKey = scryptSync(keyMaterial, "witylogix-salt", KEY_LENGTH, {
         N: 2 ** 14, // CPU/memory cost parameter
         r: 8, // Block size parameter
         p: 1, // Parallelization parameter
@@ -197,7 +207,7 @@ export class CryptoService {
       return derivedKey;
     } catch (error) {
       throw new EncryptionError(
-        `Key derivation failed: ${error instanceof Error ? error.message : String(error)}`
+        `Key derivation failed: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -217,13 +227,13 @@ export class CryptoService {
  */
 export function createCryptoService(
   masterKey?: string,
-  defaultAlgorithm?: EncryptionAlgorithm
+  defaultAlgorithm?: EncryptionAlgorithm,
 ): CryptoService {
   const key = masterKey || process.env.ENCRYPTION_MASTER_KEY;
 
   if (!key) {
     throw new EncryptionError(
-      'Master key not provided and ENCRYPTION_MASTER_KEY environment variable not set'
+      "Master key not provided and ENCRYPTION_MASTER_KEY environment variable not set",
     );
   }
 

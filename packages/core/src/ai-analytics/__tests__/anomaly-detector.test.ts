@@ -8,11 +8,11 @@
  * - Edge cases and boundary conditions
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { detectAnomalies, detectAnomaliesBatch } from '../anomaly-detector.js';
-import type { Stop, RouteDataPoint } from '../types.js';
+import { describe, it, expect, beforeEach } from "vitest";
+import { detectAnomalies, detectAnomaliesBatch } from "../anomaly-detector.js";
+import type { Stop, RouteDataPoint } from "../types.js";
 
-describe('Route Anomaly Detector', () => {
+describe("Route Anomaly Detector", () => {
   // ─── Setup ──────────────────────────────────────────────────────
 
   const createMockStop = (
@@ -30,7 +30,7 @@ describe('Route Anomaly Detector', () => {
     actualArrivalTime: 1100,
     actualDuration: actualDuration ?? plannedDuration,
     orderId: `ord_${id}`,
-    type: 'delivery',
+    type: "delivery",
   });
 
   const createMockGPSTrace = (length: number = 50): RouteDataPoint[] => {
@@ -48,13 +48,13 @@ describe('Route Anomaly Detector', () => {
 
   // ─── Unusual Stop Duration Tests ────────────────────────────────
 
-  describe('Unusual Stop Duration Detection', () => {
-    it('should detect unusually long stop duration', () => {
+  describe("Unusual Stop Duration Detection", () => {
+    it("should detect unusually long stop duration", () => {
       const route = {
-        routeId: 'route_1',
+        routeId: "route_1",
         stops: [
-          createMockStop('stop_1', 40.7128, -74.006, 5, 5),
-          createMockStop('stop_2', 40.7480, -73.9862, 5, 25), // Very long
+          createMockStop("stop_1", 40.7128, -74.006, 5, 5),
+          createMockStop("stop_2", 40.748, -73.9862, 5, 25), // Very long
         ],
         gpsTrace: createMockGPSTrace(),
         driverHistoricalStopDurations: [4, 5, 5, 4, 5, 4, 5],
@@ -63,17 +63,17 @@ describe('Route Anomaly Detector', () => {
       const result = detectAnomalies(route);
 
       const durationAnomalies = result.anomalies.filter(
-        (a) => a.type === 'unusual_stop_duration',
+        (a) => a.type === "unusual_stop_duration",
       );
       expect(durationAnomalies.length).toBeGreaterThan(0);
     });
 
-    it('should classify severe duration anomalies as warnings', () => {
+    it("should classify severe duration anomalies as warnings", () => {
       const route = {
-        routeId: 'route_1',
+        routeId: "route_1",
         stops: [
-          createMockStop('stop_1', 40.7128, -74.006, 5, 5),
-          createMockStop('stop_2', 40.7480, -73.9862, 5, 50), // Extremely long
+          createMockStop("stop_1", 40.7128, -74.006, 5, 5),
+          createMockStop("stop_2", 40.748, -73.9862, 5, 50), // Extremely long
         ],
         gpsTrace: createMockGPSTrace(),
         driverHistoricalStopDurations: [4, 5, 5, 4, 5],
@@ -82,18 +82,17 @@ describe('Route Anomaly Detector', () => {
       const result = detectAnomalies(route);
 
       const warningAnomalies = result.anomalies.filter(
-        (a) =>
-          a.type === 'unusual_stop_duration' && a.severity === 'warning',
+        (a) => a.type === "unusual_stop_duration" && a.severity === "warning",
       );
       expect(warningAnomalies.length).toBeGreaterThan(0);
     });
 
-    it('should not alert for normal stop duration', () => {
+    it("should not alert for normal stop duration", () => {
       const route = {
-        routeId: 'route_1',
+        routeId: "route_1",
         stops: [
-          createMockStop('stop_1', 40.7128, -74.006, 5, 5),
-          createMockStop('stop_2', 40.7480, -73.9862, 5, 6),
+          createMockStop("stop_1", 40.7128, -74.006, 5, 5),
+          createMockStop("stop_2", 40.748, -73.9862, 5, 6),
         ],
         gpsTrace: createMockGPSTrace(),
         driverHistoricalStopDurations: [4, 5, 5, 4, 5, 4, 5],
@@ -102,17 +101,15 @@ describe('Route Anomaly Detector', () => {
       const result = detectAnomalies(route);
 
       const durationAnomalies = result.anomalies.filter(
-        (a) => a.type === 'unusual_stop_duration',
+        (a) => a.type === "unusual_stop_duration",
       );
       expect(durationAnomalies.length).toBe(0);
     });
 
-    it('should require historical data', () => {
+    it("should require historical data", () => {
       const route = {
-        routeId: 'route_1',
-        stops: [
-          createMockStop('stop_1', 40.7128, -74.006, 5, 30),
-        ],
+        routeId: "route_1",
+        stops: [createMockStop("stop_1", 40.7128, -74.006, 5, 30)],
         gpsTrace: createMockGPSTrace(),
         // No historical data
       };
@@ -120,7 +117,7 @@ describe('Route Anomaly Detector', () => {
       const result = detectAnomalies(route);
 
       const durationAnomalies = result.anomalies.filter(
-        (a) => a.type === 'unusual_stop_duration',
+        (a) => a.type === "unusual_stop_duration",
       );
       expect(durationAnomalies.length).toBe(0);
     });
@@ -128,36 +125,36 @@ describe('Route Anomaly Detector', () => {
 
   // ─── Route Deviation Tests ──────────────────────────────────────
 
-  describe('Route Deviation Detection', () => {
-    it('should detect significant route deviations', () => {
+  describe("Route Deviation Detection", () => {
+    it("should detect significant route deviations", () => {
       const route = {
-        routeId: 'route_1',
+        routeId: "route_1",
         stops: [
-          createMockStop('stop_1', 40.7128, -74.006),
-          createMockStop('stop_2', 40.7480, -73.9862),
+          createMockStop("stop_1", 40.7128, -74.006),
+          createMockStop("stop_2", 40.748, -73.9862),
         ],
         gpsTrace: [
           { lat: 40.7128, lng: -74.006, timestamp: 1000, speedKmh: 30 },
           { lat: 40.72, lng: -73.99, timestamp: 2000, speedKmh: 30 }, // Major deviation
           { lat: 40.73, lng: -73.98, timestamp: 3000, speedKmh: 30 },
-          { lat: 40.7480, lng: -73.9862, timestamp: 4000, speedKmh: 30 },
+          { lat: 40.748, lng: -73.9862, timestamp: 4000, speedKmh: 30 },
         ],
       };
 
       const result = detectAnomalies(route);
 
       const deviationAnomalies = result.anomalies.filter(
-        (a) => a.type === 'route_deviation',
+        (a) => a.type === "route_deviation",
       );
       expect(deviationAnomalies.length).toBeGreaterThanOrEqual(0);
     });
 
-    it('should not alert for small deviations', () => {
+    it("should not alert for small deviations", () => {
       const route = {
-        routeId: 'route_1',
+        routeId: "route_1",
         stops: [
-          createMockStop('stop_1', 40.7128, -74.006),
-          createMockStop('stop_2', 40.7480, -73.9862),
+          createMockStop("stop_1", 40.7128, -74.006),
+          createMockStop("stop_2", 40.748, -73.9862),
         ],
         gpsTrace: createMockGPSTrace(),
       };
@@ -165,7 +162,7 @@ describe('Route Anomaly Detector', () => {
       const result = detectAnomalies(route);
 
       const deviationAnomalies = result.anomalies.filter(
-        (a) => a.type === 'route_deviation',
+        (a) => a.type === "route_deviation",
       );
       // Normal trace should have minimal deviations
       expect(deviationAnomalies.length).toBeLessThan(5);
@@ -174,11 +171,11 @@ describe('Route Anomaly Detector', () => {
 
   // ─── Speed Anomaly Tests ────────────────────────────────────────
 
-  describe('Speed Anomaly Detection', () => {
-    it('should detect excessive speeding', () => {
+  describe("Speed Anomaly Detection", () => {
+    it("should detect excessive speeding", () => {
       const route = {
-        routeId: 'route_1',
-        stops: [createMockStop('stop_1', 40.7128, -74.006)],
+        routeId: "route_1",
+        stops: [createMockStop("stop_1", 40.7128, -74.006)],
         gpsTrace: [
           { lat: 40.7128, lng: -74.006, timestamp: 1000, speedKmh: 30 },
           { lat: 40.715, lng: -74.005, timestamp: 2000, speedKmh: 85 }, // Way over 50 + 20
@@ -190,16 +187,16 @@ describe('Route Anomaly Detector', () => {
       const result = detectAnomalies(route, {}, 50); // 50 km/h speed limit
 
       const speedAnomalies = result.anomalies.filter(
-        (a) => a.type === 'speed_anomaly',
+        (a) => a.type === "speed_anomaly",
       );
       // May or may not detect depending on implementation
       expect(speedAnomalies).toBeDefined();
     });
 
-    it('should detect very low speeds', () => {
+    it("should detect very low speeds", () => {
       const route = {
-        routeId: 'route_1',
-        stops: [createMockStop('stop_1', 40.7128, -74.006)],
+        routeId: "route_1",
+        stops: [createMockStop("stop_1", 40.7128, -74.006)],
         gpsTrace: [
           { lat: 40.7128, lng: -74.006, timestamp: 1000, speedKmh: 30 },
           { lat: 40.7128, lng: -74.006, timestamp: 2000, speedKmh: 1 },
@@ -213,7 +210,7 @@ describe('Route Anomaly Detector', () => {
       const result = detectAnomalies(route);
 
       const speedAnomalies = result.anomalies.filter(
-        (a) => a.type === 'speed_anomaly',
+        (a) => a.type === "speed_anomaly",
       );
       expect(speedAnomalies.length).toBeGreaterThanOrEqual(0);
     });
@@ -221,13 +218,13 @@ describe('Route Anomaly Detector', () => {
 
   // ─── Unexpected Stop Tests ──────────────────────────────────────
 
-  describe('Unexpected Stop Detection', () => {
-    it('should detect unexpected stops at unplanned locations', () => {
+  describe("Unexpected Stop Detection", () => {
+    it("should detect unexpected stops at unplanned locations", () => {
       const route = {
-        routeId: 'route_1',
+        routeId: "route_1",
         stops: [
-          createMockStop('stop_1', 40.7128, -74.006),
-          createMockStop('stop_2', 40.7480, -73.9862),
+          createMockStop("stop_1", 40.7128, -74.006),
+          createMockStop("stop_2", 40.748, -73.9862),
         ],
         gpsTrace: [
           { lat: 40.7128, lng: -74.006, timestamp: 1000, speedKmh: 30 },
@@ -235,37 +232,37 @@ describe('Route Anomaly Detector', () => {
           { lat: 40.715, lng: -74.003, timestamp: 3000, speedKmh: 0 },
           { lat: 40.715, lng: -74.003, timestamp: 4000, speedKmh: 0 },
           { lat: 40.715, lng: -74.003, timestamp: 300000, speedKmh: 0 }, // 5+ minutes stopped
-          { lat: 40.7480, lng: -73.9862, timestamp: 400000, speedKmh: 30 },
+          { lat: 40.748, lng: -73.9862, timestamp: 400000, speedKmh: 30 },
         ],
       };
 
       const result = detectAnomalies(route);
 
       const unexpectedStops = result.anomalies.filter(
-        (a) => a.type === 'unexpected_stop',
+        (a) => a.type === "unexpected_stop",
       );
       expect(unexpectedStops.length).toBeGreaterThanOrEqual(0);
     });
 
-    it('should not alert for planned stops', () => {
+    it("should not alert for planned stops", () => {
       const route = {
-        routeId: 'route_1',
+        routeId: "route_1",
         stops: [
-          createMockStop('stop_1', 40.7128, -74.006, 5, 5),
-          createMockStop('stop_2', 40.7480, -73.9862, 5, 5),
+          createMockStop("stop_1", 40.7128, -74.006, 5, 5),
+          createMockStop("stop_2", 40.748, -73.9862, 5, 5),
         ],
         gpsTrace: [
           { lat: 40.7128, lng: -74.006, timestamp: 1000, speedKmh: 30 },
           { lat: 40.7128, lng: -74.006, timestamp: 2000, speedKmh: 0 },
-          { lat: 40.7480, lng: -73.9862, timestamp: 3000, speedKmh: 0 },
-          { lat: 40.7480, lng: -73.9862, timestamp: 4000, speedKmh: 30 },
+          { lat: 40.748, lng: -73.9862, timestamp: 3000, speedKmh: 0 },
+          { lat: 40.748, lng: -73.9862, timestamp: 4000, speedKmh: 30 },
         ],
       };
 
       const result = detectAnomalies(route);
 
       const unexpectedStops = result.anomalies.filter(
-        (a) => a.type === 'unexpected_stop',
+        (a) => a.type === "unexpected_stop",
       );
       expect(unexpectedStops.length).toBe(0);
     });
@@ -273,18 +270,18 @@ describe('Route Anomaly Detector', () => {
 
   // ─── Delivery Gap Tests ─────────────────────────────────────────
 
-  describe('Delivery Gap Detection', () => {
-    it('should detect large gaps between consecutive deliveries', () => {
+  describe("Delivery Gap Detection", () => {
+    it("should detect large gaps between consecutive deliveries", () => {
       const now = Date.now();
       const route = {
-        routeId: 'route_1',
+        routeId: "route_1",
         stops: [
           {
-            ...createMockStop('stop_1', 40.7128, -74.006),
+            ...createMockStop("stop_1", 40.7128, -74.006),
             actualArrivalTime: now,
           },
           {
-            ...createMockStop('stop_2', 40.7480, -73.9862),
+            ...createMockStop("stop_2", 40.748, -73.9862),
             actualArrivalTime: now + 60 * 60 * 1000, // 1 hour later (way more than 30 min)
           },
         ],
@@ -294,22 +291,22 @@ describe('Route Anomaly Detector', () => {
       const result = detectAnomalies(route);
 
       const gapAnomalies = result.anomalies.filter(
-        (a) => a.type === 'delivery_gap',
+        (a) => a.type === "delivery_gap",
       );
       expect(gapAnomalies.length).toBeGreaterThan(0);
     });
 
-    it('should not alert for normal delivery gaps', () => {
+    it("should not alert for normal delivery gaps", () => {
       const now = Date.now();
       const route = {
-        routeId: 'route_1',
+        routeId: "route_1",
         stops: [
           {
-            ...createMockStop('stop_1', 40.7128, -74.006),
+            ...createMockStop("stop_1", 40.7128, -74.006),
             actualArrivalTime: now,
           },
           {
-            ...createMockStop('stop_2', 40.7480, -73.9862),
+            ...createMockStop("stop_2", 40.748, -73.9862),
             actualArrivalTime: now + 15 * 60 * 1000, // 15 minutes later
           },
         ],
@@ -319,7 +316,7 @@ describe('Route Anomaly Detector', () => {
       const result = detectAnomalies(route);
 
       const gapAnomalies = result.anomalies.filter(
-        (a) => a.type === 'delivery_gap',
+        (a) => a.type === "delivery_gap",
       );
       expect(gapAnomalies.length).toBe(0);
     });
@@ -327,13 +324,13 @@ describe('Route Anomaly Detector', () => {
 
   // ─── Summary Statistics Tests ───────────────────────────────────
 
-  describe('Summary Statistics', () => {
-    it('should count anomalies by severity', () => {
+  describe("Summary Statistics", () => {
+    it("should count anomalies by severity", () => {
       const route = {
-        routeId: 'route_1',
+        routeId: "route_1",
         stops: [
-          createMockStop('stop_1', 40.7128, -74.006, 5, 25),
-          createMockStop('stop_2', 40.7480, -73.9862, 5, 5),
+          createMockStop("stop_1", 40.7128, -74.006, 5, 25),
+          createMockStop("stop_2", 40.748, -73.9862, 5, 5),
         ],
         gpsTrace: createMockGPSTrace(),
         driverHistoricalStopDurations: [4, 5, 5, 4, 5],
@@ -352,12 +349,12 @@ describe('Route Anomaly Detector', () => {
       );
     });
 
-    it('should identify anomaly patterns', () => {
+    it("should identify anomaly patterns", () => {
       const route = {
-        routeId: 'route_1',
+        routeId: "route_1",
         stops: [
-          createMockStop('stop_1', 40.7128, -74.006, 5, 30),
-          createMockStop('stop_2', 40.7480, -73.9862, 5, 5),
+          createMockStop("stop_1", 40.7128, -74.006, 5, 30),
+          createMockStop("stop_2", 40.748, -73.9862, 5, 5),
         ],
         gpsTrace: createMockGPSTrace(),
         driverHistoricalStopDurations: [4, 5, 5, 4, 5],
@@ -375,18 +372,18 @@ describe('Route Anomaly Detector', () => {
 
   // ─── Batch Processing Tests ────────────────────────────────────
 
-  describe('Batch Processing', () => {
-    it('should detect anomalies for multiple routes', () => {
+  describe("Batch Processing", () => {
+    it("should detect anomalies for multiple routes", () => {
       const routes = [
         {
-          routeId: 'route_1',
-          stops: [createMockStop('stop_1', 40.7128, -74.006, 5, 30)],
+          routeId: "route_1",
+          stops: [createMockStop("stop_1", 40.7128, -74.006, 5, 30)],
           gpsTrace: createMockGPSTrace(),
           driverHistoricalStopDurations: [5, 5, 5],
         },
         {
-          routeId: 'route_2',
-          stops: [createMockStop('stop_1', 40.7128, -74.006, 5, 5)],
+          routeId: "route_2",
+          stops: [createMockStop("stop_1", 40.7128, -74.006, 5, 5)],
           gpsTrace: createMockGPSTrace(),
         },
       ];
@@ -394,11 +391,11 @@ describe('Route Anomaly Detector', () => {
       const results = detectAnomaliesBatch(routes);
 
       expect(results).toHaveLength(2);
-      expect(results[0].routeId).toBe('route_1');
-      expect(results[1].routeId).toBe('route_2');
+      expect(results[0].routeId).toBe("route_1");
+      expect(results[1].routeId).toBe("route_2");
     });
 
-    it('should handle empty batch', () => {
+    it("should handle empty batch", () => {
       const results = detectAnomaliesBatch([]);
 
       expect(results).toHaveLength(0);
@@ -407,13 +404,11 @@ describe('Route Anomaly Detector', () => {
 
   // ─── Custom Thresholds Tests ────────────────────────────────────
 
-  describe('Custom Thresholds', () => {
-    it('should apply custom anomaly thresholds', () => {
+  describe("Custom Thresholds", () => {
+    it("should apply custom anomaly thresholds", () => {
       const route = {
-        routeId: 'route_1',
-        stops: [
-          createMockStop('stop_1', 40.7128, -74.006, 5, 15),
-        ],
+        routeId: "route_1",
+        stops: [createMockStop("stop_1", 40.7128, -74.006, 5, 15)],
         gpsTrace: createMockGPSTrace(),
         driverHistoricalStopDurations: [10, 11, 10],
       };
@@ -436,53 +431,56 @@ describe('Route Anomaly Detector', () => {
 
   // ─── Edge Cases ─────────────────────────────────────────────────
 
-  describe('Edge Cases', () => {
-    it('should handle route with no stops', () => {
+  describe("Edge Cases", () => {
+    it("should handle route with no stops", () => {
       const route = {
-        routeId: 'route_1',
+        routeId: "route_1",
         stops: [],
         gpsTrace: createMockGPSTrace(),
       };
 
       const result = detectAnomalies(route);
 
-      expect(result.routeId).toBe('route_1');
+      expect(result.routeId).toBe("route_1");
       expect(result.summary).toBeTruthy();
     });
 
-    it('should handle route with no GPS trace', () => {
+    it("should handle route with no GPS trace", () => {
       const route = {
-        routeId: 'route_1',
-        stops: [createMockStop('stop_1', 40.7128, -74.006)],
+        routeId: "route_1",
+        stops: [createMockStop("stop_1", 40.7128, -74.006)],
         gpsTrace: [],
       };
 
       const result = detectAnomalies(route);
 
-      expect(result.routeId).toBe('route_1');
+      expect(result.routeId).toBe("route_1");
       expect(result.anomalies).toBeDefined();
     });
 
-    it('should handle single stop route', () => {
+    it("should handle single stop route", () => {
       const route = {
-        routeId: 'route_1',
-        stops: [createMockStop('stop_1', 40.7128, -74.006, 5, 25)],
+        routeId: "route_1",
+        stops: [createMockStop("stop_1", 40.7128, -74.006, 5, 25)],
         gpsTrace: createMockGPSTrace(),
         driverHistoricalStopDurations: [5, 5, 5],
       };
 
       const result = detectAnomalies(route);
 
-      expect(result.routeId).toBe('route_1');
+      expect(result.routeId).toBe("route_1");
       expect(result.anomalies).toBeDefined();
     });
 
-    it('should handle missing timestamps', () => {
+    it("should handle missing timestamps", () => {
       const route = {
-        routeId: 'route_1',
+        routeId: "route_1",
         stops: [
-          { ...createMockStop('stop_1', 40.7128, -74.006), actualArrivalTime: undefined },
-          createMockStop('stop_2', 40.7480, -73.9862),
+          {
+            ...createMockStop("stop_1", 40.7128, -74.006),
+            actualArrivalTime: undefined,
+          },
+          createMockStop("stop_2", 40.748, -73.9862),
         ],
         gpsTrace: createMockGPSTrace(),
       };

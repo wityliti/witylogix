@@ -47,8 +47,8 @@ describe("GeotabDriveClient", () => {
               database: "default",
             },
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
 
       await expect(client.initialize()).resolves.not.toThrow();
@@ -59,7 +59,7 @@ describe("GeotabDriveClient", () => {
       const invalidClient = new GeotabDriveClient(invalidConfig);
 
       expect(() => invalidClient.initialize()).rejects.toThrow(
-        "Geotab credentials"
+        "Geotab credentials",
       );
     });
 
@@ -72,8 +72,8 @@ describe("GeotabDriveClient", () => {
               message: "Invalid credentials",
             },
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
 
       await expect(client.initialize()).rejects.toThrow();
@@ -90,8 +90,8 @@ describe("GeotabDriveClient", () => {
               database: "default",
             },
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
     });
 
@@ -115,8 +115,8 @@ describe("GeotabDriveClient", () => {
           JSON.stringify({
             result: mockLogs,
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
 
       const startDate = new Date("2026-03-12");
@@ -156,8 +156,8 @@ describe("GeotabDriveClient", () => {
           JSON.stringify({
             result: mockLogs,
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
 
       const startDate = new Date("2026-03-12");
@@ -180,8 +180,8 @@ describe("GeotabDriveClient", () => {
               database: "default",
             },
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
     });
 
@@ -200,8 +200,8 @@ describe("GeotabDriveClient", () => {
           JSON.stringify({
             result: mockLog,
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
 
       const status = await client.getDutyStatus("driver_1");
@@ -217,8 +217,8 @@ describe("GeotabDriveClient", () => {
             JSON.stringify({
               result: "log_new",
             }),
-            { status: 200 }
-          )
+            { status: 200 },
+          ),
         )
         .mockResolvedValueOnce(
           new Response(
@@ -232,8 +232,8 @@ describe("GeotabDriveClient", () => {
                 },
               ],
             }),
-            { status: 200 }
-          )
+            { status: 200 },
+          ),
         );
 
       const newStatus = await client.setDutyStatus("driver_1", "on-duty");
@@ -252,8 +252,8 @@ describe("GeotabDriveClient", () => {
               database: "default",
             },
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
     });
 
@@ -273,8 +273,8 @@ describe("GeotabDriveClient", () => {
           JSON.stringify({
             result: mockExceptions,
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
 
       const violations = await client.getViolations("driver_1", 30);
@@ -310,8 +310,8 @@ describe("GeotabDriveClient", () => {
           JSON.stringify({
             result: mockExceptions,
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
 
       const violations = await client.getViolations("driver_1", 30);
@@ -331,8 +331,8 @@ describe("GeotabDriveClient", () => {
               database: "default",
             },
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
     });
 
@@ -353,8 +353,8 @@ describe("GeotabDriveClient", () => {
           JSON.stringify({
             result: mockDevice,
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
 
       const vehicle = await client.getVehicle("device_1");
@@ -388,8 +388,8 @@ describe("GeotabDriveClient", () => {
             JSON.stringify({
               result: mockDevices,
             }),
-            { status: 200 }
-          )
+            { status: 200 },
+          ),
         )
         .mockResolvedValue(
           new Response(
@@ -402,8 +402,8 @@ describe("GeotabDriveClient", () => {
                 active: true,
               },
             }),
-            { status: 200 }
-          )
+            { status: 200 },
+          ),
         );
 
       const vehicles = await client.getVehicles();
@@ -422,8 +422,8 @@ describe("GeotabDriveClient", () => {
               database: "default",
             },
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
     });
 
@@ -433,8 +433,8 @@ describe("GeotabDriveClient", () => {
           JSON.stringify({
             result: "dvir_123",
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
 
       const dvir = await client.submitDVIR({
@@ -466,8 +466,8 @@ describe("GeotabDriveClient", () => {
           JSON.stringify({
             result: mockDVIRs,
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
 
       const dvirs = await client.getDVIRs("device_1", 30);
@@ -486,8 +486,8 @@ describe("GeotabDriveClient", () => {
               database: "default",
             },
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
     });
 
@@ -497,13 +497,13 @@ describe("GeotabDriveClient", () => {
           JSON.stringify({
             result: "msg_123",
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
 
       const messageId = await client.sendMessageToDriver(
         "device_1",
-        "Test message"
+        "Test message",
       );
 
       expect(messageId).toBe("msg_123");
@@ -520,8 +520,8 @@ describe("GeotabDriveClient", () => {
               database: "default",
             },
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
     });
 
@@ -543,8 +543,8 @@ describe("GeotabDriveClient", () => {
           JSON.stringify({
             result: mockFeed,
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
 
       const result = await client.getFeed("token_123");
@@ -564,8 +564,8 @@ describe("GeotabDriveClient", () => {
               database: "default",
             },
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
 
       const isHealthy = await client.healthCheck();
@@ -582,8 +582,8 @@ describe("GeotabDriveClient", () => {
               message: "Authentication failed",
             },
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
 
       const isHealthy = await client.healthCheck();

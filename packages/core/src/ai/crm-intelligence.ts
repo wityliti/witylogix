@@ -14,9 +14,30 @@
 
 // ─── TYPES ─────────────────────────────────────────────────────────────────
 
-export type DealStage = 'lead' | 'prospect' | 'qualified' | 'proposal' | 'negotiation' | 'closed-won' | 'closed-lost';
-export type ActivityType = 'email' | 'call' | 'meeting' | 'demo' | 'proposal' | 'followup' | 'other';
-export type NextAction = 'send_email' | 'schedule_call' | 'schedule_meeting' | 'send_proposal' | 'negotiate' | 'close' | 'nurture';
+export type DealStage =
+  | "lead"
+  | "prospect"
+  | "qualified"
+  | "proposal"
+  | "negotiation"
+  | "closed-won"
+  | "closed-lost";
+export type ActivityType =
+  | "email"
+  | "call"
+  | "meeting"
+  | "demo"
+  | "proposal"
+  | "followup"
+  | "other";
+export type NextAction =
+  | "send_email"
+  | "schedule_call"
+  | "schedule_meeting"
+  | "send_proposal"
+  | "negotiate"
+  | "close"
+  | "nurture";
 
 export interface Deal {
   id: string;
@@ -39,10 +60,10 @@ export interface Lead {
   email: string;
   phone?: string;
   industry: string;
-  companySize: 'startup' | 'small' | 'mid' | 'enterprise';
+  companySize: "startup" | "small" | "mid" | "enterprise";
   budget?: number;
-  purchaseTimeline?: 'immediate' | 'quarter' | 'year' | 'exploring';
-  source: 'inbound' | 'outbound' | 'referral' | 'event' | 'content';
+  purchaseTimeline?: "immediate" | "quarter" | "year" | "exploring";
+  source: "inbound" | "outbound" | "referral" | "event" | "content";
 }
 
 export interface Contact {
@@ -51,7 +72,7 @@ export interface Contact {
   title: string;
   email: string;
   companyId: string;
-  seniority: 'c-suite' | 'vp' | 'manager' | 'individual' | 'other';
+  seniority: "c-suite" | "vp" | "manager" | "individual" | "other";
   lastEmailAt?: Date;
   lastCallAt?: Date;
   emailsReceived: number;
@@ -81,7 +102,7 @@ export interface DealScore {
 export interface LeadScore {
   leadId: string;
   score: number; // 0-100
-  grade: 'A' | 'B' | 'C' | 'D'; // A = immediate follow-up, D = nurture
+  grade: "A" | "B" | "C" | "D"; // A = immediate follow-up, D = nurture
   factors: {
     firmographicScore: number; // company size, industry fit
     behavioralScore: number; // engagement with content
@@ -97,9 +118,9 @@ export interface ActivityRecommendation {
   recommendedAction: NextAction;
   actionDetails: {
     type: ActivityType;
-    timing: 'immediate' | 'within_week' | 'within_month';
+    timing: "immediate" | "within_week" | "within_month";
     content?: string;
-    priority: 'high' | 'medium' | 'low';
+    priority: "high" | "medium" | "low";
   };
   reasoning: string[];
   estimatedImpact: string; // qualitative impact expectation
@@ -154,8 +175,8 @@ const STAGE_PROGRESSION = {
   qualified: 0.4,
   proposal: 0.65,
   negotiation: 0.85,
-  'closed-won': 1.0,
-  'closed-lost': 0.0,
+  "closed-won": 1.0,
+  "closed-lost": 0.0,
 };
 
 const ACTIVITY_WEIGHTS = {
@@ -192,7 +213,10 @@ export class DealScoringModel {
 
     // Combine scores with weighting
     const closeProbability =
-      stageScore * 0.35 + ageScore * 0.2 + activityScore * 0.25 + engagementScore * 0.2;
+      stageScore * 0.35 +
+      ageScore * 0.2 +
+      activityScore * 0.25 +
+      engagementScore * 0.2;
 
     // Identify risk factors
     const riskFactors = {
@@ -202,13 +226,26 @@ export class DealScoringModel {
     };
 
     // Expected closing (rough estimate based on stage)
-    const expectedClosingMonth = this.estimateClosingMonth(deal.stage, deal.daysInStage);
+    const expectedClosingMonth = this.estimateClosingMonth(
+      deal.stage,
+      deal.daysInStage,
+    );
 
     // Generate explanations
-    const explanation = this.generateDealExplanations(deal, stageScore, ageScore, activityScore, engagementScore);
+    const explanation = this.generateDealExplanations(
+      deal,
+      stageScore,
+      ageScore,
+      activityScore,
+      engagementScore,
+    );
 
     // Generate recommendations
-    const recommendations = this.generateDealRecommendations(deal, closeProbability, riskFactors);
+    const recommendations = this.generateDealRecommendations(
+      deal,
+      closeProbability,
+      riskFactors,
+    );
 
     return {
       dealId: deal.id,
@@ -240,7 +277,9 @@ export class DealScoringModel {
   private calculateActivityScore(deal: Deal): number {
     // Score based on recent engagement
     const now = new Date();
-    const daysSinceActivity = Math.floor((now.getTime() - deal.lastActivityAt.getTime()) / (1000 * 60 * 60 * 24));
+    const daysSinceActivity = Math.floor(
+      (now.getTime() - deal.lastActivityAt.getTime()) / (1000 * 60 * 60 * 24),
+    );
 
     let score = 0;
 
@@ -266,7 +305,9 @@ export class DealScoringModel {
 
   private isStagnant(deal: Deal): boolean {
     const now = new Date();
-    const daysSinceActivity = Math.floor((now.getTime() - deal.lastActivityAt.getTime()) / (1000 * 60 * 60 * 24));
+    const daysSinceActivity = Math.floor(
+      (now.getTime() - deal.lastActivityAt.getTime()) / (1000 * 60 * 60 * 24),
+    );
     return daysSinceActivity > DAYS_STAGNANT_THRESHOLD;
   }
 
@@ -278,8 +319,8 @@ export class DealScoringModel {
       qualified: 2,
       proposal: 1,
       negotiation: 0.5,
-      'closed-won': 0,
-      'closed-lost': -1,
+      "closed-won": 0,
+      "closed-lost": -1,
     };
 
     const daysPerStage = 12; // rough average
@@ -295,35 +336,43 @@ export class DealScoringModel {
     stageScore: number,
     ageScore: number,
     activityScore: number,
-    engagementScore: number
+    engagementScore: number,
   ): string[] {
     const explanations: string[] = [];
 
     // Stage insights
-    if (deal.stage === 'proposal' || deal.stage === 'negotiation') {
-      explanations.push('Deal is in advanced stage - focus on closing activities');
-    } else if (deal.stage === 'lead' || deal.stage === 'prospect') {
-      explanations.push('Deal is early stage - focus on qualification and engagement');
+    if (deal.stage === "proposal" || deal.stage === "negotiation") {
+      explanations.push(
+        "Deal is in advanced stage - focus on closing activities",
+      );
+    } else if (deal.stage === "lead" || deal.stage === "prospect") {
+      explanations.push(
+        "Deal is early stage - focus on qualification and engagement",
+      );
     }
 
     // Age insights
     if (ageScore < 0.5) {
-      explanations.push('Deal is spending significant time in current stage - accelerate or reassess fit');
+      explanations.push(
+        "Deal is spending significant time in current stage - accelerate or reassess fit",
+      );
     }
 
     // Activity insights
     if (activityScore > 0.7) {
-      explanations.push('Strong recent activity - momentum is building');
+      explanations.push("Strong recent activity - momentum is building");
     } else if (activityScore < 0.3) {
-      explanations.push('Low activity level - increase engagement or follow up');
+      explanations.push(
+        "Low activity level - increase engagement or follow up",
+      );
     }
 
     // Engagement insights
     if (deal.emailsOpened / Math.max(1, deal.emailsSent) > 0.5) {
-      explanations.push('Contact is responsive to emails');
+      explanations.push("Contact is responsive to emails");
     }
     if (deal.meetingsAttended > 0) {
-      explanations.push('Contact willing to meet - strong buying signal');
+      explanations.push("Contact willing to meet - strong buying signal");
     }
 
     return explanations;
@@ -332,22 +381,32 @@ export class DealScoringModel {
   private generateDealRecommendations(
     deal: Deal,
     closeProbability: number,
-    riskFactors: { stagnantDeal: boolean; competitorMention: boolean; budgetUncertainty: boolean }
+    riskFactors: {
+      stagnantDeal: boolean;
+      competitorMention: boolean;
+      budgetUncertainty: boolean;
+    },
   ): string[] {
     const recommendations: string[] = [];
 
     if (closeProbability > 0.7) {
-      recommendations.push('High probability of close - prioritize closing activities');
+      recommendations.push(
+        "High probability of close - prioritize closing activities",
+      );
     } else if (closeProbability < 0.3) {
-      recommendations.push('Low probability - consider re-qualification or moving to nurture');
+      recommendations.push(
+        "Low probability - consider re-qualification or moving to nurture",
+      );
     }
 
     if (riskFactors.stagnantDeal) {
-      recommendations.push('Deal is stagnant - send urgent check-in or re-engage');
+      recommendations.push(
+        "Deal is stagnant - send urgent check-in or re-engage",
+      );
     }
 
-    if (deal.stage === 'proposal') {
-      recommendations.push('Schedule negotiation call to address questions');
+    if (deal.stage === "proposal") {
+      recommendations.push("Schedule negotiation call to address questions");
     }
 
     return recommendations;
@@ -373,10 +432,17 @@ export class LeadScorer {
     const timelineScore = this.calculateTimelineScore(lead);
     const budgetScore = this.calculateBudgetScore(lead);
 
-    const overallScore = (firmographicScore + behavioralScore + timelineScore + budgetScore) / 4;
+    const overallScore =
+      (firmographicScore + behavioralScore + timelineScore + budgetScore) / 4;
     const grade = this.determineGrade(overallScore);
 
-    const explanation = this.generateLeadExplanations(lead, firmographicScore, behavioralScore, timelineScore, budgetScore);
+    const explanation = this.generateLeadExplanations(
+      lead,
+      firmographicScore,
+      behavioralScore,
+      timelineScore,
+      budgetScore,
+    );
     const nextSteps = this.generateLeadNextSteps(lead, grade);
 
     return {
@@ -399,22 +465,29 @@ export class LeadScorer {
 
     // Company size fit (assuming B2B SaaS target)
     switch (lead.companySize) {
-      case 'enterprise':
+      case "enterprise":
         score += 30;
         break;
-      case 'mid':
+      case "mid":
         score += 25;
         break;
-      case 'small':
+      case "small":
         score += 15;
         break;
-      case 'startup':
+      case "startup":
         score += 10;
         break;
     }
 
     // Industry fit (technology-forward industries score higher)
-    const techIndustries = ['technology', 'fintech', 'ecommerce', 'saas', 'healthcare', 'logistics'];
+    const techIndustries = [
+      "technology",
+      "fintech",
+      "ecommerce",
+      "saas",
+      "healthcare",
+      "logistics",
+    ];
     if (techIndustries.includes(lead.industry.toLowerCase())) {
       score += 40;
     } else {
@@ -445,7 +518,7 @@ export class LeadScorer {
       exploring: 10,
     };
 
-    return timelineScores[lead.purchaseTimeline || 'exploring'] || 0;
+    return timelineScores[lead.purchaseTimeline || "exploring"] || 0;
   }
 
   private calculateBudgetScore(lead: Lead): number {
@@ -458,11 +531,11 @@ export class LeadScorer {
     return 15;
   }
 
-  private determineGrade(score: number): 'A' | 'B' | 'C' | 'D' {
-    if (score >= 80) return 'A';
-    if (score >= 65) return 'B';
-    if (score >= 50) return 'C';
-    return 'D';
+  private determineGrade(score: number): "A" | "B" | "C" | "D" {
+    if (score >= 80) return "A";
+    if (score >= 65) return "B";
+    if (score >= 50) return "C";
+    return "D";
   }
 
   private generateLeadExplanations(
@@ -470,20 +543,20 @@ export class LeadScorer {
     firmographicScore: number,
     behavioralScore: number,
     timelineScore: number,
-    budgetScore: number
+    budgetScore: number,
   ): string[] {
     const explanations: string[] = [];
 
     if (firmographicScore > 70) {
-      explanations.push('Strong company fit based on size and industry');
+      explanations.push("Strong company fit based on size and industry");
     }
 
-    if (lead.source === 'inbound') {
-      explanations.push('Inbound lead indicates high intent');
+    if (lead.source === "inbound") {
+      explanations.push("Inbound lead indicates high intent");
     }
 
-    if (lead.purchaseTimeline === 'immediate') {
-      explanations.push('Timeline indicates immediate purchase intent');
+    if (lead.purchaseTimeline === "immediate") {
+      explanations.push("Timeline indicates immediate purchase intent");
     }
 
     if (budgetScore > 30 && lead.budget) {
@@ -496,18 +569,18 @@ export class LeadScorer {
   private generateLeadNextSteps(lead: Lead, grade: string): string[] {
     const steps: string[] = [];
 
-    if (grade === 'A') {
-      steps.push('Schedule discovery call immediately');
-      steps.push('Prepare detailed product demo');
-    } else if (grade === 'B') {
-      steps.push('Send personalized introduction email');
-      steps.push('Schedule call within 3 days');
-    } else if (grade === 'C') {
-      steps.push('Add to nurture campaign');
-      steps.push('Share relevant content');
+    if (grade === "A") {
+      steps.push("Schedule discovery call immediately");
+      steps.push("Prepare detailed product demo");
+    } else if (grade === "B") {
+      steps.push("Send personalized introduction email");
+      steps.push("Schedule call within 3 days");
+    } else if (grade === "C") {
+      steps.push("Add to nurture campaign");
+      steps.push("Share relevant content");
     } else {
-      steps.push('Add to long-term nurture list');
-      steps.push('Monitor for engagement');
+      steps.push("Add to long-term nurture list");
+      steps.push("Monitor for engagement");
     }
 
     return steps;
@@ -527,7 +600,10 @@ export class ActivityRecommender {
    * const recommender = new ActivityRecommender();
    * const action = recommender.recommendActivity(contact, deal);
    */
-  public recommendActivity(contact: Contact, deal?: Deal): ActivityRecommendation {
+  public recommendActivity(
+    contact: Contact,
+    deal?: Deal,
+  ): ActivityRecommendation {
     const actionType = this.selectActionType(contact, deal);
     const timing = this.selectTiming(contact, deal);
     const priority = this.calculatePriority(contact, deal);
@@ -551,89 +627,106 @@ export class ActivityRecommender {
   private selectActionType(contact: Contact, deal?: Deal): NextAction {
     // If no recent email, send email
     if (!contact.lastEmailAt) {
-      return 'send_email';
+      return "send_email";
     }
 
-    const daysSinceEmail = Math.floor((Date.now() - (contact.lastEmailAt?.getTime() || 0)) / (1000 * 60 * 60 * 24));
+    const daysSinceEmail = Math.floor(
+      (Date.now() - (contact.lastEmailAt?.getTime() || 0)) /
+        (1000 * 60 * 60 * 24),
+    );
 
     // If email was opened recently but not responded to, send follow-up email
     if (daysSinceEmail <= 3 && contact.emailsOpened > contact.emailsClicked) {
-      return 'send_email';
+      return "send_email";
     }
 
     // If no call scheduled, schedule call
     if (!contact.lastCallAt) {
-      return 'schedule_call';
+      return "schedule_call";
     }
 
     // If deal is advanced, send proposal
-    if (deal && deal.stage >= 'qualified') {
-      return 'send_proposal';
+    if (deal && deal.stage >= "qualified") {
+      return "send_proposal";
     }
 
     // Default to email if unsure
-    return 'send_email';
+    return "send_email";
   }
 
-  private selectTiming(contact: Contact, deal?: Deal): 'immediate' | 'within_week' | 'within_month' {
-    if (deal && deal.stage === 'proposal') {
-      return 'immediate';
+  private selectTiming(
+    contact: Contact,
+    deal?: Deal,
+  ): "immediate" | "within_week" | "within_month" {
+    if (deal && deal.stage === "proposal") {
+      return "immediate";
     }
 
     const lastActivity = contact.lastEmailAt || contact.lastCallAt;
     if (!lastActivity) {
-      return 'immediate';
+      return "immediate";
     }
 
-    const daysSinceActivity = Math.floor((Date.now() - lastActivity.getTime()) / (1000 * 60 * 60 * 24));
+    const daysSinceActivity = Math.floor(
+      (Date.now() - lastActivity.getTime()) / (1000 * 60 * 60 * 24),
+    );
 
     if (daysSinceActivity > 7) {
-      return 'immediate';
+      return "immediate";
     }
     if (daysSinceActivity > 3) {
-      return 'within_week';
+      return "within_week";
     }
-    return 'within_month';
+    return "within_month";
   }
 
-  private calculatePriority(contact: Contact, deal?: Deal): 'high' | 'medium' | 'low' {
-    if (deal && deal.stage === 'proposal') {
-      return 'high';
+  private calculatePriority(
+    contact: Contact,
+    deal?: Deal,
+  ): "high" | "medium" | "low" {
+    if (deal && deal.stage === "proposal") {
+      return "high";
     }
 
     const lastActivity = contact.lastEmailAt || contact.lastCallAt;
-    const daysSinceActivity = Math.floor((Date.now() - (lastActivity?.getTime() || 0)) / (1000 * 60 * 60 * 24));
+    const daysSinceActivity = Math.floor(
+      (Date.now() - (lastActivity?.getTime() || 0)) / (1000 * 60 * 60 * 24),
+    );
 
     if (daysSinceActivity > 14) {
-      return 'high';
+      return "high";
     }
     if (daysSinceActivity > 7) {
-      return 'medium';
+      return "medium";
     }
-    return 'low';
+    return "low";
   }
 
-  private generateReasoning(contact: Contact, deal: Deal | undefined, action: NextAction): string[] {
+  private generateReasoning(
+    contact: Contact,
+    deal: Deal | undefined,
+    action: NextAction,
+  ): string[] {
     const reasoning: string[] = [];
 
     switch (action) {
-      case 'send_email':
-        reasoning.push('Email is the least intrusive way to engage');
+      case "send_email":
+        reasoning.push("Email is the least intrusive way to engage");
         break;
-      case 'schedule_call':
-        reasoning.push('Moving to synchronous communication to build rapport');
+      case "schedule_call":
+        reasoning.push("Moving to synchronous communication to build rapport");
         break;
-      case 'send_proposal':
-        reasoning.push('Deal is qualified - proposal will move deal forward');
+      case "send_proposal":
+        reasoning.push("Deal is qualified - proposal will move deal forward");
         break;
     }
 
-    if (contact.seniority === 'c-suite') {
-      reasoning.push('Contact is at executive level - prioritize');
+    if (contact.seniority === "c-suite") {
+      reasoning.push("Contact is at executive level - prioritize");
     }
 
     if (contact.emailsOpened > contact.emailsReceived * 0.5) {
-      reasoning.push('Contact is responsive to email communications');
+      reasoning.push("Contact is responsive to email communications");
     }
 
     return reasoning;
@@ -641,27 +734,27 @@ export class ActivityRecommender {
 
   private estimateImpact(action: NextAction): string {
     const impacts: Record<NextAction, string> = {
-      send_email: 'Low engagement, wide reach, easy to scale',
-      schedule_call: 'High engagement, builds relationship, time-intensive',
-      schedule_meeting: 'Very high engagement, strong buying signal',
-      send_proposal: 'Deal advancement, creates decision point',
-      negotiate: 'Final push to close',
-      close: 'Revenue generation',
-      nurture: 'Long-term pipeline building',
+      send_email: "Low engagement, wide reach, easy to scale",
+      schedule_call: "High engagement, builds relationship, time-intensive",
+      schedule_meeting: "Very high engagement, strong buying signal",
+      send_proposal: "Deal advancement, creates decision point",
+      negotiate: "Final push to close",
+      close: "Revenue generation",
+      nurture: "Long-term pipeline building",
     };
 
-    return impacts[action] || 'Unknown impact';
+    return impacts[action] || "Unknown impact";
   }
 
   private mapActionToType(action: NextAction): ActivityType {
     const mapping: Record<NextAction, ActivityType> = {
-      send_email: 'email',
-      schedule_call: 'call',
-      schedule_meeting: 'meeting',
-      send_proposal: 'proposal',
-      negotiate: 'call',
-      close: 'meeting',
-      nurture: 'email',
+      send_email: "email",
+      schedule_call: "call",
+      schedule_meeting: "meeting",
+      send_proposal: "proposal",
+      negotiate: "call",
+      close: "meeting",
+      nurture: "email",
     };
 
     return mapping[action];
@@ -685,10 +778,15 @@ export class RelationshipStrengthCalculator {
     const interactionFrequency = this.calculateInteractionFrequency(contact);
     const responseTime = this.calculateResponseTimeFactor(contact);
     const contentEngagement = this.calculateContentEngagement(contact);
-    const recentActivity = (contact.lastEmailAt || contact.lastCallAt) ? true : false;
+    const recentActivity =
+      contact.lastEmailAt || contact.lastCallAt ? true : false;
 
-    const strength = (interactionFrequency + responseTime + contentEngagement) / 3;
-    const trustLevel = Math.min(100, strength * 0.8 + (recentActivity ? 20 : 0));
+    const strength =
+      (interactionFrequency + responseTime + contentEngagement) / 3;
+    const trustLevel = Math.min(
+      100,
+      strength * 0.8 + (recentActivity ? 20 : 0),
+    );
     const engagementLevel = contentEngagement;
 
     const recommendations = this.generateRecommendations(contact, strength);
@@ -721,7 +819,9 @@ export class RelationshipStrengthCalculator {
 
   private calculateResponseTimeFactor(contact: Contact): number {
     // Score based on responsiveness (opens + clicks)
-    const responseRate = (contact.emailsOpened + contact.emailsClicked) / Math.max(1, contact.emailsReceived);
+    const responseRate =
+      (contact.emailsOpened + contact.emailsClicked) /
+      Math.max(1, contact.emailsReceived);
 
     return Math.min(100, responseRate * 100);
   }
@@ -734,19 +834,30 @@ export class RelationshipStrengthCalculator {
     return Math.min(100, clickThroughRate * 100);
   }
 
-  private generateRecommendations(contact: Contact, strength: number): string[] {
+  private generateRecommendations(
+    contact: Contact,
+    strength: number,
+  ): string[] {
     const recommendations: string[] = [];
 
     if (strength < 40) {
-      recommendations.push('Relationship is new - focus on building trust with regular contact');
+      recommendations.push(
+        "Relationship is new - focus on building trust with regular contact",
+      );
     } else if (strength < 70) {
-      recommendations.push('Relationship is developing - increase engagement frequency');
+      recommendations.push(
+        "Relationship is developing - increase engagement frequency",
+      );
     } else {
-      recommendations.push('Strong relationship - explore expansion opportunities');
+      recommendations.push(
+        "Strong relationship - explore expansion opportunities",
+      );
     }
 
-    if (contact.seniority === 'c-suite' && strength > 70) {
-      recommendations.push('Leverage this executive relationship for account expansion');
+    if (contact.seniority === "c-suite" && strength > 70) {
+      recommendations.push(
+        "Leverage this executive relationship for account expansion",
+      );
     }
 
     return recommendations;
@@ -769,7 +880,7 @@ export class SalesForecaster {
   public forecastRevenue(deals: Deal[], period: string): SalesForecast {
     let forecastedRevenue = 0;
     let totalConfidence = 0;
-    const byStage: SalesForecast['byStage'] = [];
+    const byStage: SalesForecast["byStage"] = [];
 
     const stageGroups = this.groupByStage(deals);
 
@@ -823,7 +934,9 @@ export class SalesForecaster {
 
   private calculateUpside(deals: Deal[]): number {
     // Upside = deals in proposal/negotiation that could close at full value
-    const advancedDeals = deals.filter((d) => d.stage === 'proposal' || d.stage === 'negotiation');
+    const advancedDeals = deals.filter(
+      (d) => d.stage === "proposal" || d.stage === "negotiation",
+    );
     return advancedDeals.reduce((sum, d) => sum + d.amount * 0.2, 0); // 20% upside potential
   }
 
@@ -831,7 +944,9 @@ export class SalesForecaster {
     // Downside = deals at risk of not closing
     const atRiskDeals = deals.filter((d) => {
       const now = new Date();
-      const daysSinceActivity = Math.floor((now.getTime() - d.lastActivityAt.getTime()) / (1000 * 60 * 60 * 24));
+      const daysSinceActivity = Math.floor(
+        (now.getTime() - d.lastActivityAt.getTime()) / (1000 * 60 * 60 * 24),
+      );
       return daysSinceActivity > DAYS_STAGNANT_THRESHOLD;
     });
 
@@ -843,7 +958,9 @@ export class SalesForecaster {
 
     const stagnantCount = deals.filter((d) => {
       const now = new Date();
-      const daysSinceActivity = Math.floor((now.getTime() - d.lastActivityAt.getTime()) / (1000 * 60 * 60 * 24));
+      const daysSinceActivity = Math.floor(
+        (now.getTime() - d.lastActivityAt.getTime()) / (1000 * 60 * 60 * 24),
+      );
       return daysSinceActivity > DAYS_STAGNANT_THRESHOLD;
     }).length;
 
@@ -851,10 +968,13 @@ export class SalesForecaster {
       risks.push(`${stagnantCount} deals are stagnant and at risk`);
     }
 
-    const avgDealSize = deals.reduce((sum, d) => sum + d.amount, 0) / Math.max(1, deals.length);
+    const avgDealSize =
+      deals.reduce((sum, d) => sum + d.amount, 0) / Math.max(1, deals.length);
     const largeDeals = deals.filter((d) => d.amount > avgDealSize * 2);
     if (largeDeals.length > 0) {
-      risks.push(`${largeDeals.length} large deals could significantly impact forecast if lost`);
+      risks.push(
+        `${largeDeals.length} large deals could significantly impact forecast if lost`,
+      );
     }
 
     return risks;
@@ -882,7 +1002,8 @@ export function createCRMIntelligence(): {
   };
 }
 
-let crmIntelligenceInstance: ReturnType<typeof createCRMIntelligence> | null = null;
+let crmIntelligenceInstance: ReturnType<typeof createCRMIntelligence> | null =
+  null;
 
 /**
  * Get singleton instance of CRM intelligence

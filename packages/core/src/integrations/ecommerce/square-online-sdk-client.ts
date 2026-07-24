@@ -339,16 +339,23 @@ export interface SquareLocation {
 /**
  * Square SDK Client - Implements IECommerceAdapter
  */
-export class SquareSdkClient extends ECommerceAdapterBase implements IECommerceAdapter {
+export class SquareSdkClient
+  extends ECommerceAdapterBase
+  implements IECommerceAdapter
+{
   private readonly baseUrl = "https://connect.squareup.com";
   private accessToken: string;
   private merchantId: string;
   private locationId: string;
   protected logger = {
-    info: (msg: string, data?: unknown) => console.info(`[SquareSdk] ${msg}`, data),
-    error: (msg: string, error?: unknown) => console.error(`[SquareSdk] ${msg}`, error),
-    warn: (msg: string, data?: unknown) => console.warn(`[SquareSdk] ${msg}`, data),
-    debug: (msg: string, data?: unknown) => console.debug(`[SquareSdk] ${msg}`, data),
+    info: (msg: string, data?: unknown) =>
+      console.info(`[SquareSdk] ${msg}`, data),
+    error: (msg: string, error?: unknown) =>
+      console.error(`[SquareSdk] ${msg}`, error),
+    warn: (msg: string, data?: unknown) =>
+      console.warn(`[SquareSdk] ${msg}`, data),
+    debug: (msg: string, data?: unknown) =>
+      console.debug(`[SquareSdk] ${msg}`, data),
   };
 
   /**
@@ -370,7 +377,11 @@ export class SquareSdkClient extends ECommerceAdapterBase implements IECommerceA
   /**
    * Make authenticated request to Square API
    */
-  private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  private async request<T>(
+    method: string,
+    path: string,
+    body?: unknown,
+  ): Promise<T> {
     await this.rateLimiter.waitIfNeeded();
 
     const url = `${this.baseUrl}${path}`;
@@ -386,7 +397,9 @@ export class SquareSdkClient extends ECommerceAdapterBase implements IECommerceA
     });
 
     if (!response.ok) {
-      throw new Error(`Square API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Square API error: ${response.status} ${response.statusText}`,
+      );
     }
 
     return (await response.json()) as T;
@@ -412,7 +425,9 @@ export class SquareSdkClient extends ECommerceAdapterBase implements IECommerceA
         cursor?: string;
       }>("GET", `/v2/orders?limit=${limit}`);
 
-      orders.push(...response.orders.map((order) => this.normalizeOrder(order)));
+      orders.push(
+        ...response.orders.map((order) => this.normalizeOrder(order)),
+      );
     } catch (error) {
       this.logger.error("Failed to get orders from Square", error);
     }
@@ -434,7 +449,10 @@ export class SquareSdkClient extends ECommerceAdapterBase implements IECommerceA
   /**
    * Update order
    */
-  async updateOrder(orderId: string, data: Partial<ECommerceOrder>): Promise<ECommerceOrder> {
+  async updateOrder(
+    orderId: string,
+    data: Partial<ECommerceOrder>,
+  ): Promise<ECommerceOrder> {
     const order = await this.getOrderById(orderId);
 
     const updateData: Record<string, unknown> = {
@@ -532,7 +550,10 @@ export class SquareSdkClient extends ECommerceAdapterBase implements IECommerceA
   /**
    * Update product
    */
-  async updateProduct(productId: string, data: Partial<ECommerceProduct>): Promise<ECommerceProduct> {
+  async updateProduct(
+    productId: string,
+    data: Partial<ECommerceProduct>,
+  ): Promise<ECommerceProduct> {
     const current = await this.getProductById(productId);
 
     const updateData: SquareCatalogObject = {
@@ -565,7 +586,9 @@ export class SquareSdkClient extends ECommerceAdapterBase implements IECommerceA
         cursor?: string;
       }>("GET", `/v2/customers?limit=${limit}`);
 
-      customers.push(...response.customers.map((cust) => this.normalizeCustomer(cust)));
+      customers.push(
+        ...response.customers.map((cust) => this.normalizeCustomer(cust)),
+      );
     } catch (error) {
       this.logger.error("Failed to get customers from Square", error);
     }
@@ -587,7 +610,10 @@ export class SquareSdkClient extends ECommerceAdapterBase implements IECommerceA
   /**
    * Update customer
    */
-  async updateCustomer(customerId: string, data: Partial<ECommerceCustomer>): Promise<ECommerceCustomer> {
+  async updateCustomer(
+    customerId: string,
+    data: Partial<ECommerceCustomer>,
+  ): Promise<ECommerceCustomer> {
     const updateData = {
       idempotency_key: this.generateIdempotencyKey(),
       customer: {
@@ -598,7 +624,11 @@ export class SquareSdkClient extends ECommerceAdapterBase implements IECommerceA
       },
     };
 
-    await this.request<unknown>("PUT", `/v2/customers/${customerId}`, updateData);
+    await this.request<unknown>(
+      "PUT",
+      `/v2/customers/${customerId}`,
+      updateData,
+    );
 
     return this.getCustomerById(customerId);
   }
@@ -606,7 +636,10 @@ export class SquareSdkClient extends ECommerceAdapterBase implements IECommerceA
   /**
    * Create fulfillment
    */
-  async createFulfillment(orderId: string, request: FulfillmentRequest): Promise<FulfillmentResponse> {
+  async createFulfillment(
+    orderId: string,
+    request: FulfillmentRequest,
+  ): Promise<FulfillmentResponse> {
     try {
       const order = await this.getOrderById(orderId);
 
@@ -695,7 +728,9 @@ export class SquareSdkClient extends ECommerceAdapterBase implements IECommerceA
   /**
    * Update inventory
    */
-  async updateInventory(request: InventoryUpdateRequest): Promise<ECommerceInventory> {
+  async updateInventory(
+    request: InventoryUpdateRequest,
+  ): Promise<ECommerceInventory> {
     const idempotencyKey = this.generateIdempotencyKey();
 
     const updateData = {
@@ -713,7 +748,11 @@ export class SquareSdkClient extends ECommerceAdapterBase implements IECommerceA
       ],
     };
 
-    await this.request<unknown>("POST", "/v2/inventory/batch-change", updateData);
+    await this.request<unknown>(
+      "POST",
+      "/v2/inventory/batch-change",
+      updateData,
+    );
 
     return this.getInventory(request.variantId);
   }
@@ -726,8 +765,13 @@ export class SquareSdkClient extends ECommerceAdapterBase implements IECommerceA
       return false;
     }
 
-    const payloadString = typeof payload === "string" ? payload : JSON.stringify(payload);
-    return this.verifySignature(payloadString, signature, this.config.webhookSecret);
+    const payloadString =
+      typeof payload === "string" ? payload : JSON.stringify(payload);
+    return this.verifySignature(
+      payloadString,
+      signature,
+      this.config.webhookSecret,
+    );
   }
 
   /**

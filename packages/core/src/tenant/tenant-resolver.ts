@@ -44,7 +44,7 @@ const tenantCache = new LRUCache<string, CachedTenant>({
  */
 export function invalidateTenantCache(orgId: string): void {
   const keysToDelete = Array.from(tenantCache.keys()).filter((key) =>
-    key.includes(orgId)
+    key.includes(orgId),
   );
   keysToDelete.forEach((key) => tenantCache.delete(key));
 }
@@ -70,7 +70,7 @@ export function clearTenantCache(): void {
  */
 export async function resolveTenant(
   req: Request,
-  userId?: string | null
+  userId?: string | null,
 ): Promise<TenantContext> {
   const requestId = (req.id as string) || crypto.randomUUID();
 
@@ -85,7 +85,7 @@ export async function resolveTenant(
         tenantId,
         "HEADER",
         requestId,
-        userId
+        userId,
       );
       cacheResult(tenantId, "HEADER", context);
       return context;
@@ -108,7 +108,7 @@ export async function resolveTenant(
             decoded.orgId,
             "JWT",
             requestId,
-            userId || decoded.sub
+            userId || decoded.sub,
           );
           cacheResult(decoded.orgId, "JWT", context);
           return context;
@@ -180,7 +180,7 @@ export async function resolveTenant(
 
   throw new TenantResolutionError(
     "NO_TENANT_FOUND",
-    `Could not resolve tenant from request. Host: ${req.hostname}`
+    `Could not resolve tenant from request. Host: ${req.hostname}`,
   );
 }
 
@@ -193,7 +193,7 @@ async function resolveTenantById(
   orgId: string,
   strategy: TenantResolutionStrategy,
   requestId: string,
-  userId?: string | null
+  userId?: string | null,
 ): Promise<TenantContext> {
   const org = await prisma.organization.findUniqueOrThrow({
     where: { id: orgId },
@@ -202,7 +202,7 @@ async function resolveTenantById(
   if (!org.isActive) {
     throw new TenantResolutionError(
       "TENANT_INACTIVE",
-      `Organization ${orgId} is not active`
+      `Organization ${orgId} is not active`,
     );
   }
 
@@ -214,7 +214,7 @@ async function resolveTenantById(
  */
 async function resolveByApiKey(
   apiKey: string,
-  requestId: string
+  requestId: string,
 ): Promise<TenantContext> {
   const prefix = apiKey.slice(0, 8);
 
@@ -227,7 +227,7 @@ async function resolveByApiKey(
   if (!dbKey) {
     throw new TenantResolutionError(
       "INVALID_API_KEY",
-      `API key not found or inactive: ${prefix}`
+      `API key not found or inactive: ${prefix}`,
     );
   }
 
@@ -236,7 +236,7 @@ async function resolveByApiKey(
   if (!constantTimeEquals(keyHash, dbKey.keyHash)) {
     throw new TenantResolutionError(
       "INVALID_API_KEY",
-      `API key verification failed`
+      `API key verification failed`,
     );
   }
 
@@ -244,7 +244,7 @@ async function resolveByApiKey(
   if (dbKey.expiresAt && new Date() > dbKey.expiresAt) {
     throw new TenantResolutionError(
       "INVALID_API_KEY",
-      `API key expired: ${dbKey.id}`
+      `API key expired: ${dbKey.id}`,
     );
   }
 
@@ -252,7 +252,7 @@ async function resolveByApiKey(
   if (!org.isActive) {
     throw new TenantResolutionError(
       "TENANT_INACTIVE",
-      `Organization ${org.id} is not active`
+      `Organization ${org.id} is not active`,
     );
   }
 
@@ -269,7 +269,7 @@ async function resolveByApiKey(
     org,
     "API_KEY",
     requestId,
-    undefined
+    undefined,
   );
 
   // Add API key specific data
@@ -285,7 +285,7 @@ async function resolveByApiKey(
 async function resolveBySubdomain(
   subdomain: string,
   requestId: string,
-  userId?: string | null
+  userId?: string | null,
 ): Promise<TenantContext> {
   const tenantConfig = await prisma.tenantConfig.findUniqueOrThrow({
     where: { subdomain },
@@ -295,7 +295,7 @@ async function resolveBySubdomain(
   if (!tenantConfig.isActive) {
     throw new TenantResolutionError(
       "TENANT_INACTIVE",
-      `Tenant subdomain ${subdomain} is not active`
+      `Tenant subdomain ${subdomain} is not active`,
     );
   }
 
@@ -303,7 +303,7 @@ async function resolveBySubdomain(
   if (!org.isActive) {
     throw new TenantResolutionError(
       "TENANT_INACTIVE",
-      `Organization ${org.id} is not active`
+      `Organization ${org.id} is not active`,
     );
   }
 
@@ -316,7 +316,7 @@ async function resolveBySubdomain(
 async function resolveByCustomDomain(
   customDomain: string,
   requestId: string,
-  userId?: string | null
+  userId?: string | null,
 ): Promise<TenantContext> {
   const tenantConfig = await prisma.tenantConfig.findUniqueOrThrow({
     where: { customDomain },
@@ -326,7 +326,7 @@ async function resolveByCustomDomain(
   if (!tenantConfig.isActive) {
     throw new TenantResolutionError(
       "TENANT_INACTIVE",
-      `Tenant custom domain ${customDomain} is not active`
+      `Tenant custom domain ${customDomain} is not active`,
     );
   }
 
@@ -334,7 +334,7 @@ async function resolveByCustomDomain(
   if (!org.isActive) {
     throw new TenantResolutionError(
       "TENANT_INACTIVE",
-      `Organization ${org.id} is not active`
+      `Organization ${org.id} is not active`,
     );
   }
 
@@ -350,7 +350,7 @@ async function buildTenantContext(
   org: any, // Organization model
   strategy: TenantResolutionStrategy,
   requestId: string,
-  userId?: string | null
+  userId?: string | null,
 ): Promise<TenantContext> {
   // Get plan limits and features
   const limits = getPlanLimits(org.planTier);
@@ -579,7 +579,10 @@ function extractSubdomain(host: string): string | null {
  * Hash API key for storage (SHA-256).
  */
 async function hashApiKey(apiKey: string): Promise<string> {
-  const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(apiKey));
+  const hash = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(apiKey),
+  );
   return Buffer.from(hash).toString("hex");
 }
 
@@ -620,7 +623,7 @@ function getFromCache(key: string, strategy: string): TenantContext | null {
 function cacheResult(
   key: string,
   strategy: string,
-  context: TenantContext
+  context: TenantContext,
 ): void {
   tenantCache.set(`${key}:${strategy}`, {
     context,

@@ -5,8 +5,8 @@
  * ~150 lines, 10+ tests
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { Page, Locator } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { Page, Locator } from "@playwright/test";
 
 // ─────────────────────────────────────────────────────────────────────────
 // PAGE OBJECT MODEL - INVOICE PAGE
@@ -40,13 +40,17 @@ class InvoicePage {
     this.page = page;
     this.customerSelect = page.locator('[data-testid="customer-select"]');
     this.customerSearchInput = page.locator('[data-testid="customer-search"]');
-    this.customerOption = page.locator('[data-testid="customer-option"]').first();
+    this.customerOption = page
+      .locator('[data-testid="customer-option"]')
+      .first();
     this.addLineItemButton = page.locator('[data-testid="add-line-item"]');
     this.lineItemDescription = []; // Will be populated dynamically
     this.lineItemQuantity = [];
     this.lineItemPrice = [];
     this.taxRateSelect = page.locator('[data-testid="tax-rate-select"]');
-    this.taxRateOption = page.locator('[data-testid="tax-rate-option"]').first();
+    this.taxRateOption = page
+      .locator('[data-testid="tax-rate-option"]')
+      .first();
     this.discountInput = page.locator('[data-testid="discount-input"]');
     this.discountType = page.locator('[data-testid="discount-type"]');
     this.subtotalDisplay = page.locator('[data-testid="subtotal"]');
@@ -62,7 +66,7 @@ class InvoicePage {
   }
 
   async navigate(): Promise<void> {
-    await this.page.goto('/invoices/create', { waitUntil: 'networkidle' });
+    await this.page.goto("/invoices/create", { waitUntil: "networkidle" });
   }
 
   async selectCustomer(customerName: string): Promise<void> {
@@ -75,19 +79,25 @@ class InvoicePage {
     description: string,
     quantity: number,
     price: number,
-    itemIndex: number = 0
+    itemIndex: number = 0,
   ): Promise<void> {
     if (itemIndex === 0) {
       // First item already exists, skip the add button
-      const descriptions = await this.page.locator('[data-testid="line-item-description"]');
+      const descriptions = await this.page.locator(
+        '[data-testid="line-item-description"]',
+      );
       const desc = descriptions.nth(itemIndex);
       await desc.fill(description);
     } else {
       await this.addLineItemButton.click();
     }
 
-    const quantityInputs = await this.page.locator('[data-testid="line-item-quantity"]');
-    const priceInputs = await this.page.locator('[data-testid="line-item-price"]');
+    const quantityInputs = await this.page.locator(
+      '[data-testid="line-item-quantity"]',
+    );
+    const priceInputs = await this.page.locator(
+      '[data-testid="line-item-price"]',
+    );
 
     const qtyInput = quantityInputs.nth(itemIndex);
     const priceInput = priceInputs.nth(itemIndex);
@@ -103,10 +113,13 @@ class InvoicePage {
       .click();
   }
 
-  async setDiscount(amount: number, type: 'fixed' | 'percentage'): Promise<void> {
+  async setDiscount(
+    amount: number,
+    type: "fixed" | "percentage",
+  ): Promise<void> {
     await this.discountInput.fill(amount.toString());
 
-    if (type === 'percentage') {
+    if (type === "percentage") {
       await this.discountType.click();
       await this.page.locator('[data-testid="discount-percentage"]').click();
     }
@@ -114,27 +127,27 @@ class InvoicePage {
 
   async preview(): Promise<void> {
     await this.previewButton.click();
-    await this.previewModal.waitFor({ state: 'visible', timeout: 5000 });
+    await this.previewModal.waitFor({ state: "visible", timeout: 5000 });
   }
 
   async getSubtotal(): Promise<number> {
     const text = await this.subtotalDisplay.textContent();
-    return parseFloat(text?.replace(/[^0-9.]/g, '') || '0');
+    return parseFloat(text?.replace(/[^0-9.]/g, "") || "0");
   }
 
   async getTaxAmount(): Promise<number> {
     const text = await this.taxDisplay.textContent();
-    return parseFloat(text?.replace(/[^0-9.]/g, '') || '0');
+    return parseFloat(text?.replace(/[^0-9.]/g, "") || "0");
   }
 
   async getDiscountAmount(): Promise<number> {
     const text = await this.discountDisplay.textContent();
-    return parseFloat(text?.replace(/[^0-9.]/g, '') || '0');
+    return parseFloat(text?.replace(/[^0-9.]/g, "") || "0");
   }
 
   async getTotal(): Promise<number> {
     const text = await this.totalDisplay.textContent();
-    return parseFloat(text?.replace(/[^0-9.]/g, '') || '0');
+    return parseFloat(text?.replace(/[^0-9.]/g, "") || "0");
   }
 
   async generatePdf(): Promise<void> {
@@ -146,12 +159,12 @@ class InvoicePage {
   }
 
   async waitForSuccess(): Promise<void> {
-    await this.successMessage.waitFor({ state: 'visible', timeout: 10000 });
+    await this.successMessage.waitFor({ state: "visible", timeout: 10000 });
   }
 
   async getErrorMessage(): Promise<string | null> {
     try {
-      await this.errorMessage.waitFor({ state: 'visible', timeout: 5000 });
+      await this.errorMessage.waitFor({ state: "visible", timeout: 5000 });
       return await this.errorMessage.textContent();
     } catch {
       return null;
@@ -164,7 +177,7 @@ class InvoicePage {
 // ─────────────────────────────────────────────────────────────────────────
 
 class MockInvoicePage implements Partial<Page> {
-  private url = '';
+  private url = "";
   private data: Record<string, any> = {};
 
   async goto(url: string): Promise<void> {
@@ -184,7 +197,7 @@ class MockInvoicePage implements Partial<Page> {
 // E2E TESTS
 // ─────────────────────────────────────────────────────────────────────────
 
-describe('Invoice Creation Flow', () => {
+describe("Invoice Creation Flow", () => {
   let invoicePage: InvoicePage;
 
   beforeEach(() => {
@@ -200,28 +213,28 @@ describe('Invoice Creation Flow', () => {
   // BASIC INVOICE CREATION
   // ───────────────────────────────────────────────────────────────────────
 
-  describe('Basic Invoice Creation', () => {
-    it('should navigate to invoice creation page', async () => {
+  describe("Basic Invoice Creation", () => {
+    it("should navigate to invoice creation page", async () => {
       // await invoicePage.navigate();
       // await expect(invoicePage.customerSelect).toBeVisible();
 
       expect(true).toBe(true);
     });
 
-    it('should select customer from dropdown', async () => {
+    it("should select customer from dropdown", async () => {
       // await invoicePage.selectCustomer('Acme Corp');
       // The customer should be selected
 
       expect(true).toBe(true);
     });
 
-    it('should add first line item', async () => {
+    it("should add first line item", async () => {
       // await invoicePage.addLineItem('Consulting Services', 1, 5000, 0);
 
       expect(true).toBe(true);
     });
 
-    it('should add multiple line items', async () => {
+    it("should add multiple line items", async () => {
       // await invoicePage.addLineItem('Item 1', 2, 500, 0);
       // await invoicePage.addLineItem('Item 2', 1, 1000, 1);
       // await invoicePage.addLineItem('Item 3', 3, 250, 2);
@@ -234,8 +247,8 @@ describe('Invoice Creation Flow', () => {
   // TAX CALCULATION
   // ───────────────────────────────────────────────────────────────────────
 
-  describe('Tax Calculation', () => {
-    it('should calculate 10% tax correctly', async () => {
+  describe("Tax Calculation", () => {
+    it("should calculate 10% tax correctly", async () => {
       // const subtotal = 1000;
       // const taxRate = 0.10;
       // const expectedTax = 100;
@@ -253,7 +266,7 @@ describe('Invoice Creation Flow', () => {
       expect(true).toBe(true);
     });
 
-    it('should apply 0% tax for tax-exempt items', async () => {
+    it("should apply 0% tax for tax-exempt items", async () => {
       // await invoicePage.addLineItem('Tax-exempt item', 1, 1000, 0);
       // await invoicePage.setTaxRate('None');
 
@@ -263,7 +276,7 @@ describe('Invoice Creation Flow', () => {
       expect(true).toBe(true);
     });
 
-    it('should calculate total with multiple items and tax', async () => {
+    it("should calculate total with multiple items and tax", async () => {
       // Item 1: 500 x 2 = 1000
       // Item 2: 300 x 1 = 300
       // Subtotal: 1300
@@ -290,8 +303,8 @@ describe('Invoice Creation Flow', () => {
   // DISCOUNTS
   // ───────────────────────────────────────────────────────────────────────
 
-  describe('Discounts', () => {
-    it('should apply fixed discount', async () => {
+  describe("Discounts", () => {
+    it("should apply fixed discount", async () => {
       // Subtotal: 1000
       // Discount: -100 (fixed)
       // Tax (10%): 90
@@ -311,7 +324,7 @@ describe('Invoice Creation Flow', () => {
       expect(true).toBe(true);
     });
 
-    it('should apply percentage discount', async () => {
+    it("should apply percentage discount", async () => {
       // Subtotal: 1000
       // Discount: 10% = -100
       // After discount: 900
@@ -336,8 +349,8 @@ describe('Invoice Creation Flow', () => {
   // PREVIEW & PDF
   // ───────────────────────────────────────────────────────────────────────
 
-  describe('Preview & PDF Generation', () => {
-    it('should preview invoice before sending', async () => {
+  describe("Preview & PDF Generation", () => {
+    it("should preview invoice before sending", async () => {
       // await invoicePage.addLineItem('Service', 1, 5000, 0);
       // await invoicePage.preview();
       // await expect(invoicePage.previewModal).toBeVisible();
@@ -345,7 +358,7 @@ describe('Invoice Creation Flow', () => {
       expect(true).toBe(true);
     });
 
-    it('should generate PDF from preview', async () => {
+    it("should generate PDF from preview", async () => {
       // await invoicePage.preview();
       // await invoicePage.generatePdf();
       // PDF should be downloaded
@@ -353,7 +366,7 @@ describe('Invoice Creation Flow', () => {
       expect(true).toBe(true);
     });
 
-    it('should show correct totals in preview', async () => {
+    it("should show correct totals in preview", async () => {
       // const subtotal = 1500;
       // const taxRate = 0.10;
       // const discount = 150;
@@ -376,8 +389,8 @@ describe('Invoice Creation Flow', () => {
   // SUBMISSION
   // ───────────────────────────────────────────────────────────────────────
 
-  describe('Invoice Submission', () => {
-    it('should submit invoice successfully', async () => {
+  describe("Invoice Submission", () => {
+    it("should submit invoice successfully", async () => {
       // await invoicePage.addLineItem('Consulting', 1, 5000, 0);
       // await invoicePage.preview();
       // await invoicePage.submit();
@@ -387,7 +400,7 @@ describe('Invoice Creation Flow', () => {
       expect(true).toBe(true);
     });
 
-    it('should require customer selection before submission', async () => {
+    it("should require customer selection before submission", async () => {
       // // Try to submit without selecting customer
       // await invoicePage.submit();
       // const error = await invoicePage.getErrorMessage();
@@ -396,7 +409,7 @@ describe('Invoice Creation Flow', () => {
       expect(true).toBe(true);
     });
 
-    it('should require at least one line item', async () => {
+    it("should require at least one line item", async () => {
       // await invoicePage.selectCustomer('Acme Corp');
       // await invoicePage.submit();
       // const error = await invoicePage.getErrorMessage();
@@ -405,7 +418,7 @@ describe('Invoice Creation Flow', () => {
       expect(true).toBe(true);
     });
 
-    it('should validate line items have positive amounts', async () => {
+    it("should validate line items have positive amounts", async () => {
       // // Try to add line item with zero quantity
       // await invoicePage.addLineItem('Item', 0, 100, 0);
       // await invoicePage.submit();

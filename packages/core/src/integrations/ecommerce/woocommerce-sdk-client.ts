@@ -226,11 +226,10 @@ export class WooCommerceClient {
       params.append("status", options.status);
     }
 
-    const response = await this.request(
-      "GET",
-      `/orders?${params}`,
-      null,
-    ) as { body: WooCommerceOrderResponse[]; headers: Headers };
+    const response = (await this.request("GET", `/orders?${params}`, null)) as {
+      body: WooCommerceOrderResponse[];
+      headers: Headers;
+    };
 
     return {
       orders: response.body.map((order: WooCommerceOrderResponse) =>
@@ -245,7 +244,11 @@ export class WooCommerceClient {
    * Get order by ID
    */
   async getOrderById(orderId: string): Promise<ECommerceOrder> {
-    const response = await this.request("GET", `/orders/${orderId}`, null) as { body: WooCommerceOrderResponse; headers: Headers };
+    const response = (await this.request(
+      "GET",
+      `/orders/${orderId}`,
+      null,
+    )) as { body: WooCommerceOrderResponse; headers: Headers };
     return this.mapWooCommerceOrderToECommerce(response.body);
   }
 
@@ -261,7 +264,10 @@ export class WooCommerceClient {
     customer_note?: string;
     status?: string;
   }): Promise<ECommerceOrder> {
-    const response = await this.request("POST", "/orders", data) as { body: WooCommerceOrderResponse; headers: Headers };
+    const response = (await this.request("POST", "/orders", data)) as {
+      body: WooCommerceOrderResponse;
+      headers: Headers;
+    };
     return this.mapWooCommerceOrderToECommerce(response.body);
   }
 
@@ -272,7 +278,11 @@ export class WooCommerceClient {
     orderId: string,
     data: Record<string, unknown>,
   ): Promise<ECommerceOrder> {
-    const response = await this.request("PUT", `/orders/${orderId}`, data) as { body: WooCommerceOrderResponse; headers: Headers };
+    const response = (await this.request(
+      "PUT",
+      `/orders/${orderId}`,
+      data,
+    )) as { body: WooCommerceOrderResponse; headers: Headers };
     return this.mapWooCommerceOrderToECommerce(response.body);
   }
 
@@ -284,27 +294,30 @@ export class WooCommerceClient {
     note: string,
     customerNote: boolean = false,
   ): Promise<{ id: number; note: string }> {
-    const response = await this.request(
-      "POST",
-      `/orders/${orderId}/notes`,
-      {
-        note,
-        customer_note: customerNote,
-      },
-    ) as { body: { id: number; note: string }; headers: Headers };
+    const response = (await this.request("POST", `/orders/${orderId}/notes`, {
+      note,
+      customer_note: customerNote,
+    })) as { body: { id: number; note: string }; headers: Headers };
     return response.body;
   }
 
   /**
    * List product categories
    */
-  async listCategories(options?: { limit?: number; page?: number }): Promise<Array<{ id: number; name: string }>> {
+  async listCategories(options?: {
+    limit?: number;
+    page?: number;
+  }): Promise<Array<{ id: number; name: string }>> {
     const params = new URLSearchParams({
       per_page: String(options?.limit || 100),
       page: String(options?.page || 1),
     });
 
-    const response = await this.request("GET", `/products/categories?${params}`, null) as { body: Array<{ id: number; name: string }>; headers: Headers };
+    const response = (await this.request(
+      "GET",
+      `/products/categories?${params}`,
+      null,
+    )) as { body: Array<{ id: number; name: string }>; headers: Headers };
     return response.body;
   }
 
@@ -318,7 +331,11 @@ export class WooCommerceClient {
     category?: number;
     orderby?: string;
     order?: "asc" | "desc";
-  }): Promise<{ products: ECommerceProduct[]; total: number; totalPages: number }> {
+  }): Promise<{
+    products: ECommerceProduct[];
+    total: number;
+    totalPages: number;
+  }> {
     const params = new URLSearchParams({
       per_page: String(options?.limit || 50),
       page: String(options?.page || 1),
@@ -333,11 +350,11 @@ export class WooCommerceClient {
       params.append("category", String(options.category));
     }
 
-    const response = await this.request(
+    const response = (await this.request(
       "GET",
       `/products?${params}`,
       null,
-    ) as { body: WooCommerceProductResponse[]; headers: Headers };
+    )) as { body: WooCommerceProductResponse[]; headers: Headers };
 
     return {
       products: response.body.map((product: WooCommerceProductResponse) =>
@@ -352,7 +369,11 @@ export class WooCommerceClient {
    * Get product by ID
    */
   async getProductById(productId: string): Promise<ECommerceProduct> {
-    const response = await this.request("GET", `/products/${productId}`, null) as { body: WooCommerceProductResponse; headers: Headers };
+    const response = (await this.request(
+      "GET",
+      `/products/${productId}`,
+      null,
+    )) as { body: WooCommerceProductResponse; headers: Headers };
     return this.mapWooCommerceProductToECommerce(response.body);
   }
 
@@ -369,7 +390,10 @@ export class WooCommerceClient {
     stock_quantity?: number;
     categories?: Array<{ id: number }>;
   }): Promise<ECommerceProduct> {
-    const response = await this.request("POST", "/products", data) as { body: WooCommerceProductResponse; headers: Headers };
+    const response = (await this.request("POST", "/products", data)) as {
+      body: WooCommerceProductResponse;
+      headers: Headers;
+    };
     return this.mapWooCommerceProductToECommerce(response.body);
   }
 
@@ -380,11 +404,11 @@ export class WooCommerceClient {
     productId: string,
     data: Record<string, unknown>,
   ): Promise<ECommerceProduct> {
-    const response = await this.request(
+    const response = (await this.request(
       "PUT",
       `/products/${productId}`,
       data,
-    ) as { body: WooCommerceProductResponse; headers: Headers };
+    )) as { body: WooCommerceProductResponse; headers: Headers };
     return this.mapWooCommerceProductToECommerce(response.body);
   }
 
@@ -409,11 +433,11 @@ export class WooCommerceClient {
       attributes?: Array<{ id: number; option: string }>;
     },
   ): Promise<WooCommerceVariation> {
-    const response = await this.request(
+    const response = (await this.request(
       "POST",
       `/products/${productId}/variations`,
       data,
-    ) as { body: WooCommerceVariation; headers: Headers };
+    )) as { body: WooCommerceVariation; headers: Headers };
     return response.body;
   }
 
@@ -425,11 +449,11 @@ export class WooCommerceClient {
     variationId: string,
     data: Record<string, unknown>,
   ): Promise<WooCommerceVariation> {
-    const response = await this.request(
+    const response = (await this.request(
       "PUT",
       `/products/${productId}/variations/${variationId}`,
       data,
-    ) as { body: WooCommerceVariation; headers: Headers };
+    )) as { body: WooCommerceVariation; headers: Headers };
     return response.body;
   }
 
@@ -445,11 +469,11 @@ export class WooCommerceClient {
       page: String(options?.page || 1),
     });
 
-    const response = await this.request(
+    const response = (await this.request(
       "GET",
       `/products/${productId}/variations?${params}`,
       null,
-    ) as { body: WooCommerceVariation[]; headers: Headers };
+    )) as { body: WooCommerceVariation[]; headers: Headers };
     return response.body;
   }
 
@@ -461,7 +485,11 @@ export class WooCommerceClient {
     page?: number;
     orderby?: string;
     order?: "asc" | "desc";
-  }): Promise<{ customers: ECommerceCustomer[]; total: number; totalPages: number }> {
+  }): Promise<{
+    customers: ECommerceCustomer[];
+    total: number;
+    totalPages: number;
+  }> {
     const params = new URLSearchParams({
       per_page: String(options?.limit || 50),
       page: String(options?.page || 1),
@@ -469,11 +497,11 @@ export class WooCommerceClient {
       order: options?.order || "desc",
     });
 
-    const response = await this.request(
+    const response = (await this.request(
       "GET",
       `/customers?${params}`,
       null,
-    ) as { body: WooCommerceCustomerResponse[]; headers: Headers };
+    )) as { body: WooCommerceCustomerResponse[]; headers: Headers };
 
     return {
       customers: response.body.map((customer: WooCommerceCustomerResponse) =>
@@ -488,7 +516,11 @@ export class WooCommerceClient {
    * Get customer by ID
    */
   async getCustomerById(customerId: string): Promise<ECommerceCustomer> {
-    const response = await this.request("GET", `/customers/${customerId}`, null) as { body: WooCommerceCustomerResponse; headers: Headers };
+    const response = (await this.request(
+      "GET",
+      `/customers/${customerId}`,
+      null,
+    )) as { body: WooCommerceCustomerResponse; headers: Headers };
     return this.mapWooCommerceCustomerToECommerce(response.body);
   }
 
@@ -504,7 +536,10 @@ export class WooCommerceClient {
     billing?: Record<string, string>;
     shipping?: Record<string, string>;
   }): Promise<ECommerceCustomer> {
-    const response = await this.request("POST", "/customers", data) as { body: WooCommerceCustomerResponse; headers: Headers };
+    const response = (await this.request("POST", "/customers", data)) as {
+      body: WooCommerceCustomerResponse;
+      headers: Headers;
+    };
     return this.mapWooCommerceCustomerToECommerce(response.body);
   }
 
@@ -515,11 +550,11 @@ export class WooCommerceClient {
     customerId: string,
     data: Record<string, unknown>,
   ): Promise<ECommerceCustomer> {
-    const response = await this.request(
+    const response = (await this.request(
       "PUT",
       `/customers/${customerId}`,
       data,
-    ) as { body: WooCommerceCustomerResponse; headers: Headers };
+    )) as { body: WooCommerceCustomerResponse; headers: Headers };
     return this.mapWooCommerceCustomerToECommerce(response.body);
   }
 
@@ -534,11 +569,18 @@ export class WooCommerceClient {
       stock_quantity: request.quantity,
     };
 
-    const response = await this.request(
+    const response = (await this.request(
       "PUT",
       `/products/${request.variantId}`,
       data,
-    ) as { body: { stock_quantity: number; manage_stock: boolean; backorders_allowed: boolean }; headers: Headers };
+    )) as {
+      body: {
+        stock_quantity: number;
+        manage_stock: boolean;
+        backorders_allowed: boolean;
+      };
+      headers: Headers;
+    };
 
     return {
       variantId: request.variantId,
@@ -552,65 +594,85 @@ export class WooCommerceClient {
   /**
    * Get low stock products
    */
-  async getLowStockProducts(threshold: number = 10): Promise<ECommerceProduct[]> {
-    const response = await this.request(
+  async getLowStockProducts(
+    threshold: number = 10,
+  ): Promise<ECommerceProduct[]> {
+    const response = (await this.request(
       "GET",
       `/reports/low_stock?limit=${threshold}`,
       null,
-    ) as { body: Array<{ product_id: number; name: string; stock: number }>; headers: Headers };
+    )) as {
+      body: Array<{ product_id: number; name: string; stock: number }>;
+      headers: Headers;
+    };
 
-    return response.body.map((item: { product_id: number; name: string; stock: number }) => ({
-      id: String(item.product_id),
-      title: item.name,
-      variants: [
-        {
-          id: String(item.product_id),
-          sku: "",
-          price: 0,
-          inventory: {
-            variantId: String(item.product_id),
-            quantity: item.stock,
-            trackQuantity: true,
-            allowNegativeStock: false,
-            updatedAt: new Date(),
+    return response.body.map(
+      (item: { product_id: number; name: string; stock: number }) => ({
+        id: String(item.product_id),
+        title: item.name,
+        variants: [
+          {
+            id: String(item.product_id),
+            sku: "",
+            price: 0,
+            inventory: {
+              variantId: String(item.product_id),
+              quantity: item.stock,
+              trackQuantity: true,
+              allowNegativeStock: false,
+              updatedAt: new Date(),
+            },
           },
-        },
-      ],
-      status: "active" as const,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }));
+        ],
+        status: "active" as const,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }),
+    );
   }
 
   /**
    * List shipping zones
    */
   async listShippingZones(): Promise<Array<{ id: number; name: string }>> {
-    const response = await this.request("GET", "/shipping/zones", null) as { body: Array<{ id: number; name: string }>; headers: Headers };
+    const response = (await this.request("GET", "/shipping/zones", null)) as {
+      body: Array<{ id: number; name: string }>;
+      headers: Headers;
+    };
     return response.body;
   }
 
   /**
    * List shipping methods for a zone
    */
-  async listShippingMethods(zoneId: string): Promise<Array<{ id: number; title: string; method_id: string }>> {
-    const response = await this.request(
+  async listShippingMethods(
+    zoneId: string,
+  ): Promise<Array<{ id: number; title: string; method_id: string }>> {
+    const response = (await this.request(
       "GET",
       `/shipping/zones/${zoneId}/methods`,
       null,
-    ) as { body: Array<{ id: number; title: string; method_id: string }>; headers: Headers };
+    )) as {
+      body: Array<{ id: number; title: string; method_id: string }>;
+      headers: Headers;
+    };
     return response.body;
   }
 
   /**
    * List shipping classes
    */
-  async listShippingClasses(): Promise<Array<{ id: number; name: string; description: string }>> {
-    const response = await this.request(
+  async listShippingClasses(): Promise<
+    Array<{ id: number; name: string; description: string }>
+  > {
+    const response = (await this.request(
       "GET",
       "/products/shipping_classes",
       null,
-    ) as { body: Array<{ id: number; name: string; description: string }>; headers: Headers };
+    )) as {
+      body: Array<{ id: number; name: string; description: string }>;
+      headers: Headers;
+    };
     return response.body;
   }
 
@@ -621,10 +683,10 @@ export class WooCommerceClient {
     topic: string,
     deliveryUrl: string,
   ): Promise<WooCommerceWebhook> {
-    const response = await this.request("POST", "/webhooks", {
+    const response = (await this.request("POST", "/webhooks", {
       topic,
       delivery_url: deliveryUrl,
-    }) as { body: WooCommerceWebhook; headers: Headers };
+    })) as { body: WooCommerceWebhook; headers: Headers };
     return response.body;
   }
 
@@ -632,7 +694,10 @@ export class WooCommerceClient {
    * List webhooks
    */
   async listWebhooks(): Promise<WooCommerceWebhook[]> {
-    const response = await this.request("GET", "/webhooks", null) as { body: WooCommerceWebhook[]; headers: Headers };
+    const response = (await this.request("GET", "/webhooks", null)) as {
+      body: WooCommerceWebhook[];
+      headers: Headers;
+    };
     return response.body;
   }
 
@@ -640,11 +705,7 @@ export class WooCommerceClient {
    * Delete webhook
    */
   async deleteWebhook(webhookId: string, force: boolean = true): Promise<void> {
-    await this.request(
-      "DELETE",
-      `/webhooks/${webhookId}?force=${force}`,
-      null,
-    );
+    await this.request("DELETE", `/webhooks/${webhookId}?force=${force}`, null);
   }
 
   /**
@@ -655,9 +716,9 @@ export class WooCommerceClient {
       throw new Error("Batch operations limited to 100 items per request");
     }
 
-    const response = await this.request("POST", "/batch", {
+    const response = (await this.request("POST", "/batch", {
       requests,
-    }) as { body: BatchResponseItem[]; headers: Headers };
+    })) as { body: BatchResponseItem[]; headers: Headers };
 
     return response.body;
   }
@@ -665,10 +726,7 @@ export class WooCommerceClient {
   /**
    * Verify webhook signature
    */
-  verifyWebhookSignature(
-    payload: unknown,
-    signature: string,
-  ): boolean {
+  verifyWebhookSignature(payload: unknown, signature: string): boolean {
     if (!this.config.webhookSecret) {
       return false;
     }
@@ -747,11 +805,8 @@ export class WooCommerceClient {
     }
 
     if (this.requestCount >= this.MAX_REQUESTS_PER_10S) {
-      const waitTime =
-        10000 - timeSinceWindowStart + 100;
-      await new Promise((resolve) =>
-        setTimeout(resolve, waitTime),
-      );
+      const waitTime = 10000 - timeSinceWindowStart + 100;
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
       this.requestCount = 0;
       this.requestWindowStart = Date.now();
     }
@@ -776,8 +831,7 @@ export class WooCommerceClient {
       encodeURIComponent(
         `oauth_consumer_key=${consumerKey}&oauth_nonce=${nonce}&oauth_signature_method=HMAC-SHA256&oauth_timestamp=${timestamp}&oauth_version=1.0`,
       ),
-    ]
-      .join("&");
+    ].join("&");
 
     const signingKey = `${encodeURIComponent(consumerSecret)}&`;
     const signature = createHmac("sha256", signingKey)
@@ -791,8 +845,10 @@ export class WooCommerceClient {
    * Generate random nonce
    */
   private generateNonce(): string {
-    return Math.random().toString(36).substring(2, 15) +
-      Math.random().toString(36).substring(2, 15);
+    return (
+      Math.random().toString(36).substring(2, 15) +
+      Math.random().toString(36).substring(2, 15)
+    );
   }
 
   /**
@@ -855,43 +911,45 @@ export class WooCommerceClient {
       description: product.description?.replace(/<[^>]*>/g, ""),
       status: product.status as "active" | "draft" | "archived",
       productType: product.type,
-      variants: product.variations.length > 0
-        ? product.variations.map((varId) => ({
-            id: String(varId),
-            sku: "",
-            price: parseFloat(product.price),
-            inventory: {
-              variantId: String(varId),
-              quantity: product.stock_quantity,
-              trackQuantity: product.manage_stock,
-              allowNegativeStock: false,
-              updatedAt: new Date(),
-            },
-          }))
-        : [
-            {
-              id: String(product.id),
-              sku: product.sku,
+      variants:
+        product.variations.length > 0
+          ? product.variations.map((varId) => ({
+              id: String(varId),
+              sku: "",
               price: parseFloat(product.price),
               inventory: {
-                variantId: String(product.id),
+                variantId: String(varId),
                 quantity: product.stock_quantity,
                 trackQuantity: product.manage_stock,
                 allowNegativeStock: false,
                 updatedAt: new Date(),
               },
-            },
-          ],
+            }))
+          : [
+              {
+                id: String(product.id),
+                sku: product.sku,
+                price: parseFloat(product.price),
+                inventory: {
+                  variantId: String(product.id),
+                  quantity: product.stock_quantity,
+                  trackQuantity: product.manage_stock,
+                  allowNegativeStock: false,
+                  updatedAt: new Date(),
+                },
+              },
+            ],
       images: product.images.map((img) => ({
         url: img.src,
         altText: img.alt,
       })),
-      category: product.categories.length > 0
-        ? {
-            id: String(product.categories[0].id),
-            name: product.categories[0].name,
-          }
-        : undefined,
+      category:
+        product.categories.length > 0
+          ? {
+              id: String(product.categories[0].id),
+              name: product.categories[0].name,
+            }
+          : undefined,
       createdAt: new Date(product.date_created),
       updatedAt: new Date(product.date_modified),
     };
@@ -954,8 +1012,30 @@ export class WooCommerceClient {
   /**
    * Map WooCommerce order status
    */
-  private mapWooCommerceOrderStatus(status: string): "pending" | "confirmed" | "processing" | "dispatched" | "out_for_delivery" | "delivered" | "cancelled" | "refunded" | "failed" {
-    const mapping: Record<string, "pending" | "confirmed" | "processing" | "dispatched" | "out_for_delivery" | "delivered" | "cancelled" | "refunded" | "failed"> = {
+  private mapWooCommerceOrderStatus(
+    status: string,
+  ):
+    | "pending"
+    | "confirmed"
+    | "processing"
+    | "dispatched"
+    | "out_for_delivery"
+    | "delivered"
+    | "cancelled"
+    | "refunded"
+    | "failed" {
+    const mapping: Record<
+      string,
+      | "pending"
+      | "confirmed"
+      | "processing"
+      | "dispatched"
+      | "out_for_delivery"
+      | "delivered"
+      | "cancelled"
+      | "refunded"
+      | "failed"
+    > = {
       pending: "pending",
       processing: "processing",
       "on-hold": "confirmed",
@@ -971,6 +1051,8 @@ export class WooCommerceClient {
 /**
  * Factory function to create WooCommerce client
  */
-export function createWooCommerceClient(config: WooCommerceConfig): WooCommerceClient {
+export function createWooCommerceClient(
+  config: WooCommerceConfig,
+): WooCommerceClient {
   return new WooCommerceClient(config);
 }

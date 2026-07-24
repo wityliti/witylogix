@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ChevronRight } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ChevronRight } from "lucide-react";
 
 interface ConflictRule {
   field: string;
@@ -12,20 +12,20 @@ interface ConflictRule {
 
 const CONFLICT_RULES: ConflictRule[] = [
   {
-    field: 'price',
-    priority: ['Shopify', 'WooCommerce', 'Manual Override'],
+    field: "price",
+    priority: ["Shopify", "WooCommerce", "Manual Override"],
   },
   {
-    field: 'inventory_level',
-    priority: ['WooCommerce', 'Shopify', 'Manual Override'],
+    field: "inventory_level",
+    priority: ["WooCommerce", "Shopify", "Manual Override"],
   },
   {
-    field: 'product_title',
-    priority: ['Shopify', 'WooCommerce', 'Amazon'],
+    field: "product_title",
+    priority: ["Shopify", "WooCommerce", "Amazon"],
   },
   {
-    field: 'order_status',
-    priority: ['Manual Override', 'Shopify', 'WooCommerce'],
+    field: "order_status",
+    priority: ["Manual Override", "Shopify", "WooCommerce"],
   },
 ];
 
@@ -44,10 +44,13 @@ export function ConflictRules() {
 
       <div className="grid grid-cols-1 gap-4">
         {CONFLICT_RULES.map((rule) => (
-          <Card key={rule.field} className="bg-wl-bg-elevated border-wl-border-default">
+          <Card
+            key={rule.field}
+            className="bg-wl-bg-elevated border-wl-border-default"
+          >
             <CardContent className="pt-6">
               <h3 className="font-semibold text-white mb-4">
-                {rule.field.replace(/_/g, ' ')}
+                {rule.field.replace(/_/g, " ")}
               </h3>
               <div className="flex items-center gap-2">
                 {rule.priority.map((source, idx) => (
@@ -79,19 +82,17 @@ export function ConflictRules() {
               Filter by Status
             </label>
             <div className="flex flex-wrap gap-2 mt-2">
-              {['pending', 'processing', 'completed', 'cancelled'].map(
+              {["pending", "processing", "completed", "cancelled"].map(
                 (status) => (
                   <Badge key={status} variant="primary">
                     {status}
                   </Badge>
-                )
+                ),
               )}
             </div>
           </div>
           <div>
-            <label className="text-sm font-medium text-white">
-              Date Range
-            </label>
+            <label className="text-sm font-medium text-white">Date Range</label>
             <div className="text-sm text-gray-400 mt-2">Last 90 days</div>
           </div>
           <div>
@@ -99,7 +100,7 @@ export function ConflictRules() {
               Fulfillment Type
             </label>
             <div className="flex flex-wrap gap-2 mt-2">
-              {['shipped', 'in_transit', 'delivered'].map((type) => (
+              {["shipped", "in_transit", "delivered"].map((type) => (
                 <Badge key={type} variant="info">
                   {type}
                 </Badge>

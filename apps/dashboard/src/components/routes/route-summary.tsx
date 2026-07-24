@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { Clock, MapPin, Zap, Fuel } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Card } from '@/components/ui/card';
-import type { Stop, OptimizationResult } from '@/hooks/use-route-planner';
+import { Clock, MapPin, Zap, Fuel } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
+import type { Stop, OptimizationResult } from "@/hooks/use-route-planner";
 
 interface RouteSummaryProps {
   result?: OptimizationResult;
@@ -14,7 +14,12 @@ interface RouteSummaryProps {
 export function RouteSummary({ result, stops, className }: RouteSummaryProps) {
   if (!result) {
     return (
-      <Card className={cn('p-6 bg-wl-bg-elevated border-wl-border-default', className)}>
+      <Card
+        className={cn(
+          "p-6 bg-wl-bg-elevated border-wl-border-default",
+          className,
+        )}
+      >
         <div className="text-center text-wl-text-tertiary">
           Run optimization to see route summary
         </div>
@@ -31,7 +36,7 @@ export function RouteSummary({ result, stops, className }: RouteSummaryProps) {
   };
 
   return (
-    <div className={cn('flex flex-col gap-4', className)}>
+    <div className={cn("flex flex-col gap-4", className)}>
       {/* Summary Cards */}
       <div className="grid grid-cols-2 gap-3">
         {/* Total Stops */}
@@ -88,16 +93,13 @@ export function RouteSummary({ result, stops, className }: RouteSummaryProps) {
 
         <div className="space-y-0 max-h-64 overflow-y-auto">
           {result.stopSequence.map((stop, idx) => (
-            <div
-              key={stop.id}
-              className="flex gap-3 pb-3 last:pb-0"
-            >
+            <div key={stop.id} className="flex gap-3 pb-3 last:pb-0">
               {/* Timeline Dot & Line */}
               <div className="flex flex-col items-center flex-shrink-0">
                 <div
                   className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
                   style={{
-                    backgroundColor: 'var(--wl-primary-500)',
+                    backgroundColor: "var(--wl-primary-500)",
                   }}
                 >
                   {idx + 1}
@@ -106,7 +108,7 @@ export function RouteSummary({ result, stops, className }: RouteSummaryProps) {
                   <div
                     className="w-0.5 h-12 mt-1"
                     style={{
-                      backgroundColor: 'var(--wl-border-default)',
+                      backgroundColor: "var(--wl-border-default)",
                     }}
                   />
                 )}

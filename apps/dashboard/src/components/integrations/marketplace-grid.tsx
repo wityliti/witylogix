@@ -63,7 +63,9 @@ export function MarketplaceGrid({
 
   if (isLoading) {
     return (
-      <div className={cn("grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4")}>
+      <div
+        className={cn("grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4")}
+      >
         {Array.from({ length: 9 }).map((_, i) => (
           <SkeletonCard key={i} />
         ))}
@@ -78,7 +80,7 @@ export function MarketplaceGrid({
           {category && groupByCategory && (
             <h3
               className={cn(
-                "text-lg font-bold text-wl-text-primary mb-4 capitalize"
+                "text-lg font-bold text-wl-text-primary mb-4 capitalize",
               )}
             >
               {category.replace(/_/g, " ")}
@@ -87,7 +89,7 @@ export function MarketplaceGrid({
 
           <div
             className={cn(
-              "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+              "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4",
             )}
           >
             {categoryItems.map((provider, idx) => (
@@ -132,7 +134,7 @@ function IntegrationCardInner({
       className={cn(
         "h-full flex flex-col hover:border-wl-border-strong transition-all wl-animate-in",
         provider.connected && "border-wl-success-400/30",
-        onClick && "cursor-pointer"
+        onClick && "cursor-pointer",
       )}
       style={{ animationDelay } as React.CSSProperties}
       onClick={onClick}
@@ -141,7 +143,7 @@ function IntegrationCardInner({
       {/* Logo Area */}
       <div
         className={cn(
-          "w-full h-24 bg-wl-bg-surface rounded-lg mb-3 flex items-center justify-center"
+          "w-full h-24 bg-wl-bg-surface rounded-lg mb-3 flex items-center justify-center",
         )}
       >
         {provider.logo ? (
@@ -214,7 +216,7 @@ function SkeletonCard() {
   return (
     <div
       className={cn(
-        "bg-wl-bg-elevated border border-wl-border-subtle rounded-lg p-5 animate-pulse"
+        "bg-wl-bg-elevated border border-wl-border-subtle rounded-lg p-5 animate-pulse",
       )}
     >
       <div className={cn("w-full h-24 bg-wl-bg-surface rounded-lg mb-3")} />
@@ -250,7 +252,7 @@ export function IntegrationListItem({
       className={cn(
         "flex items-center justify-between p-4 hover:border-wl-border-strong transition-all wl-animate-in",
         provider.connected && "border-wl-success-400/30",
-        onClick && "cursor-pointer"
+        onClick && "cursor-pointer",
       )}
       style={{ animationDelay } as React.CSSProperties}
       onClick={onClick}
@@ -258,7 +260,7 @@ export function IntegrationListItem({
       <div className={cn("flex-1 flex items-center gap-4 min-w-0")}>
         <div
           className={cn(
-            "w-12 h-12 rounded-lg bg-wl-bg-surface flex items-center justify-center flex-shrink-0"
+            "w-12 h-12 rounded-lg bg-wl-bg-surface flex items-center justify-center flex-shrink-0",
           )}
         >
           {provider.logo ? (

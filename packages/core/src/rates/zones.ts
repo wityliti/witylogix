@@ -113,7 +113,11 @@ const INTERNATIONAL_ZONES: Map<string, number> = new Map([
  * For US domestic shipments, calculates zone based on destination zip code
  * For international, uses country code mapping
  */
-export function getZone(originPostal: string, destPostal: string, destCountry: string): number {
+export function getZone(
+  originPostal: string,
+  destPostal: string,
+  destCountry: string,
+): number {
   // For US domestic shipments
   if (destCountry === "US") {
     const destZipPrefix = parseInt(destPostal.substring(0, 3), 10);

@@ -43,9 +43,20 @@ const dataSources: { value: DataSource; label: string }[] = [
   { value: "finance", label: "Financial Reports" },
 ];
 
-const dimensionOptions = ["Month", "Region", "Product", "Category", "Salesperson"];
-const measureOptions = ["Revenue", "Units Sold", "Gross Margin", "Cost", "Count"];
-
+const dimensionOptions = [
+  "Month",
+  "Region",
+  "Product",
+  "Category",
+  "Salesperson",
+];
+const measureOptions = [
+  "Revenue",
+  "Units Sold",
+  "Gross Margin",
+  "Cost",
+  "Count",
+];
 
 const defaultConfig: ReportConfig = {
   id: "report-1",
@@ -150,7 +161,7 @@ const ReportBuilderCard = ({
                 "px-3 py-2 rounded-lg border text-sm font-medium transition-colors",
                 config.dataSource === source.value
                   ? "bg-wl-primary-500/20 border-wl-primary-400 text-wl-primary-400"
-                  : "bg-wl-bg-surface border-wl-border-default text-wl-text-secondary hover:border-wl-border-strong"
+                  : "bg-wl-bg-surface border-wl-border-default text-wl-text-secondary hover:border-wl-border-strong",
               )}
             >
               {source.label}
@@ -172,7 +183,7 @@ const ReportBuilderCard = ({
                 "px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors",
                 config.dimensions.includes(dimension)
                   ? "bg-wl-info-500/20 border-wl-info-400 text-wl-info-400"
-                  : "bg-wl-bg-surface border-wl-border-default text-wl-text-secondary hover:border-wl-border-strong"
+                  : "bg-wl-bg-surface border-wl-border-default text-wl-text-secondary hover:border-wl-border-strong",
               )}
             >
               {dimension}
@@ -194,7 +205,7 @@ const ReportBuilderCard = ({
                 "px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors",
                 config.measures.includes(measure)
                   ? "bg-wl-success-500/20 border-wl-success-400 text-wl-success-400"
-                  : "bg-wl-bg-surface border-wl-border-default text-wl-text-secondary hover:border-wl-border-strong"
+                  : "bg-wl-bg-surface border-wl-border-default text-wl-text-secondary hover:border-wl-border-strong",
               )}
             >
               {measure}
@@ -256,11 +267,7 @@ const ReportBuilderCard = ({
               }}
               className="flex-1 px-3 py-2 rounded-lg bg-wl-bg-surface border border-wl-border-default text-xs text-wl-text-primary"
             />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => removeFilter(idx)}
-            >
+            <Button variant="ghost" size="sm" onClick={() => removeFilter(idx)}>
               <TrashIcon className="w-4 h-4" />
             </Button>
           </div>
@@ -269,7 +276,9 @@ const ReportBuilderCard = ({
 
       {showPreview && (
         <div className="p-4 bg-wl-bg-overlay rounded-lg border border-wl-border-default">
-          <p className="text-xs font-semibold text-wl-text-secondary mb-2">Preview</p>
+          <p className="text-xs font-semibold text-wl-text-secondary mb-2">
+            Preview
+          </p>
           <div className="w-full h-24 flex items-center justify-center text-xs text-wl-text-secondary border border-dashed border-wl-border-default rounded">
             Run report to see preview
           </div>
@@ -282,7 +291,9 @@ const ReportBuilderCard = ({
             type="checkbox"
             id="scheduled"
             checked={config.scheduled}
-            onChange={(e) => setConfig({ ...config, scheduled: e.target.checked })}
+            onChange={(e) =>
+              setConfig({ ...config, scheduled: e.target.checked })
+            }
             className="rounded"
           />
           <label htmlFor="scheduled" className="text-sm text-wl-text-secondary">

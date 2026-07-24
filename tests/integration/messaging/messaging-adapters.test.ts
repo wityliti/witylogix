@@ -57,13 +57,10 @@ describe("Vonage Client", () => {
         text: "Hello, this is a test message",
       };
 
-      const result = await mockClient.fetch(
-        "https://rest.nexmo.com/sms/json",
-        {
-          method: "POST",
-          body: JSON.stringify(smsRequest),
-        },
-      );
+      const result = await mockClient.fetch("https://rest.nexmo.com/sms/json", {
+        method: "POST",
+        body: JSON.stringify(smsRequest),
+      });
 
       const data = await result.json();
       expect(result.status).toBe(200);
@@ -74,9 +71,9 @@ describe("Vonage Client", () => {
     it("should include remaining balance in response", async () => {
       const data = mockVonageSendSMSResponse;
       expect(data.messages[0]).toHaveProperty("remaining_balance");
-      expect(parseFloat(data.messages[0].remaining_balance as string)).toBeLessThan(
-        15,
-      );
+      expect(
+        parseFloat(data.messages[0].remaining_balance as string),
+      ).toBeLessThan(15);
     });
 
     it("should handle international phone numbers", () => {
@@ -239,15 +236,15 @@ describe("Vonage Client", () => {
             url: /\/sms\/json/,
             status: 400,
             data: {
-              messages: [{ status: "1", error_text: "Invalid Destination Address" }],
+              messages: [
+                { status: "1", error_text: "Invalid Destination Address" },
+              ],
             },
           },
         ],
       });
 
-      const result = await mockClient.fetch(
-        "https://rest.nexmo.com/sms/json",
-      );
+      const result = await mockClient.fetch("https://rest.nexmo.com/sms/json");
 
       expect(result.status).toBe(400);
     });
@@ -263,9 +260,7 @@ describe("Vonage Client", () => {
         ],
       });
 
-      const result = await mockClient.fetch(
-        "https://rest.nexmo.com/sms/json",
-      );
+      const result = await mockClient.fetch("https://rest.nexmo.com/sms/json");
 
       expect(result.status).toBe(401);
     });
@@ -281,9 +276,7 @@ describe("Vonage Client", () => {
         ],
       });
 
-      const result = await mockClient.fetch(
-        "https://rest.nexmo.com/sms/json",
-      );
+      const result = await mockClient.fetch("https://rest.nexmo.com/sms/json");
 
       expect(result.status).toBe(429);
     });

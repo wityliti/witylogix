@@ -30,7 +30,7 @@ export enum PlatformSource {
   SHOPIFY = "SHOPIFY",
   WOOCOMMERCE = "WOOCOMMERCE",
   MAGENTO = "MAGENTO",
-  CUSTOM = "CUSTOM",  // Custom/self-hosted storefronts
+  CUSTOM = "CUSTOM", // Custom/self-hosted storefronts
 }
 
 /**
@@ -48,7 +48,9 @@ export enum PlatformSource {
  *   const source: PlatformSource = request.body.source;
  * }
  */
-export function isPlatformSource(value: string | unknown): value is PlatformSource {
+export function isPlatformSource(
+  value: string | unknown,
+): value is PlatformSource {
   if (typeof value !== "string") {
     return false;
   }
@@ -168,7 +170,7 @@ export type PlatformDiscriminatedReference =
  */
 export function getPlatformMetadata<T extends PlatformSource>(
   ref: PlatformDiscriminatedReference,
-  platform: T
+  platform: T,
 ): Extract<PlatformDiscriminatedReference, { source: T }> | undefined {
   if (ref.source === platform) {
     return ref as Extract<PlatformDiscriminatedReference, { source: T }>;
@@ -187,7 +189,7 @@ export function getPlatformMetadata<T extends PlatformSource>(
  */
 export function assertPlatform<T extends PlatformSource>(
   ref: PlatformDiscriminatedReference,
-  platform: T
+  platform: T,
 ): ref is Extract<PlatformDiscriminatedReference, { source: T }> {
   return ref.source === platform;
 }

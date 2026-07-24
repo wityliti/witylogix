@@ -15,7 +15,12 @@ interface CalendarJob {
   address: string;
   type: string;
   priority: "low" | "medium" | "high" | "urgent";
-  status: "scheduled" | "dispatched" | "in-progress" | "completed" | "cancelled";
+  status:
+    | "scheduled"
+    | "dispatched"
+    | "in-progress"
+    | "completed"
+    | "cancelled";
   startTime: string; // ISO string
   endTime: string; // ISO string
   color?: string; // For custom technician colors
@@ -25,7 +30,10 @@ interface JobCalendarProps extends HTMLAttributes<HTMLDivElement> {
   jobs: CalendarJob[];
   startDate?: Date;
   onJobClick?: (job: CalendarJob) => void;
-  onJobReschedule?: (jobId: string, newTime: { start: string; end: string }) => void;
+  onJobReschedule?: (
+    jobId: string,
+    newTime: { start: string; end: string },
+  ) => void;
   onTimeSlotClick?: (time: Date, technicianId?: string) => void;
   technicianColors?: Record<string, string>;
 }
@@ -64,7 +72,7 @@ const JobCalendar = forwardRef<HTMLDivElement, JobCalendarProps>(
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [tooltip, setTooltip] = useState<TooltipState>({
       visible: false,
@@ -87,7 +95,7 @@ const JobCalendar = forwardRef<HTMLDivElement, JobCalendarProps>(
 
     // Get unique technicians
     const technicians = Array.from(
-      new Map(jobs.map((j) => [j.technicianId, j.technicianName])).entries()
+      new Map(jobs.map((j) => [j.technicianId, j.technicianName])).entries(),
     );
 
     // Get time slots (0-23 hours)
@@ -96,7 +104,10 @@ const JobCalendar = forwardRef<HTMLDivElement, JobCalendarProps>(
     // Filter jobs for this week and sort by technician
     const weekJobs = jobs.filter((job) => {
       const jobDate = new Date(job.startTime);
-      return jobDate >= weekStart && jobDate < new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+      return (
+        jobDate >= weekStart &&
+        jobDate < new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000)
+      );
     });
 
     const getDefaultColor = (index: number): string => {
@@ -123,11 +134,13 @@ const JobCalendar = forwardRef<HTMLDivElement, JobCalendarProps>(
         (d) =>
           d.getFullYear() === jobDate.getFullYear() &&
           d.getMonth() === jobDate.getMonth() &&
-          d.getDate() === jobDate.getDate()
+          d.getDate() === jobDate.getDate(),
       );
 
       const startHour = jobDate.getHours() + jobDate.getMinutes() / 60;
-      const endHour = new Date(job.endTime).getHours() + new Date(job.endTime).getMinutes() / 60;
+      const endHour =
+        new Date(job.endTime).getHours() +
+        new Date(job.endTime).getMinutes() / 60;
       const duration = endHour - startHour;
 
       return { dayIndex, startHour, duration };
@@ -154,7 +167,11 @@ const JobCalendar = forwardRef<HTMLDivElement, JobCalendarProps>(
         {/* Header with navigation */}
         <div className="flex items-center justify-between gap-4">
           <h3 className="text-sm font-semibold text-wl-text-primary">
-            Week of {weekStart.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+            Week of{" "}
+            {weekStart.toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            })}
           </h3>
           <div className="flex items-center gap-2">
             <button
@@ -182,7 +199,10 @@ const JobCalendar = forwardRef<HTMLDivElement, JobCalendarProps>(
         <div className="overflow-x-auto">
           <div className="inline-block min-w-full">
             {/* Day headers */}
-            <div className="grid" style={{ gridTemplateColumns: "80px repeat(7, 1fr)" }}>
+            <div
+              className="grid"
+              style={{ gridTemplateColumns: "80px repeat(7, 1fr)" }}
+            >
               <div className="py-2 px-2 font-semibold text-xs text-wl-text-secondary border-b border-wl-border-subtle" />
               {days.map((day, i) => (
                 <div
@@ -191,10 +211,12 @@ const JobCalendar = forwardRef<HTMLDivElement, JobCalendarProps>(
                     "py-2 px-1 font-semibold text-xs text-center border-b border-wl-border-subtle",
                     day.toDateString() === new Date().toDateString()
                       ? "bg-wl-primary-500/10 text-wl-primary-400"
-                      : "text-wl-text-secondary"
+                      : "text-wl-text-secondary",
                   )}
                 >
-                  <div>{day.toLocaleDateString("en-US", { weekday: "short" })}</div>
+                  <div>
+                    {day.toLocaleDateString("en-US", { weekday: "short" })}
+                  </div>
                   <div className="text-sm font-semibold">{day.getDate()}</div>
                 </div>
               ))}
@@ -213,13 +235,19 @@ const JobCalendar = forwardRef<HTMLDivElement, JobCalendarProps>(
                       key={`cell-${hour}-${dayIdx}`}
                       className={cn(
                         "relative min-h-16 border-b border-wl-border-subtle border-r border-r-wl-border-subtle p-1",
-                        hour === 0 && "border-t border-t-wl-border-subtle"
+                        hour === 0 && "border-t border-t-wl-border-subtle",
                       )}
                       style={{
                         backgroundColor:
-                          hour % 2 === 0 ? "transparent" : "var(--wl-bg-surface)",
+                          hour % 2 === 0
+                            ? "transparent"
+                            : "var(--wl-bg-surface)",
                       }}
-                      onClick={() => onTimeSlotClick?.(new Date(day.getTime() + hour * 60 * 60 * 1000))}
+                      onClick={() =>
+                        onTimeSlotClick?.(
+                          new Date(day.getTime() + hour * 60 * 60 * 1000),
+                        )
+                      }
                     >
                       {/* Jobs in this hour */}
                       {weekJobs
@@ -230,7 +258,7 @@ const JobCalendar = forwardRef<HTMLDivElement, JobCalendarProps>(
                             (d) =>
                               d.getFullYear() === jobDate.getFullYear() &&
                               d.getMonth() === jobDate.getMonth() &&
-                              d.getDate() === jobDate.getDate()
+                              d.getDate() === jobDate.getDate(),
                           );
                           return jobDayIdx === dayIdx && jobHour === hour;
                         })
@@ -238,7 +266,8 @@ const JobCalendar = forwardRef<HTMLDivElement, JobCalendarProps>(
                           const jobStartTime = new Date(job.startTime);
                           const jobEndTime = new Date(job.endTime);
                           const minutes = Math.ceil(
-                            (jobEndTime.getTime() - jobStartTime.getTime()) / (1000 * 60)
+                            (jobEndTime.getTime() - jobStartTime.getTime()) /
+                              (1000 * 60),
                           );
                           const height = Math.max(16, (minutes / 60) * 64);
 
@@ -251,18 +280,19 @@ const JobCalendar = forwardRef<HTMLDivElement, JobCalendarProps>(
                                   ? "opacity-50"
                                   : job.status === "cancelled"
                                     ? "opacity-40 line-through"
-                                    : ""
+                                    : "",
                               )}
                               style={{
                                 backgroundColor: getTechnicianColor(
                                   job.technicianId,
-                                  job.technicianName
+                                  job.technicianName,
                                 ),
-                                top: `${((jobStartTime.getMinutes() / 60) * 64)}px`,
+                                top: `${(jobStartTime.getMinutes() / 60) * 64}px`,
                                 height: `${height}px`,
                               }}
                               onMouseEnter={(e) => {
-                                const rect = e.currentTarget.getBoundingClientRect();
+                                const rect =
+                                  e.currentTarget.getBoundingClientRect();
                                 setTooltip({
                                   visible: true,
                                   job,
@@ -316,7 +346,10 @@ const JobCalendar = forwardRef<HTMLDivElement, JobCalendarProps>(
                   {tooltip.job.customerName}
                 </p>
               </div>
-              <Badge variant={priorityConfig[tooltip.job.priority].label as any} className="text-xs">
+              <Badge
+                variant={priorityConfig[tooltip.job.priority].label as any}
+                className="text-xs"
+              >
                 {priorityConfig[tooltip.job.priority].label}
               </Badge>
             </div>
@@ -338,12 +371,8 @@ const JobCalendar = forwardRef<HTMLDivElement, JobCalendarProps>(
                 <MapPin className="w-3 h-3" />
                 {tooltip.job.address}
               </div>
-              <p>
-                Technician: {tooltip.job.technicianName}
-              </p>
-              <p>
-                Status: {statusConfig[tooltip.job.status]}
-              </p>
+              <p>Technician: {tooltip.job.technicianName}</p>
+              <p>Status: {statusConfig[tooltip.job.status]}</p>
             </div>
           </div>
         )}
@@ -369,7 +398,7 @@ const JobCalendar = forwardRef<HTMLDivElement, JobCalendarProps>(
         </div>
       </Card>
     );
-  }
+  },
 );
 
 JobCalendar.displayName = "JobCalendar";

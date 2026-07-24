@@ -165,26 +165,26 @@ interface Pattern {
   task: string;
   approach: string;
   steps: TrajectoryStep[];
-  outcome: 'success' | 'failure';
-  reward: number;  // 0.0 - 1.0
+  outcome: "success" | "failure";
+  reward: number; // 0.0 - 1.0
   metadata: {
     agent_type: string;
     duration_ms: number;
     files_changed: number;
     tests_passed: boolean;
   };
-  embedding: number[];  // For HNSW search
+  embedding: number[]; // For HNSW search
   created_at: Date;
 }
 ```
 
 ## MCP Tool Integration
 
-| Tool | Purpose |
-|------|---------|
-| `memory_search` | HNSW pattern retrieval |
-| `memory_usage` | Store/retrieve patterns |
-| `neural_train` | Train on new patterns |
+| Tool              | Purpose                      |
+| ----------------- | ---------------------------- |
+| `memory_search`   | HNSW pattern retrieval       |
+| `memory_usage`    | Store/retrieve patterns      |
+| `neural_train`    | Train on new patterns        |
 | `neural_patterns` | Analyze pattern distribution |
 
 ## Hooks Integration
@@ -193,21 +193,25 @@ The ReasoningBank integrates with V3 hooks:
 
 ```json
 {
-  "PostToolUse": [{
-    "matcher": "^(Write|Edit|Task)$",
-    "hooks": [{
-      "type": "command",
-      "command": "npx claude-flow@v3alpha hooks intelligence trajectory-step --operation $TOOL_NAME --outcome $TOOL_SUCCESS"
-    }]
-  }]
+  "PostToolUse": [
+    {
+      "matcher": "^(Write|Edit|Task)$",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "npx claude-flow@v3alpha hooks intelligence trajectory-step --operation $TOOL_NAME --outcome $TOOL_SUCCESS"
+        }
+      ]
+    }
+  ]
 }
 ```
 
 ## Performance Metrics
 
-| Metric | Target |
-|--------|--------|
-| Pattern retrieval | <5ms (HNSW) |
-| Verdict assignment | <1ms |
-| Distillation | <100ms |
-| Consolidation | <500ms |
+| Metric             | Target      |
+| ------------------ | ----------- |
+| Pattern retrieval  | <5ms (HNSW) |
+| Verdict assignment | <1ms        |
+| Distillation       | <100ms      |
+| Consolidation      | <500ms      |

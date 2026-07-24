@@ -1,4 +1,4 @@
-import { Page, Locator, expect } from '@playwright/test';
+import { Page, Locator, expect } from "@playwright/test";
 
 /**
  * Dashboard Page Object Model
@@ -19,21 +19,33 @@ export class DashboardPage {
   constructor(page: Page) {
     this.page = page;
     this.sidebar = page.locator('[data-testid="sidebar"], nav, aside');
-    this.sidebarLinks = page.locator('[data-testid="sidebar"] a, nav a, aside a');
+    this.sidebarLinks = page.locator(
+      '[data-testid="sidebar"] a, nav a, aside a',
+    );
     this.mainContent = page.locator('main, [data-testid="main-content"]');
-    this.statsCards = page.locator('[data-testid="stats-card"], .card, [data-testid="metric"]');
+    this.statsCards = page.locator(
+      '[data-testid="stats-card"], .card, [data-testid="metric"]',
+    );
     this.pageTitle = page.locator('h1, [data-testid="page-title"]');
-    this.userMenu = page.locator('[data-testid="user-menu"], [data-testid="profile-menu"]');
-    this.logoutButton = page.locator('button:has-text("Logout"), button:has-text("Sign Out"), [data-testid="logout-btn"]');
-    this.loadingSpinner = page.locator('[data-testid="loading"], .spinner, [role="progressbar"]');
-    this.searchInput = page.locator('input[placeholder*="Search"], input[type="search"]');
+    this.userMenu = page.locator(
+      '[data-testid="user-menu"], [data-testid="profile-menu"]',
+    );
+    this.logoutButton = page.locator(
+      'button:has-text("Logout"), button:has-text("Sign Out"), [data-testid="logout-btn"]',
+    );
+    this.loadingSpinner = page.locator(
+      '[data-testid="loading"], .spinner, [role="progressbar"]',
+    );
+    this.searchInput = page.locator(
+      'input[placeholder*="Search"], input[type="search"]',
+    );
   }
 
   /**
    * Navigate to dashboard
    */
   async navigate(): Promise<void> {
-    await this.page.goto('/dashboard', { waitUntil: 'networkidle' });
+    await this.page.goto("/dashboard", { waitUntil: "networkidle" });
     await this.waitForPageLoad();
   }
 
@@ -41,7 +53,7 @@ export class DashboardPage {
    * Wait for dashboard to fully load
    */
   async waitForPageLoad(): Promise<void> {
-    await this.page.waitForLoadState('networkidle', { timeout: 10000 });
+    await this.page.waitForLoadState("networkidle", { timeout: 10000 });
     // Wait for sidebar to be visible
     await expect(this.sidebar).toBeVisible({ timeout: 5000 });
   }
@@ -51,11 +63,11 @@ export class DashboardPage {
    */
   async waitForDataLoad(): Promise<void> {
     try {
-      await this.loadingSpinner.waitFor({ state: 'hidden', timeout: 10000 });
+      await this.loadingSpinner.waitFor({ state: "hidden", timeout: 10000 });
     } catch {
       // Spinner might not exist, which is fine
     }
-    await this.page.waitForLoadState('networkidle', { timeout: 5000 });
+    await this.page.waitForLoadState("networkidle", { timeout: 5000 });
   }
 
   /**
@@ -74,28 +86,28 @@ export class DashboardPage {
    * Navigate to Orders section
    */
   async navigateToOrders(): Promise<void> {
-    await this.navigateToSection('Orders');
+    await this.navigateToSection("Orders");
   }
 
   /**
    * Navigate to Drivers section
    */
   async navigateToDrivers(): Promise<void> {
-    await this.navigateToSection('Drivers');
+    await this.navigateToSection("Drivers");
   }
 
   /**
    * Navigate to Webhooks section
    */
   async navigateToWebhooks(): Promise<void> {
-    await this.navigateToSection('Webhooks');
+    await this.navigateToSection("Webhooks");
   }
 
   /**
    * Navigate to Tracking section
    */
   async navigateToTracking(): Promise<void> {
-    await this.navigateToSection('Tracking');
+    await this.navigateToSection("Tracking");
   }
 
   /**
@@ -116,8 +128,12 @@ export class DashboardPage {
 
     for (let i = 0; i < count; i++) {
       const card = this.statsCards.nth(i);
-      const label = await card.locator('[data-testid="stat-label"], .label').textContent();
-      const value = await card.locator('[data-testid="stat-value"], .value').textContent();
+      const label = await card
+        .locator('[data-testid="stat-label"], .label')
+        .textContent();
+      const value = await card
+        .locator('[data-testid="stat-value"], .value')
+        .textContent();
 
       if (label && value) {
         cards.push({
@@ -135,7 +151,7 @@ export class DashboardPage {
    */
   async search(query: string): Promise<void> {
     await this.searchInput.fill(query);
-    await this.page.keyboard.press('Enter');
+    await this.page.keyboard.press("Enter");
     await this.waitForDataLoad();
   }
 
@@ -145,10 +161,12 @@ export class DashboardPage {
   async openUserMenu(): Promise<void> {
     await this.userMenu.click();
     // Wait for menu to appear
-    await this.page.locator('[data-testid="user-menu-dropdown"], .dropdown-menu').waitFor({
-      state: 'visible',
-      timeout: 5000,
-    });
+    await this.page
+      .locator('[data-testid="user-menu-dropdown"], .dropdown-menu')
+      .waitFor({
+        state: "visible",
+        timeout: 5000,
+      });
   }
 
   /**
@@ -158,7 +176,7 @@ export class DashboardPage {
     await this.openUserMenu();
     await this.logoutButton.click();
     // Wait for redirect to login
-    await this.page.waitForURL('/login', { timeout: 10000 });
+    await this.page.waitForURL("/login", { timeout: 10000 });
   }
 
   /**
@@ -182,7 +200,9 @@ export class DashboardPage {
   async expectStatsCardsLoaded(minCount: number = 1): Promise<void> {
     const count = await this.statsCards.count();
     if (count < minCount) {
-      throw new Error(`Expected at least ${minCount} stats cards, found ${count}`);
+      throw new Error(
+        `Expected at least ${minCount} stats cards, found ${count}`,
+      );
     }
   }
 }

@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Download, ChevronDown, Calendar } from "lucide-react";
 import Link from "next/link";
-import { useApiList } from '@/hooks/use-api';
+import { useApiList } from "@/hooks/use-api";
 import {
   useDeliveryLog,
   type DeliveryStatus,
@@ -95,12 +95,11 @@ export default function DeliveryLogPage() {
   const stats = useMemo(() => {
     const total = entries.length;
     const delivered = entries.filter(
-      (e) => e.status === "DELIVERED" || e.status === "READ"
+      (e) => e.status === "DELIVERED" || e.status === "READ",
     ).length;
     const failed = entries.filter((e) => e.status === "FAILED").length;
     const bounced = entries.filter((e) => e.status === "BOUNCED").length;
-    const rate =
-      total > 0 ? Math.round((delivered / total) * 100) : 0;
+    const rate = total > 0 ? Math.round((delivered / total) * 100) : 0;
 
     return { total, delivered, failed, bounced, rate };
   }, [entries]);
@@ -129,9 +128,7 @@ export default function DeliveryLogPage() {
                   <div className="text-2xl font-bold text-white">
                     {stats.total}
                   </div>
-                  <p className="text-sm text-gray-300 mt-1">
-                    Total Sent
-                  </p>
+                  <p className="text-sm text-gray-300 mt-1">Total Sent</p>
                 </div>
               </CardContent>
             </Card>
@@ -142,9 +139,7 @@ export default function DeliveryLogPage() {
                   <div className="text-2xl font-bold text-emerald-500">
                     {stats.delivered}
                   </div>
-                  <p className="text-sm text-gray-300 mt-1">
-                    Delivered
-                  </p>
+                  <p className="text-sm text-gray-300 mt-1">Delivered</p>
                 </div>
               </CardContent>
             </Card>
@@ -155,9 +150,7 @@ export default function DeliveryLogPage() {
                   <div className="text-2xl font-bold text-red-500">
                     {stats.failed}
                   </div>
-                  <p className="text-sm text-gray-300 mt-1">
-                    Failed
-                  </p>
+                  <p className="text-sm text-gray-300 mt-1">Failed</p>
                 </div>
               </CardContent>
             </Card>
@@ -168,9 +161,7 @@ export default function DeliveryLogPage() {
                   <div className="text-2xl font-bold text-amber-500">
                     {stats.rate}%
                   </div>
-                  <p className="text-sm text-gray-300 mt-1">
-                    Success Rate
-                  </p>
+                  <p className="text-sm text-gray-300 mt-1">Success Rate</p>
                 </div>
               </CardContent>
             </Card>
@@ -204,7 +195,9 @@ export default function DeliveryLogPage() {
                       onChange={(e) =>
                         setFilters({
                           ...filters,
-                          channel: e.target.value ? (e.target.value as NotificationChannel) : undefined,
+                          channel: e.target.value
+                            ? (e.target.value as NotificationChannel)
+                            : undefined,
                         })
                       }
                       className={cn(
@@ -212,7 +205,7 @@ export default function DeliveryLogPage() {
                         "bg-wl-bg-elevated border border-wl-border-default",
                         "text-white",
                         "focus:outline-none focus:border-blue-500",
-                        "transition-colors duration-fast"
+                        "transition-colors duration-fast",
                       )}
                     >
                       <option value="">All Channels</option>
@@ -233,7 +226,9 @@ export default function DeliveryLogPage() {
                       onChange={(e) =>
                         setFilters({
                           ...filters,
-                          status: e.target.value ? (e.target.value as DeliveryStatus) : undefined,
+                          status: e.target.value
+                            ? (e.target.value as DeliveryStatus)
+                            : undefined,
                         })
                       }
                       className={cn(
@@ -241,7 +236,7 @@ export default function DeliveryLogPage() {
                         "bg-wl-bg-elevated border border-wl-border-default",
                         "text-white",
                         "focus:outline-none focus:border-blue-500",
-                        "transition-colors duration-fast"
+                        "transition-colors duration-fast",
                       )}
                     >
                       <option value="">All Statuses</option>
@@ -287,9 +282,7 @@ export default function DeliveryLogPage() {
               {entries.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <Calendar className="w-12 h-12 text-gray-400 mb-3" />
-                  <p className="text-gray-300">
-                    No delivery logs found
-                  </p>
+                  <p className="text-gray-300">No delivery logs found</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -323,7 +316,7 @@ export default function DeliveryLogPage() {
                             key={entry.id}
                             className={cn(
                               "border-b border-wl-border-default hover:bg-wl-bg-elevated transition-colors cursor-pointer",
-                              isExpanded && "bg-wl-bg-surface"
+                              isExpanded && "bg-wl-bg-surface",
                             )}
                           >
                             <td className="py-4 px-6 text-white font-medium">
@@ -346,15 +339,13 @@ export default function DeliveryLogPage() {
                             <td
                               className="py-4 px-6 text-center"
                               onClick={() =>
-                                setExpandedId(
-                                  isExpanded ? null : entry.id
-                                )
+                                setExpandedId(isExpanded ? null : entry.id)
                               }
                             >
                               <ChevronDown
                                 className={cn(
                                   "w-4 h-4 text-gray-400 transition-transform inline",
-                                  isExpanded && "rotate-180"
+                                  isExpanded && "rotate-180",
                                 )}
                               />
                             </td>
@@ -401,9 +392,7 @@ export default function DeliveryLogPage() {
                           Delivered At
                         </p>
                         <p className="text-emerald-500">
-                          {new Date(
-                            entry.deliveredAt
-                          ).toLocaleString()}
+                          {new Date(entry.deliveredAt).toLocaleString()}
                         </p>
                       </div>
                     )}
@@ -423,9 +412,7 @@ export default function DeliveryLogPage() {
                       <p className="text-gray-400 uppercase text-xs font-semibold tracking-wide mb-1">
                         Retries
                       </p>
-                      <p className="text-gray-300">
-                        {entry.retryCount}
-                      </p>
+                      <p className="text-gray-300">{entry.retryCount}</p>
                     </div>
 
                     {entry.error && (
@@ -463,7 +450,7 @@ export default function DeliveryLogPage() {
 // ─── HELPERS ────────────────────────────────────────────────────────
 
 function getStatusVariant(
-  status: DeliveryStatus
+  status: DeliveryStatus,
 ): "default" | "success" | "warning" | "danger" | "info" {
   switch (status) {
     case "SENT":

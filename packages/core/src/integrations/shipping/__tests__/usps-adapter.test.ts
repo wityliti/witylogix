@@ -2,7 +2,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { USPSAdapter } from "../usps-adapter.js";
 import type { ShipmentRequest } from "../types.js";
 
-const makeRequest = (overrides?: Partial<ShipmentRequest>): ShipmentRequest => ({
+const makeRequest = (
+  overrides?: Partial<ShipmentRequest>,
+): ShipmentRequest => ({
   shipmentId: "test-ship-1",
   from: {
     name: "Acme Warehouse",
@@ -34,16 +36,22 @@ describe("USPSAdapter", () => {
 
   describe("validateConfig", () => {
     it("throws if consumerKey missing", async () => {
-      const adapter = new USPSAdapter({ consumerKey: "", consumerSecret: "s" } as never);
+      const adapter = new USPSAdapter({
+        consumerKey: "",
+        consumerSecret: "s",
+      } as never);
       await expect(adapter.validateConfig()).rejects.toThrow(
-        "USPS adapter requires consumerKey and consumerSecret"
+        "USPS adapter requires consumerKey and consumerSecret",
       );
     });
 
     it("throws if consumerSecret missing", async () => {
-      const adapter = new USPSAdapter({ consumerKey: "k", consumerSecret: "" } as never);
+      const adapter = new USPSAdapter({
+        consumerKey: "k",
+        consumerSecret: "",
+      } as never);
       await expect(adapter.validateConfig()).rejects.toThrow(
-        "USPS adapter requires consumerKey and consumerSecret"
+        "USPS adapter requires consumerKey and consumerSecret",
       );
     });
   });
@@ -108,7 +116,9 @@ describe("USPSAdapter", () => {
       (adapter as never).accessToken = "tok";
       (adapter as never).tokenExpiresAt = Date.now() + 60_000;
 
-      vi.spyOn(adapter as never, "request").mockResolvedValue({ rateOptions: [] });
+      vi.spyOn(adapter as never, "request").mockResolvedValue({
+        rateOptions: [],
+      });
 
       const rates = await adapter.getRates(makeRequest());
       expect(rates).toHaveLength(0);
@@ -142,7 +152,10 @@ describe("USPSAdapter", () => {
         },
       });
 
-      const label = await adapter.createShipment(makeRequest(), "PRIORITY_MAIL");
+      const label = await adapter.createShipment(
+        makeRequest(),
+        "PRIORITY_MAIL",
+      );
       expect(label.trackingNumber).toBe("9400111899223282607816");
       expect(label.carrier).toBe("USPS");
       expect(label.service).toBe("PRIORITY");
@@ -188,7 +201,9 @@ describe("USPSAdapter", () => {
       expect(result.carrier).toBe("USPS");
       expect(result.status).toBe("DELIVERED");
       expect(result.events).toHaveLength(2);
-      expect(result.events.some((e) => e.status === "OUT_FOR_DELIVERY")).toBe(true);
+      expect(result.events.some((e) => e.status === "OUT_FOR_DELIVERY")).toBe(
+        true,
+      );
     });
   });
 
@@ -228,7 +243,9 @@ describe("USPSAdapter", () => {
       (adapter as never).accessToken = "tok";
       (adapter as never).tokenExpiresAt = Date.now() + 60_000;
 
-      vi.spyOn(adapter as never, "request").mockRejectedValue(new Error("Not found"));
+      vi.spyOn(adapter as never, "request").mockRejectedValue(
+        new Error("Not found"),
+      );
 
       const result = await adapter.validateAddress({
         name: "X",

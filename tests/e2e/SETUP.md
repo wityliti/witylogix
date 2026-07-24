@@ -82,6 +82,7 @@ Total: 41 Critical Flow Tests
 ## Test Categories
 
 ### Authentication Flow (auth.spec.ts) - 9 Tests
+
 1. Login with valid credentials
 2. Login with invalid email
 3. Login with invalid credentials
@@ -93,6 +94,7 @@ Total: 41 Critical Flow Tests
 9. Remember me functionality
 
 ### Order Lifecycle (order-lifecycle.spec.ts) - 7 Tests
+
 1. Create order with all fields
 2. Create order with minimal fields
 3. Edit order details
@@ -103,6 +105,7 @@ Total: 41 Critical Flow Tests
 8. Cancel order
 
 ### Driver Management (driver-management.spec.ts) - 9 Tests
+
 1. View driver list with pagination
 2. Filter drivers by availability
 3. Filter drivers by unavailable status
@@ -114,6 +117,7 @@ Total: 41 Critical Flow Tests
 9. Display performance metrics
 
 ### Order Tracking (tracking.spec.ts) - 7 Tests
+
 1. Navigate to tracking page
 2. Search shipment by tracking ID
 3. Display full tracking timeline
@@ -125,6 +129,7 @@ Total: 41 Critical Flow Tests
 9. Display proof of delivery
 
 ### Webhook Management (webhooks.spec.ts) - 9 Tests
+
 1. Navigate to webhook management page
 2. Display webhook list
 3. Create webhook endpoint
@@ -138,6 +143,7 @@ Total: 41 Critical Flow Tests
 ## Configuration Details
 
 ### playwright.config.ts
+
 - **Base URL:** `http://localhost:3002` (Dashboard)
 - **API URL:** `http://localhost:3001`
 - **Projects:** Chromium, Firefox, WebKit
@@ -150,6 +156,7 @@ Total: 41 Critical Flow Tests
 ### Page Object Models
 
 #### LoginPage
+
 ```typescript
 navigate()
 fillCredentials(email, password)
@@ -162,40 +169,43 @@ clickForgotPassword()
 ```
 
 #### DashboardPage
+
 ```typescript
-navigate()
-waitForPageLoad()
-waitForDataLoad()
-navigateToSection(sectionName)
-navigateToOrders()
-navigateToDrivers()
-navigateToWebhooks()
-navigateToTracking()
-getSidebarLinks()
-getStatsCards()
-search(query)
-logout()
+navigate();
+waitForPageLoad();
+waitForDataLoad();
+navigateToSection(sectionName);
+navigateToOrders();
+navigateToDrivers();
+navigateToWebhooks();
+navigateToTracking();
+getSidebarLinks();
+getStatsCards();
+search(query);
+logout();
 ```
 
 #### OrdersPage
+
 ```typescript
-navigateToList()
-clickCreateOrder()
-fillOrderForm(data)
-submitOrderForm()
-createOrder(data)
-getOrderByTrackingId(trackingId)
-openOrderDetails(trackingId)
-editOrder(trackingId, updates)
-deleteOrder(trackingId)
-filterByStatus(status)
-searchByTrackingId(trackingId)
-getOrderRow(index)
-getOrderCount()
-getOrderDetails(index)
+navigateToList();
+clickCreateOrder();
+fillOrderForm(data);
+submitOrderForm();
+createOrder(data);
+getOrderByTrackingId(trackingId);
+openOrderDetails(trackingId);
+editOrder(trackingId, updates);
+deleteOrder(trackingId);
+filterByStatus(status);
+searchByTrackingId(trackingId);
+getOrderRow(index);
+getOrderCount();
+getOrderDetails(index);
 ```
 
 #### DriversPage
+
 ```typescript
 navigateToList()
 getDriverByName(name)
@@ -212,12 +222,14 @@ getDriverCount()
 ### Fixtures & Utilities
 
 #### Authentication Fixture (auth.fixture.ts)
+
 - `authenticatedPage` - Pre-authenticated admin page
 - `adminPage` - Admin-role page
 - `dispatcherPage` - Dispatcher-role page
 - `driverPage` - Driver-role page
 
 Test users:
+
 ```typescript
 {
   admin: { email: 'admin@test.com', password: 'admin123', role: 'admin' },
@@ -227,6 +239,7 @@ Test users:
 ```
 
 #### Helper Utilities (helpers.ts)
+
 - `generateTrackingId()` - Create unique tracking IDs
 - `generateTestEmail()` - Create unique emails
 - `generatePhoneNumber()` - Random US phone numbers
@@ -259,22 +272,27 @@ npx playwright test --workers=1
 ## Debugging Tips
 
 ### View HTML Report
+
 ```bash
 npx playwright show-report tests/e2e/results/html
 ```
 
 ### Screenshot Failures
+
 All failure screenshots saved to `tests/e2e/results/`
 
 ### Video Recordings
+
 Videos automatically recorded on failure
 
 ### Trace Viewer
+
 ```bash
 npx playwright show-trace tests/e2e/results/trace.zip
 ```
 
 ### Debug Mode
+
 ```bash
 pnpm test:e2e:debug
 
@@ -314,24 +332,28 @@ jobs:
 ## Troubleshooting
 
 ### Tests Timeout
+
 ```bash
 # Increase timeout in playwright.config.ts
 timeout: 60000 // 60 seconds
 ```
 
 ### Port Already in Use
+
 ```bash
 lsof -ti:3002 | xargs kill -9  # Kill port 3002
 lsof -ti:3001 | xargs kill -9  # Kill port 3001
 ```
 
 ### Auth Fails
+
 1. Check credentials in `.env.test`
 2. Clear `tests/e2e/auth.json`
 3. Verify API is running and responding
 4. Check test user exists in database
 
 ### Flaky Tests
+
 - Add explicit waits: `await page.waitForLoadState('networkidle')`
 - Verify element visibility before interaction
 - Use `expect()` with timeout

@@ -68,30 +68,30 @@ npx agentdb@latest plugin-info my-agent
 ## Quick Start with API
 
 ```typescript
-import { createAgentDBAdapter } from 'agentic-flow/reasoningbank';
+import { createAgentDBAdapter } from "agentic-flow/reasoningbank";
 
 // Initialize with learning enabled
 const adapter = await createAgentDBAdapter({
-  dbPath: '.agentdb/learning.db',
-  enableLearning: true,       // Enable learning plugins
+  dbPath: ".agentdb/learning.db",
+  enableLearning: true, // Enable learning plugins
   enableReasoning: true,
   cacheSize: 1000,
 });
 
 // Store training experience
 await adapter.insertPattern({
-  id: '',
-  type: 'experience',
-  domain: 'game-playing',
+  id: "",
+  type: "experience",
+  domain: "game-playing",
   pattern_data: JSON.stringify({
-    embedding: await computeEmbedding('state-action-reward'),
+    embedding: await computeEmbedding("state-action-reward"),
     pattern: {
       state: [0.1, 0.2, 0.3],
       action: 2,
       reward: 1.0,
       next_state: [0.15, 0.25, 0.35],
-      done: false
-    }
+      done: false,
+    },
   }),
   confidence: 0.9,
   usage_count: 1,
@@ -106,8 +106,8 @@ const metrics = await adapter.train({
   batchSize: 32,
 });
 
-console.log('Training Loss:', metrics.loss);
-console.log('Duration:', metrics.duration, 'ms');
+console.log("Training Loss:", metrics.loss);
+console.log("Duration:", metrics.duration, "ms");
 ```
 
 ---
@@ -125,12 +125,14 @@ npx agentdb@latest create-plugin -t decision-transformer -n dt-agent
 ```
 
 **Use Cases**:
+
 - Learn from historical data
 - Imitation learning from expert demonstrations
 - Safe learning without environment interaction
 - Sequence modeling tasks
 
 **Configuration**:
+
 ```json
 {
   "algorithm": "decision-transformer",
@@ -153,12 +155,14 @@ npx agentdb@latest create-plugin -t q-learning -n q-agent
 ```
 
 **Use Cases**:
+
 - Grid worlds, board games
 - Navigation tasks
 - Resource allocation
 - Discrete decision-making
 
 **Configuration**:
+
 ```json
 {
   "algorithm": "q-learning",
@@ -180,11 +184,13 @@ npx agentdb@latest create-plugin -t sarsa -n sarsa-agent
 ```
 
 **Use Cases**:
+
 - Safety-critical applications
 - Risk-sensitive decision-making
 - Online learning with exploration
 
 **Configuration**:
+
 ```json
 {
   "algorithm": "sarsa",
@@ -205,11 +211,13 @@ npx agentdb@latest create-plugin -t actor-critic -n ac-agent
 ```
 
 **Use Cases**:
+
 - Continuous control (robotics, simulations)
 - Complex action spaces
 - Multi-agent coordination
 
 **Configuration**:
+
 ```json
 {
   "algorithm": "actor-critic",
@@ -227,6 +235,7 @@ npx agentdb@latest create-plugin -t actor-critic -n ac-agent
 **Strengths**: Minimizes labeling cost, focuses on uncertain samples
 
 **Use Cases**:
+
 - Human feedback incorporation
 - Label-efficient training
 - Uncertainty sampling
@@ -239,6 +248,7 @@ npx agentdb@latest create-plugin -t actor-critic -n ac-agent
 **Strengths**: Improves model robustness, adversarial defense
 
 **Use Cases**:
+
 - Security applications
 - Robust decision-making
 - Adversarial defense
@@ -251,6 +261,7 @@ npx agentdb@latest create-plugin -t actor-critic -n ac-agent
 **Strengths**: Stable learning, faster convergence on hard tasks
 
 **Use Cases**:
+
 - Complex multi-stage tasks
 - Hard exploration problems
 - Skill composition
@@ -263,6 +274,7 @@ npx agentdb@latest create-plugin -t actor-critic -n ac-agent
 **Strengths**: Privacy-preserving, scalable
 
 **Use Cases**:
+
 - Multi-agent systems
 - Privacy-sensitive data
 - Distributed training
@@ -275,6 +287,7 @@ npx agentdb@latest create-plugin -t actor-critic -n ac-agent
 **Strengths**: Faster learning on new tasks, better generalization
 
 **Use Cases**:
+
 - Task families
 - Transfer learning
 - Domain adaptation
@@ -293,9 +306,9 @@ for (let i = 0; i < numEpisodes; i++) {
 
   for (const step of episode.steps) {
     await adapter.insertPattern({
-      id: '',
-      type: 'experience',
-      domain: 'task-domain',
+      id: "",
+      type: "experience",
+      domain: "task-domain",
       pattern_data: JSON.stringify({
         embedding: await computeEmbedding(JSON.stringify(step)),
         pattern: {
@@ -303,8 +316,8 @@ for (let i = 0; i < numEpisodes; i++) {
           action: step.action,
           reward: step.reward,
           next_state: step.next_state,
-          done: step.done
-        }
+          done: step.done,
+        },
       }),
       confidence: step.reward > 0 ? 0.9 : 0.5,
       usage_count: 1,
@@ -327,7 +340,7 @@ const trainingMetrics = await adapter.train({
   validationSplit: 0.2,
 });
 
-console.log('Training Metrics:', trainingMetrics);
+console.log("Training Metrics:", trainingMetrics);
 // {
 //   loss: 0.023,
 //   valLoss: 0.028,
@@ -342,7 +355,7 @@ console.log('Training Metrics:', trainingMetrics);
 // Retrieve similar successful experiences
 const testQuery = await computeEmbedding(JSON.stringify(testState));
 const result = await adapter.retrieveWithReasoning(testQuery, {
-  domain: 'task-domain',
+  domain: "task-domain",
   k: 10,
   synthesizeContext: true,
 });
@@ -351,8 +364,8 @@ const result = await adapter.retrieveWithReasoning(testQuery, {
 const suggestedAction = result.memories[0].pattern.action;
 const confidence = result.memories[0].similarity;
 
-console.log('Suggested Action:', suggestedAction);
-console.log('Confidence:', confidence);
+console.log("Suggested Action:", suggestedAction);
+console.log("Confidence:", confidence);
 ```
 
 ---
@@ -382,15 +395,15 @@ await adapter.train({
 // Store experiences with priority (TD error)
 await adapter.insertPattern({
   // ... standard fields
-  confidence: tdError,  // Use TD error as confidence/priority
+  confidence: tdError, // Use TD error as confidence/priority
   // ...
 });
 
 // Retrieve high-priority experiences
 const highPriority = await adapter.retrieveWithReasoning(queryEmbedding, {
-  domain: 'task-domain',
+  domain: "task-domain",
   k: 32,
-  minConfidence: 0.7,  // Only high TD-error experiences
+  minConfidence: 0.7, // Only high TD-error experiences
 });
 ```
 
@@ -449,7 +462,7 @@ setInterval(async () => {
       batchSize: 32,
     });
   }
-}, 60000);  // Every minute
+}, 60000); // Every minute
 ```
 
 ---
@@ -464,11 +477,11 @@ await adapter.train({ epochs: 50, batchSize: 32 });
 
 // Use reasoning agents for inference
 const result = await adapter.retrieveWithReasoning(queryEmbedding, {
-  domain: 'decision-making',
+  domain: "decision-making",
   k: 10,
-  useMMR: true,              // Diverse experiences
-  synthesizeContext: true,    // Rich context
-  optimizeMemory: true,       // Consolidate patterns
+  useMMR: true, // Diverse experiences
+  synthesizeContext: true, // Rich context
+  optimizeMemory: true, // Consolidate patterns
 });
 
 // Make decision based on learned experiences + reasoning
@@ -499,31 +512,34 @@ npx agentdb@latest list-templates
 ## Troubleshooting
 
 ### Issue: Training not converging
+
 ```typescript
 // Reduce learning rate
 await adapter.train({
   epochs: 100,
   batchSize: 32,
-  learningRate: 0.0001,  // Lower learning rate
+  learningRate: 0.0001, // Lower learning rate
 });
 ```
 
 ### Issue: Overfitting
+
 ```typescript
 // Use validation split
 await adapter.train({
   epochs: 50,
   batchSize: 64,
-  validationSplit: 0.2,  // 20% validation
+  validationSplit: 0.2, // 20% validation
 });
 
 // Enable memory optimization
 await adapter.retrieveWithReasoning(queryEmbedding, {
-  optimizeMemory: true,  // Consolidate, reduce overfitting
+  optimizeMemory: true, // Consolidate, reduce overfitting
 });
 ```
 
 ### Issue: Slow training
+
 ```bash
 # Enable quantization for faster inference
 # Use binary quantization (32x faster)

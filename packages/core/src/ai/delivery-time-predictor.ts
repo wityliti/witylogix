@@ -27,9 +27,26 @@
 
 // ─── TYPES ─────────────────────────────────────────────────────────────────
 
-export type ServiceLevel = 'ground' | 'express' | 'overnight' | 'economy' | 'international';
-export type WeatherCondition = 'clear' | 'rain' | 'snow' | 'fog' | 'storm' | 'extreme';
-export type CarrierCode = 'ups' | 'fedex' | 'dhl' | 'usps' | 'canada_post' | 'generic';
+export type ServiceLevel =
+  | "ground"
+  | "express"
+  | "overnight"
+  | "economy"
+  | "international";
+export type WeatherCondition =
+  | "clear"
+  | "rain"
+  | "snow"
+  | "fog"
+  | "storm"
+  | "extreme";
+export type CarrierCode =
+  | "ups"
+  | "fedex"
+  | "dhl"
+  | "usps"
+  | "canada_post"
+  | "generic";
 
 export interface Coordinate {
   latitude: number;
@@ -56,7 +73,7 @@ export interface CarrierPerformance {
  */
 export interface WeatherImpact {
   condition: WeatherCondition;
-  location: 'origin' | 'destination' | 'route';
+  location: "origin" | "destination" | "route";
   delayDaysMin: number; // minimum delay in days
   delayDaysMax: number; // maximum delay in days
   affectedCarriers: CarrierCode[]; // empty = all carriers affected
@@ -73,7 +90,7 @@ export interface PredictionFactors {
   destinationZip: string;
   shipDate: Date;
   weight: number; // kg
-  weightCategory: 'light' | 'medium' | 'heavy' | 'oversize'; // light <5kg, medium <50kg, heavy <500kg, oversize >=500kg
+  weightCategory: "light" | "medium" | "heavy" | "oversize"; // light <5kg, medium <50kg, heavy <500kg, oversize >=500kg
   weatherOrigin: WeatherCondition;
   weatherDestination: WeatherCondition;
   weatherRoute: WeatherCondition;
@@ -136,26 +153,62 @@ const BASE_ESTIMATES: Record<ServiceLevel, number> = {
 };
 
 const US_FEDERAL_HOLIDAYS_2026 = [
-  new Date('2026-01-01'), // New Year
-  new Date('2026-01-19'), // MLK Day
-  new Date('2026-02-16'), // Presidents Day
-  new Date('2026-03-29'), // Easter (approx)
-  new Date('2026-05-25'), // Memorial Day
-  new Date('2026-07-04'), // Independence Day
-  new Date('2026-09-07'), // Labor Day
-  new Date('2026-10-12'), // Columbus Day
-  new Date('2026-11-11'), // Veterans Day
-  new Date('2026-11-26'), // Thanksgiving
-  new Date('2026-12-25'), // Christmas
+  new Date("2026-01-01"), // New Year
+  new Date("2026-01-19"), // MLK Day
+  new Date("2026-02-16"), // Presidents Day
+  new Date("2026-03-29"), // Easter (approx)
+  new Date("2026-05-25"), // Memorial Day
+  new Date("2026-07-04"), // Independence Day
+  new Date("2026-09-07"), // Labor Day
+  new Date("2026-10-12"), // Columbus Day
+  new Date("2026-11-11"), // Veterans Day
+  new Date("2026-11-26"), // Thanksgiving
+  new Date("2026-12-25"), // Christmas
 ];
 
 const WEATHER_IMPACTS: WeatherImpact[] = [
-  { condition: 'clear', location: 'route', delayDaysMin: 0, delayDaysMax: 0, affectedCarriers: [] },
-  { condition: 'rain', location: 'route', delayDaysMin: 0.5, delayDaysMax: 1.5, affectedCarriers: [] },
-  { condition: 'snow', location: 'route', delayDaysMin: 1, delayDaysMax: 2.5, affectedCarriers: [] },
-  { condition: 'fog', location: 'route', delayDaysMin: 0.5, delayDaysMax: 1, affectedCarriers: [] },
-  { condition: 'storm', location: 'route', delayDaysMin: 1.5, delayDaysMax: 3, affectedCarriers: [] },
-  { condition: 'extreme', location: 'route', delayDaysMin: 2, delayDaysMax: 4, affectedCarriers: [] },
+  {
+    condition: "clear",
+    location: "route",
+    delayDaysMin: 0,
+    delayDaysMax: 0,
+    affectedCarriers: [],
+  },
+  {
+    condition: "rain",
+    location: "route",
+    delayDaysMin: 0.5,
+    delayDaysMax: 1.5,
+    affectedCarriers: [],
+  },
+  {
+    condition: "snow",
+    location: "route",
+    delayDaysMin: 1,
+    delayDaysMax: 2.5,
+    affectedCarriers: [],
+  },
+  {
+    condition: "fog",
+    location: "route",
+    delayDaysMin: 0.5,
+    delayDaysMax: 1,
+    affectedCarriers: [],
+  },
+  {
+    condition: "storm",
+    location: "route",
+    delayDaysMin: 1.5,
+    delayDaysMax: 3,
+    affectedCarriers: [],
+  },
+  {
+    condition: "extreme",
+    location: "route",
+    delayDaysMin: 2,
+    delayDaysMax: 4,
+    affectedCarriers: [],
+  },
 ];
 
 const MIN_SAMPLES_FOR_CARRIER_FACTOR = 1; // require at least N shipments to use carrier performance data
@@ -193,9 +246,13 @@ export class CarrierPerformanceTracker {
     } else {
       // Update running average
       const prevTotal = performance.actualAverageDays * performance.sampleCount;
-      performance.actualAverageDays = (prevTotal + outcome.actualDays) / (performance.sampleCount + 1);
+      performance.actualAverageDays =
+        (prevTotal + outcome.actualDays) / (performance.sampleCount + 1);
       performance.sampleCount += 1;
-      performance.onTimeRate = (performance.onTimeRate * (performance.sampleCount - 1) + (outcome.onTime ? 1 : 0)) / performance.sampleCount;
+      performance.onTimeRate =
+        (performance.onTimeRate * (performance.sampleCount - 1) +
+          (outcome.onTime ? 1 : 0)) /
+        performance.sampleCount;
       performance.minDays = Math.min(performance.minDays, outcome.actualDays);
       performance.maxDays = Math.max(performance.maxDays, outcome.actualDays);
       performance.lastUpdated = new Date();
@@ -207,12 +264,19 @@ export class CarrierPerformanceTracker {
   /**
    * Get performance factor (actual/estimated) for a carrier on a lane
    */
-  public getPerformanceFactor(carrier: CarrierCode, originZip: string, destinationZip: string): number {
+  public getPerformanceFactor(
+    carrier: CarrierCode,
+    originZip: string,
+    destinationZip: string,
+  ): number {
     const lane = this.getLaneKey(originZip, destinationZip);
     const key = `${carrier}|${lane}`;
     const performance = this.performanceMap.get(key);
 
-    if (!performance || performance.sampleCount < MIN_SAMPLES_FOR_CARRIER_FACTOR) {
+    if (
+      !performance ||
+      performance.sampleCount < MIN_SAMPLES_FOR_CARRIER_FACTOR
+    ) {
       return 1.0; // use default if insufficient data
     }
 
@@ -258,22 +322,22 @@ export class WeatherImpactEstimator {
   public calculateDelay(
     originWeather: WeatherCondition,
     destinationWeather: WeatherCondition,
-    routeWeather: WeatherCondition
+    routeWeather: WeatherCondition,
   ): number {
     // Average the impacts at different points
     const delays: number[] = [];
 
-    const originImpact = this.getImpact(originWeather, 'origin');
+    const originImpact = this.getImpact(originWeather, "origin");
     if (originImpact) {
       delays.push((originImpact.delayDaysMin + originImpact.delayDaysMax) / 2);
     }
 
-    const destImpact = this.getImpact(destinationWeather, 'destination');
+    const destImpact = this.getImpact(destinationWeather, "destination");
     if (destImpact) {
       delays.push((destImpact.delayDaysMin + destImpact.delayDaysMax) / 2);
     }
 
-    const routeImpact = this.getImpact(routeWeather, 'route');
+    const routeImpact = this.getImpact(routeWeather, "route");
     if (routeImpact) {
       delays.push((routeImpact.delayDaysMin + routeImpact.delayDaysMax) / 2);
     }
@@ -285,12 +349,23 @@ export class WeatherImpactEstimator {
   /**
    * Get weather impact factor (multiplier)
    */
-  public getWeatherFactor(originWeather: WeatherCondition, destinationWeather: WeatherCondition, routeWeather: WeatherCondition): number {
-    const delay = this.calculateDelay(originWeather, destinationWeather, routeWeather);
+  public getWeatherFactor(
+    originWeather: WeatherCondition,
+    destinationWeather: WeatherCondition,
+    routeWeather: WeatherCondition,
+  ): number {
+    const delay = this.calculateDelay(
+      originWeather,
+      destinationWeather,
+      routeWeather,
+    );
     return delay === 0 ? 1.0 : 1.0 + delay / 5; // rough multiplier (5 days = 2x slower)
   }
 
-  private getImpact(condition: WeatherCondition, location: 'origin' | 'destination' | 'route'): WeatherImpact | undefined {
+  private getImpact(
+    condition: WeatherCondition,
+    location: "origin" | "destination" | "route",
+  ): WeatherImpact | undefined {
     const key = `${condition}|${location}`;
     return this.impacts.get(key);
   }
@@ -313,8 +388,8 @@ export class HolidayCalendar {
    * Check if a date is a holiday
    */
   public isHoliday(date: Date): boolean {
-    const dateStr = date.toISOString().split('T')[0];
-    return this.holidays.some((h) => h.toISOString().split('T')[0] === dateStr);
+    const dateStr = date.toISOString().split("T")[0];
+    return this.holidays.some((h) => h.toISOString().split("T")[0] === dateStr);
   }
 
   /**
@@ -322,8 +397,8 @@ export class HolidayCalendar {
    */
   public isBlackoutDate(carrier: CarrierCode, date: Date): boolean {
     const blackouts = this.blackoutDates.get(carrier) || [];
-    const dateStr = date.toISOString().split('T')[0];
-    return blackouts.some((b) => b.toISOString().split('T')[0] === dateStr);
+    const dateStr = date.toISOString().split("T")[0];
+    return blackouts.some((b) => b.toISOString().split("T")[0] === dateStr);
   }
 
   /**
@@ -339,7 +414,11 @@ export class HolidayCalendar {
   /**
    * Calculate business days adding delay for holidays
    */
-  public calculateDeliveryWithHolidays(shipDate: Date, estimatedDays: number, carrier: CarrierCode): { deliveryDate: Date; businessDays: number } {
+  public calculateDeliveryWithHolidays(
+    shipDate: Date,
+    estimatedDays: number,
+    carrier: CarrierCode,
+  ): { deliveryDate: Date; businessDays: number } {
     let currentDate = new Date(shipDate);
     let daysAdded = 0;
 
@@ -347,7 +426,12 @@ export class HolidayCalendar {
       currentDate.setDate(currentDate.getDate() + 1);
       // Skip weekends and holidays
       const dayOfWeek = currentDate.getDay();
-      if (dayOfWeek !== 0 && dayOfWeek !== 6 && !this.isHoliday(currentDate) && !this.isBlackoutDate(carrier, currentDate)) {
+      if (
+        dayOfWeek !== 0 &&
+        dayOfWeek !== 6 &&
+        !this.isHoliday(currentDate) &&
+        !this.isBlackoutDate(carrier, currentDate)
+      ) {
         daysAdded += 1;
       }
     }
@@ -381,34 +465,52 @@ export class DeliveryTimePrediction {
 
     // 1. Base estimate from service level
     let baseEstimate = BASE_ESTIMATES[factors.serviceLevel];
-    reasoning.push(`Base estimate for ${factors.serviceLevel} service: ${baseEstimate} days`);
+    reasoning.push(
+      `Base estimate for ${factors.serviceLevel} service: ${baseEstimate} days`,
+    );
 
     // 2. Carrier performance factor
-    const carrierFactor = this.performanceTracker.getPerformanceFactor(factors.carrier, factors.originZip, factors.destinationZip);
+    const carrierFactor = this.performanceTracker.getPerformanceFactor(
+      factors.carrier,
+      factors.originZip,
+      factors.destinationZip,
+    );
     let estimate = baseEstimate * carrierFactor;
     if (carrierFactor !== 1.0) {
-      reasoning.push(`Carrier ${factors.carrier} has ${(carrierFactor * 100).toFixed(0)}% of typical performance`);
+      reasoning.push(
+        `Carrier ${factors.carrier} has ${(carrierFactor * 100).toFixed(0)}% of typical performance`,
+      );
     }
 
     // 3. Distance factor (very long distance may take longer)
     const distanceFactor = this.calculateDistanceFactor(factors.distance);
     estimate *= distanceFactor;
     if (distanceFactor !== 1.0) {
-      reasoning.push(`Distance adjustment: ${factors.distance}km affects delivery by ${((distanceFactor - 1) * 100).toFixed(0)}%`);
+      reasoning.push(
+        `Distance adjustment: ${factors.distance}km affects delivery by ${((distanceFactor - 1) * 100).toFixed(0)}%`,
+      );
     }
 
     // 4. Day of week factor (Friday/Saturday shipments may add delay)
     const dayOfWeekFactor = this.calculateDayOfWeekFactor(factors.dayOfWeek);
     estimate *= dayOfWeekFactor;
     if (dayOfWeekFactor > 1.0) {
-      reasoning.push(`Shipping on day ${factors.dayOfWeek} (0=Sun) adds ${((dayOfWeekFactor - 1) * 100).toFixed(0)}% delay`);
+      reasoning.push(
+        `Shipping on day ${factors.dayOfWeek} (0=Sun) adds ${((dayOfWeekFactor - 1) * 100).toFixed(0)}% delay`,
+      );
     }
 
     // 5. Weather factor
-    const weatherFactor = this.weatherEstimator.getWeatherFactor(factors.weatherOrigin, factors.weatherDestination, factors.weatherRoute);
+    const weatherFactor = this.weatherEstimator.getWeatherFactor(
+      factors.weatherOrigin,
+      factors.weatherDestination,
+      factors.weatherRoute,
+    );
     estimate *= weatherFactor;
     if (weatherFactor > 1.0) {
-      reasoning.push(`Weather conditions (origin=${factors.weatherOrigin}, dest=${factors.weatherDestination}) add ${((weatherFactor - 1) * 100).toFixed(0)}% delay`);
+      reasoning.push(
+        `Weather conditions (origin=${factors.weatherOrigin}, dest=${factors.weatherDestination}) add ${((weatherFactor - 1) * 100).toFixed(0)}% delay`,
+      );
     }
 
     // 6. Holiday factor
@@ -416,7 +518,7 @@ export class DeliveryTimePrediction {
     if (factors.isHoliday) {
       holidayFactor = 1.5;
       estimate *= holidayFactor;
-      reasoning.push('Holiday period adds 50% delay');
+      reasoning.push("Holiday period adds 50% delay");
     }
     if (factors.isBlackoutDate) {
       estimate += 1; // add full day for blackout dates
@@ -424,10 +526,15 @@ export class DeliveryTimePrediction {
     }
 
     // 7. Weight factor (heavy packages may have additional handling)
-    const weightFactor = this.calculateWeightFactor(factors.weight, factors.weightCategory);
+    const weightFactor = this.calculateWeightFactor(
+      factors.weight,
+      factors.weightCategory,
+    );
     estimate *= weightFactor;
     if (weightFactor > 1.0) {
-      reasoning.push(`Package weight (${factors.weight}kg, ${factors.weightCategory}) adds ${((weightFactor - 1) * 100).toFixed(0)}% delay`);
+      reasoning.push(
+        `Package weight (${factors.weight}kg, ${factors.weightCategory}) adds ${((weightFactor - 1) * 100).toFixed(0)}% delay`,
+      );
     }
 
     // Round to reasonable precision
@@ -438,7 +545,11 @@ export class DeliveryTimePrediction {
     const interval = this.getConfidenceInterval(estimate, confidence);
 
     // 9. Calculate actual delivery date
-    const { deliveryDate } = this.holidayCalendar.calculateDeliveryWithHolidays(factors.shipDate, estimate, factors.carrier);
+    const { deliveryDate } = this.holidayCalendar.calculateDeliveryWithHolidays(
+      factors.shipDate,
+      estimate,
+      factors.carrier,
+    );
 
     return {
       estimatedDays: estimate,
@@ -497,13 +608,13 @@ export class DeliveryTimePrediction {
    */
   private calculateWeightFactor(weight: number, category: string): number {
     switch (category) {
-      case 'light':
+      case "light":
         return 1.0;
-      case 'medium':
+      case "medium":
         return 1.02;
-      case 'heavy':
+      case "heavy":
         return 1.05;
-      case 'oversize':
+      case "oversize":
         return 1.1;
       default:
         return 1.0;
@@ -515,12 +626,17 @@ export class DeliveryTimePrediction {
    */
   private calculateConfidence(factors: PredictionFactors): number {
     const performances = this.performanceTracker.getPerformanceData();
-    const matchingPerformances = performances.filter((p) => p.carrier === factors.carrier);
+    const matchingPerformances = performances.filter(
+      (p) => p.carrier === factors.carrier,
+    );
 
     if (matchingPerformances.length === 0) return 65; // low confidence without carrier data
 
     // Use total sample count across all lanes for this carrier
-    const totalSamples = matchingPerformances.reduce((sum, p) => sum + p.sampleCount, 0);
+    const totalSamples = matchingPerformances.reduce(
+      (sum, p) => sum + p.sampleCount,
+      0,
+    );
 
     if (totalSamples < 3) return 75; // medium confidence
     if (totalSamples < 15) return 85; // good confidence
@@ -530,9 +646,13 @@ export class DeliveryTimePrediction {
   /**
    * Get confidence interval (optimistic, realistic, pessimistic)
    */
-  private getConfidenceInterval(estimate: number, confidence: number): DeliveryPrediction['confidenceInterval'] {
+  private getConfidenceInterval(
+    estimate: number,
+    confidence: number,
+  ): DeliveryPrediction["confidenceInterval"] {
     // Lower confidence = wider interval
-    const margin = estimate * CONFIDENCE_INTERVAL_PERCENT * (1 - confidence / 100) * 2;
+    const margin =
+      estimate * CONFIDENCE_INTERVAL_PERCENT * (1 - confidence / 100) * 2;
 
     return {
       optimistic: Math.max(1, Math.round(estimate - margin)),

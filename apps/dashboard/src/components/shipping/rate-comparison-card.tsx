@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { forwardRef, type HTMLAttributes } from 'react';
-import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
-import { Check } from 'lucide-react';
-import { CarrierLogo, type CarrierCode } from './carrier-logo';
+import { forwardRef, type HTMLAttributes } from "react";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Check } from "lucide-react";
+import { CarrierLogo, type CarrierCode } from "./carrier-logo";
 
 interface ShippingRate {
   id: string;
@@ -18,7 +18,10 @@ interface ShippingRate {
   signatureRequired?: boolean;
 }
 
-interface RateComparisonCardProps extends Omit<HTMLAttributes<HTMLDivElement>, "onSelect"> {
+interface RateComparisonCardProps extends Omit<
+  HTMLAttributes<HTMLDivElement>,
+  "onSelect"
+> {
   /** Shipping rate data */
   rate: ShippingRate;
   /** Whether this rate is selected */
@@ -62,20 +65,20 @@ const RateComparisonCard = forwardRef<HTMLDivElement, RateComparisonCardProps>(
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const formatPrice = (price: number): string => {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
       }).format(price);
     };
 
     const formatDeliveryDate = (date: Date): string => {
-      return new Intl.DateTimeFormat('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
+      return new Intl.DateTimeFormat("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
       }).format(date);
     };
 
@@ -84,12 +87,12 @@ const RateComparisonCard = forwardRef<HTMLDivElement, RateComparisonCardProps>(
         ref={ref}
         onClick={() => onSelect?.(rate)}
         className={cn(
-          'relative rounded-lg border transition-all duration-200 ease-default',
-          'cursor-pointer group',
+          "relative rounded-lg border transition-all duration-200 ease-default",
+          "cursor-pointer group",
           isSelected
-            ? 'border-wl-primary-500 bg-wl-primary-500/8 shadow-md'
-            : 'border-wl-border-subtle bg-wl-bg-elevated hover:border-wl-primary-400 hover:shadow-md',
-          className
+            ? "border-wl-primary-500 bg-wl-primary-500/8 shadow-md"
+            : "border-wl-border-subtle bg-wl-bg-elevated hover:border-wl-primary-400 hover:shadow-md",
+          className,
         )}
         {...props}
       >
@@ -110,9 +113,7 @@ const RateComparisonCard = forwardRef<HTMLDivElement, RateComparisonCardProps>(
                 <h4 className="text-sm font-semibold text-wl-text-primary">
                   {rate.serviceName}
                 </h4>
-                <p className="text-xs text-wl-text-tertiary">
-                  {rate.carrier}
-                </p>
+                <p className="text-xs text-wl-text-tertiary">{rate.carrier}</p>
               </div>
             </div>
 
@@ -143,7 +144,8 @@ const RateComparisonCard = forwardRef<HTMLDivElement, RateComparisonCardProps>(
                 {formatPrice(rate.price)}
               </p>
               <p className="text-xs text-wl-text-tertiary mt-0.5">
-                {rate.estimatedDays} business day{rate.estimatedDays !== 1 ? 's' : ''}
+                {rate.estimatedDays} business day
+                {rate.estimatedDays !== 1 ? "s" : ""}
               </p>
             </div>
 
@@ -161,56 +163,56 @@ const RateComparisonCard = forwardRef<HTMLDivElement, RateComparisonCardProps>(
           <div className="space-y-2 pt-3 border-t border-wl-border-subtle opacity-0 group-hover:opacity-100 transition-opacity duration-200 max-h-0 group-hover:max-h-24 overflow-hidden">
             <div className="flex items-center justify-between text-xs">
               <span className="text-wl-text-secondary">
-                {rate.trackingIncluded ? '✓' : '○'} Tracking
+                {rate.trackingIncluded ? "✓" : "○"} Tracking
               </span>
               <span
                 className={cn(
                   rate.trackingIncluded
-                    ? 'text-wl-success-400'
-                    : 'text-wl-text-tertiary'
+                    ? "text-wl-success-400"
+                    : "text-wl-text-tertiary",
                 )}
               >
-                {rate.trackingIncluded ? 'Included' : 'Not included'}
+                {rate.trackingIncluded ? "Included" : "Not included"}
               </span>
             </div>
 
             <div className="flex items-center justify-between text-xs">
               <span className="text-wl-text-secondary">
-                {rate.insuranceAvailable ? '✓' : '○'} Insurance
+                {rate.insuranceAvailable ? "✓" : "○"} Insurance
               </span>
               <span
                 className={cn(
                   rate.insuranceAvailable
-                    ? 'text-wl-success-400'
-                    : 'text-wl-text-tertiary'
+                    ? "text-wl-success-400"
+                    : "text-wl-text-tertiary",
                 )}
               >
-                {rate.insuranceAvailable ? 'Available' : 'Not available'}
+                {rate.insuranceAvailable ? "Available" : "Not available"}
               </span>
             </div>
 
             <div className="flex items-center justify-between text-xs">
               <span className="text-wl-text-secondary">
-                {rate.signatureRequired ? '✓' : '○'} Signature
+                {rate.signatureRequired ? "✓" : "○"} Signature
               </span>
               <span
                 className={cn(
                   rate.signatureRequired
-                    ? 'text-wl-warning-400'
-                    : 'text-wl-text-tertiary'
+                    ? "text-wl-warning-400"
+                    : "text-wl-text-tertiary",
                 )}
               >
-                {rate.signatureRequired ? 'Required' : 'Not required'}
+                {rate.signatureRequired ? "Required" : "Not required"}
               </span>
             </div>
           </div>
         </div>
       </div>
     );
-  }
+  },
 );
 
-RateComparisonCard.displayName = 'RateComparisonCard';
+RateComparisonCard.displayName = "RateComparisonCard";
 
 export { RateComparisonCard };
 export type { ShippingRate };

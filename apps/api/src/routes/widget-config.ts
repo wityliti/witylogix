@@ -100,7 +100,9 @@ const WIDGET_CATALOG = [
     description: "Key metrics at a glance",
     type: "QUICK_STATS",
     dimensions: { minWidth: 300, minHeight: 150 },
-    defaultConfig: { metrics: ["totalOrders", "totalRevenue", "avgDeliveryTime"] },
+    defaultConfig: {
+      metrics: ["totalOrders", "totalRevenue", "avgDeliveryTime"],
+    },
   },
   {
     id: "DRIVER_ACTIVITY",
@@ -186,7 +188,9 @@ async function widgetConfigRoutes(fastify: FastifyInstance): Promise<void> {
         shopId: request.shopId,
         type: body.type,
         name: body.name || catalogEntry.name,
-        config: body.config ? JSON.stringify(body.config) : JSON.stringify(catalogEntry.defaultConfig),
+        config: body.config
+          ? JSON.stringify(body.config)
+          : JSON.stringify(catalogEntry.defaultConfig),
         position: JSON.stringify(position),
         targetPages: body.targetPages ? JSON.stringify(body.targetPages) : null,
         isActive: true,
@@ -247,12 +251,15 @@ async function widgetConfigRoutes(fastify: FastifyInstance): Promise<void> {
 
   // ── GET /catalog ─────────────────────────────────────────────
 
-  fastify.get("/catalog", async (request: FastifyRequest, reply: FastifyReply) => {
-    return {
-      data: WIDGET_CATALOG,
-      total: WIDGET_CATALOG.length,
-    };
-  });
+  fastify.get(
+    "/catalog",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      return {
+        data: WIDGET_CATALOG,
+        total: WIDGET_CATALOG.length,
+      };
+    },
+  );
 
   // ── PUT /:id ─────────────────────────────────────────────────
 
@@ -298,7 +305,9 @@ async function widgetConfigRoutes(fastify: FastifyInstance): Promise<void> {
         ...updated,
         config: JSON.parse(updated.config),
         position: JSON.parse(updated.position),
-        targetPages: updated.targetPages ? JSON.parse(updated.targetPages) : null,
+        targetPages: updated.targetPages
+          ? JSON.parse(updated.targetPages)
+          : null,
         styling: updated.styling ? JSON.parse(updated.styling) : null,
       },
     };
@@ -306,35 +315,38 @@ async function widgetConfigRoutes(fastify: FastifyInstance): Promise<void> {
 
   // ── DELETE /:id ──────────────────────────────────────────────
 
-  fastify.delete("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    const { id } = request.params as { id: string };
+  fastify.delete(
+    "/:id",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { id } = request.params as { id: string };
 
-    const widget = await (request.tenantDb as any).widget.findUnique({
-      where: { id },
-    });
+      const widget = await (request.tenantDb as any).widget.findUnique({
+        where: { id },
+      });
 
-    if (!widget) {
-      throw new NotFoundError("Widget", id);
-    }
+      if (!widget) {
+        throw new NotFoundError("Widget", id);
+      }
 
-    if (widget.shopId !== request.shopId) {
-      throw new ForbiddenError("Cannot delete widget from another shop");
-    }
+      if (widget.shopId !== request.shopId) {
+        throw new ForbiddenError("Cannot delete widget from another shop");
+      }
 
-    // Soft delete
-    const deleted = await (request.tenantDb as any).widget.update({
-      where: { id },
-      data: { isActive: false },
-    });
+      // Soft delete
+      const deleted = await (request.tenantDb as any).widget.update({
+        where: { id },
+        data: { isActive: false },
+      });
 
-    fastify.log.info(
-      { shopId: request.shopId, widgetId: id },
-      "Widget deleted",
-    );
+      fastify.log.info(
+        { shopId: request.shopId, widgetId: id },
+        "Widget deleted",
+      );
 
-    reply.status(204);
-    return;
-  });
+      reply.status(204);
+      return;
+    },
+  );
 
   // ── PUT /:id/toggle ──────────────────────────────────────────
 
@@ -370,7 +382,9 @@ async function widgetConfigRoutes(fastify: FastifyInstance): Promise<void> {
           ...updated,
           config: JSON.parse(updated.config),
           position: JSON.parse(updated.position),
-          targetPages: updated.targetPages ? JSON.parse(updated.targetPages) : null,
+          targetPages: updated.targetPages
+            ? JSON.parse(updated.targetPages)
+            : null,
         },
         message: `Widget is now ${updated.isActive ? "active" : "inactive"}`,
       };
@@ -391,7 +405,9 @@ async function widgetConfigRoutes(fastify: FastifyInstance): Promise<void> {
       });
 
       if (widgets.length !== widgetIds.length) {
-        throw new ValidationError("Some widgets not found or don't belong to this shop");
+        throw new ValidationError(
+          "Some widgets not found or don't belong to this shop",
+        );
       }
 
       // Update all widget positions
@@ -440,7 +456,9 @@ async function widgetConfigRoutes(fastify: FastifyInstance): Promise<void> {
               shopId: request.shopId,
               type: w.type as any,
               name: w.name,
-              config: JSON.stringify(WIDGET_CATALOG.find((c) => c.type === w.type)?.defaultConfig),
+              config: JSON.stringify(
+                WIDGET_CATALOG.find((c) => c.type === w.type)?.defaultConfig,
+              ),
               position: JSON.stringify({ row: w.row, col: w.col }),
               isActive: true,
             },
@@ -459,7 +477,9 @@ async function widgetConfigRoutes(fastify: FastifyInstance): Promise<void> {
           ...widget,
           config: JSON.parse(widget.config),
           position: JSON.parse(widget.position),
-          targetPages: widget.targetPages ? JSON.parse(widget.targetPages) : null,
+          targetPages: widget.targetPages
+            ? JSON.parse(widget.targetPages)
+            : null,
         })),
         message: "Dashboard reset to default layout",
       };

@@ -43,7 +43,10 @@ class P95Tracker {
 
     buf[cursor] = latencyMs;
     this.cursors.set(endpoint, (cursor + 1) % WINDOW_SIZE);
-    this.sizes.set(endpoint, Math.min((this.sizes.get(endpoint) ?? 0) + 1, WINDOW_SIZE));
+    this.sizes.set(
+      endpoint,
+      Math.min((this.sizes.get(endpoint) ?? 0) + 1, WINDOW_SIZE),
+    );
   }
 
   /**

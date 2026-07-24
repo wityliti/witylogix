@@ -41,7 +41,8 @@ export function RateComparisonCard({
 
   // Calculate if rate is below market
   const isBelowMarket = (rate: RateData, rateType: "contracted" | "spot") => {
-    const current = rateType === "contracted" ? rate.contractedRate : rate.spotRate;
+    const current =
+      rateType === "contracted" ? rate.contractedRate : rate.spotRate;
     return current < rate.marketAvg;
   };
 
@@ -67,7 +68,8 @@ export function RateComparisonCard({
     const pathData = points
       .map((point, i) => {
         const x = padding + (i / (points.length - 1)) * (width - padding * 2);
-        const y = height - padding - ((point - min) / range) * (height - padding * 2);
+        const y =
+          height - padding - ((point - min) / range) * (height - padding * 2);
         return `${i === 0 ? "M" : "L"} ${x} ${y}`;
       })
       .join(" ");
@@ -88,7 +90,11 @@ export function RateComparisonCard({
         />
         <circle
           cx={width - padding - 2}
-          cy={height - padding - ((points[points.length - 1] - min) / range) * (height - padding * 2)}
+          cy={
+            height -
+            padding -
+            ((points[points.length - 1] - min) / range) * (height - padding * 2)
+          }
           r="1.5"
           fill="currentColor"
         />
@@ -106,7 +112,7 @@ export function RateComparisonCard({
     <div
       className={cn(
         "rounded-lg border border-wl-border-default bg-wl-bg-primary p-4 space-y-4",
-        className
+        className,
       )}
     >
       {/* Header */}
@@ -124,7 +130,7 @@ export function RateComparisonCard({
               "text-xs px-2 py-1 rounded transition-colors",
               view === "contracted"
                 ? "bg-wl-primary-500/20 text-wl-primary-400"
-                : "text-wl-text-secondary hover:bg-wl-bg-secondary"
+                : "text-wl-text-secondary hover:bg-wl-bg-secondary",
             )}
           >
             Contracted
@@ -135,7 +141,7 @@ export function RateComparisonCard({
               "text-xs px-2 py-1 rounded transition-colors",
               view === "spot"
                 ? "bg-wl-primary-500/20 text-wl-primary-400"
-                : "text-wl-text-secondary hover:bg-wl-bg-secondary"
+                : "text-wl-text-secondary hover:bg-wl-bg-secondary",
             )}
           >
             Spot
@@ -156,9 +162,11 @@ export function RateComparisonCard({
         {/* Rate Rows */}
         <div className="space-y-2">
           {sortedRates.map((rate) => {
-            const currentRate = view === "contracted" ? rate.contractedRate : rate.spotRate;
+            const currentRate =
+              view === "contracted" ? rate.contractedRate : rate.spotRate;
             const below = isBelowMarket(rate, view);
-            const savings = ((rate.marketAvg - currentRate) / rate.marketAvg) * 100;
+            const savings =
+              ((rate.marketAvg - currentRate) / rate.marketAvg) * 100;
             const isAward = rate.carrier === bestCarrier;
 
             return (
@@ -169,7 +177,7 @@ export function RateComparisonCard({
                     isAward
                       ? "bg-wl-success-500/10 border border-wl-success-500/30"
                       : "hover:bg-wl-bg-secondary border border-transparent",
-                    expanded === rate.carrier && "border-wl-border-default"
+                    expanded === rate.carrier && "border-wl-border-default",
                   )}
                   onClick={() =>
                     setExpanded(expanded === rate.carrier ? null : rate.carrier)
@@ -196,7 +204,7 @@ export function RateComparisonCard({
                     <p
                       className={cn(
                         "text-xs font-semibold",
-                        getRateColor(rate, view)
+                        getRateColor(rate, view),
                       )}
                     >
                       ${currentRate.toFixed(2)}
@@ -215,7 +223,7 @@ export function RateComparisonCard({
                     <p
                       className={cn(
                         "text-xs font-medium",
-                        below ? "text-wl-success-400" : "text-wl-danger-400"
+                        below ? "text-wl-success-400" : "text-wl-danger-400",
                       )}
                     >
                       {below ? "+" : "-"}
@@ -278,13 +286,21 @@ export function RateComparisonCard({
         <div>
           <p className="text-wl-text-secondary">Best Rate</p>
           <p className="text-wl-success-400 font-semibold mt-1">
-            ${Math.min(...rates.map((r) => view === "contracted" ? r.contractedRate : r.spotRate)).toFixed(2)}
+            $
+            {Math.min(
+              ...rates.map((r) =>
+                view === "contracted" ? r.contractedRate : r.spotRate,
+              ),
+            ).toFixed(2)}
           </p>
         </div>
         <div>
           <p className="text-wl-text-secondary">Market Avg</p>
           <p className="text-wl-text-primary font-semibold mt-1">
-            ${(rates.reduce((sum, r) => sum + r.marketAvg, 0) / rates.length).toFixed(2)}
+            $
+            {(
+              rates.reduce((sum, r) => sum + r.marketAvg, 0) / rates.length
+            ).toFixed(2)}
           </p>
         </div>
         <div className="text-right">
@@ -292,7 +308,11 @@ export function RateComparisonCard({
           <p className="text-wl-success-400 font-semibold mt-1">
             {(
               ((Math.max(...rates.map((r) => r.marketAvg)) -
-                Math.min(...rates.map((r) => view === "contracted" ? r.contractedRate : r.spotRate))) /
+                Math.min(
+                  ...rates.map((r) =>
+                    view === "contracted" ? r.contractedRate : r.spotRate,
+                  ),
+                )) /
                 Math.max(...rates.map((r) => r.marketAvg))) *
               100
             ).toFixed(1)}

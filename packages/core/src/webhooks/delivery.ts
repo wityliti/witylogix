@@ -3,7 +3,12 @@
  * Handles sending webhooks to subscriber endpoints with retry logic
  */
 
-import { WebhookPayload, WebhookSubscription, WebhookDeliveryResult, WebhookDeliveryAttempt } from "./types";
+import {
+  WebhookPayload,
+  WebhookSubscription,
+  WebhookDeliveryResult,
+  WebhookDeliveryAttempt,
+} from "./types";
 import { signPayload, WEBHOOK_HEADERS } from "./signer";
 
 const DELIVERY_TIMEOUT_MS = 10000; // 10 second timeout
@@ -14,10 +19,10 @@ const MAX_RETRY_ATTEMPTS = 5;
  * Used for scheduling retries
  */
 const RETRY_INTERVALS_MS = [
-  30 * 1000,        // 30 seconds
-  2 * 60 * 1000,    // 2 minutes
-  15 * 60 * 1000,   // 15 minutes
-  60 * 60 * 1000,   // 1 hour
+  30 * 1000, // 30 seconds
+  2 * 60 * 1000, // 2 minutes
+  15 * 60 * 1000, // 15 minutes
+  60 * 60 * 1000, // 1 hour
   4 * 60 * 60 * 1000, // 4 hours
 ];
 
@@ -30,7 +35,7 @@ const RETRY_INTERVALS_MS = [
  */
 export async function deliverWebhook(
   subscription: WebhookSubscription,
-  payload: WebhookPayload
+  payload: WebhookPayload,
 ): Promise<WebhookDeliveryResult> {
   const startTime = Date.now();
   const payloadString = JSON.stringify(payload);
@@ -105,7 +110,7 @@ export async function deliverWebhook(
  * @returns Updated attempt with retry scheduled or dead letter status
  */
 export function scheduleRetry(
-  attempt: WebhookDeliveryAttempt
+  attempt: WebhookDeliveryAttempt,
 ): WebhookDeliveryAttempt {
   const nextAttemptNumber = attempt.attempt + 1;
 
@@ -119,8 +124,14 @@ export function scheduleRetry(
   }
 
   // Calculate backoff delay (use previous attempt index)
-  const backoffIndex = Math.min(attempt.attempt - 1, RETRY_INTERVALS_MS.length - 1);
-  const backoffDelay = Math.max(0, backoffIndex >= 0 ? RETRY_INTERVALS_MS[backoffIndex] : 0);
+  const backoffIndex = Math.min(
+    attempt.attempt - 1,
+    RETRY_INTERVALS_MS.length - 1,
+  );
+  const backoffDelay = Math.max(
+    0,
+    backoffIndex >= 0 ? RETRY_INTERVALS_MS[backoffIndex] : 0,
+  );
 
   // Schedule next attempt
   const nextScheduledAt = new Date(Date.now() + backoffDelay);

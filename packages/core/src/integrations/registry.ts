@@ -13,7 +13,11 @@
  * Adding a new integration = adding an entry to the appropriate category file.
  */
 
-import type { IntegrationAppMeta, IntegrationCategory, IntegrationStatus } from "./types.js";
+import type {
+  IntegrationAppMeta,
+  IntegrationCategory,
+  IntegrationStatus,
+} from "./types.js";
 import { COMMUNICATION_INTEGRATIONS } from "./categories/communication.js";
 import { ROUTING_INTEGRATIONS } from "./categories/routing.js";
 import { ORDER_MANAGEMENT_INTEGRATIONS } from "./categories/order-management.js";
@@ -36,9 +40,8 @@ const ALL_INTEGRATIONS: IntegrationAppMeta[] = [
  * The unified integration registry — a ReadonlyMap keyed by slug.
  * Source of truth for all marketplace catalog data.
  */
-export const INTEGRATION_REGISTRY: ReadonlyMap<string, IntegrationAppMeta> = new Map(
-  ALL_INTEGRATIONS.map((app) => [app.slug, app]),
-);
+export const INTEGRATION_REGISTRY: ReadonlyMap<string, IntegrationAppMeta> =
+  new Map(ALL_INTEGRATIONS.map((app) => [app.slug, app]));
 
 // ─── Accessor Functions ─────────────────────────────────────
 
@@ -60,7 +63,9 @@ export function getIntegrationsByCategory(
 /**
  * Get a single integration by its slug.
  */
-export function getIntegrationBySlug(slug: string): IntegrationAppMeta | undefined {
+export function getIntegrationBySlug(
+  slug: string,
+): IntegrationAppMeta | undefined {
   return INTEGRATION_REGISTRY.get(slug);
 }
 
@@ -68,9 +73,10 @@ export function getIntegrationBySlug(slug: string): IntegrationAppMeta | undefin
  * Get all available integrations (non-deprecated).
  * Optionally filter by status.
  */
-export function getAvailableIntegrations(
-  filter?: { status?: IntegrationStatus; category?: IntegrationCategory },
-): IntegrationAppMeta[] {
+export function getAvailableIntegrations(filter?: {
+  status?: IntegrationStatus;
+  category?: IntegrationCategory;
+}): IntegrationAppMeta[] {
   let result = ALL_INTEGRATIONS.filter((app) => app.status !== "DEPRECATED");
 
   if (filter?.status) {
@@ -103,7 +109,10 @@ export function searchIntegrations(query: string): IntegrationAppMeta[] {
 /**
  * Get count of integrations per category.
  */
-export function getIntegrationCounts(): Record<IntegrationCategory, { total: number; available: number }> {
+export function getIntegrationCounts(): Record<
+  IntegrationCategory,
+  { total: number; available: number }
+> {
   const categories: IntegrationCategory[] = [
     "COMMUNICATION",
     "ROUTING",
@@ -113,7 +122,10 @@ export function getIntegrationCounts(): Record<IntegrationCategory, { total: num
     "ANALYTICS",
   ];
 
-  const counts = {} as Record<IntegrationCategory, { total: number; available: number }>;
+  const counts = {} as Record<
+    IntegrationCategory,
+    { total: number; available: number }
+  >;
 
   for (const category of categories) {
     const apps = getIntegrationsByCategory(category);

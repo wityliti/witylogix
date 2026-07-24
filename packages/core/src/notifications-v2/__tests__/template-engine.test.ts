@@ -15,7 +15,11 @@ describe("TemplateEngine", () => {
         deliveryAddress: "123 Main St",
       };
 
-      const template = TemplateEngine.renderTemplate("order_confirmed", variables, "email");
+      const template = TemplateEngine.renderTemplate(
+        "order_confirmed",
+        variables,
+        "email",
+      );
 
       expect(template.subject).toContain("Order Confirmed");
       expect(template.html).toContain("John Doe");
@@ -33,7 +37,7 @@ describe("TemplateEngine", () => {
       const template = TemplateEngine.renderTemplate(
         "delivery_scheduled",
         variables,
-        "sms"
+        "sms",
       );
 
       expect(template.text).toContain("2026-03-12");
@@ -51,7 +55,7 @@ describe("TemplateEngine", () => {
       const template = TemplateEngine.renderTemplate(
         "out_for_delivery",
         variables,
-        "whatsapp"
+        "whatsapp",
       );
 
       expect(template.templateId).toBe("out_for_delivery");
@@ -65,7 +69,11 @@ describe("TemplateEngine", () => {
         deliveryDate: "2026-03-15",
       };
 
-      const template = TemplateEngine.renderTemplate("delivered", variables, "push");
+      const template = TemplateEngine.renderTemplate(
+        "delivered",
+        variables,
+        "push",
+      );
 
       expect(template.title).toContain("Delivered");
       expect(template.body).toBeDefined();
@@ -77,7 +85,11 @@ describe("TemplateEngine", () => {
         // Missing other variables
       };
 
-      const template = TemplateEngine.renderTemplate("delivery_scheduled", variables, "email");
+      const template = TemplateEngine.renderTemplate(
+        "delivery_scheduled",
+        variables,
+        "email",
+      );
 
       expect(template.subject).toBeDefined();
       expect(template.html).toContain("John Doe");
@@ -93,7 +105,7 @@ describe("TemplateEngine", () => {
       const template = TemplateEngine.renderTemplate(
         "delivery_scheduled",
         variables,
-        "sms"
+        "sms",
       );
 
       expect(template.text).toContain("2026-03-15");
@@ -128,7 +140,11 @@ describe("TemplateEngine", () => {
           const channels = ["email", "sms", "whatsapp", "push"] as const;
 
           channels.forEach((channel) => {
-            const template = TemplateEngine.renderTemplate(eventType, variables, channel);
+            const template = TemplateEngine.renderTemplate(
+              eventType,
+              variables,
+              channel,
+            );
 
             expect(template).toBeDefined();
 
@@ -161,7 +177,7 @@ describe("TemplateEngine", () => {
       const template = TemplateEngine.renderTemplate(
         "out_for_delivery",
         variables,
-        "email"
+        "email",
       );
 
       expect(template.html).toContain("Alice");
@@ -176,7 +192,11 @@ describe("TemplateEngine", () => {
         driverName: "O'Brien",
       };
 
-      const template = TemplateEngine.renderTemplate("delivery_arriving", variables, "email");
+      const template = TemplateEngine.renderTemplate(
+        "delivery_arriving",
+        variables,
+        "email",
+      );
 
       expect(template.html).toContain("John & Jane's Place");
       expect(template.html).toContain("456 Oak St");
@@ -188,7 +208,11 @@ describe("TemplateEngine", () => {
         deliveryAddress: "Calle Principal, España",
       };
 
-      const template = TemplateEngine.renderTemplate("order_confirmed", variables, "email");
+      const template = TemplateEngine.renderTemplate(
+        "order_confirmed",
+        variables,
+        "email",
+      );
 
       expect(template.html).toContain("José García");
       expect(template.html).toContain("España");
@@ -207,7 +231,7 @@ describe("TemplateEngine", () => {
       const template = TemplateEngine.renderTemplate(
         "delivery_scheduled",
         variables,
-        "whatsapp"
+        "whatsapp",
       );
 
       expect(template.templateParams).toBeDefined();
@@ -224,7 +248,11 @@ describe("TemplateEngine", () => {
         // Missing other parameters
       };
 
-      const template = TemplateEngine.renderTemplate("rescheduled", variables, "whatsapp");
+      const template = TemplateEngine.renderTemplate(
+        "rescheduled",
+        variables,
+        "whatsapp",
+      );
 
       expect(template.templateParams).toBeDefined();
       // Should only contain non-empty values

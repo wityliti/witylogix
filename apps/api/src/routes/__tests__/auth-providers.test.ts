@@ -6,7 +6,10 @@ interface MockRequest extends Partial<FastifyRequest> {
   body?: Record<string, unknown>;
   params?: Record<string, unknown>;
   jwt?: {
-    sign: (payload: Record<string, unknown>, options?: Record<string, unknown>) => string;
+    sign: (
+      payload: Record<string, unknown>,
+      options?: Record<string, unknown>,
+    ) => string;
   };
 }
 
@@ -98,10 +101,17 @@ describe("Auth Providers Routes", () => {
     it("should list all auth providers for a tenant", async () => {
       const tenant = generateTestTenant();
       const provider1 = generateTestAuthProvider();
-      const provider2 = { ...generateTestAuthProvider(), id: "provider-124", type: "Auth0" };
+      const provider2 = {
+        ...generateTestAuthProvider(),
+        id: "provider-124",
+        type: "Auth0",
+      };
 
       mockPrisma.tenant.findUnique.mockResolvedValue(tenant);
-      mockPrisma.authProvider.findMany.mockResolvedValue([provider1, provider2]);
+      mockPrisma.authProvider.findMany.mockResolvedValue([
+        provider1,
+        provider2,
+      ]);
 
       const providers = await (mockPrisma as any).authProvider.findMany({
         where: { tenantId: tenant.id },
@@ -223,7 +233,10 @@ describe("Auth Providers Routes", () => {
 
     it("should verify tenant ownership of provider", async () => {
       const provider = generateTestAuthProvider();
-      const differentTenant = { ...generateTestTenant(), id: "different-tenant" };
+      const differentTenant = {
+        ...generateTestTenant(),
+        id: "different-tenant",
+      };
 
       mockPrisma.authProvider.findUnique.mockResolvedValue(provider);
       mockPrisma.tenant.findUnique.mockResolvedValue(differentTenant);
@@ -241,7 +254,9 @@ describe("Auth Providers Routes", () => {
       const tenant = generateTestTenant();
 
       mockPrisma.tenant.findUnique.mockResolvedValue(tenant);
-      mockPrisma.authProvider.create.mockResolvedValue(generateTestAuthProvider());
+      mockPrisma.authProvider.create.mockResolvedValue(
+        generateTestAuthProvider(),
+      );
 
       mockRequest.body = {
         tenantId: tenant.id,
@@ -636,7 +651,9 @@ describe("Auth Providers Routes", () => {
       };
       mockRequest.params = { id: "provider-123" };
 
-      expect(typeof mockRequest.body.config.minPasswordLength).not.toBe("number");
+      expect(typeof mockRequest.body.config.minPasswordLength).not.toBe(
+        "number",
+      );
     });
   });
 
@@ -712,7 +729,10 @@ describe("Auth Providers Routes", () => {
 
     it("should enforce tenant isolation on provider access", async () => {
       const provider = generateTestAuthProvider();
-      const differentTenant = { ...generateTestTenant(), id: "different-tenant" };
+      const differentTenant = {
+        ...generateTestTenant(),
+        id: "different-tenant",
+      };
 
       mockPrisma.authProvider.findUnique.mockResolvedValue(provider);
       mockPrisma.tenant.findUnique.mockResolvedValue(differentTenant);

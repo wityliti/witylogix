@@ -15,13 +15,21 @@ export interface DeliveryRecord {
   weight: number; // kg
   status: "completed" | "cancelled" | "pending";
   completedAt: Date;
-  billingModel: "per-delivery" | "per-mile" | "per-hour" | "flat-rate" | "tiered" | "subscription";
+  billingModel:
+    | "per-delivery"
+    | "per-mile"
+    | "per-hour"
+    | "flat-rate"
+    | "tiered"
+    | "subscription";
   amount: number;
   currency: string;
   metadata?: Record<string, unknown>;
 }
 
-export const createDeliveryRecord = (overrides?: Partial<DeliveryRecord>): DeliveryRecord => ({
+export const createDeliveryRecord = (
+  overrides?: Partial<DeliveryRecord>,
+): DeliveryRecord => ({
   id: `delivery_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   orderId: `order_${Math.random().toString(36).substr(2, 9)}`,
   customerId: `customer_${Math.random().toString(36).substr(2, 9)}`,
@@ -37,15 +45,23 @@ export const createDeliveryRecord = (overrides?: Partial<DeliveryRecord>): Deliv
   ...overrides,
 });
 
-export const createBatchDeliveries = (count: number, baseModel: DeliveryRecord["billingModel"] = "per-delivery"): DeliveryRecord[] => {
+export const createBatchDeliveries = (
+  count: number,
+  baseModel: DeliveryRecord["billingModel"] = "per-delivery",
+): DeliveryRecord[] => {
   return Array.from({ length: count }, (_, i) =>
     createDeliveryRecord({
       id: `delivery_${Date.now()}_${i}`,
       billingModel: baseModel,
       distance: baseModel === "per-mile" ? 10 + i : 5,
       duration: baseModel === "per-hour" ? 1 + i * 0.5 : 0.5,
-      amount: baseModel === "per-delivery" ? 10 : (baseModel === "per-mile" ? (10 + i) : 15),
-    })
+      amount:
+        baseModel === "per-delivery"
+          ? 10
+          : baseModel === "per-mile"
+            ? 10 + i
+            : 15,
+    }),
   );
 };
 
@@ -88,7 +104,9 @@ export interface InvoiceData {
   metadata?: Record<string, unknown>;
 }
 
-export const createInvoice = (overrides?: Partial<InvoiceData>): InvoiceData => {
+export const createInvoice = (
+  overrides?: Partial<InvoiceData>,
+): InvoiceData => {
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
@@ -103,7 +121,10 @@ export const createInvoice = (overrides?: Partial<InvoiceData>): InvoiceData => 
     },
   ];
 
-  const subtotal = lineItems.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
+  const subtotal = lineItems.reduce(
+    (sum, item) => sum + item.quantity * item.unitPrice,
+    0,
+  );
   const tax = Math.round(subtotal * 0.08 * 100) / 100;
 
   return {
@@ -133,7 +154,13 @@ export const createInvoice = (overrides?: Partial<InvoiceData>): InvoiceData => 
 // ─── BILLING MODEL CONFIGURATIONS ──────────────────────────────────────────
 
 export interface BillingModelConfig {
-  type: "per-delivery" | "per-mile" | "per-hour" | "flat-rate" | "tiered" | "subscription";
+  type:
+    | "per-delivery"
+    | "per-mile"
+    | "per-hour"
+    | "flat-rate"
+    | "tiered"
+    | "subscription";
   basePrice?: number;
   perUnitPrice?: number;
   tiers?: Array<{
@@ -196,8 +223,8 @@ export const taxRates: Record<string, number> = {
   "US-FL": 0.06,
   "CA-ON": 0.13,
   "CA-QC": 0.15,
-  "GB-ENG": 0.20,
-  "GB-SC": 0.20,
+  "GB-ENG": 0.2,
+  "GB-SC": 0.2,
   "AU-NSW": 0.1,
   "AU-VIC": 0.1,
 };
@@ -232,7 +259,9 @@ export interface CustomerData {
   };
 }
 
-export const createCustomer = (overrides?: Partial<CustomerData>): CustomerData => ({
+export const createCustomer = (
+  overrides?: Partial<CustomerData>,
+): CustomerData => ({
   id: `customer_${Math.random().toString(36).substr(2, 9)}`,
   name: "Acme Corp",
   email: "billing@acme.com",
@@ -263,7 +292,10 @@ export const currencyRates: Record<string, number> = {
   JPY: 149.5,
 };
 
-export const createMultiCurrencyInvoice = (currency: string, amount: number): InvoiceData => {
+export const createMultiCurrencyInvoice = (
+  currency: string,
+  amount: number,
+): InvoiceData => {
   const baseRate = currencyRates[currency] || 1;
   const adjustedAmount = Math.round((amount / baseRate) * 100) / 100;
 
@@ -295,7 +327,9 @@ export interface PaymentRecord {
   metadata?: Record<string, unknown>;
 }
 
-export const createPaymentRecord = (overrides?: Partial<PaymentRecord>): PaymentRecord => ({
+export const createPaymentRecord = (
+  overrides?: Partial<PaymentRecord>,
+): PaymentRecord => ({
   id: `payment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   invoiceId: `invoice_${Math.random().toString(36).substr(2, 9)}`,
   amount: 1000,
@@ -333,7 +367,9 @@ export const generateSingleDeliveryInvoice = (): InvoiceData => {
   });
 };
 
-export const generateLargeInvoice = (deliveryCount: number = 1000): InvoiceData => {
+export const generateLargeInvoice = (
+  deliveryCount: number = 1000,
+): InvoiceData => {
   const unitPrice = 10;
   const subtotal = deliveryCount * unitPrice;
   const tax = Math.round(subtotal * 0.08 * 100) / 100;

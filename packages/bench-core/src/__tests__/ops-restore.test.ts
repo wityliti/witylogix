@@ -58,7 +58,12 @@ function ctxOf(overrides: Partial<Context["config"]> = {}): Context {
       services: { api: {}, dashboard: {} },
       ...overrides,
     } as unknown as Context["config"],
-    logger: { debug: () => {}, info: () => {}, warn: () => {}, error: () => {} },
+    logger: {
+      debug: () => {},
+      info: () => {},
+      warn: () => {},
+      error: () => {},
+    },
     dryRun: false,
     json: false,
   };
@@ -93,10 +98,11 @@ async function makeArchive(
     mkdirSync(join(scratch, "config"));
     writeFileSync(join(scratch, "config", "bench.config.yaml"), "demo\n");
     const out = join(tmp, `a-${Date.now()}.wbak`);
-    await createTar(
-      { gzip: true, file: out, cwd: scratch },
-      ["manifest.json", "db.sql.gz", "config"],
-    );
+    await createTar({ gzip: true, file: out, cwd: scratch }, [
+      "manifest.json",
+      "db.sql.gz",
+      "config",
+    ]);
     return out;
   } finally {
     rmSync(scratch, { recursive: true, force: true });
@@ -194,9 +200,9 @@ describe("ops/restore safety gates", () => {
     const archive = await makeArchive({
       includes: { db: true, config: true, blobs: true },
     });
-    await expect(
-      runRestore(ctxOf(), archive, { yes: true }),
-    ).rejects.toThrow(/target-storage/);
+    await expect(runRestore(ctxOf(), archive, { yes: true })).rejects.toThrow(
+      /target-storage/,
+    );
   });
 
   it("honors --skip-blobs when archive has blobs", async () => {
@@ -219,11 +225,12 @@ describe("ops/restore flow", () => {
 
     expect(stopMock).toHaveBeenCalledTimes(2);
     expect(startMock).toHaveBeenCalledTimes(2);
-    expect(runOneShotMock).toHaveBeenCalledWith(
-      expect.anything(),
-      "api",
-      ["pnpm", "prisma", "migrate", "deploy"],
-    );
+    expect(runOneShotMock).toHaveBeenCalledWith(expect.anything(), "api", [
+      "pnpm",
+      "prisma",
+      "migrate",
+      "deploy",
+    ]);
     // One exec call should contain DROP SCHEMA
     const dropCall = execMock.mock.calls.find((c) =>
       c[2].some(
@@ -232,7 +239,9 @@ describe("ops/restore flow", () => {
     );
     expect(dropCall).toBeDefined();
     // One exec call should be pg_restore
-    const restoreCall = execMock.mock.calls.find((c) => c[2][0] === "pg_restore");
+    const restoreCall = execMock.mock.calls.find(
+      (c) => c[2][0] === "pg_restore",
+    );
     expect(restoreCall).toBeDefined();
   });
 
@@ -243,9 +252,7 @@ describe("ops/restore flow", () => {
       .trim()
       .split("\n")
       .map((l) => JSON.parse(l));
-    const event = auditLines.find(
-      (e) => e.event === "bench.restore.completed",
-    );
+    const event = auditLines.find((e) => e.event === "bench.restore.completed");
     expect(event).toBeDefined();
     expect(event.data.manifest.installationName).toBe("demo");
   });
@@ -270,6 +277,8 @@ describe("ops/restore flow", () => {
       .trim()
       .split("\n")
       .map((l) => JSON.parse(l));
-    expect(auditLines.some((e) => e.event === "bench.restore.failed")).toBe(true);
+    expect(auditLines.some((e) => e.event === "bench.restore.failed")).toBe(
+      true,
+    );
   });
 });

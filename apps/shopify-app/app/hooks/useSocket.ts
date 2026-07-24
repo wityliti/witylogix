@@ -94,12 +94,9 @@ export function useSocket(options: UseSocketOptions = {}): UseSocketResult {
     [],
   );
 
-  const emit = useCallback(
-    (event: string, ...args: unknown[]) => {
-      socketRef.current?.emit(event, ...args);
-    },
-    [],
-  );
+  const emit = useCallback((event: string, ...args: unknown[]) => {
+    socketRef.current?.emit(event, ...args);
+  }, []);
 
   return { isConnected, socket: socketRef.current, on, off, emit };
 }

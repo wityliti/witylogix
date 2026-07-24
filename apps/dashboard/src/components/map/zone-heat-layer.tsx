@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { getLeaflet, getMapById } from './wl-map';
+import { useEffect, useRef } from "react";
+import { getLeaflet, getMapById } from "./wl-map";
 
 export interface ZonePoint {
   name: string;
@@ -18,8 +18,14 @@ interface ZoneHeatLayerProps {
 }
 
 const PALETTE = [
-  '#818cf8', '#34d399', '#fbbf24', '#f472b6',
-  '#60a5fa', '#a78bfa', '#2dd4bf', '#fb923c',
+  "#818cf8",
+  "#34d399",
+  "#fbbf24",
+  "#f472b6",
+  "#60a5fa",
+  "#a78bfa",
+  "#2dd4bf",
+  "#fb923c",
 ];
 
 export function ZoneHeatLayer({ mapId, zones }: ZoneHeatLayerProps) {
@@ -59,9 +65,9 @@ export function ZoneHeatLayer({ mapId, zones }: ZoneHeatLayerProps) {
             ? zone.trend > 0
               ? `<span style="color:#34d399">▲ ${zone.trend}%</span>`
               : zone.trend < 0
-              ? `<span style="color:#f87171">▼ ${Math.abs(zone.trend)}%</span>`
-              : '<span style="color:#6b7280">→ 0%</span>'
-            : '';
+                ? `<span style="color:#f87171">▼ ${Math.abs(zone.trend)}%</span>`
+                : '<span style="color:#6b7280">→ 0%</span>'
+            : "";
 
         circle.bindPopup(`
           <div style="font-family:ui-sans-serif,system-ui;min-width:150px">
@@ -74,12 +80,12 @@ export function ZoneHeatLayer({ mapId, zones }: ZoneHeatLayerProps) {
               <span style="color:#94a3b8">Share</span>
               <span style="color:#e2e8f0;font-weight:600">${zone.pct}%</span>
             </div>
-            ${trendHtml ? `<div style="margin-top:6px;font-size:11px">Trend: ${trendHtml}</div>` : ''}
+            ${trendHtml ? `<div style="margin-top:6px;font-size:11px">Trend: ${trendHtml}</div>` : ""}
           </div>
         `);
 
         const labelIcon = L.divIcon({
-          className: '',
+          className: "",
           html: `<span style="
             display:inline-block;
             background:rgba(10,10,20,.88);

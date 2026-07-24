@@ -16,7 +16,11 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { EmailRoutingEngine } from "../email-routing-engine.js";
 import { EmailAdapter, type SendResult } from "../email-adapter.js";
-import type { EmailMessage, EmailAdapterConfig, EmailRouteRule } from "../types.js";
+import type {
+  EmailMessage,
+  EmailAdapterConfig,
+  EmailRouteRule,
+} from "../types.js";
 
 // Mock email adapter for testing
 class MockEmailAdapter extends EmailAdapter {
@@ -319,7 +323,7 @@ describe("EmailRoutingEngine", () => {
 
       // Make it fail
       vi.spyOn(failingAdapter, "send").mockRejectedValue(
-        new Error("API Error")
+        new Error("API Error"),
       );
 
       engine.registerProvider("failing", failingAdapter);
@@ -350,20 +354,16 @@ describe("EmailRoutingEngine", () => {
       Object.defineProperty(failingAdapter, "provider", { value: "failing" });
 
       vi.spyOn(failingAdapter, "send").mockRejectedValue(
-        new Error("API Error")
+        new Error("API Error"),
       );
 
       vi.spyOn(mailgunAdapter, "send").mockRejectedValue(
-        new Error("API Error")
+        new Error("API Error"),
       );
 
-      vi.spyOn(sesAdapter, "send").mockRejectedValue(
-        new Error("API Error")
-      );
+      vi.spyOn(sesAdapter, "send").mockRejectedValue(new Error("API Error"));
 
-      vi.spyOn(gmailAdapter, "send").mockRejectedValue(
-        new Error("API Error")
-      );
+      vi.spyOn(gmailAdapter, "send").mockRejectedValue(new Error("API Error"));
 
       engine.registerProvider("failing", failingAdapter);
 
@@ -488,9 +488,7 @@ describe("EmailRoutingEngine", () => {
         textBody: "Test",
       };
 
-      expect(engine.routeMessage(message)).rejects.toThrow(
-        /suppressed/i
-      );
+      expect(engine.routeMessage(message)).rejects.toThrow(/suppressed/i);
     });
 
     it("should clear all suppressions", () => {

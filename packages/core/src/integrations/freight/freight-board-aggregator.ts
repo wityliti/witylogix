@@ -214,7 +214,9 @@ export class FreightBoardAggregator extends EventEmitter {
    * @param criteria - Search criteria
    * @returns Aggregated and deduplicated loads
    */
-  async searchAllBoards(criteria: Record<string, unknown>): Promise<AggregatedLoad[]> {
+  async searchAllBoards(
+    criteria: Record<string, unknown>,
+  ): Promise<AggregatedLoad[]> {
     try {
       const results = await Promise.allSettled([
         this.datClient.searchLoads(criteria),
@@ -269,7 +271,7 @@ export class FreightBoardAggregator extends EventEmitter {
       return aggregatedLoads;
     } catch (error) {
       throw new Error(
-        `Aggregator search failed: ${error instanceof Error ? error.message : String(error)}`
+        `Aggregator search failed: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -306,12 +308,13 @@ export class FreightBoardAggregator extends EventEmitter {
       // Calculate statistics
       const rates = allQuotes.map((q) => q.amount);
       const bestRate = Math.min(...rates);
-      const averageRate =
-        rates.reduce((a, b) => a + b, 0) / rates.length;
+      const averageRate = rates.reduce((a, b) => a + b, 0) / rates.length;
       const variance =
         Math.sqrt(
-          rates.reduce((sum, rate) => sum + Math.pow(rate - averageRate, 2), 0) /
-            rates.length
+          rates.reduce(
+            (sum, rate) => sum + Math.pow(rate - averageRate, 2),
+            0,
+          ) / rates.length,
         ) || 0;
 
       return {
@@ -328,7 +331,7 @@ export class FreightBoardAggregator extends EventEmitter {
       };
     } catch (error) {
       throw new Error(
-        `Rate comparison failed: ${error instanceof Error ? error.message : String(error)}`
+        `Rate comparison failed: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -342,7 +345,7 @@ export class FreightBoardAggregator extends EventEmitter {
    */
   async getBestLaneRate(
     origin: string,
-    destination: string
+    destination: string,
   ): Promise<{ rate: LaneRate; provider: string }> {
     try {
       const results = await Promise.allSettled([
@@ -367,13 +370,13 @@ export class FreightBoardAggregator extends EventEmitter {
 
       // Find best (lowest) rate
       const bestRate = rates.reduce((best, current) =>
-        current.ratePerMile < best.ratePerMile ? current : best
+        current.ratePerMile < best.ratePerMile ? current : best,
       );
 
       return { rate: bestRate, provider: bestRate.provider };
     } catch (error) {
       throw new Error(
-        `Lane rate lookup failed: ${error instanceof Error ? error.message : String(error)}`
+        `Lane rate lookup failed: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -385,7 +388,7 @@ export class FreightBoardAggregator extends EventEmitter {
    * @returns Array of carrier profiles
    */
   async searchCarriersAllBoards(
-    criteria: Record<string, unknown>
+    criteria: Record<string, unknown>,
   ): Promise<CarrierProfile[]> {
     try {
       const results = await Promise.allSettled([
@@ -412,7 +415,7 @@ export class FreightBoardAggregator extends EventEmitter {
       return carriers;
     } catch (error) {
       throw new Error(
-        `Carrier search failed: ${error instanceof Error ? error.message : String(error)}`
+        `Carrier search failed: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -423,7 +426,9 @@ export class FreightBoardAggregator extends EventEmitter {
    * @param carrierId - Carrier identifier
    * @returns Aggregated carrier score
    */
-  async aggregateCarrierScore(carrierId: string): Promise<AggregatedCarrierScore> {
+  async aggregateCarrierScore(
+    carrierId: string,
+  ): Promise<AggregatedCarrierScore> {
     try {
       const results = await Promise.allSettled([
         this.datClient.scoreCarrier(carrierId),
@@ -452,7 +457,7 @@ export class FreightBoardAggregator extends EventEmitter {
       // Calculate weighted average
       const overallRating = ratings.reduce(
         (sum, r) => sum + r.rating * r.weight,
-        0
+        0,
       );
 
       // Extract factors from first available rating
@@ -480,7 +485,7 @@ export class FreightBoardAggregator extends EventEmitter {
       };
     } catch (error) {
       throw new Error(
-        `Carrier scoring failed: ${error instanceof Error ? error.message : String(error)}`
+        `Carrier scoring failed: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -494,7 +499,7 @@ export class FreightBoardAggregator extends EventEmitter {
    */
   async getMarketRateAnalytics(
     origin: string,
-    destination: string
+    destination: string,
   ): Promise<MarketRateAnalytics> {
     try {
       const laneId = `${origin}-${destination}`;
@@ -522,7 +527,9 @@ export class FreightBoardAggregator extends EventEmitter {
         }
       });
 
-      const successCount = results.filter((r) => r.status === "fulfilled").length;
+      const successCount = results.filter(
+        (r) => r.status === "fulfilled",
+      ).length;
 
       if (rates.length === 0) {
         throw new Error("No rate data available");
@@ -537,7 +544,7 @@ export class FreightBoardAggregator extends EventEmitter {
           : rates[Math.floor(rates.length / 2)]!;
 
       // Estimate supply/demand (50 = balanced, <50 = oversupply, >50 = undersupply)
-      const supplyDemandIndex = Math.min(100, Math.max(0, 50 + (avgTrend / 2)));
+      const supplyDemandIndex = Math.min(100, Math.max(0, 50 + avgTrend / 2));
 
       return {
         laneId,
@@ -557,7 +564,7 @@ export class FreightBoardAggregator extends EventEmitter {
       };
     } catch (error) {
       throw new Error(
-        `Market analytics failed: ${error instanceof Error ? error.message : String(error)}`
+        `Market analytics failed: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }

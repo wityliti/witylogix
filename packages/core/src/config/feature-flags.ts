@@ -172,7 +172,7 @@ const tenantOverrides: Map<string, Set<FeatureFlag>> = new Map();
  */
 export function isFeatureEnabled(
   flag: FeatureFlag | string,
-  context?: FeatureFlagContext
+  context?: FeatureFlagContext,
 ): boolean {
   const config = ConfigService.getInstance();
   const env = config.get<string>("server.env", "development");
@@ -210,7 +210,7 @@ export function isFeatureEnabled(
   if (enabled && context?.percentageRollout !== undefined) {
     const rolloutEnabled = evaluateRollout(
       context.percentageRollout,
-      context.tenantId || context.userId || ""
+      context.tenantId || context.userId || "",
     );
     return rolloutEnabled;
   }
@@ -226,7 +226,7 @@ export function isFeatureEnabled(
  */
 export function enableFeatureForTenant(
   flag: FeatureFlag,
-  tenantId: string
+  tenantId: string,
 ): void {
   if (!tenantOverrides.has(tenantId)) {
     tenantOverrides.set(tenantId, new Set());
@@ -242,7 +242,7 @@ export function enableFeatureForTenant(
  */
 export function disableFeatureForTenant(
   flag: FeatureFlag,
-  tenantId: string
+  tenantId: string,
 ): void {
   const overrides = tenantOverrides.get(tenantId);
   if (overrides) {

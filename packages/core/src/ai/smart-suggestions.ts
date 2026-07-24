@@ -77,9 +77,7 @@ export class SmartSuggestions {
   /**
    * Get suggestions for current context
    */
-  async generateSuggestions(
-    context: PageContext
-  ): Promise<Suggestion[]> {
+  async generateSuggestions(context: PageContext): Promise<Suggestion[]> {
     const suggestions: Suggestion[] = [];
 
     // Apply all enabled rules
@@ -106,7 +104,7 @@ export class SmartSuggestions {
     // Filter out dismissed suggestions
     const dismissed = await this.getDismissedSuggestions(
       context.tenantId,
-      context.userId
+      context.userId,
     );
 
     // Score and sort by priority
@@ -114,7 +112,7 @@ export class SmartSuggestions {
       .filter(
         (s) =>
           !dismissed.has(s.id) &&
-          (!s.snoozedUntil || s.snoozedUntil < new Date())
+          (!s.snoozedUntil || s.snoozedUntil < new Date()),
       )
       .sort((a, b) => {
         const urgencyScore = {
@@ -136,7 +134,7 @@ export class SmartSuggestions {
   async dismissSuggestion(
     suggestionId: string,
     tenantId: string,
-    userId: string
+    userId: string,
   ): Promise<void> {
     const cacheKey = `${tenantId}:${userId}`;
     if (!this.dismissedCache.has(cacheKey)) {
@@ -162,7 +160,7 @@ export class SmartSuggestions {
     suggestionId: string,
     tenantId: string,
     userId: string,
-    minutes: number = 60
+    minutes: number = 60,
   ): Promise<void> {
     const snoozedUntil = new Date(Date.now() + minutes * 60 * 1000);
 
@@ -183,7 +181,7 @@ export class SmartSuggestions {
     suggestionId: string,
     tenantId: string,
     userId: string,
-    actionTaken: boolean = false
+    actionTaken: boolean = false,
   ): Promise<void> {
     await (prisma as any).suggestionMetric.create({
       data: {
@@ -214,7 +212,7 @@ export class SmartSuggestions {
 
   private async getDismissedSuggestions(
     tenantId: string,
-    userId: string
+    userId: string,
   ): Promise<Set<string>> {
     const cacheKey = `${tenantId}:${userId}`;
 
@@ -235,7 +233,7 @@ export class SmartSuggestions {
 
   private calculatePriority(
     context: PageContext,
-    suggestion: Partial<Suggestion>
+    suggestion: Partial<Suggestion>,
   ): number {
     const urgencyWeight = {
       critical: 1.0,
@@ -244,7 +242,10 @@ export class SmartSuggestions {
       low: 0.25,
     };
 
-    const recencyFactor = Math.max(0, 1 - (Date.now() - context.timestamp) / (24 * 60 * 60 * 1000));
+    const recencyFactor = Math.max(
+      0,
+      1 - (Date.now() - context.timestamp) / (24 * 60 * 60 * 1000),
+    );
     const urgency = urgencyWeight[suggestion.urgency || "low"] || 0.25;
 
     return Math.min(1, urgency * 0.7 + recencyFactor * 0.3);

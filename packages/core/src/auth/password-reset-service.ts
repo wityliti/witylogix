@@ -5,8 +5,8 @@
  * and password hashing. Includes rate limiting to prevent abuse.
  */
 
-import { randomBytes, scryptSync } from 'crypto';
-import { EventEmitter } from 'events';
+import { randomBytes, scryptSync } from "crypto";
+import { EventEmitter } from "events";
 
 export interface ResetToken {
   token: string;
@@ -46,7 +46,7 @@ class PasswordResetService extends EventEmitter {
    * @returns Generated token and expiry time
    */
   generateResetToken(email: string): { token: string; expiresAt: number } {
-    const token = randomBytes(32).toString('hex');
+    const token = randomBytes(32).toString("hex");
     const expiresAt = Date.now() + 3600000; // 1 hour expiry
 
     const resetToken: ResetToken = {
@@ -58,7 +58,7 @@ class PasswordResetService extends EventEmitter {
     };
 
     this.tokens.set(token, resetToken);
-    this.emit('token-generated', { email, token, expiresAt });
+    this.emit("token-generated", { email, token, expiresAt });
 
     return { token, expiresAt };
   }
@@ -80,11 +80,14 @@ class PasswordResetService extends EventEmitter {
     const windowStart = now - this.rateLimitConfig.windowMs;
 
     let emailRequests = this.rateLimits.get(email) || [];
-    emailRequests = emailRequests.filter((timestamp) => timestamp > windowStart);
+    emailRequests = emailRequests.filter(
+      (timestamp) => timestamp > windowStart,
+    );
 
     if (emailRequests.length >= this.rateLimitConfig.maxRequests) {
       const retryAfter = Math.ceil(
-        (Math.min(...emailRequests) + this.rateLimitConfig.windowMs - now) / 1000
+        (Math.min(...emailRequests) + this.rateLimitConfig.windowMs - now) /
+          1000,
       );
       return {
         success: false,
@@ -121,14 +124,14 @@ class PasswordResetService extends EventEmitter {
     if (!resetToken) {
       return {
         valid: false,
-        error: 'Invalid reset token. Please request a new password reset.',
+        error: "Invalid reset token. Please request a new password reset.",
       };
     }
 
     if (resetToken.used) {
       return {
         valid: false,
-        error: 'This reset token has already been used.',
+        error: "This reset token has already been used.",
       };
     }
 
@@ -136,7 +139,8 @@ class PasswordResetService extends EventEmitter {
       this.tokens.delete(token);
       return {
         valid: false,
-        error: 'This reset token has expired. Please request a new password reset.',
+        error:
+          "This reset token has expired. Please request a new password reset.",
       };
     }
 
@@ -152,8 +156,8 @@ class PasswordResetService extends EventEmitter {
    * @returns Hashed password
    */
   hashPassword(password: string): string {
-    const salt = randomBytes(16).toString('hex');
-    const hashed = scryptSync(password, salt, 64).toString('hex');
+    const salt = randomBytes(16).toString("hex");
+    const hashed = scryptSync(password, salt, 64).toString("hex");
     return `${salt}:${hashed}`;
   }
 
@@ -164,10 +168,10 @@ class PasswordResetService extends EventEmitter {
    * @returns True if password matches
    */
   verifyPassword(password: string, hash: string): boolean {
-    const [salt, hashed] = hash.split(':');
+    const [salt, hashed] = hash.split(":");
     if (!salt || !hashed) return false;
 
-    const computed = scryptSync(password, salt, 64).toString('hex');
+    const computed = scryptSync(password, salt, 64).toString("hex");
     return computed === hashed;
   }
 
@@ -181,14 +185,14 @@ class PasswordResetService extends EventEmitter {
   async resetPassword(
     token: string,
     newPassword: string,
-    onSessionRevoke?: (email: string) => Promise<void>
+    onSessionRevoke?: (email: string) => Promise<void>,
   ): Promise<PasswordResetResult> {
     // Validate token
     const validation = this.validateResetToken(token);
     if (!validation.valid) {
       return {
         success: false,
-        message: validation.error || 'Invalid token',
+        message: validation.error || "Invalid token",
         error: validation.error,
       };
     }
@@ -197,8 +201,8 @@ class PasswordResetService extends EventEmitter {
     if (!newPassword || newPassword.length < 8) {
       return {
         success: false,
-        message: 'Password must be at least 8 characters long',
-        error: 'Invalid password',
+        message: "Password must be at least 8 characters long",
+        error: "Invalid password",
       };
     }
 
@@ -217,17 +221,18 @@ class PasswordResetService extends EventEmitter {
         await onSessionRevoke(email);
       }
 
-      this.emit('password-reset', { email, timestamp: Date.now() });
+      this.emit("password-reset", { email, timestamp: Date.now() });
 
       return {
         success: true,
-        message: 'Password has been reset successfully',
+        message: "Password has been reset successfully",
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       return {
         success: false,
-        message: 'Failed to reset password',
+        message: "Failed to reset password",
         error: errorMessage,
       };
     }

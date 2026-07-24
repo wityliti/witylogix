@@ -105,7 +105,10 @@ describe("MetricsCollector", () => {
     });
 
     it("should format labels correctly", () => {
-      collector.incrementCounter("requests", 1, { method: "GET", status: "200" });
+      collector.incrementCounter("requests", 1, {
+        method: "GET",
+        status: "200",
+      });
       const prometheus = collector.getPrometheusMetrics();
       expect(prometheus).toMatch(/method="GET"/);
       expect(prometheus).toMatch(/status="200"/);
@@ -229,14 +232,20 @@ describe("MetricsCollector", () => {
 
   describe("business metrics", () => {
     it("should track orders", () => {
-      collector.incrementCounter("orders_created_total", 1, { tenant: "tenant-123" });
-      collector.incrementCounter("orders_created_total", 2, { tenant: "tenant-456" });
+      collector.incrementCounter("orders_created_total", 1, {
+        tenant: "tenant-123",
+      });
+      collector.incrementCounter("orders_created_total", 2, {
+        tenant: "tenant-456",
+      });
       const prometheus = collector.getPrometheusMetrics();
       expect(prometheus).toContain("orders_created_total");
     });
 
     it("should track deliveries", () => {
-      collector.incrementCounter("deliveries_completed_total", 1, { courier: "uber" });
+      collector.incrementCounter("deliveries_completed_total", 1, {
+        courier: "uber",
+      });
       const prometheus = collector.getPrometheusMetrics();
       expect(prometheus).toContain("deliveries_completed_total");
     });

@@ -35,7 +35,7 @@ describe("ShippoSDKClient", () => {
         () =>
           new ShippoSDKClient({
             apiToken: "",
-          })
+          }),
       ).toThrow("Shippo API token is required");
     });
 
@@ -239,7 +239,10 @@ describe("ShippoSDKClient", () => {
       });
 
       // Mock fetch to avoid actual API calls
-      vi.stubGlobal("fetch", vi.fn(() => Promise.reject(new Error("Timeout"))));
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(() => Promise.reject(new Error("Timeout"))),
+      );
 
       try {
         // Should throw after hitting rate limit

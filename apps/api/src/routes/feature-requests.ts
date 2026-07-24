@@ -33,7 +33,9 @@ const createFeatureRequestSchema = z.object({
 const updateFeatureRequestSchema = z.object({
   title: z.string().min(5).max(200).optional(),
   description: z.string().min(10).max(5000).optional(),
-  status: z.enum(["OPEN", "PLANNED", "IN_PROGRESS", "COMPLETED", "REJECTED"]).optional(),
+  status: z
+    .enum(["OPEN", "PLANNED", "IN_PROGRESS", "COMPLETED", "REJECTED"])
+    .optional(),
   category: z.string().optional(),
 });
 
@@ -43,7 +45,9 @@ const paginationSchema = z.object({
 });
 
 const listFeatureRequestsQuery = paginationSchema.extend({
-  status: z.enum(["OPEN", "PLANNED", "IN_PROGRESS", "COMPLETED", "REJECTED"]).optional(),
+  status: z
+    .enum(["OPEN", "PLANNED", "IN_PROGRESS", "COMPLETED", "REJECTED"])
+    .optional(),
   category: z.string().optional(),
   search: z.string().optional(),
   sort: z.enum(["votes", "createdAt", "updatedAt"]).default("votes"),
@@ -61,7 +65,9 @@ async function featureRequestsRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.post("/", async (request: FastifyRequest, reply: FastifyReply) => {
     const body = createFeatureRequestSchema.parse(request.body);
 
-    const featureRequest = await (request.tenantDb as any).featureRequest.create({
+    const featureRequest = await (
+      request.tenantDb as any
+    ).featureRequest.create({
       data: {
         shopId: request.shopId,
         title: body.title,
@@ -77,7 +83,11 @@ async function featureRequestsRoutes(fastify: FastifyInstance): Promise<void> {
     });
 
     fastify.log.info(
-      { shopId: request.shopId, requestId: featureRequest.id, title: body.title },
+      {
+        shopId: request.shopId,
+        requestId: featureRequest.id,
+        title: body.title,
+      },
       "Feature request created",
     );
 
@@ -154,7 +164,9 @@ async function featureRequestsRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
     const { id } = request.params as { id: string };
 
-    const featureRequest = await (request.tenantDb as any).featureRequest.findUnique({
+    const featureRequest = await (
+      request.tenantDb as any
+    ).featureRequest.findUnique({
       where: { id },
       include: {
         creator: { select: { id: true, email: true, name: true } },
@@ -167,13 +179,17 @@ async function featureRequestsRoutes(fastify: FastifyInstance): Promise<void> {
     }
 
     if (featureRequest.shopId !== request.shopId) {
-      throw new ForbiddenError("Cannot access feature request from another shop");
+      throw new ForbiddenError(
+        "Cannot access feature request from another shop",
+      );
     }
 
     return {
       data: {
         ...featureRequest,
-        userVoted: featureRequest.votes.some((v: any) => v.userId === request.auth.userId),
+        userVoted: featureRequest.votes.some(
+          (v: any) => v.userId === request.auth.userId,
+        ),
         voteCount: featureRequest.votes.length,
         votes: undefined,
       },
@@ -188,7 +204,9 @@ async function featureRequestsRoutes(fastify: FastifyInstance): Promise<void> {
     const { id } = request.params as { id: string };
     const body = updateFeatureRequestSchema.parse(request.body);
 
-    const featureRequest = await (request.tenantDb as any).featureRequest.findUnique({
+    const featureRequest = await (
+      request.tenantDb as any
+    ).featureRequest.findUnique({
       where: { id },
     });
 
@@ -197,7 +215,9 @@ async function featureRequestsRoutes(fastify: FastifyInstance): Promise<void> {
     }
 
     if (featureRequest.shopId !== request.shopId) {
-      throw new ForbiddenError("Cannot update feature request from another shop");
+      throw new ForbiddenError(
+        "Cannot update feature request from another shop",
+      );
     }
 
     const updated = await (request.tenantDb as any).featureRequest.update({
@@ -229,7 +249,9 @@ async function featureRequestsRoutes(fastify: FastifyInstance): Promise<void> {
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { id } = request.params as { id: string };
 
-      const featureRequest = await (request.tenantDb as any).featureRequest.findUnique({
+      const featureRequest = await (
+        request.tenantDb as any
+      ).featureRequest.findUnique({
         where: { id },
       });
 
@@ -238,11 +260,15 @@ async function featureRequestsRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       if (featureRequest.shopId !== request.shopId) {
-        throw new ForbiddenError("Cannot vote on feature request from another shop");
+        throw new ForbiddenError(
+          "Cannot vote on feature request from another shop",
+        );
       }
 
       // Check if user already voted
-      const existingVote = await (request.tenantDb as any).featureRequestVote.findFirst({
+      const existingVote = await (
+        request.tenantDb as any
+      ).featureRequestVote.findFirst({
         where: {
           featureRequestId: id,
           userId: request.auth.userId,
@@ -264,7 +290,11 @@ async function featureRequestsRoutes(fastify: FastifyInstance): Promise<void> {
         });
 
         fastify.log.info(
-          { shopId: request.shopId, requestId: id, userId: request.auth.userId },
+          {
+            shopId: request.shopId,
+            requestId: id,
+            userId: request.auth.userId,
+          },
           "Feature request vote removed",
         );
 
@@ -287,7 +317,11 @@ async function featureRequestsRoutes(fastify: FastifyInstance): Promise<void> {
         });
 
         fastify.log.info(
-          { shopId: request.shopId, requestId: id, userId: request.auth.userId },
+          {
+            shopId: request.shopId,
+            requestId: id,
+            userId: request.auth.userId,
+          },
           "Feature request voted",
         );
 
@@ -299,36 +333,43 @@ async function featureRequestsRoutes(fastify: FastifyInstance): Promise<void> {
 
   // ── DELETE /:id ──────────────────────────────────────────────
 
-  fastify.delete("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
+  fastify.delete(
+    "/:id",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
 
-    const { id } = request.params as { id: string };
+      const { id } = request.params as { id: string };
 
-    const featureRequest = await (request.tenantDb as any).featureRequest.findUnique({
-      where: { id },
-    });
+      const featureRequest = await (
+        request.tenantDb as any
+      ).featureRequest.findUnique({
+        where: { id },
+      });
 
-    if (!featureRequest) {
-      throw new NotFoundError("Feature request", id);
-    }
+      if (!featureRequest) {
+        throw new NotFoundError("Feature request", id);
+      }
 
-    if (featureRequest.shopId !== request.shopId) {
-      throw new ForbiddenError("Cannot delete feature request from another shop");
-    }
+      if (featureRequest.shopId !== request.shopId) {
+        throw new ForbiddenError(
+          "Cannot delete feature request from another shop",
+        );
+      }
 
-    // Soft delete or hard delete with cascade
-    const deleted = await (request.tenantDb as any).featureRequest.delete({
-      where: { id },
-    });
+      // Soft delete or hard delete with cascade
+      const deleted = await (request.tenantDb as any).featureRequest.delete({
+        where: { id },
+      });
 
-    fastify.log.info(
-      { shopId: request.shopId, requestId: id },
-      "Feature request deleted",
-    );
+      fastify.log.info(
+        { shopId: request.shopId, requestId: id },
+        "Feature request deleted",
+      );
 
-    reply.status(204);
-    return;
-  });
+      reply.status(204);
+      return;
+    },
+  );
 }
 
 export default featureRequestsRoutes;

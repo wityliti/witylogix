@@ -17,7 +17,7 @@ export interface ETAPrediction {
   confidence: number; // 0-1
   modelUsed: string;
   modelsConsidered: string[];
-  trafficCondition: 'light' | 'moderate' | 'heavy' | 'unknown';
+  trafficCondition: "light" | "moderate" | "heavy" | "unknown";
   estimationError?: number; // minutes (if actual delivery time is known)
   metadata?: Record<string, unknown>;
 }
@@ -47,7 +47,7 @@ export interface Route {
   destination: Coordinates;
   distanceKm: number;
   estimatedTimeMinutes: number;
-  zoneType: 'urban' | 'suburban' | 'rural';
+  zoneType: "urban" | "suburban" | "rural";
 }
 
 /**
@@ -63,8 +63,8 @@ export interface HistoricalRoute {
   actualArrival: Date;
   dayOfWeek: number;
   hourOfDay: number;
-  trafficCondition: 'light' | 'moderate' | 'heavy';
-  zoneType: 'urban' | 'suburban' | 'rural';
+  trafficCondition: "light" | "moderate" | "heavy";
+  zoneType: "urban" | "suburban" | "rural";
   driverId: string;
   success: boolean;
 }
@@ -107,7 +107,7 @@ export interface AccuracyMetrics {
 export interface TrafficZone {
   zoneId: string;
   zoneName: string;
-  zoneType: 'urban' | 'suburban' | 'rural';
+  zoneType: "urban" | "suburban" | "rural";
   center: Coordinates;
   boundingBox: {
     ne: Coordinates;
@@ -124,7 +124,7 @@ export interface TrafficData {
   origin: Coordinates;
   destination: Coordinates;
   timestamp: Date;
-  trafficCondition: 'light' | 'moderate' | 'heavy';
+  trafficCondition: "light" | "moderate" | "heavy";
   averageSpeed: number; // km/h
   averageDuration: number; // minutes
   confidence: number; // 0-1
@@ -168,7 +168,7 @@ export interface BatchETAResponse {
 export interface TrafficUpdate {
   timestamp: Date;
   zone: string;
-  condition: 'light' | 'moderate' | 'heavy';
+  condition: "light" | "moderate" | "heavy";
   affectedZones: string[];
   expectedDuration: number; // minutes
 }

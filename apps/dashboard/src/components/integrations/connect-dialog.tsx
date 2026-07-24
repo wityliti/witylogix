@@ -180,7 +180,11 @@ function StepDetails({ provider, onNext, onCancel }: StepDetailsProps) {
 
       <div className={cn("space-y-3 bg-wl-bg-surface p-4 rounded-lg")}>
         <div>
-          <div className={cn("text-xs text-wl-text-tertiary uppercase tracking-wide")}>
+          <div
+            className={cn(
+              "text-xs text-wl-text-tertiary uppercase tracking-wide",
+            )}
+          >
             Provider
           </div>
           <div className={cn("text-sm font-medium text-wl-text-primary")}>
@@ -189,7 +193,11 @@ function StepDetails({ provider, onNext, onCancel }: StepDetailsProps) {
         </div>
 
         <div>
-          <div className={cn("text-xs text-wl-text-tertiary uppercase tracking-wide")}>
+          <div
+            className={cn(
+              "text-xs text-wl-text-tertiary uppercase tracking-wide",
+            )}
+          >
             Description
           </div>
           <div className={cn("text-sm text-wl-text-secondary")}>
@@ -198,7 +206,11 @@ function StepDetails({ provider, onNext, onCancel }: StepDetailsProps) {
         </div>
 
         <div>
-          <div className={cn("text-xs text-wl-text-tertiary uppercase tracking-wide")}>
+          <div
+            className={cn(
+              "text-xs text-wl-text-tertiary uppercase tracking-wide",
+            )}
+          >
             Authentication Type
           </div>
           <div className={cn("text-sm font-medium text-wl-text-primary")}>
@@ -213,7 +225,11 @@ function StepDetails({ provider, onNext, onCancel }: StepDetailsProps) {
         </div>
 
         <div>
-          <div className={cn("text-xs text-wl-text-tertiary uppercase tracking-wide")}>
+          <div
+            className={cn(
+              "text-xs text-wl-text-tertiary uppercase tracking-wide",
+            )}
+          >
             Permissions Requested
           </div>
           <div className={cn("text-sm text-wl-text-primary space-y-1 mt-1")}>
@@ -295,7 +311,11 @@ function StepCredentials({
       ) : provider.authType === "api_key" ? (
         <div className={cn("space-y-3")}>
           <div className={cn("relative")}>
-            <label className={cn("text-sm font-semibold text-wl-text-primary block mb-2")}>
+            <label
+              className={cn(
+                "text-sm font-semibold text-wl-text-primary block mb-2",
+              )}
+            >
               API Key
             </label>
             <div className={cn("relative flex items-center")}>
@@ -309,7 +329,7 @@ function StepCredentials({
                   "border rounded-md outline-none",
                   "px-4 py-2 text-sm",
                   "border-wl-border-default focus:border-wl-primary-500",
-                  "transition-all duration-fast"
+                  "transition-all duration-fast",
                 )}
               />
               <button
@@ -337,7 +357,11 @@ function StepCredentials({
             placeholder="Enter username"
           />
           <div className={cn("relative")}>
-            <label className={cn("text-sm font-semibold text-wl-text-primary block mb-2")}>
+            <label
+              className={cn(
+                "text-sm font-semibold text-wl-text-primary block mb-2",
+              )}
+            >
               Password
             </label>
             <div className={cn("relative flex items-center")}>
@@ -351,7 +375,7 @@ function StepCredentials({
                   "border rounded-md outline-none",
                   "px-4 py-2 text-sm",
                   "border-wl-border-default focus:border-wl-primary-500",
-                  "transition-all duration-fast"
+                  "transition-all duration-fast",
                 )}
               />
               <button
@@ -376,7 +400,11 @@ function StepCredentials({
             placeholder="Enter Account SID"
           />
           <div className={cn("relative")}>
-            <label className={cn("text-sm font-semibold text-wl-text-primary block mb-2")}>
+            <label
+              className={cn(
+                "text-sm font-semibold text-wl-text-primary block mb-2",
+              )}
+            >
               Auth Token
             </label>
             <div className={cn("relative flex items-center")}>
@@ -390,7 +418,7 @@ function StepCredentials({
                   "border rounded-md outline-none",
                   "px-4 py-2 text-sm",
                   "border-wl-border-default focus:border-wl-primary-500",
-                  "transition-all duration-fast"
+                  "transition-all duration-fast",
                 )}
               />
               <button
@@ -409,7 +437,12 @@ function StepCredentials({
       )}
 
       <div className={cn("flex gap-2 pt-4")}>
-        <Button variant="ghost" className="flex-1" onClick={onBack} disabled={isLoading}>
+        <Button
+          variant="ghost"
+          className="flex-1"
+          onClick={onBack}
+          disabled={isLoading}
+        >
           Back
         </Button>
         <Button
@@ -441,7 +474,13 @@ interface StepTestingProps {
   onBack: () => void;
 }
 
-function StepTesting({ provider, testStatus, onRetry, onSuccess, onBack }: StepTestingProps) {
+function StepTesting({
+  provider,
+  testStatus,
+  onRetry,
+  onSuccess,
+  onBack,
+}: StepTestingProps) {
   return (
     <div className={cn("space-y-4 text-center py-6")}>
       {testStatus === "pending" && (
@@ -465,11 +504,7 @@ function StepTesting({ provider, testStatus, onRetry, onSuccess, onBack }: StepT
           <p className={cn("text-sm text-wl-text-tertiary")}>
             Your integration is ready to use
           </p>
-          <Button
-            variant="primary"
-            className="w-full mt-4"
-            onClick={onSuccess}
-          >
+          <Button variant="primary" className="w-full mt-4" onClick={onSuccess}>
             Complete Setup
           </Button>
         </>
@@ -524,4 +559,3 @@ function StepSuccess({ provider, onClose }: StepSuccessProps) {
     </div>
   );
 }
-

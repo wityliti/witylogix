@@ -32,16 +32,86 @@ interface FleetFuelChartProps {
 }
 
 const defaultData: FuelDataPoint[] = [
-  { date: new Date("2025-03-01"), gallons: 245, cost: 820, vehicle: "TR-2401", driver: "John Smith", mpg: 6.8 },
-  { date: new Date("2025-03-02"), gallons: 218, cost: 728, vehicle: "TR-2405", driver: "Maria Garcia", mpg: 7.2 },
-  { date: new Date("2025-03-03"), gallons: 251, cost: 835, vehicle: "TR-2312", driver: "Robert Wilson", mpg: 6.5 },
-  { date: new Date("2025-03-04"), gallons: 232, cost: 774, vehicle: "TR-2401", driver: "John Smith", mpg: 6.9 },
-  { date: new Date("2025-03-05"), gallons: 256, cost: 844, vehicle: "TR-2405", driver: "Maria Garcia", mpg: 6.3 },
-  { date: new Date("2025-03-06"), gallons: 240, cost: 804, vehicle: "TR-2312", driver: "Robert Wilson", mpg: 7.1 },
-  { date: new Date("2025-03-07"), gallons: 227, cost: 752, vehicle: "TR-2401", driver: "John Smith", mpg: 7.3 },
-  { date: new Date("2025-03-08"), gallons: 248, cost: 812, vehicle: "TR-2405", driver: "Maria Garcia", mpg: 6.6 },
-  { date: new Date("2025-03-09"), gallons: 235, cost: 784, vehicle: "TR-2312", driver: "Robert Wilson", mpg: 7.0 },
-  { date: new Date("2025-03-10"), gallons: 260, cost: 858, vehicle: "TR-2401", driver: "John Smith", mpg: 6.4 },
+  {
+    date: new Date("2025-03-01"),
+    gallons: 245,
+    cost: 820,
+    vehicle: "TR-2401",
+    driver: "John Smith",
+    mpg: 6.8,
+  },
+  {
+    date: new Date("2025-03-02"),
+    gallons: 218,
+    cost: 728,
+    vehicle: "TR-2405",
+    driver: "Maria Garcia",
+    mpg: 7.2,
+  },
+  {
+    date: new Date("2025-03-03"),
+    gallons: 251,
+    cost: 835,
+    vehicle: "TR-2312",
+    driver: "Robert Wilson",
+    mpg: 6.5,
+  },
+  {
+    date: new Date("2025-03-04"),
+    gallons: 232,
+    cost: 774,
+    vehicle: "TR-2401",
+    driver: "John Smith",
+    mpg: 6.9,
+  },
+  {
+    date: new Date("2025-03-05"),
+    gallons: 256,
+    cost: 844,
+    vehicle: "TR-2405",
+    driver: "Maria Garcia",
+    mpg: 6.3,
+  },
+  {
+    date: new Date("2025-03-06"),
+    gallons: 240,
+    cost: 804,
+    vehicle: "TR-2312",
+    driver: "Robert Wilson",
+    mpg: 7.1,
+  },
+  {
+    date: new Date("2025-03-07"),
+    gallons: 227,
+    cost: 752,
+    vehicle: "TR-2401",
+    driver: "John Smith",
+    mpg: 7.3,
+  },
+  {
+    date: new Date("2025-03-08"),
+    gallons: 248,
+    cost: 812,
+    vehicle: "TR-2405",
+    driver: "Maria Garcia",
+    mpg: 6.6,
+  },
+  {
+    date: new Date("2025-03-09"),
+    gallons: 235,
+    cost: 784,
+    vehicle: "TR-2312",
+    driver: "Robert Wilson",
+    mpg: 7.0,
+  },
+  {
+    date: new Date("2025-03-10"),
+    gallons: 260,
+    cost: 858,
+    vehicle: "TR-2401",
+    driver: "John Smith",
+    mpg: 6.4,
+  },
 ];
 
 export function FleetFuelChart({
@@ -51,9 +121,13 @@ export function FleetFuelChart({
   onComparisonChange,
   className,
 }: FleetFuelChartProps) {
-  const [selectedGroupBy, setSelectedGroupBy] = useState<"vehicle" | "driver" | "none">(groupBy);
+  const [selectedGroupBy, setSelectedGroupBy] = useState<
+    "vehicle" | "driver" | "none"
+  >(groupBy);
   const [showComparison, setShowComparison] = useState(comparisonEnabled);
-  const [dateRange, setDateRange] = useState<"week" | "month" | "custom">("month");
+  const [dateRange, setDateRange] = useState<"week" | "month" | "custom">(
+    "month",
+  );
 
   const sortedData = useMemo(() => {
     return [...data].sort((a, b) => a.date.getTime() - b.date.getTime());
@@ -62,12 +136,20 @@ export function FleetFuelChart({
   const metrics = useMemo(() => {
     const totalGallons = sortedData.reduce((sum, d) => sum + d.gallons, 0);
     const totalCost = sortedData.reduce((sum, d) => sum + d.cost, 0);
-    const avgMpg = sortedData.filter((d) => d.mpg).reduce((sum, d) => sum + (d.mpg || 0), 0) / sortedData.filter((d) => d.mpg).length;
-    const costPerMile = sortedData.length > 0 ? totalCost / (totalGallons * (avgMpg || 6.8)) : 0;
+    const avgMpg =
+      sortedData
+        .filter((d) => d.mpg)
+        .reduce((sum, d) => sum + (d.mpg || 0), 0) /
+      sortedData.filter((d) => d.mpg).length;
+    const costPerMile =
+      sortedData.length > 0 ? totalCost / (totalGallons * (avgMpg || 6.8)) : 0;
 
     return {
       totalGallons: totalGallons.toFixed(1),
-      totalCost: totalCost.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      totalCost: totalCost.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
       avgMpg: avgMpg.toFixed(2),
       costPerMile: costPerMile.toFixed(2),
     };
@@ -101,15 +183,27 @@ export function FleetFuelChart({
   };
 
   // Generate path data
-  const gallonsPath = sortedData.map((d, idx) => `${idx === 0 ? "M" : "L"} ${scaleX(d.date)} ${scaleGallons(d.gallons)}`).join(" ");
+  const gallonsPath = sortedData
+    .map(
+      (d, idx) =>
+        `${idx === 0 ? "M" : "L"} ${scaleX(d.date)} ${scaleGallons(d.gallons)}`,
+    )
+    .join(" ");
 
-  const costPath = sortedData.map((d, idx) => `${idx === 0 ? "M" : "L"} ${scaleX(d.date)} ${scaleCost(d.cost)}`).join(" ");
+  const costPath = sortedData
+    .map(
+      (d, idx) =>
+        `${idx === 0 ? "M" : "L"} ${scaleX(d.date)} ${scaleCost(d.cost)}`,
+    )
+    .join(" ");
 
   // Trend calculation
   const firstHalf = sortedData.slice(0, Math.floor(sortedData.length / 2));
   const secondHalf = sortedData.slice(Math.floor(sortedData.length / 2));
-  const firstHalfAvgCost = firstHalf.reduce((sum, d) => sum + d.cost, 0) / firstHalf.length;
-  const secondHalfAvgCost = secondHalf.reduce((sum, d) => sum + d.cost, 0) / secondHalf.length;
+  const firstHalfAvgCost =
+    firstHalf.reduce((sum, d) => sum + d.cost, 0) / firstHalf.length;
+  const secondHalfAvgCost =
+    secondHalf.reduce((sum, d) => sum + d.cost, 0) / secondHalf.length;
   const costTrend = secondHalfAvgCost - firstHalfAvgCost;
   const trendPercentage = ((costTrend / firstHalfAvgCost) * 100).toFixed(1);
 
@@ -126,7 +220,7 @@ export function FleetFuelChart({
     <div
       className={cn(
         "flex flex-col bg-wl-bg-surface border border-wl-border-subtle rounded-lg overflow-hidden",
-        className
+        className,
       )}
     >
       {/* Header */}
@@ -135,8 +229,12 @@ export function FleetFuelChart({
           <div className="flex items-center gap-3">
             <BarChart3 className="w-5 h-5 text-wl-primary-500" />
             <div>
-              <h3 className="text-base font-semibold text-wl-text-primary">Fleet Fuel Analytics</h3>
-              <p className="text-xs text-wl-text-secondary mt-1">Consumption and cost trends</p>
+              <h3 className="text-base font-semibold text-wl-text-primary">
+                Fleet Fuel Analytics
+              </h3>
+              <p className="text-xs text-wl-text-secondary mt-1">
+                Consumption and cost trends
+              </p>
             </div>
           </div>
 
@@ -168,12 +266,14 @@ export function FleetFuelChart({
               ].map(({ key, label }) => (
                 <button
                   key={key}
-                  onClick={() => handleGroupByChange(key as typeof selectedGroupBy)}
+                  onClick={() =>
+                    handleGroupByChange(key as typeof selectedGroupBy)
+                  }
                   className={cn(
                     "px-3 py-1 rounded text-xs font-medium transition-all",
                     selectedGroupBy === key
                       ? "bg-wl-primary-500 text-white"
-                      : "bg-wl-bg-surface border border-wl-border-subtle text-wl-text-secondary hover:border-wl-border-default"
+                      : "bg-wl-bg-surface border border-wl-border-subtle text-wl-text-secondary hover:border-wl-border-default",
                   )}
                 >
                   {label}
@@ -190,7 +290,10 @@ export function FleetFuelChart({
               onChange={handleComparisonToggle}
               className="w-4 h-4"
             />
-            <label htmlFor="comparison" className="text-sm text-wl-text-secondary cursor-pointer">
+            <label
+              htmlFor="comparison"
+              className="text-sm text-wl-text-secondary cursor-pointer"
+            >
               Compare with previous period
             </label>
           </div>
@@ -204,7 +307,9 @@ export function FleetFuelChart({
             <Fuel className="w-3 h-3" />
             Total Gallons
           </p>
-          <p className="text-lg font-bold text-wl-text-primary">{metrics.totalGallons}</p>
+          <p className="text-lg font-bold text-wl-text-primary">
+            {metrics.totalGallons}
+          </p>
           <p className="text-xs text-wl-text-secondary mt-1">gal</p>
         </div>
 
@@ -213,20 +318,31 @@ export function FleetFuelChart({
             <DollarSign className="w-3 h-3" />
             Total Cost
           </p>
-          <p className="text-lg font-bold text-wl-text-primary">${metrics.totalCost}</p>
+          <p className="text-lg font-bold text-wl-text-primary">
+            ${metrics.totalCost}
+          </p>
           <p className="text-xs text-wl-text-secondary mt-1">USD</p>
         </div>
 
         <div className="p-3 bg-wl-bg-surface rounded-lg">
           <p className="text-xs text-wl-text-secondary mb-1">Avg MPG</p>
-          <p className="text-lg font-bold text-wl-text-primary">{metrics.avgMpg}</p>
+          <p className="text-lg font-bold text-wl-text-primary">
+            {metrics.avgMpg}
+          </p>
           <p className="text-xs text-wl-success-400 mt-1">+0.2 trending</p>
         </div>
 
         <div className="p-3 bg-wl-bg-surface rounded-lg">
           <p className="text-xs text-wl-text-secondary mb-1">Cost per Mile</p>
-          <p className="text-lg font-bold text-wl-text-primary">${metrics.costPerMile}</p>
-          <p className={cn("text-xs mt-1 flex items-center gap-1", costTrend < 0 ? "text-wl-success-400" : "text-wl-danger-400")}>
+          <p className="text-lg font-bold text-wl-text-primary">
+            ${metrics.costPerMile}
+          </p>
+          <p
+            className={cn(
+              "text-xs mt-1 flex items-center gap-1",
+              costTrend < 0 ? "text-wl-success-400" : "text-wl-danger-400",
+            )}
+          >
             {costTrend < 0 ? (
               <>
                 <TrendingDown className="w-3 h-3" />
@@ -344,7 +460,10 @@ export function FleetFuelChart({
           <span className="text-wl-text-secondary">Gallons per day</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "var(--wl-warning-500)" }} />
+          <div
+            className="w-3 h-3 rounded-full"
+            style={{ backgroundColor: "var(--wl-warning-500)" }}
+          />
           <span className="text-wl-text-secondary">Cost per day</span>
         </div>
         <div className="flex items-center gap-2 ml-auto">

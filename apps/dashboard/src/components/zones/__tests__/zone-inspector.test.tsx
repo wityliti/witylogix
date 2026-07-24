@@ -1,11 +1,11 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
-import '@testing-library/jest-dom/vitest';
-import { ZoneInspector } from '../zone-inspector';
+import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import "@testing-library/jest-dom/vitest";
+import { ZoneInspector } from "../zone-inspector";
 
 const zone = {
-  id: 'z1',
-  name: 'South Hub',
+  id: "z1",
+  name: "South Hub",
   baseRate: 40,
   perKmRate: 8,
   minOrder: 0,
@@ -14,15 +14,15 @@ const zone = {
   priority: 0,
 };
 const overlay = {
-  id: 'z1',
+  id: "z1",
   openOrders: 12,
   drivers: 4,
   slaPct: 0.92,
-  health: 'good' as const,
+  health: "good" as const,
 };
 
-describe('<ZoneInspector>', () => {
-  it('monitor mode shows read-only zone summary', () => {
+describe("<ZoneInspector>", () => {
+  it("monitor mode shows read-only zone summary", () => {
     render(
       <ZoneInspector
         zone={zone}
@@ -33,11 +33,11 @@ describe('<ZoneInspector>', () => {
         onEditGeometry={() => {}}
       />,
     );
-    expect(screen.getByText('South Hub')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /edit geometry/i })).toBeNull();
+    expect(screen.getByText("South Hub")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /edit geometry/i })).toBeNull();
   });
 
-  it('configure mode reveals editable fields and Edit geometry', () => {
+  it("configure mode reveals editable fields and Edit geometry", () => {
     const onSave = vi.fn();
     render(
       <ZoneInspector
@@ -50,9 +50,13 @@ describe('<ZoneInspector>', () => {
       />,
     );
     const rate = screen.getByLabelText(/base rate/i) as HTMLInputElement;
-    fireEvent.change(rate, { target: { value: '45' } });
+    fireEvent.change(rate, { target: { value: "45" } });
     fireEvent.blur(rate);
-    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ baseRate: 45 }));
-    expect(screen.getByRole('button', { name: /edit geometry/i })).toBeInTheDocument();
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ baseRate: 45 }),
+    );
+    expect(
+      screen.getByRole("button", { name: /edit geometry/i }),
+    ).toBeInTheDocument();
   });
 });

@@ -3,7 +3,7 @@
  * REST endpoints for inventory, fulfillment, forecasting, and logistics
  */
 
-import type { Request, Response } from 'express';
+import type { Request, Response } from "express";
 import {
   DemandPlanner,
   SafetyStockCalculator,
@@ -12,7 +12,7 @@ import {
   ReplenishmentPlanner,
   type TimeSeriesData,
   type ForecastResult,
-} from './supply-chain-orchestrator-v2';
+} from "./supply-chain-orchestrator-v2";
 import {
   WaveManager,
   PickOptimizer,
@@ -23,7 +23,7 @@ import {
   type WaveConfig,
   type PickingStrategy,
   type CartonRule,
-} from './fulfillment-engine';
+} from "./fulfillment-engine";
 import type {
   SKU,
   InventoryItem,
@@ -40,7 +40,7 @@ import type {
   Vendor,
   ReturnAuthorization,
   StorageLocation,
-} from './supply-chain-types';
+} from "./supply-chain-types";
 
 export class SupplyChainAPI {
   private skus: Map<string, SKU> = new Map();
@@ -101,7 +101,7 @@ export class SupplyChainAPI {
       const item = this.inventory.get(itemId);
 
       if (!item) {
-        res.status(404).json({ error: 'Item not found' });
+        res.status(404).json({ error: "Item not found" });
         return;
       }
 
@@ -124,7 +124,7 @@ export class SupplyChainAPI {
 
   async searchInventory(req: Request, res: Response): Promise<void> {
     try {
-      const { warehouseId, skuId, _count = '20', _offset = '0' } = req.query;
+      const { warehouseId, skuId, _count = "20", _offset = "0" } = req.query;
       let results = Array.from(this.inventory.values());
 
       if (warehouseId) {
@@ -169,7 +169,7 @@ export class SupplyChainAPI {
       const po = this.purchaseOrders.get(poId);
 
       if (!po) {
-        res.status(404).json({ error: 'PO not found' });
+        res.status(404).json({ error: "PO not found" });
         return;
       }
 
@@ -199,16 +199,18 @@ export class SupplyChainAPI {
 
       const po = this.purchaseOrders.get(poId);
       if (!po) {
-        res.status(404).json({ error: 'PO not found' });
+        res.status(404).json({ error: "PO not found" });
         return;
       }
 
-      po.status = 'received';
-      po.actualDeliveryDate = new Date().toISOString().split('T')[0];
+      po.status = "received";
+      po.actualDeliveryDate = new Date().toISOString().split("T")[0];
 
       // Update inventory
       receivedItems.forEach((item) => {
-        const inv = Array.from(this.inventory.values()).find((i) => i.skuId === item.skuId);
+        const inv = Array.from(this.inventory.values()).find(
+          (i) => i.skuId === item.skuId,
+        );
         if (inv) {
           inv.quantity += item.quantity;
           inv.availableQuantity += item.quantity;
@@ -230,7 +232,7 @@ export class SupplyChainAPI {
   async createSalesOrder(req: Request, res: Response): Promise<void> {
     try {
       const order = req.body as SalesOrder;
-      order.status = 'pending';
+      order.status = "pending";
       this.salesOrders.set(order.orderId, order);
       res.status(201).json(order);
     } catch (error) {
@@ -244,7 +246,7 @@ export class SupplyChainAPI {
       const order = this.salesOrders.get(orderId);
 
       if (!order) {
-        res.status(404).json({ error: 'Order not found' });
+        res.status(404).json({ error: "Order not found" });
         return;
       }
 
@@ -260,14 +262,14 @@ export class SupplyChainAPI {
       const order = this.salesOrders.get(orderId);
 
       if (!order) {
-        res.status(404).json({ error: 'Order not found' });
+        res.status(404).json({ error: "Order not found" });
         return;
       }
 
       const allocation = this.orderAllocator.allocateOrders(
         [order],
         this.inventory as any,
-        Array.from(this.warehouses.values())
+        Array.from(this.warehouses.values()),
       );
 
       res.json({
@@ -291,7 +293,9 @@ export class SupplyChainAPI {
         config: WaveConfig;
       };
 
-      const orders = orderIds.map((id) => this.salesOrders.get(id)).filter(Boolean) as SalesOrder[];
+      const orders = orderIds
+        .map((id) => this.salesOrders.get(id))
+        .filter(Boolean) as SalesOrder[];
       const wave = this.waveManager.createWave(warehouseId, orders, config);
 
       res.status(201).json(wave);
@@ -325,19 +329,25 @@ export class SupplyChainAPI {
 
       let pickLists: PickList[] = [];
 
-      if (strategy.method === 'zone') {
+      if (strategy.method === "zone") {
         const zonePickLists = this.pickOptimizer.optimizeZonePicking(
           {} as any,
           orders,
-          new Map()
+          new Map(),
         );
         pickLists = Array.from(zonePickLists.values()).flat();
-      } else if (strategy.method === 'batch') {
+      } else if (strategy.method === "batch") {
         pickLists = this.pickOptimizer.optimizeBatchPicking({} as any, orders);
-      } else if (strategy.method === 'wave') {
+      } else if (strategy.method === "wave") {
         pickLists = [this.pickOptimizer.optimizeWavePicking({} as any, orders)];
-      } else if (strategy.method === 'cluster') {
-        pickLists = [this.pickOptimizer.optimizeClusterPicking({} as any, orders, new Map())];
+      } else if (strategy.method === "cluster") {
+        pickLists = [
+          this.pickOptimizer.optimizeClusterPicking(
+            {} as any,
+            orders,
+            new Map(),
+          ),
+        ];
       }
 
       res.json({
@@ -357,18 +367,22 @@ export class SupplyChainAPI {
 
   async forecastDemand(req: Request, res: Response): Promise<void> {
     try {
-      const { skuId, historicalData, method = 'exponential_smoothing', promotionFactor = 1.0 } =
-        req.body as {
-          skuId: string;
-          historicalData: TimeSeriesData[];
-          method: string;
-          promotionFactor: number;
-        };
+      const {
+        skuId,
+        historicalData,
+        method = "exponential_smoothing",
+        promotionFactor = 1.0,
+      } = req.body as {
+        skuId: string;
+        historicalData: TimeSeriesData[];
+        method: string;
+        promotionFactor: number;
+      };
 
       const result = this.demandPlanner.forecastDemand(
         historicalData,
         method as any,
-        promotionFactor
+        promotionFactor,
       );
 
       const forecast: DemandForecast = {
@@ -378,14 +392,16 @@ export class SupplyChainAPI {
         baseDemand: historicalData[historicalData.length - 1]?.demand || 0,
         seasonalFactor: 1.0,
         promotionLift: promotionFactor,
-        forecastedDemand: Math.round(result.forecast.reduce((a, b) => a + b) / result.forecast.length),
+        forecastedDemand: Math.round(
+          result.forecast.reduce((a, b) => a + b) / result.forecast.length,
+        ),
         confidenceInterval: { lower: result.lower[0], upper: result.upper[0] },
         method: method as any,
         mae: result.mae,
         rmse: result.rmse,
         mape: result.mape,
         createdAt: new Date().toISOString(),
-        createdBy: 'SYSTEM',
+        createdBy: "SYSTEM",
       };
 
       this.forecasts.set(forecast.forecastId, forecast);
@@ -401,13 +417,19 @@ export class SupplyChainAPI {
 
   async calculateReorderPoint(req: Request, res: Response): Promise<void> {
     try {
-      const { skuId, leadTimeDays, averageDailyDemand, safetyStock, minOrderQuantity } = req.body;
+      const {
+        skuId,
+        leadTimeDays,
+        averageDailyDemand,
+        safetyStock,
+        minOrderQuantity,
+      } = req.body;
 
       const reorderPoint = this.reorderEngine.calculateReorderPoint(
         leadTimeDays,
         averageDailyDemand,
         safetyStock,
-        minOrderQuantity
+        minOrderQuantity,
       );
 
       reorderPoint.skuId = skuId;
@@ -429,7 +451,9 @@ export class SupplyChainAPI {
       }> = [];
 
       for (const [skuId, reorderPoint] of this.reorderPoints) {
-        const inv = Array.from(this.inventory.values()).find((i) => i.skuId === skuId);
+        const inv = Array.from(this.inventory.values()).find(
+          (i) => i.skuId === skuId,
+        );
 
         if (inv && inv.availableQuantity <= reorderPoint.reorderPointQuantity) {
           alerts.push({
@@ -471,14 +495,15 @@ export class SupplyChainAPI {
 
       const count = this.cycles.get(countId);
       if (!count) {
-        res.status(404).json({ error: 'Cycle count not found' });
+        res.status(404).json({ error: "Cycle count not found" });
         return;
       }
 
       count.countedQuantity = countedQuantity;
       count.variance = countedQuantity - count.expectedQuantity;
-      count.variancePercentage = (count.variance / count.expectedQuantity) * 100;
-      count.status = Math.abs(count.variance) < 5 ? 'completed' : 'discrepancy';
+      count.variancePercentage =
+        (count.variance / count.expectedQuantity) * 100;
+      count.status = Math.abs(count.variance) < 5 ? "completed" : "discrepancy";
       count.countDate = new Date().toISOString();
 
       this.cycles.set(countId, count);
@@ -495,7 +520,7 @@ export class SupplyChainAPI {
   async createReturnAuthorization(req: Request, res: Response): Promise<void> {
     try {
       const ra = req.body as ReturnAuthorization;
-      ra.status = 'authorized';
+      ra.status = "authorized";
       this.returns.set(ra.raId, ra);
       res.status(201).json(ra);
     } catch (error) {
@@ -509,18 +534,18 @@ export class SupplyChainAPI {
       const ra = this.returns.get(raId);
 
       if (!ra) {
-        res.status(404).json({ error: 'RMA not found' });
+        res.status(404).json({ error: "RMA not found" });
         return;
       }
 
       const order = this.salesOrders.get(ra.orderId);
       if (!order) {
-        res.status(404).json({ error: 'Original order not found' });
+        res.status(404).json({ error: "Original order not found" });
         return;
       }
 
       const result = this.returnProcessor.processReturn(ra, order);
-      ra.status = 'processed';
+      ra.status = "processed";
 
       this.returns.set(raId, ra);
 
@@ -549,7 +574,7 @@ export class SupplyChainAPI {
         return this.inventoryOptimizer.calculateABCXYZ(
           item.skuId,
           (sku?.price || 0) * item.quantity,
-          demands
+          demands,
         );
       });
 
@@ -567,46 +592,55 @@ export class SupplyChainAPI {
    */
   registerRoutes(router: any): void {
     // Inventory routes
-    router.post('/inventory', this.createInventoryItem.bind(this));
-    router.get('/inventory/:itemId', this.getInventoryItem.bind(this));
-    router.put('/inventory/:itemId', this.updateInventoryItem.bind(this));
-    router.get('/inventory', this.searchInventory.bind(this));
+    router.post("/inventory", this.createInventoryItem.bind(this));
+    router.get("/inventory/:itemId", this.getInventoryItem.bind(this));
+    router.put("/inventory/:itemId", this.updateInventoryItem.bind(this));
+    router.get("/inventory", this.searchInventory.bind(this));
 
     // Purchase order routes
-    router.post('/purchase-orders', this.createPurchaseOrder.bind(this));
-    router.get('/purchase-orders/:poId', this.getPurchaseOrder.bind(this));
-    router.put('/purchase-orders/:poId', this.updatePurchaseOrder.bind(this));
-    router.post('/purchase-orders/:poId/receive', this.receivePurchaseOrder.bind(this));
+    router.post("/purchase-orders", this.createPurchaseOrder.bind(this));
+    router.get("/purchase-orders/:poId", this.getPurchaseOrder.bind(this));
+    router.put("/purchase-orders/:poId", this.updatePurchaseOrder.bind(this));
+    router.post(
+      "/purchase-orders/:poId/receive",
+      this.receivePurchaseOrder.bind(this),
+    );
 
     // Sales order routes
-    router.post('/sales-orders', this.createSalesOrder.bind(this));
-    router.get('/sales-orders/:orderId', this.getSalesOrder.bind(this));
-    router.post('/sales-orders/:orderId/allocate', this.allocateOrder.bind(this));
+    router.post("/sales-orders", this.createSalesOrder.bind(this));
+    router.get("/sales-orders/:orderId", this.getSalesOrder.bind(this));
+    router.post(
+      "/sales-orders/:orderId/allocate",
+      this.allocateOrder.bind(this),
+    );
 
     // Wave routes
-    router.post('/waves', this.createFulfillmentWave.bind(this));
-    router.post('/waves/:waveId/release', this.releaseWave.bind(this));
+    router.post("/waves", this.createFulfillmentWave.bind(this));
+    router.post("/waves/:waveId/release", this.releaseWave.bind(this));
 
     // Picking routes
-    router.post('/picking/lists', this.generatePickLists.bind(this));
+    router.post("/picking/lists", this.generatePickLists.bind(this));
 
     // Demand forecast routes
-    router.post('/forecasts/demand', this.forecastDemand.bind(this));
+    router.post("/forecasts/demand", this.forecastDemand.bind(this));
 
     // Reorder point routes
-    router.post('/reorder-points', this.calculateReorderPoint.bind(this));
-    router.get('/reorder-points/alerts', this.getReorderAlerts.bind(this));
+    router.post("/reorder-points", this.calculateReorderPoint.bind(this));
+    router.get("/reorder-points/alerts", this.getReorderAlerts.bind(this));
 
     // Cycle count routes
-    router.post('/cycle-counts', this.createCycleCount.bind(this));
-    router.post('/cycle-counts/:countId/complete', this.completeCycleCount.bind(this));
+    router.post("/cycle-counts", this.createCycleCount.bind(this));
+    router.post(
+      "/cycle-counts/:countId/complete",
+      this.completeCycleCount.bind(this),
+    );
 
     // Return routes
-    router.post('/returns', this.createReturnAuthorization.bind(this));
-    router.post('/returns/:raId/process', this.processReturn.bind(this));
+    router.post("/returns", this.createReturnAuthorization.bind(this));
+    router.post("/returns/:raId/process", this.processReturn.bind(this));
 
     // Analysis routes
-    router.get('/analysis/abc-xyz', this.analyzeInventoryABCXYZ.bind(this));
+    router.get("/analysis/abc-xyz", this.analyzeInventoryABCXYZ.bind(this));
   }
 }
 

@@ -32,7 +32,10 @@ const createCollectionSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().max(5000).optional(),
   type: z.enum(["MANUAL", "SMART", "FEATURED"]).optional().default("MANUAL"),
-  sortOrder: z.enum(["MANUAL", "BEST_SELLING", "NEWEST", "ALPHABETICAL"]).optional().default("MANUAL"),
+  sortOrder: z
+    .enum(["MANUAL", "BEST_SELLING", "NEWEST", "ALPHABETICAL"])
+    .optional()
+    .default("MANUAL"),
   rules: z.record(z.unknown()).optional(),
 });
 
@@ -40,7 +43,9 @@ const updateCollectionSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   description: z.string().max(5000).optional(),
   type: z.enum(["MANUAL", "SMART", "FEATURED"]).optional(),
-  sortOrder: z.enum(["MANUAL", "BEST_SELLING", "NEWEST", "ALPHABETICAL"]).optional(),
+  sortOrder: z
+    .enum(["MANUAL", "BEST_SELLING", "NEWEST", "ALPHABETICAL"])
+    .optional(),
   rules: z.record(z.unknown()).optional(),
 });
 
@@ -99,7 +104,11 @@ async function collectionsRoutes(fastify: FastifyInstance): Promise<void> {
     });
 
     fastify.log.info(
-      { shopId: request.shopId, collectionId: collection.id, title: body.title },
+      {
+        shopId: request.shopId,
+        collectionId: collection.id,
+        title: body.title,
+      },
       "Collection created",
     );
 
@@ -239,41 +248,44 @@ async function collectionsRoutes(fastify: FastifyInstance): Promise<void> {
 
   // ── DELETE /:id ──────────────────────────────────────────────
 
-  fastify.delete("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
+  fastify.delete(
+    "/:id",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
 
-    const { id } = request.params as { id: string };
+      const { id } = request.params as { id: string };
 
-    const collection = await (request.tenantDb as any).collection.findUnique({
-      where: { id },
-    });
-
-    if (!collection) {
-      throw new NotFoundError("Collection", id);
-    }
-
-    if (collection.shopId !== request.shopId) {
-      throw new ForbiddenError("Cannot delete collection from another shop");
-    }
-
-    // Delete collection and associated products
-    await request.tenantDb.$transaction(async (tx) => {
-      await (tx as any).collectionProduct.deleteMany({
-        where: { collectionId: id },
-      });
-      await (tx as any).collection.delete({
+      const collection = await (request.tenantDb as any).collection.findUnique({
         where: { id },
       });
-    });
 
-    fastify.log.info(
-      { shopId: request.shopId, collectionId: id },
-      "Collection deleted",
-    );
+      if (!collection) {
+        throw new NotFoundError("Collection", id);
+      }
 
-    reply.status(204);
-    return;
-  });
+      if (collection.shopId !== request.shopId) {
+        throw new ForbiddenError("Cannot delete collection from another shop");
+      }
+
+      // Delete collection and associated products
+      await request.tenantDb.$transaction(async (tx) => {
+        await (tx as any).collectionProduct.deleteMany({
+          where: { collectionId: id },
+        });
+        await (tx as any).collection.delete({
+          where: { id },
+        });
+      });
+
+      fastify.log.info(
+        { shopId: request.shopId, collectionId: id },
+        "Collection deleted",
+      );
+
+      reply.status(204);
+      return;
+    },
+  );
 
   // ── POST /:id/products ───────────────────────────────────────
 
@@ -307,7 +319,9 @@ async function collectionsRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       // Get max position
-      const maxPosition = await (request.tenantDb as any).collectionProduct.findFirst({
+      const maxPosition = await (
+        request.tenantDb as any
+      ).collectionProduct.findFirst({
         where: { collectionId: id },
         orderBy: { position: "desc" },
       });
@@ -334,7 +348,11 @@ async function collectionsRoutes(fastify: FastifyInstance): Promise<void> {
       });
 
       fastify.log.info(
-        { shopId: request.shopId, collectionId: id, productCount: productIds.length },
+        {
+          shopId: request.shopId,
+          collectionId: id,
+          productCount: productIds.length,
+        },
         "Products added to collection",
       );
 
@@ -387,7 +405,11 @@ async function collectionsRoutes(fastify: FastifyInstance): Promise<void> {
       });
 
       fastify.log.info(
-        { shopId: request.shopId, collectionId: id, productCount: productIds.length },
+        {
+          shopId: request.shopId,
+          collectionId: id,
+          productCount: productIds.length,
+        },
         "Products removed from collection",
       );
 
@@ -465,7 +487,9 @@ async function collectionsRoutes(fastify: FastifyInstance): Promise<void> {
       });
 
       if (!shop || !shop.shopifyAccessToken) {
-        throw new ValidationError("Shop not connected to Shopify or missing access token");
+        throw new ValidationError(
+          "Shop not connected to Shopify or missing access token",
+        );
       }
 
       // Fetch Shopify collections via GraphQL API
@@ -512,7 +536,7 @@ async function collectionsRoutes(fastify: FastifyInstance): Promise<void> {
           );
         }
 
-        const data = await response.json() as any;
+        const data = (await response.json()) as any;
 
         if (data.errors) {
           throw new ValidationError(
@@ -541,7 +565,10 @@ async function collectionsRoutes(fastify: FastifyInstance): Promise<void> {
         );
 
         fastify.log.info(
-          { shopId: request.shopId, collectionsCount: data.data?.collections?.edges?.length },
+          {
+            shopId: request.shopId,
+            collectionsCount: data.data?.collections?.edges?.length,
+          },
           "Shopify collections sync job queued",
         );
       } catch (error) {

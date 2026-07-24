@@ -1,6 +1,12 @@
 "use client";
 
-import { forwardRef, useState, useRef, useEffect, type HTMLAttributes } from "react";
+import {
+  forwardRef,
+  useState,
+  useRef,
+  useEffect,
+  type HTMLAttributes,
+} from "react";
 import { ChevronLeft, ChevronRight, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
@@ -75,7 +81,7 @@ const MaintenanceTimeline = forwardRef<
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const svgRef = useRef<SVGSVGElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -98,7 +104,7 @@ const MaintenanceTimeline = forwardRef<
 
     // Sort events by date
     const sortedEvents = [...filteredEvents].sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
 
     if (sortedEvents.length === 0) {
@@ -138,7 +144,7 @@ const MaintenanceTimeline = forwardRef<
     const handleEventHover = (
       event: MaintenanceEvent,
       clientX: number,
-      clientY: number
+      clientY: number,
     ) => {
       const rect = containerRef.current?.getBoundingClientRect();
       if (rect) {
@@ -155,9 +161,13 @@ const MaintenanceTimeline = forwardRef<
       const container = containerRef.current;
       if (!container) return;
       const scrollAmount = 200;
-      const newOffset = direction === "left"
-        ? Math.max(scrollOffset - scrollAmount, 0)
-        : Math.min(scrollOffset + scrollAmount, Math.max(0, SVG_WIDTH - (container.clientWidth - 80)));
+      const newOffset =
+        direction === "left"
+          ? Math.max(scrollOffset - scrollAmount, 0)
+          : Math.min(
+              scrollOffset + scrollAmount,
+              Math.max(0, SVG_WIDTH - (container.clientWidth - 80)),
+            );
       setScrollOffset(newOffset);
     };
 
@@ -188,7 +198,7 @@ const MaintenanceTimeline = forwardRef<
                 "px-3 py-1.5 rounded-md text-xs font-medium transition-all",
                 selectedTypes.includes(type)
                   ? cn(config.bg, config.text, "ring-1 ring-offset-0")
-                  : "bg-wl-bg-surface text-wl-text-secondary opacity-50"
+                  : "bg-wl-bg-surface text-wl-text-secondary opacity-50",
               )}
             >
               {config.label}
@@ -212,7 +222,11 @@ const MaintenanceTimeline = forwardRef<
           )}
 
           {/* Right scroll button */}
-          {scrollOffset < Math.max(0, SVG_WIDTH - (containerRef.current?.clientWidth ?? 0)) && (
+          {scrollOffset <
+            Math.max(
+              0,
+              SVG_WIDTH - (containerRef.current?.clientWidth ?? 0),
+            ) && (
             <button
               onClick={() => handleScroll("right")}
               className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-1.5 bg-wl-bg-elevated rounded-md hover:bg-wl-bg-elevated/80 transition-colors"
@@ -270,7 +284,11 @@ const MaintenanceTimeline = forwardRef<
                       y1={90}
                       x2={xPos}
                       y2={50}
-                      stroke={typeConfig.text.replace("text-", "var(--wl-").replace(/[^a-z0-9-]/g, "") + ")"}
+                      stroke={
+                        typeConfig.text
+                          .replace("text-", "var(--wl-")
+                          .replace(/[^a-z0-9-]/g, "") + ")"
+                      }
                       strokeWidth={2}
                       opacity={0.4}
                     />
@@ -280,15 +298,15 @@ const MaintenanceTimeline = forwardRef<
                       cx={xPos}
                       cy={50}
                       r={8}
-                      fill={typeConfig.text.replace("text-", "var(--wl-").replace(/[^a-z0-9-]/g, "") + ")"}
+                      fill={
+                        typeConfig.text
+                          .replace("text-", "var(--wl-")
+                          .replace(/[^a-z0-9-]/g, "") + ")"
+                      }
                       opacity={0.8}
                       style={{ cursor: "pointer" }}
                       onMouseEnter={(e) =>
-                        handleEventHover(
-                          event,
-                          e.clientX,
-                          e.clientY
-                        )
+                        handleEventHover(event, e.clientX, e.clientY)
                       }
                       onMouseLeave={() =>
                         setTooltip({ ...tooltip, visible: false })
@@ -302,7 +320,11 @@ const MaintenanceTimeline = forwardRef<
                       cy={50}
                       r={12}
                       fill="none"
-                      stroke={typeConfig.text.replace("text-", "var(--wl-").replace(/[^a-z0-9-]/g, "") + ")"}
+                      stroke={
+                        typeConfig.text
+                          .replace("text-", "var(--wl-")
+                          .replace(/[^a-z0-9-]/g, "") + ")"
+                      }
                       strokeWidth={1}
                       opacity={0.3}
                       style={{ pointerEvents: "none" }}
@@ -325,7 +347,10 @@ const MaintenanceTimeline = forwardRef<
             }}
           >
             <div className="flex items-center gap-2 mb-2">
-              <Badge variant={typeColors[tooltip.event.type].badge} className="text-xs">
+              <Badge
+                variant={typeColors[tooltip.event.type].badge}
+                className="text-xs"
+              >
                 {typeColors[tooltip.event.type].label}
               </Badge>
               <span className="text-wl-text-secondary">
@@ -359,10 +384,10 @@ const MaintenanceTimeline = forwardRef<
                   <div
                     className="w-2 h-2 rounded-full flex-shrink-0"
                     style={{
-                      backgroundColor: typeColors[event.type].text.replace(
-                        "text-",
-                        "var(--wl-"
-                      ).replace(/[^a-z0-9-]/g, "") + ")",
+                      backgroundColor:
+                        typeColors[event.type].text
+                          .replace("text-", "var(--wl-")
+                          .replace(/[^a-z0-9-]/g, "") + ")",
                     }}
                   />
                   <div className="flex-1 min-w-0">
@@ -370,7 +395,8 @@ const MaintenanceTimeline = forwardRef<
                       {event.description}
                     </p>
                     <p className="text-wl-text-secondary">
-                      {new Date(event.date).toLocaleDateString()} • ${event.cost}
+                      {new Date(event.date).toLocaleDateString()} • $
+                      {event.cost}
                     </p>
                   </div>
                 </div>
@@ -380,7 +406,7 @@ const MaintenanceTimeline = forwardRef<
         )}
       </Card>
     );
-  }
+  },
 );
 
 MaintenanceTimeline.displayName = "MaintenanceTimeline";

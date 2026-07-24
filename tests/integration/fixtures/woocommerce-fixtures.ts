@@ -124,10 +124,10 @@ export function createMockWCOrders(count: number): WCOrder[] {
       id: 10001 + i,
       number: `WC-2024-${String(i + 1).padStart(3, "0")}`,
       customer_id: 1000 + i,
-      status: (["pending", "processing", "completed", "cancelled"][
+      status: ["pending", "processing", "completed", "cancelled"][
         i % 4
-      ] as WCOrderStatus),
-    })
+      ] as WCOrderStatus,
+    }),
   );
 }
 
@@ -239,7 +239,7 @@ export function createMockWCProduct(overrides?: Partial<WCProduct>): WCProduct {
  * Create mock WC customer
  */
 export function createMockWCCustomer(
-  overrides?: Partial<WCCustomer>
+  overrides?: Partial<WCCustomer>,
 ): WCCustomer {
   return {
     id: 456,
@@ -302,9 +302,7 @@ export function createMockWCWebhook(overrides?: Partial<WCWebhook>): WCWebhook {
     updated: new Date().toISOString(),
     _links: {
       self: [{ href: "https://example.com/wp-json/wc/v3/webhooks/1001" }],
-      collection: [
-        { href: "https://example.com/wp-json/wc/v3/webhooks" },
-      ],
+      collection: [{ href: "https://example.com/wp-json/wc/v3/webhooks" }],
     },
     ...overrides,
   } as WCWebhook;
@@ -314,7 +312,7 @@ export function createMockWCWebhook(overrides?: Partial<WCWebhook>): WCWebhook {
  * Create mock webhook payload
  */
 export function createMockWebhookPayload(
-  overrides?: Partial<WCWebhookPayload>
+  overrides?: Partial<WCWebhookPayload>,
 ): WCWebhookPayload {
   return {
     id: 12345,
@@ -331,7 +329,7 @@ export function createMockWebhookPayload(
  */
 export function createMockWCErrorResponse(
   code: string,
-  message: string
+  message: string,
 ): Record<string, unknown> {
   return {
     code,
@@ -357,7 +355,7 @@ export function createMockWCListResponse<T>(items: T[]): {
  * Create mock OAuth signature
  */
 export function createMockOAuthSignature(): string {
-  return "OAuth oauth_consumer_key=\"test_key\", oauth_nonce=\"random_nonce\", oauth_signature=\"signature_hash\", oauth_signature_method=\"HMAC-SHA256\", oauth_timestamp=\"1234567890\", oauth_version=\"1.0\"";
+  return 'OAuth oauth_consumer_key="test_key", oauth_nonce="random_nonce", oauth_signature="signature_hash", oauth_signature_method="HMAC-SHA256", oauth_timestamp="1234567890", oauth_version="1.0"';
 }
 
 /**

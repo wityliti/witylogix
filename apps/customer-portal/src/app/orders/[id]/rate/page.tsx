@@ -1,57 +1,72 @@
-'use client';
+"use client";
 
-import { use, useState } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, Image as ImageIcon, CheckCircle, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { RatingStars } from '@/components/rating-stars';
-import { useMutation } from '@/lib/use-api';
-import { ROUTES } from '@/lib/portal-api';
+import { use, useState } from "react";
+import Link from "next/link";
+import {
+  ArrowLeft,
+  Image as ImageIcon,
+  CheckCircle,
+  Loader2,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { RatingStars } from "@/components/rating-stars";
+import { useMutation } from "@/lib/use-api";
+import { ROUTES } from "@/lib/portal-api";
 
-type RatingStep = 'rating' | 'categories' | 'feedback' | 'success';
+type RatingStep = "rating" | "categories" | "feedback" | "success";
 
-const STEPS: RatingStep[] = ['rating', 'categories', 'feedback', 'success'];
+const STEPS: RatingStep[] = ["rating", "categories", "feedback", "success"];
 
 function getRatingLabel(value: number): string {
   switch (value) {
-    case 1: return 'Poor';
-    case 2: return 'Fair';
-    case 3: return 'Good';
-    case 4: return 'Very Good';
-    case 5: return 'Excellent';
-    default: return '';
+    case 1:
+      return "Poor";
+    case 2:
+      return "Fair";
+    case 3:
+      return "Good";
+    case 4:
+      return "Very Good";
+    case 5:
+      return "Excellent";
+    default:
+      return "";
   }
 }
 
-export default function RatePage({ params }: { params: Promise<{ id: string }> }) {
+export default function RatePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
-  const [step, setStep] = useState<RatingStep>('rating');
+  const [step, setStep] = useState<RatingStep>("rating");
   const [driverRating, setDriverRating] = useState(0);
   const [experienceRating, setExperienceRating] = useState(0);
   const [driverCategoryRating, setDriverCategoryRating] = useState(0);
   const [timelinessCategoryRating, setTimelinessCategoryRating] = useState(0);
   const [conditionCategoryRating, setConditionCategoryRating] = useState(0);
-  const [feedback, setFeedback] = useState('');
+  const [feedback, setFeedback] = useState("");
   const [wouldOrderAgain, setWouldOrderAgain] = useState(true);
   const [photos, setPhotos] = useState<string[]>([]);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const { mutate: submitRating, loading: submitting } = useMutation(
     `${ROUTES.ORDERS}/${id}/rating`,
-    'POST',
+    "POST",
   );
 
   const handleNext = async () => {
-    if (step === 'rating' && driverRating > 0 && experienceRating > 0) {
-      setStep('categories');
+    if (step === "rating" && driverRating > 0 && experienceRating > 0) {
+      setStep("categories");
     } else if (
-      step === 'categories' &&
+      step === "categories" &&
       driverCategoryRating > 0 &&
       timelinessCategoryRating > 0 &&
       conditionCategoryRating > 0
     ) {
-      setStep('feedback');
-    } else if (step === 'feedback') {
+      setStep("feedback");
+    } else if (step === "feedback") {
       setSubmitError(null);
       try {
         await submitRating({
@@ -65,9 +80,13 @@ export default function RatePage({ params }: { params: Promise<{ id: string }> }
           feedback: feedback.trim() || undefined,
           wouldOrderAgain,
         });
-        setStep('success');
+        setStep("success");
       } catch (err: unknown) {
-        setSubmitError(err instanceof Error ? err.message : 'Failed to submit rating. Please try again.');
+        setSubmitError(
+          err instanceof Error
+            ? err.message
+            : "Failed to submit rating. Please try again.",
+        );
       }
     }
   };
@@ -81,11 +100,14 @@ export default function RatePage({ params }: { params: Promise<{ id: string }> }
     setPhotos(photos.filter((_, i) => i !== index));
   };
 
-  const canProceed = step === 'rating'
-    ? driverRating > 0 && experienceRating > 0
-    : step === 'categories'
-    ? driverCategoryRating > 0 && timelinessCategoryRating > 0 && conditionCategoryRating > 0
-    : true;
+  const canProceed =
+    step === "rating"
+      ? driverRating > 0 && experienceRating > 0
+      : step === "categories"
+        ? driverCategoryRating > 0 &&
+          timelinessCategoryRating > 0 &&
+          conditionCategoryRating > 0
+        : true;
 
   const currentStepIndex = STEPS.indexOf(step);
 
@@ -101,17 +123,20 @@ export default function RatePage({ params }: { params: Promise<{ id: string }> }
           <ArrowLeft size={18} />
         </Link>
         <span className="text-xs text-wl-text-tertiary">
-          <Link href="/orders" className="hover:text-wl-text-secondary transition-colors">
+          <Link
+            href="/orders"
+            className="hover:text-wl-text-secondary transition-colors"
+          >
             Orders
           </Link>
-          {' / '}
+          {" / "}
           <Link
             href={`/orders/${id}`}
             className="hover:text-wl-text-secondary transition-colors"
           >
             Details
           </Link>
-          {' / '}
+          {" / "}
           <span className="text-wl-text-secondary">Rate</span>
         </span>
       </div>
@@ -129,16 +154,16 @@ export default function RatePage({ params }: { params: Promise<{ id: string }> }
             <div
               key={s}
               className={cn(
-                'flex-1 h-1.5 rounded-full transition-colors',
+                "flex-1 h-1.5 rounded-full transition-colors",
                 currentStepIndex >= i
-                  ? 'bg-wl-primary-500'
-                  : 'bg-wl-neutral-800'
+                  ? "bg-wl-primary-500"
+                  : "bg-wl-neutral-800",
               )}
             />
           ))}
         </div>
         <p className="text-xs text-wl-text-tertiary mt-2">
-          Step <span className="mono">{currentStepIndex + 1}</span> of{' '}
+          Step <span className="mono">{currentStepIndex + 1}</span> of{" "}
           <span className="mono">{STEPS.length}</span>
         </p>
       </div>
@@ -146,7 +171,7 @@ export default function RatePage({ params }: { params: Promise<{ id: string }> }
       {/* Content */}
       <div className="max-w-2xl">
         {/* Step 1: Rating */}
-        {step === 'rating' && (
+        {step === "rating" && (
           <div className="section-card space-y-8 animate-fade-in">
             {/* Driver Rating */}
             <div>
@@ -191,7 +216,7 @@ export default function RatePage({ params }: { params: Promise<{ id: string }> }
         )}
 
         {/* Step 2: Categories */}
-        {step === 'categories' && (
+        {step === "categories" && (
           <div className="section-card space-y-8 animate-fade-in">
             {/* Summary of Initial Ratings */}
             <div className="p-4 rounded-lg bg-wl-bg-elevated">
@@ -203,7 +228,9 @@ export default function RatePage({ params }: { params: Promise<{ id: string }> }
                 <RatingStars value={driverRating} readonly size="sm" />
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-wl-text-secondary">Experience</span>
+                <span className="text-sm text-wl-text-secondary">
+                  Experience
+                </span>
                 <RatingStars value={experienceRating} readonly size="sm" />
               </div>
             </div>
@@ -262,7 +289,7 @@ export default function RatePage({ params }: { params: Promise<{ id: string }> }
         )}
 
         {/* Step 3: Feedback */}
-        {step === 'feedback' && (
+        {step === "feedback" && (
           <div className="section-card space-y-6 animate-fade-in">
             {/* Summary of All Ratings */}
             <div className="p-4 rounded-lg bg-wl-bg-elevated">
@@ -279,16 +306,30 @@ export default function RatePage({ params }: { params: Promise<{ id: string }> }
                   <RatingStars value={experienceRating} readonly size="sm" />
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-wl-text-secondary">Professionalism</span>
-                  <RatingStars value={driverCategoryRating} readonly size="sm" />
+                  <span className="text-wl-text-secondary">
+                    Professionalism
+                  </span>
+                  <RatingStars
+                    value={driverCategoryRating}
+                    readonly
+                    size="sm"
+                  />
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-wl-text-secondary">Timeliness</span>
-                  <RatingStars value={timelinessCategoryRating} readonly size="sm" />
+                  <RatingStars
+                    value={timelinessCategoryRating}
+                    readonly
+                    size="sm"
+                  />
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-wl-text-secondary">Item Condition</span>
-                  <RatingStars value={conditionCategoryRating} readonly size="sm" />
+                  <RatingStars
+                    value={conditionCategoryRating}
+                    readonly
+                    size="sm"
+                  />
                 </div>
               </div>
             </div>
@@ -299,7 +340,8 @@ export default function RatePage({ params }: { params: Promise<{ id: string }> }
                 Additional Feedback
               </label>
               <p className="text-sm text-wl-text-secondary mb-3">
-                Share any additional comments about your delivery experience (optional)
+                Share any additional comments about your delivery experience
+                (optional)
               </p>
               <textarea
                 value={feedback}
@@ -318,10 +360,8 @@ export default function RatePage({ params }: { params: Promise<{ id: string }> }
                 <button
                   onClick={() => setWouldOrderAgain(true)}
                   className={cn(
-                    'btn flex-1 py-3',
-                    wouldOrderAgain
-                      ? 'btn-primary'
-                      : 'btn-secondary'
+                    "btn flex-1 py-3",
+                    wouldOrderAgain ? "btn-primary" : "btn-secondary",
                   )}
                 >
                   Yes
@@ -329,10 +369,10 @@ export default function RatePage({ params }: { params: Promise<{ id: string }> }
                 <button
                   onClick={() => setWouldOrderAgain(false)}
                   className={cn(
-                    'btn flex-1 py-3',
+                    "btn flex-1 py-3",
                     !wouldOrderAgain
-                      ? 'bg-wl-danger-500 text-white'
-                      : 'btn-secondary'
+                      ? "bg-wl-danger-500 text-white"
+                      : "btn-secondary",
                   )}
                 >
                   No
@@ -355,19 +395,19 @@ export default function RatePage({ params }: { params: Promise<{ id: string }> }
                     <div
                       key={index}
                       className={cn(
-                        'relative w-full aspect-square rounded-lg',
-                        'bg-wl-bg-elevated border border-wl-border-subtle',
-                        'flex items-center justify-center'
+                        "relative w-full aspect-square rounded-lg",
+                        "bg-wl-bg-elevated border border-wl-border-subtle",
+                        "flex items-center justify-center",
                       )}
                     >
                       <span className="text-2xl">📷</span>
                       <button
                         onClick={() => handleRemovePhoto(index)}
                         className={cn(
-                          'absolute top-1 right-1 w-6 h-6',
-                          'bg-wl-danger-500 text-white rounded-full',
-                          'flex items-center justify-center text-sm',
-                          'hover:bg-wl-danger-600 transition-colors'
+                          "absolute top-1 right-1 w-6 h-6",
+                          "bg-wl-danger-500 text-white rounded-full",
+                          "flex items-center justify-center text-sm",
+                          "hover:bg-wl-danger-600 transition-colors",
                         )}
                       >
                         ×
@@ -381,12 +421,12 @@ export default function RatePage({ params }: { params: Promise<{ id: string }> }
                 onClick={handleAddPhoto}
                 disabled={photos.length >= 5}
                 className={cn(
-                  'w-full px-4 py-3 rounded-lg border-2 border-dashed',
-                  'flex items-center justify-center gap-2',
-                  'transition-colors',
+                  "w-full px-4 py-3 rounded-lg border-2 border-dashed",
+                  "flex items-center justify-center gap-2",
+                  "transition-colors",
                   photos.length >= 5
-                    ? 'border-wl-neutral-800 text-wl-text-tertiary cursor-not-allowed'
-                    : 'border-wl-border-subtle text-wl-text-secondary hover:border-wl-primary-500'
+                    ? "border-wl-neutral-800 text-wl-text-tertiary cursor-not-allowed"
+                    : "border-wl-border-subtle text-wl-text-secondary hover:border-wl-primary-500",
                 )}
               >
                 <ImageIcon size={16} />
@@ -399,16 +439,20 @@ export default function RatePage({ params }: { params: Promise<{ id: string }> }
         )}
 
         {/* Step 4: Success */}
-        {step === 'success' && (
-          <div className={cn(
-            'section-card animate-fade-in',
-            'border-l-[3px] border-l-wl-success-500'
-          )}>
+        {step === "success" && (
+          <div
+            className={cn(
+              "section-card animate-fade-in",
+              "border-l-[3px] border-l-wl-success-500",
+            )}
+          >
             <div className="text-center py-4">
-              <div className={cn(
-                'w-14 h-14 mx-auto mb-4 rounded-full',
-                'bg-wl-bg-elevated flex items-center justify-center'
-              )}>
+              <div
+                className={cn(
+                  "w-14 h-14 mx-auto mb-4 rounded-full",
+                  "bg-wl-bg-elevated flex items-center justify-center",
+                )}
+              >
                 <CheckCircle size={28} className="text-wl-success-500" />
               </div>
 
@@ -416,8 +460,8 @@ export default function RatePage({ params }: { params: Promise<{ id: string }> }
                 Thank You!
               </h2>
               <p className="text-sm text-wl-text-secondary mb-8 max-w-sm mx-auto">
-                Your feedback has been submitted successfully. We appreciate your time
-                and will use your insights to improve our service.
+                Your feedback has been submitted successfully. We appreciate
+                your time and will use your insights to improve our service.
               </p>
             </div>
 
@@ -436,22 +480,36 @@ export default function RatePage({ params }: { params: Promise<{ id: string }> }
                   <RatingStars value={experienceRating} readonly size="sm" />
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-wl-text-secondary">Professionalism</span>
-                  <RatingStars value={driverCategoryRating} readonly size="sm" />
+                  <span className="text-wl-text-secondary">
+                    Professionalism
+                  </span>
+                  <RatingStars
+                    value={driverCategoryRating}
+                    readonly
+                    size="sm"
+                  />
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-wl-text-secondary">Timeliness</span>
-                  <RatingStars value={timelinessCategoryRating} readonly size="sm" />
+                  <RatingStars
+                    value={timelinessCategoryRating}
+                    readonly
+                    size="sm"
+                  />
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-wl-text-secondary">Condition</span>
-                  <RatingStars value={conditionCategoryRating} readonly size="sm" />
+                  <RatingStars
+                    value={conditionCategoryRating}
+                    readonly
+                    size="sm"
+                  />
                 </div>
               </div>
               <div className="pt-3 mt-3 border-t border-wl-border-subtle">
                 <p className="text-sm text-wl-text-secondary">
-                  <span className="font-medium">Order Again:</span>{' '}
-                  {wouldOrderAgain ? 'Yes' : 'No'}
+                  <span className="font-medium">Order Again:</span>{" "}
+                  {wouldOrderAgain ? "Yes" : "No"}
                 </p>
               </div>
               {feedback && (
@@ -467,16 +525,10 @@ export default function RatePage({ params }: { params: Promise<{ id: string }> }
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
-              <Link
-                href="/orders"
-                className="btn btn-primary btn-lg flex-1"
-              >
+              <Link href="/orders" className="btn btn-primary btn-lg flex-1">
                 Back to Orders
               </Link>
-              <Link
-                href="/"
-                className="btn btn-secondary btn-lg flex-1"
-              >
+              <Link href="/" className="btn btn-secondary btn-lg flex-1">
                 Go to Dashboard
               </Link>
             </div>
@@ -485,15 +537,17 @@ export default function RatePage({ params }: { params: Promise<{ id: string }> }
       </div>
 
       {/* Action Buttons */}
-      {step !== 'success' && (
+      {step !== "success" && (
         <div className="flex flex-col gap-3 max-w-2xl animate-fade-in">
           {submitError && (
             <p className="text-sm text-wl-error-500">{submitError}</p>
           )}
           <div className="flex gap-3">
-            {(step === 'feedback' || step === 'categories') && (
+            {(step === "feedback" || step === "categories") && (
               <button
-                onClick={() => setStep(step === 'feedback' ? 'categories' : 'rating')}
+                onClick={() =>
+                  setStep(step === "feedback" ? "categories" : "rating")
+                }
                 disabled={submitting}
                 className="btn btn-secondary btn-lg"
               >
@@ -504,8 +558,8 @@ export default function RatePage({ params }: { params: Promise<{ id: string }> }
               onClick={handleNext}
               disabled={!canProceed || submitting}
               className={cn(
-                'btn btn-primary btn-lg flex-1',
-                (!canProceed || submitting) && 'opacity-50 cursor-not-allowed',
+                "btn btn-primary btn-lg flex-1",
+                (!canProceed || submitting) && "opacity-50 cursor-not-allowed",
               )}
             >
               {submitting ? (
@@ -513,10 +567,10 @@ export default function RatePage({ params }: { params: Promise<{ id: string }> }
                   <Loader2 size={16} className="animate-spin" />
                   Submitting…
                 </>
-              ) : step === 'feedback' ? (
-                'Submit Rating'
+              ) : step === "feedback" ? (
+                "Submit Rating"
               ) : (
-                'Continue'
+                "Continue"
               )}
             </button>
           </div>

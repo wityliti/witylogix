@@ -11,7 +11,12 @@ function makeCtx(json = false): Context {
   return {
     cwd: tmp,
     config: { metadata: { name: "demo" } } as Context["config"],
-    logger: { debug: () => {}, info: () => {}, warn: () => {}, error: () => {} },
+    logger: {
+      debug: () => {},
+      info: () => {},
+      warn: () => {},
+      error: () => {},
+    },
     dryRun: false,
     json,
   };
@@ -76,15 +81,13 @@ describe("emitAudit", () => {
   });
 
   it("streams event on stderr when ctx.json=true", () => {
-    const writeSpy = vi.spyOn(process.stderr, "write").mockImplementation(
-      () => true,
-    );
+    const writeSpy = vi
+      .spyOn(process.stderr, "write")
+      .mockImplementation(() => true);
     try {
       emitAudit(makeCtx(true), "bench.test.json", { x: 1 });
       expect(writeSpy).toHaveBeenCalledTimes(1);
-      const payload = JSON.parse(
-        (writeSpy.mock.calls[0][0] as string).trim(),
-      );
+      const payload = JSON.parse((writeSpy.mock.calls[0][0] as string).trim());
       expect(payload.audit.event).toBe("bench.test.json");
       expect(payload.audit.data).toEqual({ x: 1 });
     } finally {

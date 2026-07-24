@@ -187,7 +187,7 @@ describe("Barcode Generation", () => {
       const base64 = generateBarcodeBase64PNG(
         "1Z999AA10123456784FEDEX",
         500,
-        200
+        200,
       );
       expect(base64.length).toBeGreaterThan(0);
     });

@@ -115,7 +115,7 @@ export class NPlusOneDetector extends EventEmitter {
     requestId: string,
     sql: string,
     params: any[] = [],
-    duration: number = 0
+    duration: number = 0,
   ): void {
     if (!this.enabled || !this.queryMap.has(requestId)) {
       return;
@@ -291,18 +291,18 @@ export class NPlusOneDetector extends EventEmitter {
 
     if (errorPatterns.length > 0) {
       recommendations.push(
-        `Critical: Fix N+1 issues on tables: ${errorPatterns.map((p) => p.table).join(", ")}`
+        `Critical: Fix N+1 issues on tables: ${errorPatterns.map((p) => p.table).join(", ")}`,
       );
     }
 
     if (warnPatterns.length > 0) {
       recommendations.push(
-        `Review: Consider optimizing queries on: ${warnPatterns.map((p) => p.table).join(", ")}`
+        `Review: Consider optimizing queries on: ${warnPatterns.map((p) => p.table).join(", ")}`,
       );
     }
 
     recommendations.push(
-      "Use Prisma include() or select() for eager loading, or use DataLoader for batch operations"
+      "Use Prisma include() or select() for eager loading, or use DataLoader for batch operations",
     );
 
     return recommendations;

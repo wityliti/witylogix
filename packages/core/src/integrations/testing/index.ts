@@ -24,9 +24,7 @@ export type {
   RegressionResult,
 } from "./testing-types";
 
-export type {
-  FaultType,
-} from "./testing-types";
+export type { FaultType } from "./testing-types";
 
 // Mock Server & Test Harness
 export {

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface NotificationPreference {
   id: string;
@@ -89,7 +89,10 @@ export function NotificationPreferences({
         </div>
 
         <div className="mt-6 flex gap-2">
-          <Button variant="primary" className="bg-blue-500 hover:bg-blue-500/90">
+          <Button
+            variant="primary"
+            className="bg-blue-500 hover:bg-blue-500/90"
+          >
             Save Preferences
           </Button>
           <Button

@@ -57,7 +57,9 @@ export class EpicFhirV2SdkClient extends EventEmitter {
     super();
 
     if (!config.clientId || !config.clientSecret || !config.tokenEndpoint) {
-      throw new Error("Epic SDK requires clientId, clientSecret, and tokenEndpoint");
+      throw new Error(
+        "Epic SDK requires clientId, clientSecret, and tokenEndpoint",
+      );
     }
 
     this.config = {
@@ -86,7 +88,10 @@ export class EpicFhirV2SdkClient extends EventEmitter {
   /**
    * Get SMART on FHIR authorization URL.
    */
-  getSMARTAuthorizationUrl(redirectUri: string, scope: string = "patient/*.read launch"): string {
+  getSMARTAuthorizationUrl(
+    redirectUri: string,
+    scope: string = "patient/*.read launch",
+  ): string {
     const params = new URLSearchParams({
       response_type: "code",
       client_id: this.config.clientId,
@@ -101,7 +106,10 @@ export class EpicFhirV2SdkClient extends EventEmitter {
   /**
    * Exchange authorization code for access token.
    */
-  async exchangeCodeForToken(code: string, redirectUri: string): Promise<OAuth2Token> {
+  async exchangeCodeForToken(
+    code: string,
+    redirectUri: string,
+  ): Promise<OAuth2Token> {
     const body = new URLSearchParams({
       grant_type: "authorization_code",
       code,
@@ -156,21 +164,25 @@ export class EpicFhirV2SdkClient extends EventEmitter {
       assertion: signedJwt,
     });
 
-    const token = await this.retryableRequest<{ access_token: string; expires_in: number }>(
-      async () => {
-        const response = await fetch(this.config.tokenEndpoint as string, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: body.toString(),
-        });
+    const token = await this.retryableRequest<{
+      access_token: string;
+      expires_in: number;
+    }>(async () => {
+      const response = await fetch(this.config.tokenEndpoint as string, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body.toString(),
+      });
 
-        if (!response.ok) {
-          throw new Error(`Backend service token failed: ${response.statusText}`);
-        }
+      if (!response.ok) {
+        throw new Error(`Backend service token failed: ${response.statusText}`);
+      }
 
-        return response.json() as Promise<{ access_token: string; expires_in: number }>;
-      },
-    );
+      return response.json() as Promise<{
+        access_token: string;
+        expires_in: number;
+      }>;
+    });
 
     this.accessToken = token.access_token;
     this.tokenExpiresAt = Date.now() + token.expires_in * 1000;
@@ -181,7 +193,9 @@ export class EpicFhirV2SdkClient extends EventEmitter {
   /**
    * Search for patients by criteria.
    */
-  async searchPatients(params: Record<string, string>): Promise<FHIRBundle<NormalizedPatient>> {
+  async searchPatients(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<NormalizedPatient>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/Patient`);
@@ -197,13 +211,18 @@ export class EpicFhirV2SdkClient extends EventEmitter {
    */
   async getPatient(patientId: string): Promise<NormalizedPatient> {
     await this.ensureToken();
-    return this.makeRequest<NormalizedPatient>(`${this.baseUrl}/Patient/${patientId}`);
+    return this.makeRequest<NormalizedPatient>(
+      `${this.baseUrl}/Patient/${patientId}`,
+    );
   }
 
   /**
    * Get patient's complete record ($everything operation).
    */
-  async getPatientEverything(patientId: string, since?: string): Promise<FHIRBundle> {
+  async getPatientEverything(
+    patientId: string,
+    since?: string,
+  ): Promise<FHIRBundle> {
     await this.ensureToken();
 
     let url = `${this.baseUrl}/Patient/${patientId}/$everything`;
@@ -217,7 +236,9 @@ export class EpicFhirV2SdkClient extends EventEmitter {
   /**
    * Search encounters.
    */
-  async searchEncounters(params: Record<string, string>): Promise<FHIRBundle<NormalizedEncounter>> {
+  async searchEncounters(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<NormalizedEncounter>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/Encounter`);
@@ -233,13 +254,17 @@ export class EpicFhirV2SdkClient extends EventEmitter {
    */
   async getEncounter(encounterId: string): Promise<NormalizedEncounter> {
     await this.ensureToken();
-    return this.makeRequest<NormalizedEncounter>(`${this.baseUrl}/Encounter/${encounterId}`);
+    return this.makeRequest<NormalizedEncounter>(
+      `${this.baseUrl}/Encounter/${encounterId}`,
+    );
   }
 
   /**
    * Search observations (vital signs, labs).
    */
-  async searchObservations(params: Record<string, string>): Promise<FHIRBundle<NormalizedObservation>> {
+  async searchObservations(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<NormalizedObservation>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/Observation`);
@@ -255,13 +280,17 @@ export class EpicFhirV2SdkClient extends EventEmitter {
    */
   async getObservation(observationId: string): Promise<NormalizedObservation> {
     await this.ensureToken();
-    return this.makeRequest<NormalizedObservation>(`${this.baseUrl}/Observation/${observationId}`);
+    return this.makeRequest<NormalizedObservation>(
+      `${this.baseUrl}/Observation/${observationId}`,
+    );
   }
 
   /**
    * Search conditions (diagnoses).
    */
-  async searchConditions(params: Record<string, string>): Promise<FHIRBundle<NormalizedCondition>> {
+  async searchConditions(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<NormalizedCondition>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/Condition`);
@@ -277,7 +306,9 @@ export class EpicFhirV2SdkClient extends EventEmitter {
    */
   async getCondition(conditionId: string): Promise<NormalizedCondition> {
     await this.ensureToken();
-    return this.makeRequest<NormalizedCondition>(`${this.baseUrl}/Condition/${conditionId}`);
+    return this.makeRequest<NormalizedCondition>(
+      `${this.baseUrl}/Condition/${conditionId}`,
+    );
   }
 
   /**
@@ -299,7 +330,9 @@ export class EpicFhirV2SdkClient extends EventEmitter {
   /**
    * Get a specific medication request.
    */
-  async getMedicationRequest(medicationRequestId: string): Promise<NormalizedMedication> {
+  async getMedicationRequest(
+    medicationRequestId: string,
+  ): Promise<NormalizedMedication> {
     await this.ensureToken();
     return this.makeRequest<NormalizedMedication>(
       `${this.baseUrl}/MedicationRequest/${medicationRequestId}`,
@@ -341,7 +374,9 @@ export class EpicFhirV2SdkClient extends EventEmitter {
   /**
    * Search procedures.
    */
-  async searchProcedures(params: Record<string, string>): Promise<FHIRBundle<FHIRResource>> {
+  async searchProcedures(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<FHIRResource>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/Procedure`);
@@ -355,7 +390,9 @@ export class EpicFhirV2SdkClient extends EventEmitter {
   /**
    * Search immunizations.
    */
-  async searchImmunizations(params: Record<string, string>): Promise<FHIRBundle<FHIRResource>> {
+  async searchImmunizations(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<FHIRResource>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/Immunization`);
@@ -369,7 +406,9 @@ export class EpicFhirV2SdkClient extends EventEmitter {
   /**
    * Search care plans.
    */
-  async searchCarePlans(params: Record<string, string>): Promise<FHIRBundle<FHIRResource>> {
+  async searchCarePlans(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<FHIRResource>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/CarePlan`);
@@ -408,7 +447,9 @@ export class EpicFhirV2SdkClient extends EventEmitter {
   /**
    * Search provenance records.
    */
-  async searchProvenance(params: Record<string, string>): Promise<FHIRBundle<FHIRResource>> {
+  async searchProvenance(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<FHIRResource>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/Provenance`);
@@ -422,7 +463,10 @@ export class EpicFhirV2SdkClient extends EventEmitter {
   /**
    * Start bulk data export operation.
    */
-  async initiateBulkExport(resourceTypes?: string[], since?: string): Promise<string> {
+  async initiateBulkExport(
+    resourceTypes?: string[],
+    since?: string,
+  ): Promise<string> {
     await this.ensureToken();
 
     let url = `${this.baseUrl}/$export`;
@@ -461,7 +505,9 @@ export class EpicFhirV2SdkClient extends EventEmitter {
   /**
    * Check bulk export status.
    */
-  async getBulkExportStatus(statusUrl: string): Promise<BulkExportResult | null> {
+  async getBulkExportStatus(
+    statusUrl: string,
+  ): Promise<BulkExportResult | null> {
     await this.ensureToken();
 
     const response = await fetch(statusUrl, {
@@ -477,7 +523,11 @@ export class EpicFhirV2SdkClient extends EventEmitter {
 
     if (!response.ok) {
       const outcome = await this.parseErrorResponse(response);
-      throw this.createError("BULK_EXPORT_STATUS_FAILED", response.status, outcome);
+      throw this.createError(
+        "BULK_EXPORT_STATUS_FAILED",
+        response.status,
+        outcome,
+      );
     }
 
     return response.json() as Promise<BulkExportResult>;
@@ -491,7 +541,9 @@ export class EpicFhirV2SdkClient extends EventEmitter {
       if (this.refreshToken) {
         await this.refreshAccessToken();
       } else {
-        throw new Error("No valid token available. Call exchangeCodeForToken or getBackendServiceToken first.");
+        throw new Error(
+          "No valid token available. Call exchangeCodeForToken or getBackendServiceToken first.",
+        );
       }
     }
   }
@@ -553,7 +605,11 @@ export class EpicFhirV2SdkClient extends EventEmitter {
 
             if (!response.ok) {
               const outcome = await this.parseErrorResponse(response);
-              throw this.createError("REQUEST_FAILED", response.status, outcome);
+              throw this.createError(
+                "REQUEST_FAILED",
+                response.status,
+                outcome,
+              );
             }
 
             this.circuitBreakerFailures = 0; // Reset on success
@@ -589,10 +645,14 @@ export class EpicFhirV2SdkClient extends EventEmitter {
             });
 
             if (!response.ok) {
-              throw this.createError("BINARY_DOWNLOAD_FAILED", response.status, {
-                resourceType: "OperationOutcome",
-                issue: [],
-              });
+              throw this.createError(
+                "BINARY_DOWNLOAD_FAILED",
+                response.status,
+                {
+                  resourceType: "OperationOutcome",
+                  issue: [],
+                },
+              );
             }
 
             this.circuitBreakerFailures = 0;
@@ -637,9 +697,7 @@ export class EpicFhirV2SdkClient extends EventEmitter {
   /**
    * Private: Retry a request with exponential backoff.
    */
-  private async retryableRequest<T>(
-    fn: () => Promise<T>,
-  ): Promise<T> {
+  private async retryableRequest<T>(fn: () => Promise<T>): Promise<T> {
     for (let attempt = 1; attempt <= this.retryConfig.maxAttempts; attempt++) {
       try {
         return await fn();
@@ -671,7 +729,8 @@ export class EpicFhirV2SdkClient extends EventEmitter {
     this.rateLimiter.lastRefillTime = now;
 
     if (this.rateLimiter.tokens < 1) {
-      const waitTime = (1 - this.rateLimiter.tokens) / this.rateLimiter.refillRate;
+      const waitTime =
+        (1 - this.rateLimiter.tokens) / this.rateLimiter.refillRate;
       await new Promise((resolve) => setTimeout(resolve, waitTime * 1000));
       this.rateLimiter.tokens = 1;
     }
@@ -698,7 +757,9 @@ export class EpicFhirV2SdkClient extends EventEmitter {
   /**
    * Private: Parse error response.
    */
-  private async parseErrorResponse(response: Response): Promise<OperationOutcome> {
+  private async parseErrorResponse(
+    response: Response,
+  ): Promise<OperationOutcome> {
     try {
       return (await response.json()) as OperationOutcome;
     } catch {
@@ -733,7 +794,11 @@ export class EpicFhirV2SdkClient extends EventEmitter {
    * Private: Base64 URL encode.
    */
   private base64url(str: string): string {
-    return Buffer.from(str).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+    return Buffer.from(str)
+      .toString("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=/g, "");
   }
 
   /**

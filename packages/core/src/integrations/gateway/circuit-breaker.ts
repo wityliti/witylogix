@@ -128,11 +128,18 @@ export class CircuitBreaker extends EventEmitter {
     this.failures = this.failures.filter((f) => f.timestamp > windowStart);
 
     this.logger?.debug(
-      { provider: this.config.provider, statusCode, failureCount: this.failures.length },
+      {
+        provider: this.config.provider,
+        statusCode,
+        failureCount: this.failures.length,
+      },
       "Failure recorded",
     );
 
-    if (this.state === "closed" && this.failures.length >= this.config.failureThreshold) {
+    if (
+      this.state === "closed" &&
+      this.failures.length >= this.config.failureThreshold
+    ) {
       this.trip();
     } else if (this.state === "half-open") {
       // Any failure in half-open goes back to open
@@ -179,7 +186,10 @@ export class CircuitBreaker extends EventEmitter {
 
     if (this.state === "open") {
       // Check if reset timeout has elapsed
-      if (this.openedAt && Date.now() - this.openedAt >= this.config.resetTimeout) {
+      if (
+        this.openedAt &&
+        Date.now() - this.openedAt >= this.config.resetTimeout
+      ) {
         this.transitionToHalfOpen();
         return this.probeAllowed;
       }
@@ -211,7 +221,10 @@ export class CircuitBreaker extends EventEmitter {
       if (healthy) {
         this.recordSuccess();
       } else {
-        this.recordFailure("HEALTH_CHECK_FAILED", "Health check returned false");
+        this.recordFailure(
+          "HEALTH_CHECK_FAILED",
+          "Health check returned false",
+        );
       }
       return healthy;
     } catch (error) {
@@ -326,7 +339,10 @@ export class CircuitBreaker extends EventEmitter {
       this.resetTimeoutHandle = null;
     }
 
-    this.logger?.info({ provider: this.config.provider }, "Circuit breaker CLOSED");
+    this.logger?.info(
+      { provider: this.config.provider },
+      "Circuit breaker CLOSED",
+    );
 
     const event: StateChangeEvent = {
       provider: this.config.provider,

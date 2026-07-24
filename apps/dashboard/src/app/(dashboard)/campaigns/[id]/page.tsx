@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { use, useState, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
@@ -103,23 +103,27 @@ interface ReachPoint {
 const statusVariant = (
   s: CampaignStatus,
 ): "success" | "warning" | "danger" | "info" | "primary" | "default" =>
-  ({
-    DRAFT: "default",
-    SCHEDULED: "info",
-    SENDING: "warning",
-    PAUSED: "danger",
-    COMPLETED: "success",
-  } as const)[s] ?? "default";
+  (
+    ({
+      DRAFT: "default",
+      SCHEDULED: "info",
+      SENDING: "warning",
+      PAUSED: "danger",
+      COMPLETED: "success",
+    }) as const
+  )[s] ?? "default";
 
 const typeVariant = (
   t: CampaignType,
 ): "success" | "warning" | "danger" | "info" | "primary" | "default" =>
-  ({
-    EMAIL: "info",
-    SMS: "success",
-    WHATSAPP: "primary",
-    PUSH: "warning",
-  } as const)[t] ?? "default";
+  (
+    ({
+      EMAIL: "info",
+      SMS: "success",
+      WHATSAPP: "primary",
+      PUSH: "warning",
+    }) as const
+  )[t] ?? "default";
 
 const eventIcon = (type: EventType) => {
   const icons: Record<EventType, React.ReactNode> = {
@@ -163,16 +167,13 @@ export default function CampaignDetailPage({
     refetch,
   } = useApiQuery<Campaign>(`/api/v4/campaigns/${id}`);
 
-  const { items: events, loading: eventsLoading } =
-    useApiList<CampaignEvent>(
-      activeTab === "events" ? `/api/v4/campaigns/${id}/events` : null,
-    );
+  const { items: events, loading: eventsLoading } = useApiList<CampaignEvent>(
+    activeTab === "events" ? `/api/v4/campaigns/${id}/events` : null,
+  );
 
   const { items: recipients, loading: recipientsLoading } =
     useApiList<CampaignRecipient>(
-      activeTab === "recipients"
-        ? `/api/v4/campaigns/${id}/recipients`
-        : null,
+      activeTab === "recipients" ? `/api/v4/campaigns/${id}/recipients` : null,
     );
 
   const runAction = async (action: () => Promise<unknown>) => {
@@ -203,10 +204,7 @@ export default function CampaignDetailPage({
         label: "Delivered (not opened)",
         value: Math.max(0, delivered - opened),
         color: "var(--wl-success-500)",
-        pct:
-          sent > 0
-            ? (((delivered - opened) / sent) * 100).toFixed(1)
-            : "0",
+        pct: sent > 0 ? (((delivered - opened) / sent) * 100).toFixed(1) : "0",
       },
       {
         label: "Failed",
@@ -229,12 +227,10 @@ export default function CampaignDetailPage({
 
   const sent = campaign.stats.total_events || 0;
   const { delivered, opened, clicked, failed } = campaign.stats;
-  const deliveryRate =
-    sent > 0 ? ((delivered / sent) * 100).toFixed(1) : "0.0";
+  const deliveryRate = sent > 0 ? ((delivered / sent) * 100).toFixed(1) : "0.0";
   const openRate =
     delivered > 0 ? ((opened / delivered) * 100).toFixed(1) : "0.0";
-  const clickRate =
-    opened > 0 ? ((clicked / opened) * 100).toFixed(1) : "0.0";
+  const clickRate = opened > 0 ? ((clicked / opened) * 100).toFixed(1) : "0.0";
 
   const tabs: { key: ActiveTab; label: string; icon: React.ReactNode }[] = [
     { key: "overview", label: "Overview", icon: <BarChart3 size={14} /> },
@@ -298,9 +294,7 @@ export default function CampaignDetailPage({
                 size="md"
                 disabled={actionLoading}
                 onClick={() =>
-                  runAction(() =>
-                    api.post(`/api/v4/campaigns/${id}/pause`, {}),
-                  )
+                  runAction(() => api.post(`/api/v4/campaigns/${id}/pause`, {}))
                 }
               >
                 <Pause size={14} className="mr-1" />

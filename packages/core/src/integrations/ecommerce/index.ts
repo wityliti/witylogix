@@ -41,10 +41,7 @@ export {
 } from "./ecommerce-adapter.js";
 
 // Magento adapter
-export {
-  MagentoClient,
-  createMagentoClient,
-} from "./magento-client.js";
+export { MagentoClient, createMagentoClient } from "./magento-client.js";
 
 // BigCommerce adapter
 export {
@@ -53,16 +50,10 @@ export {
 } from "./bigcommerce-client.js";
 
 // Sync engine
-export {
-  SyncEngine,
-  createSyncEngine,
-} from "./ecommerce-sync.js";
+export { SyncEngine, createSyncEngine } from "./ecommerce-sync.js";
 
 // Shopify SDK client
-export {
-  ShopifyClient,
-  createShopifyClient,
-} from "./shopify-sdk-client.js";
+export { ShopifyClient, createShopifyClient } from "./shopify-sdk-client.js";
 export type {
   ShopifyConfig,
   ShopifyOAuthConfig,
@@ -73,9 +64,7 @@ export {
   WooCommerceClient,
   createWooCommerceClient,
 } from "./woocommerce-sdk-client.js";
-export type {
-  WooCommerceConfig,
-} from "./woocommerce-sdk-client.js";
+export type { WooCommerceConfig } from "./woocommerce-sdk-client.js";
 
 // Magento SDK client
 export {
@@ -105,10 +94,7 @@ export type {
 } from "./magento-types.js";
 
 // Order sync engine
-export {
-  OrderSyncEngine,
-  createOrderSyncEngine,
-} from "./order-sync-engine.js";
+export { OrderSyncEngine, createOrderSyncEngine } from "./order-sync-engine.js";
 export type {
   SyncState,
   SyncDirection,

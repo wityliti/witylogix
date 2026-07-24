@@ -3,7 +3,7 @@
  * Respect user's prefers-reduced-motion media query
  */
 
-import { useEffect, useState, ReactNode } from 'react';
+import { useEffect, useState, ReactNode } from "react";
 
 /**
  * Hook to detect user's motion preferences
@@ -13,7 +13,7 @@ export function useReducedMotion(): boolean {
 
   useEffect(() => {
     // Check initial preference
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     setPrefersReducedMotion(mediaQuery.matches);
 
     // Listen for changes
@@ -21,8 +21,8 @@ export function useReducedMotion(): boolean {
       setPrefersReducedMotion(e.matches);
     };
 
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
   return prefersReducedMotion;
@@ -52,10 +52,11 @@ export function MotionSafe({
  */
 export function getAnimationDuration(
   normal: number,
-  reduced: number = 0
+  reduced: number = 0,
 ): number {
-  const prefersReducedMotion = typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const prefersReducedMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   return prefersReducedMotion ? reduced : normal;
 }
@@ -64,13 +65,14 @@ export function getAnimationDuration(
  * Get Tailwind transition class based on motion preference
  */
 export function getTransitionClass(
-  normalClass: string = 'transition-all duration-200 ease-in-out'
+  normalClass: string = "transition-all duration-200 ease-in-out",
 ): string {
-  const prefersReducedMotion = typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const prefersReducedMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   if (prefersReducedMotion) {
-    return 'transition-none';
+    return "transition-none";
   }
 
   return normalClass;
@@ -81,14 +83,15 @@ export function getTransitionClass(
  */
 export function getAnimationStyle(
   normalAnimation: string,
-  reducedAnimation?: string
+  reducedAnimation?: string,
 ): Record<string, string> {
-  const prefersReducedMotion = typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const prefersReducedMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   return {
     animation: prefersReducedMotion
-      ? reducedAnimation || 'none'
+      ? reducedAnimation || "none"
       : normalAnimation,
   };
 }
@@ -100,14 +103,14 @@ export function createMotionMediaQuery(): {
   matches: boolean;
   addListener: (callback: (matches: boolean) => void) => () => void;
 } {
-  const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
   return {
     matches: mediaQuery.matches,
     addListener: (callback: (matches: boolean) => void) => {
       const handler = (e: MediaQueryListEvent) => callback(e.matches);
-      mediaQuery.addEventListener('change', handler);
-      return () => mediaQuery.removeEventListener('change', handler);
+      mediaQuery.addEventListener("change", handler);
+      return () => mediaQuery.removeEventListener("change", handler);
     },
   };
 }

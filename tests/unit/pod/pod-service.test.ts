@@ -46,7 +46,7 @@ class PODService {
 
   capturePhoto(
     imageData: Buffer,
-    exifData?: Record<string, unknown>
+    exifData?: Record<string, unknown>,
   ): PhotoCapture {
     const id = `photo_${Date.now()}`;
     const imageUrl = this.storageAdapter.uploadFile(id, imageData);
@@ -81,7 +81,7 @@ class PODService {
   renderSignaturePNG(svgData: string): SignatureData {
     const pngUrl = this.storageAdapter.uploadFile(
       `sig_${Date.now()}`,
-      Buffer.from(svgData)
+      Buffer.from(svgData),
     );
 
     return {
@@ -113,8 +113,7 @@ class PODService {
 
     let sum = 0;
     for (let i = 0; i < 12; i++) {
-      sum +=
-        (i % 2 === 0 ? 1 : 3) * parseInt(barcode.charAt(i), 10);
+      sum += (i % 2 === 0 ? 1 : 3) * parseInt(barcode.charAt(i), 10);
     }
     const checkDigit = (10 - (sum % 10)) % 10;
     return parseInt(barcode.charAt(12), 10) === checkDigit;
@@ -122,7 +121,7 @@ class PODService {
 
   transitionDeliveryStatus(
     currentStatus: DeliveryTimeline["status"],
-    newStatus: DeliveryTimeline["status"]
+    newStatus: DeliveryTimeline["status"],
   ): { valid: boolean; reason?: string } {
     const validTransitions: Record<string, string[]> = {
       pending: ["picked_up", "failed"],
@@ -462,7 +461,10 @@ describe("PODService", () => {
     });
 
     it("should transition from picked_up to in_transit", () => {
-      const result = service.transitionDeliveryStatus("picked_up", "in_transit");
+      const result = service.transitionDeliveryStatus(
+        "picked_up",
+        "in_transit",
+      );
 
       expect(result.valid).toBe(true);
     });
@@ -470,7 +472,7 @@ describe("PODService", () => {
     it("should transition from in_transit to out_for_delivery", () => {
       const result = service.transitionDeliveryStatus(
         "in_transit",
-        "out_for_delivery"
+        "out_for_delivery",
       );
 
       expect(result.valid).toBe(true);
@@ -479,7 +481,7 @@ describe("PODService", () => {
     it("should transition from out_for_delivery to delivered", () => {
       const result = service.transitionDeliveryStatus(
         "out_for_delivery",
-        "delivered"
+        "delivered",
       );
 
       expect(result.valid).toBe(true);
@@ -515,7 +517,7 @@ describe("PODService", () => {
     it("should prevent backwards transition", () => {
       const result = service.transitionDeliveryStatus(
         "out_for_delivery",
-        "pending"
+        "pending",
       );
 
       expect(result.valid).toBe(false);
@@ -528,10 +530,7 @@ describe("PODService", () => {
     });
 
     it("should provide reason for invalid transition", () => {
-      const result = service.transitionDeliveryStatus(
-        "pending",
-        "returned"
-      );
+      const result = service.transitionDeliveryStatus("pending", "returned");
 
       expect(result.reason).toContain("Cannot transition");
       expect(result.reason).toContain("pending");
@@ -602,7 +601,7 @@ describe("PODService", () => {
 
     it("should handle rapid consecutive photo captures", () => {
       const photos = Array.from({ length: 100 }, () =>
-        service.capturePhoto(Buffer.from("photo_data"))
+        service.capturePhoto(Buffer.from("photo_data")),
       );
 
       const ids = new Set(photos.map((p) => p.id));

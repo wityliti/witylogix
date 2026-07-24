@@ -5,8 +5,20 @@
  * Provides type-safe interfaces for routes, stops, drivers, and dispatch operations.
  */
 
-export type RouteStatus = "draft" | "optimized" | "assigned" | "in_progress" | "completed" | "cancelled";
-export type StopStatus = "pending" | "en_route" | "arrived" | "completed" | "skipped" | "failed";
+export type RouteStatus =
+  | "draft"
+  | "optimized"
+  | "assigned"
+  | "in_progress"
+  | "completed"
+  | "cancelled";
+export type StopStatus =
+  | "pending"
+  | "en_route"
+  | "arrived"
+  | "completed"
+  | "skipped"
+  | "failed";
 export type StopType = "pickup" | "delivery" | "return" | "depot";
 export type DriverStatus = "offline" | "available" | "on_route" | "on_break";
 export type VehicleType = "bicycle" | "motorcycle" | "car" | "van" | "truck";

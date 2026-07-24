@@ -20,7 +20,9 @@ export interface StripePaymentLink {
   metadata?: Record<string, unknown>;
 }
 
-export const createStripePaymentLink = (overrides?: Partial<StripePaymentLink>): StripePaymentLink => ({
+export const createStripePaymentLink = (
+  overrides?: Partial<StripePaymentLink>,
+): StripePaymentLink => ({
   id: `pl_${Math.random().toString(36).substr(2, 20)}`,
   url: `https://checkout.stripe.com/pay/${Math.random().toString(36).substr(2, 20)}`,
   clientSecret: `pi_${Math.random().toString(36).substr(2, 20)}_secret_${Math.random().toString(36).substr(2, 20)}`,
@@ -46,7 +48,9 @@ export interface StripeWebhookEvent {
   livemode: boolean;
 }
 
-export const createStripeWebhookEvent = (overrides?: Partial<StripeWebhookEvent>): StripeWebhookEvent => ({
+export const createStripeWebhookEvent = (
+  overrides?: Partial<StripeWebhookEvent>,
+): StripeWebhookEvent => ({
   id: `evt_${Math.random().toString(36).substr(2, 20)}`,
   type: "payment_intent.succeeded",
   data: {
@@ -77,7 +81,9 @@ export interface ManualPaymentRecord {
   metadata?: Record<string, unknown>;
 }
 
-export const createBankTransferPayment = (overrides?: Partial<ManualPaymentRecord>): ManualPaymentRecord => ({
+export const createBankTransferPayment = (
+  overrides?: Partial<ManualPaymentRecord>,
+): ManualPaymentRecord => ({
   id: `bank_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   invoiceId: `invoice_${Math.random().toString(36).substr(2, 9)}`,
   customerId: `customer_${Math.random().toString(36).substr(2, 9)}`,
@@ -94,7 +100,9 @@ export const createBankTransferPayment = (overrides?: Partial<ManualPaymentRecor
   ...overrides,
 });
 
-export const createCashPayment = (overrides?: Partial<ManualPaymentRecord>): ManualPaymentRecord => ({
+export const createCashPayment = (
+  overrides?: Partial<ManualPaymentRecord>,
+): ManualPaymentRecord => ({
   id: `cash_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   invoiceId: `invoice_${Math.random().toString(36).substr(2, 9)}`,
   customerId: `customer_${Math.random().toString(36).substr(2, 9)}`,
@@ -109,7 +117,9 @@ export const createCashPayment = (overrides?: Partial<ManualPaymentRecord>): Man
   ...overrides,
 });
 
-export const createCheckPayment = (overrides?: Partial<ManualPaymentRecord>): ManualPaymentRecord => ({
+export const createCheckPayment = (
+  overrides?: Partial<ManualPaymentRecord>,
+): ManualPaymentRecord => ({
   id: `check_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   invoiceId: `invoice_${Math.random().toString(36).substr(2, 9)}`,
   customerId: `customer_${Math.random().toString(36).substr(2, 9)}`,
@@ -139,7 +149,9 @@ export interface PartialPaymentScenario {
   isFullyPaid: boolean;
 }
 
-export const createPartialPaymentScenario = (invoiceAmount: number = 1000): PartialPaymentScenario => {
+export const createPartialPaymentScenario = (
+  invoiceAmount: number = 1000,
+): PartialPaymentScenario => {
   const payments = [
     {
       amount: 300,
@@ -174,7 +186,7 @@ export interface OverpaymentScenario {
 
 export const createOverpaymentScenario = (
   invoiceAmount: number = 1000,
-  overpaymentPercent: number = 20
+  overpaymentPercent: number = 20,
 ): OverpaymentScenario => {
   const paymentAmount = invoiceAmount * (1 + overpaymentPercent / 100);
 
@@ -201,7 +213,9 @@ export interface RefundRecord {
   metadata?: Record<string, unknown>;
 }
 
-export const createRefund = (overrides?: Partial<RefundRecord>): RefundRecord => ({
+export const createRefund = (
+  overrides?: Partial<RefundRecord>,
+): RefundRecord => ({
   id: `refund_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   paymentId: `payment_${Math.random().toString(36).substr(2, 9)}`,
   invoiceId: `invoice_${Math.random().toString(36).substr(2, 9)}`,
@@ -227,7 +241,9 @@ export interface PaymentReconciliation {
   lastReconciled?: Date;
 }
 
-export const createPaymentReconciliation = (overrides?: Partial<PaymentReconciliation>): PaymentReconciliation => ({
+export const createPaymentReconciliation = (
+  overrides?: Partial<PaymentReconciliation>,
+): PaymentReconciliation => ({
   invoiceId: `invoice_${Math.random().toString(36).substr(2, 9)}`,
   invoiceAmount: 1000,
   recordedPayments: 1000,
@@ -240,7 +256,10 @@ export const createPaymentReconciliation = (overrides?: Partial<PaymentReconcili
 
 // ─── CONCURRENT PAYMENT FIXTURES ────────────────────────────────────────────
 
-export const createConcurrentPaymentScenario = (invoiceId: string, invoiceAmount: number = 1000) => {
+export const createConcurrentPaymentScenario = (
+  invoiceId: string,
+  invoiceAmount: number = 1000,
+) => {
   const now = Date.now();
 
   return {
@@ -260,7 +279,8 @@ export const createConcurrentPaymentScenario = (invoiceId: string, invoiceAmount
         method: "stripe",
       },
     ],
-    expectedBehavior: "both payments should be recorded, invoice marked as paid",
+    expectedBehavior:
+      "both payments should be recorded, invoice marked as paid",
   };
 };
 

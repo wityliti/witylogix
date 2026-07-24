@@ -497,7 +497,10 @@ describe("BigCommerceClient", () => {
 
     it("should reject invalid webhook signature", () => {
       const payload = JSON.stringify({ id: 1 });
-      const isValid = client.verifyWebhookSignature(payload, "invalid-signature");
+      const isValid = client.verifyWebhookSignature(
+        payload,
+        "invalid-signature",
+      );
       expect(isValid).toBe(false);
     });
 

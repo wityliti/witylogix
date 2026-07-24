@@ -62,7 +62,10 @@ export class HelloSignClient extends ESignatureAdapter {
       throw new Error("HelloSign: apiKey or clientId is required");
     }
 
-    this.baseUrl = (config.apiUrl || "https://api.hellosign.com").replace(/\/$/, "");
+    this.baseUrl = (config.apiUrl || "https://api.hellosign.com").replace(
+      /\/$/,
+      "",
+    );
 
     if (config.apiKey) {
       this.apiKey = config.apiKey;
@@ -80,10 +83,13 @@ export class HelloSignClient extends ESignatureAdapter {
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/v3/signature_requests/list?limit=1`, {
-        method: "GET",
-        headers: this.getAuthHeaders(),
-      });
+      const response = await fetch(
+        `${this.baseUrl}/v3/signature_requests/list?limit=1`,
+        {
+          method: "GET",
+          headers: this.getAuthHeaders(),
+        },
+      );
 
       return response.status === 200;
     } catch {
@@ -115,8 +121,14 @@ export class HelloSignClient extends ESignatureAdapter {
    * Refresh OAuth2 token.
    */
   async refreshToken(): Promise<void> {
-    if (!this.config?.clientId || !this.config?.clientSecret || !this.config?.refreshToken) {
-      throw new Error("HelloSign: OAuth2 requires clientId, clientSecret, and refreshToken");
+    if (
+      !this.config?.clientId ||
+      !this.config?.clientSecret ||
+      !this.config?.refreshToken
+    ) {
+      throw new Error(
+        "HelloSign: OAuth2 requires clientId, clientSecret, and refreshToken",
+      );
     }
 
     const response = await fetch(`${this.baseUrl}/oauth/token`, {
@@ -132,7 +144,10 @@ export class HelloSignClient extends ESignatureAdapter {
       }).toString(),
     });
 
-    const data = (await response.json()) as { access_token: string; expires_in: number };
+    const data = (await response.json()) as {
+      access_token: string;
+      expires_in: number;
+    };
     this.setAccessToken(data.access_token, data.expires_in);
   }
 
@@ -164,7 +179,10 @@ export class HelloSignClient extends ESignatureAdapter {
       });
 
       // Add metadata
-      formData.append("title", envelope.subject || "Document Signature Request");
+      formData.append(
+        "title",
+        envelope.subject || "Document Signature Request",
+      );
       if (envelope.message) {
         formData.append("message", envelope.message);
       }
@@ -175,17 +193,24 @@ export class HelloSignClient extends ESignatureAdapter {
         });
       }
 
-      const response = await fetch(`${this.baseUrl}/v3/signature_requests/send`, {
-        method: "POST",
-        headers,
-        body: formData,
-      });
+      const response = await fetch(
+        `${this.baseUrl}/v3/signature_requests/send`,
+        {
+          method: "POST",
+          headers,
+          body: formData,
+        },
+      );
 
       if (!response.ok) {
-        throw new Error(`HelloSign: Failed to create request: ${response.statusText}`);
+        throw new Error(
+          `HelloSign: Failed to create request: ${response.statusText}`,
+        );
       }
 
-      const data = (await response.json()) as { signature_request: { signature_request_id: string } };
+      const data = (await response.json()) as {
+        signature_request: { signature_request_id: string };
+      };
 
       return {
         envelopeId: data.signature_request.signature_request_id,
@@ -219,16 +244,21 @@ export class HelloSignClient extends ESignatureAdapter {
       const headers = this.getAuthHeaders();
       headers["Content-Type"] = "application/x-www-form-urlencoded";
 
-      const response = await fetch(`${this.baseUrl}/v3/signature_requests/cancel/${envelopeId}`, {
-        method: "POST",
-        headers,
-        body: new URLSearchParams({
-          email_address: this.config?.accountId || "support@example.com",
-        }).toString(),
-      });
+      const response = await fetch(
+        `${this.baseUrl}/v3/signature_requests/cancel/${envelopeId}`,
+        {
+          method: "POST",
+          headers,
+          body: new URLSearchParams({
+            email_address: this.config?.accountId || "support@example.com",
+          }).toString(),
+        },
+      );
 
       if (!response.ok) {
-        throw new Error(`HelloSign: Failed to cancel request: ${response.statusText}`);
+        throw new Error(
+          `HelloSign: Failed to cancel request: ${response.statusText}`,
+        );
       }
     });
   }
@@ -240,13 +270,18 @@ export class HelloSignClient extends ESignatureAdapter {
     return this.rateLimitedRequest(async () => {
       const headers = this.getAuthHeaders();
 
-      const response = await fetch(`${this.baseUrl}/v3/signature_requests/${envelopeId}`, {
-        method: "GET",
-        headers,
-      });
+      const response = await fetch(
+        `${this.baseUrl}/v3/signature_requests/${envelopeId}`,
+        {
+          method: "GET",
+          headers,
+        },
+      );
 
       if (!response.ok) {
-        throw new Error(`HelloSign: Failed to get request: ${response.statusText}`);
+        throw new Error(
+          `HelloSign: Failed to get request: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as any;
@@ -266,20 +301,22 @@ export class HelloSignClient extends ESignatureAdapter {
         id: req.signature_request_id,
         name: req.title || "Document",
         status: statusMap[req.is_complete ? "completed" : req.status] || "sent",
-        documents: req.files?.map((file: any, i: number) => ({
-          id: file.file_id,
-          name: file.file_name,
-          fileName: file.file_name,
-          content: "",
-          order: i + 1,
-          mimeType: "application/pdf",
-        })) || [],
-        signers: req.signatures?.map((sig: any) => ({
-          email: sig.signer_email_address,
-          name: sig.signer_name || sig.signer_email_address,
-          order: 1,
-          requiresSequentialSigning: false,
-        })) || [],
+        documents:
+          req.files?.map((file: any, i: number) => ({
+            id: file.file_id,
+            name: file.file_name,
+            fileName: file.file_name,
+            content: "",
+            order: i + 1,
+            mimeType: "application/pdf",
+          })) || [],
+        signers:
+          req.signatures?.map((sig: any) => ({
+            email: sig.signer_email_address,
+            name: sig.signer_name || sig.signer_email_address,
+            order: 1,
+            requiresSequentialSigning: false,
+          })) || [],
         fields: [],
         createdAt: new Date(req.created_at * 1000),
         subject: req.title,
@@ -297,13 +334,18 @@ export class HelloSignClient extends ESignatureAdapter {
     return this.rateLimitedRequest(async () => {
       const headers = this.getAuthHeaders();
 
-      const response = await fetch(`${this.baseUrl}/v3/signature_requests/${envelopeId}`, {
-        method: "GET",
-        headers,
-      });
+      const response = await fetch(
+        `${this.baseUrl}/v3/signature_requests/${envelopeId}`,
+        {
+          method: "GET",
+          headers,
+        },
+      );
 
       if (!response.ok) {
-        throw new Error(`HelloSign: Failed to get request status: ${response.statusText}`);
+        throw new Error(
+          `HelloSign: Failed to get request status: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as any;
@@ -315,21 +357,27 @@ export class HelloSignClient extends ESignatureAdapter {
         viewed: "viewed",
       };
 
-      const signerStatuses = req.signatures?.map((sig: any) => ({
-        email: sig.signer_email_address,
-        name: sig.signer_name || sig.signer_email_address,
-        status: statusMap[sig.status_code] || ("sent" as EnvelopeStatus),
-        signedAt: sig.signed_at ? new Date(sig.signed_at * 1000) : undefined,
-      })) || [];
+      const signerStatuses =
+        req.signatures?.map((sig: any) => ({
+          email: sig.signer_email_address,
+          name: sig.signer_name || sig.signer_email_address,
+          status: statusMap[sig.status_code] || ("sent" as EnvelopeStatus),
+          signedAt: sig.signed_at ? new Date(sig.signed_at * 1000) : undefined,
+        })) || [];
 
-      const completedSigners = signerStatuses.filter((s: { status: EnvelopeStatus }) => s.status === "signed").length;
+      const completedSigners = signerStatuses.filter(
+        (s: { status: EnvelopeStatus }) => s.status === "signed",
+      ).length;
       const totalSigners = signerStatuses.length;
 
       return {
         envelopeId,
         status: req.is_complete ? "completed" : "sent",
         signerStatuses,
-        completionPercentage: totalSigners > 0 ? Math.round((completedSigners / totalSigners) * 100) : 0,
+        completionPercentage:
+          totalSigners > 0
+            ? Math.round((completedSigners / totalSigners) * 100)
+            : 0,
         lastUpdated: new Date(),
       };
     });
@@ -352,16 +400,21 @@ export class HelloSignClient extends ESignatureAdapter {
 
       const params = new URLSearchParams({
         limit: Math.min(limit, 100).toString(),
-        page: ((offset / limit) + 1).toString(),
+        page: (offset / limit + 1).toString(),
       });
 
-      const response = await fetch(`${this.baseUrl}/v3/signature_requests/list?${params}`, {
-        method: "GET",
-        headers,
-      });
+      const response = await fetch(
+        `${this.baseUrl}/v3/signature_requests/list?${params}`,
+        {
+          method: "GET",
+          headers,
+        },
+      );
 
       if (!response.ok) {
-        throw new Error(`HelloSign: Failed to list requests: ${response.statusText}`);
+        throw new Error(
+          `HelloSign: Failed to list requests: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as any;
@@ -395,21 +448,32 @@ export class HelloSignClient extends ESignatureAdapter {
   /**
    * Remind signers.
    */
-  async resendEnvelope(envelopeId: string, signerEmails?: string[]): Promise<void> {
+  async resendEnvelope(
+    envelopeId: string,
+    signerEmails?: string[],
+  ): Promise<void> {
     return this.rateLimitedRequest(async () => {
       const headers = this.getAuthHeaders();
       headers["Content-Type"] = "application/x-www-form-urlencoded";
 
-      const response = await fetch(`${this.baseUrl}/v3/signature_requests/remind/${envelopeId}`, {
-        method: "POST",
-        headers,
-        body: new URLSearchParams({
-          email_address: signerEmails?.[0] || this.config?.accountId || "support@example.com",
-        }).toString(),
-      });
+      const response = await fetch(
+        `${this.baseUrl}/v3/signature_requests/remind/${envelopeId}`,
+        {
+          method: "POST",
+          headers,
+          body: new URLSearchParams({
+            email_address:
+              signerEmails?.[0] ||
+              this.config?.accountId ||
+              "support@example.com",
+          }).toString(),
+        },
+      );
 
       if (!response.ok) {
-        throw new Error(`HelloSign: Failed to remind signers: ${response.statusText}`);
+        throw new Error(
+          `HelloSign: Failed to remind signers: ${response.statusText}`,
+        );
       }
     });
   }
@@ -430,13 +494,18 @@ export class HelloSignClient extends ESignatureAdapter {
         page: ((options?.offset || 0) / limit + 1).toString(),
       });
 
-      const response = await fetch(`${this.baseUrl}/v3/template_list?${params}`, {
-        method: "GET",
-        headers,
-      });
+      const response = await fetch(
+        `${this.baseUrl}/v3/template_list?${params}`,
+        {
+          method: "GET",
+          headers,
+        },
+      );
 
       if (!response.ok) {
-        throw new Error(`HelloSign: Failed to list templates: ${response.statusText}`);
+        throw new Error(
+          `HelloSign: Failed to list templates: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as any;
@@ -464,13 +533,18 @@ export class HelloSignClient extends ESignatureAdapter {
     return this.rateLimitedRequest(async () => {
       const headers = this.getAuthHeaders();
 
-      const response = await fetch(`${this.baseUrl}/v3/template/${templateId}`, {
-        method: "GET",
-        headers,
-      });
+      const response = await fetch(
+        `${this.baseUrl}/v3/template/${templateId}`,
+        {
+          method: "GET",
+          headers,
+        },
+      );
 
       if (!response.ok) {
-        throw new Error(`HelloSign: Failed to get template: ${response.statusText}`);
+        throw new Error(
+          `HelloSign: Failed to get template: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as any;
@@ -492,7 +566,7 @@ export class HelloSignClient extends ESignatureAdapter {
    */
   async createEnvelopeFromTemplate(
     templateId: string,
-    envelope: Partial<Envelope>
+    envelope: Partial<Envelope>,
   ): Promise<EnvelopeResult> {
     return this.rateLimitedRequest(async () => {
       const headers = this.getAuthHeaders();
@@ -512,17 +586,24 @@ export class HelloSignClient extends ESignatureAdapter {
         body.append(`signers[${signer.name}][name]`, signer.name);
       });
 
-      const response = await fetch(`${this.baseUrl}/v3/signature_requests/send_with_template`, {
-        method: "POST",
-        headers,
-        body: body.toString(),
-      });
+      const response = await fetch(
+        `${this.baseUrl}/v3/signature_requests/send_with_template`,
+        {
+          method: "POST",
+          headers,
+          body: body.toString(),
+        },
+      );
 
       if (!response.ok) {
-        throw new Error(`HelloSign: Failed to create request from template: ${response.statusText}`);
+        throw new Error(
+          `HelloSign: Failed to create request from template: ${response.statusText}`,
+        );
       }
 
-      const data = (await response.json()) as { signature_request: { signature_request_id: string } };
+      const data = (await response.json()) as {
+        signature_request: { signature_request_id: string };
+      };
 
       return {
         envelopeId: data.signature_request.signature_request_id,
@@ -535,7 +616,10 @@ export class HelloSignClient extends ESignatureAdapter {
   /**
    * Download document.
    */
-  async downloadDocument(envelopeId: string, documentId: string): Promise<DocumentDownloadResult> {
+  async downloadDocument(
+    envelopeId: string,
+    documentId: string,
+  ): Promise<DocumentDownloadResult> {
     return this.rateLimitedRequest(async () => {
       const headers = this.getAuthHeaders();
 
@@ -544,11 +628,13 @@ export class HelloSignClient extends ESignatureAdapter {
         {
           method: "GET",
           headers,
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`HelloSign: Failed to download document: ${response.statusText}`);
+        throw new Error(
+          `HelloSign: Failed to download document: ${response.statusText}`,
+        );
       }
 
       const buffer = await response.arrayBuffer();
@@ -569,18 +655,23 @@ export class HelloSignClient extends ESignatureAdapter {
    * Download all documents.
    */
   async downloadEnvelopeDocuments(
-    envelopeId: string
+    envelopeId: string,
   ): Promise<{ content: string; mimeType: string; fileName: string }> {
     return this.rateLimitedRequest(async () => {
       const headers = this.getAuthHeaders();
 
-      const response = await fetch(`${this.baseUrl}/v3/signature_requests/${envelopeId}/files/zip`, {
-        method: "GET",
-        headers,
-      });
+      const response = await fetch(
+        `${this.baseUrl}/v3/signature_requests/${envelopeId}/files/zip`,
+        {
+          method: "GET",
+          headers,
+        },
+      );
 
       if (!response.ok) {
-        throw new Error(`HelloSign: Failed to download documents: ${response.statusText}`);
+        throw new Error(
+          `HelloSign: Failed to download documents: ${response.statusText}`,
+        );
       }
 
       const buffer = await response.arrayBuffer();
@@ -600,7 +691,7 @@ export class HelloSignClient extends ESignatureAdapter {
   async getEmbeddedSigningUrl(
     envelopeId: string,
     signerEmail: string,
-    returnUrl: string
+    returnUrl: string,
   ): Promise<EmbedSigningResult> {
     return this.rateLimitedRequest(async () => {
       const headers = this.getAuthHeaders();
@@ -610,14 +701,18 @@ export class HelloSignClient extends ESignatureAdapter {
         {
           method: "GET",
           headers,
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`HelloSign: Failed to get signing URL: ${response.statusText}`);
+        throw new Error(
+          `HelloSign: Failed to get signing URL: ${response.statusText}`,
+        );
       }
 
-      const data = (await response.json()) as { embedded: { sign_url: string } };
+      const data = (await response.json()) as {
+        embedded: { sign_url: string };
+      };
 
       return {
         signingUrl: data.embedded.sign_url,
@@ -629,7 +724,10 @@ export class HelloSignClient extends ESignatureAdapter {
   /**
    * Mark document as viewed.
    */
-  async markDocumentViewed(envelopeId: string, signerEmail: string): Promise<void> {
+  async markDocumentViewed(
+    envelopeId: string,
+    signerEmail: string,
+  ): Promise<void> {
     // HelloSign tracks viewing automatically
   }
 
@@ -640,13 +738,18 @@ export class HelloSignClient extends ESignatureAdapter {
     return this.rateLimitedRequest(async () => {
       const headers = this.getAuthHeaders();
 
-      const response = await fetch(`${this.baseUrl}/v3/signature_requests/${envelopeId}`, {
-        method: "GET",
-        headers,
-      });
+      const response = await fetch(
+        `${this.baseUrl}/v3/signature_requests/${envelopeId}`,
+        {
+          method: "GET",
+          headers,
+        },
+      );
 
       if (!response.ok) {
-        throw new Error(`HelloSign: Failed to get events: ${response.statusText}`);
+        throw new Error(
+          `HelloSign: Failed to get events: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as any;
@@ -676,7 +779,9 @@ export class HelloSignClient extends ESignatureAdapter {
           signerEmail: sig.signer_email_address,
           previousStatus: "sent",
           newStatus: statusMap[sig.status_code] || "sent",
-          timestamp: new Date(sig.signed_at ? sig.signed_at * 1000 : Date.now()),
+          timestamp: new Date(
+            sig.signed_at ? sig.signed_at * 1000 : Date.now(),
+          ),
           signatureDetails: sig.signed_at
             ? { date: new Date(sig.signed_at * 1000) }
             : undefined,
@@ -692,11 +797,15 @@ export class HelloSignClient extends ESignatureAdapter {
    */
   async parseWebhookEvent(
     payload: Record<string, unknown>,
-    headers: Record<string, string>
+    headers: Record<string, string>,
   ): Promise<ESignatureWebhookEvent> {
-    const isValid = this.verifyWebhookSignature(JSON.stringify(payload), headers["x-hellosign-signature"] || "");
+    const isValid = this.verifyWebhookSignature(
+      JSON.stringify(payload),
+      headers["x-hellosign-signature"] || "",
+    );
 
-    const envelopeId = (payload as any).signature_request?.signature_request_id || "";
+    const envelopeId =
+      (payload as any).signature_request?.signature_request_id || "";
     const eventType = (payload as any).event?.type || "unknown";
 
     const statusMap: Record<string, EnvelopeStatus> = {
@@ -712,7 +821,7 @@ export class HelloSignClient extends ESignatureAdapter {
       id: `${envelopeId}_${Date.now()}`,
       envelopeId,
       type: "status_changed" as const,
-      previousStatus: ("created" as EnvelopeStatus),
+      previousStatus: "created" as EnvelopeStatus,
       newStatus: statusMap[eventType] || ("created" as EnvelopeStatus),
       timestamp: new Date(),
     };
@@ -754,7 +863,9 @@ export class HelloSignClient extends ESignatureAdapter {
       const verified = await this.verifyCredentials();
       return {
         healthy: verified,
-        message: verified ? "HelloSign connection is healthy" : "Failed to verify credentials",
+        message: verified
+          ? "HelloSign connection is healthy"
+          : "Failed to verify credentials",
       };
     } catch (error) {
       return {

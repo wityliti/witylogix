@@ -88,10 +88,15 @@ describe("FieldMappingDSL", () => {
     it("should chain transformations with conditions", () => {
       const dsl = new FieldMappingDSL();
 
-      const notEmpty = (value: unknown) => value !== null && value !== undefined && value !== "";
+      const notEmpty = (value: unknown) =>
+        value !== null && value !== undefined && value !== "";
       const toUpperCase = (value: unknown) => (value as string).toUpperCase();
 
-      dsl.map("company").when(notEmpty).transform(toUpperCase).to("COMPANY_NAME");
+      dsl
+        .map("company")
+        .when(notEmpty)
+        .transform(toUpperCase)
+        .to("COMPANY_NAME");
 
       const rules = dsl.getRules();
 
@@ -120,7 +125,8 @@ describe("FieldMappingDSL", () => {
     it("should support common predicates", () => {
       const dsl = new FieldMappingDSL();
 
-      const notEmpty = (value: unknown) => value !== null && value !== undefined && value !== "";
+      const notEmpty = (value: unknown) =>
+        value !== null && value !== undefined && value !== "";
       const isEmail = (value: unknown) =>
         typeof value === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
@@ -179,7 +185,8 @@ describe("FieldMappingDSL", () => {
     it("should support optional with other modifiers", () => {
       const dsl = new FieldMappingDSL();
 
-      const notEmpty = (value: unknown) => value !== null && value !== undefined && value !== "";
+      const notEmpty = (value: unknown) =>
+        value !== null && value !== undefined && value !== "";
 
       dsl.map("nickname").optional().when(notEmpty).to("displayNickname");
 
@@ -194,8 +201,10 @@ describe("FieldMappingDSL", () => {
     it("should create realistic contact mapping", () => {
       const dsl = new FieldMappingDSL();
 
-      const notEmpty = (value: unknown) => value !== null && value !== undefined && value !== "";
-      const normalizeEmail = (value: unknown) => (value as string).toLowerCase().trim();
+      const notEmpty = (value: unknown) =>
+        value !== null && value !== undefined && value !== "";
+      const normalizeEmail = (value: unknown) =>
+        (value as string).toLowerCase().trim();
 
       dsl.map("email").transform(normalizeEmail).to("emailAddress");
       dsl.map("firstName").asType("string").to("firstName");
@@ -206,7 +215,9 @@ describe("FieldMappingDSL", () => {
       const rules = dsl.getRules();
 
       expect(rules.length).toBe(5);
-      expect(rules[0].transform!("  TEST@EXAMPLE.COM  ")).toBe("test@example.com");
+      expect(rules[0].transform!("  TEST@EXAMPLE.COM  ")).toBe(
+        "test@example.com",
+      );
       expect(rules[2].required).toBe(true);
       expect(rules[3].required).toBe(false);
     });
@@ -218,7 +229,12 @@ describe("FieldMappingDSL", () => {
       const convertCurrency = (value: unknown) => (value as number) * 1.1;
 
       dsl.map("dealName").to("name");
-      dsl.map("amount").when(minAmount).transform(convertCurrency).asType("number").to("totalAmount");
+      dsl
+        .map("amount")
+        .when(minAmount)
+        .transform(convertCurrency)
+        .asType("number")
+        .to("totalAmount");
       dsl.map("stage").to("status");
       dsl.map("closeDate").asType("date").to("expectedCloseDate");
       dsl.map("owner").optional().to("ownerId");
@@ -236,11 +252,7 @@ describe("FieldMappingDSL", () => {
     it("should support fluent chaining", () => {
       const dsl = new FieldMappingDSL();
 
-      dsl
-        .map("email")
-        .asType("string")
-        .to("emailAddress")
-        .getRules();
+      dsl.map("email").asType("string").to("emailAddress").getRules();
 
       const rules = dsl.getRules();
 

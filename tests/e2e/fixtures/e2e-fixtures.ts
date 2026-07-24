@@ -24,7 +24,9 @@ export interface TestCustomer {
   createdAt: Date;
 }
 
-export function createTestCustomer(overrides?: Partial<TestCustomer>): TestCustomer {
+export function createTestCustomer(
+  overrides?: Partial<TestCustomer>,
+): TestCustomer {
   const baseId: string = randomUUID();
   return {
     id: baseId,
@@ -213,7 +215,9 @@ export interface PayPalOrder {
   createdAt: Date;
 }
 
-export function createPayPalOrder(overrides?: Partial<PayPalOrder>): PayPalOrder {
+export function createPayPalOrder(
+  overrides?: Partial<PayPalOrder>,
+): PayPalOrder {
   const baseId: string = randomUUID();
 
   return {
@@ -239,7 +243,9 @@ export interface SquarePayment {
   createdAt: Date;
 }
 
-export function createSquarePayment(overrides?: Partial<SquarePayment>): SquarePayment {
+export function createSquarePayment(
+  overrides?: Partial<SquarePayment>,
+): SquarePayment {
   const baseId: string = randomUUID();
 
   return {
@@ -426,7 +432,11 @@ export function createMagentoFulfillmentWebhook(
 
 export interface NotificationRecord {
   id: string;
-  type: "order_created" | "order_assigned" | "order_in_transit" | "order_delivered";
+  type:
+    | "order_created"
+    | "order_assigned"
+    | "order_in_transit"
+    | "order_delivered";
   recipient: string;
   recipientType: "email" | "sms" | "push";
   status: "sent" | "failed" | "pending";
@@ -466,7 +476,9 @@ export interface InvoiceRecord {
   paidAt?: Date;
 }
 
-export function createInvoiceRecord(overrides?: Partial<InvoiceRecord>): InvoiceRecord {
+export function createInvoiceRecord(
+  overrides?: Partial<InvoiceRecord>,
+): InvoiceRecord {
   const baseId: string = randomUUID();
 
   return {
@@ -497,7 +509,9 @@ export interface DeliverySlot {
   available: boolean;
 }
 
-export function createDeliverySlot(overrides?: Partial<DeliverySlot>): DeliverySlot {
+export function createDeliverySlot(
+  overrides?: Partial<DeliverySlot>,
+): DeliverySlot {
   const baseId: string = randomUUID();
 
   return {

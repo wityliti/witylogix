@@ -13,6 +13,7 @@
 This decision documents how **BullMQ workers integrate with the notification orchestrator** introduced in ADR-012. The notification worker transitions from **inline provider logic** to **orchestrator delegation**, simplifying worker code while centralizing notification logic.
 
 **Key principles:**
+
 1. **Worker = Queue Handler** — BullMQ workers handle job dequeuing, payload validation, and error routing
 2. **Orchestrator = Business Logic** — NotificationOrchestrator owns template lookup, rendering, provider selection, and delivery
 3. **Separation of Concerns** — Queue concerns (retry, dead-letter) separate from delivery concerns (provider selection, fallback)
@@ -21,6 +22,7 @@ This decision documents how **BullMQ workers integrate with the notification orc
 6. **Metered Billing** — BYOK fallback usage tracked via metering events
 
 **Result:**
+
 - Notification worker reduced from 24 TODO stubs to clean 500-line implementation
 - All inline provider switch/case removed
 - Template rendering, provider selection, and delivery delegated to orchestrator
@@ -34,6 +36,7 @@ This decision documents how **BullMQ workers integrate with the notification orc
 ### Current State (Before ADR-013)
 
 The notification worker at `apps/api/src/workers/notification-worker.ts` contains:
+
 - 24 TODO stubs with console.log placeholders
 - Inline switch/case for each provider (SendGrid, Mailgun, Postmark, etc.)
 - Hardcoded provider dispatch logic per channel
@@ -43,6 +46,7 @@ The notification worker at `apps/api/src/workers/notification-worker.ts` contain
 - Scattered delivery logging
 
 Example (current):
+
 ```typescript
 switch (resolved.provider) {
   case "sendgrid": {
@@ -55,6 +59,7 @@ switch (resolved.provider) {
 ```
 
 **Problems:**
+
 1. **Code Explosion** — 24 providers × 4 channels = 96+ stub placeholders
 2. **Logic Duplication** — Provider selection, rendering, retry logic scattered
 3. **Difficult Maintenance** — Adding new provider requires modifying worker
@@ -65,6 +70,7 @@ switch (resolved.provider) {
 ### Notification Orchestrator (ADR-012)
 
 ADR-012 introduced `NotificationOrchestrator`:
+
 - **Centralizes** template loading, rendering, provider routing
 - **Implements** retry logic with exponential backoff (100ms, 200ms, 400ms)
 - **Manages** delivery logging to `notificationLog` table
@@ -72,6 +78,7 @@ ADR-012 introduced `NotificationOrchestrator`:
 - **Provides** health checks and provider status tracking
 
 Orchestrator owns:
+
 1. Template lookup from DB by templateId + channel
 2. Mustache variable interpolation (`{{variable}}`)
 3. Provider selection via TenantProviderRegistry
@@ -79,6 +86,7 @@ Orchestrator owns:
 5. Logging to notificationLog table
 
 Worker should own:
+
 1. Dequeue job from BullMQ
 2. Extract and validate payload (tenantId, channel, templateId, etc.)
 3. Call orchestrator
@@ -88,12 +96,14 @@ Worker should own:
 ### Multi-Channel Complexity
 
 Witylogix supports 4 independent notification channels:
+
 - **Email** — 6 providers (SendGrid, Mailgun, AWS SES, Postmark, Resend, SMTP)
 - **SMS** — 5 providers (Twilio, Vonage, AWS SNS, MessageBird, Plivo)
 - **WhatsApp** — 3 providers (Meta Cloud, Twilio, 360dialog)
 - **Push** — 3 providers (Firebase, OneSignal, Expo Push)
 
 Each channel needs:
+
 - Independent provider configuration
 - Per-tenant credentials (BYOK pattern)
 - Fallback chain support
@@ -102,6 +112,7 @@ Each channel needs:
 ### Retry Strategy Distinction
 
 Two layers of retry:
+
 1. **BullMQ Retries** — Handle queue infrastructure failures
    - Job processing crashed
    - Redis connection lost
@@ -115,12 +126,14 @@ Two layers of retry:
    - Configuration: exponential backoff (100ms, 200ms, 400ms), max 3 attempts
 
 Both layers are necessary:
+
 - BullMQ retries ensure job isn't lost due to infrastructure
 - Orchestrator retries ensure transient provider issues don't block
 
 ### Error Classification
 
 Different errors require different handling:
+
 1. **ProviderError** — Provider rejected the message (invalid format, auth failure)
    - Permanent, non-retryable
    - Log to dead-letter, don't retry
@@ -146,12 +159,14 @@ Different errors require different handling:
 ### BYOK Provider Resolution
 
 When NOTIFICATIONS_BYOK=true, per-tenant provider resolution follows:
+
 1. Load tenant config from `shop.settings.notifications.<channel>`
 2. If tenant has configured `provider` + credentials → use tenant's
 3. Else → fall back to deployer's env credentials + emit metering event
 4. Else → mark channel unavailable
 
 Metering tracks:
+
 - Which tenant used which provider
 - Whether fallback was used (for billing)
 - Timestamp and operation type
@@ -159,12 +174,14 @@ Metering tracks:
 ### Dead-Letter Queue Strategy
 
 Failed notifications that exceed retry limits should:
+
 1. Be logged with full context (tenantId, channel, templateId, recipient, error)
 2. Move to `notification_dlq` table or failed job queue
 3. Generate alert for ops (Slack, Datadog) for investigation
 4. Include retry count and last error message
 
 Example DLQ entry:
+
 ```json
 {
   "jobId": "notif-123",
@@ -188,6 +205,7 @@ Example DLQ entry:
 The notification worker is **solely responsible** for:
 
 1. **Job Dequeuing**
+
    ```typescript
    const { shopId, channel, templateId, to, variables } = job.data;
    ```
@@ -199,6 +217,7 @@ The notification worker is **solely responsible** for:
    - Check templateId is non-empty string
 
 3. **Orchestrator Invocation**
+
    ```typescript
    const result = await orchestrator.sendNotification(
      shopId,
@@ -259,18 +278,21 @@ The orchestrator is **solely responsible** for:
 ### Retry Strategy
 
 **BullMQ Level:**
+
 - Max 3 attempts (configurable)
 - Exponential backoff (2000ms, 5000ms, 10000ms)
 - Dead-letter queue after 3 failures
 - Job includes retry count in metadata
 
 **Orchestrator Level:**
+
 - Max 3 attempts per provider
 - Exponential backoff (100ms, 200ms, 400ms + jitter)
 - Try next provider in fallback chain
 - Return error if all providers fail
 
 **Combined Effect:**
+
 ```
 Job Attempt 1: Orchestrator tries 3 providers (backoff: 100, 200, 400ms)
   └─ All fail → BullMQ will retry in 2000ms
@@ -294,6 +316,7 @@ const fallbackChain = registry.getFallbackChain(channel);
 ```
 
 Registry is pre-populated during tenant initialization:
+
 1. Load tenant's notification config from shop.settings
 2. Register primary provider with tenant's credentials
 3. Register backup providers from deployer config
@@ -304,6 +327,7 @@ Worker doesn't need to know credentials or provider details—orchestrator handl
 ### Metered Billing Integration
 
 When NOTIFICATIONS_BYOK=true:
+
 1. Orchestrator detects fallback provider usage
 2. Emits metering event via `emitNotificationMeterEvent()`
 3. Global callback tracks fallback usage per tenant
@@ -408,15 +432,15 @@ try {
 
 ### Trade-offs
 
-| Aspect | Before | After |
-|--------|--------|-------|
-| **Worker Complexity** | High (24 TODOs) | Low (orchestrator delegation) |
-| **Orchestrator Complexity** | None | High (600+ lines) |
-| **Code Duplication** | Yes (per provider) | No (single path) |
-| **Retry Clarity** | Mixed | Clear (BullMQ vs orchestrator) |
-| **Testing** | Difficult | Easier (separated concerns) |
-| **Provider Addition** | Modify worker | Modify registry only |
-| **Logging Consistency** | Scattered | Centralized |
+| Aspect                      | Before             | After                          |
+| --------------------------- | ------------------ | ------------------------------ |
+| **Worker Complexity**       | High (24 TODOs)    | Low (orchestrator delegation)  |
+| **Orchestrator Complexity** | None               | High (600+ lines)              |
+| **Code Duplication**        | Yes (per provider) | No (single path)               |
+| **Retry Clarity**           | Mixed              | Clear (BullMQ vs orchestrator) |
+| **Testing**                 | Difficult          | Easier (separated concerns)    |
+| **Provider Addition**       | Modify worker      | Modify registry only           |
+| **Logging Consistency**     | Scattered          | Centralized                    |
 
 ---
 
@@ -427,11 +451,13 @@ try {
 **Approach:** Leave provider dispatch in worker, improve existing code
 
 **Pros:**
+
 - Minimal refactoring
 - Single retry layer (BullMQ only)
 - Straightforward debugging (everything in one place)
 
 **Cons:**
+
 - Worker becomes bloated (300+ lines)
 - Duplication with orchestrator template/retry logic
 - Difficult to add new providers (modify worker)
@@ -443,10 +469,12 @@ try {
 **Approach:** Use orchestrator for all retries, disable BullMQ retries
 
 **Pros:**
+
 - Single retry layer (less complex)
 - Fewer total retry attempts
 
 **Cons:**
+
 - Queue infrastructure failures cause job loss
 - No circuit breaker for crashed workers
 - Harder to debug (missing job metadata)
@@ -457,10 +485,12 @@ try {
 **Approach:** Create Provider classes (SendGridProvider, TwilioProvider) initialized in worker
 
 **Pros:**
+
 - Encapsulation per provider
 - Potentially shareable between worker and other services
 
 **Cons:**
+
 - Still requires provider selection logic in worker
 - Still requires retry logic in worker
 - Overlaps with orchestrator responsibilities
@@ -471,10 +501,12 @@ try {
 **Approach:** Worker emits domain event, separate handler processes via orchestrator
 
 **Pros:**
+
 - Decouples job processing from orchestration
 - Could support async notification (fire-and-forget)
 
 **Cons:**
+
 - Adds event bus complexity
 - Delays delivery (extra hop)
 - Harder to trace end-to-end (job → event → handler)
@@ -485,9 +517,11 @@ try {
 **Approach:** Initialize orchestrator in worker at startup, reuse across jobs
 
 **Pros:**
+
 - Singleton avoids repeated initialization
 
 **Cons:**
+
 - Same as current approach (not really alternative)
 - Accepted in decision
 
@@ -512,30 +546,29 @@ async function notificationHandler(job: Job<NotificationJobData>) {
 }
 
 // Error classification helpers
-function isRetryableError(err: Error): boolean
-function isRecipientError(err: Error): boolean
-function isAuthError(err: Error): boolean
+function isRetryableError(err: Error): boolean;
+function isRecipientError(err: Error): boolean;
+function isAuthError(err: Error): boolean;
 
 // Worker setup
-export function startNotificationWorker(): Worker
-
+export function startNotificationWorker(): Worker;
 ```
 
 ### Payload Structure (Unchanged)
 
 ```typescript
 interface NotificationJobData {
-  shopId: string;           // Tenant identifier
-  orderId: string;          // Order for correlation
-  eventType: string;        // "order.shipped", etc.
-  channels: string[];       // ["EMAIL", "SMS"]
+  shopId: string; // Tenant identifier
+  orderId: string; // Order for correlation
+  eventType: string; // "order.shipped", etc.
+  channels: string[]; // ["EMAIL", "SMS"]
   recipient: {
-    email?: string;         // For EMAIL channel
-    phone?: string;         // For SMS, WHATSAPP
-    fcmToken?: string;      // For PUSH channel
+    email?: string; // For EMAIL channel
+    phone?: string; // For SMS, WHATSAPP
+    fcmToken?: string; // For PUSH channel
   };
-  templateId: string;       // Template to load and render
-  variables: Record<string, unknown>;  // {{variable}} interpolation
+  templateId: string; // Template to load and render
+  variables: Record<string, unknown>; // {{variable}} interpolation
 }
 ```
 
@@ -547,9 +580,9 @@ const orchestrator = getNotificationOrchestrator();
 const result = await orchestrator.sendNotification(
   shopId,
   channel as "EMAIL" | "SMS" | "WHATSAPP" | "PUSH",
-  recipient,  // email, phone, or fcmToken
+  recipient, // email, phone, or fcmToken
   templateId,
-  variables
+  variables,
 );
 
 if (result.success) {
@@ -562,6 +595,7 @@ if (result.success) {
 ### Dead-Letter Queue Strategy
 
 BullMQ configuration:
+
 ```typescript
 const worker = new Worker("notifications", handler, {
   connection,
@@ -569,10 +603,10 @@ const worker = new Worker("notifications", handler, {
     attempts: 3,
     backoff: {
       type: "exponential",
-      delay: 2000,  // Start with 2s
+      delay: 2000, // Start with 2s
     },
     removeOnComplete: true,
-    removeOnFail: false,  // Keep for DLQ inspection
+    removeOnFail: false, // Keep for DLQ inspection
   },
 });
 
@@ -620,12 +654,14 @@ await db.notificationLog.create({
 ### Metrics and Monitoring
 
 Expose metrics:
+
 - `notifications_sent_total` — Counter by channel, provider, status
 - `notifications_send_duration_seconds` — Histogram by channel
 - `notifications_retry_count` — Histogram of retry attempts
 - `notifications_dlq_size` — Gauge of failed jobs
 
 Example Prometheus:
+
 ```
 notifications_sent_total{channel="EMAIL",provider="sendgrid",status="sent"} 1523
 notifications_send_duration_seconds{channel="EMAIL",provider="sendgrid",le="0.5"} 1200
@@ -639,6 +675,7 @@ notifications_dlq_size{} 12
 ### Unit Tests
 
 **Worker tests:**
+
 - Valid payload → calls orchestrator with correct args
 - Missing recipient field → validation error
 - Orchestrator success → logs delivery
@@ -646,6 +683,7 @@ notifications_dlq_size{} 12
 - Orchestrator failure (permanent) → logs to DLQ
 
 **Orchestrator tests:**
+
 - Template loading → queries DB
 - Template rendering → interpolates {{variable}}
 - Provider selection → fetches from registry
@@ -654,6 +692,7 @@ notifications_dlq_size{} 12
 - Logging → inserts to notificationLog
 
 **Provider tests:**
+
 - SendGrid mock → returns messageId
 - Twilio mock → returns messageId
 - Invalid creds → throws AuthenticationError
@@ -679,17 +718,20 @@ notifications_dlq_size{} 12
 ## Reference
 
 **Related ADRs:**
+
 - **ADR-012** — Notification Provider Architecture (orchestrator design)
 - **ADR-010** — Event Bus Architecture (events from notifications)
 - **ADR-009** — Medusa-Inspired Architecture (service structure)
 
 **Implementation Files:**
+
 - `/packages/core/src/notifications/orchestrator.ts` — NotificationOrchestrator
 - `/packages/core/src/notifications/provider-registry.ts` — TenantProviderRegistry
 - `/apps/api/src/workers/notification-worker.ts` — Worker (this ADR)
 - `/packages/core/src/notifications/providers/` — Provider implementations
 
 **External References:**
+
 - [BullMQ Documentation](https://docs.bullmq.io/)
 - [Mustache Template Spec](https://mustache.github.io/)
 - [Exponential Backoff](https://en.wikipedia.org/wiki/Exponential_backoff)

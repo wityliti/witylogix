@@ -114,7 +114,10 @@ export function matches(expression: string, date: Date = new Date()): boolean {
   }
 }
 
-export function getNextRun(expression: string, fromDate: Date = new Date()): Date {
+export function getNextRun(
+  expression: string,
+  fromDate: Date = new Date(),
+): Date {
   try {
     const parsed = parseCronExpression(expression);
 
@@ -145,7 +148,9 @@ export function getNextRun(expression: string, fromDate: Date = new Date()): Dat
       current.setMinutes(current.getMinutes() + 1);
     }
 
-    throw new Error(`No next run found within 4 years for expression: ${expression}`);
+    throw new Error(
+      `No next run found within 4 years for expression: ${expression}`,
+    );
   } catch (error) {
     throw new Error(
       `Failed to calculate next run for cron expression "${expression}": ${error instanceof Error ? error.message : String(error)}`,

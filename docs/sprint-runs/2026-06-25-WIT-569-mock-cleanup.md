@@ -13,25 +13,25 @@ Replaced **all hardcoded mock/fake data and `Math.random()` simulations** in 17 
 
 ### Files Changed (17)
 
-| File | Change |
-|------|--------|
-| `components/realtime/notification-center.tsx` | `useApiQuery('/api/v4/notifications')` + 30s poll; `api.patch/delete` for read/dismiss; sound on real unread delta |
-| `components/realtime/live-kpi-counters.tsx` | `useApiQuery('/api/v4/dashboard/stats')` + 60s poll; deterministic status thresholds |
-| `components/realtime/live-order-feed.tsx` | `useApiQuery('/api/v4/orders')` + 30s poll; status normalisation from API enum |
-| `components/realtime/active-delivery-map.tsx` | `useApiQuery('/api/v4/drivers')` + deliveries + 30s poll; dynamic SVG bounds; empty state |
-| `components/notifications/notification-stats-widget.tsx` | `useApiQuery('/api/v4/notifications/stats?days=7')`; loading/error/empty states; CSS vars |
-| `components/supply-chain/inventory-gauge.tsx` | `mockInventory` removed; safe zero defaults |
-| `components/supply-chain/fulfillment-tracker.tsx` | `mockTracker` removed; safe zero defaults |
-| `components/esignatures/envelope-timeline.tsx` | `mockEvents` removed; default `[]`; empty state |
-| `components/analytics/report-builder-card.tsx` | Mock SVG data URI `<img>` → placeholder `<div>` |
-| `components/healthcare/patient-card.tsx` | `mockPatient` removed; `patient` prop required |
-| `components/healthcare/vitals-chart.tsx` | `generateMockReadings()`/`Math.random()` removed; deterministic trend |
-| `components/integrations/credential-form.tsx` | OAuth → `/api/v4/integrations/:id/oauth/authorize` |
-| `components/integrations/rate-limit-display.tsx` | Deterministic linear interpolation for history |
-| `components/integrations/provider-comparison.tsx` | Feature matrix from real `provider.features`/`capabilities` |
-| `components/routes/stop-list-editor.tsx` | `mockSuggestions` removed; manual input only |
-| `components/couriers/courier-assignment-panel.tsx` | `Math.random()` service-area removed; data-driven |
-| `app/(dashboard)/collections/page.tsx` | All 5 `useState` calls moved above early returns (hooks violation fix) |
+| File                                                     | Change                                                                                                             |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `components/realtime/notification-center.tsx`            | `useApiQuery('/api/v4/notifications')` + 30s poll; `api.patch/delete` for read/dismiss; sound on real unread delta |
+| `components/realtime/live-kpi-counters.tsx`              | `useApiQuery('/api/v4/dashboard/stats')` + 60s poll; deterministic status thresholds                               |
+| `components/realtime/live-order-feed.tsx`                | `useApiQuery('/api/v4/orders')` + 30s poll; status normalisation from API enum                                     |
+| `components/realtime/active-delivery-map.tsx`            | `useApiQuery('/api/v4/drivers')` + deliveries + 30s poll; dynamic SVG bounds; empty state                          |
+| `components/notifications/notification-stats-widget.tsx` | `useApiQuery('/api/v4/notifications/stats?days=7')`; loading/error/empty states; CSS vars                          |
+| `components/supply-chain/inventory-gauge.tsx`            | `mockInventory` removed; safe zero defaults                                                                        |
+| `components/supply-chain/fulfillment-tracker.tsx`        | `mockTracker` removed; safe zero defaults                                                                          |
+| `components/esignatures/envelope-timeline.tsx`           | `mockEvents` removed; default `[]`; empty state                                                                    |
+| `components/analytics/report-builder-card.tsx`           | Mock SVG data URI `<img>` → placeholder `<div>`                                                                    |
+| `components/healthcare/patient-card.tsx`                 | `mockPatient` removed; `patient` prop required                                                                     |
+| `components/healthcare/vitals-chart.tsx`                 | `generateMockReadings()`/`Math.random()` removed; deterministic trend                                              |
+| `components/integrations/credential-form.tsx`            | OAuth → `/api/v4/integrations/:id/oauth/authorize`                                                                 |
+| `components/integrations/rate-limit-display.tsx`         | Deterministic linear interpolation for history                                                                     |
+| `components/integrations/provider-comparison.tsx`        | Feature matrix from real `provider.features`/`capabilities`                                                        |
+| `components/routes/stop-list-editor.tsx`                 | `mockSuggestions` removed; manual input only                                                                       |
+| `components/couriers/courier-assignment-panel.tsx`       | `Math.random()` service-area removed; data-driven                                                                  |
+| `app/(dashboard)/collections/page.tsx`                   | All 5 `useState` calls moved above early returns (hooks violation fix)                                             |
 
 ### Verification
 

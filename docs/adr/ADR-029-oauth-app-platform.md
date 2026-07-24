@@ -96,7 +96,7 @@ We **do not** use JWT access tokens in v1 because:
 - The lookup cost is a single prefix index + hash compare, which is already proven in `api-key-service.ts`.
 - Payload obfuscation (what the app can infer about the tenant) is simpler with opaque tokens.
 
-If a future requirement needs stateless verification in far-edge proxies, we can revisit and issue short-lived signed JWTs *in addition*, but the canonical storage stays opaque.
+If a future requirement needs stateless verification in far-edge proxies, we can revisit and issue short-lived signed JWTs _in addition_, but the canonical storage stays opaque.
 
 ### 5. Middleware integration
 
@@ -141,7 +141,7 @@ A new `requireScope(...scope: string[])` helper sits alongside `requireRole` and
 
 ### Neutral
 
-- AGPL-3.0 license: third-party apps *calling* the API are not derivatives. We will add a short note to the developer docs and keep legal review out of this ADR.
+- AGPL-3.0 license: third-party apps _calling_ the API are not derivatives. We will add a short note to the developer docs and keep legal review out of this ADR.
 
 ---
 

@@ -128,7 +128,7 @@ const rate = await calculator.calculateRate({
   cartValue: 75,
   weight: 2.5,
   origin: { latitude: 40.7128, longitude: -74.006 },
-  destination: { latitude: 40.6782, longitude: -73.9442 }
+  destination: { latitude: 40.6782, longitude: -73.9442 },
 });
 
 // Returns:
@@ -239,7 +239,7 @@ Get available slots for a specific date.
       "available": 8,
       "total": 10,
       "isFull": false,
-      "price": 15.00,
+      "price": 15.0,
       "zone": { "id": "zone-1", "name": "Downtown" }
     }
   ],
@@ -278,6 +278,7 @@ Reserve a slot for an order.
 ```
 
 Response:
+
 ```json
 {
   "data": {
@@ -312,7 +313,7 @@ Get capacity information.
     "totalCapacity": 100,
     "currentUsage": 75,
     "availableSlots": 25,
-    "percentUtilized": 75.00,
+    "percentUtilized": 75.0,
     "status": "high_demand",
     "peakHours": [
       { "startTime": "12:00", "endTime": "15:00" },
@@ -354,10 +355,10 @@ Get zone rate by zipcode.
   "data": {
     "zoneId": "zone-1",
     "zoneName": "Downtown Manhattan",
-    "baseRate": 10.00,
-    "perKmRate": 1.50,
-    "freeThreshold": 50.00,
-    "minimumCharge": 5.00
+    "baseRate": 10.0,
+    "perKmRate": 1.5,
+    "freeThreshold": 50.0,
+    "minimumCharge": 5.0
   }
 }
 ```
@@ -379,21 +380,30 @@ Calculate delivery rate.
 ```
 
 Response:
+
 ```json
 {
   "data": {
-    "baseFee": 10.00,
+    "baseFee": 10.0,
     "distanceFee": 15.23,
-    "weightFee": 2.50,
-    "cartValueFee": 0.00,
-    "discounts": 0.00,
+    "weightFee": 2.5,
+    "cartValueFee": 0.0,
+    "discounts": 0.0,
     "subtotal": 27.73,
     "total": 27.73,
     "currency": "USD",
     "breakdown": [
-      { "label": "Base Delivery Fee", "amount": 10.00, "method": "flat" },
-      { "label": "Distance Fee (10.15 km)", "amount": 15.23, "method": "per_km" },
-      { "label": "Weight Surcharge (2.5kg)", "amount": 2.50, "method": "weight_based" }
+      { "label": "Base Delivery Fee", "amount": 10.0, "method": "flat" },
+      {
+        "label": "Distance Fee (10.15 km)",
+        "amount": 15.23,
+        "method": "per_km"
+      },
+      {
+        "label": "Weight Surcharge (2.5kg)",
+        "amount": 2.5,
+        "method": "weight_based"
+      }
     ]
   }
 }
@@ -409,10 +419,10 @@ List delivery zones.
     {
       "id": "zone-1",
       "name": "Downtown",
-      "baseRate": 10.00,
-      "perKmRate": 1.50,
-      "minimumOrder": 5.00,
-      "freeAbove": 50.00,
+      "baseRate": 10.0,
+      "perKmRate": 1.5,
+      "minimumOrder": 5.0,
+      "freeAbove": 50.0,
       "isActive": true,
       "priority": 10
     }
@@ -436,9 +446,9 @@ Update zone rates (admin only).
 
 ```json
 {
-  "baseRate": 12.00,
+  "baseRate": 12.0,
   "perKmRate": 1.75,
-  "freeThreshold": 60.00
+  "freeThreshold": 60.0
 }
 ```
 
@@ -465,7 +475,13 @@ All models are defined in `packages/db/prisma/schema/43-delivery-slots.prisma`:
 import { initializeSlotEngines } from "@witylogix/core/slots";
 
 const engines = initializeSlotEngines(prisma);
-const { slotEngine, capacityManager, zoneRateCalculator, deadlineEngine, blackoutManager } = engines;
+const {
+  slotEngine,
+  capacityManager,
+  zoneRateCalculator,
+  deadlineEngine,
+  blackoutManager,
+} = engines;
 ```
 
 ### Get Available Slots
@@ -475,7 +491,7 @@ const date = new Date("2026-04-01");
 const slots = await slotEngine.getAvailableSlots(date, "zone-1", "loc-1");
 
 // Filter to only morning slots
-const morningSlots = slots.filter(s => {
+const morningSlots = slots.filter((s) => {
   const [hour] = s.startTime.split(":").map(Number);
   return hour < 12;
 });
@@ -501,7 +517,7 @@ const rate = await zoneRateCalculator.calculateRate({
   cartValue: 100,
   weight: 3,
   origin: { latitude: 40.7128, longitude: -74.006 },
-  destination: { latitude: 40.6782, longitude: -73.9442 }
+  destination: { latitude: 40.6782, longitude: -73.9442 },
 });
 
 console.log(`Delivery fee: $${rate.total}`);
@@ -517,7 +533,7 @@ await deadlineEngine.setCutoffTime("loc-1", "20:00", 24);
 // Check deadline
 const deadline = await deadlineEngine.getOrderDeadline(
   new Date("2026-04-01"),
-  "slot-1"
+  "slot-1",
 );
 console.log(`Order must be placed by ${deadline.deadline}`);
 ```
@@ -532,7 +548,10 @@ await blackoutManager.addBlackout("loc-1", new Date("2026-12-25"), "Christmas");
 await blackoutManager.addRecurringBlackout("loc-1", 0, "Closed on Sundays");
 
 // Check availability
-const isAvailable = !(await blackoutManager.isBlackedOut("loc-1", new Date("2026-04-05")));
+const isAvailable = !(await blackoutManager.isBlackedOut(
+  "loc-1",
+  new Date("2026-04-05"),
+));
 ```
 
 ### Adjust Capacity by Demand

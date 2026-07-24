@@ -56,15 +56,11 @@ export function MobileHeader({
         "bg-wl-bg-surface/80 backdrop-blur-md",
         "border-b border-wl-border-subtle",
         "safe-area-inset-top",
-        className
+        className,
       )}
     >
       <div
-        className={cn(
-          "flex items-center justify-between",
-          "px-4 py-3",
-          "h-14"
-        )}
+        className={cn("flex items-center justify-between", "px-4 py-3", "h-14")}
       >
         {/* Hamburger Menu Button */}
         <button
@@ -77,7 +73,7 @@ export function MobileHeader({
             "rounded-md",
             "transition-colors duration-200",
             "text-wl-text-secondary hover:text-wl-text-primary",
-            "hover:bg-wl-bg-elevated"
+            "hover:bg-wl-bg-elevated",
           )}
         >
           <svg
@@ -114,7 +110,7 @@ export function MobileHeader({
                 className={cn(
                   "text-sm font-semibold",
                   "text-wl-text-primary",
-                  "truncate"
+                  "truncate",
                 )}
               >
                 {title}
@@ -136,7 +132,7 @@ export function MobileHeader({
                 "rounded-md",
                 "transition-colors duration-200",
                 "text-wl-text-secondary hover:text-wl-text-primary",
-                "hover:bg-wl-bg-elevated"
+                "hover:bg-wl-bg-elevated",
               )}
             >
               <svg
@@ -187,7 +183,7 @@ function SearchInput({ value, onChange, onClose }: SearchInputProps) {
           "rounded-md",
           "text-sm",
           "text-wl-text-primary placeholder:text-wl-text-tertiary",
-          "focus:outline-none focus:border-wl-primary-500"
+          "focus:outline-none focus:border-wl-primary-500",
         )}
       />
       <button
@@ -199,7 +195,7 @@ function SearchInput({ value, onChange, onClose }: SearchInputProps) {
           "rounded-md",
           "transition-colors duration-200",
           "text-wl-text-secondary hover:text-wl-text-primary",
-          "hover:bg-wl-bg-overlay"
+          "hover:bg-wl-bg-overlay",
         )}
       >
         <svg
@@ -244,7 +240,7 @@ export function NotificationBell({ count, onClick }: NotificationBellProps) {
         "rounded-md",
         "transition-colors duration-200",
         "text-wl-text-secondary hover:text-wl-text-primary",
-        "hover:bg-wl-bg-elevated"
+        "hover:bg-wl-bg-elevated",
       )}
     >
       <svg
@@ -268,7 +264,7 @@ export function NotificationBell({ count, onClick }: NotificationBellProps) {
             "rounded-full",
             "text-xs font-bold",
             "bg-wl-danger-500 text-white",
-            "min-w-max"
+            "min-w-max",
           )}
         >
           {count > 99 ? "99+" : count}
@@ -302,7 +298,7 @@ export function ProfileButton({ avatar, onClick }: ProfileButtonProps) {
         "overflow-hidden",
         "transition-colors duration-200",
         "hover:bg-wl-bg-elevated",
-        "border border-wl-border-subtle"
+        "border border-wl-border-subtle",
       )}
     >
       {avatar || (

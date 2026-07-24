@@ -86,7 +86,7 @@ export class ReadReplicaRouter {
 
     // Fallback to primary if no healthy replicas
     console.warn(
-      "No healthy replicas available, falling back to primary for read query"
+      "No healthy replicas available, falling back to primary for read query",
     );
     return this.primary;
   }
@@ -98,7 +98,7 @@ export class ReadReplicaRouter {
    */
   private getHealthyReplica(): string | null {
     const healthyReplicas = Array.from(this.replicaHealth.values()).filter(
-      (h) => h.healthy
+      (h) => h.healthy,
     );
 
     if (healthyReplicas.length === 0) {
@@ -106,7 +106,8 @@ export class ReadReplicaRouter {
     }
 
     // Round-robin selection
-    const replica = healthyReplicas[this.currentReplicaIndex % healthyReplicas.length];
+    const replica =
+      healthyReplicas[this.currentReplicaIndex % healthyReplicas.length];
     this.currentReplicaIndex++;
 
     return replica.url;
@@ -143,7 +144,7 @@ export class ReadReplicaRouter {
 
         if (lagMs && lagMs > this.replicaLagThresholdMs) {
           console.warn(
-            `Replica lag threshold exceeded for ${replicaUrl}: ${lagMs}ms > ${this.replicaLagThresholdMs}ms`
+            `Replica lag threshold exceeded for ${replicaUrl}: ${lagMs}ms > ${this.replicaLagThresholdMs}ms`,
           );
           health.healthy = false;
           health.consecutiveFailures++;
@@ -176,7 +177,7 @@ export class ReadReplicaRouter {
    */
   private async simulateQuery(
     _query: string,
-    _timeoutMs: number
+    _timeoutMs: number,
   ): Promise<number> {
     // Simulate a random lag between 0-10 seconds
     return Math.random() * 10000;
@@ -294,7 +295,7 @@ export class ReadReplicaRouter {
  */
 export function createReplicaRouter(
   primaryUrl: string,
-  replicaUrls: string[]
+  replicaUrls: string[],
 ): ReadReplicaRouter {
   return new ReadReplicaRouter({
     primary: primaryUrl,

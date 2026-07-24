@@ -45,7 +45,7 @@ const Progress = ({
         className={cn(
           "relative w-full h-2 rounded-full",
           "bg-wl-bg-overlay",
-          "overflow-hidden"
+          "overflow-hidden",
         )}
         role="progressbar"
         aria-valuenow={clampedValue}
@@ -57,7 +57,7 @@ const Progress = ({
             "h-full rounded-full",
             "transition-all duration-300 ease-out",
             variantClasses[variant],
-            "shadow-lg"
+            "shadow-lg",
           )}
           style={{ width: `${clampedValue}%` }}
         />

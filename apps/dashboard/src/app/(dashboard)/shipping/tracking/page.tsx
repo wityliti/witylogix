@@ -1,24 +1,24 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import dynamic from 'next/dynamic';
-import Link from 'next/link';
-import { Header } from '@/components/layout/header';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { useApiList } from '@/hooks/use-api';
-import { cn } from '@/lib/utils';
-import { LayoutList, Map } from 'lucide-react';
+import { useState, useMemo } from "react";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import { Header } from "@/components/layout/header";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { useApiList } from "@/hooks/use-api";
+import { cn } from "@/lib/utils";
+import { LayoutList, Map } from "lucide-react";
 
 /* ═══════════════════════════════════════════════════════════
    SHIPMENT TRACKING  — List / Map toggle, real data
    ═══════════════════════════════════════════════════════════ */
 
 const ShipmentsMapView = dynamic(
-  () => import('@/components/shipments/shipments-map-view'),
+  () => import("@/components/shipments/shipments-map-view"),
   {
     ssr: false,
     loading: () => (
@@ -52,29 +52,46 @@ interface ShipmentTracking {
   notes: string | null;
   tags: string[];
   deliveryLocation: { lat: number; lng: number } | null;
-  order: { id: string; shopifyOrderNumber: string | null; externalOrderNumber: string | null } | null;
+  order: {
+    id: string;
+    shopifyOrderNumber: string | null;
+    externalOrderNumber: string | null;
+  } | null;
   driver: { id: string; name: string; phone: string } | null;
   location: { id: string; name: string; city: string } | null;
 }
 
-const IN_TRANSIT_STATUSES = ['IN_TRANSIT', 'OUT_FOR_DELIVERY', 'ARRIVED', 'PICKED_UP'];
+const IN_TRANSIT_STATUSES = [
+  "IN_TRANSIT",
+  "OUT_FOR_DELIVERY",
+  "ARRIVED",
+  "PICKED_UP",
+];
 
 const getStatusColor = (
   status: string,
-): 'success' | 'warning' | 'danger' | 'info' | 'primary' | 'default' => {
-  if (status === 'DELIVERED') return 'success';
-  if (status === 'OUT_FOR_DELIVERY' || status === 'ARRIVED') return 'info';
-  if (status === 'IN_TRANSIT' || status === 'PICKED_UP') return 'primary';
-  if (status === 'FAILED' || status === 'RETURNED') return 'danger';
-  return 'warning';
+): "success" | "warning" | "danger" | "info" | "primary" | "default" => {
+  if (status === "DELIVERED") return "success";
+  if (status === "OUT_FOR_DELIVERY" || status === "ARRIVED") return "info";
+  if (status === "IN_TRANSIT" || status === "PICKED_UP") return "primary";
+  if (status === "FAILED" || status === "RETURNED") return "danger";
+  return "warning";
 };
 
-const FILTER_OPTIONS = ['ALL', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'FAILED'];
+const FILTER_OPTIONS = [
+  "ALL",
+  "IN_TRANSIT",
+  "OUT_FOR_DELIVERY",
+  "DELIVERED",
+  "FAILED",
+];
 
 export default function TrackingPage() {
-  const [filterStatus, setFilterStatus] = useState<string>('ALL');
-  const [view, setView] = useState<'list' | 'map'>('list');
-  const [selectedShipmentId, setSelectedShipmentId] = useState<string | null>(null);
+  const [filterStatus, setFilterStatus] = useState<string>("ALL");
+  const [view, setView] = useState<"list" | "map">("list");
+  const [selectedShipmentId, setSelectedShipmentId] = useState<string | null>(
+    null,
+  );
 
   const {
     items: shipments,
@@ -83,11 +100,11 @@ export default function TrackingPage() {
     refetch,
     pagination,
     setPage,
-  } = useApiList<ShipmentTracking>('/api/v4/shipments', { limit: 50 });
+  } = useApiList<ShipmentTracking>("/api/v4/shipments", { limit: 50 });
 
   const filteredShipments = useMemo(
     () =>
-      filterStatus === 'ALL'
+      filterStatus === "ALL"
         ? shipments
         : shipments.filter((s) => s.status === filterStatus),
     [shipments, filterStatus],
@@ -98,8 +115,8 @@ export default function TrackingPage() {
       filteredShipments.filter(
         (s) =>
           s.deliveryLocation != null &&
-          typeof s.deliveryLocation.lat === 'number' &&
-          typeof s.deliveryLocation.lng === 'number',
+          typeof s.deliveryLocation.lat === "number" &&
+          typeof s.deliveryLocation.lng === "number",
       ).length,
     [filteredShipments],
   );
@@ -127,7 +144,7 @@ export default function TrackingPage() {
               <div className="flex gap-2 flex-wrap">
                 {FILTER_OPTIONS.map((status) => {
                   const count =
-                    status === 'ALL'
+                    status === "ALL"
                       ? shipments.length
                       : shipments.filter((s) => s.status === status).length;
                   return (
@@ -135,14 +152,16 @@ export default function TrackingPage() {
                       key={status}
                       onClick={() => setFilterStatus(status)}
                       className={cn(
-                        'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+                        "px-4 py-2 rounded-md text-sm font-medium transition-colors",
                         filterStatus === status
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-wl-bg-elevated text-gray-400 hover:text-white',
+                          ? "bg-blue-500 text-white"
+                          : "bg-wl-bg-elevated text-gray-400 hover:text-white",
                       )}
                     >
-                      {status.replace(/_/g, ' ')}
-                      <span className="ml-1.5 text-xs opacity-70">({count})</span>
+                      {status.replace(/_/g, " ")}
+                      <span className="ml-1.5 text-xs opacity-70">
+                        ({count})
+                      </span>
                     </button>
                   );
                 })}
@@ -151,32 +170,34 @@ export default function TrackingPage() {
               {/* List / Map toggle */}
               <div className="flex items-center gap-1 p-1 bg-wl-bg-overlay rounded-lg border border-wl-border-default">
                 <button
-                  onClick={() => setView('list')}
+                  onClick={() => setView("list")}
                   aria-label="List view"
                   className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all',
-                    view === 'list'
-                      ? 'bg-wl-primary text-white'
-                      : 'text-wl-text-muted hover:text-wl-text-primary',
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all",
+                    view === "list"
+                      ? "bg-wl-primary text-white"
+                      : "text-wl-text-muted hover:text-wl-text-primary",
                   )}
                 >
                   <LayoutList className="w-3.5 h-3.5" />
                   List
                 </button>
                 <button
-                  onClick={() => setView('map')}
+                  onClick={() => setView("map")}
                   aria-label="Map view"
                   className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all',
-                    view === 'map'
-                      ? 'bg-wl-primary text-white'
-                      : 'text-wl-text-muted hover:text-wl-text-primary',
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all",
+                    view === "map"
+                      ? "bg-wl-primary text-white"
+                      : "text-wl-text-muted hover:text-wl-text-primary",
                   )}
                 >
                   <Map className="w-3.5 h-3.5" />
                   Map
                   {mappableCount > 0 && (
-                    <span className="ml-1 text-[10px] opacity-60">{mappableCount}</span>
+                    <span className="ml-1 text-[10px] opacity-60">
+                      {mappableCount}
+                    </span>
                   )}
                 </button>
               </div>
@@ -184,15 +205,19 @@ export default function TrackingPage() {
           </CardContent>
         </Card>
 
-        {view === 'map' ? (
+        {view === "map" ? (
           /* ── Map view ────────────────────────────────────── */
           <div className="h-[600px] rounded-xl overflow-hidden">
             {mappableCount === 0 ? (
               <div className="w-full h-full bg-wl-bg-overlay border border-wl-border-default rounded-xl flex items-center justify-center">
                 <div className="text-center text-gray-400">
                   <Map className="w-8 h-8 mx-auto mb-3 opacity-40" />
-                  <p className="text-sm font-semibold text-wl-text-primary mb-1">No location data</p>
-                  <p className="text-xs">Shipments need delivery coordinates to appear on the map.</p>
+                  <p className="text-sm font-semibold text-wl-text-primary mb-1">
+                    No location data
+                  </p>
+                  <p className="text-xs">
+                    Shipments need delivery coordinates to appear on the map.
+                  </p>
                 </div>
               </div>
             ) : (
@@ -213,13 +238,27 @@ export default function TrackingPage() {
                 <table className="w-full border-collapse text-sm">
                   <thead>
                     <tr className="border-b border-wl-border-default bg-wl-bg-elevated">
-                      <th className="p-3 px-4 text-left font-semibold text-gray-400">Tracking #</th>
-                      <th className="p-3 px-4 text-left font-semibold text-gray-400">Recipient</th>
-                      <th className="p-3 px-4 text-left font-semibold text-gray-400">Carrier</th>
-                      <th className="p-3 px-4 text-left font-semibold text-gray-400">Last Known Location</th>
-                      <th className="p-3 px-4 text-center font-semibold text-gray-400">Status</th>
-                      <th className="p-3 px-4 text-center font-semibold text-gray-400">ETA</th>
-                      <th className="p-3 px-4 text-center font-semibold text-gray-400">Actions</th>
+                      <th className="p-3 px-4 text-left font-semibold text-gray-400">
+                        Tracking #
+                      </th>
+                      <th className="p-3 px-4 text-left font-semibold text-gray-400">
+                        Recipient
+                      </th>
+                      <th className="p-3 px-4 text-left font-semibold text-gray-400">
+                        Carrier
+                      </th>
+                      <th className="p-3 px-4 text-left font-semibold text-gray-400">
+                        Last Known Location
+                      </th>
+                      <th className="p-3 px-4 text-center font-semibold text-gray-400">
+                        Status
+                      </th>
+                      <th className="p-3 px-4 text-center font-semibold text-gray-400">
+                        ETA
+                      </th>
+                      <th className="p-3 px-4 text-center font-semibold text-gray-400">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -227,31 +266,35 @@ export default function TrackingPage() {
                       <tr
                         key={shipment.id}
                         className={cn(
-                          'border-b border-wl-border-default transition-colors hover:bg-wl-bg-elevated',
-                          idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-sunken',
+                          "border-b border-wl-border-default transition-colors hover:bg-wl-bg-elevated",
+                          idx % 2 === 0 ? "bg-transparent" : "bg-wl-bg-sunken",
                         )}
                       >
                         <td className="p-3 px-4 text-white font-mono text-xs">
                           {shipment.trackingNumber ?? shipment.shipmentNumber}
                         </td>
                         <td className="p-3 px-4 text-gray-400 text-sm">
-                          {shipment.recipientName ?? '—'}
+                          {shipment.recipientName ?? "—"}
                         </td>
                         <td className="p-3 px-4 text-gray-400 text-sm">
-                          {shipment.carrier ?? '—'}
+                          {shipment.carrier ?? "—"}
                         </td>
                         <td className="p-3 px-4 text-gray-400 text-sm">
-                          {[shipment.city, shipment.province].filter(Boolean).join(', ') || '—'}
+                          {[shipment.city, shipment.province]
+                            .filter(Boolean)
+                            .join(", ") || "—"}
                         </td>
                         <td className="p-3 px-4 text-center">
                           <Badge variant={getStatusColor(shipment.status)}>
-                            {shipment.status.replace(/_/g, ' ')}
+                            {shipment.status.replace(/_/g, " ")}
                           </Badge>
                         </td>
                         <td className="p-3 px-4 text-center text-gray-400 text-sm">
                           {shipment.estimatedArrival
-                            ? new Date(shipment.estimatedArrival).toLocaleDateString()
-                            : '—'}
+                            ? new Date(
+                                shipment.estimatedArrival,
+                              ).toLocaleDateString()
+                            : "—"}
                         </td>
                         <td className="p-3 px-4 text-center">
                           <Link
@@ -261,14 +304,19 @@ export default function TrackingPage() {
                                 : `/shipments/${shipment.id}`
                             }
                           >
-                            <Button variant="secondary" size="sm">Track</Button>
+                            <Button variant="secondary" size="sm">
+                              Track
+                            </Button>
                           </Link>
                         </td>
                       </tr>
                     ))}
                     {filteredShipments.length === 0 && (
                       <tr>
-                        <td colSpan={7} className="p-8 text-center text-gray-500 text-sm">
+                        <td
+                          colSpan={7}
+                          className="p-8 text-center text-gray-500 text-sm"
+                        >
                           No shipments found
                         </td>
                       </tr>

@@ -22,7 +22,7 @@ export interface PaginationQuery {
   page?: number;
   limit?: number;
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }
 
 // ─── Error Responses ─────────────────────────────────────────────────
@@ -58,7 +58,7 @@ export interface TokenResponse {
     id: string;
     email: string;
     name: string;
-    role: 'SUPER_ADMIN' | 'ADMIN' | 'DISPATCHER' | 'DRIVER' | 'CUSTOMER';
+    role: "SUPER_ADMIN" | "ADMIN" | "DISPATCHER" | "DRIVER" | "CUSTOMER";
   };
 }
 
@@ -90,16 +90,16 @@ export interface PasswordResetConfirm {
 // ─── Orders ──────────────────────────────────────────────────────────
 
 export type OrderStatus =
-  | 'PENDING'
-  | 'ACCEPTED'
-  | 'ASSIGNED'
-  | 'PICKED_UP'
-  | 'OUT_FOR_DELIVERY'
-  | 'ARRIVED'
-  | 'DELIVERED'
-  | 'FAILED'
-  | 'RETURNED'
-  | 'CANCELLED';
+  | "PENDING"
+  | "ACCEPTED"
+  | "ASSIGNED"
+  | "PICKED_UP"
+  | "OUT_FOR_DELIVERY"
+  | "ARRIVED"
+  | "DELIVERED"
+  | "FAILED"
+  | "RETURNED"
+  | "CANCELLED";
 
 export interface LineItem {
   shopifyLineId: string;
@@ -179,9 +179,14 @@ export interface OrderTimeline {
 
 // ─── Drivers ─────────────────────────────────────────────────────────
 
-export type DriverStatus = 'ACTIVE' | 'INACTIVE' | 'ON_LEAVE' | 'TERMINATED';
-export type DriverOperationalStatus = 'ACTIVE' | 'INACTIVE' | 'ON_DELIVERY' | 'BREAK' | 'UNAVAILABLE';
-export type VehicleType = 'MOTORCYCLE' | 'CAR' | 'VAN' | 'TRUCK';
+export type DriverStatus = "ACTIVE" | "INACTIVE" | "ON_LEAVE" | "TERMINATED";
+export type DriverOperationalStatus =
+  | "ACTIVE"
+  | "INACTIVE"
+  | "ON_DELIVERY"
+  | "BREAK"
+  | "UNAVAILABLE";
+export type VehicleType = "MOTORCYCLE" | "CAR" | "VAN" | "TRUCK";
 
 export interface Driver {
   id: string;
@@ -263,9 +268,21 @@ export interface CreateZoneRequest {
 
 // ─── Routes ──────────────────────────────────────────────────────────
 
-export type RouteStatus = 'DRAFT' | 'OPTIMIZED' | 'ASSIGNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
-export type StopType = 'PICKUP' | 'DELIVERY' | 'RETURN' | 'DEPOT';
-export type StopStatus = 'PENDING' | 'EN_ROUTE' | 'ARRIVED' | 'COMPLETED' | 'SKIPPED' | 'FAILED';
+export type RouteStatus =
+  | "DRAFT"
+  | "OPTIMIZED"
+  | "ASSIGNED"
+  | "IN_PROGRESS"
+  | "COMPLETED"
+  | "CANCELLED";
+export type StopType = "PICKUP" | "DELIVERY" | "RETURN" | "DEPOT";
+export type StopStatus =
+  | "PENDING"
+  | "EN_ROUTE"
+  | "ARRIVED"
+  | "COMPLETED"
+  | "SKIPPED"
+  | "FAILED";
 
 export interface RouteStop {
   id: string;
@@ -308,8 +325,13 @@ export interface CreateRouteStopRequest {
 
 // ─── Integrations ────────────────────────────────────────────────────
 
-export type IntegrationType = 'SHOPIFY' | 'WOOCOMMERCE' | 'MAGENTO' | 'CUSTOM_API' | 'CUSTOM_WEBHOOK';
-export type IntegrationStatus = 'INACTIVE' | 'CONFIGURED' | 'ACTIVE' | 'ERROR';
+export type IntegrationType =
+  | "SHOPIFY"
+  | "WOOCOMMERCE"
+  | "MAGENTO"
+  | "CUSTOM_API"
+  | "CUSTOM_WEBHOOK";
+export type IntegrationStatus = "INACTIVE" | "CONFIGURED" | "ACTIVE" | "ERROR";
 
 export interface Integration {
   id: string;
@@ -332,7 +354,7 @@ export interface InstallIntegrationRequest {
 }
 
 export interface IntegrationHealth {
-  status: 'HEALTHY' | 'DEGRADED' | 'ERROR';
+  status: "HEALTHY" | "DEGRADED" | "ERROR";
   lastSyncAt?: string | null;
   lastError?: string | null;
 }
@@ -340,17 +362,21 @@ export interface IntegrationHealth {
 // ─── Webhooks ────────────────────────────────────────────────────────
 
 export type WebhookEvent =
-  | 'order.created'
-  | 'order.updated'
-  | 'order.assigned'
-  | 'order.status_changed'
-  | 'delivery.completed'
-  | 'delivery.failed'
-  | 'driver.location_updated'
-  | 'route.optimized'
-  | 'integration.error';
+  | "order.created"
+  | "order.updated"
+  | "order.assigned"
+  | "order.status_changed"
+  | "delivery.completed"
+  | "delivery.failed"
+  | "driver.location_updated"
+  | "route.optimized"
+  | "integration.error";
 
-export type WebhookDeliveryStatus = 'PENDING' | 'SUCCESS' | 'FAILED' | 'RETRYING';
+export type WebhookDeliveryStatus =
+  | "PENDING"
+  | "SUCCESS"
+  | "FAILED"
+  | "RETRYING";
 
 export interface WebhookEndpoint {
   id: string;
@@ -440,8 +466,13 @@ export interface DriverLocationUpdatedEvent {
 
 // ─── Admin ───────────────────────────────────────────────────────────
 
-export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'DISPATCHER' | 'DRIVER' | 'CUSTOMER';
-export type PlanType = 'FREE' | 'PRO' | 'ENTERPRISE';
+export type UserRole =
+  | "SUPER_ADMIN"
+  | "ADMIN"
+  | "DISPATCHER"
+  | "DRIVER"
+  | "CUSTOMER";
+export type PlanType = "FREE" | "PRO" | "ENTERPRISE";
 
 export interface User {
   id: string;
@@ -466,14 +497,14 @@ export interface Organization {
 }
 
 export interface HealthCheck {
-  database: 'ok' | 'error';
-  redis: 'ok' | 'error';
-  queues?: 'ok' | 'error';
+  database: "ok" | "error";
+  redis: "ok" | "error";
+  queues?: "ok" | "error";
 }
 
 // ─── API Keys ────────────────────────────────────────────────────────
 
-export type ApiKeyType = 'LIVE' | 'TEST';
+export type ApiKeyType = "LIVE" | "TEST";
 
 export interface ApiKeyResponse {
   id: string;
@@ -571,7 +602,10 @@ export interface WitylogixClientConfig {
   apiKey?: string;
   accessToken?: string;
   refreshToken?: string;
-  onTokenRefresh?: (tokens: { accessToken: string; refreshToken: string }) => void;
+  onTokenRefresh?: (tokens: {
+    accessToken: string;
+    refreshToken: string;
+  }) => void;
   retryConfig?: {
     maxRetries?: number;
     initialDelayMs?: number;
@@ -616,7 +650,7 @@ export interface ListOrdersQuery extends PaginationQuery {
   driverId?: string;
   deliveryDate?: DateString;
   search?: string;
-  sortBy?: 'createdAt' | 'deliveryDate' | 'status' | 'customerName';
+  sortBy?: "createdAt" | "deliveryDate" | "status" | "customerName";
 }
 
 export interface ListDriversQuery extends PaginationQuery {

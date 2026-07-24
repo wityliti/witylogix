@@ -58,7 +58,7 @@ export class WebhookRegistry {
     tenantId: string,
     url: string,
     events: string[],
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
   ): RegisteredEndpoint {
     // Validate URL
     try {
@@ -186,7 +186,9 @@ export class WebhookRegistry {
 
     return Array.from(endpoints)
       .map((id) => this.endpoints.get(id))
-      .filter((e): e is RegisteredEndpoint => e !== undefined && e.active === true);
+      .filter(
+        (e): e is RegisteredEndpoint => e !== undefined && e.active === true,
+      );
   }
 
   /**
@@ -223,7 +225,7 @@ export class WebhookRegistry {
    */
   rotateSecret(
     endpointId: string,
-    gracePeriodMs: number = 24 * 60 * 60 * 1000 // 24 hours
+    gracePeriodMs: number = 24 * 60 * 60 * 1000, // 24 hours
   ): string {
     const endpoint = this.endpoints.get(endpointId);
     if (!endpoint) {
@@ -275,10 +277,7 @@ export class WebhookRegistry {
     const now = new Date();
 
     for (const rotation of rotations) {
-      if (
-        rotation.oldSecret === secret &&
-        now <= rotation.validUntil
-      ) {
+      if (rotation.oldSecret === secret && now <= rotation.validUntil) {
         return true;
       }
     }
@@ -347,7 +346,7 @@ export class WebhookRegistry {
    */
   fanOutToSubscribers(
     eventType: string,
-    payload: Record<string, unknown>
+    payload: Record<string, unknown>,
   ): Array<{ endpointId: string; url: string; secret: string }> {
     const subscribers = this.getSubscribers(eventType);
 
@@ -369,20 +368,19 @@ export class WebhookRegistry {
       activeEndpoints: endpoints.filter((e) => e.active).length,
       healthyEndpoints: endpoints.filter((e) => e.healthStatus === "healthy")
         .length,
-      degradedEndpoints: endpoints.filter(
-        (e) => e.healthStatus === "degraded"
-      ).length,
+      degradedEndpoints: endpoints.filter((e) => e.healthStatus === "degraded")
+        .length,
       unhealthyEndpoints: endpoints.filter(
-        (e) => e.healthStatus === "unhealthy"
+        (e) => e.healthStatus === "unhealthy",
       ).length,
       totalSubscriptions: this.subscriptions.size,
       totalSuccessfulDeliveries: endpoints.reduce(
         (sum, e) => sum + e.successCount,
-        0
+        0,
       ),
       totalFailedDeliveries: endpoints.reduce(
         (sum, e) => sum + e.failureCount,
-        0
+        0,
       ),
       totalTenants: this.tenantEndpoints.size,
     };

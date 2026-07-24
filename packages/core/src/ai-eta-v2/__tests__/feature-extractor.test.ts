@@ -2,21 +2,21 @@
  * Feature Extractor Tests
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { featureExtractor } from '../feature-extractor.js';
-import type { HistoricalDelivery } from '../types.js';
+import { describe, it, expect, beforeEach } from "vitest";
+import { featureExtractor } from "../feature-extractor.js";
+import type { HistoricalDelivery } from "../types.js";
 
-describe('FeatureExtractor', () => {
+describe("FeatureExtractor", () => {
   beforeEach(() => {
     // Feature extractor is stateless, so nothing to setup
   });
 
-  it('should extract features from delivery context', () => {
+  it("should extract features from delivery context", () => {
     const features = featureExtractor.extractFeatures(
       10, // distance
-      new Date('2025-03-11T14:30:00Z'), // departure time (Tuesday)
+      new Date("2025-03-11T14:30:00Z"), // departure time (Tuesday)
       3, // driver experience years
-      'car', // vehicle type
+      "car", // vehicle type
       2, // stops remaining
       35, // historical avg
       0.1, // weather intensity
@@ -35,15 +35,15 @@ describe('FeatureExtractor', () => {
     expect(features.day_of_week).toBe(2); // Tuesday
     expect(features.is_weekend).toBe(0);
     expect(features.driver_experience_score).toBeGreaterThan(0);
-    expect(features.vehicle_type).toBe('car');
+    expect(features.vehicle_type).toBe("car");
   });
 
-  it('should handle holidays', () => {
+  it("should handle holidays", () => {
     const christmasFeatures = featureExtractor.extractFeatures(
       10,
-      new Date('2025-12-25T14:30:00Z'),
+      new Date("2025-12-25T14:30:00Z"),
       3,
-      'car',
+      "car",
       2,
       35,
       0,
@@ -57,9 +57,9 @@ describe('FeatureExtractor', () => {
 
     const regularDayFeatures = featureExtractor.extractFeatures(
       10,
-      new Date('2025-12-24T14:30:00Z'),
+      new Date("2025-12-24T14:30:00Z"),
       3,
-      'car',
+      "car",
       2,
       35,
       0,
@@ -75,12 +75,12 @@ describe('FeatureExtractor', () => {
     expect(regularDayFeatures.is_holiday).toBe(false);
   });
 
-  it('should identify weekends', () => {
+  it("should identify weekends", () => {
     const saturdayFeatures = featureExtractor.extractFeatures(
       10,
-      new Date('2025-03-08T14:30:00Z'), // Saturday
+      new Date("2025-03-08T14:30:00Z"), // Saturday
       3,
-      'car',
+      "car",
       2,
       35,
       0,
@@ -94,9 +94,9 @@ describe('FeatureExtractor', () => {
 
     const sundayFeatures = featureExtractor.extractFeatures(
       10,
-      new Date('2025-03-09T14:30:00Z'), // Sunday
+      new Date("2025-03-09T14:30:00Z"), // Sunday
       3,
-      'car',
+      "car",
       2,
       35,
       0,
@@ -109,9 +109,9 @@ describe('FeatureExtractor', () => {
 
     const weekdayFeatures = featureExtractor.extractFeatures(
       10,
-      new Date('2025-03-10T14:30:00Z'), // Monday
+      new Date("2025-03-10T14:30:00Z"), // Monday
       3,
-      'car',
+      "car",
       2,
       35,
       0,
@@ -128,19 +128,19 @@ describe('FeatureExtractor', () => {
     expect(weekdayFeatures.is_weekend).toBe(0);
   });
 
-  it('should extract features from historical delivery', () => {
+  it("should extract features from historical delivery", () => {
     const historical: HistoricalDelivery = {
-      delivery_id: 'test_1',
+      delivery_id: "test_1",
       distance_km: 8,
-      zone_type: 'urban',
+      zone_type: "urban",
       hour: 14,
       day_of_week: 2,
       is_holiday: false,
-      weather_condition: 'rain',
+      weather_condition: "rain",
       weather_intensity: 0.5,
-      traffic_condition: 'moderate',
+      traffic_condition: "moderate",
       driver_experience_score: 0.7,
-      vehicle_type: 'car',
+      vehicle_type: "car",
       num_stops: 3,
       actual_duration_minutes: 45,
       temperature_celsius: 18,
@@ -152,19 +152,19 @@ describe('FeatureExtractor', () => {
     const features = featureExtractor.extractFromHistorical(historical);
 
     expect(features).toBeDefined();
-    expect(features.zone_type).toBe('urban');
+    expect(features.zone_type).toBe("urban");
     expect(features.hour).toBe(14);
-    expect(features.weather_condition).toBe('rain');
-    expect(features.vehicle_type).toBe('car');
+    expect(features.weather_condition).toBe("rain");
+    expect(features.vehicle_type).toBe("car");
     expect(features.num_stops_remaining).toBe(3);
   });
 
-  it('should normalize distance properly', () => {
+  it("should normalize distance properly", () => {
     const features1km = featureExtractor.extractFeatures(
       1,
       new Date(),
       3,
-      'car',
+      "car",
       1,
       30,
       0,
@@ -180,7 +180,7 @@ describe('FeatureExtractor', () => {
       100,
       new Date(),
       3,
-      'car',
+      "car",
       1,
       30,
       0,
@@ -202,12 +202,12 @@ describe('FeatureExtractor', () => {
     expect(features100km.distance_km).toBeGreaterThan(features1km.distance_km);
   });
 
-  it('should normalize driver experience', () => {
+  it("should normalize driver experience", () => {
     const inexperienced = featureExtractor.extractFeatures(
       10,
       new Date(),
       0.5, // 6 months
-      'car',
+      "car",
       1,
       30,
       0,
@@ -223,7 +223,7 @@ describe('FeatureExtractor', () => {
       10,
       new Date(),
       10, // 10 years
-      'car',
+      "car",
       1,
       30,
       0,
@@ -240,12 +240,12 @@ describe('FeatureExtractor', () => {
     );
   });
 
-  it('should handle weather conditions', () => {
+  it("should handle weather conditions", () => {
     const clearWeather = featureExtractor.extractFeatures(
       10,
       new Date(),
       3,
-      'car',
+      "car",
       1,
       30,
       0, // No precipitation
@@ -261,7 +261,7 @@ describe('FeatureExtractor', () => {
       10,
       new Date(),
       3,
-      'car',
+      "car",
       1,
       30,
       0.4, // Rain
@@ -277,7 +277,7 @@ describe('FeatureExtractor', () => {
       10,
       new Date(),
       3,
-      'car',
+      "car",
       1,
       30,
       0.8, // Heavy snow
@@ -289,17 +289,17 @@ describe('FeatureExtractor', () => {
       0,
     );
 
-    expect(clearWeather.weather_condition).toBe('clear');
-    expect(rainWeather.weather_condition).toBe('rain');
-    expect(snowWeather.weather_condition).toBe('snow');
+    expect(clearWeather.weather_condition).toBe("clear");
+    expect(rainWeather.weather_condition).toBe("rain");
+    expect(snowWeather.weather_condition).toBe("snow");
   });
 
-  it('should compute similarity between feature vectors', () => {
+  it("should compute similarity between feature vectors", () => {
     const features1 = featureExtractor.extractFeatures(
       10,
-      new Date('2025-03-11T14:00:00Z'),
+      new Date("2025-03-11T14:00:00Z"),
       3,
-      'car',
+      "car",
       1,
       30,
       0,
@@ -314,9 +314,9 @@ describe('FeatureExtractor', () => {
     // Identical features
     const features2 = featureExtractor.extractFeatures(
       10,
-      new Date('2025-03-11T14:00:00Z'),
+      new Date("2025-03-11T14:00:00Z"),
       3,
-      'car',
+      "car",
       1,
       30,
       0,
@@ -331,9 +331,9 @@ describe('FeatureExtractor', () => {
     // Different distance
     const features3 = featureExtractor.extractFeatures(
       20,
-      new Date('2025-03-11T14:00:00Z'),
+      new Date("2025-03-11T14:00:00Z"),
       3,
-      'car',
+      "car",
       1,
       30,
       0,
@@ -345,19 +345,25 @@ describe('FeatureExtractor', () => {
       -74.006,
     );
 
-    const similarity12 = featureExtractor.computeSimilarity(features1, features2);
-    const similarity13 = featureExtractor.computeSimilarity(features1, features3);
+    const similarity12 = featureExtractor.computeSimilarity(
+      features1,
+      features2,
+    );
+    const similarity13 = featureExtractor.computeSimilarity(
+      features1,
+      features3,
+    );
 
     expect(similarity12).toBeGreaterThan(0.95); // Nearly identical
     expect(similarity13).toBeLessThan(similarity12); // Different distance
   });
 
-  it('should compute weighted distance', () => {
+  it("should compute weighted distance", () => {
     const features1 = featureExtractor.extractFeatures(
       10,
-      new Date('2025-03-11T14:00:00Z'),
+      new Date("2025-03-11T14:00:00Z"),
       3,
-      'car',
+      "car",
       1,
       30,
       0,
@@ -371,9 +377,9 @@ describe('FeatureExtractor', () => {
 
     const features2 = featureExtractor.extractFeatures(
       10,
-      new Date('2025-03-11T14:00:00Z'),
+      new Date("2025-03-11T14:00:00Z"),
       3,
-      'car',
+      "car",
       1,
       30,
       0,
@@ -391,12 +397,12 @@ describe('FeatureExtractor', () => {
     expect(distance).toBeGreaterThanOrEqual(0);
   });
 
-  it('should handle temperature normalization', () => {
+  it("should handle temperature normalization", () => {
     const coldFeatures = featureExtractor.extractFeatures(
       10,
       new Date(),
       3,
-      'car',
+      "car",
       1,
       30,
       0,
@@ -412,7 +418,7 @@ describe('FeatureExtractor', () => {
       10,
       new Date(),
       3,
-      'car',
+      "car",
       1,
       30,
       0,
@@ -428,7 +434,7 @@ describe('FeatureExtractor', () => {
       10,
       new Date(),
       3,
-      'car',
+      "car",
       1,
       30,
       0,
@@ -449,7 +455,7 @@ describe('FeatureExtractor', () => {
     expect(mildFeatures.temperature_celsius).toBeLessThanOrEqual(1);
   });
 
-  it('should extract all hour values correctly', () => {
+  it("should extract all hour values correctly", () => {
     for (let hour = 0; hour < 24; hour++) {
       const date = new Date();
       date.setUTCHours(hour);
@@ -458,7 +464,7 @@ describe('FeatureExtractor', () => {
         10,
         date,
         3,
-        'car',
+        "car",
         1,
         30,
         0,
@@ -474,14 +480,10 @@ describe('FeatureExtractor', () => {
     }
   });
 
-  it('should handle all zone types', () => {
-    const zoneTypes: Array<'urban-core' | 'urban' | 'suburban' | 'rural' | 'highway'> = [
-      'urban-core',
-      'urban',
-      'suburban',
-      'rural',
-      'highway',
-    ];
+  it("should handle all zone types", () => {
+    const zoneTypes: Array<
+      "urban-core" | "urban" | "suburban" | "rural" | "highway"
+    > = ["urban-core", "urban", "suburban", "rural", "highway"];
 
     for (const zone of zoneTypes) {
       const historical: HistoricalDelivery = {
@@ -491,11 +493,11 @@ describe('FeatureExtractor', () => {
         hour: 14,
         day_of_week: 2,
         is_holiday: false,
-        weather_condition: 'clear',
+        weather_condition: "clear",
         weather_intensity: 0,
-        traffic_condition: 'light',
+        traffic_condition: "light",
         driver_experience_score: 0.5,
-        vehicle_type: 'car',
+        vehicle_type: "car",
         num_stops: 1,
         actual_duration_minutes: 30,
         temperature_celsius: 20,

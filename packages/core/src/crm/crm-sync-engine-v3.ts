@@ -39,37 +39,86 @@ import {
  */
 export interface CrmRepository {
   // Contact operations
-  findContacts(tenantId: string, filters?: Record<string, unknown>): Promise<UnifiedContact[]>;
-  findContactById(tenantId: string, contactId: string): Promise<UnifiedContact | null>;
-  createContact(tenantId: string, contact: UnifiedContact): Promise<UnifiedContact>;
-  updateContact(tenantId: string, contactId: string, updates: Partial<UnifiedContact>): Promise<UnifiedContact>;
+  findContacts(
+    tenantId: string,
+    filters?: Record<string, unknown>,
+  ): Promise<UnifiedContact[]>;
+  findContactById(
+    tenantId: string,
+    contactId: string,
+  ): Promise<UnifiedContact | null>;
+  createContact(
+    tenantId: string,
+    contact: UnifiedContact,
+  ): Promise<UnifiedContact>;
+  updateContact(
+    tenantId: string,
+    contactId: string,
+    updates: Partial<UnifiedContact>,
+  ): Promise<UnifiedContact>;
   deleteContact(tenantId: string, contactId: string): Promise<void>;
 
   // Deal operations
-  findDeals(tenantId: string, filters?: Record<string, unknown>): Promise<UnifiedDeal[]>;
+  findDeals(
+    tenantId: string,
+    filters?: Record<string, unknown>,
+  ): Promise<UnifiedDeal[]>;
   findDealById(tenantId: string, dealId: string): Promise<UnifiedDeal | null>;
   createDeal(tenantId: string, deal: UnifiedDeal): Promise<UnifiedDeal>;
-  updateDeal(tenantId: string, dealId: string, updates: Partial<UnifiedDeal>): Promise<UnifiedDeal>;
+  updateDeal(
+    tenantId: string,
+    dealId: string,
+    updates: Partial<UnifiedDeal>,
+  ): Promise<UnifiedDeal>;
   deleteDeal(tenantId: string, dealId: string): Promise<void>;
 
   // Company operations
-  findCompanies(tenantId: string, filters?: Record<string, unknown>): Promise<UnifiedCompany[]>;
-  findCompanyById(tenantId: string, companyId: string): Promise<UnifiedCompany | null>;
-  createCompany(tenantId: string, company: UnifiedCompany): Promise<UnifiedCompany>;
-  updateCompany(tenantId: string, companyId: string, updates: Partial<UnifiedCompany>): Promise<UnifiedCompany>;
+  findCompanies(
+    tenantId: string,
+    filters?: Record<string, unknown>,
+  ): Promise<UnifiedCompany[]>;
+  findCompanyById(
+    tenantId: string,
+    companyId: string,
+  ): Promise<UnifiedCompany | null>;
+  createCompany(
+    tenantId: string,
+    company: UnifiedCompany,
+  ): Promise<UnifiedCompany>;
+  updateCompany(
+    tenantId: string,
+    companyId: string,
+    updates: Partial<UnifiedCompany>,
+  ): Promise<UnifiedCompany>;
   deleteCompany(tenantId: string, companyId: string): Promise<void>;
 
   // Activity operations
-  findActivities(tenantId: string, filters?: Record<string, unknown>): Promise<UnifiedActivity[]>;
-  findActivityById(tenantId: string, activityId: string): Promise<UnifiedActivity | null>;
-  createActivity(tenantId: string, activity: UnifiedActivity): Promise<UnifiedActivity>;
-  updateActivity(tenantId: string, activityId: string, updates: Partial<UnifiedActivity>): Promise<UnifiedActivity>;
+  findActivities(
+    tenantId: string,
+    filters?: Record<string, unknown>,
+  ): Promise<UnifiedActivity[]>;
+  findActivityById(
+    tenantId: string,
+    activityId: string,
+  ): Promise<UnifiedActivity | null>;
+  createActivity(
+    tenantId: string,
+    activity: UnifiedActivity,
+  ): Promise<UnifiedActivity>;
+  updateActivity(
+    tenantId: string,
+    activityId: string,
+    updates: Partial<UnifiedActivity>,
+  ): Promise<UnifiedActivity>;
   deleteActivity(tenantId: string, activityId: string): Promise<void>;
 
   // Conflict management
   recordConflict(conflict: ConflictRecord): Promise<void>;
   findUnresolvedConflicts(tenantId: string): Promise<ConflictRecord[]>;
-  resolveConflict(conflictId: string, resolution: "INTERNAL" | "EXTERNAL"): Promise<void>;
+  resolveConflict(
+    conflictId: string,
+    resolution: "INTERNAL" | "EXTERNAL",
+  ): Promise<void>;
 }
 
 /**
@@ -90,12 +139,22 @@ export interface CrmRepository {
  */
 export class FieldMappingDSL {
   private sourceField: string = "";
-  private transformFn?: (value: unknown, context?: Record<string, unknown>) => unknown;
+  private transformFn?: (
+    value: unknown,
+    context?: Record<string, unknown>,
+  ) => unknown;
   private conditionFn?: (value: unknown) => boolean;
   private targetField: string = "";
   private rules: MappingRule[] = [];
   private required: boolean = true;
-  private dataType: "string" | "number" | "boolean" | "date" | "object" | "array" | "null" = "string";
+  private dataType:
+    | "string"
+    | "number"
+    | "boolean"
+    | "date"
+    | "object"
+    | "array"
+    | "null" = "string";
 
   /**
    * Start mapping from a source field
@@ -115,7 +174,9 @@ export class FieldMappingDSL {
    * Apply a transformation function
    * @param fn - Transform function
    */
-  transform(fn: (value: unknown, context?: Record<string, unknown>) => unknown): this {
+  transform(
+    fn: (value: unknown, context?: Record<string, unknown>) => unknown,
+  ): this {
     this.transformFn = fn;
     return this;
   }
@@ -133,7 +194,16 @@ export class FieldMappingDSL {
    * Set data type
    * @param type - Data type
    */
-  asType(type: "string" | "number" | "boolean" | "date" | "object" | "array" | "null"): this {
+  asType(
+    type:
+      | "string"
+      | "number"
+      | "boolean"
+      | "date"
+      | "object"
+      | "array"
+      | "null",
+  ): this {
     this.dataType = type;
     return this;
   }
@@ -263,7 +333,9 @@ export class BidirectionalResolver {
    * Initialize with field priorities for specific fields
    * @param priorities - Map of field names to winning side
    */
-  setFieldPriorities(priorities: Record<string, "INTERNAL" | "EXTERNAL">): void {
+  setFieldPriorities(
+    priorities: Record<string, "INTERNAL" | "EXTERNAL">,
+  ): void {
     this.fieldPriorities = new Map(Object.entries(priorities));
   }
 
@@ -320,20 +392,25 @@ export class BidirectionalResolver {
    * @param strategy - Resolution strategy
    * @returns Winning value
    */
-  resolveConflict(conflict: ConflictRecord, strategy: ConflictResolutionStrategy): unknown {
+  resolveConflict(
+    conflict: ConflictRecord,
+    strategy: ConflictResolutionStrategy,
+  ): unknown {
     // Check field-level priority first
     const fieldPriority = this.fieldPriorities.get(conflict.conflictField);
     if (fieldPriority) {
-      const resolution = fieldPriority === "INTERNAL"
-        ? conflict.internalValue
-        : conflict.externalValue;
+      const resolution =
+        fieldPriority === "INTERNAL"
+          ? conflict.internalValue
+          : conflict.externalValue;
       return resolution;
     }
 
     // Apply strategy
     switch (strategy) {
       case ConflictResolutionStrategy.TIMESTAMP_WINS:
-        return new Date(conflict.externalUpdatedAt) > new Date(conflict.internalUpdatedAt)
+        return new Date(conflict.externalUpdatedAt) >
+          new Date(conflict.internalUpdatedAt)
           ? conflict.externalValue
           : conflict.internalValue;
 
@@ -416,8 +493,13 @@ export class SyncTransaction {
    * Create new sync transaction
    * @param tenantId - Tenant ID
    */
-  constructor(private tenantId: string, transactionId?: string) {
-    this.transactionId = transactionId || `txn-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  constructor(
+    private tenantId: string,
+    transactionId?: string,
+  ) {
+    this.transactionId =
+      transactionId ||
+      `txn-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     this.createdAt = new Date().toISOString();
   }
 
@@ -538,7 +620,12 @@ export class CrmSyncOrchestrator {
 
     // Set field priorities if provided in config metadata
     if (config.metadata?.fieldPriorities) {
-      this.resolver.setFieldPriorities(config.metadata.fieldPriorities as Record<string, "INTERNAL" | "EXTERNAL">);
+      this.resolver.setFieldPriorities(
+        config.metadata.fieldPriorities as Record<
+          string,
+          "INTERNAL" | "EXTERNAL"
+        >,
+      );
     }
   }
 
@@ -570,7 +657,10 @@ export class CrmSyncOrchestrator {
     const mergedData = { ...internalData };
 
     for (const conflict of conflicts) {
-      const resolution = this.resolver.resolveConflict(conflict, this.config.conflictStrategy);
+      const resolution = this.resolver.resolveConflict(
+        conflict,
+        this.config.conflictStrategy,
+      );
       if (resolution !== undefined) {
         mergedData[conflict.conflictField] = resolution;
       }
@@ -600,14 +690,20 @@ export class CrmSyncOrchestrator {
    * @param mapping - Field mapping configuration
    * @param sourceData - Source data to transform
    */
-  applyFieldMapping(mapping: FieldMapping, sourceData: Record<string, unknown>): Record<string, unknown> {
+  applyFieldMapping(
+    mapping: FieldMapping,
+    sourceData: Record<string, unknown>,
+  ): Record<string, unknown> {
     const targetData: Record<string, unknown> = {};
 
     for (const rule of mapping.rules) {
       const sourceValue = this.getNestedValue(sourceData, rule.sourceField);
 
       // Skip if null/undefined and optional
-      if ((sourceValue === null || sourceValue === undefined) && !rule.required) {
+      if (
+        (sourceValue === null || sourceValue === undefined) &&
+        !rule.required
+      ) {
         continue;
       }
 
@@ -622,7 +718,10 @@ export class CrmSyncOrchestrator {
         try {
           transformedValue = rule.transform(sourceValue, { sourceData });
         } catch (error) {
-          console.error(`Transform failed for field ${rule.sourceField}:`, error);
+          console.error(
+            `Transform failed for field ${rule.sourceField}:`,
+            error,
+          );
           throw error;
         }
       }
@@ -655,7 +754,11 @@ export class CrmSyncOrchestrator {
   /**
    * Set nested value in object using dot notation
    */
-  private setNestedValue(obj: Record<string, unknown>, path: string, value: unknown): void {
+  private setNestedValue(
+    obj: Record<string, unknown>,
+    path: string,
+    value: unknown,
+  ): void {
     const keys = path.split(".");
     const lastKey = keys.pop()!;
     let current: any = obj;
@@ -686,7 +789,9 @@ export class CrmSyncOrchestrator {
     this.syncMetrics.recordsSynced += recordsCount;
 
     // Update average latency
-    const totalLatency = this.syncMetrics.avgLatencyMs * (this.syncMetrics.totalSyncs - 1) + latencyMs;
+    const totalLatency =
+      this.syncMetrics.avgLatencyMs * (this.syncMetrics.totalSyncs - 1) +
+      latencyMs;
     this.syncMetrics.avgLatencyMs = totalLatency / this.syncMetrics.totalSyncs;
 
     this.syncMetrics.successRate =
@@ -703,7 +808,9 @@ export class CrmSyncOrchestrator {
     this.syncMetrics.failedSyncs += 1;
 
     // Update average latency
-    const totalLatency = this.syncMetrics.avgLatencyMs * (this.syncMetrics.totalSyncs - 1) + latencyMs;
+    const totalLatency =
+      this.syncMetrics.avgLatencyMs * (this.syncMetrics.totalSyncs - 1) +
+      latencyMs;
     this.syncMetrics.avgLatencyMs = totalLatency / this.syncMetrics.totalSyncs;
 
     this.syncMetrics.successRate =

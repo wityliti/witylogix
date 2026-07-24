@@ -66,7 +66,7 @@ describe("SignatureVerifier", () => {
         payload,
         invalidSignature,
         timestamp,
-        secret
+        secret,
       );
 
       expect(result.valid).toBe(false);
@@ -88,14 +88,16 @@ describe("SignatureVerifier", () => {
     it("should reject future timestamp", () => {
       const payload = '{"event":"order.created"}';
       const secret = "test_secret";
-      const futureTimestamp = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 min future
+      const futureTimestamp = new Date(
+        Date.now() + 10 * 60 * 1000,
+      ).toISOString(); // 10 min future
 
       const signature = verifier.generateSignature(payload, secret);
       const result = verifier.verify(
         payload,
         signature,
         futureTimestamp,
-        secret
+        secret,
       );
 
       expect(result.valid).toBe(false);
@@ -105,7 +107,7 @@ describe("SignatureVerifier", () => {
       const payload = '{"event":"order.created"}';
       const secret = "test_secret";
       const slightlyFutureTimestamp = new Date(
-        Date.now() + 10 * 1000
+        Date.now() + 10 * 1000,
       ).toISOString(); // 10 sec future
 
       const signature = verifier.generateSignature(payload, secret);
@@ -113,7 +115,7 @@ describe("SignatureVerifier", () => {
         payload,
         signature,
         slightlyFutureTimestamp,
-        secret
+        secret,
       );
 
       expect(result.valid).toBe(true);
@@ -135,7 +137,7 @@ describe("SignatureVerifier", () => {
         timestamp,
         nonce,
         tenantId,
-        secret
+        secret,
       );
 
       expect(result.valid).toBe(true);
@@ -157,7 +159,7 @@ describe("SignatureVerifier", () => {
         timestamp,
         nonce,
         tenantId,
-        secret
+        secret,
       );
       expect(result1.valid).toBe(true);
 
@@ -168,7 +170,7 @@ describe("SignatureVerifier", () => {
         timestamp,
         nonce,
         tenantId,
-        secret
+        secret,
       );
       expect(result2.valid).toBe(false);
       expect(result2.reason).toContain("replay attack");
@@ -189,7 +191,7 @@ describe("SignatureVerifier", () => {
         timestamp,
         nonce1,
         tenantId,
-        secret
+        secret,
       );
 
       const nonce2 = SignatureVerifier.generateNonce();
@@ -199,7 +201,7 @@ describe("SignatureVerifier", () => {
         timestamp,
         nonce2,
         tenantId,
-        secret
+        secret,
       );
 
       expect(result1.valid).toBe(true);
@@ -234,7 +236,12 @@ describe("SignatureVerifier", () => {
       const payload = '{"event":"order.created"}';
       const secret = "test_secret";
 
-      const headers = verifier.buildHeaders(payload, secret, undefined, "sha512");
+      const headers = verifier.buildHeaders(
+        payload,
+        secret,
+        undefined,
+        "sha512",
+      );
 
       expect(headers["X-Witylogix-Algorithm"]).toBe("sha512");
     });
@@ -274,7 +281,7 @@ describe("SignatureVerifier", () => {
           timestamp,
           nonce,
           "tenant_1",
-          secret
+          secret,
         );
       }
 

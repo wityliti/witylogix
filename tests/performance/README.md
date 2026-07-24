@@ -5,6 +5,7 @@ Comprehensive k6-based load testing infrastructure for the Witylogix platform.
 ## Overview
 
 This suite provides production-ready performance testing scenarios covering:
+
 - **Authentication** - Login, registration, token refresh, password reset
 - **Onboarding** - Multi-step wizard completion and resume flows
 - **CRUD Operations** - Orders, drivers, deliveries with pagination and concurrency
@@ -41,13 +42,14 @@ tests/performance/
 ### Prerequisites
 
 - **k6** (load testing tool)
+
   ```bash
   # macOS
   brew install k6
-  
+
   # Ubuntu/Debian
   sudo apt-get install k6
-  
+
   # Docker
   docker run -v $(pwd):/scripts -it grafana/k6:latest run /scripts/tests/performance/k6/auth-load.js
   ```
@@ -60,6 +62,7 @@ tests/performance/
 ### Running Tests
 
 #### Simple Test Run
+
 ```bash
 # Run authentication load test
 k6 run tests/performance/k6/auth-load.js
@@ -72,6 +75,7 @@ k6 run -e API_BASE_URL=http://localhost:3000 tests/performance/k6/auth-load.js
 ```
 
 #### With Environment Variables
+
 ```bash
 k6 run \
   -e API_BASE_URL=http://localhost:3000 \
@@ -81,6 +85,7 @@ k6 run \
 ```
 
 #### Generate Reports
+
 ```bash
 # Run tests and capture JSON output
 k6 run \
@@ -94,14 +99,17 @@ node tests/performance/scripts/generate-report.js results/20260316_120000
 ## Test Scenarios
 
 ### 1. Authentication Load Test (`auth-load.js`)
+
 **Purpose:** Test login, registration, token refresh, and password reset operations under load.
 
 **Configuration:**
+
 - Ramp-up: 0→50 VUs over 30s
 - Sustained: 50 VUs for 2 minutes
 - Ramp-down: 50→0 VUs over 30s
 
 **Thresholds:**
+
 - p95 login duration < 500ms
 - p99 login duration < 1s
 - Error rate < 1%
@@ -109,6 +117,7 @@ node tests/performance/scripts/generate-report.js results/20260316_120000
 - Rate limit enforcement > 80%
 
 **Scenarios:**
+
 - Login flow with email/password
 - User registration with unique data
 - Token refresh with validity checks
@@ -117,6 +126,7 @@ node tests/performance/scripts/generate-report.js results/20260316_120000
 - Concurrent authentication requests
 
 **Custom Metrics:**
+
 - `login_duration` - Login operation time
 - `token_refresh_duration` - Token refresh time
 - `password_reset_duration` - Password reset time
@@ -127,25 +137,30 @@ node tests/performance/scripts/generate-report.js results/20260316_120000
 ---
 
 ### 2. Onboarding Load Test (`onboarding-load.js`)
+
 **Purpose:** Test multi-step onboarding wizard completion and state persistence.
 
 **Configuration:**
+
 - 20 concurrent VUs for 5 minutes
 - Mix of full completions and partial saves
 
 **Thresholds:**
+
 - p95 per step < 800ms
 - Total flow < 30s
 - Error rate < 1%
 - Success rate > 95%
 
 **Scenarios:**
+
 - Complete onboarding flow (5 steps)
 - Partial save and resume
 - Step validation
 - Data persistence checks
 
 **Custom Metrics:**
+
 - `onboarding_step_duration` - Time per step
 - `onboarding_total_duration` - Total completion time
 - `step_save_failures` - Failed progress saves
@@ -154,18 +169,22 @@ node tests/performance/scripts/generate-report.js results/20260316_120000
 ---
 
 ### 3. CRUD Operations Load Test (`api-crud-load.js`)
+
 **Purpose:** Test Create, Read, Update, Delete operations across orders, drivers, and deliveries.
 
 **Configuration:**
+
 - Ramp-up: 0→30 VUs over 30s
 - Sustained: 30 VUs for 2 minutes
 - Ramp-down: 30→0 VUs over 30s
 
 **Workload:**
+
 - 80% read operations (GET, LIST)
 - 20% write operations (POST, PUT, DELETE)
 
 **Thresholds:**
+
 - Read p95 < 200ms
 - Write p95 < 500ms
 - Pagination p95 < 300ms
@@ -173,6 +192,7 @@ node tests/performance/scripts/generate-report.js results/20260316_120000
 - Concurrency conflicts < 5%
 
 **Scenarios:**
+
 - Order CRUD with status changes
 - Driver CRUD with location updates
 - Delivery CRUD with tracking
@@ -182,6 +202,7 @@ node tests/performance/scripts/generate-report.js results/20260316_120000
 - Concurrent modifications with optimistic locking
 
 **Custom Metrics:**
+
 - `read_duration` - Read operation time
 - `write_duration` - Write operation time
 - `pagination_duration` - Pagination request time
@@ -191,9 +212,11 @@ node tests/performance/scripts/generate-report.js results/20260316_120000
 ---
 
 ### 4. Webhook Delivery Load Test (`webhook-load.js`)
+
 **Purpose:** Test high-throughput webhook event emission and delivery under load.
 
 **Configuration:**
+
 - Ramp-up: 50 VUs over 30s
 - Spike: Scale to 100 VUs over 1 minute
 - Sustained: 100 VUs for 3 minutes
@@ -202,12 +225,14 @@ node tests/performance/scripts/generate-report.js results/20260316_120000
 **Target Throughput:** 1000 events/minute
 
 **Thresholds:**
+
 - Delivery p95 < 2 seconds
 - Retry success rate > 95%
 - Dead letter queue growth < 1%
 - Error rate < 2%
 
 **Scenarios:**
+
 - Standard webhook delivery
 - Concurrent webhook emission
 - Retry storm simulation
@@ -216,6 +241,7 @@ node tests/performance/scripts/generate-report.js results/20260316_120000
 - Webhook statistics collection
 
 **Custom Metrics:**
+
 - `webhook_delivery_duration` - Delivery time
 - `webhook_retry_duration` - Retry time
 - `delivery_success_rate` - Successful delivery rate
@@ -225,14 +251,17 @@ node tests/performance/scripts/generate-report.js results/20260316_120000
 ---
 
 ### 5. Multi-Tenant Isolation Load Test (`tenant-isolation-load.js`)
+
 **Purpose:** Verify data isolation and security with 10 concurrent tenants.
 
 **Configuration:**
+
 - 10 concurrent VUs (one per tenant)
 - Run for 3 minutes
 - Ramp-up: 30s, Ramp-down: 30s
 
 **Thresholds:**
+
 - p95 response time < 300ms
 - Error rate < 1%
 - Cross-tenant violations = 0 (critical)
@@ -240,6 +269,7 @@ node tests/performance/scripts/generate-report.js results/20260316_120000
 - Unauthorized access = 0 (critical)
 
 **Scenarios:**
+
 - Concurrent tenant operations
 - Data isolation verification
 - Per-tenant rate limiting
@@ -248,6 +278,7 @@ node tests/performance/scripts/generate-report.js results/20260316_120000
 - Resource filtering by tenant
 
 **Custom Metrics:**
+
 - `tenant_operation_duration` - Tenant op time
 - `data_isolation_checks` - Isolation validations
 - `cross_tenant_violations` - Security breaches
@@ -259,14 +290,17 @@ node tests/performance/scripts/generate-report.js results/20260316_120000
 ## Configuration Files
 
 ### `environments.json`
+
 Defines environment-specific settings and test profiles.
 
 **Environments:**
+
 - `dev` - Local development (10 VUs, 1 min test)
 - `staging` - Staging environment (50 VUs, 5 min test)
 - `production` - Production (100 VUs, 10 min test, read-only)
 
 **Test Profiles:**
+
 - `loadTest` - Moderate load testing
 - `stressTest` - High stress (200 VUs)
 - `spikeTest` - Spike testing (500 VUs)
@@ -275,9 +309,11 @@ Defines environment-specific settings and test profiles.
 - `cicd` - CI/CD pipeline (10 VUs, 2 min)
 
 ### `thresholds.json`
+
 SLA thresholds and performance limits for all endpoints.
 
 **Sections:**
+
 - Global response time, error rate, success rate
 - Per-endpoint thresholds (auth, orders, drivers, webhooks)
 - Database query time limits
@@ -285,9 +321,11 @@ SLA thresholds and performance limits for all endpoints.
 - Multi-tenant security requirements
 
 ### `baseline-v6.2.json`
+
 Recorded baseline metrics for v6.2 release.
 
 Used for:
+
 - Performance regression detection
 - Threshold validation
 - Historical comparison
@@ -297,9 +335,11 @@ Used for:
 ## Helper Libraries
 
 ### `helpers/auth.js`
+
 Authentication utilities for load tests.
 
 **Functions:**
+
 - `login(email, password)` - User login
 - `register(email, password, name, shopDomain)` - Registration
 - `refreshToken(refreshToken)` - Token refresh
@@ -311,9 +351,11 @@ Authentication utilities for load tests.
 - `extractAuthContext(token)` - Get auth claims
 
 ### `helpers/data-generators.js`
+
 Test data generation utilities.
 
 **Functions:**
+
 - `generateOrder(customerId, shopId)` - Order data
 - `generateDriver(shopId)` - Driver data
 - `generateDelivery(orderId, driverId)` - Delivery data
@@ -397,35 +439,42 @@ docker run -v $(pwd):/scripts -it grafana/k6:latest \
 ## Performance Thresholds
 
 ### API Response Times (Global)
+
 - p50: 100ms
 - p95: 500ms
 - p99: 1000ms
 - Average: 250ms
 
 ### Error Rates
+
 - Maximum acceptable: 1%
 - Success rate minimum: 99%
 
 ### By Endpoint Category
 
 **Authentication:**
+
 - Login p95 < 500ms
 - Register p95 < 800ms
 - Token refresh p95 < 300ms
 
 **Read Operations:**
+
 - p95 < 200ms (GET single)
 - p95 < 300ms (LIST with pagination)
 
 **Write Operations:**
+
 - p95 < 500ms (POST/PUT)
 - Bulk p95 < 5 seconds (100 items)
 
 **Webhooks:**
+
 - Delivery p95 < 2000ms
 - Retry success > 95%
 
 **Multi-Tenant:**
+
 - Cross-tenant violations: 0 (critical)
 - Unauthorized access: 0 (critical)
 
@@ -434,11 +483,13 @@ docker run -v $(pwd):/scripts -it grafana/k6:latest \
 ## Results and Reports
 
 ### Output Files
+
 - `results/<timestamp>/` - Test results directory
 - `results/<timestamp>/<test>-results.json` - Raw k6 metrics
 - `results/<timestamp>/report.html` - Generated HTML report
 
 ### Report Contents
+
 - Test summary (total requests, errors)
 - Response time distribution
 - Endpoint-specific metrics
@@ -518,6 +569,7 @@ k6 run --iterations 1 tests/performance/k6/auth-load.js
 ## CI/CD Integration
 
 ### GitHub Actions Example
+
 ```yaml
 - name: Run Performance Tests
   run: |
@@ -525,6 +577,7 @@ k6 run --iterations 1 tests/performance/k6/auth-load.js
 ```
 
 ### Expected Results
+
 - All threshold checks pass
 - Error rate < 1%
 - p95 response time < 500ms
@@ -543,6 +596,7 @@ k6 run --iterations 1 tests/performance/k6/auth-load.js
 ## Support
 
 For issues or questions:
+
 1. Check the troubleshooting section above
 2. Review k6 documentation
 3. Check test logs and JSON output

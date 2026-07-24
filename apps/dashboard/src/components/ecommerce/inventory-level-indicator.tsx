@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { forwardRef, useState, type HTMLAttributes } from 'react';
-import { cn } from '@/lib/utils';
-import { AlertCircle } from 'lucide-react';
+import { forwardRef, useState, type HTMLAttributes } from "react";
+import { cn } from "@/lib/utils";
+import { AlertCircle } from "lucide-react";
 
 interface WarehouseStock {
   warehouseId: string;
@@ -12,8 +12,7 @@ interface WarehouseStock {
   total: number;
 }
 
-interface InventoryLevelIndicatorProps
-  extends HTMLAttributes<HTMLDivElement> {
+interface InventoryLevelIndicatorProps extends HTMLAttributes<HTMLDivElement> {
   /** Stock level (0-100) or absolute quantity */
   level: number;
   /** Max stock level (for percentage calculation if needed) */
@@ -33,17 +32,17 @@ interface InventoryLevelIndicatorProps
 }
 
 const getStockColor = (percentage: number): string => {
-  if (percentage > 50) return 'bg-green-500 dark:bg-green-600';
-  if (percentage >= 10) return 'bg-yellow-500 dark:bg-yellow-600';
-  if (percentage > 0) return 'bg-red-500 dark:bg-red-600';
-  return 'bg-gray-300 dark:bg-gray-600';
+  if (percentage > 50) return "bg-green-500 dark:bg-green-600";
+  if (percentage >= 10) return "bg-yellow-500 dark:bg-yellow-600";
+  if (percentage > 0) return "bg-red-500 dark:bg-red-600";
+  return "bg-gray-300 dark:bg-gray-600";
 };
 
 const getStockLabel = (percentage: number): string => {
-  if (percentage > 50) return 'In Stock';
-  if (percentage >= 10) return 'Low Stock';
-  if (percentage > 0) return 'Critical';
-  return 'Out of Stock';
+  if (percentage > 50) return "In Stock";
+  if (percentage >= 10) return "Low Stock";
+  if (percentage > 0) return "Critical";
+  return "Out of Stock";
 };
 
 /**
@@ -83,7 +82,7 @@ const InventoryLevelIndicator = forwardRef<
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [showWarehouseDetail, setShowWarehouseDetail] = useState(false);
     const percentage = maxLevel > 0 ? (level / maxLevel) * 100 : 0;
@@ -94,18 +93,15 @@ const InventoryLevelIndicator = forwardRef<
       return (
         <div
           ref={ref}
-          className={cn(
-            'inline-flex items-center gap-2',
-            className
-          )}
+          className={cn("inline-flex items-center gap-2", className)}
           {...props}
         >
           {/* Compact bar */}
           <div className="w-24 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
             <div
               className={cn(
-                'h-full transition-all duration-300 ease-default rounded-full',
-                getStockColor(percentage)
+                "h-full transition-all duration-300 ease-default rounded-full",
+                getStockColor(percentage),
               )}
               style={{ width: `${Math.max(2, percentage)}%` }}
               aria-valuenow={level}
@@ -119,10 +115,12 @@ const InventoryLevelIndicator = forwardRef<
           {/* Stock text */}
           <span
             className={cn(
-              'text-xs font-semibold whitespace-nowrap',
-              isOutOfStock && 'text-gray-500 dark:text-gray-400',
-              isLowStock && 'text-yellow-600 dark:text-yellow-400',
-              !isLowStock && !isOutOfStock && 'text-green-600 dark:text-green-400'
+              "text-xs font-semibold whitespace-nowrap",
+              isOutOfStock && "text-gray-500 dark:text-gray-400",
+              isLowStock && "text-yellow-600 dark:text-yellow-400",
+              !isLowStock &&
+                !isOutOfStock &&
+                "text-green-600 dark:text-green-400",
             )}
           >
             {available}/{maxLevel}
@@ -140,11 +138,11 @@ const InventoryLevelIndicator = forwardRef<
       <div
         ref={ref}
         className={cn(
-          'flex flex-col gap-3',
-          'p-3 rounded-lg',
-          'bg-gray-50 dark:bg-gray-900/30',
-          'border border-gray-200 dark:border-gray-800',
-          className
+          "flex flex-col gap-3",
+          "p-3 rounded-lg",
+          "bg-gray-50 dark:bg-gray-900/30",
+          "border border-gray-200 dark:border-gray-800",
+          className,
         )}
         {...props}
       >
@@ -160,10 +158,14 @@ const InventoryLevelIndicator = forwardRef<
           </div>
           <span
             className={cn(
-              'text-xs font-semibold px-2 py-1 rounded',
-              isOutOfStock && 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
-              isLowStock && 'bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400',
-              !isLowStock && !isOutOfStock && 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400'
+              "text-xs font-semibold px-2 py-1 rounded",
+              isOutOfStock &&
+                "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300",
+              isLowStock &&
+                "bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400",
+              !isLowStock &&
+                !isOutOfStock &&
+                "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400",
             )}
           >
             {getStockLabel(percentage)}
@@ -175,8 +177,8 @@ const InventoryLevelIndicator = forwardRef<
           <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
             <div
               className={cn(
-                'h-full transition-all duration-300 ease-default rounded-full',
-                getStockColor(percentage)
+                "h-full transition-all duration-300 ease-default rounded-full",
+                getStockColor(percentage),
               )}
               style={{ width: `${Math.max(2, percentage)}%` }}
               role="progressbar"
@@ -205,7 +207,9 @@ const InventoryLevelIndicator = forwardRef<
           </div>
           {reserved > 0 && (
             <div>
-              <span className="text-gray-600 dark:text-gray-400">Reserved:</span>
+              <span className="text-gray-600 dark:text-gray-400">
+                Reserved:
+              </span>
               <span className="ml-1 font-semibold text-yellow-600 dark:text-yellow-400">
                 {reserved}
               </span>
@@ -219,14 +223,14 @@ const InventoryLevelIndicator = forwardRef<
             <button
               onClick={() => setShowWarehouseDetail(!showWarehouseDetail)}
               className={cn(
-                'text-xs font-semibold text-blue-600 dark:text-blue-400',
-                'hover:underline transition-colors'
+                "text-xs font-semibold text-blue-600 dark:text-blue-400",
+                "hover:underline transition-colors",
               )}
               aria-expanded={showWarehouseDetail}
             >
               {showWarehouseDetail
-                ? 'Hide warehouse details'
-                : `View ${warehouses.length} warehouse${warehouses.length > 1 ? 's' : ''}`}
+                ? "Hide warehouse details"
+                : `View ${warehouses.length} warehouse${warehouses.length > 1 ? "s" : ""}`}
             </button>
 
             {showWarehouseDetail && (
@@ -242,10 +246,10 @@ const InventoryLevelIndicator = forwardRef<
                     <div className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-1">
                       <div
                         className={cn(
-                          'h-full transition-all duration-200',
+                          "h-full transition-all duration-200",
                           getStockColor(
-                            wh.total > 0 ? (wh.available / wh.total) * 100 : 0
-                          )
+                            wh.total > 0 ? (wh.available / wh.total) * 100 : 0,
+                          ),
                         )}
                         style={{
                           width: `${wh.total > 0 ? (wh.available / wh.total) * 100 : 0}%`,
@@ -267,10 +271,10 @@ const InventoryLevelIndicator = forwardRef<
         )}
       </div>
     );
-  }
+  },
 );
 
-InventoryLevelIndicator.displayName = 'InventoryLevelIndicator';
+InventoryLevelIndicator.displayName = "InventoryLevelIndicator";
 
 export { InventoryLevelIndicator };
 export type { WarehouseStock };

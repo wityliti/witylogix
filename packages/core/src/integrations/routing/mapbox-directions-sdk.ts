@@ -16,8 +16,8 @@
  * Reference: https://docs.mapbox.com/api/navigation/directions/
  */
 
-import type { Coordinate, LatLng } from './types.js';
-import { RoutingAdapter } from './routing-adapter.js';
+import type { Coordinate, LatLng } from "./types.js";
+import { RoutingAdapter } from "./routing-adapter.js";
 import type {
   RouteRequest,
   RouteResponse,
@@ -29,20 +29,20 @@ import type {
   MatrixResponse,
   MatrixElement,
   RoutingAdapterConfig,
-} from './types.js';
+} from "./types.js";
 import type {
   RoutingMode,
   RoutingResult,
   OptimizationResult,
   ManeuverType,
-} from './unified-routing-types.js';
-import { decodeMapboxPolyline6, getPolylineBounds } from './polyline-utils.js';
+} from "./unified-routing-types.js";
+import { decodeMapboxPolyline6, getPolylineBounds } from "./polyline-utils.js";
 
 /**
  * Mapbox Directions API types
  */
 interface MapboxCoordinate {
-  type: 'Point';
+  type: "Point";
   coordinates: [number, number]; // [lng, lat]
 }
 
@@ -89,12 +89,12 @@ interface MapboxStep {
     out?: number;
   }>;
   geometry?: {
-    type: 'LineString';
+    type: "LineString";
     coordinates: Array<[number, number]>;
   };
   voiceInstructions?: MapboxVoiceInstruction[];
   bannerInstructions?: MapboxBannerInstruction[];
-  driving_side?: 'left' | 'right';
+  driving_side?: "left" | "right";
   weight?: number;
   toll?: boolean;
   unpaved?: boolean;
@@ -122,14 +122,14 @@ interface MapboxRoute {
   weight?: number;
   weight_name?: string;
   geometry: {
-    type: 'LineString';
+    type: "LineString";
     coordinates: Array<[number, number]>;
   };
   legs: MapboxLeg[];
 }
 
 interface MapboxDirectionsResponse {
-  code: 'Ok' | 'NoRoute' | 'NotImplemented' | 'ProfileNotFound';
+  code: "Ok" | "NoRoute" | "NotImplemented" | "ProfileNotFound";
   routes: MapboxRoute[];
   waypoints: Array<{
     name: string;
@@ -140,7 +140,7 @@ interface MapboxDirectionsResponse {
 }
 
 interface MapboxOptimizationResponse {
-  code: 'Ok' | 'NoRoute' | 'InvalidInput';
+  code: "Ok" | "NoRoute" | "InvalidInput";
   waypoints: Array<{
     hint: string;
     name: string;
@@ -150,11 +150,11 @@ interface MapboxOptimizationResponse {
 }
 
 interface MapboxIsochroneResponse {
-  code: 'Ok' | 'NoRoute' | 'InvalidInput';
+  code: "Ok" | "NoRoute" | "InvalidInput";
   contours: Array<{
     color?: string;
     geometry?: {
-      type: 'Polygon';
+      type: "Polygon";
       coordinates: Array<Array<[number, number]>>;
     };
   }>;
@@ -172,7 +172,7 @@ interface MapboxDirectionsConfig extends RoutingAdapterConfig {
  * Mapbox Directions API SDK
  */
 export class MapboxDirectionsSDK extends RoutingAdapter {
-  private mapboxBaseUrl: string = 'https://api.mapbox.com/directions/v5';
+  private mapboxBaseUrl: string = "https://api.mapbox.com/directions/v5";
   private apiRequestsThisMinute: number = 0;
   private lastMinuteReset: number = Date.now();
   private readonly RATE_LIMIT: number = 300; // 300 req/min
@@ -191,7 +191,7 @@ export class MapboxDirectionsSDK extends RoutingAdapter {
     });
 
     if (!config.apiKey) {
-      throw new Error('Mapbox Directions API requires apiKey');
+      throw new Error("Mapbox Directions API requires apiKey");
     }
 
     if (config.baseUrl) {
@@ -203,36 +203,38 @@ export class MapboxDirectionsSDK extends RoutingAdapter {
    * Get directions between origin and destination
    */
   async route(request: RouteRequest): Promise<RouteResponse> {
-    return this.executeRequest('MapboxDirections.route', async () => {
+    return this.executeRequest("MapboxDirections.route", async () => {
       const origin = this.normalizeCoordinate(request.origin);
       const destination = this.normalizeCoordinate(request.destination);
-      const waypoints = (request.waypoints || []).map((w) => this.normalizeCoordinate(w));
+      const waypoints = (request.waypoints || []).map((w) =>
+        this.normalizeCoordinate(w),
+      );
 
-      const profile = this.mapProfile(request.costing || 'auto');
+      const profile = this.mapProfile(request.costing || "auto");
       const coordinates = [origin, ...waypoints, destination]
-        .map((c) => [c.lng, c.lat].join(','))
-        .join(';');
+        .map((c) => [c.lng, c.lat].join(","))
+        .join(";");
 
       const params = new URLSearchParams({
-        alternatives: request.options?.alternatives ? 'true' : 'false',
-        geometries: 'polyline6',
-        overview: 'full',
-        steps: 'true',
-        continue_straight: 'true',
-        annotations: 'distance,duration,speed',
-        language: request.options?.language || 'en',
+        alternatives: request.options?.alternatives ? "true" : "false",
+        geometries: "polyline6",
+        overview: "full",
+        steps: "true",
+        continue_straight: "true",
+        annotations: "distance,duration,speed",
+        language: request.options?.language || "en",
         access_token: this.mapboxConfig.apiKey,
       });
 
       const url = `${this.mapboxBaseUrl}/${profile}/${coordinates}?${params}`;
       const response = await this.callMapboxAPI<MapboxDirectionsResponse>(url);
 
-      if (response.code !== 'Ok') {
+      if (response.code !== "Ok") {
         throw new Error(`Mapbox returned status: ${response.code}`);
       }
 
       if (response.routes.length === 0) {
-        throw new Error('No route found');
+        throw new Error("No route found");
       }
 
       return this.normalizeDirectionsResponse(response.routes[0], request);
@@ -243,10 +245,12 @@ export class MapboxDirectionsSDK extends RoutingAdapter {
    * Optimize waypoint order using Mapbox Optimization API v1
    */
   async optimize(request: OptimizationRequest): Promise<OptimizationResponse> {
-    return this.executeRequest('MapboxDirections.optimize', async () => {
+    return this.executeRequest("MapboxDirections.optimize", async () => {
       // Support both the canonical VRP format (jobs[].location) and the simpler
       // waypoints[] format from unified-routing-types (used internally).
-      const rawRequest = request as OptimizationRequest & { waypoints?: import('./types.js').Coordinate[] };
+      const rawRequest = request as OptimizationRequest & {
+        waypoints?: import("./types.js").Coordinate[];
+      };
       const jobCoords: string[] = rawRequest.waypoints
         ? rawRequest.waypoints.map((w) => {
             const normalized = this.normalizeCoordinate(w);
@@ -258,21 +262,22 @@ export class MapboxDirectionsSDK extends RoutingAdapter {
           });
 
       if (jobCoords.length === 0) {
-        throw new Error('Mapbox optimize: no jobs provided');
+        throw new Error("Mapbox optimize: no jobs provided");
       }
 
-      const coordinatesStr = jobCoords.join(';');
+      const coordinatesStr = jobCoords.join(";");
       const params = new URLSearchParams({
-        geometries: 'polyline6',
-        overview: 'full',
-        annotations: 'distance,duration',
+        geometries: "polyline6",
+        overview: "full",
+        annotations: "distance,duration",
         access_token: this.mapboxConfig.apiKey,
       });
 
       const url = `${this.mapboxBaseUrl}/mapbox/driving/${coordinatesStr}?${params}&optimize=true`;
-      const response = await this.callMapboxAPI<MapboxOptimizationResponse>(url);
+      const response =
+        await this.callMapboxAPI<MapboxOptimizationResponse>(url);
 
-      if (response.code !== 'Ok') {
+      if (response.code !== "Ok") {
         throw new Error(`Mapbox returned status: ${response.code}`);
       }
 
@@ -282,13 +287,13 @@ export class MapboxDirectionsSDK extends RoutingAdapter {
 
       const optimizedRoute = {
         vehicle: 0,
-        steps: [] as OptimizationResponse['routes'][number]['steps'],
+        steps: [] as OptimizationResponse["routes"][number]["steps"],
         distance_m: totalDistance,
         duration_s: totalDuration,
         polyline: this.geometryToPolyline(route.geometry),
       };
       return {
-        code: 'OK',
+        code: "OK",
         summary: {
           distance_m: totalDistance,
           duration_s: totalDuration,
@@ -306,15 +311,17 @@ export class MapboxDirectionsSDK extends RoutingAdapter {
    * Compute distance/duration matrix
    */
   async matrix(request: MatrixRequest): Promise<MatrixResponse> {
-    return this.executeRequest('MapboxDirections.matrix', async () => {
+    return this.executeRequest("MapboxDirections.matrix", async () => {
       // Mapbox uses Matrix API, different endpoint
       const origins = request.origins.map((o) => this.normalizeCoordinate(o));
-      const destinations = request.destinations.map((d) => this.normalizeCoordinate(d));
+      const destinations = request.destinations.map((d) =>
+        this.normalizeCoordinate(d),
+      );
 
       // Build coordinates as origin;dest1;dest2...
       const coords = [...origins, ...destinations]
         .map((c) => `${c.lng},${c.lat}`)
-        .join(';');
+        .join(";");
 
       const params = new URLSearchParams({
         access_token: this.mapboxConfig.apiKey,
@@ -323,7 +330,10 @@ export class MapboxDirectionsSDK extends RoutingAdapter {
       // Matrix API endpoint
       const url = `https://api.mapbox.com/matrix/v1/mapbox/driving/${coords}?${params}`;
       const controller = new AbortController();
-      const tid = setTimeout(() => controller.abort(), this.mapboxConfig.timeout ?? 30000);
+      const tid = setTimeout(
+        () => controller.abort(),
+        this.mapboxConfig.timeout ?? 30000,
+      );
       let response: Response;
       try {
         response = await fetch(url, { signal: controller.signal });
@@ -350,7 +360,7 @@ export class MapboxDirectionsSDK extends RoutingAdapter {
           matrix[i][j] = {
             distance_m: Math.round(data.distances[i][j]),
             duration_s: Math.round(data.durations[i][j]),
-            status: 'OK',
+            status: "OK",
           };
         }
       }
@@ -366,14 +376,17 @@ export class MapboxDirectionsSDK extends RoutingAdapter {
   /**
    * Generate isochrone (reachable area)
    */
-  async isochrone(center: Coordinate, duration: number): Promise<{ polygon: LatLng[] }> {
+  async isochrone(
+    center: Coordinate,
+    duration: number,
+  ): Promise<{ polygon: LatLng[] }> {
     const normalized = this.normalizeCoordinate(center);
     const contours = [duration];
-    const colors = ['ff0000'];
+    const colors = ["ff0000"];
 
     const params = new URLSearchParams({
-      contours_seconds: contours.join(','),
-      contours_colors: colors.join(','),
+      contours_seconds: contours.join(","),
+      contours_colors: colors.join(","),
       access_token: this.mapboxConfig.apiKey,
     });
 
@@ -383,14 +396,17 @@ export class MapboxDirectionsSDK extends RoutingAdapter {
 
     const response = await this.callMapboxAPI<MapboxIsochroneResponse>(url);
 
-    if (response.code !== 'Ok') {
+    if (response.code !== "Ok") {
       throw new Error(`Mapbox Isochrone error: ${response.code}`);
     }
 
     const firstContour = response.contours[0];
 
-    if (!firstContour.geometry || firstContour.geometry.coordinates.length === 0) {
-      throw new Error('No contour geometry in isochrone response');
+    if (
+      !firstContour.geometry ||
+      firstContour.geometry.coordinates.length === 0
+    ) {
+      throw new Error("No contour geometry in isochrone response");
     }
 
     const polygon = firstContour.geometry.coordinates[0].map(([lng, lat]) => ({
@@ -408,12 +424,17 @@ export class MapboxDirectionsSDK extends RoutingAdapter {
     this.checkRateLimit();
 
     const controller = new AbortController();
-    const tid = setTimeout(() => controller.abort(), this.mapboxConfig.timeout ?? 30000);
+    const tid = setTimeout(
+      () => controller.abort(),
+      this.mapboxConfig.timeout ?? 30000,
+    );
     let response: Response;
     try {
       response = await fetch(url, {
-        method: 'GET',
-        headers: { 'User-Agent': this.mapboxConfig.user_agent || 'Witylogix/1.0' },
+        method: "GET",
+        headers: {
+          "User-Agent": this.mapboxConfig.user_agent || "Witylogix/1.0",
+        },
         signal: controller.signal,
       });
     } finally {
@@ -456,31 +477,37 @@ export class MapboxDirectionsSDK extends RoutingAdapter {
    */
   private mapProfile(costing: string): string {
     const map: Record<string, string> = {
-      auto: 'driving',
-      car: 'driving',
-      truck: 'driving',
-      bicycle: 'cycling',
-      pedestrian: 'walking',
-      taxi: 'driving',
-      motorcycle: 'driving',
+      auto: "driving",
+      car: "driving",
+      truck: "driving",
+      bicycle: "cycling",
+      pedestrian: "walking",
+      taxi: "driving",
+      motorcycle: "driving",
     };
 
-    return map[costing] || 'driving';
+    return map[costing] || "driving";
   }
 
   /**
    * Convert GeoJSON geometry to polyline6
    */
-  private geometryToPolyline(geometry: { type: string; coordinates: Array<[number, number]> }): string {
+  private geometryToPolyline(geometry: {
+    type: string;
+    coordinates: Array<[number, number]>;
+  }): string {
     // For now, return encoded representation
     // In production, would encode to polyline6
-    return 'polyline6_encoded';
+    return "polyline6_encoded";
   }
 
   /**
    * Normalize Mapbox directions response
    */
-  private normalizeDirectionsResponse(route: MapboxRoute, _originalRequest: RouteRequest): RouteResponse {
+  private normalizeDirectionsResponse(
+    route: MapboxRoute,
+    _originalRequest: RouteRequest,
+  ): RouteResponse {
     const legs: RouteLeg[] = route.legs.map((leg) => {
       const firstStep = leg.steps[0];
       const lastStep = leg.steps[leg.steps.length - 1];
@@ -517,12 +544,17 @@ export class MapboxDirectionsSDK extends RoutingAdapter {
       instruction: step.maneuver.instruction,
       maneuver: this.mapManeuver(step.maneuver.type, step.maneuver.modifier),
       way_name: step.name,
-      start_location: { lat: step.maneuver.location[1], lng: step.maneuver.location[0] },
+      start_location: {
+        lat: step.maneuver.location[1],
+        lng: step.maneuver.location[0],
+      },
       end_location:
         step.intersections && step.intersections.length > 0
           ? {
-              lat: step.intersections[step.intersections.length - 1].location[1],
-              lng: step.intersections[step.intersections.length - 1].location[0],
+              lat: step.intersections[step.intersections.length - 1]
+                .location[1],
+              lng: step.intersections[step.intersections.length - 1]
+                .location[0],
             }
           : { lat: step.maneuver.location[1], lng: step.maneuver.location[0] },
     };
@@ -533,13 +565,16 @@ export class MapboxDirectionsSDK extends RoutingAdapter {
    */
   private mapManeuver(type: string, modifier?: string): string {
     // Return combined type and modifier
-    return `${type}${modifier ? `-${modifier}` : ''}`;
+    return `${type}${modifier ? `-${modifier}` : ""}`;
   }
 
   /**
    * Extract first coordinate from geometry
    */
-  private extractFirstCoordinate(geometry?: { type: string; coordinates: Array<[number, number]> }): LatLng {
+  private extractFirstCoordinate(geometry?: {
+    type: string;
+    coordinates: Array<[number, number]>;
+  }): LatLng {
     if (!geometry || geometry.coordinates.length === 0) {
       return { lat: 0, lng: 0 };
     }
@@ -551,7 +586,10 @@ export class MapboxDirectionsSDK extends RoutingAdapter {
   /**
    * Extract last coordinate from geometry
    */
-  private extractLastCoordinate(geometry?: { type: string; coordinates: Array<[number, number]> }): LatLng {
+  private extractLastCoordinate(geometry?: {
+    type: string;
+    coordinates: Array<[number, number]>;
+  }): LatLng {
     if (!geometry || geometry.coordinates.length === 0) {
       return { lat: 0, lng: 0 };
     }
@@ -563,17 +601,21 @@ export class MapboxDirectionsSDK extends RoutingAdapter {
   /**
    * Convert GeoJSON to polyline6
    */
-  private geoJsonToPolyline6(geometry: { type: string; coordinates: Array<[number, number]> }): string {
+  private geoJsonToPolyline6(geometry: {
+    type: string;
+    coordinates: Array<[number, number]>;
+  }): string {
     // Simplified: return marker for now
-    return 'polyline6_encoded';
+    return "polyline6_encoded";
   }
 
   /**
    * Get bounds from GeoJSON geometry
    */
-  private getGeoJsonBounds(
-    geometry: { type: string; coordinates: Array<[number, number]> },
-  ): { ne: LatLng; sw: LatLng } {
+  private getGeoJsonBounds(geometry: {
+    type: string;
+    coordinates: Array<[number, number]>;
+  }): { ne: LatLng; sw: LatLng } {
     let minLat = 90,
       maxLat = -90,
       minLng = 180,
@@ -596,6 +638,8 @@ export class MapboxDirectionsSDK extends RoutingAdapter {
 /**
  * Export factory function
  */
-export function createMapboxDirectionsSDK(config: MapboxDirectionsConfig): MapboxDirectionsSDK {
+export function createMapboxDirectionsSDK(
+  config: MapboxDirectionsConfig,
+): MapboxDirectionsSDK {
   return new MapboxDirectionsSDK(config);
 }

@@ -3,7 +3,14 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { TrendingDown, TrendingUp, Calendar, MapPin, Truck, DollarSign } from "lucide-react";
+import {
+  TrendingDown,
+  TrendingUp,
+  Calendar,
+  MapPin,
+  Truck,
+  DollarSign,
+} from "lucide-react";
 
 interface FreightQuoteCardProps {
   carrierId: string;
@@ -49,20 +56,29 @@ export function FreightQuoteCard({
   const isBelowMarket = isBelow && rateComparison;
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "2-digit" });
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "2-digit",
+    });
   };
 
   const getComparisonLabel = () => {
     if (!rateComparison) return null;
-    const percentage = Math.round((Math.abs(rateComparison.difference) / rateComparison.marketAverage) * 100);
-    return isBelowMarket ? `${percentage}% below market` : `${percentage}% above market`;
+    const percentage = Math.round(
+      (Math.abs(rateComparison.difference) / rateComparison.marketAverage) *
+        100,
+    );
+    return isBelowMarket
+      ? `${percentage}% below market`
+      : `${percentage}% above market`;
   };
 
   return (
     <div
       className={cn(
         "flex flex-col border border-wl-border-subtle rounded-lg bg-wl-bg-surface overflow-hidden transition-all duration-200 hover:border-wl-border-default hover:shadow-md",
-        className
+        className,
       )}
     >
       {/* Header */}
@@ -84,14 +100,21 @@ export function FreightQuoteCard({
 
             {/* Carrier name and quote ID */}
             <div>
-              <h3 className="text-sm font-semibold text-wl-text-primary">{carrierName}</h3>
-              <p className="text-xs text-wl-text-secondary">Quote #{carrierId.slice(0, 8)}</p>
+              <h3 className="text-sm font-semibold text-wl-text-primary">
+                {carrierName}
+              </h3>
+              <p className="text-xs text-wl-text-secondary">
+                Quote #{carrierId.slice(0, 8)}
+              </p>
             </div>
           </div>
 
           {/* Rate comparison badge */}
           {rateComparison && (
-            <Badge variant={isBelowMarket ? "success" : "warning"} className="flex-shrink-0">
+            <Badge
+              variant={isBelowMarket ? "success" : "warning"}
+              className="flex-shrink-0"
+            >
               {isBelowMarket ? (
                 <TrendingDown className="w-3 h-3" />
               ) : (
@@ -110,13 +133,19 @@ export function FreightQuoteCard({
           <p className="text-xs text-wl-text-secondary mb-2">Total Rate</p>
           <div className="flex items-baseline gap-2">
             <span className="text-3xl font-bold text-wl-text-primary">
-              {rate.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {rate.toLocaleString("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </span>
             <span className="text-sm text-wl-text-secondary">{currency}</span>
           </div>
           {rateComparison && (
             <p className="text-xs text-wl-text-secondary mt-1">
-              Market avg: ${rateComparison.marketAverage.toLocaleString("en-US", { maximumFractionDigits: 0 })}
+              Market avg: $
+              {rateComparison.marketAverage.toLocaleString("en-US", {
+                maximumFractionDigits: 0,
+              })}
             </p>
           )}
         </div>
@@ -128,7 +157,9 @@ export function FreightQuoteCard({
               <Calendar className="w-3.5 h-3.5 text-wl-text-secondary" />
               <p className="text-xs text-wl-text-secondary">Pickup</p>
             </div>
-            <p className="text-sm font-semibold text-wl-text-primary">{formatDate(pickupDate)}</p>
+            <p className="text-sm font-semibold text-wl-text-primary">
+              {formatDate(pickupDate)}
+            </p>
           </div>
 
           <div>
@@ -136,7 +167,9 @@ export function FreightQuoteCard({
               <Calendar className="w-3.5 h-3.5 text-wl-text-secondary" />
               <p className="text-xs text-wl-text-secondary">Delivery</p>
             </div>
-            <p className="text-sm font-semibold text-wl-text-primary">{formatDate(deliveryDate)}</p>
+            <p className="text-sm font-semibold text-wl-text-primary">
+              {formatDate(deliveryDate)}
+            </p>
           </div>
         </div>
 
@@ -146,7 +179,9 @@ export function FreightQuoteCard({
             <MapPin className="w-4 h-4 text-wl-primary-500 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="text-xs text-wl-text-secondary">Origin</p>
-              <p className="text-sm text-wl-text-primary font-medium">{origin}</p>
+              <p className="text-sm text-wl-text-primary font-medium">
+                {origin}
+              </p>
             </div>
           </div>
 
@@ -154,7 +189,9 @@ export function FreightQuoteCard({
             <MapPin className="w-4 h-4 text-wl-primary-500 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="text-xs text-wl-text-secondary">Destination</p>
-              <p className="text-sm text-wl-text-primary font-medium">{destination}</p>
+              <p className="text-sm text-wl-text-primary font-medium">
+                {destination}
+              </p>
             </div>
           </div>
         </div>

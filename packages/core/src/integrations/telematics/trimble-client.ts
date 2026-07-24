@@ -356,7 +356,9 @@ export class TrimbleClient extends TelematicsAdapter {
    * Get vehicle diagnostics
    * GET /vehicles/{id}/diagnostics
    */
-  async getVehicleDiagnostics(vehicleId: string): Promise<NormalizedDiagnostic> {
+  async getVehicleDiagnostics(
+    vehicleId: string,
+  ): Promise<NormalizedDiagnostic> {
     const cacheKey = `trimble:diagnostics:${vehicleId}`;
     const cached = this.cache.get(cacheKey) as NormalizedDiagnostic | undefined;
     if (cached) return cached;
@@ -422,7 +424,9 @@ export class TrimbleClient extends TelematicsAdapter {
    */
   async getFuelLevel(vehicleId: string): Promise<NormalizedFuelReading> {
     const cacheKey = `trimble:fuel:${vehicleId}`;
-    const cached = this.cache.get(cacheKey) as NormalizedFuelReading | undefined;
+    const cached = this.cache.get(cacheKey) as
+      | NormalizedFuelReading
+      | undefined;
     if (cached) return cached;
 
     return this.retryWithBackoff(async () => {

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { getLeaflet, getMapById } from './wl-map';
+import { useEffect, useRef } from "react";
+import { getLeaflet, getMapById } from "./wl-map";
 
 export interface DeliveryPoint {
   id: string;
@@ -19,13 +19,17 @@ interface DeliveryMarkerLayerProps {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  pending: '#fbbf24',
-  'in-transit': '#60a5fa',
-  delivered: '#34d399',
-  failed: '#f87171',
+  pending: "#fbbf24",
+  "in-transit": "#60a5fa",
+  delivered: "#34d399",
+  failed: "#f87171",
 };
 
-export function DeliveryMarkerLayer({ mapId, points, selectedId }: DeliveryMarkerLayerProps) {
+export function DeliveryMarkerLayer({
+  mapId,
+  points,
+  selectedId,
+}: DeliveryMarkerLayerProps) {
   const layersRef = useRef<unknown[]>([]);
 
   useEffect(() => {
@@ -42,14 +46,14 @@ export function DeliveryMarkerLayer({ mapId, points, selectedId }: DeliveryMarke
       const boundsCoords: [number, number][] = [];
 
       points.forEach((point) => {
-        const color = STATUS_COLORS[point.status] ?? '#94a3b8';
+        const color = STATUS_COLORS[point.status] ?? "#94a3b8";
         const isSelected = point.id === selectedId;
         const size = isSelected ? 20 : 14;
 
         boundsCoords.push([point.latitude, point.longitude]);
 
         const icon = L.divIcon({
-          className: '',
+          className: "",
           html: `<div style="
               width:${size}px;height:${size}px;
               border-radius:50%;
@@ -67,7 +71,7 @@ export function DeliveryMarkerLayer({ mapId, points, selectedId }: DeliveryMarke
             <b>${point.label}</b><br/>
             <span style="color:#9ca3af">${point.address}</span><br/>
             <span style="color:${color};text-transform:uppercase;font-size:10px">${point.status}</span>
-          </div>`
+          </div>`,
         );
         marker.addTo(map);
         layersRef.current.push(marker);
@@ -94,7 +98,11 @@ export function DeliveryMarkerLayer({ mapId, points, selectedId }: DeliveryMarke
     return () => {
       const map = getMapById(mapId);
       if (map) {
-        layersRef.current.forEach((l: any) => { try { map.removeLayer(l); } catch {} });
+        layersRef.current.forEach((l: any) => {
+          try {
+            map.removeLayer(l);
+          } catch {}
+        });
         layersRef.current = [];
       }
     };

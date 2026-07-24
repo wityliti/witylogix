@@ -3,7 +3,7 @@
  * Integrates Slack Web API, Events API, and Socket Mode
  */
 
-import { CollaborationAdapter } from './collaboration-adapter';
+import { CollaborationAdapter } from "./collaboration-adapter";
 import {
   CollaborationAttachment,
   CollaborationChannel,
@@ -16,7 +16,7 @@ import {
   ChannelType,
   MessageType,
   PresenceStatus,
-} from './types';
+} from "./types";
 
 interface SlackOAuthToken {
   accessToken: string;
@@ -36,45 +36,47 @@ export class SlackClient extends CollaborationAdapter {
   private botToken?: string;
   private userToken?: string;
   private oauthTokens: Map<string, SlackOAuthToken> = new Map();
-  private slackApiBaseUrl = 'https://slack.com/api';
+  private slackApiBaseUrl = "https://slack.com/api";
   private socketModeConnected = false;
   private presencePollingInterval?: NodeJS.Timeout;
 
   // Rate limiting per method tier
   private rateLimitConfigs: SlackRateLimitConfig = {
     // Tier 1: 1 request per second
-    'conversations.list': { tier: 1, callsPerMinute: 60 },
-    'conversations.info': { tier: 1, callsPerMinute: 60 },
-    'conversations.members': { tier: 1, callsPerMinute: 60 },
-    'conversations.history': { tier: 1, callsPerMinute: 60 },
+    "conversations.list": { tier: 1, callsPerMinute: 60 },
+    "conversations.info": { tier: 1, callsPerMinute: 60 },
+    "conversations.members": { tier: 1, callsPerMinute: 60 },
+    "conversations.history": { tier: 1, callsPerMinute: 60 },
 
     // Tier 2: 20 requests per minute
-    'chat.postMessage': { tier: 2, callsPerMinute: 20 },
-    'chat.update': { tier: 2, callsPerMinute: 20 },
-    'reactions.add': { tier: 2, callsPerMinute: 20 },
-    'reactions.remove': { tier: 2, callsPerMinute: 20 },
+    "chat.postMessage": { tier: 2, callsPerMinute: 20 },
+    "chat.update": { tier: 2, callsPerMinute: 20 },
+    "reactions.add": { tier: 2, callsPerMinute: 20 },
+    "reactions.remove": { tier: 2, callsPerMinute: 20 },
 
     // Tier 3: 50 requests per minute
-    'users.info': { tier: 3, callsPerMinute: 50 },
-    'users.list': { tier: 3, callsPerMinute: 50 },
+    "users.info": { tier: 3, callsPerMinute: 50 },
+    "users.list": { tier: 3, callsPerMinute: 50 },
 
     // Tier 4: 100+ requests per minute (tier 3 methods with no explicit limit)
-    'files.upload': { tier: 4, callsPerMinute: 100 },
+    "files.upload": { tier: 4, callsPerMinute: 100 },
   };
 
-  private methodRateLimiters: Map<string, { tokens: number; refillTime: number }> =
-    new Map();
+  private methodRateLimiters: Map<
+    string,
+    { tokens: number; refillTime: number }
+  > = new Map();
 
   constructor(config: CollaborationConfig) {
-    super('slack', config);
+    super("slack", config);
     this.botToken = config.credentials?.botToken;
     this.userToken = config.credentials?.userToken;
 
     if (config.credentials?.token) {
-      this.oauthTokens.set('default', {
+      this.oauthTokens.set("default", {
         accessToken: config.credentials.token,
-        botUserId: '',
-        teamId: '',
+        botUserId: "",
+        teamId: "",
       });
     }
   }
@@ -87,11 +89,11 @@ export class SlackClient extends CollaborationAdapter {
       await this.executeWithCircuitBreaker(async () => {
         // Verify bot token
         if (this.botToken) {
-          const testResult = await this.callSlackApi('auth.test', {
+          const testResult = await this.callSlackApi("auth.test", {
             token: this.botToken,
           });
           if (!testResult.ok) {
-            throw new Error('Failed to authenticate with Slack bot token');
+            throw new Error("Failed to authenticate with Slack bot token");
           }
         }
 
@@ -129,11 +131,11 @@ export class SlackClient extends CollaborationAdapter {
    */
   private async initializeSocketMode(): Promise<void> {
     if (!this.botToken) {
-      throw new Error('Bot token required for Socket Mode');
+      throw new Error("Bot token required for Socket Mode");
     }
 
     try {
-      const response = await this.callSlackApi('apps.connections.open', {
+      const response = await this.callSlackApi("apps.connections.open", {
         token: this.botToken,
       });
 
@@ -153,10 +155,9 @@ export class SlackClient extends CollaborationAdapter {
   private startPresencePolling(): void {
     this.presencePollingInterval = setInterval(async () => {
       try {
-        const usersResult = await this.callSlackApiWithRateLimit(
-          'users.list',
-          { token: this.botToken }
-        );
+        const usersResult = await this.callSlackApiWithRateLimit("users.list", {
+          token: this.botToken,
+        });
 
         if (usersResult.ok && usersResult.members) {
           for (const member of usersResult.members) {
@@ -182,11 +183,11 @@ export class SlackClient extends CollaborationAdapter {
    */
   private async callSlackApi(
     method: string,
-    params: Record<string, unknown> = {}
+    params: Record<string, unknown> = {},
   ): Promise<any> {
     const url = `${this.slackApiBaseUrl}/${method}`;
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
 
     if (!params.token && this.botToken) {
@@ -194,7 +195,7 @@ export class SlackClient extends CollaborationAdapter {
     }
 
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers,
       body: JSON.stringify(params),
     });
@@ -208,7 +209,7 @@ export class SlackClient extends CollaborationAdapter {
    */
   private async callSlackApiWithRateLimit(
     method: string,
-    params: Record<string, unknown> = {}
+    params: Record<string, unknown> = {},
   ): Promise<any> {
     await this.applyMethodRateLimit(method);
     return this.callSlackApi(method, params);
@@ -257,15 +258,17 @@ export class SlackClient extends CollaborationAdapter {
 
     try {
       const result = await this.executeWithRetry(async () =>
-        this.callSlackApiWithRateLimit('conversations.info', {
+        this.callSlackApiWithRateLimit("conversations.info", {
           channel: channelId,
           include_num_members: true,
-        })
+        }),
       );
 
       if (!result.ok) return null;
 
-      const channel = this.mapSlackChannelToCollaborationChannel(result.channel);
+      const channel = this.mapSlackChannelToCollaborationChannel(
+        result.channel,
+      );
       this.cacheChannel(channel);
       return channel;
     } catch (error) {
@@ -285,11 +288,11 @@ export class SlackClient extends CollaborationAdapter {
   }): Promise<{ channels: CollaborationChannel[]; cursor?: string }> {
     try {
       const result = await this.executeWithRetry(async () =>
-        this.callSlackApiWithRateLimit('conversations.list', {
+        this.callSlackApiWithRateLimit("conversations.list", {
           exclude_archived: !options?.includeArchived,
           limit: options?.limit ?? 100,
           cursor: options?.cursor,
-        })
+        }),
       );
 
       if (!result.ok) {
@@ -325,28 +328,30 @@ export class SlackClient extends CollaborationAdapter {
       type?: ChannelType;
       isPrivate?: boolean;
       members?: string[];
-    }
+    },
   ): Promise<CollaborationChannel> {
     try {
       const result = await this.executeWithRetry(async () =>
-        this.callSlackApiWithRateLimit('conversations.create', {
-          name: name.toLowerCase().replace(/\s+/g, '-'),
+        this.callSlackApiWithRateLimit("conversations.create", {
+          name: name.toLowerCase().replace(/\s+/g, "-"),
           is_private: options?.isPrivate ?? false,
           description: options?.description,
-        })
+        }),
       );
 
       if (!result.ok) {
-        throw new Error(result.error || 'Failed to create channel');
+        throw new Error(result.error || "Failed to create channel");
       }
 
-      const channel = this.mapSlackChannelToCollaborationChannel(result.channel);
+      const channel = this.mapSlackChannelToCollaborationChannel(
+        result.channel,
+      );
 
       // Add members if provided
       if (options?.members && options.members.length > 0) {
-        await this.callSlackApiWithRateLimit('conversations.invite', {
+        await this.callSlackApiWithRateLimit("conversations.invite", {
           channel: channel.id,
-          users: options.members.join(','),
+          users: options.members.join(","),
         });
       }
 
@@ -362,7 +367,7 @@ export class SlackClient extends CollaborationAdapter {
    */
   async updateChannel(
     channelId: string,
-    updates: Partial<CollaborationChannel>
+    updates: Partial<CollaborationChannel>,
   ): Promise<CollaborationChannel> {
     try {
       const params: Record<string, unknown> = { channel: channelId };
@@ -375,7 +380,7 @@ export class SlackClient extends CollaborationAdapter {
         params.purpose = { value: updates.description };
       }
 
-      await this.callSlackApiWithRateLimit('conversations.setPurpose', params);
+      await this.callSlackApiWithRateLimit("conversations.setPurpose", params);
 
       this.invalidateChannelCache(channelId);
       return this.getChannel(channelId) as Promise<CollaborationChannel>;
@@ -390,9 +395,9 @@ export class SlackClient extends CollaborationAdapter {
   async archiveChannel(channelId: string): Promise<void> {
     try {
       await this.executeWithRetry(async () =>
-        this.callSlackApiWithRateLimit('conversations.archive', {
+        this.callSlackApiWithRateLimit("conversations.archive", {
           channel: channelId,
-        })
+        }),
       );
 
       this.invalidateChannelCache(channelId);
@@ -407,9 +412,9 @@ export class SlackClient extends CollaborationAdapter {
   async unarchiveChannel(channelId: string): Promise<void> {
     try {
       await this.executeWithRetry(async () =>
-        this.callSlackApiWithRateLimit('conversations.unarchive', {
+        this.callSlackApiWithRateLimit("conversations.unarchive", {
           channel: channelId,
-        })
+        }),
       );
 
       this.invalidateChannelCache(channelId);
@@ -430,7 +435,7 @@ export class SlackClient extends CollaborationAdapter {
       attachments?: CollaborationAttachment[];
       threadId?: string;
       metadata?: Record<string, unknown>;
-    }
+    },
   ): Promise<CollaborationMessage> {
     try {
       const params: Record<string, unknown> = {
@@ -462,20 +467,20 @@ export class SlackClient extends CollaborationAdapter {
       }
 
       const result = await this.executeWithRetry(async () =>
-        this.callSlackApiWithRateLimit('chat.postMessage', params)
+        this.callSlackApiWithRateLimit("chat.postMessage", params),
       );
 
       if (!result.ok) {
-        throw new Error(result.error || 'Failed to send message');
+        throw new Error(result.error || "Failed to send message");
       }
 
       return {
         id: result.ts,
         channelId,
-        userId: result.user || '',
+        userId: result.user || "",
         content,
-        type: options?.type ?? 'text',
-        platform: 'slack',
+        type: options?.type ?? "text",
+        platform: "slack",
         externalId: result.ts,
         isEdited: false,
         isDeleted: false,
@@ -493,18 +498,18 @@ export class SlackClient extends CollaborationAdapter {
   async getMessage(messageId: string): Promise<CollaborationMessage | null> {
     try {
       // Parse message ID (format: channelId/timestamp)
-      const [channelId, ts] = messageId.split('/');
+      const [channelId, ts] = messageId.split("/");
       if (!channelId || !ts) {
         return null;
       }
 
       const result = await this.executeWithRetry(async () =>
-        this.callSlackApiWithRateLimit('conversations.history', {
+        this.callSlackApiWithRateLimit("conversations.history", {
           channel: channelId,
           latest: ts,
           limit: 1,
           inclusive: true,
-        })
+        }),
       );
 
       if (!result.ok || !result.messages || result.messages.length === 0) {
@@ -513,7 +518,7 @@ export class SlackClient extends CollaborationAdapter {
 
       return this.mapSlackMessageToCollaborationMessage(
         result.messages[0],
-        channelId
+        channelId,
       );
     } catch (error) {
       console.error(`Failed to get message: ${error}`);
@@ -527,10 +532,10 @@ export class SlackClient extends CollaborationAdapter {
   async editMessage(
     messageId: string,
     content: string,
-    richContent?: Record<string, unknown>
+    richContent?: Record<string, unknown>,
   ): Promise<CollaborationMessage> {
     try {
-      const [channelId, ts] = messageId.split('/');
+      const [channelId, ts] = messageId.split("/");
 
       const params: Record<string, unknown> = {
         channel: channelId,
@@ -543,20 +548,20 @@ export class SlackClient extends CollaborationAdapter {
       }
 
       const result = await this.executeWithRetry(async () =>
-        this.callSlackApiWithRateLimit('chat.update', params)
+        this.callSlackApiWithRateLimit("chat.update", params),
       );
 
       if (!result.ok) {
-        throw new Error(result.error || 'Failed to edit message');
+        throw new Error(result.error || "Failed to edit message");
       }
 
       return {
         id: result.ts,
         channelId,
-        userId: result.user || '',
+        userId: result.user || "",
         content,
-        type: 'text',
-        platform: 'slack',
+        type: "text",
+        platform: "slack",
         isEdited: true,
         editedAt: new Date(),
         isDeleted: false,
@@ -573,13 +578,13 @@ export class SlackClient extends CollaborationAdapter {
    */
   async deleteMessage(messageId: string): Promise<void> {
     try {
-      const [channelId, ts] = messageId.split('/');
+      const [channelId, ts] = messageId.split("/");
 
       await this.executeWithRetry(async () =>
-        this.callSlackApiWithRateLimit('chat.delete', {
+        this.callSlackApiWithRateLimit("chat.delete", {
           channel: channelId,
           ts,
-        })
+        }),
       );
     } catch (error) {
       throw new Error(`Failed to delete message: ${error}`);
@@ -591,13 +596,13 @@ export class SlackClient extends CollaborationAdapter {
    */
   async getMessageThread(messageId: string): Promise<CollaborationMessage[]> {
     try {
-      const [channelId, ts] = messageId.split('/');
+      const [channelId, ts] = messageId.split("/");
 
       const result = await this.executeWithRetry(async () =>
-        this.callSlackApiWithRateLimit('conversations.replies', {
+        this.callSlackApiWithRateLimit("conversations.replies", {
           channel: channelId,
           ts,
-        })
+        }),
       );
 
       if (!result.ok || !result.messages) {
@@ -605,7 +610,7 @@ export class SlackClient extends CollaborationAdapter {
       }
 
       return result.messages.map((msg: any) =>
-        this.mapSlackMessageToCollaborationMessage(msg, channelId)
+        this.mapSlackMessageToCollaborationMessage(msg, channelId),
       );
     } catch (error) {
       console.error(`Failed to get message thread: ${error}`);
@@ -619,7 +624,7 @@ export class SlackClient extends CollaborationAdapter {
   async getUser(userId: string): Promise<CollaborationUser | null> {
     try {
       const result = await this.executeWithRetry(async () =>
-        this.callSlackApiWithRateLimit('users.info', { user: userId })
+        this.callSlackApiWithRateLimit("users.info", { user: userId }),
       );
 
       if (!result.ok) {
@@ -643,10 +648,10 @@ export class SlackClient extends CollaborationAdapter {
   }): Promise<{ users: CollaborationUser[]; cursor?: string }> {
     try {
       const result = await this.executeWithRetry(async () =>
-        this.callSlackApiWithRateLimit('users.list', {
+        this.callSlackApiWithRateLimit("users.list", {
           limit: options?.limit ?? 100,
           cursor: options?.cursor,
-        })
+        }),
       );
 
       if (!result.ok) {
@@ -673,7 +678,7 @@ export class SlackClient extends CollaborationAdapter {
   async getUsersByEmail(email: string): Promise<CollaborationUser[]> {
     try {
       const result = await this.executeWithRetry(async () =>
-        this.callSlackApiWithRateLimit('users.lookupByEmail', { email })
+        this.callSlackApiWithRateLimit("users.lookupByEmail", { email }),
       );
 
       if (!result.ok) {
@@ -696,7 +701,7 @@ export class SlackClient extends CollaborationAdapter {
 
     try {
       const result = await this.executeWithRetry(async () =>
-        this.callSlackApiWithRateLimit('users.getPresence', { user: userId })
+        this.callSlackApiWithRateLimit("users.getPresence", { user: userId }),
       );
 
       if (!result.ok) {
@@ -705,9 +710,9 @@ export class SlackClient extends CollaborationAdapter {
 
       const presence: CollaborationPresence = {
         userId,
-        status: (result.presence === 'active'
-          ? 'active'
-          : 'away') as PresenceStatus,
+        status: (result.presence === "active"
+          ? "active"
+          : "away") as PresenceStatus,
         lastActivity: result.last_activity
           ? new Date(result.last_activity * 1000)
           : undefined,
@@ -727,19 +732,19 @@ export class SlackClient extends CollaborationAdapter {
   async setUserPresence(
     userId: string,
     status: PresenceStatus,
-    statusMessage?: string
+    statusMessage?: string,
   ): Promise<void> {
     try {
-      const slackStatus = status === 'active' ? 'active' : 'away';
+      const slackStatus = status === "active" ? "active" : "away";
 
       await this.executeWithRetry(async () =>
-        this.callSlackApiWithRateLimit('users.setPresence', {
+        this.callSlackApiWithRateLimit("users.setPresence", {
           presence: slackStatus,
-        })
+        }),
       );
 
       if (statusMessage) {
-        await this.callSlackApiWithRateLimit('users.profile.set', {
+        await this.callSlackApiWithRateLimit("users.profile.set", {
           user: userId,
           profile: { status_text: statusMessage },
         });
@@ -763,25 +768,25 @@ export class SlackClient extends CollaborationAdapter {
    */
   async addReaction(
     messageId: string,
-    emoji: string
+    emoji: string,
   ): Promise<CollaborationReaction> {
     try {
-      const [channelId, ts] = messageId.split('/');
+      const [channelId, ts] = messageId.split("/");
 
       await this.executeWithRetry(async () =>
-        this.callSlackApiWithRateLimit('reactions.add', {
-          name: emoji.replace(/:/g, ''),
+        this.callSlackApiWithRateLimit("reactions.add", {
+          name: emoji.replace(/:/g, ""),
           channel: channelId,
           timestamp: ts,
-        })
+        }),
       );
 
       return {
         id: `${messageId}:${emoji}`,
         messageId,
-        userId: '',
+        userId: "",
         emoji,
-        type: 'emoji',
+        type: "emoji",
         createdAt: new Date(),
       };
     } catch (error) {
@@ -794,14 +799,14 @@ export class SlackClient extends CollaborationAdapter {
    */
   async removeReaction(messageId: string, emoji: string): Promise<void> {
     try {
-      const [channelId, ts] = messageId.split('/');
+      const [channelId, ts] = messageId.split("/");
 
       await this.executeWithRetry(async () =>
-        this.callSlackApiWithRateLimit('reactions.remove', {
-          name: emoji.replace(/:/g, ''),
+        this.callSlackApiWithRateLimit("reactions.remove", {
+          name: emoji.replace(/:/g, ""),
           channel: channelId,
           timestamp: ts,
-        })
+        }),
       );
     } catch (error) {
       throw new Error(`Failed to remove reaction: ${error}`);
@@ -813,14 +818,14 @@ export class SlackClient extends CollaborationAdapter {
    */
   async listReactions(messageId: string): Promise<CollaborationReaction[]> {
     try {
-      const [channelId, ts] = messageId.split('/');
+      const [channelId, ts] = messageId.split("/");
 
       const result = await this.executeWithRetry(async () =>
-        this.callSlackApiWithRateLimit('reactions.get', {
+        this.callSlackApiWithRateLimit("reactions.get", {
           channel: channelId,
           timestamp: ts,
           full: true,
-        })
+        }),
       );
 
       if (!result.ok || !result.message?.reactions) {
@@ -830,9 +835,9 @@ export class SlackClient extends CollaborationAdapter {
       return result.message.reactions.map((reaction: any) => ({
         id: `${messageId}:${reaction.name}`,
         messageId,
-        userId: '',
+        userId: "",
         emoji: reaction.name,
-        type: 'emoji' as const,
+        type: "emoji" as const,
         count: reaction.count,
         users: reaction.users,
         createdAt: new Date(),
@@ -848,19 +853,19 @@ export class SlackClient extends CollaborationAdapter {
    */
   async addChannelMember(
     channelId: string,
-    userId: string
+    userId: string,
   ): Promise<CollaborationUser> {
     try {
       await this.executeWithRetry(async () =>
-        this.callSlackApiWithRateLimit('conversations.invite', {
+        this.callSlackApiWithRateLimit("conversations.invite", {
           channel: channelId,
           users: userId,
-        })
+        }),
       );
 
       const user = await this.getUser(userId);
       if (!user) {
-        throw new Error('Failed to fetch user after adding to channel');
+        throw new Error("Failed to fetch user after adding to channel");
       }
 
       return user;
@@ -872,16 +877,13 @@ export class SlackClient extends CollaborationAdapter {
   /**
    * Remove channel member
    */
-  async removeChannelMember(
-    channelId: string,
-    userId: string
-  ): Promise<void> {
+  async removeChannelMember(channelId: string, userId: string): Promise<void> {
     try {
       await this.executeWithRetry(async () =>
-        this.callSlackApiWithRateLimit('conversations.kick', {
+        this.callSlackApiWithRateLimit("conversations.kick", {
           channel: channelId,
           user: userId,
-        })
+        }),
       );
     } catch (error) {
       throw new Error(`Failed to remove channel member: ${error}`);
@@ -893,15 +895,15 @@ export class SlackClient extends CollaborationAdapter {
    */
   async listChannelMembers(
     channelId: string,
-    options?: { limit?: number; cursor?: string }
+    options?: { limit?: number; cursor?: string },
   ): Promise<{ members: CollaborationUser[]; cursor?: string }> {
     try {
       const result = await this.executeWithRetry(async () =>
-        this.callSlackApiWithRateLimit('conversations.members', {
+        this.callSlackApiWithRateLimit("conversations.members", {
           channel: channelId,
           limit: options?.limit ?? 100,
           cursor: options?.cursor,
-        })
+        }),
       );
 
       if (!result.ok) {
@@ -929,30 +931,38 @@ export class SlackClient extends CollaborationAdapter {
    */
   async uploadFile(
     channelId: string,
-    file: { name: string; buffer: Buffer; mimeType: string }
+    file: { name: string; buffer: Buffer; mimeType: string },
   ): Promise<CollaborationAttachment> {
     try {
       const formData = new FormData();
-      formData.append('channels', channelId);
-      formData.append('file', new Blob([file.buffer], { type: file.mimeType }), file.name);
-      formData.append('token', this.botToken || '');
+      formData.append("channels", channelId);
+      formData.append(
+        "file",
+        new Blob([file.buffer], { type: file.mimeType }),
+        file.name,
+      );
+      formData.append("token", this.botToken || "");
 
       const response = await fetch(`${this.slackApiBaseUrl}/files.upload`, {
-        method: 'POST',
+        method: "POST",
         body: formData,
       });
 
-      const result = (await response.json()) as { ok: boolean; error?: string; file?: Record<string, unknown> };
+      const result = (await response.json()) as {
+        ok: boolean;
+        error?: string;
+        file?: Record<string, unknown>;
+      };
 
       if (!result.ok) {
-        throw new Error(result.error || 'Failed to upload file');
+        throw new Error(result.error || "Failed to upload file");
       }
 
       const slackFile = result.file as Record<string, unknown>;
       return {
         id: slackFile.id as string,
         name: slackFile.name as string,
-        type: 'file' as const,
+        type: "file" as const,
         size: slackFile.size as number,
         mimeType: file.mimeType,
         url: slackFile.permalink as string,
@@ -970,29 +980,25 @@ export class SlackClient extends CollaborationAdapter {
    */
   async shareFile(
     messageId: string,
-    fileId: string
+    fileId: string,
   ): Promise<CollaborationAttachment> {
     // In Slack, files are shared by including them in message attachments
     // This is handled by the sendMessage method
-    throw new Error('Not implemented - use sendMessage with attachments');
+    throw new Error("Not implemented - use sendMessage with attachments");
   }
 
   /**
    * Validate webhook signature
    */
-  validateWebhook(
-    signature: string,
-    timestamp: string,
-    body: string
-  ): boolean {
+  validateWebhook(signature: string, timestamp: string, body: string): boolean {
     if (!this.config.credentials?.secret) {
       return false;
     }
 
-    const crypto = require('crypto');
+    const crypto = require("crypto");
     const baseString = `v0:${timestamp}:${body}`;
-    const hmac = crypto.createHmac('sha256', this.config.credentials.secret);
-    const computedSignature = `v0=${hmac.update(baseString).digest('hex')}`;
+    const hmac = crypto.createHmac("sha256", this.config.credentials.secret);
+    const computedSignature = `v0=${hmac.update(baseString).digest("hex")}`;
 
     return signature === computedSignature;
   }
@@ -1002,13 +1008,13 @@ export class SlackClient extends CollaborationAdapter {
    */
 
   private mapSlackChannelType(channel: any): ChannelType {
-    if (channel.is_im) return 'direct';
-    if (channel.is_mpim) return 'group';
-    return channel.is_private ? 'private' : 'public';
+    if (channel.is_im) return "direct";
+    if (channel.is_mpim) return "group";
+    return channel.is_private ? "private" : "public";
   }
 
   private mapSlackChannelToCollaborationChannel(
-    channel: any
+    channel: any,
   ): CollaborationChannel {
     return {
       id: channel.id,
@@ -1016,7 +1022,7 @@ export class SlackClient extends CollaborationAdapter {
       displayName: channel.name,
       description: channel.topic?.value,
       type: this.mapSlackChannelType(channel),
-      platform: 'slack',
+      platform: "slack",
       externalId: channel.id,
       isArchived: channel.is_archived,
       isMuted: false,
@@ -1030,20 +1036,18 @@ export class SlackClient extends CollaborationAdapter {
 
   private mapSlackMessageToCollaborationMessage(
     message: any,
-    channelId: string
+    channelId: string,
   ): CollaborationMessage {
     return {
       id: `${channelId}/${message.ts}`,
       channelId,
-      userId: message.user || '',
-      content: message.text || '',
-      type: 'text',
-      platform: 'slack',
+      userId: message.user || "",
+      content: message.text || "",
+      type: "text",
+      platform: "slack",
       externalId: message.ts,
       isEdited: !!message.edited,
-      editedAt: message.edited
-        ? new Date(message.edited.ts * 1000)
-        : undefined,
+      editedAt: message.edited ? new Date(message.edited.ts * 1000) : undefined,
       isDeleted: false,
       createdAt: new Date(parseFloat(message.ts) * 1000),
       updatedAt: new Date(),
@@ -1060,7 +1064,7 @@ export class SlackClient extends CollaborationAdapter {
       email: user.profile?.email,
       avatarUrl: user.profile?.image_512,
       title: user.profile?.title,
-      platform: 'slack',
+      platform: "slack",
       externalId: user.id,
       isBot: user.is_bot || false,
       isActive: !user.deleted,
@@ -1068,15 +1072,15 @@ export class SlackClient extends CollaborationAdapter {
   }
 
   private mapSlackPresenceStatus(member: any): PresenceStatus {
-    if (member.presence === 'active') return 'active';
-    if (member.status === 'dnd') return 'do_not_disturb';
-    return 'away';
+    if (member.presence === "active") return "active";
+    if (member.status === "dnd") return "do_not_disturb";
+    return "away";
   }
 
   /**
    * Resolve Slack mentions
    */
   protected resolveMention(content: string, mention: string): string {
-    return content.replace(new RegExp(`@${mention}`, 'g'), `<@${mention}>`);
+    return content.replace(new RegExp(`@${mention}`, "g"), `<@${mention}>`);
   }
 }

@@ -5,14 +5,23 @@
  * Supports Business Partners, Sales Orders, Purchase Orders, Materials, Deliveries, Invoices
  */
 
-import { createHmac } from 'crypto';
+import { createHmac } from "crypto";
 
 // ─── TYPE DEFINITIONS ──────────────────────────────────────────────────────
 
 /**
  * SAP OData query builder filter operators
  */
-export type ODataOperator = 'eq' | 'ne' | 'lt' | 'le' | 'gt' | 'ge' | 'startswith' | 'endswith' | 'contains';
+export type ODataOperator =
+  | "eq"
+  | "ne"
+  | "lt"
+  | "le"
+  | "gt"
+  | "ge"
+  | "startswith"
+  | "endswith"
+  | "contains";
 
 /**
  * SAP OData client configuration
@@ -22,7 +31,7 @@ export interface SapODataConfig {
   clientSecret: string;
   tokenUrl: string;
   instanceUrl: string; // e.g., https://my.example.com/sap/opu/odata/sap/
-  environment?: 'sandbox' | 'production';
+  environment?: "sandbox" | "production";
   timeout?: number; // Default: 30000ms
   maxRetries?: number; // Default: 3
   rateLimit?: {
@@ -49,7 +58,7 @@ export interface ODataQuery {
   filter?: ODataFilterCondition[];
   select?: string[];
   expand?: string[];
-  orderby?: Array<{ field: string; direction: 'asc' | 'desc' }>;
+  orderby?: Array<{ field: string; direction: "asc" | "desc" }>;
   top?: number;
   skip?: number;
   count?: boolean;
@@ -85,7 +94,10 @@ export interface SapBusinessPartner {
   IsNaturalPerson?: boolean;
   CentralCorrespondenceLanguage?: string;
   Emails?: Array<{ EmailAddress: string; IsPreferredEmailAddress?: boolean }>;
-  PhoneNumbers?: Array<{ PhoneNumber: string; IsPreferredPhoneNumber?: boolean }>;
+  PhoneNumbers?: Array<{
+    PhoneNumber: string;
+    IsPreferredPhoneNumber?: boolean;
+  }>;
   WebsiteURL?: string;
   BPAddresses?: SapBusinessPartnerAddress[];
 }
@@ -333,7 +345,7 @@ export interface SapInvoiceItem {
  * SAP batch request operation
  */
 export interface SapBatchOperation {
-  method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
+  method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
   uri: string;
   id?: string;
   headers?: Record<string, string>;
@@ -358,7 +370,7 @@ export interface SapBatchResponse {
  * SAP error details from sap-message header
  */
 export interface SapErrorDetail {
-  severity?: 'error' | 'warning' | 'info' | 'success';
+  severity?: "error" | "warning" | "info" | "success";
   code?: string;
   message: string;
   details?: string;
@@ -381,14 +393,18 @@ export class ODataQueryBuilder {
   /**
    * Add filter condition
    */
-  filter(field: string, operator: ODataOperator, value: string | number | boolean): this {
+  filter(
+    field: string,
+    operator: ODataOperator,
+    value: string | number | boolean,
+  ): this {
     if (!this.query.filter) {
       this.query.filter = [];
     }
 
     // Input validation
     if (!field || field.length === 0) {
-      throw new Error('Filter field cannot be empty');
+      throw new Error("Filter field cannot be empty");
     }
 
     if (!/^[a-zA-Z_][a-zA-Z0-9_/]*$/.test(field)) {
@@ -409,7 +425,7 @@ export class ODataQueryBuilder {
    */
   select(fields: string[]): this {
     if (!Array.isArray(fields) || fields.length === 0) {
-      throw new Error('Select fields must be a non-empty array');
+      throw new Error("Select fields must be a non-empty array");
     }
 
     // Validate field names
@@ -428,7 +444,7 @@ export class ODataQueryBuilder {
    */
   expand(entities: string[]): this {
     if (!Array.isArray(entities) || entities.length === 0) {
-      throw new Error('Expand entities must be a non-empty array');
+      throw new Error("Expand entities must be a non-empty array");
     }
 
     for (const entity of entities) {
@@ -444,9 +460,9 @@ export class ODataQueryBuilder {
   /**
    * Add ORDER BY clause
    */
-  orderby(field: string, direction: 'asc' | 'desc' = 'asc'): this {
+  orderby(field: string, direction: "asc" | "desc" = "asc"): this {
     if (!field || field.length === 0) {
-      throw new Error('Orderby field cannot be empty');
+      throw new Error("Orderby field cannot be empty");
     }
 
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(field)) {
@@ -466,7 +482,7 @@ export class ODataQueryBuilder {
    */
   top(count: number): this {
     if (!Number.isInteger(count) || count < 1) {
-      throw new Error('Top count must be a positive integer');
+      throw new Error("Top count must be a positive integer");
     }
 
     this.query.top = count;
@@ -478,7 +494,7 @@ export class ODataQueryBuilder {
    */
   skip(count: number): this {
     if (!Number.isInteger(count) || count < 0) {
-      throw new Error('Skip count must be a non-negative integer');
+      throw new Error("Skip count must be a non-negative integer");
     }
 
     this.query.skip = count;
@@ -506,15 +522,17 @@ export class ODataQueryBuilder {
     }
 
     if (this.query.select && this.query.select.length > 0) {
-      params.push(`$select=${this.query.select.join(',')}`);
+      params.push(`$select=${this.query.select.join(",")}`);
     }
 
     if (this.query.expand && this.query.expand.length > 0) {
-      params.push(`$expand=${this.query.expand.join(',')}`);
+      params.push(`$expand=${this.query.expand.join(",")}`);
     }
 
     if (this.query.orderby && this.query.orderby.length > 0) {
-      const orderStr = this.query.orderby.map((o) => `${o.field} ${o.direction}`).join(',');
+      const orderStr = this.query.orderby
+        .map((o) => `${o.field} ${o.direction}`)
+        .join(",");
       params.push(`$orderby=${orderStr}`);
     }
 
@@ -527,10 +545,10 @@ export class ODataQueryBuilder {
     }
 
     if (this.query.count) {
-      params.push('$count=true');
+      params.push("$count=true");
     }
 
-    return params.join('&');
+    return params.join("&");
   }
 
   /**
@@ -542,22 +560,24 @@ export class ODataQueryBuilder {
         const value = this.escapeFilterValue(cond.value);
 
         switch (cond.operator) {
-          case 'startswith':
-          case 'endswith':
-          case 'contains':
+          case "startswith":
+          case "endswith":
+          case "contains":
             return `${cond.operator}(${cond.field},'${value}')`;
           default:
             return `${cond.field} ${cond.operator} ${value}`;
         }
       })
-      .join(' and ');
+      .join(" and ");
   }
 
   /**
    * Escape special characters in filter values
    */
-  private escapeFilterValue(value: string | number | boolean): string | number | boolean {
-    if (typeof value === 'string') {
+  private escapeFilterValue(
+    value: string | number | boolean,
+  ): string | number | boolean {
+    if (typeof value === "string") {
       // Escape single quotes by doubling them
       return value.replace(/'/g, "''");
     }
@@ -586,16 +606,16 @@ export class SapODataClient {
     this.config = {
       timeout: this.defaultTimeout,
       maxRetries: this.defaultMaxRetries,
-      environment: 'production',
+      environment: "production",
       ...config,
     };
 
     if (!config.clientId || !config.clientSecret) {
-      throw new Error('SAP OData client requires clientId and clientSecret');
+      throw new Error("SAP OData client requires clientId and clientSecret");
     }
 
     if (!config.tokenUrl || !config.instanceUrl) {
-      throw new Error('SAP OData client requires tokenUrl and instanceUrl');
+      throw new Error("SAP OData client requires tokenUrl and instanceUrl");
     }
   }
 
@@ -605,12 +625,12 @@ export class SapODataClient {
   async authenticate(): Promise<string> {
     try {
       const response = await fetch(this.config.tokenUrl, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          "Content-Type": "application/x-www-form-urlencoded",
         },
         body: new URLSearchParams({
-          grant_type: 'client_credentials',
+          grant_type: "client_credentials",
           client_id: this.config.clientId,
           client_secret: this.config.clientSecret,
         }).toString(),
@@ -620,7 +640,10 @@ export class SapODataClient {
         throw new Error(`Authentication failed: ${response.statusText}`);
       }
 
-      const data = await response.json() as { access_token: string; expires_in?: number };
+      const data = (await response.json()) as {
+        access_token: string;
+        expires_in?: number;
+      };
       this.accessToken = data.access_token;
 
       if (data.expires_in) {
@@ -629,7 +652,9 @@ export class SapODataClient {
 
       return this.accessToken;
     } catch (error) {
-      throw new Error(`Failed to authenticate with SAP: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to authenticate with SAP: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -649,20 +674,23 @@ export class SapODataClient {
     }
 
     try {
-      const token = await this.accessToken || (await this.authenticate());
+      const token = (await this.accessToken) || (await this.authenticate());
 
-      const response = await fetch(`${this.config.instanceUrl}A_BusinessPartner?$top=1`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'x-csrf-token': 'Fetch',
+      const response = await fetch(
+        `${this.config.instanceUrl}A_BusinessPartner?$top=1`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "x-csrf-token": "Fetch",
+          },
         },
-      });
+      );
 
-      const csrfToken = response.headers.get('x-csrf-token');
+      const csrfToken = response.headers.get("x-csrf-token");
 
       if (!csrfToken) {
-        throw new Error('Failed to fetch CSRF token from SAP');
+        throw new Error("Failed to fetch CSRF token from SAP");
       }
 
       this.csrfToken = {
@@ -673,20 +701,24 @@ export class SapODataClient {
 
       return csrfToken;
     } catch (error) {
-      throw new Error(`Failed to fetch CSRF token: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to fetch CSRF token: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   /**
    * Create a new business partner (customer)
    */
-  async createBusinessPartner(partner: Omit<SapBusinessPartner, 'id'>): Promise<SapBusinessPartner> {
+  async createBusinessPartner(
+    partner: Omit<SapBusinessPartner, "id">,
+  ): Promise<SapBusinessPartner> {
     const csrfToken = await this.fetchCsrfToken();
     const token = this.accessToken || (await this.authenticate());
 
-    const response = await this.makeRequest('POST', 'A_BusinessPartner', {
+    const response = await this.makeRequest("POST", "A_BusinessPartner", {
       headers: {
-        'x-csrf-token': csrfToken,
+        "x-csrf-token": csrfToken,
       },
       body: partner,
     });
@@ -698,9 +730,13 @@ export class SapODataClient {
    * Get business partner by number
    */
   async getBusinessPartner(bpNumber: string): Promise<SapBusinessPartner> {
-    const query = new ODataQueryBuilder().expand(['BPAddresses']).build();
+    const query = new ODataQueryBuilder().expand(["BPAddresses"]).build();
 
-    const response = await this.makeRequest('GET', `A_BusinessPartner('${bpNumber}')?${query}`, {});
+    const response = await this.makeRequest(
+      "GET",
+      `A_BusinessPartner('${bpNumber}')?${query}`,
+      {},
+    );
 
     return response as SapBusinessPartner;
   }
@@ -710,12 +746,16 @@ export class SapODataClient {
    */
   async queryBusinessPartners(
     queryBuilder: ODataQueryBuilder,
-  ): Promise<{ value: SapBusinessPartner[]; '@odata.count'?: number }> {
+  ): Promise<{ value: SapBusinessPartner[]; "@odata.count"?: number }> {
     const query = queryBuilder.build();
 
-    const response = await this.makeRequest('GET', `A_BusinessPartner?${query}`, {});
+    const response = await this.makeRequest(
+      "GET",
+      `A_BusinessPartner?${query}`,
+      {},
+    );
 
-    return response as { value: SapBusinessPartner[]; '@odata.count'?: number };
+    return response as { value: SapBusinessPartner[]; "@odata.count"?: number };
   }
 
   /**
@@ -727,12 +767,16 @@ export class SapODataClient {
   ): Promise<SapBusinessPartner> {
     const csrfToken = await this.fetchCsrfToken();
 
-    const response = await this.makeRequest('PATCH', `A_BusinessPartner('${bpNumber}')`, {
-      headers: {
-        'x-csrf-token': csrfToken,
+    const response = await this.makeRequest(
+      "PATCH",
+      `A_BusinessPartner('${bpNumber}')`,
+      {
+        headers: {
+          "x-csrf-token": csrfToken,
+        },
+        body: updates,
       },
-      body: updates,
-    });
+    );
 
     return response as SapBusinessPartner;
   }
@@ -743,9 +787,9 @@ export class SapODataClient {
   async deleteBusinessPartner(bpNumber: string): Promise<void> {
     const csrfToken = await this.fetchCsrfToken();
 
-    await this.makeRequest('DELETE', `A_BusinessPartner('${bpNumber}')`, {
+    await this.makeRequest("DELETE", `A_BusinessPartner('${bpNumber}')`, {
       headers: {
-        'x-csrf-token': csrfToken,
+        "x-csrf-token": csrfToken,
       },
     });
   }
@@ -755,16 +799,20 @@ export class SapODataClient {
    */
   async createBusinessPartnerAddress(
     bpNumber: string,
-    address: Omit<SapBusinessPartnerAddress, 'BusinessPartner'>,
+    address: Omit<SapBusinessPartnerAddress, "BusinessPartner">,
   ): Promise<SapBusinessPartnerAddress> {
     const csrfToken = await this.fetchCsrfToken();
 
-    const response = await this.makeRequest('POST', `A_BusinessPartner('${bpNumber}')/BPAddresses`, {
-      headers: {
-        'x-csrf-token': csrfToken,
+    const response = await this.makeRequest(
+      "POST",
+      `A_BusinessPartner('${bpNumber}')/BPAddresses`,
+      {
+        headers: {
+          "x-csrf-token": csrfToken,
+        },
+        body: { BusinessPartner: bpNumber, ...address },
       },
-      body: { BusinessPartner: bpNumber, ...address },
-    });
+    );
 
     return response as SapBusinessPartnerAddress;
   }
@@ -772,12 +820,14 @@ export class SapODataClient {
   /**
    * Create sales order
    */
-  async createSalesOrder(order: Omit<SapSalesOrder, 'id'>): Promise<SapSalesOrder> {
+  async createSalesOrder(
+    order: Omit<SapSalesOrder, "id">,
+  ): Promise<SapSalesOrder> {
     const csrfToken = await this.fetchCsrfToken();
 
-    const response = await this.makeRequest('POST', 'A_SalesOrder', {
+    const response = await this.makeRequest("POST", "A_SalesOrder", {
       headers: {
-        'x-csrf-token': csrfToken,
+        "x-csrf-token": csrfToken,
       },
       body: order,
     });
@@ -789,9 +839,13 @@ export class SapODataClient {
    * Get sales order
    */
   async getSalesOrder(salesOrder: string): Promise<SapSalesOrder> {
-    const query = new ODataQueryBuilder().expand(['SOItems']).build();
+    const query = new ODataQueryBuilder().expand(["SOItems"]).build();
 
-    const response = await this.makeRequest('GET', `A_SalesOrder('${salesOrder}')?${query}`, {});
+    const response = await this.makeRequest(
+      "GET",
+      `A_SalesOrder('${salesOrder}')?${query}`,
+      {},
+    );
 
     return response as SapSalesOrder;
   }
@@ -801,23 +855,25 @@ export class SapODataClient {
    */
   async querySalesOrders(
     queryBuilder: ODataQueryBuilder,
-  ): Promise<{ value: SapSalesOrder[]; '@odata.count'?: number }> {
+  ): Promise<{ value: SapSalesOrder[]; "@odata.count"?: number }> {
     const query = queryBuilder.build();
 
-    const response = await this.makeRequest('GET', `A_SalesOrder?${query}`, {});
+    const response = await this.makeRequest("GET", `A_SalesOrder?${query}`, {});
 
-    return response as { value: SapSalesOrder[]; '@odata.count'?: number };
+    return response as { value: SapSalesOrder[]; "@odata.count"?: number };
   }
 
   /**
    * Create purchase order
    */
-  async createPurchaseOrder(order: Omit<SapPurchaseOrder, 'id'>): Promise<SapPurchaseOrder> {
+  async createPurchaseOrder(
+    order: Omit<SapPurchaseOrder, "id">,
+  ): Promise<SapPurchaseOrder> {
     const csrfToken = await this.fetchCsrfToken();
 
-    const response = await this.makeRequest('POST', 'A_PurchaseOrder', {
+    const response = await this.makeRequest("POST", "A_PurchaseOrder", {
       headers: {
-        'x-csrf-token': csrfToken,
+        "x-csrf-token": csrfToken,
       },
       body: order,
     });
@@ -829,9 +885,15 @@ export class SapODataClient {
    * Get purchase order
    */
   async getPurchaseOrder(purchaseOrder: string): Promise<SapPurchaseOrder> {
-    const query = new ODataQueryBuilder().expand(['to_PurchaseOrderItem']).build();
+    const query = new ODataQueryBuilder()
+      .expand(["to_PurchaseOrderItem"])
+      .build();
 
-    const response = await this.makeRequest('GET', `A_PurchaseOrder('${purchaseOrder}')?${query}`, {});
+    const response = await this.makeRequest(
+      "GET",
+      `A_PurchaseOrder('${purchaseOrder}')?${query}`,
+      {},
+    );
 
     return response as SapPurchaseOrder;
   }
@@ -841,21 +903,29 @@ export class SapODataClient {
    */
   async queryPurchaseOrders(
     queryBuilder: ODataQueryBuilder,
-  ): Promise<{ value: SapPurchaseOrder[]; '@odata.count'?: number }> {
+  ): Promise<{ value: SapPurchaseOrder[]; "@odata.count"?: number }> {
     const query = queryBuilder.build();
 
-    const response = await this.makeRequest('GET', `A_PurchaseOrder?${query}`, {});
+    const response = await this.makeRequest(
+      "GET",
+      `A_PurchaseOrder?${query}`,
+      {},
+    );
 
-    return response as { value: SapPurchaseOrder[]; '@odata.count'?: number };
+    return response as { value: SapPurchaseOrder[]; "@odata.count"?: number };
   }
 
   /**
    * Get product/material
    */
   async getProduct(materialNumber: string): Promise<SapProduct> {
-    const query = new ODataQueryBuilder().expand(['to_MaterialPlant']).build();
+    const query = new ODataQueryBuilder().expand(["to_MaterialPlant"]).build();
 
-    const response = await this.makeRequest('GET', `A_Product('${materialNumber}')?${query}`, {});
+    const response = await this.makeRequest(
+      "GET",
+      `A_Product('${materialNumber}')?${query}`,
+      {},
+    );
 
     return response as SapProduct;
   }
@@ -865,23 +935,25 @@ export class SapODataClient {
    */
   async queryProducts(
     queryBuilder: ODataQueryBuilder,
-  ): Promise<{ value: SapProduct[]; '@odata.count'?: number }> {
+  ): Promise<{ value: SapProduct[]; "@odata.count"?: number }> {
     const query = queryBuilder.build();
 
-    const response = await this.makeRequest('GET', `A_Product?${query}`, {});
+    const response = await this.makeRequest("GET", `A_Product?${query}`, {});
 
-    return response as { value: SapProduct[]; '@odata.count'?: number };
+    return response as { value: SapProduct[]; "@odata.count"?: number };
   }
 
   /**
    * Create outbound delivery
    */
-  async createDelivery(delivery: Omit<SapDelivery, 'id'>): Promise<SapDelivery> {
+  async createDelivery(
+    delivery: Omit<SapDelivery, "id">,
+  ): Promise<SapDelivery> {
     const csrfToken = await this.fetchCsrfToken();
 
-    const response = await this.makeRequest('POST', 'A_OutbDeliveryHeader', {
+    const response = await this.makeRequest("POST", "A_OutbDeliveryHeader", {
       headers: {
-        'x-csrf-token': csrfToken,
+        "x-csrf-token": csrfToken,
       },
       body: delivery,
     });
@@ -893,9 +965,13 @@ export class SapODataClient {
    * Get delivery
    */
   async getDelivery(deliveryNumber: string): Promise<SapDelivery> {
-    const query = new ODataQueryBuilder().expand(['to_DeliveryItem']).build();
+    const query = new ODataQueryBuilder().expand(["to_DeliveryItem"]).build();
 
-    const response = await this.makeRequest('GET', `A_OutbDeliveryHeader('${deliveryNumber}')?${query}`, {});
+    const response = await this.makeRequest(
+      "GET",
+      `A_OutbDeliveryHeader('${deliveryNumber}')?${query}`,
+      {},
+    );
 
     return response as SapDelivery;
   }
@@ -903,12 +979,12 @@ export class SapODataClient {
   /**
    * Create billing document (invoice)
    */
-  async createInvoice(invoice: Omit<SapInvoice, 'id'>): Promise<SapInvoice> {
+  async createInvoice(invoice: Omit<SapInvoice, "id">): Promise<SapInvoice> {
     const csrfToken = await this.fetchCsrfToken();
 
-    const response = await this.makeRequest('POST', 'A_BillingDocument', {
+    const response = await this.makeRequest("POST", "A_BillingDocument", {
       headers: {
-        'x-csrf-token': csrfToken,
+        "x-csrf-token": csrfToken,
       },
       body: invoice,
     });
@@ -920,9 +996,15 @@ export class SapODataClient {
    * Get billing document
    */
   async getInvoice(billingDocument: string): Promise<SapInvoice> {
-    const query = new ODataQueryBuilder().expand(['to_BillingDocumentItem']).build();
+    const query = new ODataQueryBuilder()
+      .expand(["to_BillingDocumentItem"])
+      .build();
 
-    const response = await this.makeRequest('GET', `A_BillingDocument('${billingDocument}')?${query}`, {});
+    const response = await this.makeRequest(
+      "GET",
+      `A_BillingDocument('${billingDocument}')?${query}`,
+      {},
+    );
 
     return response as SapInvoice;
   }
@@ -931,15 +1013,17 @@ export class SapODataClient {
    * Execute batch request with multiple operations
    * Supports $batch multipart/mixed format
    */
-  async executeBatch(operations: SapBatchOperation[]): Promise<SapBatchResponse> {
+  async executeBatch(
+    operations: SapBatchOperation[],
+  ): Promise<SapBatchResponse> {
     const csrfToken = await this.fetchCsrfToken();
 
     const batchBody = this.buildBatchRequest(operations);
 
-    const response = await this.makeRequest('POST', '$batch', {
+    const response = await this.makeRequest("POST", "$batch", {
       headers: {
-        'x-csrf-token': csrfToken,
-        'Content-Type': 'multipart/mixed;boundary=batch_boundary',
+        "x-csrf-token": csrfToken,
+        "Content-Type": "multipart/mixed;boundary=batch_boundary",
       },
       body: batchBody,
       raw: true,
@@ -952,26 +1036,26 @@ export class SapODataClient {
    * Build multipart/mixed batch request body
    */
   private buildBatchRequest(operations: SapBatchOperation[]): string {
-    let body = '';
+    let body = "";
 
     for (let i = 0; i < operations.length; i++) {
       const op = operations[i] as SapBatchOperation;
 
-      body += '--batch_boundary\r\n';
+      body += "--batch_boundary\r\n";
 
-      if (op.method === 'GET' || op.method === 'DELETE') {
+      if (op.method === "GET" || op.method === "DELETE") {
         body += `Content-Type: application/http\r\nContent-Transfer-Encoding: binary\r\n\r\n`;
         body += `${op.method} ${op.uri} HTTP/1.1\r\n`;
-        body += 'Accept: application/json\r\n\r\n';
+        body += "Accept: application/json\r\n\r\n";
       } else {
         body += `Content-Type: application/http\r\nContent-Transfer-Encoding: binary\r\n\r\n`;
         body += `${op.method} ${op.uri} HTTP/1.1\r\n`;
-        body += 'Content-Type: application/json\r\n';
+        body += "Content-Type: application/json\r\n";
         body += `\r\n${JSON.stringify(op.body)}\r\n`;
       }
     }
 
-    body += '--batch_boundary--';
+    body += "--batch_boundary--";
 
     return body;
   }
@@ -980,17 +1064,17 @@ export class SapODataClient {
    * Parse batch response
    */
   private parseBatchResponse(response: string): SapBatchResponse {
-    const lines = response.split('\r\n');
-    const responses: SapBatchResponse['responses'] = [];
+    const lines = response.split("\r\n");
+    const responses: SapBatchResponse["responses"] = [];
 
     let i = 0;
     while (i < lines.length) {
       const line = lines[i] as string;
 
       // Look for HTTP status line
-      if (line.startsWith('HTTP/')) {
-        const [, statusStr] = line.split(' ');
-        const status = parseInt(statusStr || '200', 10);
+      if (line.startsWith("HTTP/")) {
+        const [, statusStr] = line.split(" ");
+        const status = parseInt(statusStr || "200", 10);
 
         responses.push({ status });
       }
@@ -1008,13 +1092,18 @@ export class SapODataClient {
     try {
       const token = this.accessToken || (await this.authenticate());
 
-      const response = await fetch(`${this.config.instanceUrl}A_BusinessPartner?$top=1`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${this.config.instanceUrl}A_BusinessPartner?$top=1`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          signal: AbortSignal.timeout(
+            this.config.timeout || this.defaultTimeout,
+          ),
         },
-        signal: AbortSignal.timeout(this.config.timeout || this.defaultTimeout),
-      });
+      );
 
       return response.ok;
     } catch {
@@ -1038,7 +1127,11 @@ export class SapODataClient {
 
     let lastError: Error | undefined;
 
-    for (let attempt = 0; attempt < (this.config.maxRetries || this.defaultMaxRetries); attempt++) {
+    for (
+      let attempt = 0;
+      attempt < (this.config.maxRetries || this.defaultMaxRetries);
+      attempt++
+    ) {
       try {
         const token = this.accessToken || (await this.authenticate());
 
@@ -1048,20 +1141,27 @@ export class SapODataClient {
         };
 
         if (options.body && !options.raw) {
-          headers['Content-Type'] = 'application/json';
+          headers["Content-Type"] = "application/json";
         }
 
         const fetchOptions: RequestInit = {
           method,
           headers,
-          signal: AbortSignal.timeout(this.config.timeout || this.defaultTimeout),
+          signal: AbortSignal.timeout(
+            this.config.timeout || this.defaultTimeout,
+          ),
         };
 
         if (options.body) {
-          fetchOptions.body = options.raw ? (options.body as string) : JSON.stringify(options.body);
+          fetchOptions.body = options.raw
+            ? (options.body as string)
+            : JSON.stringify(options.body);
         }
 
-        const response = await fetch(`${this.config.instanceUrl}${endpoint}`, fetchOptions);
+        const response = await fetch(
+          `${this.config.instanceUrl}${endpoint}`,
+          fetchOptions,
+        );
 
         if (!response.ok) {
           const errorDetail = this.parseSapError(response);
@@ -1070,7 +1170,7 @@ export class SapODataClient {
           );
         }
 
-        if (method === 'DELETE' || response.status === 204) {
+        if (method === "DELETE" || response.status === 204) {
           return undefined;
         }
 
@@ -1085,14 +1185,14 @@ export class SapODataClient {
       }
     }
 
-    throw lastError || new Error('Unknown error in SAP API request');
+    throw lastError || new Error("Unknown error in SAP API request");
   }
 
   /**
    * Parse SAP-specific error from sap-message header
    */
   private parseSapError(response: Response): SapErrorDetail {
-    const sapMessage = response.headers.get('sap-message');
+    const sapMessage = response.headers.get("sap-message");
 
     if (!sapMessage) {
       return { message: response.statusText };
@@ -1102,11 +1202,16 @@ export class SapODataClient {
       // SAP message format: severity=error&code=SY/500&message=Server%20Error
       const params = new URLSearchParams(sapMessage);
       return {
-        severity: (params.get('severity') as 'error' | 'warning' | 'info' | 'success') || 'error',
-        code: params.get('code') || undefined,
-        message: params.get('message') || response.statusText,
-        details: params.get('details') || undefined,
-        longTextUrl: params.get('longtext_url') || undefined,
+        severity:
+          (params.get("severity") as
+            | "error"
+            | "warning"
+            | "info"
+            | "success") || "error",
+        code: params.get("code") || undefined,
+        message: params.get("message") || response.statusText,
+        details: params.get("details") || undefined,
+        longTextUrl: params.get("longtext_url") || undefined,
       };
     } catch {
       return { message: response.statusText };
@@ -1121,7 +1226,9 @@ export class SapODataClient {
     const now = Date.now();
 
     // Remove old timestamps outside 1 second window
-    this.requestTimestamps = this.requestTimestamps.filter((ts) => now - ts < 1000);
+    this.requestTimestamps = this.requestTimestamps.filter(
+      (ts) => now - ts < 1000,
+    );
 
     if (this.requestTimestamps.length >= rateLimit) {
       const oldestTimestamp = this.requestTimestamps[0] as number;

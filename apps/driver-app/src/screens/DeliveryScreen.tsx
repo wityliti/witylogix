@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,22 +10,22 @@ import {
   Alert,
   TextInput,
   Image,
-} from 'react-native';
-import { useRoute } from '@react-navigation/native';
-import * as ImagePicker from 'expo-image-picker';
-import { useCameraPermissions } from 'expo-camera';
-import { api } from '../services/api';
+} from "react-native";
+import { useRoute } from "@react-navigation/native";
+import * as ImagePicker from "expo-image-picker";
+import { useCameraPermissions } from "expo-camera";
+import { api } from "../services/api";
 import {
   captureStatusTransition,
   capturePodSignature,
   StatusTransitionType,
-} from '../services/offline-event-service';
-import { syncManager } from '../services/sync-manager';
-import { connectivityMonitor } from '../services/connectivity-monitor';
-import OfflineIndicator from '../components/OfflineIndicator';
+} from "../services/offline-event-service";
+import { syncManager } from "../services/sync-manager";
+import { connectivityMonitor } from "../services/connectivity-monitor";
+import OfflineIndicator from "../components/OfflineIndicator";
 
 interface CustomerPreferences {
-  deliveryMethod?: 'door' | 'signature' | 'neighbor';
+  deliveryMethod?: "door" | "signature" | "neighbor";
   safePlace?: string;
   instructions?: string;
   rescheduleDate?: string;
@@ -49,16 +49,16 @@ interface Delivery {
 }
 
 const STATUS_MAP: Record<string, StatusTransitionType> = {
-  arrived: 'in_transit',
-  delivered: 'delivered',
-  failed: 'failed_delivery',
+  arrived: "in_transit",
+  delivered: "delivered",
+  failed: "failed_delivery",
 };
 
 const DeliveryScreen: React.FC = () => {
   const route = useRoute<any>();
   const [delivery, setDelivery] = useState<Delivery | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState("");
   const [proofImage, setProofImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [, requestCameraPermission] = useCameraPermissions();
@@ -77,8 +77,8 @@ const DeliveryScreen: React.FC = () => {
       const data = await api.get(`/api/v4/deliveries/${deliveryId}`);
       setDelivery(data);
     } catch (error) {
-      console.error('Failed to fetch delivery:', error);
-      Alert.alert('Error', 'Failed to load delivery details');
+      console.error("Failed to fetch delivery:", error);
+      Alert.alert("Error", "Failed to load delivery details");
     } finally {
       setIsLoading(false);
     }
@@ -88,7 +88,7 @@ const DeliveryScreen: React.FC = () => {
     try {
       const result = await requestCameraPermission();
       if (!result.granted) {
-        Alert.alert('Permission Denied', 'Camera permission is required');
+        Alert.alert("Permission Denied", "Camera permission is required");
         return;
       }
 
@@ -102,7 +102,7 @@ const DeliveryScreen: React.FC = () => {
         setProofImage(pickerResult.assets[0].uri);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to take photo');
+      Alert.alert("Error", "Failed to take photo");
     }
   };
 
@@ -111,27 +111,38 @@ const DeliveryScreen: React.FC = () => {
     try {
       setIsSubmitting(true);
 
-      const offlineStatus = STATUS_MAP[newStatus] ?? (newStatus as StatusTransitionType);
+      const offlineStatus =
+        STATUS_MAP[newStatus] ?? (newStatus as StatusTransitionType);
 
       // Always write to offline queue first (works regardless of connectivity)
-      await captureStatusTransition(delivery.id, offlineStatus, { notes: notes || undefined });
+      await captureStatusTransition(delivery.id, offlineStatus, {
+        notes: notes || undefined,
+      });
 
       // If a POD image is captured, record it as a pod_signature event
-      if (proofImage && (newStatus === 'delivered' || newStatus === 'arrived')) {
-        await capturePodSignature(delivery.id, proofImage, { notes: notes || undefined });
+      if (
+        proofImage &&
+        (newStatus === "delivered" || newStatus === "arrived")
+      ) {
+        await capturePodSignature(delivery.id, proofImage, {
+          notes: notes || undefined,
+        });
       }
 
       // Optimistically update UI
-      setDelivery((prev) => prev ? { ...prev, status: newStatus } : prev);
+      setDelivery((prev) => (prev ? { ...prev, status: newStatus } : prev));
 
       // Attempt immediate sync if online
       if (connectivityMonitor.isCurrentlyOnline()) {
         syncManager.flush().catch(() => {});
       }
 
-      Alert.alert('Saved', `Delivery status saved${connectivityMonitor.isCurrentlyOnline() ? '' : ' offline — will sync when connected'}`);
+      Alert.alert(
+        "Saved",
+        `Delivery status saved${connectivityMonitor.isCurrentlyOnline() ? "" : " offline — will sync when connected"}`,
+      );
     } catch (error) {
-      Alert.alert('Error', 'Failed to save delivery status');
+      Alert.alert("Error", "Failed to save delivery status");
     } finally {
       setIsSubmitting(false);
     }
@@ -190,30 +201,37 @@ const DeliveryScreen: React.FC = () => {
               <View style={styles.prefRow}>
                 <Text style={styles.prefLabel}>Method</Text>
                 <Text style={styles.prefValue}>
-                  {delivery.preferences.deliveryMethod === 'door' && 'Leave at Door'}
-                  {delivery.preferences.deliveryMethod === 'signature' && 'Require Signature'}
-                  {delivery.preferences.deliveryMethod === 'neighbor' && 'Leave with Neighbour'}
+                  {delivery.preferences.deliveryMethod === "door" &&
+                    "Leave at Door"}
+                  {delivery.preferences.deliveryMethod === "signature" &&
+                    "Require Signature"}
+                  {delivery.preferences.deliveryMethod === "neighbor" &&
+                    "Leave with Neighbour"}
                 </Text>
               </View>
             )}
             {!!delivery.preferences.safePlace && (
               <View style={styles.prefRow}>
                 <Text style={styles.prefLabel}>Safe Place</Text>
-                <Text style={styles.prefValue}>{delivery.preferences.safePlace}</Text>
+                <Text style={styles.prefValue}>
+                  {delivery.preferences.safePlace}
+                </Text>
               </View>
             )}
             {!!delivery.preferences.instructions && (
               <View style={styles.prefRow}>
                 <Text style={styles.prefLabel}>Instructions</Text>
-                <Text style={styles.prefValue}>{delivery.preferences.instructions}</Text>
+                <Text style={styles.prefValue}>
+                  {delivery.preferences.instructions}
+                </Text>
               </View>
             )}
             {delivery.preferences.redirectAddress && (
               <View style={styles.prefRow}>
                 <Text style={styles.prefLabel}>Redirect To</Text>
                 <Text style={styles.prefValue}>
-                  {delivery.preferences.redirectAddress.line1},{' '}
-                  {delivery.preferences.redirectAddress.city}{' '}
+                  {delivery.preferences.redirectAddress.line1},{" "}
+                  {delivery.preferences.redirectAddress.city}{" "}
                   {delivery.preferences.redirectAddress.postalCode}
                 </Text>
               </View>
@@ -224,7 +242,7 @@ const DeliveryScreen: React.FC = () => {
                 <Text style={styles.prefValue}>
                   {delivery.preferences.rescheduleDate}
                   {delivery.preferences.rescheduleTimeWindow &&
-                    delivery.preferences.rescheduleTimeWindow !== 'anytime' &&
+                    delivery.preferences.rescheduleTimeWindow !== "anytime" &&
                     ` (${delivery.preferences.rescheduleTimeWindow})`}
                 </Text>
               </View>
@@ -232,12 +250,15 @@ const DeliveryScreen: React.FC = () => {
             {!!delivery.preferences.phoneNumber && (
               <View style={styles.prefRow}>
                 <Text style={styles.prefLabel}>Contact</Text>
-                <Text style={styles.prefValue}>{delivery.preferences.phoneNumber}</Text>
+                <Text style={styles.prefValue}>
+                  {delivery.preferences.phoneNumber}
+                </Text>
               </View>
             )}
             {delivery.preferences.updatedAt && (
               <Text style={styles.prefUpdated}>
-                Updated {new Date(delivery.preferences.updatedAt).toLocaleTimeString()}
+                Updated{" "}
+                {new Date(delivery.preferences.updatedAt).toLocaleTimeString()}
               </Text>
             )}
           </View>
@@ -256,14 +277,16 @@ const DeliveryScreen: React.FC = () => {
             disabled={isSubmitting}
           >
             <Text style={styles.photoButtonText}>
-              {proofImage ? 'Retake Photo' : 'Take Photo'}
+              {proofImage ? "Retake Photo" : "Take Photo"}
             </Text>
           </TouchableOpacity>
 
           <View style={styles.signatureContainer}>
             <Text style={styles.signatureLabel}>Signature (Coming Soon)</Text>
             <View style={styles.signaturePlaceholder}>
-              <Text style={styles.signatureText}>Signature pad will be integrated here</Text>
+              <Text style={styles.signatureText}>
+                Signature pad will be integrated here
+              </Text>
             </View>
           </View>
         </View>
@@ -282,10 +305,10 @@ const DeliveryScreen: React.FC = () => {
         </View>
 
         <View style={styles.actionContainer}>
-          {delivery.status === 'pending' && (
+          {delivery.status === "pending" && (
             <TouchableOpacity
               style={styles.primaryButton}
-              onPress={() => handleStatusUpdate('arrived')}
+              onPress={() => handleStatusUpdate("arrived")}
               disabled={isSubmitting}
             >
               {isSubmitting ? (
@@ -295,11 +318,11 @@ const DeliveryScreen: React.FC = () => {
               )}
             </TouchableOpacity>
           )}
-          {delivery.status === 'arrived' && (
+          {delivery.status === "arrived" && (
             <>
               <TouchableOpacity
                 style={styles.primaryButton}
-                onPress={() => handleStatusUpdate('delivered')}
+                onPress={() => handleStatusUpdate("delivered")}
                 disabled={isSubmitting || !proofImage}
               >
                 {isSubmitting ? (
@@ -310,7 +333,7 @@ const DeliveryScreen: React.FC = () => {
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.secondaryButton}
-                onPress={() => handleStatusUpdate('failed')}
+                onPress={() => handleStatusUpdate("failed")}
                 disabled={isSubmitting}
               >
                 <Text style={styles.secondaryButtonText}>Mark as Failed</Text>
@@ -325,68 +348,68 @@ const DeliveryScreen: React.FC = () => {
 
 const getStatusColor = (status: string) => {
   switch (status.toLowerCase()) {
-    case 'delivered':
-      return { backgroundColor: '#e8f5e9' };
-    case 'arrived':
-      return { backgroundColor: '#fff3e0' };
-    case 'failed':
-      return { backgroundColor: '#ffebee' };
+    case "delivered":
+      return { backgroundColor: "#e8f5e9" };
+    case "arrived":
+      return { backgroundColor: "#fff3e0" };
+    case "failed":
+      return { backgroundColor: "#ffebee" };
     default:
-      return { backgroundColor: '#f5f5f5' };
+      return { backgroundColor: "#f5f5f5" };
   }
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   centerContent: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   header: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     paddingHorizontal: 16,
     paddingVertical: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
   },
   customerName: {
     fontSize: 22,
-    fontWeight: '700',
-    color: '#202223',
+    fontWeight: "700",
+    color: "#202223",
     marginBottom: 8,
   },
   address: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginBottom: 12,
     lineHeight: 20,
   },
   phoneButton: {
-    backgroundColor: '#e3f2fd',
+    backgroundColor: "#e3f2fd",
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 6,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
   },
   phoneText: {
-    color: '#005bd3',
+    color: "#005bd3",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   mapPlaceholder: {
     marginHorizontal: 16,
     marginVertical: 12,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 20,
-    alignItems: 'center',
+    alignItems: "center",
     minHeight: 200,
-    justifyContent: 'center',
-    shadowColor: '#000',
+    justifyContent: "center",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -394,16 +417,16 @@ const styles = StyleSheet.create({
   },
   mapText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#005bd3',
+    fontWeight: "600",
+    color: "#005bd3",
   },
   statusCard: {
     marginHorizontal: 16,
     marginVertical: 12,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -411,28 +434,28 @@ const styles = StyleSheet.create({
   },
   statusLabel: {
     fontSize: 12,
-    color: '#666',
-    fontWeight: '600',
+    color: "#666",
+    fontWeight: "600",
     marginBottom: 8,
   },
   statusBadge: {
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 6,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
   },
   statusValue: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#005bd3',
+    fontWeight: "600",
+    color: "#005bd3",
   },
   section: {
     paddingHorizontal: 16,
     marginVertical: 12,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -440,24 +463,24 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#202223',
+    fontWeight: "600",
+    color: "#202223",
     marginBottom: 12,
   },
   photoButton: {
-    backgroundColor: '#005bd3',
+    backgroundColor: "#005bd3",
     borderRadius: 8,
     paddingVertical: 12,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 16,
   },
   photoButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   proofImage: {
-    width: '100%',
+    width: "100%",
     height: 200,
     borderRadius: 8,
     marginBottom: 12,
@@ -467,33 +490,33 @@ const styles = StyleSheet.create({
   },
   signatureLabel: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#202223',
+    fontWeight: "600",
+    color: "#202223",
     marginBottom: 8,
   },
   signaturePlaceholder: {
     borderWidth: 2,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderRadius: 8,
     padding: 20,
     minHeight: 120,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   signatureText: {
     fontSize: 14,
-    color: '#999',
+    color: "#999",
   },
   notesInput: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 12,
     fontSize: 14,
-    color: '#202223',
+    color: "#202223",
     minHeight: 80,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
   actionContainer: {
     paddingHorizontal: 16,
@@ -501,61 +524,61 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   primaryButton: {
-    backgroundColor: '#005bd3',
+    backgroundColor: "#005bd3",
     borderRadius: 8,
     paddingVertical: 14,
-    alignItems: 'center',
+    alignItems: "center",
   },
   secondaryButton: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderRadius: 8,
     paddingVertical: 14,
-    alignItems: 'center',
+    alignItems: "center",
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   secondaryButtonText: {
-    color: '#202223',
+    color: "#202223",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   errorText: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
   preferencesCard: {
     borderLeftWidth: 4,
-    borderLeftColor: '#005bd3',
-    backgroundColor: '#f0f7ff',
+    borderLeftColor: "#005bd3",
+    backgroundColor: "#f0f7ff",
   },
   prefRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 8,
-    alignItems: 'flex-start',
+    alignItems: "flex-start",
   },
   prefLabel: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#005bd3',
+    fontWeight: "600",
+    color: "#005bd3",
     width: 90,
     marginTop: 1,
   },
   prefValue: {
     fontSize: 13,
-    color: '#202223',
+    color: "#202223",
     flex: 1,
     lineHeight: 18,
   },
   prefUpdated: {
     fontSize: 11,
-    color: '#6b7280',
+    color: "#6b7280",
     marginTop: 4,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
 });
 

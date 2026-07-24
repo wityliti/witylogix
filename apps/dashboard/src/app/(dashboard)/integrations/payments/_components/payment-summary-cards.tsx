@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
+import { cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface PaymentSummaryCardsProps {
   totalVolume: number;
@@ -22,11 +22,9 @@ export function PaymentSummaryCards({
             Total Volume
           </p>
           <p className="text-3xl font-bold text-blue-500 mt-2">
-            ${totalVolume.toLocaleString('en-US', { maximumFractionDigits: 2 })}
+            ${totalVolume.toLocaleString("en-US", { maximumFractionDigits: 2 })}
           </p>
-          <p className="text-xs text-blue-500 mt-2">
-            Across all providers
-          </p>
+          <p className="text-xs text-blue-500 mt-2">Across all providers</p>
         </CardContent>
       </Card>
 
@@ -36,7 +34,7 @@ export function PaymentSummaryCards({
             Total Fees
           </p>
           <p className="text-3xl font-bold text-blue-400 mt-2">
-            ${totalFees.toLocaleString('en-US', { maximumFractionDigits: 2 })}
+            ${totalFees.toLocaleString("en-US", { maximumFractionDigits: 2 })}
           </p>
           <p className="text-xs text-blue-500 mt-2">
             {((totalFees / totalVolume) * 100).toFixed(2)}% of volume
@@ -52,9 +50,7 @@ export function PaymentSummaryCards({
           <p className="text-3xl font-bold text-green-400 mt-2">
             {connectedProviders}
           </p>
-          <p className="text-xs text-blue-500 mt-2">
-            Active integrations
-          </p>
+          <p className="text-xs text-blue-500 mt-2">Active integrations</p>
         </CardContent>
       </Card>
     </div>

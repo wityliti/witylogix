@@ -76,7 +76,10 @@ const createFlowSchema = z.object({
     .string()
     .min(1)
     .max(64)
-    .regex(/^[a-z0-9_-]+$/, "key must be lowercase alphanumeric, dash, underscore"),
+    .regex(
+      /^[a-z0-9_-]+$/,
+      "key must be lowercase alphanumeric, dash, underscore",
+    ),
   name: z.string().min(1).max(200),
   description: z.string().optional(),
   graph: flowGraphSchema,

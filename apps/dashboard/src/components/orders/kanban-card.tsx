@@ -5,7 +5,15 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Clock, MapPin } from "lucide-react";
 
-type OrderStatus = "PENDING" | "CONFIRMED" | "ASSIGNED" | "PICKED_UP" | "IN_TRANSIT" | "DELIVERED" | "FAILED" | "CANCELLED";
+type OrderStatus =
+  | "PENDING"
+  | "CONFIRMED"
+  | "ASSIGNED"
+  | "PICKED_UP"
+  | "IN_TRANSIT"
+  | "DELIVERED"
+  | "FAILED"
+  | "CANCELLED";
 type PriorityLevel = "high" | "medium" | "low";
 
 interface KanbanCardProps {
@@ -88,14 +96,14 @@ export function KanbanCard({
         "hover:border-wl-border-strong hover:shadow-md",
         "transition-all duration-200",
         "flex flex-col gap-2",
-        "cursor-pointer"
+        "cursor-pointer",
       )}
     >
       {/* Priority left border */}
       <div
         className={cn(
           "absolute left-0 top-0 bottom-0 w-1 rounded-l-lg",
-          getPriorityColor(priority)
+          getPriorityColor(priority),
         )}
         aria-hidden="true"
       />
@@ -110,7 +118,10 @@ export function KanbanCard({
             {customerName}
           </p>
         </div>
-        <Badge variant={getStatusBadgeVariant(status)} className="flex-shrink-0">
+        <Badge
+          variant={getStatusBadgeVariant(status)}
+          className="flex-shrink-0"
+        >
           {status.replace(/_/g, " ")}
         </Badge>
       </div>
@@ -140,7 +151,7 @@ export function KanbanCard({
               "w-6 h-6 rounded-full",
               "bg-gradient-to-br from-wl-primary-500 to-wl-primary-600",
               "text-wl-text-inverse text-xs font-bold",
-              "flex items-center justify-center flex-shrink-0"
+              "flex items-center justify-center flex-shrink-0",
             )}
             title={driverName || "Driver"}
           >

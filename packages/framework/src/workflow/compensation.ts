@@ -60,7 +60,7 @@ export interface CompensationResult {
 export async function runCompensation(
   stepDefinitions: WorkflowStep[],
   stepExecutions: WorkflowStepExecution[],
-  context: WorkflowContext
+  context: WorkflowContext,
 ): Promise<CompensationResult> {
   const result: CompensationResult = {
     success: true,
@@ -80,9 +80,7 @@ export async function runCompensation(
     .reverse();
 
   // Look up step definitions for compensation handlers
-  const stepDefMap = new Map(
-    stepDefinitions.map((step) => [step.id, step])
-  );
+  const stepDefMap = new Map(stepDefinitions.map((step) => [step.id, step]));
 
   for (const stepExecution of completedWithCompensation) {
     const stepDef = stepDefMap.get(stepExecution.stepId);
@@ -90,7 +88,7 @@ export async function runCompensation(
     if (!stepDef || !stepDef.compensate) {
       context.logger.debug(
         `No compensation handler for step "${stepExecution.stepName}", skipping`,
-        { stepId: stepExecution.stepId }
+        { stepId: stepExecution.stepId },
       );
       continue;
     }
@@ -103,18 +101,16 @@ export async function runCompensation(
         {
           stepId: stepExecution.stepId,
           transactionId: context.transactionId,
-        }
+        },
       );
 
-      await Promise.resolve(
-        stepDef.compensate(stepExecution.output, context)
-      );
+      await Promise.resolve(stepDef.compensate(stepExecution.output, context));
 
       result.compensated.push(stepExecution.stepId);
 
       context.logger.info(
         `Compensation completed for step "${stepExecution.stepName}"`,
-        { stepId: stepExecution.stepId }
+        { stepId: stepExecution.stepId },
       );
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
@@ -125,7 +121,7 @@ export async function runCompensation(
           stepId: stepExecution.stepId,
           error: error.message,
           transactionId: context.transactionId,
-        }
+        },
       );
 
       result.success = false;
@@ -155,11 +151,9 @@ export async function runCompensation(
  */
 export function isCompensationNeeded(
   stepDefinitions: WorkflowStep[],
-  stepExecutions: WorkflowStepExecution[]
+  stepExecutions: WorkflowStepExecution[],
 ): boolean {
-  const stepDefMap = new Map(
-    stepDefinitions.map((step) => [step.id, step])
-  );
+  const stepDefMap = new Map(stepDefinitions.map((step) => [step.id, step]));
 
   return stepExecutions.some((exec) => {
     if (exec.status !== "completed") return false;

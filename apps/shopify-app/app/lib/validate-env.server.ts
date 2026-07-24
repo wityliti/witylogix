@@ -10,16 +10,15 @@ export function validateEnv(): { valid: boolean; missing: string[] } {
     "DATABASE_URL",
   ];
 
-  const recommended = [
-    "SHOPIFY_WEBHOOK_SECRET",
-    "API_BASE_URL",
-  ];
+  const recommended = ["SHOPIFY_WEBHOOK_SECRET", "API_BASE_URL"];
 
   const missing = required.filter((key) => !process.env[key]);
   const missingRecommended = recommended.filter((key) => !process.env[key]);
 
   if (missingRecommended.length > 0) {
-    console.warn(`[env] Missing recommended env vars: ${missingRecommended.join(", ")}`);
+    console.warn(
+      `[env] Missing recommended env vars: ${missingRecommended.join(", ")}`,
+    );
   }
 
   if (missing.length > 0) {

@@ -86,11 +86,7 @@ export class MockServerInstance {
   /**
    * Register a route handler.
    */
-  registerRoute(
-    method: string,
-    path: string,
-    handler: MockRouteHandler
-  ): void {
+  registerRoute(method: string, path: string, handler: MockRouteHandler): void {
     const key = `${method} ${path}`;
     this.routes.set(key, {
       method,
@@ -108,7 +104,7 @@ export class MockServerInstance {
     method: string,
     path: string,
     condition: (req: VCRRequest) => boolean,
-    response: MockResponse
+    response: MockResponse,
   ): void {
     this.registerRoute(method, path, {
       status: response.status,
@@ -168,10 +164,10 @@ export class MockServerInstance {
   assertCalledWithBody(
     method: string,
     path: string,
-    expectedBody: unknown
+    expectedBody: unknown,
   ): boolean {
     const requests = this.recordings.filter(
-      (r) => r.method === method && r.url.includes(path)
+      (r) => r.method === method && r.url.includes(path),
     );
     return requests.some((r) => {
       if (!r.body) return !expectedBody;
@@ -190,14 +186,14 @@ export class MockServerInstance {
   assertCalledWithHeaders(
     method: string,
     path: string,
-    expectedHeaders: Record<string, string>
+    expectedHeaders: Record<string, string>,
   ): boolean {
     const requests = this.recordings.filter(
-      (r) => r.method === method && r.url.includes(path)
+      (r) => r.method === method && r.url.includes(path),
     );
     return requests.some((r) => {
       return Object.entries(expectedHeaders).every(
-        ([key, value]) => r.headers[key.toLowerCase()] === value.toLowerCase()
+        ([key, value]) => r.headers[key.toLowerCase()] === value.toLowerCase(),
       );
     });
   }
@@ -230,7 +226,10 @@ export class MockServerInstance {
    * Internal: record a request.
    */
   private recordRequest(request: VCRRequest): void {
-    if (this.config.recordRequests && this.recordings.length < this.config.maxRecordings!) {
+    if (
+      this.config.recordRequests &&
+      this.recordings.length < this.config.maxRecordings!
+    ) {
       this.recordings.push(request);
     }
   }
@@ -276,7 +275,7 @@ export class VCRRecorder {
     id: string,
     provider: string,
     testName: string,
-    mode: "record" | "playback" | "record_once" = "record_once"
+    mode: "record" | "playback" | "record_once" = "record_once",
   ): VCRFixture {
     const fixture: VCRFixture = {
       id,
@@ -298,7 +297,7 @@ export class VCRRecorder {
   recordInteraction(
     fixtureId: string,
     request: VCRRequest,
-    response: VCRResponse
+    response: VCRResponse,
   ): void {
     const fixture = this.fixtures.get(fixtureId);
     if (!fixture || fixture.sealed) return;
@@ -330,7 +329,7 @@ export class VCRRecorder {
    */
   findMatchingInteraction(
     fixtureId: string,
-    request: VCRRequest
+    request: VCRRequest,
   ): VCRInteraction | undefined {
     const fixture = this.fixtures.get(fixtureId);
     if (!fixture) return undefined;
@@ -338,8 +337,10 @@ export class VCRRecorder {
     const bodyHash = request.body ? this.hashBody(request.body) : undefined;
 
     return fixture.interactions.find((interaction) => {
-      const urlMatch = this.normalizeUrl(interaction.request.url) ===
-        this.normalizeUrl(request.url) && interaction.request.method === request.method;
+      const urlMatch =
+        this.normalizeUrl(interaction.request.url) ===
+          this.normalizeUrl(request.url) &&
+        interaction.request.method === request.method;
       const bodyMatch = !bodyHash || interaction.request.bodyHash === bodyHash;
       return urlMatch && bodyMatch;
     });
@@ -348,9 +349,13 @@ export class VCRRecorder {
   /**
    * Playback a recorded interaction.
    */
-  playbackInteraction(fixtureId: string, interactionIndex: number): VCRResponse | undefined {
+  playbackInteraction(
+    fixtureId: string,
+    interactionIndex: number,
+  ): VCRResponse | undefined {
     const fixture = this.fixtures.get(fixtureId);
-    if (!fixture || interactionIndex >= fixture.interactions.length) return undefined;
+    if (!fixture || interactionIndex >= fixture.interactions.length)
+      return undefined;
 
     const interaction = fixture.interactions[interactionIndex];
     interaction.replayCount += 1;
@@ -405,10 +410,7 @@ export class VCRRecorder {
   /**
    * Private: redact sensitive data from request/response.
    */
-  private redactSensitiveData(
-    data: unknown,
-    keys: string[]
-  ): void {
+  private redactSensitiveData(data: unknown, keys: string[]): void {
     if (typeof data !== "object" || data === null) return;
 
     const obj = data as Record<string, unknown>;
@@ -471,7 +473,7 @@ export class ContractTester {
   validateAgainstContract(
     contractId: string,
     requestBody: unknown,
-    responseBody: unknown
+    responseBody: unknown,
   ): ContractValidation {
     const contract = this.contracts.get(contractId);
     if (!contract) {
@@ -494,7 +496,10 @@ export class ContractTester {
 
     // Validate request against schema
     for (const field of contract.requestSchema) {
-      if (field.required && !(field.name in (requestBody as Record<string, unknown>))) {
+      if (
+        field.required &&
+        !(field.name in (requestBody as Record<string, unknown>))
+      ) {
         errors.push(`Missing required request field: ${field.name}`);
         requestSchemaMatched = false;
       }
@@ -502,7 +507,10 @@ export class ContractTester {
 
     // Validate response against schema
     for (const field of contract.responseSchema) {
-      if (field.required && !(field.name in (responseBody as Record<string, unknown>))) {
+      if (
+        field.required &&
+        !(field.name in (responseBody as Record<string, unknown>))
+      ) {
         errors.push(`Missing required response field: ${field.name}`);
         responseSchemaMatched = false;
       }
@@ -511,7 +519,7 @@ export class ContractTester {
     // Detect schema drift
     const responseObj = responseBody as Record<string, unknown>;
     const newFields = Object.keys(responseObj).filter(
-      (key) => !contract.responseSchema.some((f) => f.name === key)
+      (key) => !contract.responseSchema.some((f) => f.name === key),
     );
 
     const schemaDrift = {
@@ -551,7 +559,10 @@ export class ContractTester {
   /**
    * Check for backward compatibility.
    */
-  checkBackwardCompatibility(oldContractId: string, newContractId: string): boolean {
+  checkBackwardCompatibility(
+    oldContractId: string,
+    newContractId: string,
+  ): boolean {
     const oldContract = this.contracts.get(oldContractId);
     const newContract = this.contracts.get(newContractId);
 
@@ -590,7 +601,10 @@ export class SDKCompatMatrix {
   /**
    * Check compatibility between SDK and API version.
    */
-  checkCompatibility(sdkVersion: string, apiVersion: string): CompatibilityScore {
+  checkCompatibility(
+    sdkVersion: string,
+    apiVersion: string,
+  ): CompatibilityScore {
     const cacheKey = `${sdkVersion}-${apiVersion}`;
     const cached = this.compatibilityCache.get(cacheKey);
     if (cached) return cached;
@@ -634,7 +648,10 @@ export class SDKCompatMatrix {
   /**
    * Get upgrade suggestions.
    */
-  getUpgradePath(currentSdkVersion: string, targetApiVersion: string): string | undefined {
+  getUpgradePath(
+    currentSdkVersion: string,
+    targetApiVersion: string,
+  ): string | undefined {
     const versions = Array.from(this.sdkVersions.values()).flat();
     const compatible = versions
       .filter((v) => !v.deprecated && v.maxApiVersion >= targetApiVersion)
@@ -649,7 +666,9 @@ export class SDKCompatMatrix {
   getDeprecationWarnings(sdkVersion: string): string[] {
     const allVersions = Array.from(this.sdkVersions.values()).flat();
     const version = allVersions.find((v) => v.version === sdkVersion);
-    return version?.deprecated ? [`SDK version ${sdkVersion} is deprecated`] : [];
+    return version?.deprecated
+      ? [`SDK version ${sdkVersion} is deprecated`]
+      : [];
   }
 }
 
@@ -670,7 +689,10 @@ export class RegressionRunner {
   /**
    * Record test result.
    */
-  recordResult(testName: string, metrics: Record<string, number>): RegressionResult {
+  recordResult(
+    testName: string,
+    metrics: Record<string, number>,
+  ): RegressionResult {
     const baseline = this.baselines.get(testName) ?? {};
     const changePercent: Record<string, number> = {};
 

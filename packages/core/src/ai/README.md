@@ -100,14 +100,11 @@ await search.indexEntity(
   "order_123",
   "order",
   "Urgent delivery to downtown",
-  "tenant_1"
+  "tenant_1",
 );
 
 // Vector search
-const results = await search.vectorSearch(
-  "delivery downtown",
-  "tenant_1"
-);
+const results = await search.vectorSearch("delivery downtown", "tenant_1");
 
 // Hybrid search (vector + text with RRF)
 const hybrid = await search.hybridSearch({
@@ -155,7 +152,7 @@ import { nlFilterParser } from "@witylogix/core/ai";
 
 // Parse a natural language query
 const filter = nlFilterParser.parse(
-  "overdue orders from last week over $500 near downtown #urgent"
+  "overdue orders from last week over $500 near downtown #urgent",
 );
 
 // Result:
@@ -199,7 +196,7 @@ const features = await ranker.extractFeatures(
   "urgent delivery to downtown for customer...",
   new Date(),
   "user_1",
-  "tenant_1"
+  "tenant_1",
 );
 
 const score = ranker.scoreResult(features, "user_1");
@@ -223,8 +220,12 @@ ranker.registerABTest({
   testId: "ranking_v2_test",
   name: "Ranking Algorithm V2",
   enabled: true,
-  weightingA: { /* old weights */ },
-  weightingB: { /* new weights */ },
+  weightingA: {
+    /* old weights */
+  },
+  weightingB: {
+    /* new weights */
+  },
   splitPercentage: 50,
 });
 
@@ -243,6 +244,7 @@ Three options for vector embeddings:
 3. **TF-IDF** — Lightweight fallback, no external deps
 
 Switch at runtime:
+
 ```typescript
 const search = createSemanticSearch("openai-ada-002", openaiApiKey);
 ```
@@ -255,6 +257,7 @@ Combines two ranking systems:
 2. **Vector Similarity** — Semantic understanding
 
 Unified with **Reciprocal Rank Fusion (RRF)**:
+
 ```
 RRF(r_bm25, r_vector) = 1/(60 + r_bm25) + 1/(60 + r_vector)
 ```
@@ -269,7 +272,8 @@ Pluggable condition system:
 engine.registerRule({
   id: "custom_rule",
   name: "High Value Orders",
-  condition: (ctx) => ctx.currentPage === "orders" && ctx.data?.orderValue > 5000,
+  condition: (ctx) =>
+    ctx.currentPage === "orders" && ctx.data?.orderValue > 5000,
   suggestionFactory: (ctx) => ({
     title: "VIP Order Attention Needed",
     description: `${ctx.data?.orderCount || 0} high-value orders pending`,
@@ -295,16 +299,19 @@ Enables learning without explicit training.
 Requires these tables (generated via Prisma):
 
 - **`SearchIndex`** — Embeddings and content
+
   ```
   id, entityId, entityType, tenantId, content, embedding[], metadata
   ```
 
 - **`SuggestionDismissal`** — Dismissed suggestions
+
   ```
   id, suggestionId, tenantId, userId, dismissedAt
   ```
 
 - **`SuggestionSnooze`** — Snoozed suggestions
+
   ```
   id, suggestionId, tenantId, userId, snoozedUntil
   ```
@@ -317,11 +324,13 @@ Requires these tables (generated via Prisma):
 ## Testing
 
 Run all tests:
+
 ```bash
 npm run test packages/core -- ai
 ```
 
 Individual test files:
+
 ```bash
 npm run test packages/core -- semantic-search.test.ts
 npm run test packages/core -- natural-language-filter.test.ts
@@ -329,6 +338,7 @@ npm run test packages/core -- smart-suggestions.test.ts
 ```
 
 Coverage:
+
 - **Semantic Search**: 28 tests (embeddings, similarity, BM25, indexing, hybrid search, tenant isolation)
 - **NL Filter**: 45 tests (entity detection, status, dates, amounts, locations, tags, edge cases)
 - **Smart Suggestions**: 32 tests (generation, priority, time-based, rules, dismiss, snooze, tracking)
@@ -343,13 +353,16 @@ Coverage:
 const search = createSemanticSearch("tfidf");
 
 // OpenAI ada-002 (requires API key)
-const search = createSemanticSearch("openai-ada-002", process.env.OPENAI_API_KEY);
+const search = createSemanticSearch(
+  "openai-ada-002",
+  process.env.OPENAI_API_KEY,
+);
 
 // Sentence-Transformers (requires local model)
 const search = createSemanticSearch(
   "sentence-transformers",
   undefined,
-  "/models/sentence-transformers"
+  "/models/sentence-transformers",
 );
 ```
 
@@ -359,9 +372,9 @@ Customize for your use case:
 
 ```typescript
 const ranker = createSearchRanker({
-  textRelevance: 0.5,    // Boost keyword matching
-  recency: 0.1,          // Reduce recency importance
-  popularity: 0.25,      // Increase popularity factor
+  textRelevance: 0.5, // Boost keyword matching
+  recency: 0.1, // Reduce recency importance
+  popularity: 0.25, // Increase popularity factor
   userInteractionScore: 0.1,
   engagementRate: 0.05,
 });

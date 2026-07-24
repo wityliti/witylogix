@@ -3,8 +3,15 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { WEXv2SDKClient, WEXAPIError } from "../../../../packages/core/src/integrations/fuel-fleet/wex-v2-sdk-client";
-import type { SDKConfig, CardIssuanceRequest, TransactionSearchCriteria } from "../../../../packages/core/src/integrations/fuel-fleet/fuel-fleet-sdk-types";
+import {
+  WEXv2SDKClient,
+  WEXAPIError,
+} from "../../../../packages/core/src/integrations/fuel-fleet/wex-v2-sdk-client";
+import type {
+  SDKConfig,
+  CardIssuanceRequest,
+  TransactionSearchCriteria,
+} from "../../../../packages/core/src/integrations/fuel-fleet/fuel-fleet-sdk-types";
 
 describe("WEXv2SDKClient", () => {
   let client: WEXv2SDKClient;
@@ -240,7 +247,12 @@ describe("WEXv2SDKClient", () => {
 
   describe("Error Handling", () => {
     it("should throw WEXAPIError on authentication failure", () => {
-      const error = new WEXAPIError("AUTH_FAILED", "Invalid credentials", {}, "req_123");
+      const error = new WEXAPIError(
+        "AUTH_FAILED",
+        "Invalid credentials",
+        {},
+        "req_123",
+      );
 
       expect(error).toBeInstanceOf(WEXAPIError);
       expect(error.code).toBe("AUTH_FAILED");

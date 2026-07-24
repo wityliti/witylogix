@@ -11,7 +11,13 @@
  */
 
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
-import { useLoaderData, useSearchParams, Link, Form, redirect } from "react-router";
+import {
+  useLoaderData,
+  useSearchParams,
+  Link,
+  Form,
+  redirect,
+} from "react-router";
 import { useState } from "react";
 import {
   Page,
@@ -28,7 +34,10 @@ import {
   TextField,
   FormLayout,
 } from "@shopify/polaris";
-import { createApiClientFromRequest, type PaginatedResponse } from "~/lib/api.server";
+import {
+  createApiClientFromRequest,
+  type PaginatedResponse,
+} from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
 // ─── Types ─────────────────────────────────────────────────
@@ -92,7 +101,10 @@ export async function action({ request }: ActionFunctionArgs) {
         : null,
       priority: Number(formData.get("priority") ?? 1),
     };
-    const result = await api.post<{ data: { id: string } }>("/api/v4/zones", zone);
+    const result = await api.post<{ data: { id: string } }>(
+      "/api/v4/zones",
+      zone,
+    );
     return redirect(`/zones/${result.data.id}`);
   }
 
@@ -133,10 +145,7 @@ export default function ZonesList() {
   const rowMarkup = zones.map((zone, index) => (
     <IndexTable.Row id={zone.id} key={zone.id} position={index}>
       <IndexTable.Cell>
-        <Link
-          to={`/zones/${zone.id}`}
-          style={{ textDecoration: "none" }}
-        >
+        <Link to={`/zones/${zone.id}`} style={{ textDecoration: "none" }}>
           <Text as="span" variant="bodyMd" fontWeight="semibold" tone="magic">
             {zone.name}
           </Text>

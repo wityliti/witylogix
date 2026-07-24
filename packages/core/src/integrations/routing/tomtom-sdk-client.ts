@@ -19,8 +19,8 @@
  * Reference: https://developer.tomtom.com/
  */
 
-import type { Coordinate, LatLng } from './types.js';
-import { RoutingAdapter } from './routing-adapter.js';
+import type { Coordinate, LatLng } from "./types.js";
+import { RoutingAdapter } from "./routing-adapter.js";
 import type {
   RouteRequest,
   RouteResponse,
@@ -31,7 +31,7 @@ import type {
   MatrixElement,
   RoutingAdapterConfig,
   VehicleConstraints,
-} from './types.js';
+} from "./types.js";
 
 /**
  * TomTom-specific configuration
@@ -150,17 +150,22 @@ interface TomTomMatrixResponse {
     successfulRoutes: number;
     totalRoutes: number;
   };
-  matrix: Array<Array<{
-    response:
+  matrix: Array<
+    Array<
       | {
-          routeSummary: {
-            lengthInMeters: number;
-            travelTimeInSeconds: number;
-            trafficDelayInSeconds?: number;
-          };
+          response:
+            | {
+                routeSummary: {
+                  lengthInMeters: number;
+                  travelTimeInSeconds: number;
+                  trafficDelayInSeconds?: number;
+                };
+              }
+            | string; // API may return a string status like 'UNREACHABLE'
         }
-      | string; // API may return a string status like 'UNREACHABLE'
-  } | string>>;
+      | string
+    >
+  >;
 }
 
 /**
@@ -185,21 +190,29 @@ export class TomTomSDKClient extends RoutingAdapter {
   constructor(config: TomTomConfig) {
     super(config);
     this.apiKey = config.apiKey;
-    this.baseUrlSearch = config.baseUrlSearch || 'https://api.tomtom.com/search/2';
-    this.baseUrlRouting = config.baseUrlRouting || 'https://api.tomtom.com/routing/1';
-    this.region = config.region || 'Global';
+    this.baseUrlSearch =
+      config.baseUrlSearch || "https://api.tomtom.com/search/2";
+    this.baseUrlRouting =
+      config.baseUrlRouting || "https://api.tomtom.com/routing/1";
+    this.region = config.region || "Global";
 
     if (!this.apiKey) {
-      throw new Error('TomTom API key is required');
+      throw new Error("TomTom API key is required");
     }
   }
 
   /**
    * Fetch with timeout using AbortController
    */
-  private async fetchWithTimeout(url: string, init?: RequestInit): Promise<Response> {
+  private async fetchWithTimeout(
+    url: string,
+    init?: RequestInit,
+  ): Promise<Response> {
     const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), this.config.timeout ?? 30000);
+    const id = setTimeout(
+      () => controller.abort(),
+      this.config.timeout ?? 30000,
+    );
     try {
       return await fetch(url, { ...init, signal: controller.signal });
     } finally {
@@ -210,7 +223,10 @@ export class TomTomSDKClient extends RoutingAdapter {
   /**
    * Fuzzy search: query → POI results
    */
-  async fuzzySearch(query: string, options?: { limit?: number; position?: Coordinate }): Promise<
+  async fuzzySearch(
+    query: string,
+    options?: { limit?: number; position?: Coordinate },
+  ): Promise<
     Array<{
       id: string;
       title: string;
@@ -219,7 +235,7 @@ export class TomTomSDKClient extends RoutingAdapter {
       score: number;
     }>
   > {
-    return this.executeRequest('fuzzySearch', async () => {
+    return this.executeRequest("fuzzySearch", async () => {
       const params = new URLSearchParams({
         key: this.apiKey,
         query,
@@ -228,7 +244,7 @@ export class TomTomSDKClient extends RoutingAdapter {
 
       if (options?.position) {
         const coord = this.normalizeCoordinate(options.position);
-        params.append('position', `${coord.lat},${coord.lng}`);
+        params.append("position", `${coord.lat},${coord.lng}`);
       }
 
       const response = await this.fetchWithTimeout(
@@ -236,7 +252,7 @@ export class TomTomSDKClient extends RoutingAdapter {
       );
 
       if (!response.ok) {
-        const error = await response.json() as { errorText?: string };
+        const error = (await response.json()) as { errorText?: string };
         throw new Error(
           `TomTom fuzzy search error: ${error.errorText || response.statusText}`,
         );
@@ -268,11 +284,11 @@ export class TomTomSDKClient extends RoutingAdapter {
       confidence: number;
     }>
   > {
-    return this.executeRequest('geocode', async () => {
+    return this.executeRequest("geocode", async () => {
       const params = new URLSearchParams({
         key: this.apiKey,
         query: address,
-        limit: '5',
+        limit: "5",
       });
 
       const response = await this.fetchWithTimeout(
@@ -280,8 +296,10 @@ export class TomTomSDKClient extends RoutingAdapter {
       );
 
       if (!response.ok) {
-        const error = await response.json() as { errorText?: string };
-        throw new Error(`TomTom geocode error: ${error.errorText || response.statusText}`);
+        const error = (await response.json()) as { errorText?: string };
+        throw new Error(
+          `TomTom geocode error: ${error.errorText || response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as TomTomSearchResponse;
@@ -298,7 +316,10 @@ export class TomTomSDKClient extends RoutingAdapter {
   /**
    * Reverse geocode: coordinates → address
    */
-  async reverseGeocode(lat: number, lng: number): Promise<{
+  async reverseGeocode(
+    lat: number,
+    lng: number,
+  ): Promise<{
     address: string;
     components?: {
       country?: string;
@@ -307,7 +328,7 @@ export class TomTomSDKClient extends RoutingAdapter {
       street?: string;
     };
   }> {
-    return this.executeRequest('reverseGeocode', async () => {
+    return this.executeRequest("reverseGeocode", async () => {
       const params = new URLSearchParams({
         key: this.apiKey,
       });
@@ -317,7 +338,7 @@ export class TomTomSDKClient extends RoutingAdapter {
       );
 
       if (!response.ok) {
-        const error = await response.json() as { errorText?: string };
+        const error = (await response.json()) as { errorText?: string };
         throw new Error(
           `TomTom reverse geocode error: ${error.errorText || response.statusText}`,
         );
@@ -348,13 +369,16 @@ export class TomTomSDKClient extends RoutingAdapter {
   /**
    * Autocomplete: partial → suggestions
    */
-  async autocomplete(query: string, options?: { limit?: number; position?: Coordinate }): Promise<
+  async autocomplete(
+    query: string,
+    options?: { limit?: number; position?: Coordinate },
+  ): Promise<
     Array<{
       title: string;
       address: string;
     }>
   > {
-    return this.executeRequest('autocomplete', async () => {
+    return this.executeRequest("autocomplete", async () => {
       const params = new URLSearchParams({
         key: this.apiKey,
         query,
@@ -363,7 +387,7 @@ export class TomTomSDKClient extends RoutingAdapter {
 
       if (options?.position) {
         const coord = this.normalizeCoordinate(options.position);
-        params.append('position', `${coord.lat},${coord.lng}`);
+        params.append("position", `${coord.lat},${coord.lng}`);
       }
 
       const response = await this.fetchWithTimeout(
@@ -377,8 +401,8 @@ export class TomTomSDKClient extends RoutingAdapter {
       const data = (await response.json()) as TomTomSearchResponse;
 
       return (data.results || []).map((result) => ({
-        title: result.poi?.name || result.address?.freeformAddress || '',
-        address: result.address?.freeformAddress || '',
+        title: result.poi?.name || result.address?.freeformAddress || "",
+        address: result.address?.freeformAddress || "",
       }));
     });
   }
@@ -387,7 +411,7 @@ export class TomTomSDKClient extends RoutingAdapter {
    * Calculate route: origin/destination → route with points, distance, duration
    */
   async route(request: RouteRequest): Promise<RouteResponse> {
-    return this.executeRequest('route', async () => {
+    return this.executeRequest("route", async () => {
       const origin = this.normalizeCoordinate(request.origin);
       const destination = this.normalizeCoordinate(request.destination);
 
@@ -398,38 +422,40 @@ export class TomTomSDKClient extends RoutingAdapter {
           const normalized = this.normalizeCoordinate(wp);
           return `${normalized.lat},${normalized.lng}`;
         });
-        waypoints = `${origin.lat},${origin.lng}:${waypointStrs.join(':')}:${destination.lat},${destination.lng}`;
+        waypoints = `${origin.lat},${origin.lng}:${waypointStrs.join(":")}:${destination.lat},${destination.lng}`;
       }
 
       const params = new URLSearchParams({
         key: this.apiKey,
-        routeType: 'fastest',
-        travelMode: 'car',
-        return: 'polyline,summary,guidance',
+        routeType: "fastest",
+        travelMode: "car",
+        return: "polyline,summary,guidance",
       });
 
       if (request.options?.exclude_toll) {
-        params.append('avoid', 'tollRoads');
+        params.append("avoid", "tollRoads");
       }
       if (request.options?.exclude_motorway) {
-        params.append('avoid', 'motorways');
+        params.append("avoid", "motorways");
       }
       if (request.options?.exclude_ferry) {
-        params.append('avoid', 'ferries');
+        params.append("avoid", "ferries");
       }
 
       const url = `${this.baseUrlRouting}/routes/${waypoints}/json?${params.toString()}`;
       const response = await this.fetchWithTimeout(url);
 
       if (!response.ok) {
-        const error = await response.json() as { errorText?: string };
-        throw new Error(`TomTom routing error: ${error.errorText || response.statusText}`);
+        const error = (await response.json()) as { errorText?: string };
+        throw new Error(
+          `TomTom routing error: ${error.errorText || response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as TomTomRoutingResponse;
 
       if (!data.routes || data.routes.length === 0) {
-        throw new Error('No route found');
+        throw new Error("No route found");
       }
 
       const primaryRoute = data.routes[0];
@@ -490,26 +516,28 @@ export class TomTomSDKClient extends RoutingAdapter {
     departureTime?: Date;
     avoidTraffic?: boolean;
   }): Promise<RouteResponse> {
-    return this.executeRequest('trafficAwareRoute', async () => {
+    return this.executeRequest("trafficAwareRoute", async () => {
       const origin = this.normalizeCoordinate(request.origin);
       const destination = this.normalizeCoordinate(request.destination);
 
       const params = new URLSearchParams({
         key: this.apiKey,
-        routeType: 'fastest',
-        traffic: request.avoidTraffic ? 'false' : 'true',
-        return: 'polyline,summary',
+        routeType: "fastest",
+        traffic: request.avoidTraffic ? "false" : "true",
+        return: "polyline,summary",
       });
 
       if (request.departureTime) {
-        params.append('departAt', request.departureTime.toISOString());
+        params.append("departAt", request.departureTime.toISOString());
       }
 
       const url = `${this.baseUrlRouting}/routes/${origin.lat},${origin.lng}:${destination.lat},${destination.lng}/json?${params.toString()}`;
       const response = await this.fetchWithTimeout(url);
 
       if (!response.ok) {
-        throw new Error(`TomTom traffic-aware routing error: ${response.statusText}`);
+        throw new Error(
+          `TomTom traffic-aware routing error: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as TomTomRoutingResponse;
@@ -541,32 +569,32 @@ export class TomTomSDKClient extends RoutingAdapter {
     maxAxleWeight?: number;
     vehicleLoadType?: string;
   }): Promise<RouteResponse> {
-    return this.executeRequest('truckRoute', async () => {
+    return this.executeRequest("truckRoute", async () => {
       const origin = this.normalizeCoordinate(request.origin);
       const destination = this.normalizeCoordinate(request.destination);
 
       const params = new URLSearchParams({
         key: this.apiKey,
-        routeType: 'fastest',
-        travelMode: 'truck',
-        return: 'polyline,summary',
+        routeType: "fastest",
+        travelMode: "truck",
+        return: "polyline,summary",
       });
 
       // Add vehicle dimensions if provided
       if (request.vehicleWidth) {
-        params.append('vehicleWidth', String(request.vehicleWidth / 100)); // Convert to meters
+        params.append("vehicleWidth", String(request.vehicleWidth / 100)); // Convert to meters
       }
       if (request.vehicleHeight) {
-        params.append('vehicleHeight', String(request.vehicleHeight / 100));
+        params.append("vehicleHeight", String(request.vehicleHeight / 100));
       }
       if (request.vehicleLength) {
-        params.append('vehicleLength', String(request.vehicleLength / 100));
+        params.append("vehicleLength", String(request.vehicleLength / 100));
       }
       if (request.vehicleWeight) {
-        params.append('vehicleWeight', String(request.vehicleWeight));
+        params.append("vehicleWeight", String(request.vehicleWeight));
       }
       if (request.maxAxleWeight) {
-        params.append('maxAxleWeight', String(request.maxAxleWeight));
+        params.append("maxAxleWeight", String(request.maxAxleWeight));
       }
 
       const url = `${this.baseUrlRouting}/routes/${origin.lat},${origin.lng}:${destination.lat},${destination.lng}/json?${params.toString()}`;
@@ -596,32 +624,34 @@ export class TomTomSDKClient extends RoutingAdapter {
    * Route optimization (batch routing)
    */
   async optimize(): Promise<never> {
-    throw new Error('Direct optimization not implemented - use matrix + custom optimization');
+    throw new Error(
+      "Direct optimization not implemented - use matrix + custom optimization",
+    );
   }
 
   /**
    * Matrix routing: origins × destinations
    */
   async matrix(request: MatrixRequest): Promise<MatrixResponse> {
-    return this.executeRequest('matrix', async () => {
+    return this.executeRequest("matrix", async () => {
       // TomTom requires explicit matrix calculation
       const originStrs = request.origins
         .map((o) => {
           const coord = this.normalizeCoordinate(o);
           return `${coord.lat},${coord.lng}`;
         })
-        .join(':');
+        .join(":");
 
       const destStrs = request.destinations
         .map((d) => {
           const coord = this.normalizeCoordinate(d);
           return `${coord.lat},${coord.lng}`;
         })
-        .join(':');
+        .join(":");
 
       const params = new URLSearchParams({
         key: this.apiKey,
-        routeType: 'fastest',
+        routeType: "fastest",
       });
 
       // POST request for matrix
@@ -635,16 +665,16 @@ export class TomTomSDKClient extends RoutingAdapter {
           return { point: { latitude: coord.lat, longitude: coord.lng } };
         }),
         options: {
-          routeType: 'fastest',
-          travelMode: 'car',
+          routeType: "fastest",
+          travelMode: "car",
         },
       };
 
       const response = await this.fetchWithTimeout(
         `${this.baseUrlRouting}/matrix/json?${params.toString()}`,
         {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         },
       );
@@ -666,36 +696,36 @@ export class TomTomSDKClient extends RoutingAdapter {
             matrix[i][j] = {
               distance_m: 0,
               duration_s: 0,
-              status: 'NO_ROUTE',
+              status: "NO_ROUTE",
             };
             continue;
           }
 
           const cell = matrixRow[j];
-          if (typeof cell === 'string') {
+          if (typeof cell === "string") {
             matrix[i][j] = {
               distance_m: 0,
               duration_s: 0,
-              status: 'NO_ROUTE',
+              status: "NO_ROUTE",
             };
-          } else if (typeof cell.response === 'string') {
+          } else if (typeof cell.response === "string") {
             // API returned a string status (e.g., 'UNREACHABLE') instead of a routeSummary object
             matrix[i][j] = {
               distance_m: 0,
               duration_s: 0,
-              status: 'NO_ROUTE',
+              status: "NO_ROUTE",
             };
-          } else if ('routeSummary' in cell.response) {
+          } else if ("routeSummary" in cell.response) {
             matrix[i][j] = {
               distance_m: cell.response.routeSummary.lengthInMeters,
               duration_s: cell.response.routeSummary.travelTimeInSeconds,
-              status: 'OK',
+              status: "OK",
             };
           } else {
             matrix[i][j] = {
               distance_m: 0,
               duration_s: 0,
-              status: 'UNREACHABLE',
+              status: "UNREACHABLE",
             };
           }
         }

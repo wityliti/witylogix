@@ -26,8 +26,15 @@ export function WebhookDeliveryChart({
 
   if (!data || data.length === 0) {
     return (
-      <div className={cn("w-full flex items-center justify-center bg-wl-surface-hover rounded-lg p-8", className)}>
-        <div className="text-wl-text-secondary text-sm">No webhook delivery data available</div>
+      <div
+        className={cn(
+          "w-full flex items-center justify-center bg-wl-surface-hover rounded-lg p-8",
+          className,
+        )}
+      >
+        <div className="text-wl-text-secondary text-sm">
+          No webhook delivery data available
+        </div>
       </div>
     );
   }
@@ -47,7 +54,7 @@ export function WebhookDeliveryChart({
   const chartHeight = 200;
   const barWidth = chartWidth / data.length;
   const maxValue = Math.max(
-    ...data.map((d) => d.successful + d.failed + d.pending)
+    ...data.map((d) => d.successful + d.failed + d.pending),
   );
   const yScale = chartHeight / maxValue;
 
@@ -105,7 +112,8 @@ export function WebhookDeliveryChart({
             {/* Bars and latency line */}
             {data.map((hour, idx) => {
               const x = idx * barWidth;
-              const barHeight = (hour.successful + hour.failed + hour.pending) * yScale;
+              const barHeight =
+                (hour.successful + hour.failed + hour.pending) * yScale;
               const successHeight = hour.successful * yScale;
               const failedHeight = hour.failed * yScale;
 
@@ -167,7 +175,7 @@ export function WebhookDeliveryChart({
               points={data
                 .map(
                   (hour, idx) =>
-                    `${idx * barWidth + barWidth / 2},${chartHeight - hour.avgLatencyMs * latencyScale}`
+                    `${idx * barWidth + barWidth / 2},${chartHeight - hour.avgLatencyMs * latencyScale}`,
                 )
                 .join(" ")}
               fill="none"
@@ -242,17 +250,23 @@ export function WebhookDeliveryChart({
         {/* Summary stats */}
         <div className="grid grid-cols-4 gap-4">
           <div>
-            <div className="text-xs text-wl-text-secondary mb-1">Total Delivered</div>
+            <div className="text-xs text-wl-text-secondary mb-1">
+              Total Delivered
+            </div>
             <div className="text-lg font-semibold text-wl-success-600">
               {totalDelivered.toLocaleString()}
             </div>
           </div>
           <div>
             <div className="text-xs text-wl-text-secondary mb-1">Fail Rate</div>
-            <div className="text-lg font-semibold text-wl-danger-600">{failRate}%</div>
+            <div className="text-lg font-semibold text-wl-danger-600">
+              {failRate}%
+            </div>
           </div>
           <div>
-            <div className="text-xs text-wl-text-secondary mb-1">Avg Latency</div>
+            <div className="text-xs text-wl-text-secondary mb-1">
+              Avg Latency
+            </div>
             <div className="text-lg font-semibold text-wl-primary-600">
               {avgLatency.toFixed(0)}ms
             </div>

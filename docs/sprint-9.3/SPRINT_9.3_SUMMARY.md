@@ -7,6 +7,7 @@
 ## What Changed
 
 ### Before Sprint 9.3
+
 - 22 API route files existed but were NEVER registered in server.ts (including returns, driver-scoring, invoices)
 - 12 hooks (5,958 lines) contained embedded mock data instead of calling the API
 - 156 of 167 dashboard pages used hardcoded mock data (93% mock)
@@ -16,6 +17,7 @@
 - No CI/CD pipeline
 
 ### After Sprint 9.3
+
 - ALL 61 API route files registered in server.ts (was 39/61 → now 61/61)
 - All 12 mock-data hooks rewritten to real API calls (5,958 → ~1,400 lines, 76% reduction)
 - ~27 additional pages rewired to real API (was 11 → ~38 API-connected pages)
@@ -27,12 +29,14 @@
 ## Agent Contributions
 
 ### AR (CTO) — Register 22 Missing API Routes [backend-patterns]
+
 - Updated `apps/api/src/server.ts` to register all 22 unregistered routes
 - Critical: Returns (`/api/v4/returns`), driver-scoring (`/api/v4/driver-scoring`), invoices (`/api/v4/invoices`) are now live
 - Also registered: couriers, ecommerce, health, pod, settings, notifications-v2, payments-v2, webhook routes, workflow routes
 - **Now 61/61 route files registered** (was 39/61)
 
 ### RG (Backend Lead) — Rewrite 6 Mock-Data Hooks Batch 1 [api-design]
+
 - `use-fleet.ts` (698 → 138 lines) — 8 hooks: useVehicles, useMaintenanceEvents, useFuelTransactions, useFleetOverview
 - `use-notifications.ts` (645 → 114 lines) — 7 hooks with CRUD mutations
 - `use-field-service.ts` (626 → 138 lines) — 8 hooks: useWorkOrders, useTechnicians, useDispatchMap
@@ -41,6 +45,7 @@
 - `use-freight.ts` (462 → 108 lines) — 7 hooks: useFreightLoads, useLaneAnalytics, useCarrierScorecard
 
 ### PK (Sr. Backend) — Rewrite 6 Mock-Data Hooks Batch 2 [api-design]
+
 - `use-healthcare.ts` (591 → 167 lines) — usePatients, useMedications, useEncounters, useFHIRResources
 - `use-analytics.ts` (456 → 124 lines) — CRUD dashboard/report hooks with mutations
 - `use-esignatures.ts` (442 → 123 lines) — useSigningSession, envelope/template mutations
@@ -49,33 +54,39 @@
 - `use-financial-data.ts` (303 → 89 lines) — useInvoices, usePayments, useAutoReconcile
 
 ### NK (Frontend Lead) — Fix Dashboard Build [frontend-patterns]
+
 - Deleted stale `.next/types` directory (eliminated ~1,000 false TS errors)
 - Migrated all admin pages from `src/app/admin/` → `src/app/(dashboard)/admin/`
 - Fixed TS errors: button/badge variants, StatCard props, Modal props, type annotations
 - Fixed import paths for relocated admin pages
 
 ### DM (Frontend) — Rewire 30 Pages Batch 1 [frontend-patterns]
+
 - Fully rewired: dispatch, payments, billing, shipments pages
 - Added API hook imports to fleet, analytics, finance, demand, delivery, freight, locations, activity, calendar pages
-- Pattern: removed MOCK_* arrays → useApiList + LoadingSkeleton + ErrorState
+- Pattern: removed MOCK\_\* arrays → useApiList + LoadingSkeleton + ErrorState
 
 ### SP (Full-stack) — Rewire 30 Pages Batch 2 [frontend-patterns]
-- Rewired 24 pages: products, collections, campaigns, partners, notifications, pos, tracking, eld/*, esignatures/*, events, crm/*, collaboration, zones, map, support, inventory
+
+- Rewired 24 pages: products, collections, campaigns, partners, notifications, pos, tracking, eld/_, esignatures/_, events, crm/\*, collaboration, zones, map, support, inventory
 - Each page: removed mock data → useApiList → TableSkeleton + ErrorState
 - 6 requested pages didn't exist (skipped): partners/courier-rates, partners/courier-tracking, partners/performance, notifications/templates, notifications/logs, pos/terminals
 
 ### VS (Component Dev) — Consolidate Duplicate UI Components [frontend-patterns]
+
 - Merged metric-card + stat-card → card.tsx (with re-exports for compatibility)
 - Merged dialog + modal → dialog.tsx (Modal re-exported as alias)
 - Merged status-badge → badge.tsx (with status variant support)
 - analytics/data-table → re-exports from ui/data-table.tsx
 
 ### AM (Integration) — CI/CD Pipeline [deployment-patterns]
+
 - Created `.github/workflows/ci.yml`
 - Pipeline: pnpm 9.15.0 + Node.js 20 → install → build shared → typecheck → test → build API
 - Runs on push/PR to main
 
 ### KS (QA Lead) — Test Verification [tdd-workflow]
+
 - Confirmed validators test import path correct (`../index`)
 - Confirmed test script present in package.json
 

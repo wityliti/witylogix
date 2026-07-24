@@ -109,22 +109,19 @@ const generateId = (prefix: string = "test") =>
 
 // HMAC signature generator (matching real implementation)
 const generateHmacSignature = (payload: string, secret: string): string => {
-  return crypto
-    .createHmac("sha256", secret)
-    .update(payload)
-    .digest("base64");
+  return crypto.createHmac("sha256", secret).update(payload).digest("base64");
 };
 
 // Verify HMAC signature
 const verifyHmacSignature = (
   payload: string,
   signature: string,
-  secret: string
+  secret: string,
 ): boolean => {
   const expectedSignature = generateHmacSignature(payload, secret);
   return crypto.timingSafeEqual(
     Buffer.from(signature),
-    Buffer.from(expectedSignature)
+    Buffer.from(expectedSignature),
   );
 };
 
@@ -259,7 +256,10 @@ describe("Webhook Chain Integration Tests", () => {
         postalCode: shopifyPayload.shipping_address.zip,
         country: shopifyPayload.shipping_address.country_code,
         totalPrice: parseFloat(shopifyPayload.total_price),
-        itemCount: shopifyPayload.line_items.reduce((sum, item) => sum + item.quantity, 0),
+        itemCount: shopifyPayload.line_items.reduce(
+          (sum, item) => sum + item.quantity,
+          0,
+        ),
       };
 
       expect(transformedOrder.totalPrice).toBe(109.97);
@@ -274,7 +274,9 @@ describe("Webhook Chain Integration Tests", () => {
       });
 
       const customer = await mockPrisma.customer.upsert({
-        where: { shopId_email: { shopId, email: shopifyPayload.customer.email } },
+        where: {
+          shopId_email: { shopId, email: shopifyPayload.customer.email },
+        },
         create: {
           shopId: shopId,
           email: shopifyPayload.customer.email,
@@ -307,9 +309,7 @@ describe("Webhook Chain Integration Tests", () => {
         },
       });
 
-      expect(createdOrder.externalOrderId).toBe(
-        shopifyPayload.id.toString()
-      );
+      expect(createdOrder.externalOrderId).toBe(shopifyPayload.id.toString());
       expect(createdOrder.status).toBe("PENDING");
 
       // Step 5: Send outbound webhook to registered webhooks
@@ -350,7 +350,7 @@ describe("Webhook Chain Integration Tests", () => {
       const outboundPayloadString = JSON.stringify(outboundPayload);
       const outboundHmac = generateHmacSignature(
         outboundPayloadString,
-        registeredWebhooks[0].secret
+        registeredWebhooks[0].secret,
       );
 
       // Simulate HTTP POST to webhook
@@ -392,7 +392,7 @@ describe("Webhook Chain Integration Tests", () => {
       const isTamperedValid = verifyHmacSignature(
         tamperedPayload,
         correctSignature,
-        secret
+        secret,
       );
 
       expect(isTamperedValid).toBe(false);
@@ -405,7 +405,13 @@ describe("Webhook Chain Integration Tests", () => {
       mockPrisma.order.findUnique.mockResolvedValue(null);
 
       let existing = await mockPrisma.order.findUnique({
-        where: { shopId_externalOrderId_source: { shopId, externalOrderId, source: "SHOPIFY" } },
+        where: {
+          shopId_externalOrderId_source: {
+            shopId,
+            externalOrderId,
+            source: "SHOPIFY",
+          },
+        },
       });
 
       expect(existing).toBeNull();
@@ -432,7 +438,13 @@ describe("Webhook Chain Integration Tests", () => {
       mockPrisma.order.findUnique.mockResolvedValue(order1);
 
       existing = await mockPrisma.order.findUnique({
-        where: { shopId_externalOrderId_source: { shopId, externalOrderId, source: "SHOPIFY" } },
+        where: {
+          shopId_externalOrderId_source: {
+            shopId,
+            externalOrderId,
+            source: "SHOPIFY",
+          },
+        },
       });
 
       expect(existing).toBeDefined();
@@ -501,7 +513,10 @@ describe("Webhook Chain Integration Tests", () => {
         postalCode: wooPayload.shipping.postcode,
         country: wooPayload.shipping.country,
         totalPrice: parseFloat(wooPayload.total),
-        itemCount: wooPayload.line_items.reduce((sum, item) => sum + item.quantity, 0),
+        itemCount: wooPayload.line_items.reduce(
+          (sum, item) => sum + item.quantity,
+          0,
+        ),
       };
 
       expect(adaptedOrder.totalPrice).toBe(79.99);
@@ -579,7 +594,7 @@ describe("Webhook Chain Integration Tests", () => {
       const originalPayload = { test: "payload" };
 
       mockPrisma.webhookDelivery.create.mockRejectedValue(
-        new Error("Connection timeout")
+        new Error("Connection timeout"),
       );
 
       // Simulate retry attempts
@@ -597,7 +612,7 @@ describe("Webhook Chain Integration Tests", () => {
             failureCount: maxRetries + 1,
             createdAt: new Date().toISOString(),
             expiresAt: new Date(
-              Date.now() + 30 * 24 * 60 * 60 * 1000
+              Date.now() + 30 * 24 * 60 * 60 * 1000,
             ).toISOString(), // 30 days
           });
 
@@ -669,9 +684,7 @@ describe("Webhook Chain Integration Tests", () => {
 
     it("should auto-expire DLQ messages after retention period", async () => {
       const now = new Date();
-      const expiryDate = new Date(
-        now.getTime() - 1 * 24 * 60 * 60 * 1000
-      ); // Expired yesterday
+      const expiryDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // Expired yesterday
 
       mockPrisma.deadLetterQueue.findMany.mockResolvedValue([
         {
@@ -715,7 +728,7 @@ describe("Webhook Chain Integration Tests", () => {
       for (let attempt = 0; attempt < maxRetries; attempt++) {
         const delay = Math.min(
           initialDelayMs * Math.pow(backoffMultiplier, attempt),
-          maxDelayMs
+          maxDelayMs,
         );
         delays.push(delay);
       }
@@ -739,14 +752,14 @@ describe("Webhook Chain Integration Tests", () => {
       // Simulate failures
       for (let i = 0; i < failureThreshold + 1; i++) {
         failureWindow.push({
-          timestamp: now - (i * 1000),
+          timestamp: now - i * 1000,
           success: false,
         });
       }
 
       // Count failures in time window
       failureCount = failureWindow.filter(
-        (f) => f.timestamp >= now - windowMs && !f.success
+        (f) => f.timestamp >= now - windowMs && !f.success,
       ).length;
 
       if (failureCount >= failureThreshold) {
@@ -853,8 +866,8 @@ describe("Webhook Chain Integration Tests", () => {
       };
 
       // Check all required fields present
-      const hasAllFields = requiredFields.every((field) =>
-        field in validPayload
+      const hasAllFields = requiredFields.every(
+        (field) => field in validPayload,
       );
 
       expect(hasAllFields).toBe(true);
@@ -869,8 +882,8 @@ describe("Webhook Chain Integration Tests", () => {
         totalPrice: 100,
       };
 
-      const hasAllFieldsInvalid = requiredFields.every((field) =>
-        field in invalidPayload
+      const hasAllFieldsInvalid = requiredFields.every(
+        (field) => field in invalidPayload,
       );
 
       expect(hasAllFieldsInvalid).toBe(false);
@@ -894,10 +907,17 @@ describe("Webhook Chain Integration Tests", () => {
       };
 
       const payloadString = JSON.stringify(payload);
-      const hmacSignature = generateHmacSignature(payloadString, webhook.secret);
+      const hmacSignature = generateHmacSignature(
+        payloadString,
+        webhook.secret,
+      );
 
       // Verify signature can be generated and verified
-      const isValid = verifyHmacSignature(payloadString, hmacSignature, webhook.secret);
+      const isValid = verifyHmacSignature(
+        payloadString,
+        hmacSignature,
+        webhook.secret,
+      );
       expect(isValid).toBe(true);
 
       // Log delivery
@@ -923,13 +943,18 @@ describe("Webhook Chain Integration Tests", () => {
     });
 
     it("should batch process webhook deliveries efficiently", async () => {
-      const webhookIds = Array.from({ length: 50 }, () => generateId("webhook"));
+      const webhookIds = Array.from({ length: 50 }, () =>
+        generateId("webhook"),
+      );
 
       mockPrisma.webhookDelivery.createMany = vi.fn().mockResolvedValue({
         count: webhookIds.length,
       });
 
-      const payload = { event: "bulk_event", timestamp: new Date().toISOString() };
+      const payload = {
+        event: "bulk_event",
+        timestamp: new Date().toISOString(),
+      };
 
       const deliveries = webhookIds.map((id) => ({
         webhookId: id,

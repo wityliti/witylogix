@@ -3,11 +3,11 @@
  * Comprehensive test suite for saved view management
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { ViewEngine } from '../view-engine';
-import { ViewNotFoundError, ViewValidationError } from '../types';
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { ViewEngine } from "../view-engine";
+import { ViewNotFoundError, ViewValidationError } from "../types";
 
-describe('ViewEngine', () => {
+describe("ViewEngine", () => {
   let engine: ViewEngine;
   let prisma: any;
 
@@ -28,15 +28,15 @@ describe('ViewEngine', () => {
     engine = new ViewEngine(prisma as any);
   });
 
-  describe('createView', () => {
-    it('should create view', async () => {
+  describe("createView", () => {
+    it("should create view", async () => {
       const mockView: any = {
-        id: 'view-1',
-        shopId: 'shop-1',
-        userId: 'user-1',
-        name: 'Active Orders',
-        tableName: 'orders',
-        filters: [{ column: 'status', operator: 'equals', value: 'active' }],
+        id: "view-1",
+        shopId: "shop-1",
+        userId: "user-1",
+        name: "Active Orders",
+        tableName: "orders",
+        filters: [{ column: "status", operator: "equals", value: "active" }],
         sortConfig: null,
         columnVisibility: null,
         isShared: false,
@@ -48,127 +48,129 @@ describe('ViewEngine', () => {
       prisma.savedView.findFirst.mockResolvedValue(null);
       prisma.savedView.create.mockResolvedValue(mockView);
 
-      const result = await engine.createView('shop-1', 'user-1', {
-        name: 'Active Orders',
-        tableName: 'orders',
-        filters: [{ column: 'status', operator: 'equals', value: 'active' }],
+      const result = await engine.createView("shop-1", "user-1", {
+        name: "Active Orders",
+        tableName: "orders",
+        filters: [{ column: "status", operator: "equals", value: "active" }],
       });
 
-      expect(result.id).toBe('view-1');
-      expect(result.name).toBe('Active Orders');
-      expect(result.tableName).toBe('orders');
+      expect(result.id).toBe("view-1");
+      expect(result.name).toBe("Active Orders");
+      expect(result.tableName).toBe("orders");
     });
 
-    it('should enforce unique name per user and table', async () => {
+    it("should enforce unique name per user and table", async () => {
       const existingView: any = {
-        id: 'view-1',
-        name: 'Active Orders',
+        id: "view-1",
+        name: "Active Orders",
       };
 
       prisma.savedView.findFirst.mockResolvedValue(existingView);
 
       await expect(
-        engine.createView('shop-1', 'user-1', {
-          name: 'Active Orders',
-          tableName: 'orders',
-        })
+        engine.createView("shop-1", "user-1", {
+          name: "Active Orders",
+          tableName: "orders",
+        }),
       ).rejects.toThrow(ViewValidationError);
     });
   });
 
-  describe('updateView', () => {
-    it('should update view with ownership check', async () => {
+  describe("updateView", () => {
+    it("should update view with ownership check", async () => {
       const mockView: any = {
-        id: 'view-1',
-        shopId: 'shop-1',
-        userId: 'user-1',
-        name: 'Old Name',
-        tableName: 'orders',
+        id: "view-1",
+        shopId: "shop-1",
+        userId: "user-1",
+        name: "Old Name",
+        tableName: "orders",
       };
 
       const updatedView: any = {
         ...mockView,
-        name: 'New Name',
+        name: "New Name",
       };
 
       prisma.savedView.findUnique.mockResolvedValue(mockView);
       prisma.savedView.findFirst.mockResolvedValue(null);
       prisma.savedView.update.mockResolvedValue(updatedView);
 
-      const result = await engine.updateView('view-1', 'user-1', { name: 'New Name' });
+      const result = await engine.updateView("view-1", "user-1", {
+        name: "New Name",
+      });
 
-      expect(result.name).toBe('New Name');
+      expect(result.name).toBe("New Name");
     });
 
-    it('should throw error if user does not own view', async () => {
+    it("should throw error if user does not own view", async () => {
       const mockView: any = {
-        id: 'view-1',
-        userId: 'user-2',
+        id: "view-1",
+        userId: "user-2",
       };
 
       prisma.savedView.findUnique.mockResolvedValue(mockView);
 
       await expect(
-        engine.updateView('view-1', 'user-1', { name: 'New Name' })
+        engine.updateView("view-1", "user-1", { name: "New Name" }),
       ).rejects.toThrow(ViewValidationError);
     });
 
-    it('should throw ViewNotFoundError when view not found', async () => {
+    it("should throw ViewNotFoundError when view not found", async () => {
       prisma.savedView.findUnique.mockResolvedValue(null);
 
       await expect(
-        engine.updateView('invalid-view', 'user-1', { name: 'Test' })
+        engine.updateView("invalid-view", "user-1", { name: "Test" }),
       ).rejects.toThrow(ViewNotFoundError);
     });
   });
 
-  describe('deleteView', () => {
-    it('should delete view with ownership check', async () => {
+  describe("deleteView", () => {
+    it("should delete view with ownership check", async () => {
       const mockView: any = {
-        id: 'view-1',
-        userId: 'user-1',
+        id: "view-1",
+        userId: "user-1",
       };
 
       prisma.savedView.findUnique.mockResolvedValue(mockView);
       prisma.savedView.delete.mockResolvedValue(mockView);
 
-      await engine.deleteView('view-1', 'user-1');
+      await engine.deleteView("view-1", "user-1");
 
       expect(prisma.savedView.delete).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { id: 'view-1' },
-        })
+          where: { id: "view-1" },
+        }),
       );
     });
 
-    it('should throw error if user does not own view', async () => {
+    it("should throw error if user does not own view", async () => {
       const mockView: any = {
-        id: 'view-1',
-        userId: 'user-2',
+        id: "view-1",
+        userId: "user-2",
       };
 
       prisma.savedView.findUnique.mockResolvedValue(mockView);
 
-      await expect(engine.deleteView('view-1', 'user-1')).rejects.toThrow(
-        ViewValidationError
+      await expect(engine.deleteView("view-1", "user-1")).rejects.toThrow(
+        ViewValidationError,
       );
     });
 
-    it('should throw ViewNotFoundError when view not found', async () => {
+    it("should throw ViewNotFoundError when view not found", async () => {
       prisma.savedView.findUnique.mockResolvedValue(null);
 
-      await expect(engine.deleteView('invalid-view', 'user-1')).rejects.toThrow(
-        ViewNotFoundError
+      await expect(engine.deleteView("invalid-view", "user-1")).rejects.toThrow(
+        ViewNotFoundError,
       );
     });
   });
 
-  describe('setDefault', () => {
-    it('should set view as default and unset previous default', async () => {
+  describe("setDefault", () => {
+    it("should set view as default and unset previous default", async () => {
       const mockView: any = {
-        id: 'view-1',
-        userId: 'user-1',
-        tableName: 'orders',
+        id: "view-1",
+        userId: "user-1",
+        tableName: "orders",
         isDefault: false,
       };
 
@@ -181,43 +183,43 @@ describe('ViewEngine', () => {
       prisma.savedView.updateMany.mockResolvedValue({ count: 1 });
       prisma.savedView.update.mockResolvedValue(updatedView);
 
-      const result = await engine.setDefault('view-1', 'user-1', 'orders');
+      const result = await engine.setDefault("view-1", "user-1", "orders");
 
       expect(result.isDefault).toBe(true);
       expect(prisma.savedView.updateMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            userId: 'user-1',
-            tableName: 'orders',
+            userId: "user-1",
+            tableName: "orders",
             isDefault: true,
           }),
           data: { isDefault: false },
-        })
+        }),
       );
     });
 
-    it('should throw error if user does not own view', async () => {
+    it("should throw error if user does not own view", async () => {
       const mockView: any = {
-        id: 'view-1',
-        userId: 'user-2',
+        id: "view-1",
+        userId: "user-2",
       };
 
       prisma.savedView.findUnique.mockResolvedValue(mockView);
 
-      await expect(engine.setDefault('view-1', 'user-1', 'orders')).rejects.toThrow(
-        ViewValidationError
-      );
+      await expect(
+        engine.setDefault("view-1", "user-1", "orders"),
+      ).rejects.toThrow(ViewValidationError);
     });
   });
 
-  describe('duplicateView', () => {
+  describe("duplicateView", () => {
     it('should duplicate view with "(Copy)" suffix', async () => {
       const mockView: any = {
-        id: 'view-1',
-        shopId: 'shop-1',
-        userId: 'user-1',
-        name: 'Original',
-        tableName: 'orders',
+        id: "view-1",
+        shopId: "shop-1",
+        userId: "user-1",
+        name: "Original",
+        tableName: "orders",
         filters: [],
         sortConfig: null,
         columnVisibility: null,
@@ -226,8 +228,8 @@ describe('ViewEngine', () => {
       };
 
       const duplicatedView: any = {
-        id: 'view-2',
-        name: 'Original (Copy)',
+        id: "view-2",
+        name: "Original (Copy)",
         isShared: false,
         isDefault: false,
       };
@@ -236,29 +238,29 @@ describe('ViewEngine', () => {
       prisma.savedView.findFirst.mockResolvedValue(null);
       prisma.savedView.create.mockResolvedValue(duplicatedView);
 
-      const result = await engine.duplicateView('view-1', 'user-1');
+      const result = await engine.duplicateView("view-1", "user-1");
 
-      expect(result.name).toBe('Original (Copy)');
+      expect(result.name).toBe("Original (Copy)");
       expect(result.isShared).toBe(false);
       expect(result.isDefault).toBe(false);
     });
 
-    it('should handle duplicate copy names', async () => {
+    it("should handle duplicate copy names", async () => {
       const mockView: any = {
-        id: 'view-1',
-        shopId: 'shop-1',
-        userId: 'user-1',
-        name: 'Original',
-        tableName: 'orders',
+        id: "view-1",
+        shopId: "shop-1",
+        userId: "user-1",
+        name: "Original",
+        tableName: "orders",
       };
 
       const existingCopy: any = {
-        name: 'Original (Copy)',
+        name: "Original (Copy)",
       };
 
       const duplicatedView: any = {
-        id: 'view-3',
-        name: 'Original (Copy 2)',
+        id: "view-3",
+        name: "Original (Copy 2)",
       };
 
       prisma.savedView.findUnique.mockResolvedValue(mockView);
@@ -267,30 +269,30 @@ describe('ViewEngine', () => {
         .mockResolvedValueOnce(null);
       prisma.savedView.create.mockResolvedValue(duplicatedView);
 
-      const result = await engine.duplicateView('view-1', 'user-1');
+      const result = await engine.duplicateView("view-1", "user-1");
 
-      expect(result.name).toBe('Original (Copy 2)');
+      expect(result.name).toBe("Original (Copy 2)");
     });
 
-    it('should throw error if user does not own view', async () => {
+    it("should throw error if user does not own view", async () => {
       const mockView: any = {
-        id: 'view-1',
-        userId: 'user-2',
+        id: "view-1",
+        userId: "user-2",
       };
 
       prisma.savedView.findUnique.mockResolvedValue(mockView);
 
-      await expect(engine.duplicateView('view-1', 'user-1')).rejects.toThrow(
-        ViewValidationError
+      await expect(engine.duplicateView("view-1", "user-1")).rejects.toThrow(
+        ViewValidationError,
       );
     });
   });
 
-  describe('shareView', () => {
-    it('should share view', async () => {
+  describe("shareView", () => {
+    it("should share view", async () => {
       const mockView: any = {
-        id: 'view-1',
-        userId: 'user-1',
+        id: "view-1",
+        userId: "user-1",
         isShared: false,
       };
 
@@ -302,30 +304,30 @@ describe('ViewEngine', () => {
       prisma.savedView.findUnique.mockResolvedValue(mockView);
       prisma.savedView.update.mockResolvedValue(sharedView);
 
-      const result = await engine.shareView('view-1', 'user-1');
+      const result = await engine.shareView("view-1", "user-1");
 
       expect(result.isShared).toBe(true);
     });
 
-    it('should throw error if user does not own view', async () => {
+    it("should throw error if user does not own view", async () => {
       const mockView: any = {
-        id: 'view-1',
-        userId: 'user-2',
+        id: "view-1",
+        userId: "user-2",
       };
 
       prisma.savedView.findUnique.mockResolvedValue(mockView);
 
-      await expect(engine.shareView('view-1', 'user-1')).rejects.toThrow(
-        ViewValidationError
+      await expect(engine.shareView("view-1", "user-1")).rejects.toThrow(
+        ViewValidationError,
       );
     });
   });
 
-  describe('unshareView', () => {
-    it('should unshare view', async () => {
+  describe("unshareView", () => {
+    it("should unshare view", async () => {
       const mockView: any = {
-        id: 'view-1',
-        userId: 'user-1',
+        id: "view-1",
+        userId: "user-1",
         isShared: true,
       };
 
@@ -337,88 +339,88 @@ describe('ViewEngine', () => {
       prisma.savedView.findUnique.mockResolvedValue(mockView);
       prisma.savedView.update.mockResolvedValue(unsharedView);
 
-      const result = await engine.unshareView('view-1', 'user-1');
+      const result = await engine.unshareView("view-1", "user-1");
 
       expect(result.isShared).toBe(false);
     });
 
-    it('should throw error if user does not own view', async () => {
+    it("should throw error if user does not own view", async () => {
       const mockView: any = {
-        id: 'view-1',
-        userId: 'user-2',
+        id: "view-1",
+        userId: "user-2",
       };
 
       prisma.savedView.findUnique.mockResolvedValue(mockView);
 
-      await expect(engine.unshareView('view-1', 'user-1')).rejects.toThrow(
-        ViewValidationError
+      await expect(engine.unshareView("view-1", "user-1")).rejects.toThrow(
+        ViewValidationError,
       );
     });
   });
 
-  describe('listViews', () => {
-    it('should list user\'s own views and shared views', async () => {
+  describe("listViews", () => {
+    it("should list user's own views and shared views", async () => {
       const mockViews: any = [
-        { id: 'view-1', userId: 'user-1', isShared: false },
-        { id: 'view-2', userId: 'user-2', isShared: true },
+        { id: "view-1", userId: "user-1", isShared: false },
+        { id: "view-2", userId: "user-2", isShared: true },
       ];
 
       prisma.savedView.findMany.mockResolvedValue(mockViews);
 
-      const result = await engine.listViews('shop-1', 'user-1');
+      const result = await engine.listViews("shop-1", "user-1");
 
       expect(result).toHaveLength(2);
       expect(prisma.savedView.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            shopId: 'shop-1',
-            OR: [{ userId: 'user-1' }, { isShared: true }],
+            shopId: "shop-1",
+            OR: [{ userId: "user-1" }, { isShared: true }],
           }),
-        })
+        }),
       );
     });
 
-    it('should filter by table name', async () => {
-      const mockViews: any = [{ id: 'view-1', tableName: 'orders' }];
+    it("should filter by table name", async () => {
+      const mockViews: any = [{ id: "view-1", tableName: "orders" }];
 
       prisma.savedView.findMany.mockResolvedValue(mockViews);
 
-      await engine.listViews('shop-1', 'user-1', 'orders');
+      await engine.listViews("shop-1", "user-1", "orders");
 
       expect(prisma.savedView.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            tableName: 'orders',
+            tableName: "orders",
           }),
-        })
+        }),
       );
     });
   });
 
-  describe('applyFilters', () => {
-    it('should apply equals filter', () => {
-      const result = engine.applyFilters('orders', [
-        { column: 'status', operator: 'equals', value: 'active' },
+  describe("applyFilters", () => {
+    it("should apply equals filter", () => {
+      const result = engine.applyFilters("orders", [
+        { column: "status", operator: "equals", value: "active" },
       ]);
 
       expect(result).toEqual({
-        status: { equals: 'active' },
+        status: { equals: "active" },
       });
     });
 
-    it('should apply contains filter', () => {
-      const result = engine.applyFilters('orders', [
-        { column: 'description', operator: 'contains', value: 'urgent' },
+    it("should apply contains filter", () => {
+      const result = engine.applyFilters("orders", [
+        { column: "description", operator: "contains", value: "urgent" },
       ]);
 
       expect(result).toEqual({
-        description: { contains: 'urgent', mode: 'insensitive' },
+        description: { contains: "urgent", mode: "insensitive" },
       });
     });
 
-    it('should apply between filter', () => {
-      const result = engine.applyFilters('orders', [
-        { column: 'amount', operator: 'between', value: [100, 500] },
+    it("should apply between filter", () => {
+      const result = engine.applyFilters("orders", [
+        { column: "amount", operator: "between", value: [100, 500] },
       ]);
 
       expect(result).toEqual({
@@ -426,144 +428,146 @@ describe('ViewEngine', () => {
       });
     });
 
-    it('should apply in filter', () => {
-      const result = engine.applyFilters('orders', [
-        { column: 'status', operator: 'in', value: ['active', 'pending'] },
+    it("should apply in filter", () => {
+      const result = engine.applyFilters("orders", [
+        { column: "status", operator: "in", value: ["active", "pending"] },
       ]);
 
       expect(result).toEqual({
-        status: { in: ['active', 'pending'] },
+        status: { in: ["active", "pending"] },
       });
     });
 
-    it('should apply is_empty filter', () => {
-      const result = engine.applyFilters('orders', [
-        { column: 'notes', operator: 'is_empty', value: null },
+    it("should apply is_empty filter", () => {
+      const result = engine.applyFilters("orders", [
+        { column: "notes", operator: "is_empty", value: null },
       ]);
 
       expect(result).toEqual({
-        OR: [{ notes: null }, { notes: '' }],
+        OR: [{ notes: null }, { notes: "" }],
       });
     });
 
-    it('should combine multiple filters with AND', () => {
-      const result = engine.applyFilters('orders', [
-        { column: 'status', operator: 'equals', value: 'active' },
-        { column: 'priority', operator: 'equals', value: 'high' },
+    it("should combine multiple filters with AND", () => {
+      const result = engine.applyFilters("orders", [
+        { column: "status", operator: "equals", value: "active" },
+        { column: "priority", operator: "equals", value: "high" },
       ]);
 
       expect(result).toEqual({
         AND: [
-          { status: { equals: 'active' } },
-          { priority: { equals: 'high' } },
+          { status: { equals: "active" } },
+          { priority: { equals: "high" } },
         ],
       });
     });
 
-    it('should return empty object for empty filters', () => {
-      const result = engine.applyFilters('orders', []);
+    it("should return empty object for empty filters", () => {
+      const result = engine.applyFilters("orders", []);
 
       expect(result).toEqual({});
     });
   });
 
-  describe('validateFilters', () => {
-    it('should validate filters against table columns', () => {
+  describe("validateFilters", () => {
+    it("should validate filters against table columns", () => {
       expect(() => {
-        engine.validateFilters('orders', [
-          { column: 'status', operator: 'equals', value: 'active' },
+        engine.validateFilters("orders", [
+          { column: "status", operator: "equals", value: "active" },
         ]);
       }).not.toThrow();
     });
 
-    it('should throw error for invalid column', () => {
+    it("should throw error for invalid column", () => {
       expect(() => {
-        engine.validateFilters('orders', [
-          { column: 'nonexistent', operator: 'equals', value: 'test' },
+        engine.validateFilters("orders", [
+          { column: "nonexistent", operator: "equals", value: "test" },
         ]);
       }).toThrow(ViewValidationError);
     });
 
-    it('should throw error for between operator without array', () => {
+    it("should throw error for between operator without array", () => {
       expect(() => {
-        engine.validateFilters('orders', [
-          { column: 'amount', operator: 'between', value: 100 },
+        engine.validateFilters("orders", [
+          { column: "amount", operator: "between", value: 100 },
         ]);
       }).toThrow(ViewValidationError);
     });
 
-    it('should throw error for between operator without 2 values', () => {
+    it("should throw error for between operator without 2 values", () => {
       expect(() => {
-        engine.validateFilters('orders', [
-          { column: 'amount', operator: 'between', value: [100] },
+        engine.validateFilters("orders", [
+          { column: "amount", operator: "between", value: [100] },
         ]);
       }).toThrow(ViewValidationError);
     });
   });
 
-  describe('getAvailableColumns', () => {
-    it('should return available columns for table', () => {
-      const columns = engine.getAvailableColumns('orders');
+  describe("getAvailableColumns", () => {
+    it("should return available columns for table", () => {
+      const columns = engine.getAvailableColumns("orders");
 
       expect(Array.isArray(columns)).toBe(true);
       expect(columns.length).toBeGreaterThan(0);
     });
 
-    it('should throw error for unknown table', () => {
+    it("should throw error for unknown table", () => {
       expect(() => {
-        engine.getAvailableColumns('unknown_table' as any);
+        engine.getAvailableColumns("unknown_table" as any);
       }).toThrow(ViewValidationError);
     });
   });
 
-  describe('getView', () => {
-    it('should get view by ID', async () => {
+  describe("getView", () => {
+    it("should get view by ID", async () => {
       const mockView: any = {
-        id: 'view-1',
-        name: 'Test View',
-        tableName: 'orders',
+        id: "view-1",
+        name: "Test View",
+        tableName: "orders",
       };
 
       prisma.savedView.findUnique.mockResolvedValue(mockView);
 
-      const result = await engine.getView('view-1');
+      const result = await engine.getView("view-1");
 
-      expect(result.id).toBe('view-1');
-      expect(result.name).toBe('Test View');
+      expect(result.id).toBe("view-1");
+      expect(result.name).toBe("Test View");
     });
 
-    it('should throw ViewNotFoundError when view not found', async () => {
+    it("should throw ViewNotFoundError when view not found", async () => {
       prisma.savedView.findUnique.mockResolvedValue(null);
 
-      await expect(engine.getView('invalid-view')).rejects.toThrow(ViewNotFoundError);
+      await expect(engine.getView("invalid-view")).rejects.toThrow(
+        ViewNotFoundError,
+      );
     });
   });
 
-  describe('Edge cases', () => {
-    it('should handle empty view name validation', async () => {
+  describe("Edge cases", () => {
+    it("should handle empty view name validation", async () => {
       await expect(
-        engine.createView('shop-1', 'user-1', {
-          name: '',
-          tableName: 'orders',
-        })
+        engine.createView("shop-1", "user-1", {
+          name: "",
+          tableName: "orders",
+        }),
       ).rejects.toThrow(ViewValidationError);
     });
 
-    it('should handle missing table name', async () => {
+    it("should handle missing table name", async () => {
       await expect(
-        engine.createView('shop-1', 'user-1', {
-          name: 'Test',
+        engine.createView("shop-1", "user-1", {
+          name: "Test",
           tableName: undefined as any,
-        })
+        }),
       ).rejects.toThrow(ViewValidationError);
     });
 
-    it('should handle unknown table in create', async () => {
+    it("should handle unknown table in create", async () => {
       await expect(
-        engine.createView('shop-1', 'user-1', {
-          name: 'Test',
-          tableName: 'unknown_table' as any,
-        })
+        engine.createView("shop-1", "user-1", {
+          name: "Test",
+          tableName: "unknown_table" as any,
+        }),
       ).rejects.toThrow(ViewValidationError);
     });
   });

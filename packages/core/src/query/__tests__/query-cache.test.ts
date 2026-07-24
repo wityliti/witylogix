@@ -70,8 +70,14 @@ describe("QueryCache", () => {
     it("should generate different keys for different SQL", () => {
       const params = [123];
 
-      const key1 = cache.generateKey("SELECT * FROM users WHERE id = $1", params);
-      const key2 = cache.generateKey("SELECT * FROM orders WHERE id = $1", params);
+      const key1 = cache.generateKey(
+        "SELECT * FROM users WHERE id = $1",
+        params,
+      );
+      const key2 = cache.generateKey(
+        "SELECT * FROM orders WHERE id = $1",
+        params,
+      );
 
       expect(key1).not.toBe(key2);
     });
@@ -326,9 +332,7 @@ describe("QueryCache", () => {
     it("should respect TTL when warming", async () => {
       vi.useFakeTimers();
 
-      const entries = [
-        { key: "key1", data: { value: 1 }, ttl: 1 },
-      ];
+      const entries = [{ key: "key1", data: { value: 1 }, ttl: 1 }];
 
       cache.warm(entries);
 
@@ -393,7 +397,10 @@ describe("QueryCache", () => {
     });
 
     it("should handle special characters in keys", () => {
-      const specialKey = cache.generateKey("SELECT * FROM `table`; DROP TABLE;", []);
+      const specialKey = cache.generateKey(
+        "SELECT * FROM `table`; DROP TABLE;",
+        [],
+      );
       cache.set(specialKey, { safe: true });
 
       expect(cache.get(specialKey)).toEqual({ safe: true });

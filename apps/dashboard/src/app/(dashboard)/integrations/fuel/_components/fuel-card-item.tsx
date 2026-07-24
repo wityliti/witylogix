@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Eye, Trash2, Settings } from 'lucide-react';
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Eye, Trash2, Settings } from "lucide-react";
 
 export type CardStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED" | "PENDING";
 export type AssignmentType = "DRIVER" | "VEHICLE" | "BOTH";
@@ -34,16 +34,16 @@ interface FuelCardItemProps {
 
 const statusVariant = (status: CardStatus) => {
   switch (status) {
-    case 'ACTIVE':
-      return 'success';
-    case 'INACTIVE':
-      return 'default';
-    case 'SUSPENDED':
-      return 'danger';
-    case 'PENDING':
-      return 'warning';
+    case "ACTIVE":
+      return "success";
+    case "INACTIVE":
+      return "default";
+    case "SUSPENDED":
+      return "danger";
+    case "PENDING":
+      return "warning";
     default:
-      return 'default';
+      return "default";
   }
 };
 
@@ -95,12 +95,12 @@ export function FuelCardItem({
           <div className="w-full bg-wl-bg-root rounded-full h-2">
             <div
               className={cn(
-                'h-2 rounded-full transition-all',
+                "h-2 rounded-full transition-all",
                 spendPercentage > 90
-                  ? 'bg-red-500'
+                  ? "bg-red-500"
                   : spendPercentage > 70
-                  ? 'bg-yellow-500'
-                  : 'bg-emerald-500'
+                    ? "bg-yellow-500"
+                    : "bg-emerald-500",
               )}
               style={{ width: `${Math.min(spendPercentage, 100)}%` }}
             />

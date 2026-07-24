@@ -73,7 +73,10 @@ export class SamsaraSdkClient implements TelematicsProvider {
   private retries = 3;
   private rateLimiter = new SamsaraRateLimiter();
 
-  constructor(apiToken: string, options?: { timeout?: number; retries?: number }) {
+  constructor(
+    apiToken: string,
+    options?: { timeout?: number; retries?: number },
+  ) {
     if (!apiToken) {
       throw new Error("Samsara API token is required");
     }
@@ -167,7 +170,9 @@ export class SamsaraSdkClient implements TelematicsProvider {
    * Get real-time GPS positions
    * GET /fleet/vehicles/locations
    */
-  async getVehiclePosition(vehicleId: string): Promise<WitylogixVehiclePosition> {
+  async getVehiclePosition(
+    vehicleId: string,
+  ): Promise<WitylogixVehiclePosition> {
     const response = await this.request("GET", "/fleet/vehicles/locations", {
       vehicleIds: [vehicleId],
       limit: 1,
@@ -282,8 +287,13 @@ export class SamsaraSdkClient implements TelematicsProvider {
    * Get vehicle diagnostics (fuel, odometer, engine hours, battery)
    * GET /fleet/vehicles/{id}/stats
    */
-  async getVehicleDiagnostics(vehicleId: string): Promise<WitylogixVehicleDiagnostics> {
-    const response = await this.request("GET", `/fleet/vehicles/${vehicleId}/stats`);
+  async getVehicleDiagnostics(
+    vehicleId: string,
+  ): Promise<WitylogixVehicleDiagnostics> {
+    const response = await this.request(
+      "GET",
+      `/fleet/vehicles/${vehicleId}/stats`,
+    );
 
     const data = response as {
       data?: {
@@ -426,13 +436,11 @@ export class SamsaraSdkClient implements TelematicsProvider {
     return (data.data?.safetyEvents || []).map((event) => ({
       driverId,
       eventType: this.mapEventType(event.eventType),
-      severity: (
-        event.severity === "critical"
-          ? "critical"
-          : event.severity === "warning"
-            ? "warning"
-            : "info"
-      ) as "info" | "warning" | "critical",
+      severity: (event.severity === "critical"
+        ? "critical"
+        : event.severity === "warning"
+          ? "warning"
+          : "info") as "info" | "warning" | "critical",
       timestamp: new Date(event.timestamp),
       location: {
         lat: event.latitude,
@@ -478,7 +486,9 @@ export class SamsaraSdkClient implements TelematicsProvider {
       vehicleId?: string;
     }>
   > {
-    const response = await this.request("GET", "/fleet/drivers", { limit: 100 });
+    const response = await this.request("GET", "/fleet/drivers", {
+      limit: 100,
+    });
 
     const data = response as {
       data?: Array<{
@@ -575,8 +585,7 @@ export class SamsaraSdkClient implements TelematicsProvider {
           clearTimeout(timeoutId);
         }
       } catch (error) {
-        lastError =
-          error instanceof Error ? error : new Error(String(error));
+        lastError = error instanceof Error ? error : new Error(String(error));
 
         if (attempt < this.retries - 1) {
           const delayMs = Math.pow(2, attempt) * 100;
@@ -629,9 +638,7 @@ export class SamsaraSdkClient implements TelematicsProvider {
   /**
    * Map event type
    */
-  private mapEventType(
-    eventType: string,
-  ): WitylogixSafetyEvent["eventType"] {
+  private mapEventType(eventType: string): WitylogixSafetyEvent["eventType"] {
     const normalized = eventType.toLowerCase();
     if (normalized.includes("harsh_accel")) return "harsh_acceleration";
     if (normalized.includes("harsh_brake")) return "harsh_braking";
@@ -649,4 +656,8 @@ export class SamsaraSdkClient implements TelematicsProvider {
 /**
  * Export named exports
  */
-export type { TelematicsProvider, WitylogixVehiclePosition, WitylogixDriverStatus };
+export type {
+  TelematicsProvider,
+  WitylogixVehiclePosition,
+  WitylogixDriverStatus,
+};

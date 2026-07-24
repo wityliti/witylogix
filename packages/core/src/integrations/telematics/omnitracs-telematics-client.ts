@@ -51,7 +51,12 @@ interface OmnitracsBreadcrumb {
 interface OmnitracsCriticalEvent {
   eventId: string;
   vehicleId: string;
-  eventType: "HARSH_ACCELERATION" | "HARSH_BRAKING" | "HARSH_TURN" | "COLLISION" | "ROLLOVER";
+  eventType:
+    | "HARSH_ACCELERATION"
+    | "HARSH_BRAKING"
+    | "HARSH_TURN"
+    | "COLLISION"
+    | "ROLLOVER";
   severity: string;
   timestamp: string;
   latitude: number;
@@ -183,7 +188,9 @@ export class OmnitrocsClient implements ITelematicsAdapter {
    */
   private async refreshAccessToken(): Promise<void> {
     const url = "https://auth.omnitracs.com/oauth/token";
-    const auth = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString("base64");
+    const auth = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString(
+      "base64",
+    );
 
     const body = new URLSearchParams({
       grant_type: "client_credentials",
@@ -199,7 +206,9 @@ export class OmnitrocsClient implements ITelematicsAdapter {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to refresh Omnitracs token: ${response.statusText}`);
+      throw new Error(
+        `Failed to refresh Omnitracs token: ${response.statusText}`,
+      );
     }
 
     const data = (await response.json()) as any;
@@ -210,7 +219,11 @@ export class OmnitrocsClient implements ITelematicsAdapter {
   /**
    * Make authenticated request to Omnitracs API
    */
-  private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  private async request<T>(
+    method: string,
+    path: string,
+    body?: unknown,
+  ): Promise<T> {
     return this.circuitBreaker.execute(async () => {
       await this.rateLimiter.waitIfNeeded();
 
@@ -227,7 +240,9 @@ export class OmnitrocsClient implements ITelematicsAdapter {
       });
 
       if (!response.ok) {
-        throw new Error(`Omnitracs API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Omnitracs API error: ${response.status} ${response.statusText}`,
+        );
       }
 
       return (await response.json()) as T;
@@ -301,7 +316,9 @@ export class OmnitrocsClient implements ITelematicsAdapter {
   /**
    * Get diagnostics by vehicle ID
    */
-  async getDiagnosticsByVehicleId(vehicleId: string): Promise<NormalizedDiagnostic> {
+  async getDiagnosticsByVehicleId(
+    vehicleId: string,
+  ): Promise<NormalizedDiagnostic> {
     return {
       externalVehicleId: vehicleId,
       engineRunning: false,
@@ -313,7 +330,9 @@ export class OmnitrocsClient implements ITelematicsAdapter {
   /**
    * Get critical events (behavior)
    */
-  async getBehaviorEvents(options?: SyncOptions): Promise<NormalizedBehaviorEvent[]> {
+  async getBehaviorEvents(
+    options?: SyncOptions,
+  ): Promise<NormalizedBehaviorEvent[]> {
     try {
       const response = await this.request<{
         events: OmnitracsCriticalEvent[];
@@ -329,7 +348,9 @@ export class OmnitrocsClient implements ITelematicsAdapter {
   /**
    * Get fuel readings
    */
-  async getFuelReadings(options?: SyncOptions): Promise<NormalizedFuelReading[]> {
+  async getFuelReadings(
+    options?: SyncOptions,
+  ): Promise<NormalizedFuelReading[]> {
     // Omnitracs doesn't provide fuel data directly
     return [];
   }
@@ -337,7 +358,9 @@ export class OmnitrocsClient implements ITelematicsAdapter {
   /**
    * Get fuel reading by vehicle ID
    */
-  async getFuelReadingByVehicleId(vehicleId: string): Promise<NormalizedFuelReading> {
+  async getFuelReadingByVehicleId(
+    vehicleId: string,
+  ): Promise<NormalizedFuelReading> {
     return {
       externalVehicleId: vehicleId,
       fuelLevel: 0,
@@ -377,7 +400,9 @@ export class OmnitrocsClient implements ITelematicsAdapter {
   /**
    * Submit driver form
    */
-  async submitDriverForm(form: Omit<OmnitrocsForm, "formId">): Promise<OmnitrocsForm> {
+  async submitDriverForm(
+    form: Omit<OmnitrocsForm, "formId">,
+  ): Promise<OmnitrocsForm> {
     const response = await this.request<OmnitrocsForm>(
       "POST",
       "/drivers/forms",
@@ -390,7 +415,10 @@ export class OmnitrocsClient implements ITelematicsAdapter {
   /**
    * Send message to driver
    */
-  async sendMessageToDriver(driverId: string, message: string): Promise<OmnitrocsMessage> {
+  async sendMessageToDriver(
+    driverId: string,
+    message: string,
+  ): Promise<OmnitrocsMessage> {
     const response = await this.request<OmnitrocsMessage>(
       "POST",
       `/drivers/${driverId}/messages`,
@@ -488,7 +516,9 @@ export class OmnitrocsClient implements ITelematicsAdapter {
     return this.getPositionByVehicleId(vehicleId);
   }
 
-  async getVehicleDiagnostics(vehicleId: string): Promise<NormalizedDiagnostic> {
+  async getVehicleDiagnostics(
+    vehicleId: string,
+  ): Promise<NormalizedDiagnostic> {
     return this.getDiagnosticsByVehicleId(vehicleId);
   }
 
@@ -496,7 +526,10 @@ export class OmnitrocsClient implements ITelematicsAdapter {
     driverId: string,
     dateRange: { startDate: Date; endDate: Date },
   ): Promise<NormalizedBehaviorEvent[]> {
-    return this.getBehaviorEvents({ startDate: dateRange.startDate, endDate: dateRange.endDate });
+    return this.getBehaviorEvents({
+      startDate: dateRange.startDate,
+      endDate: dateRange.endDate,
+    });
   }
 
   async getFuelLevel(vehicleId: string): Promise<NormalizedFuelReading> {
@@ -507,8 +540,18 @@ export class OmnitrocsClient implements ITelematicsAdapter {
     webhookUrl: string,
     eventTypes: string[],
   ): Promise<WebhookSubscription> {
-    await this.subscribeWebhook({ webhookId: "", url: webhookUrl, events: eventTypes, createdAt: new Date() });
-    return { webhookId: `omnitracs-${Date.now()}`, url: webhookUrl, events: eventTypes, createdAt: new Date() };
+    await this.subscribeWebhook({
+      webhookId: "",
+      url: webhookUrl,
+      events: eventTypes,
+      createdAt: new Date(),
+    });
+    return {
+      webhookId: `omnitracs-${Date.now()}`,
+      url: webhookUrl,
+      events: eventTypes,
+      createdAt: new Date(),
+    };
   }
 
   async unsubscribeFromEvents(webhookId: string): Promise<void> {
@@ -561,7 +604,9 @@ export class OmnitrocsClient implements ITelematicsAdapter {
   /**
    * Normalize Omnitracs critical event to behavior event
    */
-  private normalizeCriticalEvent(event: OmnitracsCriticalEvent): NormalizedBehaviorEvent {
+  private normalizeCriticalEvent(
+    event: OmnitracsCriticalEvent,
+  ): NormalizedBehaviorEvent {
     const eventTypeMap: Record<string, any> = {
       HARSH_ACCELERATION: "rapid_acceleration",
       HARSH_BRAKING: "harsh_braking",

@@ -12,7 +12,11 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { SESClient } from "../ses-client.js";
-import type { EmailMessage, EmailAdapterConfig, BulkEmailRequest } from "../types.js";
+import type {
+  EmailMessage,
+  EmailAdapterConfig,
+  BulkEmailRequest,
+} from "../types.js";
 
 describe("SESClient", () => {
   let client: SESClient;
@@ -38,7 +42,9 @@ describe("SESClient", () => {
 
     it("should throw error if credentials are missing", () => {
       const invalidConfig = { awsRegion: "us-east-1" };
-      expect(() => new SESClient(invalidConfig as EmailAdapterConfig)).not.toThrow();
+      expect(
+        () => new SESClient(invalidConfig as EmailAdapterConfig),
+      ).not.toThrow();
       // Validation happens on first request
     });
 
@@ -93,10 +99,7 @@ describe("SESClient", () => {
     it("should handle multiple TO recipients", async () => {
       const message: EmailMessage = {
         from: "sender@example.com",
-        to: [
-          { email: "user1@example.com" },
-          { email: "user2@example.com" },
-        ],
+        to: [{ email: "user1@example.com" }, { email: "user2@example.com" }],
         subject: "Multi-recipient",
         htmlBody: "<p>Test</p>",
       };
@@ -438,7 +441,7 @@ describe("SESClient", () => {
 
     it("should return false for unhealthy client", async () => {
       vi.spyOn(client as any, "request").mockRejectedValueOnce(
-        new Error("Invalid credentials")
+        new Error("Invalid credentials"),
       );
 
       const healthy = await client.healthCheck();
@@ -455,7 +458,9 @@ describe("SESClient", () => {
         suppressedAt: new Date(),
       });
 
-      const suppressed = (client as any).isEmailSuppressed("bounced@example.com");
+      const suppressed = (client as any).isEmailSuppressed(
+        "bounced@example.com",
+      );
 
       expect(suppressed).toBeDefined();
     });
@@ -519,8 +524,11 @@ describe("SESClient", () => {
       const authHeader = (client as any).createAuthorizationHeader(
         "POST",
         "/v2/email/outbound-emails",
-        { "X-Amz-Date": "20240312T120000Z", Host: "email.us-east-1.amazonaws.com" },
-        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        {
+          "X-Amz-Date": "20240312T120000Z",
+          Host: "email.us-east-1.amazonaws.com",
+        },
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       );
 
       expect(authHeader).toContain("AWS4-HMAC-SHA256");

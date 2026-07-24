@@ -133,7 +133,7 @@ export class ConnectionMonitor {
     const avgCheckout =
       checkoutTimes.length > 0
         ? Math.round(
-            checkoutTimes.reduce((a, b) => a + b, 0) / checkoutTimes.length
+            checkoutTimes.reduce((a, b) => a + b, 0) / checkoutTimes.length,
           )
         : 0;
 
@@ -149,9 +149,8 @@ export class ConnectionMonitor {
       avgCheckoutTime: avgCheckout,
       maxCheckoutTime: maxCheckout,
       leakedConnections: this.detectLeaks().length,
-      exhaustionAlerts: this.alerts.filter(
-        (a) => a.type === "exhaustion"
-      ).length,
+      exhaustionAlerts: this.alerts.filter((a) => a.type === "exhaustion")
+        .length,
       lastCheck: Date.now(),
     };
   }
@@ -241,7 +240,7 @@ export class ConnectionMonitor {
     p99Duration: number;
   } {
     const completed = Array.from(this.checkouts.values()).filter(
-      (c) => c.duration !== undefined
+      (c) => c.duration !== undefined,
     );
 
     const durations = completed.map((c) => c.duration!);
@@ -294,7 +293,10 @@ export class ConnectionMonitor {
 
     this.checkouts.forEach((checkout, id) => {
       // Unclosed connection older than threshold
-      if (!checkout.releasedAt && now - checkout.acquiredAt > this.leakThresholdMs) {
+      if (
+        !checkout.releasedAt &&
+        now - checkout.acquiredAt > this.leakThresholdMs
+      ) {
         leaks.push({
           id,
           acquiredAt: checkout.acquiredAt,
@@ -356,9 +358,8 @@ export class ConnectionMonitor {
    * @returns Count
    */
   private getActiveConnectionCount(): number {
-    return Array.from(this.checkouts.values()).filter(
-      (c) => !c.releasedAt
-    ).length;
+    return Array.from(this.checkouts.values()).filter((c) => !c.releasedAt)
+      .length;
   }
 
   /**
@@ -367,10 +368,7 @@ export class ConnectionMonitor {
    * @returns Count
    */
   private getIdleConnectionCount(): number {
-    return Math.max(
-      0,
-      this.poolSize - this.getActiveConnectionCount()
-    );
+    return Math.max(0, this.poolSize - this.getActiveConnectionCount());
   }
 
   /**

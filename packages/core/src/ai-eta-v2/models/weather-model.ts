@@ -11,7 +11,7 @@ import type {
   HistoricalDelivery,
   ModelPrediction,
   WeatherModelState,
-} from '../types.js';
+} from "../types.js";
 
 interface WeatherCoefficient {
   base_delay_minutes: number;
@@ -36,7 +36,7 @@ export class WeatherModel {
    */
   private initializeDefaults(): void {
     // Clear weather: minimal impact
-    this.conditionCoefficients.set('clear', {
+    this.conditionCoefficients.set("clear", {
       base_delay_minutes: 0,
       intensity_coefficient: 0,
       interaction_factors: {},
@@ -45,7 +45,7 @@ export class WeatherModel {
     });
 
     // Fog: moderate impact, reduces visibility
-    this.conditionCoefficients.set('fog', {
+    this.conditionCoefficients.set("fog", {
       base_delay_minutes: 2,
       intensity_coefficient: 1.5,
       interaction_factors: {},
@@ -54,35 +54,35 @@ export class WeatherModel {
     });
 
     // Rain: significant impact, speed reduction
-    this.conditionCoefficients.set('rain', {
+    this.conditionCoefficients.set("rain", {
       base_delay_minutes: 4,
       intensity_coefficient: 2.5,
       interaction_factors: {
-        'rush-hour': 3.0, // Rain during rush hour = extra delay
-        'urban-area': 2.0, // More impact in cities
+        "rush-hour": 3.0, // Rain during rush hour = extra delay
+        "urban-area": 2.0, // More impact in cities
       },
       sample_count: 0,
       confidence: 0.5,
     });
 
     // Snow: severe impact
-    this.conditionCoefficients.set('snow', {
+    this.conditionCoefficients.set("snow", {
       base_delay_minutes: 8,
       intensity_coefficient: 4.0,
       interaction_factors: {
-        'rush-hour': 5.0,
-        'urban-area': 3.0,
-        'temperature-below-freezing': 2.0,
+        "rush-hour": 5.0,
+        "urban-area": 3.0,
+        "temperature-below-freezing": 2.0,
       },
       sample_count: 0,
       confidence: 0.6,
     });
 
     // Default interaction effects
-    this.interactionEffects.set('rain-rush-hour', 3.0);
-    this.interactionEffects.set('snow-rush-hour', 5.0);
-    this.interactionEffects.set('rain-urban', 2.0);
-    this.interactionEffects.set('snow-urban', 3.0);
+    this.interactionEffects.set("rain-rush-hour", 3.0);
+    this.interactionEffects.set("snow-rush-hour", 5.0);
+    this.interactionEffects.set("rain-urban", 2.0);
+    this.interactionEffects.set("snow-urban", 3.0);
   }
 
   /**
@@ -146,7 +146,10 @@ export class WeatherModel {
         existing.base_delay_minutes = Math.max(0, coeff.intercept);
         existing.intensity_coefficient = Math.max(0, coeff.slope);
         existing.sample_count = deliveries.length;
-        existing.confidence = Math.min(0.95, 0.4 + Math.log(deliveries.length + 1) / 10);
+        existing.confidence = Math.min(
+          0.95,
+          0.4 + Math.log(deliveries.length + 1) / 10,
+        );
 
         this.conditionCoefficients.set(condition, existing);
       }
@@ -159,7 +162,10 @@ export class WeatherModel {
   /**
    * Linear regression: y = intercept + slope * x
    */
-  private linearRegression(x: number[], y: number[]): { intercept: number; slope: number } {
+  private linearRegression(
+    x: number[],
+    y: number[],
+  ): { intercept: number; slope: number } {
     const n = x.length;
     if (n < 2) return { intercept: y[0] || 0, slope: 0 };
 
@@ -183,7 +189,10 @@ export class WeatherModel {
   /**
    * Analyze interaction effects (e.g., rain + rush hour)
    */
-  private analyzeInteractions(deliveries: HistoricalDelivery[], condition: string): void {
+  private analyzeInteractions(
+    deliveries: HistoricalDelivery[],
+    condition: string,
+  ): void {
     // Split by rush hour
     const rushHourTimes: number[] = [];
     const nonRushTimes: number[] = [];
@@ -197,11 +206,16 @@ export class WeatherModel {
     }
 
     if (rushHourTimes.length > 0 && nonRushTimes.length > 0) {
-      const rushMean = rushHourTimes.reduce((a, b) => a + b, 0) / rushHourTimes.length;
-      const nonRushMean = nonRushTimes.reduce((a, b) => a + b, 0) / nonRushTimes.length;
+      const rushMean =
+        rushHourTimes.reduce((a, b) => a + b, 0) / rushHourTimes.length;
+      const nonRushMean =
+        nonRushTimes.reduce((a, b) => a + b, 0) / nonRushTimes.length;
 
       const interactionDelay = rushMean - nonRushMean;
-      this.interactionEffects.set(`${condition}-rush-hour`, Math.max(0, interactionDelay));
+      this.interactionEffects.set(
+        `${condition}-rush-hour`,
+        Math.max(0, interactionDelay),
+      );
     }
 
     // Split by urban/non-urban
@@ -209,7 +223,10 @@ export class WeatherModel {
     const nonUrbanTimes: number[] = [];
 
     for (const delivery of deliveries) {
-      if (delivery.zone_type === 'urban' || delivery.zone_type === 'urban-core') {
+      if (
+        delivery.zone_type === "urban" ||
+        delivery.zone_type === "urban-core"
+      ) {
         urbanTimes.push(delivery.actual_duration_minutes);
       } else {
         nonUrbanTimes.push(delivery.actual_duration_minutes);
@@ -217,11 +234,16 @@ export class WeatherModel {
     }
 
     if (urbanTimes.length > 0 && nonUrbanTimes.length > 0) {
-      const urbanMean = urbanTimes.reduce((a, b) => a + b, 0) / urbanTimes.length;
-      const nonUrbanMean = nonUrbanTimes.reduce((a, b) => a + b, 0) / nonUrbanTimes.length;
+      const urbanMean =
+        urbanTimes.reduce((a, b) => a + b, 0) / urbanTimes.length;
+      const nonUrbanMean =
+        nonUrbanTimes.reduce((a, b) => a + b, 0) / nonUrbanTimes.length;
 
       const interactionDelay = urbanMean - nonUrbanMean;
-      this.interactionEffects.set(`${condition}-urban`, Math.max(0, interactionDelay));
+      this.interactionEffects.set(
+        `${condition}-urban`,
+        Math.max(0, interactionDelay),
+      );
     }
   }
 
@@ -241,17 +263,20 @@ export class WeatherModel {
 
     if (coeff) {
       // Base delay + intensity-dependent delay
-      delayMinutes = coeff.base_delay_minutes + coeff.intensity_coefficient * intensity;
+      delayMinutes =
+        coeff.base_delay_minutes + coeff.intensity_coefficient * intensity;
       confidence = coeff.confidence;
 
       // Apply interaction effects
       if (this.isRushHour(hour)) {
-        const rushHourFactor = this.interactionEffects.get(`${condition}-rush-hour`) || 0;
+        const rushHourFactor =
+          this.interactionEffects.get(`${condition}-rush-hour`) || 0;
         delayMinutes += rushHourFactor;
       }
 
-      if (zoneType === 'urban' || zoneType === 'urban-core') {
-        const urbanFactor = this.interactionEffects.get(`${condition}-urban`) || 0;
+      if (zoneType === "urban" || zoneType === "urban-core") {
+        const urbanFactor =
+          this.interactionEffects.get(`${condition}-urban`) || 0;
         delayMinutes += urbanFactor;
       }
     }
@@ -267,11 +292,15 @@ export class WeatherModel {
     const errorMargin = Math.max(3, delayMinutes * 0.5);
 
     return {
-      modelName: 'weather-impact',
+      modelName: "weather-impact",
       predicted_duration_minutes: Math.round(predictedDuration * 10) / 10,
       confidence,
-      lower_bound_minutes: Math.max(5, Math.round((predictedDuration - errorMargin) * 10) / 10),
-      upper_bound_minutes: Math.round((predictedDuration + errorMargin) * 10) / 10,
+      lower_bound_minutes: Math.max(
+        5,
+        Math.round((predictedDuration - errorMargin) * 10) / 10,
+      ),
+      upper_bound_minutes:
+        Math.round((predictedDuration + errorMargin) * 10) / 10,
     };
   }
 
@@ -280,14 +309,20 @@ export class WeatherModel {
    */
   getState(): WeatherModelState {
     return {
-      condition_coefficients: Object.fromEntries(this.conditionCoefficients.entries()),
-      intensity_curve: Object.fromEntries(
-        Array.from(this.conditionCoefficients.entries()).map(([condition, coeff]) => [
-          condition,
-          [coeff.base_delay_minutes, coeff.intensity_coefficient],
-        ]),
+      condition_coefficients: Object.fromEntries(
+        this.conditionCoefficients.entries(),
       ),
-      interaction_effects: Object.fromEntries(this.interactionEffects.entries()),
+      intensity_curve: Object.fromEntries(
+        Array.from(this.conditionCoefficients.entries()).map(
+          ([condition, coeff]) => [
+            condition,
+            [coeff.base_delay_minutes, coeff.intensity_coefficient],
+          ],
+        ),
+      ),
+      interaction_effects: Object.fromEntries(
+        this.interactionEffects.entries(),
+      ),
     };
   }
 
@@ -297,7 +332,9 @@ export class WeatherModel {
   setState(state: WeatherModelState): void {
     this.conditionCoefficients.clear();
 
-    for (const [condition, coeff] of Object.entries(state.condition_coefficients)) {
+    for (const [condition, coeff] of Object.entries(
+      state.condition_coefficients,
+    )) {
       this.conditionCoefficients.set(condition, coeff as WeatherCoefficient);
     }
 

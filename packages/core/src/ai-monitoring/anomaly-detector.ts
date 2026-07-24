@@ -90,7 +90,8 @@ export class AnomalyDetector {
       enableIQR: config.enableIQR ?? true,
       enableMovingAverage: config.enableMovingAverage ?? true,
       movingAverageWindowSize: config.movingAverageWindowSize ?? 5,
-      movingAverageDeviationMultiplier: config.movingAverageDeviationMultiplier ?? 2,
+      movingAverageDeviationMultiplier:
+        config.movingAverageDeviationMultiplier ?? 2,
     };
   }
 
@@ -148,7 +149,12 @@ export class AnomalyDetector {
 
     // IQR detection
     if (this.config.enableIQR) {
-      const iqrAnomalies = this.detectByIQR(dataPoints, stats, anomalyType, threshold);
+      const iqrAnomalies = this.detectByIQR(
+        dataPoints,
+        stats,
+        anomalyType,
+        threshold,
+      );
       alerts.push(...iqrAnomalies);
     }
 
@@ -264,9 +270,9 @@ export class AnomalyDetector {
       const windowStats = this.calculateStatistics(windowValues);
 
       const currentPoint = dataPoints[i];
-      const deviation = Math.abs(
-        currentPoint.value - windowStats.mean,
-      ) / (windowStats.stdDev || 1);
+      const deviation =
+        Math.abs(currentPoint.value - windowStats.mean) /
+        (windowStats.stdDev || 1);
 
       if (deviation > this.config.movingAverageDeviationMultiplier) {
         alerts.push(
@@ -275,8 +281,13 @@ export class AnomalyDetector {
             `Moving average deviation: ${deviation.toFixed(2)}σ from mean`,
             currentPoint.value,
             threshold,
-            windowStats.mean + this.config.movingAverageDeviationMultiplier * (windowStats.stdDev || 1),
-            Math.min(deviation / this.config.movingAverageDeviationMultiplier, 1.0),
+            windowStats.mean +
+              this.config.movingAverageDeviationMultiplier *
+                (windowStats.stdDev || 1),
+            Math.min(
+              deviation / this.config.movingAverageDeviationMultiplier,
+              1.0,
+            ),
             currentPoint.timestamp,
             currentPoint.label,
           ),
@@ -381,7 +392,8 @@ export class AnomalyDetector {
 
     const sorted = [...values].sort((a, b) => a - b);
     const mean = values.reduce((a, b) => a + b, 0) / values.length;
-    const variance = values.reduce((sum, v) => sum + (v - mean) ** 2, 0) / values.length;
+    const variance =
+      values.reduce((sum, v) => sum + (v - mean) ** 2, 0) / values.length;
     const stdDev = Math.sqrt(variance);
 
     const median = sorted[Math.floor(sorted.length / 2)];

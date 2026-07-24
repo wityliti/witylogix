@@ -7,10 +7,10 @@
  * Supported e-commerce platforms
  */
 export enum PlatformSource {
-  SHOPIFY = 'shopify',
-  WOOCOMMERCE = 'woocommerce',
-  MAGENTO = 'magento',
-  CUSTOM = 'custom',
+  SHOPIFY = "shopify",
+  WOOCOMMERCE = "woocommerce",
+  MAGENTO = "magento",
+  CUSTOM = "custom",
 }
 
 /**
@@ -21,7 +21,14 @@ export interface UnifiedOrder {
   externalId: string;
   platform: PlatformSource;
   number: string;
-  status: 'pending' | 'confirmed' | 'dispatched' | 'out_for_delivery' | 'delivered' | 'cancelled' | 'returned';
+  status:
+    | "pending"
+    | "confirmed"
+    | "dispatched"
+    | "out_for_delivery"
+    | "delivered"
+    | "cancelled"
+    | "returned";
   currency: string;
   createdAt: Date;
   modifiedAt: Date;
@@ -70,7 +77,7 @@ export interface UnifiedProduct {
   compareAtPrice?: number; // In cents
   cost?: number; // In cents
   weight?: number;
-  status: 'draft' | 'active' | 'archived';
+  status: "draft" | "active" | "archived";
   createdAt: Date;
   modifiedAt: Date;
   images: UnifiedImage[];
@@ -154,8 +161,8 @@ export interface UnifiedWebhookEvent {
   id: string;
   platform: PlatformSource;
   topic: string;
-  eventType: 'created' | 'updated' | 'deleted' | 'action_required';
-  resourceType: 'order' | 'product' | 'customer' | 'fulfillment';
+  eventType: "created" | "updated" | "deleted" | "action_required";
+  resourceType: "order" | "product" | "customer" | "fulfillment";
   resourceId: string;
   data: UnifiedOrder | UnifiedProduct | UnifiedCustomer;
   timestamp: Date;
@@ -205,37 +212,41 @@ export interface NormalizationResult<T> {
  */
 export interface PlatformWebhookTopics {
   [PlatformSource.SHOPIFY]: {
-    order: 'orders/created' | 'orders/updated' | 'orders/cancelled' | 'orders/fulfilled';
-    product: 'products/create' | 'products/update' | 'products/delete';
-    customer: 'customers/create' | 'customers/update' | 'customers/delete';
+    order:
+      | "orders/created"
+      | "orders/updated"
+      | "orders/cancelled"
+      | "orders/fulfilled";
+    product: "products/create" | "products/update" | "products/delete";
+    customer: "customers/create" | "customers/update" | "customers/delete";
   };
   [PlatformSource.WOOCOMMERCE]: {
-    order: 'order.created' | 'order.updated' | 'order.deleted';
-    product: 'product.created' | 'product.updated' | 'product.deleted';
-    customer: 'customer.created' | 'customer.updated' | 'customer.deleted';
+    order: "order.created" | "order.updated" | "order.deleted";
+    product: "product.created" | "product.updated" | "product.deleted";
+    customer: "customer.created" | "customer.updated" | "customer.deleted";
   };
   [PlatformSource.MAGENTO]: {
-    order: 'order.created' | 'order.updated' | 'order.cancelled';
-    product: 'product.created' | 'product.updated' | 'product.deleted';
-    customer: 'customer.created' | 'customer.updated' | 'customer.deleted';
+    order: "order.created" | "order.updated" | "order.cancelled";
+    product: "product.created" | "product.updated" | "product.deleted";
+    customer: "customer.created" | "customer.updated" | "customer.deleted";
   };
 }
 
 /**
  * Sync direction
  */
-export type SyncDirection = 'one-way-pull' | 'one-way-push' | 'bidirectional';
+export type SyncDirection = "one-way-pull" | "one-way-push" | "bidirectional";
 
 /**
  * Sync configuration
  */
 export interface SyncConfig {
   platform: PlatformSource;
-  resources: ('orders' | 'products' | 'customers')[];
+  resources: ("orders" | "products" | "customers")[];
   direction: SyncDirection;
   schedule?: string; // Cron expression
   batchSize?: number;
-  conflictResolution?: 'last-write-wins' | 'external-wins' | 'internal-wins';
+  conflictResolution?: "last-write-wins" | "external-wins" | "internal-wins";
 }
 
 /**
@@ -245,7 +256,7 @@ export interface SyncStatus {
   id: string;
   platform: PlatformSource;
   resource: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'failed';
+  status: "pending" | "in_progress" | "completed" | "failed";
   startedAt: Date;
   completedAt?: Date;
   itemsProcessed: number;

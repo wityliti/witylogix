@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from "react";
 
 export interface GeoResult {
   lat: number;
@@ -10,7 +10,10 @@ export interface GeoResult {
 
 // In-memory session cache to avoid redundant Nominatim calls
 const geoCache = new Map<string, GeoResult | null>();
-let nominatimQueue: Array<{ key: string; resolve: (r: GeoResult | null) => void }> = [];
+let nominatimQueue: Array<{
+  key: string;
+  resolve: (r: GeoResult | null) => void;
+}> = [];
 let nominatimTimer: ReturnType<typeof setTimeout> | null = null;
 
 function geocodeKey(city: string, country: string): string {
@@ -24,10 +27,15 @@ function flushQueue() {
   const batch = nominatimQueue.splice(0, 1); // Nominatim ToS: 1 req/sec
   const { key, resolve } = batch[0];
 
-  const [city, country] = key.split('|');
+  const [city, country] = key.split("|");
   const url = `https://nominatim.openstreetmap.org/search?city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}&format=json&limit=1`;
 
-  fetch(url, { headers: { 'Accept-Language': 'en', 'User-Agent': 'Witylogix-Dashboard/1.0' } })
+  fetch(url, {
+    headers: {
+      "Accept-Language": "en",
+      "User-Agent": "Witylogix-Dashboard/1.0",
+    },
+  })
     .then((r) => r.json())
     .then((data: Array<{ lat: string; lon: string; display_name: string }>) => {
       if (data?.[0]) {
@@ -55,7 +63,10 @@ function flushQueue() {
     });
 }
 
-function enqueueGeocode(city: string, country: string): Promise<GeoResult | null> {
+function enqueueGeocode(
+  city: string,
+  country: string,
+): Promise<GeoResult | null> {
   const key = geocodeKey(city, country);
   if (geoCache.has(key)) return Promise.resolve(geoCache.get(key) ?? null);
 
@@ -92,32 +103,32 @@ export function useGeocoder(addresses: AddressInput[]): {
   const [results, setResults] = useState<GeocodedAddress[]>(() =>
     addresses.map((a) => ({
       ...a,
-      geoLat: typeof a.lat === 'number' ? a.lat : null,
-      geoLng: typeof a.lng === 'number' ? a.lng : null,
-      geocoded: typeof a.lat === 'number' && typeof a.lng === 'number',
-    }))
+      geoLat: typeof a.lat === "number" ? a.lat : null,
+      geoLng: typeof a.lng === "number" ? a.lng : null,
+      geocoded: typeof a.lat === "number" && typeof a.lng === "number",
+    })),
   );
   const [loading, setLoading] = useState(false);
-  const prevIdsRef = useRef<string>('');
+  const prevIdsRef = useRef<string>("");
 
   useEffect(() => {
-    const ids = addresses.map((a) => a.id).join(',');
+    const ids = addresses.map((a) => a.id).join(",");
     if (ids === prevIdsRef.current) return;
     prevIdsRef.current = ids;
 
     // Identify which need geocoding (no precise coords stored)
     const needGeo = addresses.filter(
-      (a) => (typeof a.lat !== 'number' || typeof a.lng !== 'number') && a.city
+      (a) => (typeof a.lat !== "number" || typeof a.lng !== "number") && a.city,
     );
 
     if (needGeo.length === 0) {
       setResults(
         addresses.map((a) => ({
           ...a,
-          geoLat: typeof a.lat === 'number' ? a.lat : null,
-          geoLng: typeof a.lng === 'number' ? a.lng : null,
+          geoLat: typeof a.lat === "number" ? a.lat : null,
+          geoLng: typeof a.lng === "number" ? a.lng : null,
           geocoded: true,
-        }))
+        })),
       );
       return;
     }
@@ -125,14 +136,14 @@ export function useGeocoder(addresses: AddressInput[]): {
     setLoading(true);
 
     Promise.all(
-      needGeo.map((a) => enqueueGeocode(a.city, a.country ?? 'US'))
+      needGeo.map((a) => enqueueGeocode(a.city, a.country ?? "US")),
     ).then((geoResults) => {
       const geoMap = new Map<string, GeoResult | null>();
       needGeo.forEach((a, i) => geoMap.set(a.id, geoResults[i]));
 
       setResults(
         addresses.map((a) => {
-          if (typeof a.lat === 'number' && typeof a.lng === 'number') {
+          if (typeof a.lat === "number" && typeof a.lng === "number") {
             return { ...a, geoLat: a.lat, geoLng: a.lng, geocoded: true };
           }
           const geo = geoMap.get(a.id);
@@ -142,7 +153,7 @@ export function useGeocoder(addresses: AddressInput[]): {
             geoLng: geo?.lng ?? null,
             geocoded: !!geo,
           };
-        })
+        }),
       );
       setLoading(false);
     });

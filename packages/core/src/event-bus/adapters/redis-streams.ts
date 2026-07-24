@@ -34,7 +34,11 @@ interface RedisClient {
     id: string,
     mkstream?: boolean,
   ): Promise<unknown>;
-  xpending(key: string, group: string, ...args: (string | number)[]): Promise<unknown>;
+  xpending(
+    key: string,
+    group: string,
+    ...args: (string | number)[]
+  ): Promise<unknown>;
   xclaim(
     key: string,
     group: string,
@@ -317,9 +321,7 @@ export class RedisStreamAdapter implements StreamAdapter {
    * @param streamKey Stream key
    * @returns Stream metadata
    */
-  async getStreamInfo(
-    streamKey: string,
-  ): Promise<{
+  async getStreamInfo(streamKey: string): Promise<{
     length: number;
     firstId?: string;
     lastId?: string;

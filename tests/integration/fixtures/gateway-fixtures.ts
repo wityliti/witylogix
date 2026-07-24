@@ -51,7 +51,7 @@ export interface MockResponse {
  * Factory: Create default circuit breaker config
  */
 export function createCircuitBreakerConfig(
-  overrides?: Partial<CircuitBreakerConfig>
+  overrides?: Partial<CircuitBreakerConfig>,
 ): CircuitBreakerConfig {
   return {
     name: "default-breaker",
@@ -92,7 +92,7 @@ export function createProviderCircuitBreakerConfigs() {
  * Factory: Create default retry policy
  */
 export function createRetryPolicy(
-  overrides?: Partial<RetryPolicy>
+  overrides?: Partial<RetryPolicy>,
 ): RetryPolicy {
   return {
     maxAttempts: 3,
@@ -108,7 +108,7 @@ export function createRetryPolicy(
  * Factory: Create idempotency-aware retry policy
  */
 export function createIdempotentRetryPolicy(
-  idempotencyKey: string
+  idempotencyKey: string,
 ): RetryPolicy {
   return createRetryPolicy({
     idempotencyKey,
@@ -121,7 +121,7 @@ export function createIdempotentRetryPolicy(
  * Factory: Create cache config with LRU behavior
  */
 export function createCacheConfig(
-  overrides?: Partial<CacheConfig>
+  overrides?: Partial<CacheConfig>,
 ): CacheConfig {
   return {
     maxSize: 1000,
@@ -135,7 +135,7 @@ export function createCacheConfig(
  * Factory: Create mock HTTP request
  */
 export function createMockRequest(
-  overrides?: Partial<MockRequest>
+  overrides?: Partial<MockRequest>,
 ): MockRequest {
   const now = Date.now();
   return {
@@ -144,7 +144,7 @@ export function createMockRequest(
     path: "/api/v1/payments",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": "Bearer " + "sk_live_" + "FAKEKEY123456",
+      Authorization: "Bearer " + "sk_live_" + "FAKEKEY123456",
       "X-Request-ID": `req-${now}`,
     },
     timestamp: now,
@@ -156,7 +156,7 @@ export function createMockRequest(
  * Factory: Create mock HTTP response
  */
 export function createMockResponse(
-  overrides?: Partial<MockResponse>
+  overrides?: Partial<MockResponse>,
 ): MockResponse {
   return {
     statusCode: 200,
@@ -177,7 +177,7 @@ export function createMockResponse(
 export function createStateTransitionEvent(
   fromState: "closed" | "open" | "half-open",
   toState: "closed" | "open" | "half-open",
-  reason: string
+  reason: string,
 ) {
   return {
     type: "state-transition",
@@ -193,13 +193,13 @@ export function createStateTransitionEvent(
  */
 export function createConcurrentRequestBatch(
   count: number,
-  baseDelay: number = 0
+  baseDelay: number = 0,
 ): MockRequest[] {
   return Array.from({ length: count }, (_, i) =>
     createMockRequest({
       id: `concurrent-${i}`,
       path: `/api/v1/batch/${i}`,
-    })
+    }),
   );
 }
 
@@ -223,7 +223,7 @@ export function createSlidingWindowMetrics() {
 export function createCacheEntry(
   key: string,
   value: unknown,
-  ttlMs: number = 300000
+  ttlMs: number = 300000,
 ) {
   const now = Date.now();
   return {
@@ -242,7 +242,7 @@ export function createCacheEntry(
 export function createDeduplicationKey(
   method: string,
   path: string,
-  body?: unknown
+  body?: unknown,
 ): string {
   const hash = (str: string) => {
     let hash = 0;

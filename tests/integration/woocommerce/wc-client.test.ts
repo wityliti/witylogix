@@ -6,7 +6,10 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { createHmac, randomBytes } from "node:crypto";
 import type { WCClientConfig } from "../../../packages/core/src/integrations/woocommerce/types.js";
-import { WooCommerceClient, createWooCommerceClient } from "../../../packages/core/src/integrations/woocommerce/wc-client.js";
+import {
+  WooCommerceClient,
+  createWooCommerceClient,
+} from "../../../packages/core/src/integrations/woocommerce/wc-client.js";
 
 // Mock global fetch
 global.fetch = vi.fn();
@@ -38,9 +41,12 @@ describe("WooCommerceClient", () => {
 
   describe("OAuth 1.0a Signature Generation", () => {
     it("should generate valid OAuth 1.0a header with required parameters", async () => {
-      const mockResponse = new Response(JSON.stringify({ id: 1, status: "processing" }), {
-        status: 200,
-      });
+      const mockResponse = new Response(
+        JSON.stringify({ id: 1, status: "processing" }),
+        {
+          status: 200,
+        },
+      );
       mockFetch.mockResolvedValue(mockResponse);
 
       await client.get("/orders/1");
@@ -66,8 +72,13 @@ describe("WooCommerceClient", () => {
 
       await client.get("/orders/1");
 
-      const headers = (mockFetch.mock.calls[0][1]?.headers as Record<string, string>);
-      expect(headers.Authorization).toContain('oauth_signature_method="HMAC-SHA256"');
+      const headers = mockFetch.mock.calls[0][1]?.headers as Record<
+        string,
+        string
+      >;
+      expect(headers.Authorization).toContain(
+        'oauth_signature_method="HMAC-SHA256"',
+      );
     });
 
     it("should generate unique nonce for each request", async () => {
@@ -78,15 +89,17 @@ describe("WooCommerceClient", () => {
 
       await client.get("/orders/1");
       const firstNonce = extractOAuthParam(
-        (mockFetch.mock.calls[0][1]?.headers as Record<string, string>).Authorization,
-        "oauth_nonce"
+        (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)
+          .Authorization,
+        "oauth_nonce",
       );
 
       mockFetch.mockClear();
       await client.get("/orders/2");
       const secondNonce = extractOAuthParam(
-        (mockFetch.mock.calls[0][1]?.headers as Record<string, string>).Authorization,
-        "oauth_nonce"
+        (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)
+          .Authorization,
+        "oauth_nonce",
       );
 
       expect(firstNonce).not.toBe(secondNonce);
@@ -100,8 +113,9 @@ describe("WooCommerceClient", () => {
 
       await client.get("/orders/1");
       const firstTimestamp = extractOAuthParam(
-        (mockFetch.mock.calls[0][1]?.headers as Record<string, string>).Authorization,
-        "oauth_timestamp"
+        (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)
+          .Authorization,
+        "oauth_timestamp",
       );
 
       mockFetch.mockClear();
@@ -109,11 +123,14 @@ describe("WooCommerceClient", () => {
 
       await client.get("/orders/2");
       const secondTimestamp = extractOAuthParam(
-        (mockFetch.mock.calls[0][1]?.headers as Record<string, string>).Authorization,
-        "oauth_timestamp"
+        (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)
+          .Authorization,
+        "oauth_timestamp",
       );
 
-      expect(parseInt(secondTimestamp)).toBeGreaterThan(parseInt(firstTimestamp));
+      expect(parseInt(secondTimestamp)).toBeGreaterThan(
+        parseInt(firstTimestamp),
+      );
     });
 
     it("should include consumer key in signature", async () => {
@@ -124,8 +141,9 @@ describe("WooCommerceClient", () => {
 
       await client.get("/orders/1");
 
-      const auth = (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)
-        .Authorization;
+      const auth = (
+        mockFetch.mock.calls[0][1]?.headers as Record<string, string>
+      ).Authorization;
       expect(auth).toContain(`oauth_consumer_key="${mockConfig.consumerKey}"`);
     });
 
@@ -137,8 +155,9 @@ describe("WooCommerceClient", () => {
 
       await client.get("/orders/1");
 
-      const auth = (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)
-        .Authorization;
+      const auth = (
+        mockFetch.mock.calls[0][1]?.headers as Record<string, string>
+      ).Authorization;
       expect(auth).toContain('oauth_version="1.0"');
     });
   });
@@ -155,7 +174,9 @@ describe("WooCommerceClient", () => {
       const [url, options] = mockFetch.mock.calls[0];
       expect(options?.method).toBe("GET");
       expect(options?.headers?.["Content-Type"]).toBe("application/json");
-      expect((options?.headers as Record<string, string>)["User-Agent"]).toBe("Witylogix/1.0");
+      expect((options?.headers as Record<string, string>)["User-Agent"]).toBe(
+        "Witylogix/1.0",
+      );
     });
 
     it("should send POST request with body", async () => {
@@ -287,7 +308,10 @@ describe("WooCommerceClient", () => {
 
       await client.get("/orders/1");
 
-      const headers = (mockFetch.mock.calls[0][1]?.headers as Record<string, string>);
+      const headers = mockFetch.mock.calls[0][1]?.headers as Record<
+        string,
+        string
+      >;
       expect(headers["User-Agent"]).toBe("Witylogix/1.0");
     });
   });
@@ -296,7 +320,7 @@ describe("WooCommerceClient", () => {
     it("should retry on 429 (rate limited) status with exponential backoff", async () => {
       const mockResponse429 = new Response(
         JSON.stringify({ code: "woocommerce_rest_rate_limit" }),
-        { status: 429 }
+        { status: 429 },
       );
       const mockResponseOK = new Response(JSON.stringify({ id: 1 }), {
         status: 200,
@@ -315,7 +339,7 @@ describe("WooCommerceClient", () => {
     it("should retry on 500 (server error) status", async () => {
       const mockResponse500 = new Response(
         JSON.stringify({ code: "woocommerce_rest_invalid_param" }),
-        { status: 500 }
+        { status: 500 },
       );
       const mockResponseOK = new Response(JSON.stringify({ id: 1 }), {
         status: 200,
@@ -332,10 +356,9 @@ describe("WooCommerceClient", () => {
     });
 
     it("should use exponential backoff for retries", async () => {
-      const mockResponse500 = new Response(
-        JSON.stringify({ code: "error" }),
-        { status: 500 }
-      );
+      const mockResponse500 = new Response(JSON.stringify({ code: "error" }), {
+        status: 500,
+      });
       const mockResponseOK = new Response(JSON.stringify({ id: 1 }), {
         status: 200,
       });
@@ -355,10 +378,9 @@ describe("WooCommerceClient", () => {
     });
 
     it("should throw error after max retries exceeded", async () => {
-      const mockResponse500 = new Response(
-        JSON.stringify({ code: "error" }),
-        { status: 500 }
-      );
+      const mockResponse500 = new Response(JSON.stringify({ code: "error" }), {
+        status: 500,
+      });
 
       mockFetch.mockResolvedValue(mockResponse500);
 
@@ -369,8 +391,11 @@ describe("WooCommerceClient", () => {
 
     it("should not retry on 4xx errors except 429", async () => {
       const mockResponse400 = new Response(
-        JSON.stringify({ code: "woocommerce_rest_invalid_param", message: "Bad request" }),
-        { status: 400 }
+        JSON.stringify({
+          code: "woocommerce_rest_invalid_param",
+          message: "Bad request",
+        }),
+        { status: 400 },
       );
 
       mockFetch.mockResolvedValue(mockResponse400);
@@ -385,7 +410,7 @@ describe("WooCommerceClient", () => {
       mockFetch
         .mockRejectedValueOnce(networkError)
         .mockResolvedValueOnce(
-          new Response(JSON.stringify({ id: 1 }), { status: 200 })
+          new Response(JSON.stringify({ id: 1 }), { status: 200 }),
         );
 
       const result = await client.get("/orders/1");
@@ -507,7 +532,7 @@ describe("WooCommerceClient", () => {
     it("should get single order", async () => {
       const mockOrder = { id: 123, status: "processing", total: "99.99" };
       mockFetch.mockResolvedValue(
-        new Response(JSON.stringify(mockOrder), { status: 200 })
+        new Response(JSON.stringify(mockOrder), { status: 200 }),
       );
 
       const result = await client.getOrder(123);
@@ -523,7 +548,7 @@ describe("WooCommerceClient", () => {
         { id: 2, status: "processing" },
       ];
       mockFetch.mockResolvedValue(
-        new Response(JSON.stringify(mockOrders), { status: 200 })
+        new Response(JSON.stringify(mockOrders), { status: 200 }),
       );
 
       const result = await client.getOrders({ page: 1, perPage: 10 });
@@ -538,7 +563,7 @@ describe("WooCommerceClient", () => {
       };
       const createdOrder = { id: 999, ...newOrder };
       mockFetch.mockResolvedValue(
-        new Response(JSON.stringify(createdOrder), { status: 201 })
+        new Response(JSON.stringify(createdOrder), { status: 201 }),
       );
 
       const result = await client.createOrder(newOrder);
@@ -552,7 +577,7 @@ describe("WooCommerceClient", () => {
       const updateData = { status: "completed" };
       const updatedOrder = { id: 123, ...updateData };
       mockFetch.mockResolvedValue(
-        new Response(JSON.stringify(updatedOrder), { status: 200 })
+        new Response(JSON.stringify(updatedOrder), { status: 200 }),
       );
 
       const result = await client.updateOrder(123, updateData);
@@ -566,7 +591,7 @@ describe("WooCommerceClient", () => {
       mockFetch.mockResolvedValue(
         new Response(JSON.stringify({ id: 123, status: "trash" }), {
           status: 200,
-        })
+        }),
       );
 
       await client.deleteOrder(123);
@@ -578,7 +603,7 @@ describe("WooCommerceClient", () => {
 
     it("should handle force delete parameter", async () => {
       mockFetch.mockResolvedValue(
-        new Response(JSON.stringify({ id: 123 }), { status: 200 })
+        new Response(JSON.stringify({ id: 123 }), { status: 200 }),
       );
 
       await client.deleteOrder(123, true);
@@ -596,18 +621,18 @@ describe("WooCommerceClient", () => {
             code: "woocommerce_rest_invalid_param",
             message: "Invalid order ID",
           }),
-          { status: 400 }
-        )
+          { status: 400 },
+        ),
       );
 
       await expect(client.get("/orders/invalid")).rejects.toThrow(
-        /WooCommerce API Error \[400\]/
+        /WooCommerce API Error \[400\]/,
       );
     });
 
     it("should handle error response without message", async () => {
       mockFetch.mockResolvedValue(
-        new Response(JSON.stringify({}), { status: 404 })
+        new Response(JSON.stringify({}), { status: 404 }),
       );
 
       await expect(client.get("/orders/999")).rejects.toThrow();
@@ -615,7 +640,7 @@ describe("WooCommerceClient", () => {
 
     it("should handle non-JSON error response", async () => {
       mockFetch.mockResolvedValue(
-        new Response("Internal Server Error", { status: 500 })
+        new Response("Internal Server Error", { status: 500 }),
       );
 
       await expect(client.get("/orders/1")).rejects.toThrow();

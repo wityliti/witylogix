@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useApiList } from '@/hooks/use-api';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { Header } from '@/components/layout/header';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import Link from 'next/link';
+import { useApiList } from "@/hooks/use-api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { Header } from "@/components/layout/header";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 import {
   ChevronLeft,
   Bell,
@@ -15,7 +15,7 @@ import {
   MessageSquare,
   Smartphone,
   Webhook,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface NotificationEvent {
   id: string;
@@ -30,7 +30,12 @@ interface NotificationEvent {
 }
 
 export default function NotificationsConfigPage() {
-  const { items: notificationEvents, loading, error, refetch } = useApiList<NotificationEvent>('/api/v4/settings/notification-events');
+  const {
+    items: notificationEvents,
+    loading,
+    error,
+    refetch,
+  } = useApiList<NotificationEvent>("/api/v4/settings/notification-events");
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
@@ -101,27 +106,27 @@ export default function NotificationsConfigPage() {
   const channelInfo = [
     {
       icon: Mail,
-      name: 'Email',
-      id: 'email',
-      description: 'Send notifications via email',
+      name: "Email",
+      id: "email",
+      description: "Send notifications via email",
     },
     {
       icon: MessageSquare,
-      name: 'SMS',
-      id: 'sms',
-      description: 'Send notifications via SMS',
+      name: "SMS",
+      id: "sms",
+      description: "Send notifications via SMS",
     },
     {
       icon: Smartphone,
-      name: 'Push',
-      id: 'push',
-      description: 'Send push notifications to mobile apps',
+      name: "Push",
+      id: "push",
+      description: "Send push notifications to mobile apps",
     },
     {
       icon: Webhook,
-      name: 'Webhook',
-      id: 'webhook',
-      description: 'Send notifications to custom webhooks',
+      name: "Webhook",
+      id: "webhook",
+      description: "Send notifications to custom webhooks",
     },
   ];
   return (
@@ -162,9 +167,7 @@ export default function NotificationsConfigPage() {
                   >
                     <div className="flex items-center gap-3 mb-3">
                       <Icon className="w-5 h-5 text-blue-500" />
-                      <h4 className="font-medium text-white">
-                        {channel.name}
-                      </h4>
+                      <h4 className="font-medium text-white">{channel.name}</h4>
                     </div>
                     <p className="text-xs text-gray-400 mb-4">
                       {channel.description}
@@ -233,9 +236,7 @@ export default function NotificationsConfigPage() {
                     >
                       <td className="py-4 px-4">
                         <div>
-                          <p className="font-medium text-white">
-                            {event.name}
-                          </p>
+                          <p className="font-medium text-white">{event.name}</p>
                           <p className="text-xs text-gray-400">
                             {event.description}
                           </p>

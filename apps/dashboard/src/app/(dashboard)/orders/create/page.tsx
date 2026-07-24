@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { cn } from '@/lib/utils';
-import { useApiList, useApiMutation } from '@/hooks/use-api';
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { useApiList, useApiMutation } from "@/hooks/use-api";
 
 interface ApiCustomer {
   id: string;
@@ -44,37 +44,55 @@ interface DeliveryAddress {
 
 export default function CreateOrderPage() {
   const router = useRouter();
-  const [customer, setCustomer] = useState<Customer>({ name: '', email: '', phone: '' });
+  const [customer, setCustomer] = useState<Customer>({
+    name: "",
+    email: "",
+    phone: "",
+  });
   const [isNewCustomer, setIsNewCustomer] = useState(true);
-  const [address, setAddress] = useState<DeliveryAddress>({ street: '', city: '', state: '', zip: '' });
+  const [address, setAddress] = useState<DeliveryAddress>({
+    street: "",
+    city: "",
+    state: "",
+    zip: "",
+  });
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
-  const [deliveryDate, setDeliveryDate] = useState('');
-  const [timeSlot, setTimeSlot] = useState('9:00-13:00');
-  const [deliveryNotes, setDeliveryNotes] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('cod');
-  const [priority, setPriority] = useState('normal');
-  const [tags, setTags] = useState('');
+  const [deliveryDate, setDeliveryDate] = useState("");
+  const [timeSlot, setTimeSlot] = useState("9:00-13:00");
+  const [deliveryNotes, setDeliveryNotes] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("cod");
+  const [priority, setPriority] = useState("normal");
+  const [tags, setTags] = useState("");
   const [discount, setDiscount] = useState(0);
   const [tax, setTax] = useState(0);
   const [shipping, setShipping] = useState(50);
   const [newLineItem, setNewLineItem] = useState({
-    productName: '',
-    sku: '',
+    productName: "",
+    sku: "",
     quantity: 1,
-    unitPrice: 0
+    unitPrice: 0,
   });
-  const [customerSearch, setCustomerSearch] = useState('');
+  const [customerSearch, setCustomerSearch] = useState("");
   const [successOrderId, setSuccessOrderId] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [lineItemError, setLineItemError] = useState<string | null>(null);
 
-  const { items: customers, setSearch: setCustomerSearchApi } = useApiList<ApiCustomer>('/api/v4/customers', { limit: 10 });
-  const { items: products } = useApiList<ApiProduct>('/api/v4/products', { limit: 50 });
-  const { execute: createOrder, loading: creating } = useApiMutation<{ id: string }>('POST', '/api/v4/orders');
+  const { items: customers, setSearch: setCustomerSearchApi } =
+    useApiList<ApiCustomer>("/api/v4/customers", { limit: 10 });
+  const { items: products } = useApiList<ApiProduct>("/api/v4/products", {
+    limit: 50,
+  });
+  const { execute: createOrder, loading: creating } = useApiMutation<{
+    id: string;
+  }>("POST", "/api/v4/orders");
 
   const addLineItem = () => {
-    if (!newLineItem.productName || newLineItem.quantity <= 0 || newLineItem.unitPrice <= 0) {
-      setLineItemError('Please fill product name, quantity, and unit price');
+    if (
+      !newLineItem.productName ||
+      newLineItem.quantity <= 0 ||
+      newLineItem.unitPrice <= 0
+    ) {
+      setLineItemError("Please fill product name, quantity, and unit price");
       return;
     }
     setLineItemError(null);
@@ -84,14 +102,14 @@ export default function CreateOrderPage() {
       sku: newLineItem.sku,
       quantity: newLineItem.quantity,
       unitPrice: newLineItem.unitPrice,
-      total: newLineItem.quantity * newLineItem.unitPrice
+      total: newLineItem.quantity * newLineItem.unitPrice,
     };
     setLineItems([...lineItems, lineItem]);
-    setNewLineItem({ productName: '', sku: '', quantity: 1, unitPrice: 0 });
+    setNewLineItem({ productName: "", sku: "", quantity: 1, unitPrice: 0 });
   };
 
   const removeLineItem = (id: string) => {
-    setLineItems(lineItems.filter(item => item.id !== id));
+    setLineItems(lineItems.filter((item) => item.id !== id));
   };
 
   const subtotal = lineItems.reduce((sum, item) => sum + item.total, 0);
@@ -101,11 +119,11 @@ export default function CreateOrderPage() {
 
   const getPriorityColor = (pri: string) => {
     const colors: Record<string, string> = {
-      'normal': '#8888a0',
-      'express': '#ffa500',
-      'same-day': '#ff4444'
+      normal: "#8888a0",
+      express: "#ffa500",
+      "same-day": "#ff4444",
     };
-    return colors[pri] || '#8888a0';
+    return colors[pri] || "#8888a0";
   };
 
   const buildPayload = (shopifyPrefix: string, extraTags: string[] = []) => ({
@@ -122,8 +140,8 @@ export default function CreateOrderPage() {
     deliveryNotes: deliveryNotes || undefined,
     paymentMethod,
     priority: priority.toUpperCase(),
-    tags: [...(tags ? tags.split(',').map(t => t.trim()) : []), ...extraTags],
-    lineItems: lineItems.map(item => ({
+    tags: [...(tags ? tags.split(",").map((t) => t.trim()) : []), ...extraTags],
+    lineItems: lineItems.map((item) => ({
       productName: item.productName,
       sku: item.sku,
       quantity: item.quantity,
@@ -132,34 +150,45 @@ export default function CreateOrderPage() {
   });
 
   const handleCreateOrder = async () => {
-    if (!customer.name || !customer.email || !address.street || lineItems.length === 0) {
-      setSubmitError('Please fill all required fields and add at least one line item');
+    if (
+      !customer.name ||
+      !customer.email ||
+      !address.street ||
+      lineItems.length === 0
+    ) {
+      setSubmitError(
+        "Please fill all required fields and add at least one line item",
+      );
       return;
     }
     setSubmitError(null);
     try {
-      const result = await createOrder(buildPayload('MANUAL'));
+      const result = await createOrder(buildPayload("MANUAL"));
       if (result?.id) {
         setSuccessOrderId(result.id);
       }
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : 'Failed to create order');
+      setSubmitError(
+        err instanceof Error ? err.message : "Failed to create order",
+      );
     }
   };
 
   const handleSaveDraft = async () => {
     if (!customer.name) {
-      setSubmitError('Please enter customer name');
+      setSubmitError("Please enter customer name");
       return;
     }
     setSubmitError(null);
     try {
-      const result = await createOrder(buildPayload('DRAFT', ['draft']));
+      const result = await createOrder(buildPayload("DRAFT", ["draft"]));
       if (result?.id) {
         setSuccessOrderId(result.id);
       }
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : 'Failed to save draft');
+      setSubmitError(
+        err instanceof Error ? err.message : "Failed to save draft",
+      );
     }
   };
 
@@ -169,10 +198,12 @@ export default function CreateOrderPage() {
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-8 max-w-md w-full text-center">
           <div className="text-4xl mb-4">✓</div>
           <h2 className="text-xl font-bold mb-2">Order Created</h2>
-          <p className="text-gray-400 text-sm mb-6">Order ID: {successOrderId}</p>
+          <p className="text-gray-400 text-sm mb-6">
+            Order ID: {successOrderId}
+          </p>
           <div className="flex gap-3">
             <button
-              onClick={() => router.push('/orders')}
+              onClick={() => router.push("/orders")}
               className="flex-1 px-4 py-2.5 rounded bg-blue-500 text-white font-semibold text-sm transition-all hover:bg-blue-600"
             >
               View Orders
@@ -180,11 +211,11 @@ export default function CreateOrderPage() {
             <button
               onClick={() => {
                 setSuccessOrderId(null);
-                setCustomer({ name: '', email: '', phone: '' });
-                setAddress({ street: '', city: '', state: '', zip: '' });
+                setCustomer({ name: "", email: "", phone: "" });
+                setAddress({ street: "", city: "", state: "", zip: "" });
                 setLineItems([]);
-                setTags('');
-                setDeliveryNotes('');
+                setTags("");
+                setDeliveryNotes("");
               }}
               className="flex-1 px-4 py-2.5 rounded bg-transparent text-blue-500 font-semibold text-sm border border-blue-500 transition-all hover:bg-blue-500 hover:text-white"
             >
@@ -200,7 +231,9 @@ export default function CreateOrderPage() {
     <div className="min-h-screen bg-wl-bg-root p-6 text-white">
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">Create Order</h1>
-        <p className="text-sm text-gray-400">Create and manage new orders with customer and delivery information</p>
+        <p className="text-sm text-gray-400">
+          Create and manage new orders with customer and delivery information
+        </p>
       </div>
 
       {submitError && (
@@ -212,20 +245,29 @@ export default function CreateOrderPage() {
       <div className="grid grid-cols-1 gap-6 md:grid-cols-[repeat(auto-fit,minmax(400px,1fr))] mb-6">
         {/* Customer Section */}
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6">
-          <h3 className="text-base font-semibold mb-4 text-white">Customer Information</h3>
+          <h3 className="text-base font-semibold mb-4 text-white">
+            Customer Information
+          </h3>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-300 mb-2">Customer Type</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Customer Type
+            </label>
             <div className="flex gap-5 mb-4">
               {[
-                { checked: isNewCustomer, label: 'New Customer' },
-                { checked: !isNewCustomer, label: 'Existing Customer' }
+                { checked: isNewCustomer, label: "New Customer" },
+                { checked: !isNewCustomer, label: "Existing Customer" },
               ].map((opt, idx) => (
-                <label key={idx} className="flex items-center gap-2 cursor-pointer text-sm text-gray-300">
+                <label
+                  key={idx}
+                  className="flex items-center gap-2 cursor-pointer text-sm text-gray-300"
+                >
                   <input
                     type="radio"
                     checked={opt.checked}
-                    onChange={() => setIsNewCustomer(opt.label === 'New Customer')}
+                    onChange={() =>
+                      setIsNewCustomer(opt.label === "New Customer")
+                    }
                   />
                   {opt.label}
                 </label>
@@ -235,7 +277,9 @@ export default function CreateOrderPage() {
 
           {!isNewCustomer ? (
             <div className="mb-4 relative">
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">Search Customer</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                Search Customer
+              </label>
               <input
                 type="text"
                 className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
@@ -248,14 +292,19 @@ export default function CreateOrderPage() {
               />
               {customerSearch && customers.length > 0 && (
                 <div className="absolute bg-wl-bg-surface border border-wl-border-default rounded mt-1 z-10 max-h-52 overflow-y-auto w-full">
-                  {customers.map(c => (
+                  {customers.map((c) => (
                     <div
                       key={c.id}
                       className="p-3 cursor-pointer border-b border-wl-border-default hover:bg-wl-bg-root text-sm text-gray-300"
                       onClick={() => {
-                        setCustomer({ id: c.id, name: c.name, email: c.email, phone: c.phone });
-                        setCustomerSearch('');
-                        setCustomerSearchApi('');
+                        setCustomer({
+                          id: c.id,
+                          name: c.name,
+                          email: c.email,
+                          phone: c.phone,
+                        });
+                        setCustomerSearch("");
+                        setCustomerSearchApi("");
                       }}
                     >
                       <p className="font-medium text-white">{c.name}</p>
@@ -268,56 +317,76 @@ export default function CreateOrderPage() {
           ) : null}
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">Full Name *</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              Full Name *
+            </label>
             <input
               type="text"
               className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               placeholder="Enter customer name"
               value={customer.name}
-              onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
+              onChange={(e) =>
+                setCustomer({ ...customer, name: e.target.value })
+              }
             />
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">Email *</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              Email *
+            </label>
             <input
               type="email"
               className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               placeholder="customer@example.com"
               value={customer.email}
-              onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
+              onChange={(e) =>
+                setCustomer({ ...customer, email: e.target.value })
+              }
             />
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">Phone Number</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              Phone Number
+            </label>
             <input
               type="tel"
               className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               placeholder="+91-9876543210"
               value={customer.phone}
-              onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
+              onChange={(e) =>
+                setCustomer({ ...customer, phone: e.target.value })
+              }
             />
           </div>
         </div>
 
         {/* Delivery Address */}
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6">
-          <h3 className="text-base font-semibold mb-4 text-white">Delivery Address</h3>
+          <h3 className="text-base font-semibold mb-4 text-white">
+            Delivery Address
+          </h3>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">Street Address *</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              Street Address *
+            </label>
             <input
               type="text"
               className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               placeholder="Enter street address"
               value={address.street}
-              onChange={(e) => setAddress({ ...address, street: e.target.value })}
+              onChange={(e) =>
+                setAddress({ ...address, street: e.target.value })
+              }
             />
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">City *</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              City *
+            </label>
             <input
               type="text"
               className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
@@ -329,24 +398,32 @@ export default function CreateOrderPage() {
 
           <div className="grid grid-cols-2 gap-2.5">
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">State *</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                State *
+              </label>
               <input
                 type="text"
                 className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
                 placeholder="Enter state"
                 value={address.state}
-                onChange={(e) => setAddress({ ...address, state: e.target.value })}
+                onChange={(e) =>
+                  setAddress({ ...address, state: e.target.value })
+                }
               />
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">Zip Code *</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                Zip Code *
+              </label>
               <input
                 type="text"
                 className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
                 placeholder="Enter zip code"
                 value={address.zip}
-                onChange={(e) => setAddress({ ...address, zip: e.target.value })}
+                onChange={(e) =>
+                  setAddress({ ...address, zip: e.target.value })
+                }
               />
             </div>
           </div>
@@ -354,10 +431,14 @@ export default function CreateOrderPage() {
 
         {/* Delivery Preferences */}
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6">
-          <h3 className="text-base font-semibold mb-4 text-white">Delivery Preferences</h3>
+          <h3 className="text-base font-semibold mb-4 text-white">
+            Delivery Preferences
+          </h3>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">Preferred Delivery Date</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              Preferred Delivery Date
+            </label>
             <input
               type="date"
               className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
@@ -367,7 +448,9 @@ export default function CreateOrderPage() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">Time Slot</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              Time Slot
+            </label>
             <select
               className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               value={timeSlot}
@@ -381,7 +464,9 @@ export default function CreateOrderPage() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">Delivery Notes</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              Delivery Notes
+            </label>
             <textarea
               className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm min-h-20 font-inherit box-border focus:outline-none focus:border-blue-500"
               placeholder="Add special delivery instructions..."
@@ -393,46 +478,66 @@ export default function CreateOrderPage() {
 
         {/* Payment & Priority */}
         <div className="bg-wl-bg-surface border border-wl-border-default rounded-lg p-6">
-          <h3 className="text-base font-semibold mb-4 text-white">Payment & Priority</h3>
+          <h3 className="text-base font-semibold mb-4 text-white">
+            Payment & Priority
+          </h3>
 
           <div className="mb-5">
-            <label className="block text-sm font-medium text-gray-300 mb-2.5">Payment Method</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2.5">
+              Payment Method
+            </label>
             <div className="flex flex-col gap-2.5">
-              {['cod', 'prepaid', 'invoice'].map(method => (
-                <label key={method} className="flex items-center gap-2 cursor-pointer text-sm text-gray-300">
+              {["cod", "prepaid", "invoice"].map((method) => (
+                <label
+                  key={method}
+                  className="flex items-center gap-2 cursor-pointer text-sm text-gray-300"
+                >
                   <input
                     type="radio"
                     checked={paymentMethod === method}
                     onChange={() => setPaymentMethod(method)}
                   />
-                  {method === 'cod' ? 'Cash on Delivery' : method === 'prepaid' ? 'Prepaid' : 'Invoice'}
+                  {method === "cod"
+                    ? "Cash on Delivery"
+                    : method === "prepaid"
+                      ? "Prepaid"
+                      : "Invoice"}
                 </label>
               ))}
             </div>
           </div>
 
           <div className="mb-5">
-            <label className="block text-sm font-medium text-gray-300 mb-2.5">Priority</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2.5">
+              Priority
+            </label>
             <div className="flex gap-2.5 flex-wrap mb-2.5">
-              {['normal', 'express', 'same-day'].map(pri => (
+              {["normal", "express", "same-day"].map((pri) => (
                 <button
                   key={pri}
                   onClick={() => setPriority(pri)}
                   className={cn(
-                    'px-4 py-2 rounded border text-sm font-semibold transition-all',
+                    "px-4 py-2 rounded border text-sm font-semibold transition-all",
                     priority === pri
-                      ? 'bg-blue-500 text-white border-blue-500'
-                      : 'bg-transparent text-blue-500 border-blue-500'
+                      ? "bg-blue-500 text-white border-blue-500"
+                      : "bg-transparent text-blue-500 border-blue-500",
                   )}
                 >
-                  {pri === 'normal' ? 'Normal' : pri === 'express' ? 'Express' : 'Same Day'}
+                  {pri === "normal"
+                    ? "Normal"
+                    : pri === "express"
+                      ? "Express"
+                      : "Same Day"}
                 </button>
               ))}
             </div>
             <div className="mt-2.5">
               <span
                 className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
-                style={{ color: getPriorityColor(priority), background: `${getPriorityColor(priority)}22` }}
+                style={{
+                  color: getPriorityColor(priority),
+                  background: `${getPriorityColor(priority)}22`,
+                }}
               >
                 {priority.charAt(0).toUpperCase() + priority.slice(1)}
               </span>
@@ -440,7 +545,9 @@ export default function CreateOrderPage() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">Tags (comma-separated)</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              Tags (comma-separated)
+            </label>
             <input
               type="text"
               className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
@@ -458,65 +565,87 @@ export default function CreateOrderPage() {
 
         <div className="grid grid-cols-[2fr_1fr_1fr_1fr_100px] gap-2.5 mb-4">
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">Product Name</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              Product Name
+            </label>
             <input
               type="text"
               className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               placeholder="Search product..."
               value={newLineItem.productName}
               onChange={(e) => {
-                const product = products.find(p => p.name === e.target.value);
+                const product = products.find((p) => p.name === e.target.value);
                 setNewLineItem({
                   ...newLineItem,
                   productName: e.target.value,
                   sku: product?.sku || newLineItem.sku,
-                  unitPrice: product?.price || newLineItem.unitPrice
+                  unitPrice: product?.price || newLineItem.unitPrice,
                 });
               }}
               list="products"
             />
             <datalist id="products">
-              {products.map(p => (
+              {products.map((p) => (
                 <option key={p.id} value={p.name} />
               ))}
             </datalist>
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">SKU</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              SKU
+            </label>
             <input
               type="text"
               className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-400 text-sm box-border"
               placeholder="SKU"
               value={newLineItem.sku}
-              onChange={(e) => setNewLineItem({ ...newLineItem, sku: e.target.value })}
+              onChange={(e) =>
+                setNewLineItem({ ...newLineItem, sku: e.target.value })
+              }
             />
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">Quantity</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              Quantity
+            </label>
             <input
               type="number"
               className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               min="1"
               value={newLineItem.quantity}
-              onChange={(e) => setNewLineItem({ ...newLineItem, quantity: parseInt(e.target.value) || 1 })}
+              onChange={(e) =>
+                setNewLineItem({
+                  ...newLineItem,
+                  quantity: parseInt(e.target.value) || 1,
+                })
+              }
             />
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">Unit Price</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              Unit Price
+            </label>
             <input
               type="number"
               className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
               min="0"
               value={newLineItem.unitPrice}
-              onChange={(e) => setNewLineItem({ ...newLineItem, unitPrice: parseFloat(e.target.value) || 0 })}
+              onChange={(e) =>
+                setNewLineItem({
+                  ...newLineItem,
+                  unitPrice: parseFloat(e.target.value) || 0,
+                })
+              }
             />
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">&nbsp;</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              &nbsp;
+            </label>
             <button
               onClick={addLineItem}
               className="w-full px-4 py-2.5 rounded bg-blue-500 text-white font-semibold text-sm transition-all hover:bg-blue-600"
@@ -533,21 +662,36 @@ export default function CreateOrderPage() {
           <table className="w-full border-collapse mt-4 mb-5">
             <thead>
               <tr>
-                {['Product', 'SKU', 'Qty', 'Unit Price', 'Total', 'Action'].map(h => (
-                  <th key={h} className="bg-wl-bg-root border-b border-wl-border-default p-3 text-left text-xs font-semibold text-gray-400">
-                    {h}
-                  </th>
-                ))}
+                {["Product", "SKU", "Qty", "Unit Price", "Total", "Action"].map(
+                  (h) => (
+                    <th
+                      key={h}
+                      className="bg-wl-bg-root border-b border-wl-border-default p-3 text-left text-xs font-semibold text-gray-400"
+                    >
+                      {h}
+                    </th>
+                  ),
+                )}
               </tr>
             </thead>
             <tbody>
-              {lineItems.map(item => (
+              {lineItems.map((item) => (
                 <tr key={item.id}>
-                  <td className="border-b border-wl-border-default p-3 text-sm text-gray-300">{item.productName}</td>
-                  <td className="border-b border-wl-border-default p-3 text-sm text-gray-300">{item.sku}</td>
-                  <td className="border-b border-wl-border-default p-3 text-sm text-gray-300">{item.quantity}</td>
-                  <td className="border-b border-wl-border-default p-3 text-sm text-gray-300">₹{item.unitPrice.toLocaleString()}</td>
-                  <td className="border-b border-wl-border-default p-3 text-sm text-gray-300">₹{item.total.toLocaleString()}</td>
+                  <td className="border-b border-wl-border-default p-3 text-sm text-gray-300">
+                    {item.productName}
+                  </td>
+                  <td className="border-b border-wl-border-default p-3 text-sm text-gray-300">
+                    {item.sku}
+                  </td>
+                  <td className="border-b border-wl-border-default p-3 text-sm text-gray-300">
+                    {item.quantity}
+                  </td>
+                  <td className="border-b border-wl-border-default p-3 text-sm text-gray-300">
+                    ₹{item.unitPrice.toLocaleString()}
+                  </td>
+                  <td className="border-b border-wl-border-default p-3 text-sm text-gray-300">
+                    ₹{item.total.toLocaleString()}
+                  </td>
                   <td className="border-b border-wl-border-default p-3 text-sm">
                     <button
                       onClick={() => removeLineItem(item.id)}
@@ -571,7 +715,9 @@ export default function CreateOrderPage() {
 
           <div className="grid grid-cols-2 gap-5 mb-4 mt-4">
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">Tax (%)</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                Tax (%)
+              </label>
               <input
                 type="number"
                 className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
@@ -582,7 +728,9 @@ export default function CreateOrderPage() {
               />
             </div>
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">Discount (₹)</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                Discount (₹)
+              </label>
               <input
                 type="number"
                 className="w-full px-3 py-2.5 bg-wl-bg-root border border-wl-border-default rounded text-gray-300 text-sm box-border focus:outline-none focus:border-blue-500"
@@ -605,7 +753,9 @@ export default function CreateOrderPage() {
 
           <div className="flex justify-between py-2 text-sm text-gray-300">
             <span>Discount:</span>
-            <span className="font-semibold">-₹{discountAmount.toLocaleString()}</span>
+            <span className="font-semibold">
+              -₹{discountAmount.toLocaleString()}
+            </span>
           </div>
 
           <div className="flex justify-between py-4 border-t border-wl-border-default text-base font-bold text-blue-500">
@@ -620,10 +770,12 @@ export default function CreateOrderPage() {
             disabled={creating}
             className={cn(
               "flex-1 px-4 py-2.5 rounded font-semibold text-sm transition-all",
-              creating ? "bg-blue-500 text-white opacity-50 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600"
+              creating
+                ? "bg-blue-500 text-white opacity-50 cursor-not-allowed"
+                : "bg-blue-500 text-white hover:bg-blue-600",
             )}
           >
-            {creating ? 'Creating...' : 'Create Order'}
+            {creating ? "Creating..." : "Create Order"}
           </button>
           <button
             onClick={handleSaveDraft}

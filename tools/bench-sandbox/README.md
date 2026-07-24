@@ -31,13 +31,13 @@ That's it. The script:
 
 ## Subcommands
 
-| Command | What it does |
-|---------|--------------|
-| `./cycle.sh` (no args) | `reset` + `execute` (default) |
-| `./cycle.sh reset` | Only tear down remote state |
-| `./cycle.sh execute` | Only push + run (no reset) — useful for layered testing |
-| `./cycle.sh shell` | Interactive SSH into the sandbox directory |
-| `./cycle.sh logs <service>` | Tail logs from a service in the current sandbox |
+| Command                     | What it does                                            |
+| --------------------------- | ------------------------------------------------------- |
+| `./cycle.sh` (no args)      | `reset` + `execute` (default)                           |
+| `./cycle.sh reset`          | Only tear down remote state                             |
+| `./cycle.sh execute`        | Only push + run (no reset) — useful for layered testing |
+| `./cycle.sh shell`          | Interactive SSH into the sandbox directory              |
+| `./cycle.sh logs <service>` | Tail logs from a service in the current sandbox         |
 
 ## Requirements on the local machine
 

@@ -12,10 +12,7 @@ export function Breadcrumb({ className }: BreadcrumbProps) {
   const pathname = usePathname();
 
   // Generate breadcrumb segments from route
-  const segments = pathname
-    .split("/")
-    .filter(Boolean)
-    .slice(0, 3); // Limit to 3 levels
+  const segments = pathname.split("/").filter(Boolean).slice(0, 3); // Limit to 3 levels
 
   // Convert segments to readable labels
   const breadcrumbs = segments.map((segment, index) => ({
@@ -34,7 +31,7 @@ export function Breadcrumb({ className }: BreadcrumbProps) {
     <nav
       className={cn(
         "flex items-center gap-2 text-sm text-wl-text-secondary",
-        className
+        className,
       )}
       aria-label="Breadcrumb"
     >
@@ -42,7 +39,7 @@ export function Breadcrumb({ className }: BreadcrumbProps) {
         href="/"
         className={cn(
           "flex items-center gap-2 hover:text-wl-text-primary transition-colors",
-          pathname === "/" && "text-wl-text-primary"
+          pathname === "/" && "text-wl-text-primary",
         )}
       >
         <svg
@@ -67,7 +64,8 @@ export function Breadcrumb({ className }: BreadcrumbProps) {
             href={crumb.href}
             className={cn(
               "hover:text-wl-text-primary transition-colors truncate max-w-[200px]",
-              index === breadcrumbs.length - 1 && "text-wl-text-primary pointer-events-none"
+              index === breadcrumbs.length - 1 &&
+                "text-wl-text-primary pointer-events-none",
             )}
           >
             {crumb.label}

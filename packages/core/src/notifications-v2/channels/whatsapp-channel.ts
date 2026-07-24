@@ -78,7 +78,8 @@ export class WhatsAppChannel {
       }
 
       // Validate template
-      const templateId = TEMPLATE_MAP[params.templateName as WhatsAppTemplateType];
+      const templateId =
+        TEMPLATE_MAP[params.templateName as WhatsAppTemplateType];
       if (!templateId) {
         return {
           accepted: false,
@@ -129,7 +130,8 @@ export class WhatsAppChannel {
         messageId: mockMessageId,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       return {
         accepted: false,
         error: errorMessage,
@@ -143,7 +145,7 @@ export class WhatsAppChannel {
   private buildMessagePayload(
     to: string,
     templateId: string,
-    params: WhatsAppParams
+    params: WhatsAppParams,
   ): Record<string, any> {
     const payload: Record<string, any> = {
       messaging_product: "whatsapp",

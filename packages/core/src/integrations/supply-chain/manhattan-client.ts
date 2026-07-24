@@ -5,8 +5,8 @@
  * @packageDocumentation
  */
 
-import { SupplyChainAdapter } from './supply-chain-adapter';
-import { RetryHandler } from './supply-chain-adapter';
+import { SupplyChainAdapter } from "./supply-chain-adapter";
+import { RetryHandler } from "./supply-chain-adapter";
 import type {
   SupplyChainConfig,
   WarehouseLocation,
@@ -21,7 +21,7 @@ import type {
   PickTask,
   PackStation,
   ShipConfirmation,
-} from './types';
+} from "./types";
 
 /**
  * Manhattan OAuth2 token response
@@ -110,10 +110,12 @@ export class ManhattanClient extends SupplyChainAdapter {
     try {
       await this.checkPrerequisites();
       await this.authenticateOAuth2();
-      this.logEvent('manhattan.initialized');
+      this.logEvent("manhattan.initialized");
     } catch (error) {
       this.handleApiResponse(false, error as Error);
-      throw new Error(`Manhattan initialization failed: ${(error as Error).message}`);
+      throw new Error(
+        `Manhattan initialization failed: ${(error as Error).message}`,
+      );
     }
   }
 
@@ -127,7 +129,7 @@ export class ManhattanClient extends SupplyChainAdapter {
       const response = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
         const result = await fetch(`${this.config.baseUrl}/api/v2/warehouses`, {
-          method: 'GET',
+          method: "GET",
           headers,
           signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
@@ -156,11 +158,14 @@ export class ManhattanClient extends SupplyChainAdapter {
 
       const warehouse = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
-        const response = await fetch(`${this.config.baseUrl}/api/v2/warehouses/${warehouseId}`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/warehouses/${warehouseId}`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to get warehouse: ${response.statusText}`);
@@ -174,16 +179,16 @@ export class ManhattanClient extends SupplyChainAdapter {
       return {
         id: warehouse.WHID,
         name: warehouse.WNAME || warehouseId,
-        code: warehouse.WCODE || '',
+        code: warehouse.WCODE || "",
         address: {
-          street: '',
-          city: warehouse.WCITY || '',
-          state: warehouse.WSTATE || '',
-          postalCode: warehouse.WZIP || '',
-          country: warehouse.WCOUNTRY || 'US',
+          street: "",
+          city: warehouse.WCITY || "",
+          state: warehouse.WSTATE || "",
+          postalCode: warehouse.WZIP || "",
+          country: warehouse.WCOUNTRY || "US",
         },
-        type: 'dc',
-        status: (warehouse.WSTATUS as any) || 'active',
+        type: "dc",
+        status: (warehouse.WSTATUS as any) || "active",
       };
     } catch (error) {
       this.handleApiResponse(false, error as Error);
@@ -201,17 +206,22 @@ export class ManhattanClient extends SupplyChainAdapter {
 
       const warehouses = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
-        const response = await fetch(`${this.config.baseUrl}/api/v2/warehouses`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/warehouses`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to list warehouses: ${response.statusText}`);
         }
 
-        const data = (await response.json()) as { items?: ManhattanWarehouse[] };
+        const data = (await response.json()) as {
+          items?: ManhattanWarehouse[];
+        };
         return data.items || [];
       });
 
@@ -220,16 +230,16 @@ export class ManhattanClient extends SupplyChainAdapter {
       return warehouses.map((w) => ({
         id: w.WHID,
         name: w.WNAME || w.WHID,
-        code: w.WCODE || '',
+        code: w.WCODE || "",
         address: {
-          street: '',
-          city: w.WCITY || '',
-          state: w.WSTATE || '',
-          postalCode: w.WZIP || '',
-          country: w.WCOUNTRY || 'US',
+          street: "",
+          city: w.WCITY || "",
+          state: w.WSTATE || "",
+          postalCode: w.WZIP || "",
+          country: w.WCOUNTRY || "US",
         },
-        type: 'dc',
-        status: (w.WSTATUS as any) || 'active',
+        type: "dc",
+        status: (w.WSTATUS as any) || "active",
       }));
     } catch (error) {
       this.handleApiResponse(false, error as Error);
@@ -242,7 +252,9 @@ export class ManhattanClient extends SupplyChainAdapter {
    * @param warehouse Warehouse to create
    * @returns Created warehouse
    */
-  public async createWarehouse(warehouse: WarehouseLocation): Promise<WarehouseLocation> {
+  public async createWarehouse(
+    warehouse: WarehouseLocation,
+  ): Promise<WarehouseLocation> {
     try {
       await this.checkPrerequisites();
 
@@ -259,12 +271,15 @@ export class ManhattanClient extends SupplyChainAdapter {
           WSTATUS: warehouse.status,
         };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v2/warehouses`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/warehouses`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to create warehouse: ${response.statusText}`);
@@ -274,7 +289,7 @@ export class ManhattanClient extends SupplyChainAdapter {
       });
 
       this.handleApiResponse(true);
-      this.logEvent('warehouse.created', { id: warehouse.id });
+      this.logEvent("warehouse.created", { id: warehouse.id });
 
       return {
         id: result.WHID,
@@ -298,7 +313,7 @@ export class ManhattanClient extends SupplyChainAdapter {
    */
   public async updateWarehouse(
     warehouseId: string,
-    updates: Partial<WarehouseLocation>
+    updates: Partial<WarehouseLocation>,
   ): Promise<WarehouseLocation> {
     try {
       await this.checkPrerequisites();
@@ -312,12 +327,15 @@ export class ManhattanClient extends SupplyChainAdapter {
           WSTATE: updates.address?.state,
         };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v2/warehouses/${warehouseId}`, {
-          method: 'PUT',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/warehouses/${warehouseId}`,
+          {
+            method: "PUT",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to update warehouse: ${response.statusText}`);
@@ -325,7 +343,7 @@ export class ManhattanClient extends SupplyChainAdapter {
       });
 
       this.handleApiResponse(true);
-      this.logEvent('warehouse.updated', { id: warehouseId });
+      this.logEvent("warehouse.updated", { id: warehouseId });
 
       return await this.getWarehouse(warehouseId);
     } catch (error) {
@@ -344,7 +362,10 @@ export class ManhattanClient extends SupplyChainAdapter {
    * @param sku Stock keeping unit
    * @returns Inventory item
    */
-  public async getInventory(warehouseId: string, sku: string): Promise<InventoryItem> {
+  public async getInventory(
+    warehouseId: string,
+    sku: string,
+  ): Promise<InventoryItem> {
     try {
       await this.checkPrerequisites();
 
@@ -353,17 +374,19 @@ export class ManhattanClient extends SupplyChainAdapter {
         const response = await fetch(
           `${this.config.baseUrl}/api/v2/inventory?WHID=${warehouseId}&SKU=${sku}`,
           {
-            method: 'GET',
+            method: "GET",
             headers,
             signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-          }
+          },
         );
 
         if (!response.ok) {
           throw new Error(`Failed to get inventory: ${response.statusText}`);
         }
 
-        const data = (await response.json()) as { items?: ManhattanInventory[] };
+        const data = (await response.json()) as {
+          items?: ManhattanInventory[];
+        };
         return data.items?.[0];
       });
 
@@ -377,15 +400,15 @@ export class ManhattanClient extends SupplyChainAdapter {
         id: inventory.ITEMID,
         sku: inventory.SKU,
         warehouseId,
-        zone: inventory.ZONE || '',
+        zone: inventory.ZONE || "",
         binLocation: inventory.LOC,
         quantityOnHand: inventory.QOH,
         quantityAllocated: inventory.QAL,
         quantityAvailable: inventory.QAV,
         productName: sku,
-        uom: inventory.UOM || 'EACH',
+        uom: inventory.UOM || "EACH",
         receivedDate: new Date(),
-        status: (inventory.STATUS as any) || 'available',
+        status: (inventory.STATUS as any) || "available",
         unitCost: inventory.COST || 0,
       };
     } catch (error) {
@@ -406,7 +429,7 @@ export class ManhattanClient extends SupplyChainAdapter {
       zone?: string;
       status?: string;
       sku?: string;
-    }
+    },
   ): Promise<InventoryItem[]> {
     try {
       await this.checkPrerequisites();
@@ -414,21 +437,26 @@ export class ManhattanClient extends SupplyChainAdapter {
       const items = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
         const params = new URLSearchParams({ WHID: warehouseId });
-        if (filters?.zone) params.append('ZONE', filters.zone);
-        if (filters?.status) params.append('STATUS', filters.status);
-        if (filters?.sku) params.append('SKU', filters.sku);
+        if (filters?.zone) params.append("ZONE", filters.zone);
+        if (filters?.status) params.append("STATUS", filters.status);
+        if (filters?.sku) params.append("SKU", filters.sku);
 
-        const response = await fetch(`${this.config.baseUrl}/api/v2/inventory?${params}`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/inventory?${params}`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to list inventory: ${response.statusText}`);
         }
 
-        const data = (await response.json()) as { items?: ManhattanInventory[] };
+        const data = (await response.json()) as {
+          items?: ManhattanInventory[];
+        };
         return data.items || [];
       });
 
@@ -438,15 +466,15 @@ export class ManhattanClient extends SupplyChainAdapter {
         id: inv.ITEMID,
         sku: inv.SKU,
         warehouseId,
-        zone: inv.ZONE || '',
+        zone: inv.ZONE || "",
         binLocation: inv.LOC,
         quantityOnHand: inv.QOH,
         quantityAllocated: inv.QAL,
         quantityAvailable: inv.QAV,
         productName: inv.SKU,
-        uom: inv.UOM || 'EACH',
+        uom: inv.UOM || "EACH",
         receivedDate: new Date(),
-        status: (inv.STATUS as any) || 'available',
+        status: (inv.STATUS as any) || "available",
         unitCost: inv.COST || 0,
       }));
     } catch (error) {
@@ -460,7 +488,9 @@ export class ManhattanClient extends SupplyChainAdapter {
    * @param warehouseId Warehouse ID
    * @returns Synced inventory
    */
-  public async syncInventoryRealTime(warehouseId: string): Promise<InventoryItem[]> {
+  public async syncInventoryRealTime(
+    warehouseId: string,
+  ): Promise<InventoryItem[]> {
     return this.listInventory(warehouseId);
   }
 
@@ -470,7 +500,10 @@ export class ManhattanClient extends SupplyChainAdapter {
    * @param skus SKUs to sync
    * @returns Synced inventory
    */
-  public async syncInventoryBatch(warehouseId: string, skus: string[]): Promise<InventoryItem[]> {
+  public async syncInventoryBatch(
+    warehouseId: string,
+    skus: string[],
+  ): Promise<InventoryItem[]> {
     const results: InventoryItem[] = [];
 
     for (const sku of skus) {
@@ -478,7 +511,10 @@ export class ManhattanClient extends SupplyChainAdapter {
         const item = await this.getInventory(warehouseId, sku);
         results.push(item);
       } catch (error) {
-        this.logEvent('inventory.sync.error', { sku, error: (error as Error).message });
+        this.logEvent("inventory.sync.error", {
+          sku,
+          error: (error as Error).message,
+        });
       }
     }
 
@@ -497,7 +533,7 @@ export class ManhattanClient extends SupplyChainAdapter {
     warehouseId: string,
     sku: string,
     quantity: number,
-    reason: string
+    reason: string,
   ): Promise<InventoryItem> {
     try {
       await this.checkPrerequisites();
@@ -512,12 +548,15 @@ export class ManhattanClient extends SupplyChainAdapter {
           ADJDATE: new Date().toISOString(),
         };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v2/inventory/adjust`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/inventory/adjust`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to adjust inventory: ${response.statusText}`);
@@ -525,7 +564,7 @@ export class ManhattanClient extends SupplyChainAdapter {
       });
 
       this.handleApiResponse(true);
-      this.logEvent('inventory.adjusted', { sku, quantity, reason });
+      this.logEvent("inventory.adjusted", { sku, quantity, reason });
 
       return this.getInventory(warehouseId, sku);
     } catch (error) {
@@ -548,7 +587,7 @@ export class ManhattanClient extends SupplyChainAdapter {
     sku: string,
     fromBin: string,
     toBin: string,
-    quantity: number
+    quantity: number,
   ): Promise<InventoryItem[]> {
     try {
       await this.checkPrerequisites();
@@ -564,12 +603,15 @@ export class ManhattanClient extends SupplyChainAdapter {
           MOVEDATE: new Date().toISOString(),
         };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v2/inventory/move`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/inventory/move`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to move inventory: ${response.statusText}`);
@@ -577,7 +619,7 @@ export class ManhattanClient extends SupplyChainAdapter {
       });
 
       this.handleApiResponse(true);
-      this.logEvent('inventory.moved', { sku, fromBin, toBin, quantity });
+      this.logEvent("inventory.moved", { sku, fromBin, toBin, quantity });
 
       return [await this.getInventory(warehouseId, sku)];
     } catch (error) {
@@ -595,20 +637,27 @@ export class ManhattanClient extends SupplyChainAdapter {
    * @param shipmentId Shipment ID
    * @returns Inbound shipment
    */
-  public async getInboundShipment(shipmentId: string): Promise<InboundShipment> {
+  public async getInboundShipment(
+    shipmentId: string,
+  ): Promise<InboundShipment> {
     try {
       await this.checkPrerequisites();
 
       const shipment = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
-        const response = await fetch(`${this.config.baseUrl}/api/v2/inbound/${shipmentId}`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/inbound/${shipmentId}`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
-          throw new Error(`Failed to get inbound shipment: ${response.statusText}`);
+          throw new Error(
+            `Failed to get inbound shipment: ${response.statusText}`,
+          );
         }
 
         return response.json() as Promise<any>;
@@ -618,9 +667,9 @@ export class ManhattanClient extends SupplyChainAdapter {
 
       return {
         id: shipment.ShipmentID,
-        trackingNumber: shipment.TrackingNumber || '',
+        trackingNumber: shipment.TrackingNumber || "",
         warehouseId: shipment.WHID,
-        status: (shipment.Status as any) || 'in_transit',
+        status: (shipment.Status as any) || "in_transit",
         items: shipment.Items || [],
         expectedDeliveryDate: new Date(shipment.ExpectedDeliveryDate),
       };
@@ -638,7 +687,7 @@ export class ManhattanClient extends SupplyChainAdapter {
    */
   public async listInboundShipments(
     warehouseId: string,
-    status?: string
+    status?: string,
   ): Promise<InboundShipment[]> {
     try {
       await this.checkPrerequisites();
@@ -646,16 +695,21 @@ export class ManhattanClient extends SupplyChainAdapter {
       const shipments = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
         const params = new URLSearchParams({ WHID: warehouseId });
-        if (status) params.append('Status', status);
+        if (status) params.append("Status", status);
 
-        const response = await fetch(`${this.config.baseUrl}/api/v2/inbound?${params}`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/inbound?${params}`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
-          throw new Error(`Failed to list inbound shipments: ${response.statusText}`);
+          throw new Error(
+            `Failed to list inbound shipments: ${response.statusText}`,
+          );
         }
 
         const data = (await response.json()) as { items?: any[] };
@@ -666,9 +720,9 @@ export class ManhattanClient extends SupplyChainAdapter {
 
       return shipments.map((s) => ({
         id: s.ShipmentID,
-        trackingNumber: s.TrackingNumber || '',
+        trackingNumber: s.TrackingNumber || "",
         warehouseId,
-        status: (s.Status as any) || 'in_transit',
+        status: (s.Status as any) || "in_transit",
         items: s.Items || [],
         expectedDeliveryDate: new Date(s.ExpectedDeliveryDate),
       }));
@@ -683,7 +737,9 @@ export class ManhattanClient extends SupplyChainAdapter {
    * @param shipment Shipment data
    * @returns Created shipment
    */
-  public async createInboundShipment(shipment: InboundShipment): Promise<InboundShipment> {
+  public async createInboundShipment(
+    shipment: InboundShipment,
+  ): Promise<InboundShipment> {
     try {
       await this.checkPrerequisites();
 
@@ -694,31 +750,33 @@ export class ManhattanClient extends SupplyChainAdapter {
           WHID: shipment.warehouseId,
           ExpectedDeliveryDate: shipment.expectedDeliveryDate,
           Items: shipment.items,
-          Status: 'in_transit',
+          Status: "in_transit",
         };
 
         const response = await fetch(`${this.config.baseUrl}/api/v2/inbound`, {
-          method: 'POST',
+          method: "POST",
           headers,
           body: JSON.stringify(payload),
           signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         });
 
         if (!response.ok) {
-          throw new Error(`Failed to create inbound shipment: ${response.statusText}`);
+          throw new Error(
+            `Failed to create inbound shipment: ${response.statusText}`,
+          );
         }
 
         return response.json() as Promise<any>;
       });
 
       this.handleApiResponse(true);
-      this.logEvent('inbound.created', { id: result.ShipmentID });
+      this.logEvent("inbound.created", { id: result.ShipmentID });
 
       return {
         id: result.ShipmentID,
         trackingNumber: result.TrackingNumber,
         warehouseId: shipment.warehouseId,
-        status: 'in_transit',
+        status: "in_transit",
         items: shipment.items,
         expectedDeliveryDate: shipment.expectedDeliveryDate,
       };
@@ -740,7 +798,7 @@ export class ManhattanClient extends SupplyChainAdapter {
       sku: string;
       quantity: number;
       lotNumber?: string;
-    }>
+    }>,
   ): Promise<InboundShipment> {
     try {
       await this.checkPrerequisites();
@@ -753,12 +811,15 @@ export class ManhattanClient extends SupplyChainAdapter {
           Items: receivedItems,
         };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v2/inbound/${shipmentId}/receive`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/inbound/${shipmentId}/receive`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to receive shipment: ${response.statusText}`);
@@ -766,7 +827,7 @@ export class ManhattanClient extends SupplyChainAdapter {
       });
 
       this.handleApiResponse(true);
-      this.logEvent('inbound.received', { id: shipmentId });
+      this.logEvent("inbound.received", { id: shipmentId });
 
       return this.getInboundShipment(shipmentId);
     } catch (error) {
@@ -785,7 +846,7 @@ export class ManhattanClient extends SupplyChainAdapter {
   public async confirmQualityCheck(
     shipmentId: string,
     qcPassed: boolean,
-    notes?: string
+    notes?: string,
   ): Promise<ReceiptConfirmation> {
     try {
       await this.checkPrerequisites();
@@ -795,16 +856,19 @@ export class ManhattanClient extends SupplyChainAdapter {
         const payload = {
           ShipmentID: shipmentId,
           QCPassed: qcPassed,
-          QCNotes: notes || '',
+          QCNotes: notes || "",
           QCDate: new Date().toISOString(),
         };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v2/inbound/${shipmentId}/qc`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/inbound/${shipmentId}/qc`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to confirm QC: ${response.statusText}`);
@@ -814,17 +878,17 @@ export class ManhattanClient extends SupplyChainAdapter {
       });
 
       this.handleApiResponse(true);
-      this.logEvent('qc.confirmed', { shipmentId, qcPassed });
+      this.logEvent("qc.confirmed", { shipmentId, qcPassed });
 
       return {
         id: result.ReceiptID,
         shipmentId,
-        warehouseId: this.config.warehouseId || '',
+        warehouseId: this.config.warehouseId || "",
         receiptDate: new Date(),
-        receivedBy: 'system',
-        status: qcPassed ? 'qc_passed' : 'qc_failed',
+        receivedBy: "system",
+        status: qcPassed ? "qc_passed" : "qc_failed",
         items: result.Items || [],
-        qcStatus: qcPassed ? 'pass' : 'fail',
+        qcStatus: qcPassed ? "pass" : "fail",
         qcNotes: notes,
       };
     } catch (error) {
@@ -848,11 +912,14 @@ export class ManhattanClient extends SupplyChainAdapter {
 
       const order = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
-        const response = await fetch(`${this.config.baseUrl}/api/v2/orders/${orderId}`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/orders/${orderId}`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to get order: ${response.statusText}`);
@@ -866,11 +933,11 @@ export class ManhattanClient extends SupplyChainAdapter {
       return {
         id: order.OrderID,
         orderNumber: order.OrderNumber,
-        type: 'sales',
+        type: "sales",
         sourceWarehouseId: order.WHID,
         orderDate: new Date(order.OrderDate),
-        status: (order.Status as any) || 'pending',
-        priority: 'standard',
+        status: (order.Status as any) || "pending",
+        priority: "standard",
         items: order.Items || [],
       };
     } catch (error) {
@@ -887,7 +954,7 @@ export class ManhattanClient extends SupplyChainAdapter {
    */
   public async listOutboundOrders(
     warehouseId: string,
-    status?: string
+    status?: string,
   ): Promise<OutboundOrder[]> {
     try {
       await this.checkPrerequisites();
@@ -895,13 +962,16 @@ export class ManhattanClient extends SupplyChainAdapter {
       const orders = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
         const params = new URLSearchParams({ WHID: warehouseId });
-        if (status) params.append('Status', status);
+        if (status) params.append("Status", status);
 
-        const response = await fetch(`${this.config.baseUrl}/api/v2/orders?${params}`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/orders?${params}`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to list orders: ${response.statusText}`);
@@ -916,11 +986,11 @@ export class ManhattanClient extends SupplyChainAdapter {
       return orders.map((o) => ({
         id: o.OrderID,
         orderNumber: o.OrderNumber,
-        type: 'sales',
+        type: "sales",
         sourceWarehouseId: warehouseId,
         orderDate: new Date(o.OrderDate),
-        status: (o.Status as any) || 'pending',
-        priority: 'standard',
+        status: (o.Status as any) || "pending",
+        priority: "standard",
         items: o.Items || [],
       }));
     } catch (error) {
@@ -934,7 +1004,9 @@ export class ManhattanClient extends SupplyChainAdapter {
    * @param order Order data
    * @returns Created order
    */
-  public async createOutboundOrder(order: OutboundOrder): Promise<OutboundOrder> {
+  public async createOutboundOrder(
+    order: OutboundOrder,
+  ): Promise<OutboundOrder> {
     try {
       await this.checkPrerequisites();
 
@@ -945,11 +1017,11 @@ export class ManhattanClient extends SupplyChainAdapter {
           WHID: order.sourceWarehouseId,
           OrderDate: order.orderDate,
           Items: order.items,
-          Status: 'pending',
+          Status: "pending",
         };
 
         const response = await fetch(`${this.config.baseUrl}/api/v2/orders`, {
-          method: 'POST',
+          method: "POST",
           headers,
           body: JSON.stringify(payload),
           signal: AbortSignal.timeout(this.config.timeout ?? 30000),
@@ -963,7 +1035,7 @@ export class ManhattanClient extends SupplyChainAdapter {
       });
 
       this.handleApiResponse(true);
-      this.logEvent('order.created', { id: result.OrderID });
+      this.logEvent("order.created", { id: result.OrderID });
 
       return {
         id: result.OrderID,
@@ -971,7 +1043,7 @@ export class ManhattanClient extends SupplyChainAdapter {
         type: order.type,
         sourceWarehouseId: order.sourceWarehouseId,
         orderDate: order.orderDate,
-        status: 'pending',
+        status: "pending",
         priority: order.priority,
         items: order.items,
       };
@@ -989,7 +1061,7 @@ export class ManhattanClient extends SupplyChainAdapter {
    */
   public async updateOutboundOrder(
     orderId: string,
-    updates: Partial<OutboundOrder>
+    updates: Partial<OutboundOrder>,
   ): Promise<OutboundOrder> {
     try {
       await this.checkPrerequisites();
@@ -1001,12 +1073,15 @@ export class ManhattanClient extends SupplyChainAdapter {
           Priority: updates.priority,
         };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v2/orders/${orderId}`, {
-          method: 'PUT',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/orders/${orderId}`,
+          {
+            method: "PUT",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to update order: ${response.statusText}`);
@@ -1014,7 +1089,7 @@ export class ManhattanClient extends SupplyChainAdapter {
       });
 
       this.handleApiResponse(true);
-      this.logEvent('order.updated', { id: orderId });
+      this.logEvent("order.updated", { id: orderId });
 
       return this.getOutboundOrder(orderId);
     } catch (error) {
@@ -1029,7 +1104,10 @@ export class ManhattanClient extends SupplyChainAdapter {
    * @param reason Cancellation reason
    * @returns Cancelled order
    */
-  public async cancelOutboundOrder(orderId: string, reason: string): Promise<OutboundOrder> {
+  public async cancelOutboundOrder(
+    orderId: string,
+    reason: string,
+  ): Promise<OutboundOrder> {
     try {
       await this.checkPrerequisites();
 
@@ -1037,12 +1115,15 @@ export class ManhattanClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const payload = { Reason: reason };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v2/orders/${orderId}/cancel`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/orders/${orderId}/cancel`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to cancel order: ${response.statusText}`);
@@ -1050,7 +1131,7 @@ export class ManhattanClient extends SupplyChainAdapter {
       });
 
       this.handleApiResponse(true);
-      this.logEvent('order.cancelled', { id: orderId, reason });
+      this.logEvent("order.cancelled", { id: orderId, reason });
 
       return this.getOutboundOrder(orderId);
     } catch (error) {
@@ -1068,7 +1149,9 @@ export class ManhattanClient extends SupplyChainAdapter {
    * @param fulfillmentId Fulfillment ID
    * @returns Fulfillment request
    */
-  public async getFulfillmentRequest(fulfillmentId: string): Promise<FulfillmentRequest> {
+  public async getFulfillmentRequest(
+    fulfillmentId: string,
+  ): Promise<FulfillmentRequest> {
     try {
       await this.checkPrerequisites();
 
@@ -1077,10 +1160,10 @@ export class ManhattanClient extends SupplyChainAdapter {
         const response = await fetch(
           `${this.config.baseUrl}/api/v2/fulfillment/${fulfillmentId}`,
           {
-            method: 'GET',
+            method: "GET",
             headers,
             signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-          }
+          },
         );
 
         if (!response.ok) {
@@ -1097,7 +1180,7 @@ export class ManhattanClient extends SupplyChainAdapter {
         orderId: result.OrderID,
         warehouseId: result.WHID,
         createdAt: new Date(result.CreatedDate),
-        status: (result.Status as any) || 'pending',
+        status: (result.Status as any) || "pending",
         allocations: result.Allocations || [],
       };
     } catch (error) {
@@ -1116,7 +1199,7 @@ export class ManhattanClient extends SupplyChainAdapter {
   public async allocateOrder(
     orderId: string,
     warehouseId: string,
-    allocationMethod?: 'fifo' | 'closest' | 'random'
+    allocationMethod?: "fifo" | "closest" | "random",
   ): Promise<FulfillmentRequest> {
     try {
       await this.checkPrerequisites();
@@ -1126,12 +1209,12 @@ export class ManhattanClient extends SupplyChainAdapter {
         const payload = {
           OrderID: orderId,
           WHID: warehouseId,
-          AllocationMethod: allocationMethod || 'fifo',
+          AllocationMethod: allocationMethod || "fifo",
           AllocatedDate: new Date().toISOString(),
         };
 
         const response = await fetch(`${this.config.baseUrl}/api/v2/allocate`, {
-          method: 'POST',
+          method: "POST",
           headers,
           body: JSON.stringify(payload),
           signal: AbortSignal.timeout(this.config.timeout ?? 30000),
@@ -1145,14 +1228,14 @@ export class ManhattanClient extends SupplyChainAdapter {
       });
 
       this.handleApiResponse(true);
-      this.logEvent('order.allocated', { orderId, warehouseId });
+      this.logEvent("order.allocated", { orderId, warehouseId });
 
       return {
         id: result.FulfillmentID,
         orderId,
         warehouseId,
         createdAt: new Date(),
-        status: 'allocated',
+        status: "allocated",
         allocations: result.Allocations || [],
       };
     } catch (error) {
@@ -1166,8 +1249,10 @@ export class ManhattanClient extends SupplyChainAdapter {
    * @param fulfillmentId Fulfillment ID
    * @returns Released fulfillment
    */
-  public async releaseFulfillment(fulfillmentId: string): Promise<FulfillmentRequest> {
-    return this.updateFulfillmentStatus(fulfillmentId, 'in_progress');
+  public async releaseFulfillment(
+    fulfillmentId: string,
+  ): Promise<FulfillmentRequest> {
+    return this.updateFulfillmentStatus(fulfillmentId, "in_progress");
   }
 
   /**
@@ -1178,7 +1263,7 @@ export class ManhattanClient extends SupplyChainAdapter {
    */
   public async updateFulfillmentStatus(
     fulfillmentId: string,
-    status: string
+    status: string,
   ): Promise<FulfillmentRequest> {
     try {
       await this.checkPrerequisites();
@@ -1190,20 +1275,22 @@ export class ManhattanClient extends SupplyChainAdapter {
         const response = await fetch(
           `${this.config.baseUrl}/api/v2/fulfillment/${fulfillmentId}`,
           {
-            method: 'PUT',
+            method: "PUT",
             headers,
             body: JSON.stringify(payload),
             signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-          }
+          },
         );
 
         if (!response.ok) {
-          throw new Error(`Failed to update fulfillment: ${response.statusText}`);
+          throw new Error(
+            `Failed to update fulfillment: ${response.statusText}`,
+          );
         }
       });
 
       this.handleApiResponse(true);
-      this.logEvent('fulfillment.updated', { id: fulfillmentId, status });
+      this.logEvent("fulfillment.updated", { id: fulfillmentId, status });
 
       return this.getFulfillmentRequest(fulfillmentId);
     } catch (error) {
@@ -1227,11 +1314,14 @@ export class ManhattanClient extends SupplyChainAdapter {
 
       const wave = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
-        const response = await fetch(`${this.config.baseUrl}/api/v2/waves/${waveId}`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/waves/${waveId}`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to get wave: ${response.statusText}`);
@@ -1247,7 +1337,7 @@ export class ManhattanClient extends SupplyChainAdapter {
         waveNumber: wave.WaveNumber,
         warehouseId: wave.WHID,
         createdAt: new Date(wave.CreatedOn),
-        status: (wave.Status as any) || 'planned',
+        status: (wave.Status as any) || "planned",
         fulfillmentRequestIds: [],
         orderCount: wave.OrderCount,
         unitCount: wave.UnitCount,
@@ -1264,20 +1354,26 @@ export class ManhattanClient extends SupplyChainAdapter {
    * @param status Status filter
    * @returns Array of waves
    */
-  public async listWaves(warehouseId: string, status?: string): Promise<WaveDefinition[]> {
+  public async listWaves(
+    warehouseId: string,
+    status?: string,
+  ): Promise<WaveDefinition[]> {
     try {
       await this.checkPrerequisites();
 
       const waves = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
         const params = new URLSearchParams({ WHID: warehouseId });
-        if (status) params.append('Status', status);
+        if (status) params.append("Status", status);
 
-        const response = await fetch(`${this.config.baseUrl}/api/v2/waves?${params}`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/waves?${params}`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to list waves: ${response.statusText}`);
@@ -1294,7 +1390,7 @@ export class ManhattanClient extends SupplyChainAdapter {
         waveNumber: w.WaveNumber,
         warehouseId,
         createdAt: new Date(w.CreatedOn),
-        status: (w.Status as any) || 'planned',
+        status: (w.Status as any) || "planned",
         fulfillmentRequestIds: [],
         orderCount: w.OrderCount,
         unitCount: w.UnitCount,
@@ -1315,7 +1411,7 @@ export class ManhattanClient extends SupplyChainAdapter {
   public async createWave(
     warehouseId: string,
     fulfillmentIds: string[],
-    pickMethod?: 'zone' | 'batch' | 'order'
+    pickMethod?: "zone" | "batch" | "order",
   ): Promise<WaveDefinition> {
     try {
       await this.checkPrerequisites();
@@ -1325,12 +1421,12 @@ export class ManhattanClient extends SupplyChainAdapter {
         const payload = {
           WHID: warehouseId,
           FulfillmentIDs: fulfillmentIds,
-          PickMethod: pickMethod || 'zone',
+          PickMethod: pickMethod || "zone",
           CreatedDate: new Date().toISOString(),
         };
 
         const response = await fetch(`${this.config.baseUrl}/api/v2/waves`, {
-          method: 'POST',
+          method: "POST",
           headers,
           body: JSON.stringify(payload),
           signal: AbortSignal.timeout(this.config.timeout ?? 30000),
@@ -1344,14 +1440,14 @@ export class ManhattanClient extends SupplyChainAdapter {
       });
 
       this.handleApiResponse(true);
-      this.logEvent('wave.created', { id: result.WaveID });
+      this.logEvent("wave.created", { id: result.WaveID });
 
       return {
         id: result.WaveID,
         waveNumber: result.WaveNumber,
         warehouseId,
         createdAt: new Date(result.CreatedOn),
-        status: 'planned',
+        status: "planned",
         fulfillmentRequestIds: fulfillmentIds,
         orderCount: result.OrderCount,
         unitCount: result.UnitCount,
@@ -1375,12 +1471,15 @@ export class ManhattanClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const payload = { ReleasedDate: new Date().toISOString() };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v2/waves/${waveId}/release`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/waves/${waveId}/release`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to release wave: ${response.statusText}`);
@@ -1388,7 +1487,7 @@ export class ManhattanClient extends SupplyChainAdapter {
       });
 
       this.handleApiResponse(true);
-      this.logEvent('wave.released', { id: waveId });
+      this.logEvent("wave.released", { id: waveId });
 
       return this.getWave(waveId);
     } catch (error) {
@@ -1410,12 +1509,15 @@ export class ManhattanClient extends SupplyChainAdapter {
         const headers = this.buildHeaders();
         const payload = { CompletedDate: new Date().toISOString() };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v2/waves/${waveId}/complete`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/waves/${waveId}/complete`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to complete wave: ${response.statusText}`);
@@ -1423,7 +1525,7 @@ export class ManhattanClient extends SupplyChainAdapter {
       });
 
       this.handleApiResponse(true);
-      this.logEvent('wave.completed', { id: waveId });
+      this.logEvent("wave.completed", { id: waveId });
 
       return this.getWave(waveId);
     } catch (error) {
@@ -1447,11 +1549,14 @@ export class ManhattanClient extends SupplyChainAdapter {
 
       const task = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
-        const response = await fetch(`${this.config.baseUrl}/api/v2/pick-tasks/${taskId}`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/pick-tasks/${taskId}`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to get pick task: ${response.statusText}`);
@@ -1466,12 +1571,12 @@ export class ManhattanClient extends SupplyChainAdapter {
         id: task.TaskID,
         waveId: task.WaveID,
         fromBinLocation: task.FromLoc,
-        zone: task.Zone || '',
+        zone: task.Zone || "",
         sku: task.SKU,
         quantity: task.Qty,
         pickedQuantity: task.PickedQty || 0,
-        toBinLocation: task.ToLoc || '',
-        status: (task.Status as any) || 'pending',
+        toBinLocation: task.ToLoc || "",
+        status: (task.Status as any) || "pending",
       };
     } catch (error) {
       this.handleApiResponse(false, error as Error);
@@ -1493,10 +1598,10 @@ export class ManhattanClient extends SupplyChainAdapter {
         const response = await fetch(
           `${this.config.baseUrl}/api/v2/pick-tasks?WaveID=${waveId}`,
           {
-            method: 'GET',
+            method: "GET",
             headers,
             signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-          }
+          },
         );
 
         if (!response.ok) {
@@ -1513,12 +1618,12 @@ export class ManhattanClient extends SupplyChainAdapter {
         id: t.TaskID,
         waveId,
         fromBinLocation: t.FromLoc,
-        zone: t.Zone || '',
+        zone: t.Zone || "",
         sku: t.SKU,
         quantity: t.Qty,
         pickedQuantity: t.PickedQty || 0,
-        toBinLocation: t.ToLoc || '',
-        status: (t.Status as any) || 'pending',
+        toBinLocation: t.ToLoc || "",
+        status: (t.Status as any) || "pending",
       }));
     } catch (error) {
       this.handleApiResponse(false, error as Error);
@@ -1536,7 +1641,7 @@ export class ManhattanClient extends SupplyChainAdapter {
   public async updatePickTask(
     taskId: string,
     pickedQuantity: number,
-    status: string
+    status: string,
   ): Promise<PickTask> {
     try {
       await this.checkPrerequisites();
@@ -1549,12 +1654,15 @@ export class ManhattanClient extends SupplyChainAdapter {
           UpdatedDate: new Date().toISOString(),
         };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v2/pick-tasks/${taskId}`, {
-          method: 'PUT',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/pick-tasks/${taskId}`,
+          {
+            method: "PUT",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to update pick task: ${response.statusText}`);
@@ -1562,7 +1670,11 @@ export class ManhattanClient extends SupplyChainAdapter {
       });
 
       this.handleApiResponse(true);
-      this.logEvent('pick_task.updated', { id: taskId, pickedQuantity, status });
+      this.logEvent("pick_task.updated", {
+        id: taskId,
+        pickedQuantity,
+        status,
+      });
 
       return this.getPickTask(taskId);
     } catch (error) {
@@ -1586,11 +1698,14 @@ export class ManhattanClient extends SupplyChainAdapter {
 
       const station = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
-        const response = await fetch(`${this.config.baseUrl}/api/v2/pack-stations/${stationId}`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/pack-stations/${stationId}`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to get pack station: ${response.statusText}`);
@@ -1607,8 +1722,8 @@ export class ManhattanClient extends SupplyChainAdapter {
         warehouseId: station.WHID,
         zone: station.Zone,
         location: station.Location,
-        type: (station.Type as any) || 'manual',
-        status: (station.Status as any) || 'active',
+        type: (station.Type as any) || "manual",
+        status: (station.Status as any) || "active",
       };
     } catch (error) {
       this.handleApiResponse(false, error as Error);
@@ -1630,14 +1745,16 @@ export class ManhattanClient extends SupplyChainAdapter {
         const response = await fetch(
           `${this.config.baseUrl}/api/v2/pack-stations?WHID=${warehouseId}`,
           {
-            method: 'GET',
+            method: "GET",
             headers,
             signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-          }
+          },
         );
 
         if (!response.ok) {
-          throw new Error(`Failed to list pack stations: ${response.statusText}`);
+          throw new Error(
+            `Failed to list pack stations: ${response.statusText}`,
+          );
         }
 
         const data = (await response.json()) as { items?: any[] };
@@ -1652,8 +1769,8 @@ export class ManhattanClient extends SupplyChainAdapter {
         warehouseId,
         zone: s.Zone,
         location: s.Location,
-        type: (s.Type as any) || 'manual',
-        status: (s.Status as any) || 'active',
+        type: (s.Type as any) || "manual",
+        status: (s.Status as any) || "active",
       }));
     } catch (error) {
       this.handleApiResponse(false, error as Error);
@@ -1673,7 +1790,7 @@ export class ManhattanClient extends SupplyChainAdapter {
     orderId: string,
     carrier: string,
     trackingNumber: string,
-    weight?: number
+    weight?: number,
   ): Promise<ShipConfirmation> {
     try {
       await this.checkPrerequisites();
@@ -1688,12 +1805,15 @@ export class ManhattanClient extends SupplyChainAdapter {
           ShipDate: new Date().toISOString(),
         };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v2/ship-confirm`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/ship-confirm`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to confirm shipment: ${response.statusText}`);
@@ -1703,13 +1823,13 @@ export class ManhattanClient extends SupplyChainAdapter {
       });
 
       this.handleApiResponse(true);
-      this.logEvent('shipment.confirmed', { orderId, trackingNumber });
+      this.logEvent("shipment.confirmed", { orderId, trackingNumber });
 
       return {
         id: result.ShipConfirmID,
         orderId,
         shipmentNumber: result.ShipmentNumber,
-        warehouseId: this.config.warehouseId || '',
+        warehouseId: this.config.warehouseId || "",
         shipDate: new Date(),
         items: [],
         carrier,
@@ -1734,7 +1854,7 @@ export class ManhattanClient extends SupplyChainAdapter {
    */
   public async getLocation(
     warehouseId: string,
-    binLocation: string
+    binLocation: string,
   ): Promise<{
     binLocation: string;
     zone: string;
@@ -1749,10 +1869,10 @@ export class ManhattanClient extends SupplyChainAdapter {
         const response = await fetch(
           `${this.config.baseUrl}/api/v2/locations/${warehouseId}/${binLocation}`,
           {
-            method: 'GET',
+            method: "GET",
             headers,
             signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-          }
+          },
         );
 
         if (!response.ok) {
@@ -1790,17 +1910,19 @@ export class ManhattanClient extends SupplyChainAdapter {
         const response = await fetch(
           `${this.config.baseUrl}/api/v2/zones?WHID=${warehouseId}`,
           {
-            method: 'GET',
+            method: "GET",
             headers,
             signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-          }
+          },
         );
 
         if (!response.ok) {
           throw new Error(`Failed to list zones: ${response.statusText}`);
         }
 
-        const data = (await response.json()) as { items?: Array<{ Zone: string }> };
+        const data = (await response.json()) as {
+          items?: Array<{ Zone: string }>;
+        };
         return (data.items || []).map((z) => z.Zone);
       });
 
@@ -1827,7 +1949,7 @@ export class ManhattanClient extends SupplyChainAdapter {
       pickMethod?: string;
       packStations?: number;
       capacity?: number;
-    }
+    },
   ): Promise<Record<string, unknown>> {
     try {
       await this.checkPrerequisites();
@@ -1841,12 +1963,15 @@ export class ManhattanClient extends SupplyChainAdapter {
           UpdatedDate: new Date().toISOString(),
         };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v2/zones/${zone}`, {
-          method: 'PUT',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/zones/${zone}`,
+          {
+            method: "PUT",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to configure zone: ${response.statusText}`);
@@ -1856,7 +1981,7 @@ export class ManhattanClient extends SupplyChainAdapter {
       });
 
       this.handleApiResponse(true);
-      this.logEvent('zone.configured', { zone });
+      this.logEvent("zone.configured", { zone });
 
       return result;
     } catch (error) {
@@ -1880,11 +2005,14 @@ export class ManhattanClient extends SupplyChainAdapter {
 
       const po = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
-        const response = await fetch(`${this.config.baseUrl}/api/v2/purchase-orders/${poId}`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/purchase-orders/${poId}`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to get PO: ${response.statusText}`);
@@ -1902,7 +2030,7 @@ export class ManhattanClient extends SupplyChainAdapter {
         warehouseId: po.WHID,
         createdDate: new Date(po.CreatedDate),
         expectedDeliveryDate: new Date(po.ExpectedDeliveryDate),
-        status: (po.Status as any) || 'draft',
+        status: (po.Status as any) || "draft",
         items: po.Items || [],
         totalValue: po.TotalValue,
       };
@@ -1924,15 +2052,15 @@ export class ManhattanClient extends SupplyChainAdapter {
       const pos = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
         const params = new URLSearchParams();
-        if (status) params.append('Status', status);
+        if (status) params.append("Status", status);
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v2/purchase-orders?${params}`,
           {
-            method: 'GET',
+            method: "GET",
             headers,
             signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-          }
+          },
         );
 
         if (!response.ok) {
@@ -1952,7 +2080,7 @@ export class ManhattanClient extends SupplyChainAdapter {
         warehouseId: p.WHID,
         createdDate: new Date(p.CreatedDate),
         expectedDeliveryDate: new Date(p.ExpectedDeliveryDate),
-        status: (p.Status as any) || 'draft',
+        status: (p.Status as any) || "draft",
         items: p.Items || [],
         totalValue: p.TotalValue,
       }));
@@ -1980,15 +2108,18 @@ export class ManhattanClient extends SupplyChainAdapter {
           CreatedDate: po.createdDate,
           ExpectedDeliveryDate: po.expectedDeliveryDate,
           Items: po.items,
-          Status: 'draft',
+          Status: "draft",
         };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v2/purchase-orders`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/purchase-orders`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to create PO: ${response.statusText}`);
@@ -1998,7 +2129,7 @@ export class ManhattanClient extends SupplyChainAdapter {
       });
 
       this.handleApiResponse(true);
-      this.logEvent('po.created', { id: result.POID });
+      this.logEvent("po.created", { id: result.POID });
 
       return {
         id: result.POID,
@@ -2007,7 +2138,7 @@ export class ManhattanClient extends SupplyChainAdapter {
         warehouseId: po.warehouseId,
         createdDate: po.createdDate,
         expectedDeliveryDate: po.expectedDeliveryDate,
-        status: 'draft',
+        status: "draft",
         items: po.items,
       };
     } catch (error) {
@@ -2031,14 +2162,19 @@ export class ManhattanClient extends SupplyChainAdapter {
 
       const to = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
-        const response = await fetch(`${this.config.baseUrl}/api/v2/transfer-orders/${toId}`, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/transfer-orders/${toId}`,
+          {
+            method: "GET",
+            headers,
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
-          throw new Error(`Failed to get transfer order: ${response.statusText}`);
+          throw new Error(
+            `Failed to get transfer order: ${response.statusText}`,
+          );
         }
 
         return response.json() as Promise<any>;
@@ -2053,7 +2189,7 @@ export class ManhattanClient extends SupplyChainAdapter {
         toWarehouseId: to.ToWHID,
         createdDate: new Date(to.CreatedDate),
         expectedDeliveryDate: new Date(to.ExpectedDeliveryDate),
-        status: (to.Status as any) || 'pending',
+        status: (to.Status as any) || "pending",
         items: to.Items || [],
       };
     } catch (error) {
@@ -2074,19 +2210,21 @@ export class ManhattanClient extends SupplyChainAdapter {
       const tos = await RetryHandler.execute(async () => {
         const headers = this.buildHeaders();
         const params = new URLSearchParams();
-        if (status) params.append('Status', status);
+        if (status) params.append("Status", status);
 
         const response = await fetch(
           `${this.config.baseUrl}/api/v2/transfer-orders?${params}`,
           {
-            method: 'GET',
+            method: "GET",
             headers,
             signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-          }
+          },
         );
 
         if (!response.ok) {
-          throw new Error(`Failed to list transfer orders: ${response.statusText}`);
+          throw new Error(
+            `Failed to list transfer orders: ${response.statusText}`,
+          );
         }
 
         const data = (await response.json()) as { items?: any[] };
@@ -2102,7 +2240,7 @@ export class ManhattanClient extends SupplyChainAdapter {
         toWarehouseId: t.ToWHID,
         createdDate: new Date(t.CreatedDate),
         expectedDeliveryDate: new Date(t.ExpectedDeliveryDate),
-        status: (t.Status as any) || 'pending',
+        status: (t.Status as any) || "pending",
         items: t.Items || [],
       }));
     } catch (error) {
@@ -2129,25 +2267,30 @@ export class ManhattanClient extends SupplyChainAdapter {
           CreatedDate: to.createdDate,
           ExpectedDeliveryDate: to.expectedDeliveryDate,
           Items: to.items,
-          Status: 'pending',
+          Status: "pending",
         };
 
-        const response = await fetch(`${this.config.baseUrl}/api/v2/transfer-orders`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-        });
+        const response = await fetch(
+          `${this.config.baseUrl}/api/v2/transfer-orders`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify(payload),
+            signal: AbortSignal.timeout(this.config.timeout ?? 30000),
+          },
+        );
 
         if (!response.ok) {
-          throw new Error(`Failed to create transfer order: ${response.statusText}`);
+          throw new Error(
+            `Failed to create transfer order: ${response.statusText}`,
+          );
         }
 
         return response.json() as Promise<any>;
       });
 
       this.handleApiResponse(true);
-      this.logEvent('to.created', { id: result.TOID });
+      this.logEvent("to.created", { id: result.TOID });
 
       return {
         id: result.TOID,
@@ -2156,7 +2299,7 @@ export class ManhattanClient extends SupplyChainAdapter {
         toWarehouseId: to.toWarehouseId,
         createdDate: to.createdDate,
         expectedDeliveryDate: to.expectedDeliveryDate,
-        status: 'pending',
+        status: "pending",
         items: to.items,
       };
     } catch (error) {
@@ -2175,18 +2318,21 @@ export class ManhattanClient extends SupplyChainAdapter {
    */
   private async authenticateOAuth2(): Promise<void> {
     try {
-      const response = await fetch(this.config.tokenUrl || `${this.config.baseUrl}/oauth/token`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+      const response = await fetch(
+        this.config.tokenUrl || `${this.config.baseUrl}/oauth/token`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({
+            grant_type: "client_credentials",
+            client_id: this.config.apiKey || "",
+            client_secret: this.config.clientSecret || "",
+          }).toString(),
+          signal: AbortSignal.timeout(this.config.timeout ?? 30000),
         },
-        body: new URLSearchParams({
-          grant_type: 'client_credentials',
-          client_id: this.config.apiKey || '',
-          client_secret: this.config.clientSecret || '',
-        }).toString(),
-        signal: AbortSignal.timeout(this.config.timeout ?? 30000),
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`OAuth2 authentication failed: ${response.statusText}`);
@@ -2196,7 +2342,7 @@ export class ManhattanClient extends SupplyChainAdapter {
       this.accessToken = data.access_token;
       this.tokenExpiresAt = Date.now() + data.expires_in * 1000;
 
-      this.logEvent('authentication.successful');
+      this.logEvent("authentication.successful");
     } catch (error) {
       throw new Error(`Failed to authenticate: ${(error as Error).message}`);
     }
@@ -2208,9 +2354,9 @@ export class ManhattanClient extends SupplyChainAdapter {
    */
   private buildHeaders(): Record<string, string> {
     return {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Authorization: `Bearer ${this.accessToken}`,
-      'X-Tenant-ID': this.config.tenantId || '',
+      "X-Tenant-ID": this.config.tenantId || "",
       ...this.config.customHeaders,
     };
   }

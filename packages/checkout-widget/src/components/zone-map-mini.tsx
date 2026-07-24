@@ -29,12 +29,16 @@ export function ZoneMapMini({
         className={cn(
           "relative w-full rounded-lg overflow-hidden border-2",
           "bg-wl-bg-secondary",
-          isInZone ? "border-wl-success-300" : "border-wl-danger-300"
+          isInZone ? "border-wl-success-300" : "border-wl-danger-300",
         )}
         style={{ aspectRatio: "16 / 9", minHeight: "120px" }}
       >
         {/* SVG Map visualization */}
-        <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
+        <svg
+          className="w-full h-full"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="xMidYMid slice"
+        >
           {/* Zone polygon */}
           {zonePolygonCoords && zonePolygonCoords.length > 0 && (
             <polygon
@@ -57,7 +61,14 @@ export function ZoneMapMini({
           {(!zonePolygonCoords || zonePolygonCoords.length === 0) && (
             <>
               <circle cx="50" cy="50" r="35" fill={zoneColor} opacity="0.15" />
-              <circle cx="50" cy="50" r="35" fill="none" stroke={zoneColor} strokeWidth="0.5" />
+              <circle
+                cx="50"
+                cy="50"
+                r="35"
+                fill="none"
+                stroke={zoneColor}
+                strokeWidth="0.5"
+              />
             </>
           )}
 
@@ -88,7 +99,10 @@ export function ZoneMapMini({
         {/* Status indicator overlay */}
         <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-wl-bg-primary/90 backdrop-blur-sm px-2.5 py-1 rounded-full">
           <span
-            className={cn("w-2 h-2 rounded-full", isInZone ? "bg-wl-success-500" : "bg-wl-danger-500")}
+            className={cn(
+              "w-2 h-2 rounded-full",
+              isInZone ? "bg-wl-success-500" : "bg-wl-danger-500",
+            )}
           />
           <span className="text-xs font-medium text-wl-text-secondary">
             {isInZone ? "In Zone" : "Out of Zone"}
@@ -103,7 +117,9 @@ export function ZoneMapMini({
             className="w-3 h-3 rounded-full flex-shrink-0"
             style={{ backgroundColor: zoneColor }}
           />
-          <p className="font-semibold text-sm text-wl-text-primary">{zoneName}</p>
+          <p className="font-semibold text-sm text-wl-text-primary">
+            {zoneName}
+          </p>
         </div>
         <p className="text-xs text-wl-text-tertiary">
           {isInZone

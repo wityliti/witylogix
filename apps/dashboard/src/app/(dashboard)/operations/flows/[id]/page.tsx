@@ -1,4 +1,4 @@
-import { FlowEditor } from '../_components/flow-editor';
+import { FlowEditor } from "../_components/flow-editor";
 
 interface PageProps {
   params: Promise<{ id: string }>;

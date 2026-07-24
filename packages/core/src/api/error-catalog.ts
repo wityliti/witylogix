@@ -27,23 +27,27 @@ const AUTH_ERRORS: ErrorRegistry = {
     httpStatus: 401,
     messageTemplate: "Invalid email or password",
     description: "User provided incorrect credentials during login",
-    resolutionHint: "Verify email and password, check for caps lock, reset if forgotten",
+    resolutionHint:
+      "Verify email and password, check for caps lock, reset if forgotten",
   },
 
   AUTH_ACCOUNT_LOCKED: {
     code: "AUTH_ACCOUNT_LOCKED",
     httpStatus: 401,
     messageTemplate: "Account locked due to too many failed login attempts",
-    description: "User account is temporarily locked after failed login attempts",
+    description:
+      "User account is temporarily locked after failed login attempts",
     resolutionHint: "Wait 15 minutes or reset password to unlock account",
   },
 
   AUTH_EMAIL_NOT_VERIFIED: {
     code: "AUTH_EMAIL_NOT_VERIFIED",
     httpStatus: 403,
-    messageTemplate: "Email not verified. Please check your email for verification link",
+    messageTemplate:
+      "Email not verified. Please check your email for verification link",
     description: "User has not verified their email address",
-    resolutionHint: "Click verification link in email or request new verification email",
+    resolutionHint:
+      "Click verification link in email or request new verification email",
   },
 
   AUTH_EXPIRED_TOKEN: {
@@ -117,9 +121,11 @@ const ORDER_ERRORS: ErrorRegistry = {
   ORDER_INVALID_STATUS_TRANSITION: {
     code: "ORDER_INVALID_STATUS_TRANSITION",
     httpStatus: 422,
-    messageTemplate: "Cannot transition from {{currentStatus}} to {{newStatus}}",
+    messageTemplate:
+      "Cannot transition from {{currentStatus}} to {{newStatus}}",
     description: "Requested status transition violates state machine rules",
-    resolutionHint: "Check order state machine documentation for valid transitions",
+    resolutionHint:
+      "Check order state machine documentation for valid transitions",
   },
 
   ORDER_ALREADY_ASSIGNED: {
@@ -127,7 +133,8 @@ const ORDER_ERRORS: ErrorRegistry = {
     httpStatus: 409,
     messageTemplate: "Order is already assigned to a driver",
     description: "Cannot reassign an order that is already in progress",
-    resolutionHint: "Cancel current assignment first or update to different driver",
+    resolutionHint:
+      "Cancel current assignment first or update to different driver",
   },
 
   ORDER_MISSING_REQUIRED_FIELDS: {
@@ -135,7 +142,8 @@ const ORDER_ERRORS: ErrorRegistry = {
     httpStatus: 422,
     messageTemplate: "Missing required fields: {{fields}}",
     description: "Order creation/update missing mandatory fields",
-    resolutionHint: "Provide all required fields: customerName, phone, address, items",
+    resolutionHint:
+      "Provide all required fields: customerName, phone, address, items",
   },
 
   ORDER_INVALID_ADDRESS: {
@@ -143,7 +151,8 @@ const ORDER_ERRORS: ErrorRegistry = {
     httpStatus: 422,
     messageTemplate: "Invalid shipping address",
     description: "Provided address fails validation or geocoding",
-    resolutionHint: "Verify address format: street, city, state, postal code, country",
+    resolutionHint:
+      "Verify address format: street, city, state, postal code, country",
   },
 
   ORDER_BULK_LIMIT_EXCEEDED: {
@@ -210,7 +219,8 @@ const DRIVER_ERRORS: ErrorRegistry = {
     code: "DRIVER_DOCUMENT_MISSING",
     httpStatus: 422,
     messageTemplate: "Required document not provided: {{document}}",
-    description: "Driver is missing required documents (license, insurance, etc)",
+    description:
+      "Driver is missing required documents (license, insurance, etc)",
     resolutionHint: "Upload required documents to driver profile",
   },
 
@@ -219,7 +229,8 @@ const DRIVER_ERRORS: ErrorRegistry = {
     httpStatus: 422,
     messageTemplate: "Driver has reached maximum assignment capacity",
     description: "Cannot assign more orders to driver at current capacity",
-    resolutionHint: "Wait for driver to complete deliveries or use different driver",
+    resolutionHint:
+      "Wait for driver to complete deliveries or use different driver",
   },
 
   DRIVER_LOCATION_STALE: {
@@ -227,7 +238,8 @@ const DRIVER_ERRORS: ErrorRegistry = {
     httpStatus: 422,
     messageTemplate: "Driver location data is stale ({{age}} minutes old)",
     description: "Last location update is older than acceptable threshold",
-    resolutionHint: "Request driver to enable location sharing or update manually",
+    resolutionHint:
+      "Request driver to enable location sharing or update manually",
   },
 };
 
@@ -245,9 +257,11 @@ const DELIVERY_ERRORS: ErrorRegistry = {
   DELIVERY_INVALID_STATUS_TRANSITION: {
     code: "DELIVERY_INVALID_STATUS_TRANSITION",
     httpStatus: 422,
-    messageTemplate: "Invalid delivery status transition from {{current}} to {{target}}",
+    messageTemplate:
+      "Invalid delivery status transition from {{current}} to {{target}}",
     description: "Status transition violates delivery state machine",
-    resolutionHint: "Delivery status can only progress: PENDING → ASSIGNED → IN_PROGRESS → COMPLETED/FAILED",
+    resolutionHint:
+      "Delivery status can only progress: PENDING → ASSIGNED → IN_PROGRESS → COMPLETED/FAILED",
   },
 
   DELIVERY_PROOF_REQUIRED: {
@@ -255,7 +269,8 @@ const DELIVERY_ERRORS: ErrorRegistry = {
     httpStatus: 422,
     messageTemplate: "Delivery proof is required (signature/photo)",
     description: "Delivery requires proof of delivery but none provided",
-    resolutionHint: "Provide signature or photo proof before completing delivery",
+    resolutionHint:
+      "Provide signature or photo proof before completing delivery",
   },
 
   DELIVERY_RECIPIENT_UNREACHABLE: {
@@ -263,7 +278,8 @@ const DELIVERY_ERRORS: ErrorRegistry = {
     httpStatus: 422,
     messageTemplate: "Unable to reach recipient at delivery address",
     description: "Delivery failed because recipient was not available",
-    resolutionHint: "Reschedule delivery for different time or use alternative contact",
+    resolutionHint:
+      "Reschedule delivery for different time or use alternative contact",
   },
 
   DELIVERY_ADDRESS_INVALID: {
@@ -299,13 +315,15 @@ const ZONE_ERRORS: ErrorRegistry = {
     httpStatus: 422,
     messageTemplate: "Zone polygon is invalid (must be valid GeoJSON Polygon)",
     description: "Provided polygon does not conform to GeoJSON Polygon spec",
-    resolutionHint: "Polygon must be GeoJSON format with valid coordinate rings",
+    resolutionHint:
+      "Polygon must be GeoJSON format with valid coordinate rings",
   },
 
   ZONE_COORDINATES_OUTSIDE_BOUNDS: {
     code: "ZONE_COORDINATES_OUTSIDE_BOUNDS",
     httpStatus: 422,
-    messageTemplate: "Coordinate {{lat}}, {{lng}} is outside valid bounds (±90 lat, ±180 lng)",
+    messageTemplate:
+      "Coordinate {{lat}}, {{lng}} is outside valid bounds (±90 lat, ±180 lng)",
     description: "Provided coordinates are invalid",
     resolutionHint: "Latitude must be -90 to 90, longitude must be -180 to 180",
   },
@@ -329,7 +347,8 @@ const ZONE_ERRORS: ErrorRegistry = {
   ZONE_STILL_IN_USE: {
     code: "ZONE_STILL_IN_USE",
     httpStatus: 422,
-    messageTemplate: "Cannot delete zone - {{count}} active deliveries still assigned",
+    messageTemplate:
+      "Cannot delete zone - {{count}} active deliveries still assigned",
     description: "Zone cannot be deleted while deliveries are assigned to it",
     resolutionHint: "Complete or reassign deliveries before deleting zone",
   },
@@ -357,9 +376,11 @@ const ORG_ERRORS: ErrorRegistry = {
   ORG_INVALID_SLUG: {
     code: "ORG_INVALID_SLUG",
     httpStatus: 422,
-    messageTemplate: "Invalid slug format (must be lowercase alphanumeric + hyphens)",
+    messageTemplate:
+      "Invalid slug format (must be lowercase alphanumeric + hyphens)",
     description: "Slug does not match required format",
-    resolutionHint: "Slug must be 1-100 characters, lowercase, alphanumeric and hyphens only",
+    resolutionHint:
+      "Slug must be 1-100 characters, lowercase, alphanumeric and hyphens only",
   },
 
   ORG_MEMBER_NOT_FOUND: {
@@ -426,7 +447,8 @@ const INTEGRATION_ERRORS: ErrorRegistry = {
     code: "INTEGRATION_INVALID_CREDENTIALS",
     httpStatus: 422,
     messageTemplate: "Invalid integration credentials",
-    description: "Provided credentials failed authentication with external service",
+    description:
+      "Provided credentials failed authentication with external service",
     resolutionHint: "Verify API key, token, or credentials are correct",
   },
 
@@ -435,7 +457,8 @@ const INTEGRATION_ERRORS: ErrorRegistry = {
     httpStatus: 502,
     messageTemplate: "Failed to connect to {{service}}",
     description: "Unable to reach external service",
-    resolutionHint: "Check service status page, verify credentials, check network",
+    resolutionHint:
+      "Check service status page, verify credentials, check network",
   },
 
   INTEGRATION_SYNC_FAILED: {
@@ -443,7 +466,8 @@ const INTEGRATION_ERRORS: ErrorRegistry = {
     httpStatus: 502,
     messageTemplate: "Sync with {{service}} failed",
     description: "Data synchronization encountered error",
-    resolutionHint: "Check integration settings, verify API limits not exceeded",
+    resolutionHint:
+      "Check integration settings, verify API limits not exceeded",
   },
 
   INTEGRATION_RATE_LIMIT: {
@@ -459,7 +483,8 @@ const INTEGRATION_ERRORS: ErrorRegistry = {
     httpStatus: 422,
     messageTemplate: "Invalid webhook payload signature",
     description: "Webhook signature verification failed",
-    resolutionHint: "Verify webhook signing secret matches, check request timing",
+    resolutionHint:
+      "Verify webhook signing secret matches, check request timing",
   },
 };
 
@@ -511,7 +536,8 @@ const BILLING_ERRORS: ErrorRegistry = {
     httpStatus: 402,
     messageTemplate: "Usage limit exceeded for current plan",
     description: "Organization has exceeded plan usage limits",
-    resolutionHint: "Upgrade to higher tier plan or wait for billing cycle reset",
+    resolutionHint:
+      "Upgrade to higher tier plan or wait for billing cycle reset",
   },
 
   BILLING_INVOICE_NOT_FOUND: {
@@ -569,7 +595,8 @@ const VALIDATION_ERRORS: ErrorRegistry = {
   INVALID_ENUM_VALUE: {
     code: "INVALID_ENUM_VALUE",
     httpStatus: 422,
-    messageTemplate: "Invalid value '{{value}}' for {{field}}. Allowed: {{allowed}}",
+    messageTemplate:
+      "Invalid value '{{value}}' for {{field}}. Allowed: {{allowed}}",
     description: "Enum field has invalid value",
     resolutionHint: "Use one of the allowed values",
   },
@@ -679,7 +706,10 @@ export class ErrorCatalog {
   /**
    * Get error with template variables substituted
    */
-  static getFormatted(code: string, variables: Record<string, any> = {}): ErrorDefinition {
+  static getFormatted(
+    code: string,
+    variables: Record<string, any> = {},
+  ): ErrorDefinition {
     const error = this.get(code);
     return {
       ...error,
@@ -722,7 +752,10 @@ export class ErrorCatalog {
   /**
    * Simple string interpolation for template variables
    */
-  private static interpolate(template: string, variables: Record<string, any>): string {
+  private static interpolate(
+    template: string,
+    variables: Record<string, any>,
+  ): string {
     let result = template;
     for (const [key, value] of Object.entries(variables)) {
       result = result.replace(new RegExp(`{{${key}}}`, "g"), String(value));
@@ -739,4 +772,4 @@ export type { ErrorDefinition, ErrorRegistry };
  * List of all error codes for type safety
  */
 export const ERROR_CODES = Object.keys(ERROR_REGISTRY) as const;
-export type ErrorCode = typeof ERROR_CODES[number];
+export type ErrorCode = (typeof ERROR_CODES)[number];

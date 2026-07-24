@@ -164,7 +164,10 @@ export class RateLimitEnforcer extends EventEmitter {
   async registerProvider(config: RateLimitConfig): Promise<void> {
     this.configs.set(config.provider, config);
     await this.store.setConfig(config.provider, config);
-    this.logger?.debug({ provider: config.provider, config }, "Provider registered");
+    this.logger?.debug(
+      { provider: config.provider, config },
+      "Provider registered",
+    );
   }
 
   /**
@@ -191,7 +194,9 @@ export class RateLimitEnforcer extends EventEmitter {
 
     // Get current window count
     const currentCount = await this.store.getWindowCount(provider, window);
-    const allowedCount = Math.ceil(config.rateLimitRpm * (1 + config.burstAllowance / 100));
+    const allowedCount = Math.ceil(
+      config.rateLimitRpm * (1 + config.burstAllowance / 100),
+    );
 
     const headers: RateLimitHeaders = {
       "X-RateLimit-Limit": config.rateLimitRpm,
@@ -201,7 +206,10 @@ export class RateLimitEnforcer extends EventEmitter {
 
     if (currentCount >= allowedCount) {
       // Over limit - queue the request
-      const queue = (this.store as InMemoryRateLimitStore).getQueue(provider, window);
+      const queue = (this.store as InMemoryRateLimitStore).getQueue(
+        provider,
+        window,
+      );
 
       if (queue.length >= config.maxQueueSize) {
         this.analytics.set(provider, {
@@ -232,11 +240,17 @@ export class RateLimitEnforcer extends EventEmitter {
         };
 
         queue.push(pending);
-        (this.store as InMemoryRateLimitStore).setQueue(provider, window, queue);
+        (this.store as InMemoryRateLimitStore).setQueue(
+          provider,
+          window,
+          queue,
+        );
 
         // Reject if timeout exceeded
         const timeoutHandle = setTimeout(() => {
-          reject(new Error(`Request timeout in rate limit queue after ${timeout}ms`));
+          reject(
+            new Error(`Request timeout in rate limit queue after ${timeout}ms`),
+          );
         }, timeout);
 
         // Clean up timeout on resolution
@@ -281,17 +295,28 @@ export class RateLimitEnforcer extends EventEmitter {
     const now = Date.now();
     const window = Math.floor(now / 60000);
 
-    const queue = (this.store as InMemoryRateLimitStore).getQueue(provider, window);
+    const queue = (this.store as InMemoryRateLimitStore).getQueue(
+      provider,
+      window,
+    );
     if (queue.length > 0) {
       const pending = queue.shift();
       if (pending) {
-        (this.store as InMemoryRateLimitStore).setQueue(provider, window, queue);
+        (this.store as InMemoryRateLimitStore).setQueue(
+          provider,
+          window,
+          queue,
+        );
         pending.resolve();
         this.logger?.debug(
           { provider, requestId: pending.id, queuePosition: queue.length },
           "Request dequeued and allowed to proceed",
         );
-        this.emit("dequeued", { provider, requestId: pending.id, remaining: queue.length });
+        this.emit("dequeued", {
+          provider,
+          requestId: pending.id,
+          remaining: queue.length,
+        });
       }
     }
   }
@@ -323,7 +348,10 @@ export class RateLimitEnforcer extends EventEmitter {
     const active = this.activeRequests.get(provider) ?? 0;
     const now = Date.now();
     const window = Math.floor(now / 60000);
-    const queue = (this.store as InMemoryRateLimitStore).getQueue(provider, window);
+    const queue = (this.store as InMemoryRateLimitStore).getQueue(
+      provider,
+      window,
+    );
 
     return {
       provider,

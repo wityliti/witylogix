@@ -3,9 +3,20 @@
 import React, { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Tooltip } from "@/components/ui/tooltip";
-import { AlertTriangle, AlertCircle, MessageSquare, Clock, Zap } from "lucide-react";
+import {
+  AlertTriangle,
+  AlertCircle,
+  MessageSquare,
+  Clock,
+  Zap,
+} from "lucide-react";
 
-export type NotificationPriority = "critical" | "high" | "normal" | "low" | "digest";
+export type NotificationPriority =
+  | "critical"
+  | "high"
+  | "normal"
+  | "low"
+  | "digest";
 
 interface PrioritySelectorProps {
   value: NotificationPriority;
@@ -35,8 +46,7 @@ const PRIORITY_CONFIG: Record<NotificationPriority, PriorityConfig> = {
   },
   high: {
     label: "High",
-    description:
-      "High priority, delivered soon. Time-sensitive information.",
+    description: "High priority, delivered soon. Time-sensitive information.",
     color: "text-white",
     bgColor: "bg-orange-500",
     borderColor: "border-orange-400",
@@ -77,16 +87,8 @@ const PRIORITY_ORDER: NotificationPriority[] = [
 ];
 
 export const PrioritySelector = React.memo(
-  ({
-    value,
-    onChange,
-    disabled = false,
-    className,
-  }: PrioritySelectorProps) => {
-    const currentConfig = useMemo(
-      () => PRIORITY_CONFIG[value],
-      [value]
-    );
+  ({ value, onChange, disabled = false, className }: PrioritySelectorProps) => {
+    const currentConfig = useMemo(() => PRIORITY_CONFIG[value], [value]);
 
     return (
       <div className={cn("space-y-4", className)}>
@@ -117,8 +119,8 @@ export const PrioritySelector = React.memo(
                           "bg-[var(--wl-bg-secondary)]",
                           "text-[var(--wl-text-primary)]",
                           "border-[var(--wl-border)]",
-                          "hover:border-[var(--wl-primary)]"
-                        )
+                          "hover:border-[var(--wl-primary)]",
+                        ),
                   )}
                   aria-pressed={isSelected}
                   aria-label={`Priority: ${config.label}`}
@@ -136,7 +138,7 @@ export const PrioritySelector = React.memo(
           className={cn(
             "px-4 py-3 rounded-md border-2",
             "bg-[var(--wl-bg-secondary)]",
-            currentConfig.borderColor
+            currentConfig.borderColor,
           )}
         >
           <p className="text-sm font-semibold text-[var(--wl-text-primary)]">
@@ -148,7 +150,7 @@ export const PrioritySelector = React.memo(
         </div>
       </div>
     );
-  }
+  },
 );
 
 PrioritySelector.displayName = "PrioritySelector";

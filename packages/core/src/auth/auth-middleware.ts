@@ -198,7 +198,10 @@ export function requirePermission(
     } else {
       // Fallback: check permission string directly
       const permission = `${resource}:${action}`;
-      if (!req.user.permissions.includes(permission) && !req.user.permissions.includes("*:*")) {
+      if (
+        !req.user.permissions.includes(permission) &&
+        !req.user.permissions.includes("*:*")
+      ) {
         return res.status(403).json({
           error: "PERMISSION_DENIED",
           message: `Not permitted to ${action} ${resource}`,
@@ -290,7 +293,9 @@ export function requireOrgOwner() {
  * @param fn Async route handler
  * @returns Express middleware function
  */
-export function asyncHandler(fn: (req: Request, res: Response, next: NextFunction) => Promise<void>) {
+export function asyncHandler(
+  fn: (req: Request, res: Response, next: NextFunction) => Promise<void>,
+) {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };

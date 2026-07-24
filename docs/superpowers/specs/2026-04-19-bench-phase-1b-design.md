@@ -40,11 +40,11 @@ Four commands share two new seams.
 
 A narrow, versioned namespace at `/internal/bench/*` in the Fastify API, gated by a shared `BENCH_SERVICE_TOKEN`.
 
-| Verb / Path | Used by | Purpose |
-|-------------|---------|---------|
-| `GET  /internal/bench/health` | migrate, status | version + migration state |
-| `POST /internal/bench/drain` | migrate, restore | puts API into drained/offline mode before shutdown |
-| `POST /internal/bench/tenants` | new-tenant | provisions a tenant via `WorkspaceProvisioner` |
+| Verb / Path                    | Used by          | Purpose                                            |
+| ------------------------------ | ---------------- | -------------------------------------------------- |
+| `GET  /internal/bench/health`  | migrate, status  | version + migration state                          |
+| `POST /internal/bench/drain`   | migrate, restore | puts API into drained/offline mode before shutdown |
+| `POST /internal/bench/tenants` | new-tenant       | provisions a tenant via `WorkspaceProvisioner`     |
 
 All endpoints require `Authorization: Bearer <BENCH_SERVICE_TOKEN>`. The Fastify route group registers only when the env var is present — installations that don't use Bench have zero attack surface.
 
@@ -52,12 +52,12 @@ All endpoints require `Authorization: Bearer <BENCH_SERVICE_TOKEN>`. The Fastify
 
 Four new modules in `packages/bench-core`:
 
-| Module | Responsibility |
-|--------|----------------|
-| `ops/migrate.ts` | Orchestrates drain → stop → migrate → verify → start |
+| Module           | Responsibility                                              |
+| ---------------- | ----------------------------------------------------------- |
+| `ops/migrate.ts` | Orchestrates drain → stop → migrate → verify → start        |
 | `ops/tenants.ts` | Thin HTTP client for the admin endpoint (no business logic) |
-| `ops/backup.ts` | Archive writer (DB dump, config snapshot, optional blobs) |
-| `ops/restore.ts` | Archive reader, manifest verifier, inverse of backup |
+| `ops/backup.ts`  | Archive writer (DB dump, config snapshot, optional blobs)   |
+| `ops/restore.ts` | Archive reader, manifest verifier, inverse of backup        |
 
 Each module is a pure library function that takes a `Context` and returns a result. The CLI and, in Phase 2, the Cloud control plane both import from `ops/*` directly. No CLI-specific logic in core.
 
@@ -193,15 +193,15 @@ Defaults: auto-backup enabled, no `--yes` required unless destructive, 600s time
 
 ### 4.3 Failure handling
 
-| Failure at | Behavior | Exit |
-|-----------|----------|------|
-| 1–2 | Abort, no state change. | 1 / 2 |
-| 3 | Drain applied but services still up — request cancellation reverts drain. | 2 |
-| 4 | Services partly stopped — clear message to run `bench start`. | 5 |
-| 5 | Migration script exited non-zero; DB partially migrated; services remain stopped. Message: "rollback via `bench restore <auto-backup-path>` or fix schema and re-run `bench migrate`." | 5 |
-| 6 | Verification mismatch; services still stopped. Same rollback guidance as 5. | 5 |
-| 7 | Services failed to start; DB migrated; human must intervene. | 5 |
-| 8 | Services up but health check fails — loud warning, audit `status: degraded`. | 4 |
+| Failure at | Behavior                                                                                                                                                                               | Exit  |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| 1–2        | Abort, no state change.                                                                                                                                                                | 1 / 2 |
+| 3          | Drain applied but services still up — request cancellation reverts drain.                                                                                                              | 2     |
+| 4          | Services partly stopped — clear message to run `bench start`.                                                                                                                          | 5     |
+| 5          | Migration script exited non-zero; DB partially migrated; services remain stopped. Message: "rollback via `bench restore <auto-backup-path>` or fix schema and re-run `bench migrate`." | 5     |
+| 6          | Verification mismatch; services still stopped. Same rollback guidance as 5.                                                                                                            | 5     |
+| 7          | Services failed to start; DB migrated; human must intervene.                                                                                                                           | 5     |
+| 8          | Services up but health check fails — loud warning, audit `status: degraded`.                                                                                                           | 4     |
 
 ### 4.4 CLI UX
 
@@ -258,19 +258,24 @@ bench new-tenant <slug>
 ### 5.3 API endpoint implementation
 
 The route is a thin adapter:
+
 ```ts
-app.post('/internal/bench/tenants', { preHandler: benchAuth }, async (req, reply) => {
-  const input = createTenantSchema.parse(req.body);
-  const result = await workspaceProvisioner.provisionWorkspace({
-    slug: input.slug,
-    ownerEmail: input.ownerEmail,
-    ownerName: input.ownerName,
-    plan: input.plan ?? 'starter',
-    features: input.features ?? {},
-    limits: input.limits ?? {},
-  });
-  return reply.status(201).send(result);
-});
+app.post(
+  "/internal/bench/tenants",
+  { preHandler: benchAuth },
+  async (req, reply) => {
+    const input = createTenantSchema.parse(req.body);
+    const result = await workspaceProvisioner.provisionWorkspace({
+      slug: input.slug,
+      ownerEmail: input.ownerEmail,
+      ownerName: input.ownerName,
+      plan: input.plan ?? "starter",
+      features: input.features ?? {},
+      limits: input.limits ?? {},
+    });
+    return reply.status(201).send(result);
+  },
+);
 ```
 
 All business logic remains in `WorkspaceProvisioner`. The endpoint adds no behavior.
@@ -398,16 +403,16 @@ bench restore <archive.wbak>
 
 ### 7.3 Failure handling
 
-| Failure at | Behavior | Exit |
-|-----------|----------|------|
-| 1–3 | Abort cleanly; no DB writes. | 1 |
-| 4 | Drain reverted; services back up. | 2 |
-| 5 | Schema dropped but restore not started — DB unusable. Message: "DB empty; re-run `bench restore <archive>`." | 5 |
-| 6 | `pg_restore` error — partial rows. Services stay stopped. | 5 |
-| 7 | Counts mismatch — data loss detected. Services stay stopped. | 5 |
-| 8 | Blob upload failure list written to `.bench/restore-<ts>/missing-blobs.json`; DB unchanged (order guarantee). | 4 |
-| 9 | Migration failed; DB in legacy schema. | 5 |
-| 10 | Services failed to start; DB is fine — user intervention. | 4 |
+| Failure at | Behavior                                                                                                      | Exit |
+| ---------- | ------------------------------------------------------------------------------------------------------------- | ---- |
+| 1–3        | Abort cleanly; no DB writes.                                                                                  | 1    |
+| 4          | Drain reverted; services back up.                                                                             | 2    |
+| 5          | Schema dropped but restore not started — DB unusable. Message: "DB empty; re-run `bench restore <archive>`."  | 5    |
+| 6          | `pg_restore` error — partial rows. Services stay stopped.                                                     | 5    |
+| 7          | Counts mismatch — data loss detected. Services stay stopped.                                                  | 5    |
+| 8          | Blob upload failure list written to `.bench/restore-<ts>/missing-blobs.json`; DB unchanged (order guarantee). | 4    |
+| 9          | Migration failed; DB in legacy schema.                                                                        | 5    |
+| 10         | Services failed to start; DB is fine — user intervention.                                                     | 4    |
 
 ### 7.4 Tests
 
@@ -422,13 +427,13 @@ bench restore <archive.wbak>
 
 ## 8. Testing Summary
 
-| Layer | Suite | Target test count | Coverage target |
-|-------|-------|-------------------|-----------------|
-| Unit (bench-core) | `ops/migrate`, `ops/tenants`, `ops/backup`, `ops/restore` | ~25 | 85%+ |
-| Unit (docker-compose provider) | compose generator extensions, `execInService`, `runOneShot`, `pg_dump` wiring | ~15 | 80%+ |
-| Contract (apps/api) | 3 admin endpoints — token, CIDR, input validation | ~12 | 100% of routes |
-| Integration (apps/api) | new-tenant hits real Postgres test DB | ~4 | n/a |
-| E2E | Full round-trip `bench init → migrate → new-tenant → backup → restore` on Docker | 1 | n/a |
+| Layer                          | Suite                                                                            | Target test count | Coverage target |
+| ------------------------------ | -------------------------------------------------------------------------------- | ----------------- | --------------- |
+| Unit (bench-core)              | `ops/migrate`, `ops/tenants`, `ops/backup`, `ops/restore`                        | ~25               | 85%+            |
+| Unit (docker-compose provider) | compose generator extensions, `execInService`, `runOneShot`, `pg_dump` wiring    | ~15               | 80%+            |
+| Contract (apps/api)            | 3 admin endpoints — token, CIDR, input validation                                | ~12               | 100% of routes  |
+| Integration (apps/api)         | new-tenant hits real Postgres test DB                                            | ~4                | n/a             |
+| E2E                            | Full round-trip `bench init → migrate → new-tenant → backup → restore` on Docker | 1                 | n/a             |
 
 **Total target**: 60+ tests. Phase 1a ended with 19 tests; Phase 1b triples the suite size.
 
@@ -436,15 +441,15 @@ bench restore <archive.wbak>
 
 ## 9. Risks & Mitigations
 
-| Risk | Mitigation |
-|------|------------|
-| `BENCH_SERVICE_TOKEN` leak | Never log; constant-time compare; rotate via `bench rotate-secret`; CIDR gate as second line of defense. |
-| `pg_dump`/`pg_restore` version mismatch with server | Pin `postgresql-client` version matching `postgres` image; `bench doctor` adds a compatibility check. |
-| Interrupted backup = half-tarball | Manifest written last; restore refuses archives without manifest. |
-| Restore into wrong installation | `manifest.installationName` compared to `ctx.config.metadata.name`; warn and block unless `--cross-install`. |
-| Migrate downtime visible to users | API 503 with `Retry-After`; `customer-portal` and `tracking-page` detect 503 and render a maintenance page (tracked as a follow-up ticket). |
-| `--include-blobs` cost at scale | Non-default; documented as portability/archival use. Progress UX gives honest size estimate before starting. |
-| Race: two operators run `bench migrate` concurrently | Admin endpoint writes a distributed lock via `SELECT pg_advisory_lock(...)` for the migration window. Second caller gets 423 Locked. |
+| Risk                                                 | Mitigation                                                                                                                                  |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BENCH_SERVICE_TOKEN` leak                           | Never log; constant-time compare; rotate via `bench rotate-secret`; CIDR gate as second line of defense.                                    |
+| `pg_dump`/`pg_restore` version mismatch with server  | Pin `postgresql-client` version matching `postgres` image; `bench doctor` adds a compatibility check.                                       |
+| Interrupted backup = half-tarball                    | Manifest written last; restore refuses archives without manifest.                                                                           |
+| Restore into wrong installation                      | `manifest.installationName` compared to `ctx.config.metadata.name`; warn and block unless `--cross-install`.                                |
+| Migrate downtime visible to users                    | API 503 with `Retry-After`; `customer-portal` and `tracking-page` detect 503 and render a maintenance page (tracked as a follow-up ticket). |
+| `--include-blobs` cost at scale                      | Non-default; documented as portability/archival use. Progress UX gives honest size estimate before starting.                                |
+| Race: two operators run `bench migrate` concurrently | Admin endpoint writes a distributed lock via `SELECT pg_advisory_lock(...)` for the migration window. Second caller gets 423 Locked.        |
 
 ---
 
@@ -458,24 +463,30 @@ storage:
   # for backend=s3 / r2 / gcs:
   bucket: witylogix-acme-prod
   region: us-east-1
-  endpoint: null                 # null = backend default; set for R2/MinIO
+  endpoint: null # null = backend default; set for R2/MinIO
   # for backend=local:
   path: /var/lib/witylogix/uploads
   # credentials sourced from the configured secrets backend, never inline:
-  credentials_ref: s3-write      # key name in secrets backend
+  credentials_ref: s3-write # key name in secrets backend
 ```
 
 **Scope for Phase 1b**:
+
 - Exactly one storage backend per installation.
 - S3 and local-volume implementations ship.
 - R2 and GCS are interface-compatible (S3-style API) — implemented in same backend module, deferred to Phase 1c.
 - `bench restore --target-storage <url>` parses the URL to infer backend type for the destination.
 
 `StorageClient` interface (`packages/bench-core/src/storage.ts`):
+
 ```ts
 interface StorageClient {
   get(key: string): Promise<Readable>;
-  put(key: string, body: Readable | Buffer, meta: { contentType?: string }): Promise<void>;
+  put(
+    key: string,
+    body: Readable | Buffer,
+    meta: { contentType?: string },
+  ): Promise<void>;
   list(prefix: string): AsyncIterable<string>;
 }
 ```
@@ -493,14 +504,14 @@ Backup iterates storage URLs referenced in the DB, not `list()` — we only pull
 
 ## 12. Roadmap Placement
 
-| Phase | Scope | Where this spec fits |
-|-------|-------|---------------------|
-| 1a (done) | scaffold + core CLI commands | — |
-| **1b (this spec)** | migrate, new-tenant, backup, restore | **you are here** |
-| 1c | remote backup targets (S3), scheduled backups, `--no-downtime` migrate, retention, `bench plugin` scaffold | blocked by 1b |
-| 2 | `apps/bench-web` Cloud control plane | reuses `bench-core/ops/*` directly |
-| 3 | Open-source launch | |
-| 4 | Customer signup, billing, multi-provider | |
+| Phase              | Scope                                                                                                      | Where this spec fits               |
+| ------------------ | ---------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| 1a (done)          | scaffold + core CLI commands                                                                               | —                                  |
+| **1b (this spec)** | migrate, new-tenant, backup, restore                                                                       | **you are here**                   |
+| 1c                 | remote backup targets (S3), scheduled backups, `--no-downtime` migrate, retention, `bench plugin` scaffold | blocked by 1b                      |
+| 2                  | `apps/bench-web` Cloud control plane                                                                       | reuses `bench-core/ops/*` directly |
+| 3                  | Open-source launch                                                                                         |                                    |
+| 4                  | Customer signup, billing, multi-provider                                                                   |                                    |
 
 ---
 

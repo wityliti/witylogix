@@ -1,10 +1,12 @@
 # Sprint 9.7 — Status Report
+
 **Date**: 2026-03-21  
 **Branch**: sprint-9.7-mass-design-polish
 
 ## ✓ Completed Work
 
 ### Agent 1 & 2: Database Helpers & (prisma as any) Sweep
+
 **Status**: ✓ COMPLETE
 
 - Expanded `packages/db/src/helpers.ts` from 31 to 132+ models
@@ -16,9 +18,11 @@
 - **Commits**: 2 commits
 
 ### Agent 7: Finance + Payments + Products
+
 **Status**: ✓ COMPLETE
 
 Dark theme redesign applied to 8 pages:
+
 - ✓ finance/page.tsx
 - ✓ finance/invoices/page.tsx
 - ✓ finance/reconciliation/page.tsx
@@ -30,6 +34,7 @@ Dark theme redesign applied to 8 pages:
 - ✓ inventory/page.tsx
 
 **Color Palette Applied**:
+
 - Background: `#0a0a0f` (pages), `#12121a` (cards), `#1a1a2e` (inputs)
 - Text: white (primary), gray-400 (secondary), gray-500 (tertiary)
 - Borders: `#1e1e2e`
@@ -39,40 +44,46 @@ Dark theme redesign applied to 8 pages:
 
 ## 📊 Current Progress
 
-| Category | Completed | Target | % Complete |
-|----------|-----------|--------|-----------|
-| DB Helpers | 132+ | 132+ | 100% |
-| (prisma as any) sweep | 355→30 | <100 | 91.5% |
-| Dark Theme Pages | 47 | 82 | 57% |
-| **Sprint Total** | - | - | **~80%** |
+| Category              | Completed | Target | % Complete |
+| --------------------- | --------- | ------ | ---------- |
+| DB Helpers            | 132+      | 132+   | 100%       |
+| (prisma as any) sweep | 355→30    | <100   | 91.5%      |
+| Dark Theme Pages      | 47        | 82     | 57%        |
+| **Sprint Total**      | -         | -      | **~80%**   |
 
 ## 🎯 Remaining Work
 
 ### Pages Needing Dark Theme (135 remaining)
 
 **Agent 3**: Orders sub-pages (7 pages)
+
 - orders/board/page.tsx
 - (others partially completed)
 
-**Agent 4**: Routes + Dispatch (7 pages)  
+**Agent 4**: Routes + Dispatch (7 pages)
+
 - (routes partially completed)
 
 **Agent 5**: Fleet + Shipping (8 pages)
+
 - (fleet/shipping partially completed)
 
 **Agent 6**: Tracking + Delivery + Map (6 pages)
+
 - (tracking/delivery/map partially completed)
 
 **Agent 8**: CRM + Customers + Partners (8 pages)
+
 - [ ] crm/page.tsx
 - [ ] crm/connect/page.tsx
 - [ ] customers/page.tsx
-- [ ] partners/* (5 pages)
+- [ ] partners/\* (5 pages)
 - [ ] collaboration/page.tsx
 
 **Agent 9**: ELD + Campaigns + Misc (12+ pages)
-- [ ] eld/* (3 pages)
-- [ ] campaigns/* (2 pages)
+
+- [ ] eld/\* (3 pages)
+- [ ] campaigns/\* (2 pages)
 - [ ] calendar/page.tsx
 - [ ] events/page.tsx
 - [ ] collections/page.tsx
@@ -83,6 +94,7 @@ Dark theme redesign applied to 8 pages:
 - [ ] returns/page.tsx
 
 **Agent 10**: Platform + Stores + Misc (8+ pages)
+
 - [ ] platform/page.tsx
 - [ ] stores/page.tsx
 - [ ] locations/page.tsx
@@ -127,7 +139,7 @@ Dark theme redesign applied to 8 pages:
 ```tsx
 // Main page container
 <div className="p-6 bg-[#0a0a0f] min-h-screen">
-  
+
   // Stats cards (KPIs)
   <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4 mb-6">
     <StatCard label="..." value={X} ... />

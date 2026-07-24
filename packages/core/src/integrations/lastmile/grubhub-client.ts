@@ -8,8 +8,8 @@ import type {
   Location,
   Contact,
   LastMileWebhookEvent,
-} from './types';
-import { LastMileAdapter } from './lastmile-adapter';
+} from "./types";
+import { LastMileAdapter } from "./lastmile-adapter";
 
 interface GrubhubOrderRequest {
   external_order_id: string;
@@ -101,9 +101,9 @@ export class GrubhubClient extends LastMileAdapter {
     oauth_client_id?: string,
     oauth_client_secret?: string,
     initial_token?: string,
-    sandbox_mode: boolean = false
+    sandbox_mode: boolean = false,
   ) {
-    super('grubhub', api_key);
+    super("grubhub", api_key);
     this.api_key = api_key;
     this.webhook_secret = webhook_secret;
     this.restaurant_id = restaurant_id;
@@ -112,8 +112,8 @@ export class GrubhubClient extends LastMileAdapter {
     this.oauth_token = initial_token;
     this.sandbox_mode = sandbox_mode;
     this.base_url = sandbox_mode
-      ? 'https://sandbox.grubhub.com'
-      : 'https://api.grubhub.com';
+      ? "https://sandbox.grubhub.com"
+      : "https://api.grubhub.com";
   }
 
   private async refreshTokenIfNeeded(): Promise<void> {
@@ -127,14 +127,14 @@ export class GrubhubClient extends LastMileAdapter {
 
     try {
       const response = await fetch(`${this.base_url}/oauth/authorize`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           client_id: this.oauth_client_id,
           client_secret: this.oauth_client_secret,
-          grant_type: 'client_credentials',
+          grant_type: "client_credentials",
         }),
       });
 
@@ -146,56 +146,62 @@ export class GrubhubClient extends LastMileAdapter {
       this.oauth_token = data.access_token;
       this.token_expires_at = Date.now() + (data.expires_in - 300) * 1000;
     } catch (error) {
-      throw new Error(`Failed to refresh OAuth token: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to refresh OAuth token: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   private getAuthHeaders(): Record<string, string> {
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
 
     if (this.oauth_token) {
       headers.Authorization = `Bearer ${this.oauth_token}`;
     } else {
-      headers['X-Api-Key'] = this.api_key ?? '';
+      headers["X-Api-Key"] = this.api_key ?? "";
     }
 
     return headers;
   }
 
-  async createDelivery(delivery: Partial<LastMileDelivery>): Promise<LastMileDelivery> {
+  async createDelivery(
+    delivery: Partial<LastMileDelivery>,
+  ): Promise<LastMileDelivery> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('grubhub-order-create');
+      await this.checkRateLimit("grubhub-order-create");
       await this.refreshTokenIfNeeded();
 
       if (!delivery.pickup_location || !delivery.dropoff_location) {
-        throw new Error('Pickup and dropoff locations are required');
+        throw new Error("Pickup and dropoff locations are required");
       }
 
       if (!delivery.dropoff_contact) {
-        throw new Error('Dropoff contact is required');
+        throw new Error("Dropoff contact is required");
       }
 
       const request_id = this.generateRequestId();
-      const path = '/v1/orders';
+      const path = "/v1/orders";
 
       const grubhub_request: GrubhubOrderRequest = {
         external_order_id: delivery.order_id || request_id,
         restaurant_id: this.restaurant_id,
         delivery_address: this.locationToAddress(delivery.dropoff_location),
         delivery_contact: this.contactToGrubhub(delivery.dropoff_contact),
-        items: delivery.notes ? [{ item_id: '1', name: delivery.notes, quantity: 1, unit_price: 0 }] : [],
+        items: delivery.notes
+          ? [{ item_id: "1", name: delivery.notes, quantity: 1, unit_price: 0 }]
+          : [],
         order_value: 0,
         delivery_notes: delivery.special_instructions,
       };
 
       try {
         const response = await fetch(`${this.base_url}${path}`, {
-          method: 'POST',
+          method: "POST",
           headers: {
             ...this.getAuthHeaders(),
-            'X-Request-ID': request_id,
+            "X-Request-ID": request_id,
           },
           body: JSON.stringify(grubhub_request),
         });
@@ -208,35 +214,41 @@ export class GrubhubClient extends LastMileAdapter {
 
         return {
           id: data.order_id,
-          platform: 'grubhub',
+          platform: "grubhub",
           external_id: data.external_order_id,
           status: this.mapStatusToUnified(data.status),
           order_id: delivery.order_id || request_id,
 
           pickup_location: delivery.pickup_location,
           dropoff_location: delivery.dropoff_location,
-          pickup_contact: { name: 'Restaurant', phone: '' },
+          pickup_contact: { name: "Restaurant", phone: "" },
           dropoff_contact: delivery.dropoff_contact,
 
           item_count: delivery.item_count || 0,
           total_weight: delivery.total_weight,
 
-          estimated_pickup_time: new Date(Date.now() + data.estimated_prep_time_minutes * 60000),
+          estimated_pickup_time: new Date(
+            Date.now() + data.estimated_prep_time_minutes * 60000,
+          ),
           estimated_dropoff_time: new Date(data.estimated_delivery_time),
 
           driver: data.driver
             ? {
                 id: data.driver.id,
-                platform: 'grubhub',
+                platform: "grubhub",
                 external_id: data.driver.id,
-                first_name: data.driver.name.split(' ')[0] || '',
-                last_name: data.driver.name.split(' ')[1] || '',
+                first_name: data.driver.name.split(" ")[0] || "",
+                last_name: data.driver.name.split(" ")[1] || "",
                 phone: data.driver.phone,
                 vehicle: {
-                  type: (data.driver.vehicle.type || 'car') as 'car' | 'bike' | 'scooter' | 'truck',
+                  type: (data.driver.vehicle.type || "car") as
+                    | "car"
+                    | "bike"
+                    | "scooter"
+                    | "truck",
                   license_plate: data.driver.vehicle.license_plate,
                 },
-                status: 'on_delivery',
+                status: "on_delivery",
               }
             : undefined,
 
@@ -249,21 +261,23 @@ export class GrubhubClient extends LastMileAdapter {
           updated_at: new Date(),
         };
       } catch (error) {
-        throw new Error(`Failed to create Grubhub order: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(
+          `Failed to create Grubhub order: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     });
   }
 
   async getDelivery(delivery_id: string): Promise<LastMileDelivery | null> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('grubhub-order-get');
+      await this.checkRateLimit("grubhub-order-get");
       await this.refreshTokenIfNeeded();
 
       const path = `/v1/orders/${delivery_id}`;
 
       try {
         const response = await fetch(`${this.base_url}${path}`, {
-          method: 'GET',
+          method: "GET",
           headers: this.getAuthHeaders(),
         });
 
@@ -279,7 +293,7 @@ export class GrubhubClient extends LastMileAdapter {
 
         return {
           id: data.order_id,
-          platform: 'grubhub',
+          platform: "grubhub",
           external_id: data.external_order_id,
           status: this.mapStatusToUnified(data.status),
           order_id: data.external_order_id,
@@ -294,29 +308,35 @@ export class GrubhubClient extends LastMileAdapter {
             longitude: data.delivery_address.longitude || 0,
             address: data.delivery_address.street_address,
           },
-          pickup_contact: { name: 'Restaurant', phone: '' },
+          pickup_contact: { name: "Restaurant", phone: "" },
           dropoff_contact: {
             name: `${data.delivery_contact.first_name} ${data.delivery_contact.last_name}`,
             phone: data.delivery_contact.phone_number,
             email: data.delivery_contact.email,
           },
 
-          estimated_pickup_time: new Date(Date.now() + data.estimated_prep_time_minutes * 60000),
+          estimated_pickup_time: new Date(
+            Date.now() + data.estimated_prep_time_minutes * 60000,
+          ),
           estimated_dropoff_time: new Date(data.estimated_delivery_time),
 
           driver: data.driver
             ? {
                 id: data.driver.id,
-                platform: 'grubhub',
+                platform: "grubhub",
                 external_id: data.driver.id,
-                first_name: data.driver.name.split(' ')[0] || '',
-                last_name: data.driver.name.split(' ')[1] || '',
+                first_name: data.driver.name.split(" ")[0] || "",
+                last_name: data.driver.name.split(" ")[1] || "",
                 phone: data.driver.phone,
                 vehicle: {
-                  type: (data.driver.vehicle.type || 'car') as 'car' | 'bike' | 'scooter' | 'truck',
+                  type: (data.driver.vehicle.type || "car") as
+                    | "car"
+                    | "bike"
+                    | "scooter"
+                    | "truck",
                   license_plate: data.driver.vehicle.license_plate,
                 },
-                status: 'on_delivery',
+                status: "on_delivery",
               }
             : undefined,
 
@@ -326,17 +346,19 @@ export class GrubhubClient extends LastMileAdapter {
           updated_at: new Date(),
         };
       } catch (error) {
-        throw new Error(`Failed to get Grubhub order: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(
+          `Failed to get Grubhub order: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     });
   }
 
   async updateDelivery(
     delivery_id: string,
-    updates: Partial<LastMileDelivery>
+    updates: Partial<LastMileDelivery>,
   ): Promise<LastMileDelivery> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('grubhub-order-update');
+      await this.checkRateLimit("grubhub-order-update");
       await this.refreshTokenIfNeeded();
 
       const path = `/v1/orders/${delivery_id}`;
@@ -346,7 +368,7 @@ export class GrubhubClient extends LastMileAdapter {
 
       try {
         const response = await fetch(`${this.base_url}${path}`, {
-          method: 'PATCH',
+          method: "PATCH",
           headers: this.getAuthHeaders(),
           body: JSON.stringify(update_body),
         });
@@ -359,7 +381,7 @@ export class GrubhubClient extends LastMileAdapter {
 
         return {
           id: data.order_id,
-          platform: 'grubhub',
+          platform: "grubhub",
           external_id: data.external_order_id,
           status: this.mapStatusToUnified(data.status),
           order_id: data.external_order_id,
@@ -374,13 +396,15 @@ export class GrubhubClient extends LastMileAdapter {
             longitude: data.delivery_address.longitude || 0,
             address: data.delivery_address.street_address,
           },
-          pickup_contact: { name: 'Restaurant', phone: '' },
+          pickup_contact: { name: "Restaurant", phone: "" },
           dropoff_contact: {
             name: `${data.delivery_contact.first_name} ${data.delivery_contact.last_name}`,
             phone: data.delivery_contact.phone_number,
           },
 
-          estimated_pickup_time: new Date(Date.now() + data.estimated_prep_time_minutes * 60000),
+          estimated_pickup_time: new Date(
+            Date.now() + data.estimated_prep_time_minutes * 60000,
+          ),
           estimated_dropoff_time: new Date(data.estimated_delivery_time),
 
           tracking_url: data.tracking_url,
@@ -389,23 +413,28 @@ export class GrubhubClient extends LastMileAdapter {
           updated_at: new Date(),
         };
       } catch (error) {
-        throw new Error(`Failed to update Grubhub order: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(
+          `Failed to update Grubhub order: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     });
   }
 
-  async cancelDelivery(delivery_id: string, reason?: string): Promise<LastMileDelivery> {
+  async cancelDelivery(
+    delivery_id: string,
+    reason?: string,
+  ): Promise<LastMileDelivery> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('grubhub-order-cancel');
+      await this.checkRateLimit("grubhub-order-cancel");
       await this.refreshTokenIfNeeded();
 
       const path = `/v1/orders/${delivery_id}/cancel`;
 
       try {
         const response = await fetch(`${this.base_url}${path}`, {
-          method: 'POST',
+          method: "POST",
           headers: this.getAuthHeaders(),
-          body: JSON.stringify({ reason_code: reason || 'MERCHANT_REQUESTED' }),
+          body: JSON.stringify({ reason_code: reason || "MERCHANT_REQUESTED" }),
         });
 
         if (!response.ok) {
@@ -416,7 +445,7 @@ export class GrubhubClient extends LastMileAdapter {
 
         return {
           id: data.order_id,
-          platform: 'grubhub',
+          platform: "grubhub",
           external_id: data.external_order_id,
           status: this.mapStatusToUnified(data.status),
           order_id: data.external_order_id,
@@ -431,13 +460,15 @@ export class GrubhubClient extends LastMileAdapter {
             longitude: data.delivery_address.longitude || 0,
             address: data.delivery_address.street_address,
           },
-          pickup_contact: { name: 'Restaurant', phone: '' },
+          pickup_contact: { name: "Restaurant", phone: "" },
           dropoff_contact: {
             name: `${data.delivery_contact.first_name} ${data.delivery_contact.last_name}`,
             phone: data.delivery_contact.phone_number,
           },
 
-          estimated_pickup_time: new Date(Date.now() + data.estimated_prep_time_minutes * 60000),
+          estimated_pickup_time: new Date(
+            Date.now() + data.estimated_prep_time_minutes * 60000,
+          ),
           estimated_dropoff_time: new Date(data.estimated_delivery_time),
 
           tracking_url: data.tracking_url,
@@ -446,21 +477,25 @@ export class GrubhubClient extends LastMileAdapter {
           updated_at: new Date(),
         };
       } catch (error) {
-        throw new Error(`Failed to cancel Grubhub order: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(
+          `Failed to cancel Grubhub order: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     });
   }
 
-  async listDeliveries(filters?: DeliveryFilterOptions): Promise<LastMileDelivery[]> {
+  async listDeliveries(
+    filters?: DeliveryFilterOptions,
+  ): Promise<LastMileDelivery[]> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('grubhub-order-list');
+      await this.checkRateLimit("grubhub-order-list");
       await this.refreshTokenIfNeeded();
 
       const path = `/v1/restaurants/${this.restaurant_id}/orders`;
 
       try {
         const response = await fetch(`${this.base_url}${path}`, {
-          method: 'GET',
+          method: "GET",
           headers: this.getAuthHeaders(),
         });
 
@@ -468,11 +503,13 @@ export class GrubhubClient extends LastMileAdapter {
           throw new Error(`Grubhub API error: ${response.statusText}`);
         }
 
-        const data = (await response.json()) as { orders: GrubhubOrderResponse[] };
+        const data = (await response.json()) as {
+          orders: GrubhubOrderResponse[];
+        };
 
         return data.orders.map((order) => ({
           id: order.order_id,
-          platform: 'grubhub',
+          platform: "grubhub",
           external_id: order.external_order_id,
           status: this.mapStatusToUnified(order.status),
           order_id: order.external_order_id,
@@ -487,13 +524,15 @@ export class GrubhubClient extends LastMileAdapter {
             longitude: order.delivery_address.longitude || 0,
             address: order.delivery_address.street_address,
           },
-          pickup_contact: { name: 'Restaurant', phone: '' },
+          pickup_contact: { name: "Restaurant", phone: "" },
           dropoff_contact: {
             name: `${order.delivery_contact.first_name} ${order.delivery_contact.last_name}`,
             phone: order.delivery_contact.phone_number,
           },
 
-          estimated_pickup_time: new Date(Date.now() + order.estimated_prep_time_minutes * 60000),
+          estimated_pickup_time: new Date(
+            Date.now() + order.estimated_prep_time_minutes * 60000,
+          ),
           estimated_dropoff_time: new Date(order.estimated_delivery_time),
 
           tracking_url: order.tracking_url,
@@ -502,7 +541,9 @@ export class GrubhubClient extends LastMileAdapter {
           updated_at: new Date(),
         }));
       } catch (error) {
-        throw new Error(`Failed to list Grubhub orders: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(
+          `Failed to list Grubhub orders: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     });
   }
@@ -510,14 +551,14 @@ export class GrubhubClient extends LastMileAdapter {
   async getQuote(
     pickup: Location,
     dropoff: Location,
-    options?: QuoteOptions
+    options?: QuoteOptions,
   ): Promise<LastMileQuote> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('grubhub-quote');
+      await this.checkRateLimit("grubhub-quote");
       await this.refreshTokenIfNeeded();
 
       const request_id = this.generateRequestId();
-      const path = '/v1/quotes';
+      const path = "/v1/quotes";
 
       const quote_request: GrubhubQuoteRequest = {
         restaurant_id: this.restaurant_id,
@@ -527,10 +568,10 @@ export class GrubhubClient extends LastMileAdapter {
 
       try {
         const response = await fetch(`${this.base_url}${path}`, {
-          method: 'POST',
+          method: "POST",
           headers: {
             ...this.getAuthHeaders(),
-            'X-Request-ID': request_id,
+            "X-Request-ID": request_id,
           },
           body: JSON.stringify(quote_request),
         });
@@ -547,7 +588,7 @@ export class GrubhubClient extends LastMileAdapter {
 
         return {
           id: data.quote_id,
-          platform: 'grubhub',
+          platform: "grubhub",
 
           pickup_location: pickup,
           dropoff_location: dropoff,
@@ -566,10 +607,12 @@ export class GrubhubClient extends LastMileAdapter {
           tax: data.tax,
           total: data.total,
 
-          currency: data.currency || 'USD',
+          currency: data.currency || "USD",
 
           estimated_pickup_time: new Date(),
-          estimated_dropoff_time: new Date(Date.now() + data.estimated_delivery_time_minutes * 60000),
+          estimated_dropoff_time: new Date(
+            Date.now() + data.estimated_delivery_time_minutes * 60000,
+          ),
 
           valid_until: new Date(data.expires_at),
           expires_at: new Date(data.expires_at),
@@ -578,14 +621,16 @@ export class GrubhubClient extends LastMileAdapter {
           platform_commission_amount: commission,
         };
       } catch (error) {
-        throw new Error(`Failed to get Grubhub quote: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(
+          `Failed to get Grubhub quote: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     });
   }
 
   async getTracking(delivery_id: string): Promise<LastMileTracking> {
     return this.executeWithCircuitBreaker(async () => {
-      await this.checkRateLimit('grubhub-tracking');
+      await this.checkRateLimit("grubhub-tracking");
 
       const delivery = await this.getDelivery(delivery_id);
       if (!delivery) {
@@ -596,7 +641,9 @@ export class GrubhubClient extends LastMileAdapter {
     });
   }
 
-  async getTrackingByExternalId(external_id: string): Promise<LastMileTracking> {
+  async getTrackingByExternalId(
+    external_id: string,
+  ): Promise<LastMileTracking> {
     const deliveries = await this.listDeliveries();
     const delivery = deliveries.find((d) => d.external_id === external_id);
 
@@ -612,7 +659,10 @@ export class GrubhubClient extends LastMileAdapter {
     return null;
   }
 
-  async listAvailableDrivers(location: Location, radius_meters: number = 5000): Promise<LastMileDriver[]> {
+  async listAvailableDrivers(
+    location: Location,
+    radius_meters: number = 5000,
+  ): Promise<LastMileDriver[]> {
     return [];
   }
 
@@ -625,15 +675,17 @@ export class GrubhubClient extends LastMileAdapter {
 
     return {
       id: data.order_id || this.generateRequestId(),
-      platform: 'grubhub',
-      event_type: data.event_type || 'order.status_changed',
+      platform: "grubhub",
+      event_type: data.event_type || "order.status_changed",
       external_id: data.external_order_id,
 
       delivery_id: data.order_id,
       order_id: data.external_order_id,
 
       status: this.mapStatusToUnified(data.status),
-      previous_status: data.previous_status ? this.mapStatusToUnified(data.previous_status) : undefined,
+      previous_status: data.previous_status
+        ? this.mapStatusToUnified(data.previous_status)
+        : undefined,
 
       timestamp: new Date(data.timestamp || Date.now()),
 
@@ -649,21 +701,21 @@ export class GrubhubClient extends LastMileAdapter {
 
   private locationToAddress(location: Location): GrubhubAddress {
     return {
-      street_address: location.address || '',
-      city: location.city || '',
-      state: location.state || '',
-      postal_code: location.zip_code || '',
-      country: location.country_code || 'US',
+      street_address: location.address || "",
+      city: location.city || "",
+      state: location.state || "",
+      postal_code: location.zip_code || "",
+      country: location.country_code || "US",
       latitude: location.latitude,
       longitude: location.longitude,
     };
   }
 
   private contactToGrubhub(contact: Contact): GrubhubContact {
-    const parts = contact.name.split(' ');
+    const parts = contact.name.split(" ");
     return {
-      first_name: parts[0] || '',
-      last_name: parts.slice(1).join(' ') || '',
+      first_name: parts[0] || "",
+      last_name: parts.slice(1).join(" ") || "",
       phone_number: contact.phone,
       email: contact.email,
     };
@@ -672,7 +724,7 @@ export class GrubhubClient extends LastMileAdapter {
   private buildTracking(delivery: LastMileDelivery): LastMileTracking {
     return {
       delivery_id: delivery.id,
-      platform: 'grubhub',
+      platform: "grubhub",
 
       current_location: delivery.dropoff_location,
       current_latitude: delivery.dropoff_location.latitude,
@@ -697,8 +749,8 @@ export class GrubhubClient extends LastMileAdapter {
       events: [
         {
           timestamp: delivery.created_at,
-          status: 'created',
-          description: 'Order created',
+          status: "created",
+          description: "Order created",
         },
       ],
     };

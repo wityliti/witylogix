@@ -32,15 +32,17 @@ export class OnboardingService {
   private eventEmitter: EventEmitter;
 
   // Step dependency map — which steps must be completed before advancing
-  private readonly requiredPriorSteps: Record<OnboardingStep, OnboardingStep[]> =
-    {
-      [OnboardingStep.EMAIL_VERIFICATION]: [],
-      [OnboardingStep.BASIC_INFO]: [OnboardingStep.EMAIL_VERIFICATION],
-      [OnboardingStep.WORKSPACE_CONFIG]: [OnboardingStep.BASIC_INFO],
-      [OnboardingStep.INTEGRATION_SETUP]: [OnboardingStep.WORKSPACE_CONFIG],
-      [OnboardingStep.TEAM_SETUP]: [OnboardingStep.INTEGRATION_SETUP],
-      [OnboardingStep.COMPLETION]: [OnboardingStep.TEAM_SETUP],
-    };
+  private readonly requiredPriorSteps: Record<
+    OnboardingStep,
+    OnboardingStep[]
+  > = {
+    [OnboardingStep.EMAIL_VERIFICATION]: [],
+    [OnboardingStep.BASIC_INFO]: [OnboardingStep.EMAIL_VERIFICATION],
+    [OnboardingStep.WORKSPACE_CONFIG]: [OnboardingStep.BASIC_INFO],
+    [OnboardingStep.INTEGRATION_SETUP]: [OnboardingStep.WORKSPACE_CONFIG],
+    [OnboardingStep.TEAM_SETUP]: [OnboardingStep.INTEGRATION_SETUP],
+    [OnboardingStep.COMPLETION]: [OnboardingStep.TEAM_SETUP],
+  };
 
   constructor(eventEmitter: EventEmitter = new EventEmitter()) {
     this.eventEmitter = eventEmitter;
@@ -160,7 +162,11 @@ export class OnboardingService {
       progressId,
       userId: progress.userId,
       orgId: progress.orgId || undefined,
-      data: { step, subStep, completedCount: updatedProgress.completedSteps.length },
+      data: {
+        step,
+        subStep,
+        completedCount: updatedProgress.completedSteps.length,
+      },
       timestamp: new Date(),
     });
 
@@ -212,14 +218,18 @@ export class OnboardingService {
    * @returns Updated onboarding state
    * @throws OnboardingError if not all steps are complete
    */
-  async completeOnboarding(input: CompleteOnboardingInput): Promise<OnboardingState> {
+  async completeOnboarding(
+    input: CompleteOnboardingInput,
+  ): Promise<OnboardingState> {
     const { progressId } = input;
 
     const progress = await this.getProgressById(progressId);
 
     // Verify all steps are complete
     const allSteps = Object.values(OnboardingStep);
-    const missingSteps = allSteps.filter((s) => !progress.completedSteps.includes(s));
+    const missingSteps = allSteps.filter(
+      (s) => !progress.completedSteps.includes(s),
+    );
 
     if (missingSteps.length > 0) {
       throw new OnboardingError(
@@ -291,7 +301,10 @@ export class OnboardingService {
    * @param orgId - Organization ID to link
    * @returns Updated onboarding state
    */
-  async linkOrganization(progressId: string, orgId: string): Promise<OnboardingState> {
+  async linkOrganization(
+    progressId: string,
+    orgId: string,
+  ): Promise<OnboardingState> {
     const updated = await db.onboardingProgress.update({
       where: { id: progressId },
       data: {
@@ -436,7 +449,8 @@ export class OnboardingService {
       totalCompleted: completed,
       totalAbandoned: abandoned,
       averageStepsCompleted: Math.round(avgStepsCompleted * 100) / 100,
-      completionRate: total > 0 ? Math.round((completed / total) * 10000) / 100 : 0,
+      completionRate:
+        total > 0 ? Math.round((completed / total) * 10000) / 100 : 0,
     };
   }
 }

@@ -13,7 +13,12 @@ export async function provisionTenant(formData: FormData): Promise<void> {
     | "enterprise";
 
   try {
-    const r = await benchApi.createTenant({ slug, ownerEmail, ownerName, plan });
+    const r = await benchApi.createTenant({
+      slug,
+      ownerEmail,
+      ownerName,
+      plan,
+    });
     redirect(`/tenants?created=${encodeURIComponent(r.subdomain)}`);
   } catch (err) {
     if (err instanceof BenchApiError) {

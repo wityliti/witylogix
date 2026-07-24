@@ -9,13 +9,13 @@ import type {
   SmsResult,
   SmsProvider,
   SmsBulkResult,
-} from './types.js';
-import { SmsStatus } from './types.js';
-import { ConsoleSmsProvider } from './providers/console-provider.js';
+} from "./types.js";
+import { SmsStatus } from "./types.js";
+import { ConsoleSmsProvider } from "./providers/console-provider.js";
 
 export type { SmsConfig, SmsMessage, SmsResult, SmsBulkResult };
-export { SmsStatus, type SmsProvider } from './types.js';
-export { ConsoleSmsProvider } from './providers/console-provider.js';
+export { SmsStatus, type SmsProvider } from "./types.js";
+export { ConsoleSmsProvider } from "./providers/console-provider.js";
 
 /**
  * SMS service for sending SMS messages through configured provider
@@ -36,12 +36,12 @@ export class SmsService {
    */
   private initializeProvider(): SmsProvider {
     switch (this.config.provider) {
-      case 'console':
+      case "console":
         return new ConsoleSmsProvider();
 
-      case 'twilio':
+      case "twilio":
         throw new Error(
-          'Twilio provider not yet implemented. Use console provider for now.',
+          "Twilio provider not yet implemented. Use console provider for now.",
         );
 
       default:
@@ -77,7 +77,8 @@ export class SmsService {
         // Rate limiting
         await this.sleep(this.rateLimitDelay);
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         failedMessages.push({ message, error: errorMessage });
       }
     }

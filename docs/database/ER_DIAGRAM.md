@@ -530,24 +530,29 @@ erDiagram
 ## Key Relationship Patterns
 
 ### 1. Org-Level vs Shop-Level Scoping
+
 - **Org-Level (shared):** `driver`, `location`, `delivery_zone`, `workspace`, `api_key`
 - **Shop-Level (isolated):** `order`, `shipment`, `route`, `time_slot`, `user` (primary)
 - **Both (flexible):** `driver`, `location`, `integration` (per-shop install)
 
 ### 2. Soft Deletion
+
 Models use `is_active` (boolean) or `deleted_at` (timestamp) for soft deletes. Queries filter with `WHERE is_active = true`.
 
 ### 3. Immutable Records
+
 - **Order**: Core fields immutable after creation; only status and metadata updated
 - **Shipment**: Similar; core fields locked after assignment
 - **ProofOfDelivery / ShipmentProof**: Immutable once created
 
 ### 4. Many-to-Many Examples
+
 - **User ↔ Organization** via `OrgMember` (with role and shop filtering)
 - **Permission ↔ Role** via `RolePermission` (fine-grained RBAC)
 - **Integration ↔ Shop** via `Integration` (per-shop installation)
 
 ### 5. Cascade & Referential Actions
+
 - **Organization** → deletions cascade to `Shop`, `User`, `Driver`, `Workspace`, etc.
 - **Shop** → deletions cascade to `Order`, `Shipment`, `Route`, etc.
 - **User** → deletions cascade to `AuthSession`, `MfaDevice`, `LoginAttempt`
@@ -558,18 +563,21 @@ Models use `is_active` (boolean) or `deleted_at` (timestamp) for soft deletes. Q
 ## Row-Level Security (RLS) Boundaries
 
 ### Shop-Level (Primary)
+
 ```sql
 RLS Policy: app.current_shop_id = shop_id
 Applies to: order, shipment, route, route_stop, time_slot, location, integration, etc.
 ```
 
 ### Organization-Level (Secondary)
+
 ```sql
 RLS Policy: app.current_org_id = org_id
 Applies to: driver, location, delivery_zone, workspace, tenant_config, api_key, usage_record, webhook_secret
 ```
 
 ### Hybrid (Org OR Shop)
+
 ```sql
 RLS Policy: (app.current_org_id = org_id) OR (app.current_shop_id = shop_id)
 Applies to: org_member (cross-org access), integration_connection (workspace scoped)
@@ -583,4 +591,3 @@ Applies to: org_member (cross-org access), integration_connection (workspace sco
 2. **Add custom views:** Create specialized ER diagrams for reporting and analytics
 3. **PostGIS relationships:** Update geometry-related diagrams when PostGIS is enabled
 4. **Monitor growth:** As new models are added, refresh and categorize diagrams
-

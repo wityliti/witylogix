@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { getLeaflet, getMapById } from './wl-map';
+import { useEffect, useRef } from "react";
+import { getLeaflet, getMapById } from "./wl-map";
 
 export interface LocationPin {
   id: string;
@@ -22,22 +22,27 @@ interface LocationPinLayerProps {
 }
 
 const TYPE_COLOR: Record<string, string> = {
-  WAREHOUSE: '#60a5fa',
-  STORE:     '#34d399',
-  HUB:       '#f59e0b',
-  DEPOT:     '#a78bfa',
-  PICKUP_POINT: '#fb7185',
+  WAREHOUSE: "#60a5fa",
+  STORE: "#34d399",
+  HUB: "#f59e0b",
+  DEPOT: "#a78bfa",
+  PICKUP_POINT: "#fb7185",
 };
 
 const TYPE_ICON: Record<string, string> = {
-  WAREHOUSE: '🏭',
-  STORE:     '🏪',
-  HUB:       '🔵',
-  DEPOT:     '📦',
-  PICKUP_POINT: '📍',
+  WAREHOUSE: "🏭",
+  STORE: "🏪",
+  HUB: "🔵",
+  DEPOT: "📦",
+  PICKUP_POINT: "📍",
 };
 
-export function LocationPinLayer({ mapId, locations, selectedId, onLocationClick }: LocationPinLayerProps) {
+export function LocationPinLayer({
+  mapId,
+  locations,
+  selectedId,
+  onLocationClick,
+}: LocationPinLayerProps) {
   const layersRef = useRef<unknown[]>([]);
 
   useEffect(() => {
@@ -55,21 +60,22 @@ export function LocationPinLayer({ mapId, locations, selectedId, onLocationClick
 
       locations.forEach((loc) => {
         if (!loc.latitude || !loc.longitude) return;
-        const color = TYPE_COLOR[loc.type] ?? '#94a3b8';
-        const icon = TYPE_ICON[loc.type] ?? '📍';
+        const color = TYPE_COLOR[loc.type] ?? "#94a3b8";
+        const icon = TYPE_ICON[loc.type] ?? "📍";
         const isSelected = loc.id === selectedId;
-        const isInactive = loc.status === 'INACTIVE' || loc.status === 'MAINTENANCE';
+        const isInactive =
+          loc.status === "INACTIVE" || loc.status === "MAINTENANCE";
         const size = isSelected ? 36 : 28;
 
         bounds.push([loc.latitude, loc.longitude]);
 
         const marker = L.marker([loc.latitude, loc.longitude], {
           icon: L.divIcon({
-            className: '',
+            className: "",
             html: `<div style="
               width:${size}px; height:${size}px;
               border-radius:50%;
-              background:${isInactive ? '#374151' : color};
+              background:${isInactive ? "#374151" : color};
               border:${isSelected ? 3 : 2}px solid rgba(255,255,255,${isInactive ? 0.3 : 0.7});
               box-shadow:0 0 0 ${isSelected ? 4 : 0}px ${color}55, 0 2px 8px rgba(0,0,0,.5);
               display:flex; align-items:center; justify-content:center;
@@ -82,18 +88,19 @@ export function LocationPinLayer({ mapId, locations, selectedId, onLocationClick
           }),
         });
 
-        const popup = L.popup({ closeButton: false, className: 'wl-popup' }).setContent(`
+        const popup = L.popup({ closeButton: false, className: "wl-popup" })
+          .setContent(`
           <div style="
             background:#12121a; border:1px solid #1e1e2e; border-radius:8px;
             padding:10px 14px; min-width:160px; font-family:inherit;
           ">
             <div style="font-size:11px; font-weight:700; color:${color}; text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px;">
-              ${loc.type.replace(/_/g, ' ')}
+              ${loc.type.replace(/_/g, " ")}
             </div>
             <div style="font-size:13px; font-weight:600; color:#fff; margin-bottom:4px;">${loc.name}</div>
-            ${loc.city ? `<div style="font-size:11px; color:#9ca3af;">${loc.city}</div>` : ''}
-            <div style="font-size:11px; color:${loc.status === 'ACTIVE' ? '#34d399' : '#f87171'}; margin-top:4px; font-weight:600;">
-              ${loc.status}${loc.isDefault ? ' · Default' : ''}
+            ${loc.city ? `<div style="font-size:11px; color:#9ca3af;">${loc.city}</div>` : ""}
+            <div style="font-size:11px; color:${loc.status === "ACTIVE" ? "#34d399" : "#f87171"}; margin-top:4px; font-weight:600;">
+              ${loc.status}${loc.isDefault ? " · Default" : ""}
             </div>
           </div>
         `);
@@ -101,7 +108,7 @@ export function LocationPinLayer({ mapId, locations, selectedId, onLocationClick
         marker.bindPopup(popup);
 
         if (onLocationClick) {
-          marker.on('click', () => onLocationClick(loc.id));
+          marker.on("click", () => onLocationClick(loc.id));
         }
 
         if (isSelected) {

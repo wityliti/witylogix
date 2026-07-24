@@ -12,7 +12,10 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { ViolationDetector } from "../../../packages/core/src/compliance/hos-violation-detector.js";
-import type { LogEntry, RuleSet } from "../../../packages/core/src/compliance/hos-types.js";
+import type {
+  LogEntry,
+  RuleSet,
+} from "../../../packages/core/src/compliance/hos-types.js";
 import { DutyStatus } from "../../../packages/core/src/compliance/hos-types.js";
 
 describe("ViolationDetector", () => {
@@ -85,11 +88,11 @@ describe("ViolationDetector", () => {
         "vehicle_1",
         newLog,
         [...logs, newLog],
-        usPropertyRuleSet
+        usPropertyRuleSet,
       );
 
       const driving11Violation = violations.find(
-        (v) => v.violationType === "DRIVING_11"
+        (v) => v.violationType === "DRIVING_11",
       );
       expect(driving11Violation).toBeDefined();
       expect(driving11Violation?.severity).toBe("CRITICAL");
@@ -135,11 +138,11 @@ describe("ViolationDetector", () => {
         "vehicle_1",
         newLog,
         [...logs, newLog],
-        usPropertyRuleSet
+        usPropertyRuleSet,
       );
 
       const window14Violation = violations.find(
-        (v) => v.violationType === "ON_DUTY_14"
+        (v) => v.violationType === "ON_DUTY_14",
       );
       expect(window14Violation).toBeDefined();
       expect(window14Violation?.severity).toBe("CRITICAL");
@@ -184,11 +187,11 @@ describe("ViolationDetector", () => {
         "vehicle_1",
         newLog,
         [...logs, newLog],
-        usPropertyRuleSet
+        usPropertyRuleSet,
       );
 
       const breakViolation = violations.find(
-        (v) => v.violationType === "BREAK_30MIN"
+        (v) => v.violationType === "BREAK_30MIN",
       );
       expect(breakViolation).toBeDefined();
       expect(breakViolation?.severity).toBe("CRITICAL");
@@ -221,11 +224,11 @@ describe("ViolationDetector", () => {
         "vehicle_1",
         incompleteLog,
         [incompleteLog],
-        usPropertyRuleSet
+        usPropertyRuleSet,
       );
 
       const formViolation = violations.find(
-        (v) => v.violationType === "FORM_MANNER"
+        (v) => v.violationType === "FORM_MANNER",
       );
       expect(formViolation).toBeDefined();
       expect(formViolation?.severity).toBe("WARNING");
@@ -255,11 +258,11 @@ describe("ViolationDetector", () => {
         "vehicle_1",
         invalidLog,
         [invalidLog],
-        usPropertyRuleSet
+        usPropertyRuleSet,
       );
 
       const formViolation = violations.find(
-        (v) => v.violationType === "FORM_MANNER"
+        (v) => v.violationType === "FORM_MANNER",
       );
       expect(formViolation).toBeDefined();
     });
@@ -301,11 +304,11 @@ describe("ViolationDetector", () => {
         "vehicle_1",
         suspiciousLog,
         [suspiciousLog],
-        usPropertyRuleSet
+        usPropertyRuleSet,
       );
 
       const falsifiedViolation = violations.find(
-        (v) => v.violationType === "FALSIFIED_LOG"
+        (v) => v.violationType === "FALSIFIED_LOG",
       );
       expect(falsifiedViolation).toBeDefined();
       expect(falsifiedViolation?.severity).toBe("CRITICAL");
@@ -326,7 +329,7 @@ describe("ViolationDetector", () => {
           vehicleId: "vehicle_1",
           startTime: new Date(sevenDaysAgo.getTime() + i * 24 * 60 * 60 * 1000),
           endTime: new Date(
-            sevenDaysAgo.getTime() + (i + 1) * 24 * 60 * 60 * 1000
+            sevenDaysAgo.getTime() + (i + 1) * 24 * 60 * 60 * 1000,
           ),
           dutyStatus: DutyStatus.DRIVING,
           hours: 11,
@@ -342,11 +345,11 @@ describe("ViolationDetector", () => {
         "acc_123",
         "vehicle_1",
         logs,
-        usPropertyRuleSet
+        usPropertyRuleSet,
       );
 
       const cycleViolation = violations.find(
-        (v) => v.violationType === "CYCLE_70_HOUR"
+        (v) => v.violationType === "CYCLE_70_HOUR",
       );
       expect(cycleViolation).toBeDefined();
       expect(cycleViolation?.fmcsaViolationCode).toBe("395.8(b)");
@@ -463,7 +466,7 @@ describe("ViolationDetector", () => {
         "vehicle_1",
         logs[0],
         logs,
-        usPropertyRuleSet
+        usPropertyRuleSet,
       );
 
       detector.recordViolation(violations[0]);
@@ -502,7 +505,7 @@ describe("ViolationDetector", () => {
         "vehicle_1",
         logs[0],
         logs,
-        usPropertyRuleSet
+        usPropertyRuleSet,
       );
 
       const count = detector.getRepeatOffenderCount("driver_1");
@@ -535,7 +538,7 @@ describe("ViolationDetector", () => {
         "vehicle_1",
         logs[0],
         logs,
-        usPropertyRuleSet
+        usPropertyRuleSet,
       );
 
       const retrieved = detector.getViolations("acc_123", "driver_1");
@@ -566,7 +569,7 @@ describe("ViolationDetector", () => {
         "vehicle_1",
         logs[0],
         logs,
-        usPropertyRuleSet
+        usPropertyRuleSet,
       );
 
       detector.resetDriverViolationHistory("acc_123", "driver_reset");

@@ -57,7 +57,7 @@ export function DataTableToolbar({
       setSearchQuery(query);
       onSearch?.(query);
     },
-    [onSearch]
+    [onSearch],
   );
 
   const toggleColumnVisibility = (columnId: string) => {
@@ -82,7 +82,7 @@ export function DataTableToolbar({
       className={cn(
         "flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between",
         "px-4 py-3 border border-wl-border-subtle rounded-lg bg-wl-bg-surface",
-        className
+        className,
       )}
     >
       {/* Left side: Search and selected count */}
@@ -115,7 +115,7 @@ export function DataTableToolbar({
               "px-3 py-2 text-xs font-medium transition-colors",
               viewMode === "table"
                 ? "bg-wl-primary-500 text-wl-text-inverse"
-                : "bg-transparent text-wl-text-secondary hover:text-wl-text-primary"
+                : "bg-transparent text-wl-text-secondary hover:text-wl-text-primary",
             )}
             title="Table view"
           >
@@ -127,7 +127,7 @@ export function DataTableToolbar({
               "px-3 py-2 text-xs font-medium transition-colors border-l border-wl-border-subtle",
               viewMode === "grid"
                 ? "bg-wl-primary-500 text-wl-text-inverse"
-                : "bg-transparent text-wl-text-secondary hover:text-wl-text-primary"
+                : "bg-transparent text-wl-text-secondary hover:text-wl-text-primary",
             )}
             title="Grid view"
           >
@@ -139,7 +139,7 @@ export function DataTableToolbar({
               "px-3 py-2 text-xs font-medium transition-colors border-l border-wl-border-subtle",
               viewMode === "compact"
                 ? "bg-wl-primary-500 text-wl-text-inverse"
-                : "bg-transparent text-wl-text-secondary hover:text-wl-text-primary"
+                : "bg-transparent text-wl-text-secondary hover:text-wl-text-primary",
             )}
             title="Compact view"
           >
@@ -175,7 +175,9 @@ export function DataTableToolbar({
                       onChange={() => toggleColumnVisibility(column.id)}
                       className="w-4 h-4 rounded border-wl-border-default accent-wl-primary-500"
                     />
-                    <span className="text-wl-text-primary">{column.header}</span>
+                    <span className="text-wl-text-primary">
+                      {column.header}
+                    </span>
                   </label>
                 ))}
               </div>
@@ -205,9 +207,7 @@ export function DataTableToolbar({
           disabled={isLoading}
           title="Refresh data"
         >
-          <RotateCcw
-            className={cn("w-4 h-4", isLoading && "animate-spin")}
-          />
+          <RotateCcw className={cn("w-4 h-4", isLoading && "animate-spin")} />
           <span className="text-xs hidden sm:inline">Refresh</span>
         </Button>
       </div>

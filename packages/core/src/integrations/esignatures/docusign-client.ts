@@ -159,7 +159,10 @@ export class DocuSignClient extends ESignatureAdapter {
       throw new Error("DocuSign: accountId is required");
     }
 
-    this.baseUrl = (config.apiUrl || "https://na3.docusign.net").replace(/\/$/, "");
+    this.baseUrl = (config.apiUrl || "https://na3.docusign.net").replace(
+      /\/$/,
+      "",
+    );
     this.accountId = config.accountId;
 
     if (config.authType === "oauth2") {
@@ -177,13 +180,16 @@ export class DocuSignClient extends ESignatureAdapter {
 
     try {
       const token = await this.getAccessToken();
-      const response = await fetch(`${this.baseUrl}/v2.1/accounts/${this.accountId}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
+      const response = await fetch(
+        `${this.baseUrl}/v2.1/accounts/${this.accountId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
         },
-      });
+      );
 
       return response.status === 200;
     } catch {
@@ -212,8 +218,14 @@ export class DocuSignClient extends ESignatureAdapter {
    * Refresh using OAuth2 Authorization Code Grant.
    */
   private async refreshOAuth2Token(): Promise<void> {
-    if (!this.config?.clientId || !this.config?.clientSecret || !this.config?.refreshToken) {
-      throw new Error("DocuSign: OAuth2 requires clientId, clientSecret, and refreshToken");
+    if (
+      !this.config?.clientId ||
+      !this.config?.clientSecret ||
+      !this.config?.refreshToken
+    ) {
+      throw new Error(
+        "DocuSign: OAuth2 requires clientId, clientSecret, and refreshToken",
+      );
     }
 
     const response = await fetch("https://account.docusign.com/oauth/token", {
@@ -229,7 +241,10 @@ export class DocuSignClient extends ESignatureAdapter {
       }).toString(),
     });
 
-    const data = (await response.json()) as { access_token: string; expires_in: number };
+    const data = (await response.json()) as {
+      access_token: string;
+      expires_in: number;
+    };
     this.setAccessToken(data.access_token, data.expires_in);
   }
 
@@ -237,8 +252,14 @@ export class DocuSignClient extends ESignatureAdapter {
    * Refresh using JWT Grant.
    */
   private async refreshJWTToken(): Promise<void> {
-    if (!this.config?.clientId || !this.config?.userId || !this.config?.privateKey) {
-      throw new Error("DocuSign: JWT requires clientId, userId, and privateKey");
+    if (
+      !this.config?.clientId ||
+      !this.config?.userId ||
+      !this.config?.privateKey
+    ) {
+      throw new Error(
+        "DocuSign: JWT requires clientId, userId, and privateKey",
+      );
     }
 
     // Create JWT assertion
@@ -253,7 +274,9 @@ export class DocuSignClient extends ESignatureAdapter {
     };
 
     const headerB64 = Buffer.from(JSON.stringify(header)).toString("base64url");
-    const payloadB64 = Buffer.from(JSON.stringify(payload)).toString("base64url");
+    const payloadB64 = Buffer.from(JSON.stringify(payload)).toString(
+      "base64url",
+    );
     const message = `${headerB64}.${payloadB64}`;
 
     const signer = createSign("sha256");
@@ -274,7 +297,10 @@ export class DocuSignClient extends ESignatureAdapter {
       }).toString(),
     });
 
-    const data = (await response.json()) as { access_token: string; expires_in: number };
+    const data = (await response.json()) as {
+      access_token: string;
+      expires_in: number;
+    };
     this.setAccessToken(data.access_token, data.expires_in);
   }
 
@@ -287,70 +313,78 @@ export class DocuSignClient extends ESignatureAdapter {
       const token = await this.getAccessToken();
 
       // Convert documents
-      const docuSignDocs: DocuSignDocument[] = prepared.documents.map((doc, index) => ({
-        documentId: (index + 1).toString(),
-        name: doc.fileName,
-        documentBase64: doc.content,
-        fileExtension: doc.fileName.split(".").pop() || "pdf",
-      }));
+      const docuSignDocs: DocuSignDocument[] = prepared.documents.map(
+        (doc, index) => ({
+          documentId: (index + 1).toString(),
+          name: doc.fileName,
+          documentBase64: doc.content,
+          fileExtension: doc.fileName.split(".").pop() || "pdf",
+        }),
+      );
 
       // Convert signers with tabs
-      const docuSignSigners: DocuSignSigner[] = prepared.signers.map((signer) => {
-        const signerFields = prepared.fields.filter((f) => f.signerEmail === signer.email);
+      const docuSignSigners: DocuSignSigner[] = prepared.signers.map(
+        (signer) => {
+          const signerFields = prepared.fields.filter(
+            (f) => f.signerEmail === signer.email,
+          );
 
-        const tabs: DocuSignSigner["tabs"] = {
-          signHereTabs: [],
-          initialHereTabs: [],
-          dateSignedTabs: [],
-          textTabs: [],
-          checkboxTabs: [],
-          dropdownTabs: [],
-        };
-
-        signerFields.forEach((field) => {
-          const docIndex = prepared.documents.findIndex((d) => d.id === `doc${field.pageNumber}`);
-          const tab: DocuSignTab = {
-            documentId: (docIndex + 1).toString(),
-            pageNumber: field.pageNumber.toString(),
-            xPosition: field.xCoordinate.toFixed(0),
-            yPosition: field.yCoordinate.toFixed(0),
-            width: field.width.toFixed(0),
-            height: field.height.toFixed(0),
-            tabLabel: field.label || field.id,
-            required: field.required ? "true" : "false",
-            value: field.value,
+          const tabs: DocuSignSigner["tabs"] = {
+            signHereTabs: [],
+            initialHereTabs: [],
+            dateSignedTabs: [],
+            textTabs: [],
+            checkboxTabs: [],
+            dropdownTabs: [],
           };
 
-          switch (field.type) {
-            case "signature":
-              tabs.signHereTabs?.push(tab);
-              break;
-            case "initial":
-              tabs.initialHereTabs?.push(tab);
-              break;
-            case "date":
-              tabs.dateSignedTabs?.push(tab);
-              break;
-            case "text":
-              tabs.textTabs?.push(tab);
-              break;
-            case "checkbox":
-              tabs.checkboxTabs?.push(tab);
-              break;
-            case "dropdown":
-              tabs.dropdownTabs?.push(tab);
-              break;
-          }
-        });
+          signerFields.forEach((field) => {
+            const docIndex = prepared.documents.findIndex(
+              (d) => d.id === `doc${field.pageNumber}`,
+            );
+            const tab: DocuSignTab = {
+              documentId: (docIndex + 1).toString(),
+              pageNumber: field.pageNumber.toString(),
+              xPosition: field.xCoordinate.toFixed(0),
+              yPosition: field.yCoordinate.toFixed(0),
+              width: field.width.toFixed(0),
+              height: field.height.toFixed(0),
+              tabLabel: field.label || field.id,
+              required: field.required ? "true" : "false",
+              value: field.value,
+            };
 
-        return {
-          email: signer.email,
-          name: signer.name,
-          recipientId: (prepared.signers.indexOf(signer) + 1).toString(),
-          routingOrder: signer.order.toString(),
-          tabs,
-        };
-      });
+            switch (field.type) {
+              case "signature":
+                tabs.signHereTabs?.push(tab);
+                break;
+              case "initial":
+                tabs.initialHereTabs?.push(tab);
+                break;
+              case "date":
+                tabs.dateSignedTabs?.push(tab);
+                break;
+              case "text":
+                tabs.textTabs?.push(tab);
+                break;
+              case "checkbox":
+                tabs.checkboxTabs?.push(tab);
+                break;
+              case "dropdown":
+                tabs.dropdownTabs?.push(tab);
+                break;
+            }
+          });
+
+          return {
+            email: signer.email,
+            name: signer.name,
+            recipientId: (prepared.signers.indexOf(signer) + 1).toString(),
+            routingOrder: signer.order.toString(),
+            tabs,
+          };
+        },
+      );
 
       const request: DocuSignEnvelopeRequest = {
         emailSubject: envelope.subject || "Please sign this document",
@@ -369,11 +403,13 @@ export class DocuSignClient extends ESignatureAdapter {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(request),
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`DocuSign: Failed to create envelope: ${response.statusText}`);
+        throw new Error(
+          `DocuSign: Failed to create envelope: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as { envelopeId: string };
@@ -402,11 +438,13 @@ export class DocuSignClient extends ESignatureAdapter {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ status: "sent" }),
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`DocuSign: Failed to send envelope: ${response.statusText}`);
+        throw new Error(
+          `DocuSign: Failed to send envelope: ${response.statusText}`,
+        );
       }
 
       return {
@@ -433,11 +471,13 @@ export class DocuSignClient extends ESignatureAdapter {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ status: "voided", voidedReason: reason }),
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`DocuSign: Failed to void envelope: ${response.statusText}`);
+        throw new Error(
+          `DocuSign: Failed to void envelope: ${response.statusText}`,
+        );
       }
     });
   }
@@ -457,11 +497,13 @@ export class DocuSignClient extends ESignatureAdapter {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`DocuSign: Failed to get envelope: ${response.statusText}`);
+        throw new Error(
+          `DocuSign: Failed to get envelope: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as DocuSignEnvelopeResponse;
@@ -480,20 +522,22 @@ export class DocuSignClient extends ESignatureAdapter {
         id: data.envelopeId,
         name: data.emailSubject || "Document",
         status: statusMap[data.status] || "created",
-        documents: data.envelopeDocuments?.map((doc, i) => ({
-          id: doc.documentId,
-          name: doc.name,
-          fileName: doc.name,
-          content: "",
-          order: i + 1,
-          mimeType: "application/pdf",
-        })) || [],
-        signers: data.recipients?.signers?.map((signer) => ({
-          email: signer.email,
-          name: signer.name,
-          order: parseInt(signer.routingOrder) || 1,
-          requiresSequentialSigning: true,
-        })) || [],
+        documents:
+          data.envelopeDocuments?.map((doc, i) => ({
+            id: doc.documentId,
+            name: doc.name,
+            fileName: doc.name,
+            content: "",
+            order: i + 1,
+            mimeType: "application/pdf",
+          })) || [],
+        signers:
+          data.recipients?.signers?.map((signer) => ({
+            email: signer.email,
+            name: signer.name,
+            order: parseInt(signer.routingOrder) || 1,
+            requiresSequentialSigning: true,
+          })) || [],
         fields: [],
         createdAt: new Date(data.statusChangedDateTime || ""),
         subject: data.emailSubject,
@@ -519,11 +563,13 @@ export class DocuSignClient extends ESignatureAdapter {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`DocuSign: Failed to get envelope status: ${response.statusText}`);
+        throw new Error(
+          `DocuSign: Failed to get envelope status: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as DocuSignEnvelopeResponse;
@@ -539,17 +585,25 @@ export class DocuSignClient extends ESignatureAdapter {
         declined: "declined",
       };
 
-      const signerStatuses = data.recipients?.signers?.map((signer) => ({
-        email: signer.email,
-        name: signer.name,
-        status: statusMap[signer.status] || ("created" as EnvelopeStatus),
-        signedAt: signer.signedDateTime ? new Date(signer.signedDateTime) : undefined,
-        declinedAt: signer.declinedDateTime ? new Date(signer.declinedDateTime) : undefined,
-      })) || [];
+      const signerStatuses =
+        data.recipients?.signers?.map((signer) => ({
+          email: signer.email,
+          name: signer.name,
+          status: statusMap[signer.status] || ("created" as EnvelopeStatus),
+          signedAt: signer.signedDateTime
+            ? new Date(signer.signedDateTime)
+            : undefined,
+          declinedAt: signer.declinedDateTime
+            ? new Date(signer.declinedDateTime)
+            : undefined,
+        })) || [];
 
-      const completedSigners = signerStatuses.filter((s) => s.status === "completed").length;
+      const completedSigners = signerStatuses.filter(
+        (s) => s.status === "completed",
+      ).length;
       const totalSigners = signerStatuses.length;
-      const completionPercentage = totalSigners > 0 ? (completedSigners / totalSigners) * 100 : 0;
+      const completionPercentage =
+        totalSigners > 0 ? (completedSigners / totalSigners) * 100 : 0;
 
       return {
         envelopeId,
@@ -577,8 +631,10 @@ export class DocuSignClient extends ESignatureAdapter {
       const offset = options?.offset || 0;
 
       const params = new URLSearchParams({
-        "from_date": options?.fromDate?.toISOString() || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        "to_date": options?.toDate?.toISOString() || new Date().toISOString(),
+        from_date:
+          options?.fromDate?.toISOString() ||
+          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+        to_date: options?.toDate?.toISOString() || new Date().toISOString(),
       });
 
       if (options?.status) {
@@ -593,11 +649,13 @@ export class DocuSignClient extends ESignatureAdapter {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`DocuSign: Failed to list envelopes: ${response.statusText}`);
+        throw new Error(
+          `DocuSign: Failed to list envelopes: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as DocuSignEnvelopesListResponse;
@@ -612,17 +670,18 @@ export class DocuSignClient extends ESignatureAdapter {
         declined: "declined",
       };
 
-      const envelopes = data.envelopes?.map((env) => ({
-        id: env.envelopeId,
-        name: env.emailSubject || "Document",
-        status: statusMap[env.status] || "created",
-        documents: [],
-        signers: [],
-        fields: [],
-        createdAt: new Date(env.statusChangedDateTime || ""),
-        workflowMode: "sequential" as const,
-        createdBy: "unknown",
-      })) || [];
+      const envelopes =
+        data.envelopes?.map((env) => ({
+          id: env.envelopeId,
+          name: env.emailSubject || "Document",
+          status: statusMap[env.status] || "created",
+          documents: [],
+          signers: [],
+          fields: [],
+          createdAt: new Date(env.statusChangedDateTime || ""),
+          workflowMode: "sequential" as const,
+          createdBy: "unknown",
+        })) || [];
 
       return {
         envelopes,
@@ -634,7 +693,10 @@ export class DocuSignClient extends ESignatureAdapter {
   /**
    * Resend envelope to signers.
    */
-  async resendEnvelope(envelopeId: string, signerEmails?: string[]): Promise<void> {
+  async resendEnvelope(
+    envelopeId: string,
+    signerEmails?: string[],
+  ): Promise<void> {
     return this.rateLimitedRequest(async () => {
       const token = await this.getAccessToken();
 
@@ -648,14 +710,20 @@ export class DocuSignClient extends ESignatureAdapter {
           },
           body: JSON.stringify({
             recipients: {
-              signers: signerEmails?.map((email) => ({ email, resendNotification: "true" })) || [],
+              signers:
+                signerEmails?.map((email) => ({
+                  email,
+                  resendNotification: "true",
+                })) || [],
             },
           }),
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`DocuSign: Failed to resend envelope: ${response.statusText}`);
+        throw new Error(
+          `DocuSign: Failed to resend envelope: ${response.statusText}`,
+        );
       }
     });
   }
@@ -680,23 +748,26 @@ export class DocuSignClient extends ESignatureAdapter {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`DocuSign: Failed to list templates: ${response.statusText}`);
+        throw new Error(
+          `DocuSign: Failed to list templates: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as DocuSignTemplatesListResponse;
 
-      const templates = data.envelopeTemplates?.map((template) => ({
-        id: template.templateId,
-        name: template.name,
-        description: template.description,
-        createdAt: new Date(),
-        modifiedAt: new Date(template.dateModified || ""),
-        defaultSignerCount: 1,
-      })) || [];
+      const templates =
+        data.envelopeTemplates?.map((template) => ({
+          id: template.templateId,
+          name: template.name,
+          description: template.description,
+          createdAt: new Date(),
+          modifiedAt: new Date(template.dateModified || ""),
+          defaultSignerCount: 1,
+        })) || [];
 
       return {
         templates,
@@ -720,11 +791,13 @@ export class DocuSignClient extends ESignatureAdapter {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`DocuSign: Failed to get template: ${response.statusText}`);
+        throw new Error(
+          `DocuSign: Failed to get template: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as DocuSignTemplateResponse;
@@ -745,16 +818,17 @@ export class DocuSignClient extends ESignatureAdapter {
    */
   async createEnvelopeFromTemplate(
     templateId: string,
-    envelope: Partial<Envelope>
+    envelope: Partial<Envelope>,
   ): Promise<EnvelopeResult> {
     return this.rateLimitedRequest(async () => {
       const token = await this.getAccessToken();
 
-      const templateRoles = envelope.signers?.map((signer) => ({
-        email: signer.email,
-        name: signer.name,
-        roleName: `Signer${signer.order}`,
-      })) || [];
+      const templateRoles =
+        envelope.signers?.map((signer) => ({
+          email: signer.email,
+          name: signer.name,
+          roleName: `Signer${signer.order}`,
+        })) || [];
 
       const request = {
         templateId,
@@ -773,11 +847,13 @@ export class DocuSignClient extends ESignatureAdapter {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(request),
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`DocuSign: Failed to create envelope from template: ${response.statusText}`);
+        throw new Error(
+          `DocuSign: Failed to create envelope from template: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as { envelopeId: string };
@@ -793,7 +869,10 @@ export class DocuSignClient extends ESignatureAdapter {
   /**
    * Download document.
    */
-  async downloadDocument(envelopeId: string, documentId: string): Promise<DocumentDownloadResult> {
+  async downloadDocument(
+    envelopeId: string,
+    documentId: string,
+  ): Promise<DocumentDownloadResult> {
     return this.rateLimitedRequest(async () => {
       const token = await this.getAccessToken();
 
@@ -804,11 +883,13 @@ export class DocuSignClient extends ESignatureAdapter {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`DocuSign: Failed to download document: ${response.statusText}`);
+        throw new Error(
+          `DocuSign: Failed to download document: ${response.statusText}`,
+        );
       }
 
       const buffer = await response.arrayBuffer();
@@ -829,7 +910,7 @@ export class DocuSignClient extends ESignatureAdapter {
    * Download all envelope documents as ZIP.
    */
   async downloadEnvelopeDocuments(
-    envelopeId: string
+    envelopeId: string,
   ): Promise<{ content: string; mimeType: string; fileName: string }> {
     return this.rateLimitedRequest(async () => {
       const token = await this.getAccessToken();
@@ -841,11 +922,13 @@ export class DocuSignClient extends ESignatureAdapter {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`DocuSign: Failed to download envelope documents: ${response.statusText}`);
+        throw new Error(
+          `DocuSign: Failed to download envelope documents: ${response.statusText}`,
+        );
       }
 
       const buffer = await response.arrayBuffer();
@@ -865,7 +948,7 @@ export class DocuSignClient extends ESignatureAdapter {
   async getEmbeddedSigningUrl(
     envelopeId: string,
     signerEmail: string,
-    returnUrl: string
+    returnUrl: string,
   ): Promise<EmbedSigningResult> {
     return this.rateLimitedRequest(async () => {
       const token = await this.getAccessToken();
@@ -884,11 +967,13 @@ export class DocuSignClient extends ESignatureAdapter {
             email: signerEmail,
             userName: signerEmail,
           }),
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`DocuSign: Failed to get signing URL: ${response.statusText}`);
+        throw new Error(
+          `DocuSign: Failed to get signing URL: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as { url: string };
@@ -903,7 +988,10 @@ export class DocuSignClient extends ESignatureAdapter {
   /**
    * Mark document as viewed.
    */
-  async markDocumentViewed(envelopeId: string, signerEmail: string): Promise<void> {
+  async markDocumentViewed(
+    envelopeId: string,
+    signerEmail: string,
+  ): Promise<void> {
     // DocuSign tracks viewing automatically, no action needed
   }
 
@@ -922,11 +1010,13 @@ export class DocuSignClient extends ESignatureAdapter {
             Authorization: `Bearer ${token}`,
             Accept: "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
-        throw new Error(`DocuSign: Failed to get events: ${response.statusText}`);
+        throw new Error(
+          `DocuSign: Failed to get events: ${response.statusText}`,
+        );
       }
 
       const data = (await response.json()) as DocuSignEnvelopeResponse;
@@ -961,7 +1051,9 @@ export class DocuSignClient extends ESignatureAdapter {
           signerEmail: signer.email,
           previousStatus: "sent",
           newStatus: statusMap[signer.status] || "sent",
-          timestamp: new Date(signer.statusChangedDateTime || data.statusChangedDateTime || ""),
+          timestamp: new Date(
+            signer.statusChangedDateTime || data.statusChangedDateTime || "",
+          ),
           signatureDetails: signer.signedDateTime
             ? {
                 date: new Date(signer.signedDateTime),
@@ -981,12 +1073,17 @@ export class DocuSignClient extends ESignatureAdapter {
    */
   async parseWebhookEvent(
     payload: Record<string, unknown>,
-    headers: Record<string, string>
+    headers: Record<string, string>,
   ): Promise<ESignatureWebhookEvent> {
-    const isValid = this.verifyWebhookSignature(JSON.stringify(payload), headers["x-docusign-signature-1"] || "");
+    const isValid = this.verifyWebhookSignature(
+      JSON.stringify(payload),
+      headers["x-docusign-signature-1"] || "",
+    );
 
     const payloadData = payload as Record<string, unknown>;
-    const envelopeId = (payloadData.data as Record<string, unknown> | undefined)?.envelopeId || "";
+    const envelopeId =
+      (payloadData.data as Record<string, unknown> | undefined)?.envelopeId ||
+      "";
     const eventType = (payloadData.event as string) || "unknown";
 
     const statusMap: Record<string, EnvelopeStatus> = {
@@ -1043,7 +1140,9 @@ export class DocuSignClient extends ESignatureAdapter {
       const verified = await this.verifyCredentials();
       return {
         healthy: verified,
-        message: verified ? "DocuSign connection is healthy" : "Failed to verify credentials",
+        message: verified
+          ? "DocuSign connection is healthy"
+          : "Failed to verify credentials",
       };
     } catch (error) {
       return {

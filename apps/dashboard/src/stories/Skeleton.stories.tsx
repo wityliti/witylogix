@@ -1,5 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { Skeleton, SkeletonText, SkeletonCircle } from "@/components/ui/skeleton";
+import {
+  Skeleton,
+  SkeletonText,
+  SkeletonCircle,
+} from "@/components/ui/skeleton";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 const meta = {
@@ -67,7 +71,10 @@ export const Table: Story = {
       </div>
       {/* Rows */}
       {[1, 2, 3].map((i) => (
-        <div key={i} className="flex gap-4 p-4 border border-wl-border-subtle rounded-md">
+        <div
+          key={i}
+          className="flex gap-4 p-4 border border-wl-border-subtle rounded-md"
+        >
           <Skeleton className="h-4 w-20 rounded" />
           <Skeleton className="h-4 w-32 rounded flex-1" />
           <Skeleton className="h-4 w-24 rounded" />

@@ -113,7 +113,7 @@ export const ChannelToggleMatrix = ({
   className,
 }: ChannelToggleMatrixProps) => {
   const [state, setState] = useState<MatrixState>(
-    defaultState || createDefaultState()
+    defaultState || createDefaultState(),
   );
 
   const handleToggle = (category: Category, channel: Channel) => {
@@ -131,7 +131,9 @@ export const ChannelToggleMatrix = ({
   };
 
   const handleRowSelectAll = (category: Category) => {
-    const availableChannels = CHANNELS.filter((ch) => !UNAVAILABLE_CHANNELS[ch]);
+    const availableChannels = CHANNELS.filter(
+      (ch) => !UNAVAILABLE_CHANNELS[ch],
+    );
     const allEnabled = availableChannels.every((ch) => state[category][ch]);
 
     const newState = {
@@ -140,7 +142,7 @@ export const ChannelToggleMatrix = ({
         ...state[category],
         ...availableChannels.reduce(
           (acc, ch) => ({ ...acc, [ch]: !allEnabled }),
-          {}
+          {},
         ),
       },
     };
@@ -172,7 +174,7 @@ export const ChannelToggleMatrix = ({
           enabled: CATEGORIES.filter((cat) => state[cat][channel]).length,
           total: CATEGORIES.length,
         },
-      ])
+      ]),
     );
   }, [state]);
 
@@ -199,7 +201,7 @@ export const ChannelToggleMatrix = ({
                         "transition-colors uppercase tracking-wide",
                         UNAVAILABLE_CHANNELS[channel]
                           ? "text-[var(--wl-text-secondary)] opacity-40 cursor-not-allowed"
-                          : "text-[var(--wl-primary)] hover:bg-[var(--wl-bg-secondary)]"
+                          : "text-[var(--wl-primary)] hover:bg-[var(--wl-bg-secondary)]",
                       )}
                     >
                       {channel}
@@ -207,7 +209,8 @@ export const ChannelToggleMatrix = ({
                   </Tooltip>
                   {!UNAVAILABLE_CHANNELS[channel] && (
                     <span className="text-xs text-[var(--wl-text-secondary)]">
-                      {columnStats[channel].enabled}/{columnStats[channel].total}
+                      {columnStats[channel].enabled}/
+                      {columnStats[channel].total}
                     </span>
                   )}
                 </div>
@@ -218,10 +221,10 @@ export const ChannelToggleMatrix = ({
         <tbody>
           {CATEGORIES.map((category) => {
             const categoryEnabled = CHANNELS.filter(
-              (ch) => !UNAVAILABLE_CHANNELS[ch] && state[category][ch]
+              (ch) => !UNAVAILABLE_CHANNELS[ch] && state[category][ch],
             ).length;
             const availableCount = CHANNELS.filter(
-              (ch) => !UNAVAILABLE_CHANNELS[ch]
+              (ch) => !UNAVAILABLE_CHANNELS[ch],
             ).length;
 
             return (
@@ -234,7 +237,7 @@ export const ChannelToggleMatrix = ({
                       "hover:text-[var(--wl-primary)] hover:underline",
                       categoryEnabled === availableCount
                         ? "text-[var(--wl-primary)]"
-                        : "text-[var(--wl-text-primary)]"
+                        : "text-[var(--wl-text-primary)]",
                     )}
                     title="Click to toggle all available channels"
                   >
@@ -249,14 +252,12 @@ export const ChannelToggleMatrix = ({
                     <div
                       className={cn(
                         "inline-flex",
-                        UNAVAILABLE_CHANNELS[channel] && "opacity-50"
+                        UNAVAILABLE_CHANNELS[channel] && "opacity-50",
                       )}
                     >
                       <Switch
                         checked={state[category][channel]}
-                        onChange={() =>
-                          handleToggle(category, channel)
-                        }
+                        onChange={() => handleToggle(category, channel)}
                         disabled={UNAVAILABLE_CHANNELS[channel]}
                         aria-label={`Toggle ${channel} for ${category}`}
                       />

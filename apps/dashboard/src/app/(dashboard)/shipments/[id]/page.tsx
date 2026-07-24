@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import dynamic from 'next/dynamic';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { cn, formatCurrency } from '@/lib/utils';
+import { useMemo } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import dynamic from "next/dynamic";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { cn, formatCurrency } from "@/lib/utils";
 import {
   Package,
   Truck,
@@ -25,13 +25,13 @@ import {
   CheckCircle,
   Circle,
   ChevronLeft,
-} from 'lucide-react';
-import { useApiQuery } from '@/hooks/use-api';
-import { statusVariant } from '@/components/shipments/shipment-utils';
+} from "lucide-react";
+import { useApiQuery } from "@/hooks/use-api";
+import { statusVariant } from "@/components/shipments/shipment-utils";
 
 // ── Dynamic map import (avoids SSR issues with maplibre-gl) ──────────────────
 const ShipmentDetailMap = dynamic(
-  () => import('@/components/shipments/shipment-detail-map'),
+  () => import("@/components/shipments/shipment-detail-map"),
   {
     ssr: false,
     loading: () => (
@@ -117,45 +117,42 @@ interface DriverLocation {
 // ── Constants ──────────────────────────────────────────────────────────────
 
 const STATUS_PROGRESSION = [
-  'PENDING',
-  'PROCESSING',
-  'READY_FOR_PICKUP',
-  'PICKED_UP',
-  'IN_TRANSIT',
-  'OUT_FOR_DELIVERY',
-  'ARRIVED',
-  'DELIVERED',
+  "PENDING",
+  "PROCESSING",
+  "READY_FOR_PICKUP",
+  "PICKED_UP",
+  "IN_TRANSIT",
+  "OUT_FOR_DELIVERY",
+  "ARRIVED",
+  "DELIVERED",
 ];
 
-const ACTIVE_FOR_DRIVER_LOCATION = new Set([
-  'OUT_FOR_DELIVERY',
-  'ARRIVED',
-]);
+const ACTIVE_FOR_DRIVER_LOCATION = new Set(["OUT_FOR_DELIVERY", "ARRIVED"]);
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
 function formatDateShort(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
+    year: "numeric",
+    month: "short",
+    day: "numeric",
   });
 }
 
 function humaniseAction(action: string): string {
   return action
     .toLowerCase()
-    .replace(/_/g, ' ')
+    .replace(/_/g, " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
@@ -198,7 +195,9 @@ export default function ShipmentDetailPage() {
     shipment && ACTIVE_FOR_DRIVER_LOCATION.has(shipment.status);
 
   const { data: driverLocationData } = useApiQuery<DriverLocation>(
-    shouldFetchDriverLocation ? `/api/v4/shipments/${id}/driver-location` : null,
+    shouldFetchDriverLocation
+      ? `/api/v4/shipments/${id}/driver-location`
+      : null,
   );
 
   // Build timeline from activity logs (chronological, most recent first)
@@ -216,23 +215,27 @@ export default function ShipmentDetailPage() {
     if (!shipment) return null;
 
     const destination = shipment.deliveryLocation
-      ? { lat: shipment.deliveryLocation.lat, lng: shipment.deliveryLocation.lng }
+      ? {
+          lat: shipment.deliveryLocation.lat,
+          lng: shipment.deliveryLocation.lng,
+        }
       : null;
 
-    const origin =
-      shipment.location?.coordinates
-        ? { lat: shipment.location.coordinates.lat, lng: shipment.location.coordinates.lng }
-        : null;
+    const origin = shipment.location?.coordinates
+      ? {
+          lat: shipment.location.coordinates.lat,
+          lng: shipment.location.coordinates.lng,
+        }
+      : null;
 
-    const driverLocation =
-      driverLocationData
-        ? {
-            lat: driverLocationData.latitude,
-            lng: driverLocationData.longitude,
-            heading: driverLocationData.heading,
-            driverName: driverLocationData.driverName,
-          }
-        : null;
+    const driverLocation = driverLocationData
+      ? {
+          lat: driverLocationData.latitude,
+          lng: driverLocationData.longitude,
+          heading: driverLocationData.heading,
+          driverName: driverLocationData.driverName,
+        }
+      : null;
 
     return { destination, origin, driverLocation };
   }, [shipment, driverLocationData]);
@@ -258,11 +261,9 @@ export default function ShipmentDetailPage() {
   }
 
   const orderNum =
-    shipment.order?.externalOrderNumber ??
-    shipment.order?.shopifyOrderNumber;
+    shipment.order?.externalOrderNumber ?? shipment.order?.shopifyOrderNumber;
 
-  const hasMap =
-    mapData?.destination != null || mapData?.origin != null;
+  const hasMap = mapData?.destination != null || mapData?.origin != null;
 
   return (
     <div className="p-6 min-h-screen bg-wl-bg-root">
@@ -297,7 +298,7 @@ export default function ShipmentDetailPage() {
             variant={statusVariant(shipment.status)}
             className="text-xs px-3 py-1.5 flex-shrink-0"
           >
-            {shipment.status.replace(/_/g, ' ')}
+            {shipment.status.replace(/_/g, " ")}
           </Badge>
         </div>
       </div>
@@ -344,22 +345,22 @@ export default function ShipmentDetailPage() {
                     <div
                       key={step}
                       className={cn(
-                        'px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
+                        "px-3 py-1.5 rounded-full text-xs font-medium border transition-all",
                         isCurrent
-                          ? 'bg-blue-500 text-white border-blue-500 shadow-[0_0_12px_rgba(59,130,246,0.3)]'
+                          ? "bg-blue-500 text-white border-blue-500 shadow-[0_0_12px_rgba(59,130,246,0.3)]"
                           : isCompleted
-                            ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                            : 'bg-transparent text-gray-500 border-wl-border-default',
+                            ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                            : "bg-transparent text-gray-500 border-wl-border-default",
                       )}
                     >
-                      {step.replace(/_/g, ' ')}
+                      {step.replace(/_/g, " ")}
                     </div>
                   );
                 })}
                 {/* Handle non-standard statuses */}
                 {!STATUS_PROGRESSION.includes(shipment.status) && (
                   <div className="px-3 py-1.5 rounded-full text-xs font-medium border bg-red-500/20 text-red-400 border-red-500/30">
-                    {shipment.status.replace(/_/g, ' ')}
+                    {shipment.status.replace(/_/g, " ")}
                   </div>
                 )}
               </div>
@@ -378,17 +379,14 @@ export default function ShipmentDetailPage() {
                     <div
                       key={event.id}
                       className={cn(
-                        'flex gap-4',
-                        index < timeline.length - 1 ? 'mb-0' : '',
+                        "flex gap-4",
+                        index < timeline.length - 1 ? "mb-0" : "",
                       )}
                     >
                       <div className="flex flex-col items-center flex-shrink-0">
                         <div className="w-6 h-6 rounded-full border-2 flex items-center justify-center bg-blue-500/20 border-blue-500">
                           {index === 0 ? (
-                            <CheckCircle
-                              size={14}
-                              className="text-blue-400"
-                            />
+                            <CheckCircle size={14} className="text-blue-400" />
                           ) : (
                             <Circle size={14} className="text-blue-400" />
                           )}
@@ -426,7 +424,7 @@ export default function ShipmentDetailPage() {
                     <Weight size={12} /> Weight
                   </p>
                   <p className="text-sm font-semibold text-white">
-                    {shipment.weight ? `${shipment.weight} kg` : '—'}
+                    {shipment.weight ? `${shipment.weight} kg` : "—"}
                   </p>
                 </div>
                 <div>
@@ -434,7 +432,7 @@ export default function ShipmentDetailPage() {
                   <p className="text-sm font-semibold text-white">
                     {shipment.dimensions
                       ? `${shipment.dimensions.length} × ${shipment.dimensions.width} × ${shipment.dimensions.height} cm`
-                      : '—'}
+                      : "—"}
                   </p>
                 </div>
                 <div>
@@ -446,7 +444,7 @@ export default function ShipmentDetailPage() {
                 <div>
                   <p className="text-xs text-gray-400 mb-1">Delivery Method</p>
                   <p className="text-sm font-semibold text-white">
-                    {shipment.deliveryMethod.replace(/_/g, ' ')}
+                    {shipment.deliveryMethod.replace(/_/g, " ")}
                   </p>
                 </div>
               </div>
@@ -495,7 +493,7 @@ export default function ShipmentDetailPage() {
                 <div>
                   <p className="text-xs text-gray-400 mb-1">Name</p>
                   <p className="text-sm font-semibold text-white">
-                    {shipment.recipientName ?? '—'}
+                    {shipment.recipientName ?? "—"}
                   </p>
                 </div>
                 <div>
@@ -512,7 +510,7 @@ export default function ShipmentDetailPage() {
                       shipment.postalCode,
                     ]
                       .filter(Boolean)
-                      .join(', ')}
+                      .join(", ")}
                   </p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -521,7 +519,7 @@ export default function ShipmentDetailPage() {
                       <Phone size={12} /> Phone
                     </p>
                     <p className="text-sm text-white font-mono">
-                      {shipment.recipientPhone ?? '—'}
+                      {shipment.recipientPhone ?? "—"}
                     </p>
                   </div>
                   <div>
@@ -529,7 +527,7 @@ export default function ShipmentDetailPage() {
                       <Mail size={12} /> Email
                     </p>
                     <p className="text-sm text-white truncate">
-                      {shipment.recipientEmail ?? '—'}
+                      {shipment.recipientEmail ?? "—"}
                     </p>
                   </div>
                 </div>
@@ -562,7 +560,7 @@ export default function ShipmentDetailPage() {
                   Proof of Delivery
                 </h2>
                 <p className="text-xs text-gray-400 mb-4">
-                  Delivered on{' '}
+                  Delivered on{" "}
                   {formatDate(shipment.proofOfDelivery.deliveredAt)}
                   {shipment.proofOfDelivery.recipientName && (
                     <> · Received by {shipment.proofOfDelivery.recipientName}</>
@@ -579,9 +577,7 @@ export default function ShipmentDetailPage() {
                       />
                     ) : (
                       <div className="h-24 rounded border-2 border-dashed border-wl-border-default bg-wl-bg-elevated flex items-center justify-center">
-                        <p className="text-xs text-gray-500">
-                          No signature
-                        </p>
+                        <p className="text-xs text-gray-500">No signature</p>
                       </div>
                     )}
                   </div>
@@ -591,16 +587,14 @@ export default function ShipmentDetailPage() {
                     </p>
                     {shipment.proofOfDelivery.photoUrls.length > 0 ? (
                       <div className="grid grid-cols-2 gap-1">
-                        {shipment.proofOfDelivery.photoUrls.map(
-                          (url, idx) => (
-                            <img
-                              key={idx}
-                              src={url}
-                              alt={`Delivery photo ${idx + 1}`}
-                              className="w-full rounded border border-wl-border-default aspect-square object-cover"
-                            />
-                          ),
-                        )}
+                        {shipment.proofOfDelivery.photoUrls.map((url, idx) => (
+                          <img
+                            key={idx}
+                            src={url}
+                            alt={`Delivery photo ${idx + 1}`}
+                            className="w-full rounded border border-wl-border-default aspect-square object-cover"
+                          />
+                        ))}
                       </div>
                     ) : (
                       <div className="h-24 rounded border-2 border-dashed border-wl-border-default bg-wl-bg-elevated flex items-center justify-center">
@@ -652,10 +646,10 @@ export default function ShipmentDetailPage() {
               </p>
 
               <div className="space-y-3">
-                <InfoRow label="Carrier" value={shipment.carrier ?? '—'} />
+                <InfoRow label="Carrier" value={shipment.carrier ?? "—"} />
                 <InfoRow
                   label="Tracking #"
-                  value={shipment.trackingNumber ?? '—'}
+                  value={shipment.trackingNumber ?? "—"}
                   mono
                 />
                 <InfoRow
@@ -740,8 +734,7 @@ export default function ShipmentDetailPage() {
                     </div>
                     {driverLocationData.updatedAt && (
                       <p className="text-[10px] text-gray-500 font-mono">
-                        Updated{' '}
-                        {formatDate(driverLocationData.updatedAt)}
+                        Updated {formatDate(driverLocationData.updatedAt)}
                       </p>
                     )}
                   </div>
@@ -772,12 +765,13 @@ export default function ShipmentDetailPage() {
           {/* Current Status card */}
           <Card
             className={cn(
-              'border-2',
-              shipment.status === 'DELIVERED'
-                ? 'bg-emerald-500/5 border-emerald-500/40'
-                : shipment.status === 'FAILED' || shipment.status === 'CANCELLED'
-                  ? 'bg-red-500/5 border-red-500/40'
-                  : 'bg-blue-500/5 border-blue-500/40',
+              "border-2",
+              shipment.status === "DELIVERED"
+                ? "bg-emerald-500/5 border-emerald-500/40"
+                : shipment.status === "FAILED" ||
+                    shipment.status === "CANCELLED"
+                  ? "bg-red-500/5 border-red-500/40"
+                  : "bg-blue-500/5 border-blue-500/40",
             )}
           >
             <CardContent className="p-5">
@@ -788,7 +782,7 @@ export default function ShipmentDetailPage() {
                 variant={statusVariant(shipment.status)}
                 className="text-xs px-3 py-1.5"
               >
-                {shipment.status.replace(/_/g, ' ')}
+                {shipment.status.replace(/_/g, " ")}
               </Badge>
             </CardContent>
           </Card>
@@ -811,7 +805,13 @@ function InfoRow({ label, value, mono, className }: InfoRowProps) {
   return (
     <div>
       <p className="text-xs text-gray-400">{label}</p>
-      <p className={cn('text-xs font-semibold text-white mt-0.5', mono && 'font-mono', className)}>
+      <p
+        className={cn(
+          "text-xs font-semibold text-white mt-0.5",
+          mono && "font-mono",
+          className,
+        )}
+      >
         {value}
       </p>
     </div>

@@ -13,7 +13,7 @@ import type {
   ScheduleReport,
   WhatIfScenario,
   SmartSchedulerConfig,
-} from './types';
+} from "./types";
 
 /**
  * Smart Scheduler
@@ -24,7 +24,7 @@ export class SmartScheduler {
 
   constructor(config?: Partial<SmartSchedulerConfig>) {
     this.config = {
-      optimization_target: 'balanced',
+      optimization_target: "balanced",
       min_service_level: 0.95,
       max_utilization: 0.85,
       driver_cost_per_hour: 25,
@@ -54,7 +54,11 @@ export class SmartScheduler {
       let slotLower = 0;
       let slotUpper = 0;
 
-      for (let h = Math.floor(startHour); h < Math.ceil(endHour) && h < prediction.predictions.length; h++) {
+      for (
+        let h = Math.floor(startHour);
+        h < Math.ceil(endHour) && h < prediction.predictions.length;
+        h++
+      ) {
         const weight = this.getHourWeight(h, startHour, endHour);
         slotDemand += prediction.predictions[h] * weight;
         slotConfidence += prediction.confidence * weight;
@@ -106,7 +110,11 @@ export class SmartScheduler {
   /**
    * Get weight of hour in slot
    */
-  private getHourWeight(hour: number, startHour: number, endHour: number): number {
+  private getHourWeight(
+    hour: number,
+    startHour: number,
+    endHour: number,
+  ): number {
     const hourStart = Math.max(hour, startHour);
     const hourEnd = Math.min(hour + 1, endHour);
     return Math.max(0, hourEnd - hourStart);
@@ -125,26 +133,30 @@ export class SmartScheduler {
 
     // Demand level
     if (demand < 5) {
-      reasons.push('Low demand forecasted - minimal capacity needed');
+      reasons.push("Low demand forecasted - minimal capacity needed");
     } else if (demand < 15) {
-      reasons.push('Moderate demand expected - standard capacity recommended');
+      reasons.push("Moderate demand expected - standard capacity recommended");
     } else {
-      reasons.push('High demand forecasted - increase capacity to meet demand');
+      reasons.push("High demand forecasted - increase capacity to meet demand");
     }
 
     // Utilization
     const utilization = demand / capacity;
     if (utilization > 0.9) {
-      reasons.push('Warning: High utilization - consider adding buffer capacity');
+      reasons.push(
+        "Warning: High utilization - consider adding buffer capacity",
+      );
     } else if (utilization < 0.6) {
-      reasons.push('Capacity headroom available for unexpected spikes');
+      reasons.push("Capacity headroom available for unexpected spikes");
     }
 
     // Confidence
     if (confidence < 0.7) {
-      reasons.push('Lower confidence forecast - maintain safety margin');
+      reasons.push("Lower confidence forecast - maintain safety margin");
     } else if (confidence > 0.85) {
-      reasons.push('High confidence in forecast - can optimize capacity tightly');
+      reasons.push(
+        "High confidence in forecast - can optimize capacity tightly",
+      );
     }
 
     // Primary factors
@@ -176,7 +188,8 @@ export class SmartScheduler {
 
       for (let h = 0; h < pred.predictions.length; h++) {
         zoneDemand[h] = (zoneDemand[h] || 0) + pred.predictions[h];
-        totalDemandByHour[h] = (totalDemandByHour[h] || 0) + pred.predictions[h];
+        totalDemandByHour[h] =
+          (totalDemandByHour[h] || 0) + pred.predictions[h];
       }
     }
 
@@ -207,7 +220,8 @@ export class SmartScheduler {
         total_drivers: totalDrivers,
         peak_hour: peakHour,
         peak_drivers: peakDrivers,
-        confidence: predictions.find((p) => p.zoneId === zoneId)?.confidence || 0.5,
+        confidence:
+          predictions.find((p) => p.zoneId === zoneId)?.confidence || 0.5,
       });
     }
 
@@ -321,7 +335,7 @@ export class SmartScheduler {
           gaps.push({
             zoneId: pred.zoneId,
             timestamp,
-            type: gap < 0 ? 'understaffed' : 'overstaffed',
+            type: gap < 0 ? "understaffed" : "overstaffed",
             gap: Math.round(gap),
             severity: Math.round(severity * 10) / 10,
             recommended_action: this.getGapAction(gap, demand),
@@ -365,7 +379,12 @@ export class SmartScheduler {
 
     // Driver allocation
     if (predictions.length > 0) {
-      driverAllocations.push(...this.suggestDriverAllocation(predictions, predictions[0].targetPeriod));
+      driverAllocations.push(
+        ...this.suggestDriverAllocation(
+          predictions,
+          predictions[0].targetPeriod,
+        ),
+      );
     }
 
     // Capacity gaps
@@ -377,8 +396,12 @@ export class SmartScheduler {
       0,
     );
 
-    const totalCapacity = slots.reduce((sum, s) => sum + s.recommendedCapacity, 0);
-    const estimatedServiceLevel = totalCapacity > 0 ? Math.min(1, totalExpectedOrders / totalCapacity) : 1;
+    const totalCapacity = slots.reduce(
+      (sum, s) => sum + s.recommendedCapacity,
+      0,
+    );
+    const estimatedServiceLevel =
+      totalCapacity > 0 ? Math.min(1, totalExpectedOrders / totalCapacity) : 1;
 
     const recommendations: string[] = [];
 
@@ -389,18 +412,28 @@ export class SmartScheduler {
       );
     }
 
-    const understaffedCount = gaps.filter((g) => g.type === 'understaffed').length;
+    const understaffedCount = gaps.filter(
+      (g) => g.type === "understaffed",
+    ).length;
     if (understaffedCount > 0) {
-      recommendations.push(`${understaffedCount} time periods are understaffed. Review driver allocation.`);
+      recommendations.push(
+        `${understaffedCount} time periods are understaffed. Review driver allocation.`,
+      );
     }
 
-    const overstaffedCount = gaps.filter((g) => g.type === 'overstaffed').length;
+    const overstaffedCount = gaps.filter(
+      (g) => g.type === "overstaffed",
+    ).length;
     if (overstaffedCount > 0) {
-      recommendations.push(`${overstaffedCount} time periods are overstaffed. Optimize cost by rebalancing.`);
+      recommendations.push(
+        `${overstaffedCount} time periods are overstaffed. Optimize cost by rebalancing.`,
+      );
     }
 
     if (predictions.length > 0) {
-      const lowConfidence = predictions.filter((p) => p.confidence < 0.7).length;
+      const lowConfidence = predictions.filter(
+        (p) => p.confidence < 0.7,
+      ).length;
       if (lowConfidence > 0) {
         recommendations.push(
           `${lowConfidence} forecast(s) have low confidence (<70%). Monitor actual demand closely.`,
@@ -436,7 +469,10 @@ export class SmartScheduler {
     );
 
     // Simulate changes
-    const modifiedPredictions = this.applyScenarioChanges(basePredictions, scenario);
+    const modifiedPredictions = this.applyScenarioChanges(
+      basePredictions,
+      scenario,
+    );
     const modifiedReport = this.generateScheduleReport(modifiedPredictions);
     const modifiedCost = modifiedReport.driver_allocations.reduce(
       (sum, a) => sum + a.total_drivers * 24 * this.config.driver_cost_per_hour,
@@ -444,7 +480,9 @@ export class SmartScheduler {
     );
 
     const costDifference = modifiedCost - baseCost;
-    const serviceLevelDifference = modifiedReport.estimated_service_level - baseReport.estimated_service_level;
+    const serviceLevelDifference =
+      modifiedReport.estimated_service_level -
+      baseReport.estimated_service_level;
 
     return {
       scenario_name: scenario.name,
@@ -504,14 +542,17 @@ export class SmartScheduler {
     } else if (serviceLevelDifference > 0) {
       return `Service level improvement of ${(serviceLevelDifference * 100).toFixed(1)}% at cost of $${costDifference.toFixed(0)}. `;
     } else {
-      return `Tradeoff: ${costDifference > 0 ? 'Higher cost' : 'Lower cost'} with ${serviceLevelDifference > 0 ? 'improved' : 'reduced'} service level.`;
+      return `Tradeoff: ${costDifference > 0 ? "Higher cost" : "Lower cost"} with ${serviceLevelDifference > 0 ? "improved" : "reduced"} service level.`;
     }
   }
 
   /**
    * Set current capacity (for baseline)
    */
-  setCurrentCapacity(zoneId: string, hourlyCapacity: Record<number, number>): void {
+  setCurrentCapacity(
+    zoneId: string,
+    hourlyCapacity: Record<number, number>,
+  ): void {
     const zoneMap = new Map<number, number>();
     for (const [hour, cap] of Object.entries(hourlyCapacity)) {
       zoneMap.set(parseInt(hour, 10), cap);

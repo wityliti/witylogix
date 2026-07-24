@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useApiQuery, useApiMutation } from '@/hooks/use-api';
-import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { useApiQuery, useApiMutation } from "@/hooks/use-api";
+import { TableSkeleton } from "@/components/ui/loading-skeleton";
 import {
   Code,
   Eye,
@@ -46,14 +46,21 @@ export default function WidgetConfigPage() {
   const [copiedCode, setCopiedCode] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  const { data: shopResp, loading: shopLoading } = useApiQuery<{ data: ShopData }>('/api/v4/shops/me');
-  const saveMutation = useApiMutation<{ settings: Record<string, unknown> }>('PATCH', '/api/v4/shops/me');
+  const { data: shopResp, loading: shopLoading } = useApiQuery<{
+    data: ShopData;
+  }>("/api/v4/shops/me");
+  const saveMutation = useApiMutation<{ settings: Record<string, unknown> }>(
+    "PATCH",
+    "/api/v4/shops/me",
+  );
 
   useEffect(() => {
     const cfg = (shopResp?.data?.settings as any)?.widgetConfig;
     if (!cfg) return;
-    if (cfg.cartSelectorEnabled !== undefined) setCartSelectorEnabled(cfg.cartSelectorEnabled);
-    if (cfg.shippingCalcEnabled !== undefined) setShippingCalcEnabled(cfg.shippingCalcEnabled);
+    if (cfg.cartSelectorEnabled !== undefined)
+      setCartSelectorEnabled(cfg.cartSelectorEnabled);
+    if (cfg.shippingCalcEnabled !== undefined)
+      setShippingCalcEnabled(cfg.shippingCalcEnabled);
     if (cfg.position) setWidgetPosition(cfg.position);
     if (cfg.fontFamily) setFontFamily(cfg.fontFamily);
     if (cfg.language) setLanguage(cfg.language);
@@ -73,11 +80,18 @@ export default function WidgetConfigPage() {
       await saveMutation.execute({
         settings: {
           widgetConfig: {
-            cartSelectorEnabled, shippingCalcEnabled,
-            position: widgetPosition, fontFamily, language,
-            width: widgetWidth, height: widgetHeight,
-            primaryColor, backgroundColor, textColor,
-            borderRadius, shadowEnabled,
+            cartSelectorEnabled,
+            shippingCalcEnabled,
+            position: widgetPosition,
+            fontFamily,
+            language,
+            width: widgetWidth,
+            height: widgetHeight,
+            primaryColor,
+            backgroundColor,
+            textColor,
+            borderRadius,
+            shadowEnabled,
           },
         },
       });
@@ -135,7 +149,9 @@ export default function WidgetConfigPage() {
             <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-white">Widget Features</CardTitle>
-                <CardDescription className="text-gray-400">Enable widget features</CardDescription>
+                <CardDescription className="text-gray-400">
+                  Enable widget features
+                </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
                 {/* Cart Selector Toggle */}
@@ -143,15 +159,19 @@ export default function WidgetConfigPage() {
                   <div className="flex items-center gap-3">
                     <Settings size={18} className="text-blue-400" />
                     <div>
-                      <p className="text-white text-sm font-medium">Cart Delivery Selector</p>
-                      <p className="text-gray-400 text-xs">Show delivery options</p>
+                      <p className="text-white text-sm font-medium">
+                        Cart Delivery Selector
+                      </p>
+                      <p className="text-gray-400 text-xs">
+                        Show delivery options
+                      </p>
                     </div>
                   </div>
                   <button
                     onClick={() => setCartSelectorEnabled(!cartSelectorEnabled)}
                     className={cn(
-                      'w-12 h-7 rounded-full border-none cursor-pointer transition-colors',
-                      cartSelectorEnabled ? 'bg-blue-500' : 'bg-wl-bg-elevated'
+                      "w-12 h-7 rounded-full border-none cursor-pointer transition-colors",
+                      cartSelectorEnabled ? "bg-blue-500" : "bg-wl-bg-elevated",
                     )}
                   />
                 </div>
@@ -161,15 +181,19 @@ export default function WidgetConfigPage() {
                   <div className="flex items-center gap-3">
                     <Globe size={18} className="text-blue-400" />
                     <div>
-                      <p className="text-white text-sm font-medium">Shipping Calculator</p>
-                      <p className="text-gray-400 text-xs">Calculate shipping costs</p>
+                      <p className="text-white text-sm font-medium">
+                        Shipping Calculator
+                      </p>
+                      <p className="text-gray-400 text-xs">
+                        Calculate shipping costs
+                      </p>
                     </div>
                   </div>
                   <button
                     onClick={() => setShippingCalcEnabled(!shippingCalcEnabled)}
                     className={cn(
-                      'w-12 h-7 rounded-full border-none cursor-pointer transition-colors',
-                      shippingCalcEnabled ? 'bg-blue-500' : 'bg-wl-bg-elevated'
+                      "w-12 h-7 rounded-full border-none cursor-pointer transition-colors",
+                      shippingCalcEnabled ? "bg-blue-500" : "bg-wl-bg-elevated",
                     )}
                   />
                 </div>
@@ -180,7 +204,9 @@ export default function WidgetConfigPage() {
             <Card className="bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-white">Appearance</CardTitle>
-                <CardDescription className="text-gray-400">Customize widget look and feel</CardDescription>
+                <CardDescription className="text-gray-400">
+                  Customize widget look and feel
+                </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
                 {/* Position */}
@@ -251,8 +277,8 @@ export default function WidgetConfigPage() {
                   <button
                     onClick={() => setShadowEnabled(!shadowEnabled)}
                     className={cn(
-                      'w-11 h-6 rounded-full border-none cursor-pointer transition-colors',
-                      shadowEnabled ? 'bg-blue-500' : 'bg-wl-bg-elevated'
+                      "w-11 h-6 rounded-full border-none cursor-pointer transition-colors",
+                      shadowEnabled ? "bg-blue-500" : "bg-wl-bg-elevated",
                     )}
                   />
                 </div>
@@ -387,10 +413,15 @@ export default function WidgetConfigPage() {
                       borderRadius: `${borderRadius}px`,
                       border: `1px solid ${primaryColor}`,
                       padding: "16px",
-                      boxShadow: shadowEnabled ? "0 4px 12px rgba(0,0,0,0.15)" : "none",
+                      boxShadow: shadowEnabled
+                        ? "0 4px 12px rgba(0,0,0,0.15)"
+                        : "none",
                     }}
                   >
-                    <div className="font-semibold text-sm" style={{ color: textColor }}>
+                    <div
+                      className="font-semibold text-sm"
+                      style={{ color: textColor }}
+                    >
                       Witylogix Widget
                     </div>
 
@@ -412,7 +443,10 @@ export default function WidgetConfigPage() {
                       </div>
                     )}
 
-                    <p className="text-xs flex-1 mt-auto" style={{ color: textColor }}>
+                    <p
+                      className="text-xs flex-1 mt-auto"
+                      style={{ color: textColor }}
+                    >
                       Widget configured with {language} language
                     </p>
                   </div>
@@ -427,7 +461,9 @@ export default function WidgetConfigPage() {
                   <Code size={18} />
                   Embed Code
                 </CardTitle>
-                <CardDescription className="text-gray-400">Copy and paste to your website</CardDescription>
+                <CardDescription className="text-gray-400">
+                  Copy and paste to your website
+                </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
                 <div className="bg-wl-bg-root rounded border border-wl-border-default p-3 max-h-64 overflow-y-auto">
@@ -477,13 +513,21 @@ export default function WidgetConfigPage() {
         {/* Save Button */}
         <div className="flex gap-3 justify-end items-center">
           {saveMutation.error && (
-            <span className="text-xs text-red-400">{saveMutation.error.message}</span>
+            <span className="text-xs text-red-400">
+              {saveMutation.error.message}
+            </span>
           )}
-          {saveSuccess && <span className="text-xs text-green-400">Saved!</span>}
+          {saveSuccess && (
+            <span className="text-xs text-green-400">Saved!</span>
+          )}
           <Button variant="secondary" onClick={() => window.location.reload()}>
             Discard
           </Button>
-          <Button variant="primary" onClick={handleSave} disabled={saveMutation.loading}>
+          <Button
+            variant="primary"
+            onClick={handleSave}
+            disabled={saveMutation.loading}
+          >
             {saveMutation.loading ? "Saving…" : "Save Configuration"}
           </Button>
         </div>

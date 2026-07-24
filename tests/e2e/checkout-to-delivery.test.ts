@@ -13,7 +13,11 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import type { DeliverySlot, TestOrder, TestCustomer } from "./fixtures/e2e-fixtures.js";
+import type {
+  DeliverySlot,
+  TestOrder,
+  TestCustomer,
+} from "./fixtures/e2e-fixtures.js";
 import {
   createDeliverySlot,
   createTestOrder,
@@ -21,7 +25,11 @@ import {
   createStripePaymentIntent,
 } from "./fixtures/e2e-fixtures.js";
 import type { AuthenticatedClient } from "./helpers/test-helpers.js";
-import { createAuthenticatedClient, apiPost, apiGet } from "./helpers/test-helpers.js";
+import {
+  createAuthenticatedClient,
+  apiPost,
+  apiGet,
+} from "./helpers/test-helpers.js";
 
 // ─── TYPE DEFINITIONS ───────────────────────────────────────────────────────
 
@@ -44,7 +52,12 @@ export interface CheckoutSession {
   deliveryFee: number;
   tax: number;
   total: number;
-  status: "cart" | "slot_selected" | "checkout" | "payment_pending" | "completed";
+  status:
+    | "cart"
+    | "slot_selected"
+    | "checkout"
+    | "payment_pending"
+    | "completed";
   createdAt: Date;
 }
 
@@ -59,7 +72,8 @@ export interface PODCapture {
 
 // ─── TEST DATA ───────────────────────────────────────────────────────────────
 
-const API_BASE_URL: string = process.env.API_BASE_URL || "http://localhost:3000/api/v4";
+const API_BASE_URL: string =
+  process.env.API_BASE_URL || "http://localhost:3000/api/v4";
 
 let mockSessions: Map<string, CheckoutSession> = new Map();
 let mockSlots: Map<string, DeliverySlot> = new Map();
@@ -188,9 +202,12 @@ async function selectDeliverySlot(
   const [hours] = slot.startTime.split(":").map(Number);
   slotDate.setHours(hours, 0, 0, 0);
 
-  const hoursUntilSlot: number = (slotDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+  const hoursUntilSlot: number =
+    (slotDate.getTime() - now.getTime()) / (1000 * 60 * 60);
   if (hoursUntilSlot < 2) {
-    throw new Error(`Slot must be at least 2 hours in future (${hoursUntilSlot.toFixed(1)} hours away)`);
+    throw new Error(
+      `Slot must be at least 2 hours in future (${hoursUntilSlot.toFixed(1)} hours away)`,
+    );
   }
 
   // Verify not blackout date
@@ -256,7 +273,9 @@ async function completeCheckoutToOrder(sessionId: string): Promise<TestOrder> {
   if (!session) throw new Error(`Session ${sessionId} not found`);
 
   if (session.status !== "completed") {
-    throw new Error(`Cannot create order from session with status ${session.status}`);
+    throw new Error(
+      `Cannot create order from session with status ${session.status}`,
+    );
   }
 
   const order: TestOrder = createTestOrder({
@@ -352,9 +371,13 @@ describe("Checkout Widget to Delivery E2E Tests", () => {
         slot.zone,
       );
 
-      const expectedTax: number = Math.round((updated.subtotal + updated.deliveryFee) * 0.08);
+      const expectedTax: number = Math.round(
+        (updated.subtotal + updated.deliveryFee) * 0.08,
+      );
       expect(updated.tax).toBe(expectedTax);
-      expect(updated.total).toBe(updated.subtotal + updated.deliveryFee + expectedTax);
+      expect(updated.total).toBe(
+        updated.subtotal + updated.deliveryFee + expectedTax,
+      );
     });
 
     it("should proceed to checkout", async () => {
@@ -459,8 +482,14 @@ describe("Checkout Widget to Delivery E2E Tests", () => {
       const slot: DeliverySlot = slots[0];
 
       for (let i = 0; i < 3; i++) {
-        const cust: AuthenticatedClient = createAuthenticatedClient(API_BASE_URL, "customer");
-        const sess: CheckoutSession = await createCheckoutSession(cust, `cart_${i}`);
+        const cust: AuthenticatedClient = createAuthenticatedClient(
+          API_BASE_URL,
+          "customer",
+        );
+        const sess: CheckoutSession = await createCheckoutSession(
+          cust,
+          `cart_${i}`,
+        );
         await selectDeliverySlot(sess.id, slot.id, slot.zone);
       }
 

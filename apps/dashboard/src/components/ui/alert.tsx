@@ -1,13 +1,7 @@
 "use client";
 
 import { ReactNode, useState } from "react";
-import {
-  Info,
-  CheckCircle,
-  AlertTriangle,
-  XCircle,
-  X,
-} from "lucide-react";
+import { Info, CheckCircle, AlertTriangle, XCircle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type AlertVariant = "info" | "success" | "warning" | "danger";
@@ -78,7 +72,7 @@ const Alert = ({
         "border",
         config.bg,
         config.border,
-        className
+        className,
       )}
       role="alert"
     >
@@ -95,7 +89,9 @@ const Alert = ({
         {description && (
           <p className="text-sm text-wl-text-secondary">{description}</p>
         )}
-        {children && <div className="text-sm text-wl-text-secondary mt-2">{children}</div>}
+        {children && (
+          <div className="text-sm text-wl-text-secondary mt-2">{children}</div>
+        )}
       </div>
 
       {closeable && (
@@ -105,7 +101,7 @@ const Alert = ({
             "flex-shrink-0 mt-0.5",
             "text-wl-text-secondary hover:text-wl-text-primary",
             "transition-colors duration-fast ease-default",
-            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wl-primary-500"
+            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wl-primary-500",
           )}
           aria-label="Close alert"
         >
@@ -119,6 +115,16 @@ const Alert = ({
 export { Alert };
 
 // Shadcn-compatible sub-component
-export function AlertDescription({ children, className }: { children?: ReactNode; className?: string }) {
-  return <p className={`text-sm text-wl-text-secondary mt-1 ${className ?? ''}`}>{children}</p>;
+export function AlertDescription({
+  children,
+  className,
+}: {
+  children?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <p className={`text-sm text-wl-text-secondary mt-1 ${className ?? ""}`}>
+      {children}
+    </p>
+  );
 }

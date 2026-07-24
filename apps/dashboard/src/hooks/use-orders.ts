@@ -1,22 +1,30 @@
-'use client';
+"use client";
 
 /**
  * Order-specific API hooks for the dashboard
  */
 
-import { useMemo } from 'react';
-import { useApiMutation, useApiList, useApiQuery, ApiFilters, UseApiQueryResult, UseApiMutationResult, UseApiListResult } from './use-api';
+import { useMemo } from "react";
+import {
+  useApiMutation,
+  useApiList,
+  useApiQuery,
+  ApiFilters,
+  UseApiQueryResult,
+  UseApiMutationResult,
+  UseApiListResult,
+} from "./use-api";
 
 /**
  * Order status enum
  */
 export enum OrderStatus {
-  PENDING = 'pending',
-  CONFIRMED = 'confirmed',
-  ASSIGNED = 'assigned',
-  IN_TRANSIT = 'in_transit',
-  DELIVERED = 'delivered',
-  CANCELLED = 'cancelled',
+  PENDING = "pending",
+  CONFIRMED = "confirmed",
+  ASSIGNED = "assigned",
+  IN_TRANSIT = "in_transit",
+  DELIVERED = "delivered",
+  CANCELLED = "cancelled",
 }
 
 /**
@@ -112,7 +120,7 @@ export interface OrderFilters extends ApiFilters {
   driverId?: string;
   deliveryDate?: string;
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }
 
 /**
@@ -125,10 +133,10 @@ export interface OrderFilters extends ApiFilters {
  */
 function normalizeOrder(raw: unknown): Order {
   const r = (raw ?? {}) as Record<string, unknown>;
-  const str = (v: unknown): string => (typeof v === 'string' ? v : '');
+  const str = (v: unknown): string => (typeof v === "string" ? v : "");
   const num = (v: unknown): number => {
-    if (typeof v === 'number') return v;
-    if (typeof v === 'string') {
+    if (typeof v === "number") return v;
+    if (typeof v === "string") {
       const parsed = Number(v);
       return Number.isFinite(parsed) ? parsed : 0;
     }
@@ -137,7 +145,11 @@ function normalizeOrder(raw: unknown): Order {
 
   const rawStatus = str(r.status).toLowerCase();
 
-  const rawLineItems = Array.isArray(r.lineItems) ? (r.lineItems as unknown[]) : (Array.isArray(r.items) ? (r.items as unknown[]) : []);
+  const rawLineItems = Array.isArray(r.lineItems)
+    ? (r.lineItems as unknown[])
+    : Array.isArray(r.items)
+      ? (r.items as unknown[])
+      : [];
 
   const deliveryAddress: Address = {
     street: str(r.addressLine1 ?? r.street),
@@ -147,32 +159,35 @@ function normalizeOrder(raw: unknown): Order {
     country: str(r.country),
   };
 
-  const driver: OrderDriver | null = r.driver && typeof r.driver === 'object'
-    ? {
-        id: str((r.driver as Record<string, unknown>).id),
-        name: str((r.driver as Record<string, unknown>).name),
-        phone: str((r.driver as Record<string, unknown>).phone),
-        vehicleType: (r.driver as Record<string, unknown>).vehicleType != null
-          ? str((r.driver as Record<string, unknown>).vehicleType)
-          : undefined,
-      }
-    : null;
+  const driver: OrderDriver | null =
+    r.driver && typeof r.driver === "object"
+      ? {
+          id: str((r.driver as Record<string, unknown>).id),
+          name: str((r.driver as Record<string, unknown>).name),
+          phone: str((r.driver as Record<string, unknown>).phone),
+          vehicleType:
+            (r.driver as Record<string, unknown>).vehicleType != null
+              ? str((r.driver as Record<string, unknown>).vehicleType)
+              : undefined,
+        }
+      : null;
 
-  const timeSlot: OrderTimeSlot | null = r.timeSlot && typeof r.timeSlot === 'object'
-    ? {
-        id: str((r.timeSlot as Record<string, unknown>).id),
-        name: str((r.timeSlot as Record<string, unknown>).name),
-        startTime: str((r.timeSlot as Record<string, unknown>).startTime),
-        endTime: str((r.timeSlot as Record<string, unknown>).endTime),
-      }
-    : null;
+  const timeSlot: OrderTimeSlot | null =
+    r.timeSlot && typeof r.timeSlot === "object"
+      ? {
+          id: str((r.timeSlot as Record<string, unknown>).id),
+          name: str((r.timeSlot as Record<string, unknown>).name),
+          startTime: str((r.timeSlot as Record<string, unknown>).startTime),
+          endTime: str((r.timeSlot as Record<string, unknown>).endTime),
+        }
+      : null;
 
   return {
     id: str(r.id),
-    orderNumber: typeof r.orderNumber === 'string' ? r.orderNumber : null,
+    orderNumber: typeof r.orderNumber === "string" ? r.orderNumber : null,
     externalOrderId: str(r.externalOrderId ?? r.shopifyOrderId ?? r.externalId),
-    source: str(r.source) || 'manual',
-    status: rawStatus || 'pending',
+    source: str(r.source) || "manual",
+    status: rawStatus || "pending",
     customerName: str(r.customerName),
     customerEmail: str(r.customerEmail),
     customerPhone: str(r.customerPhone),
@@ -181,29 +196,33 @@ function normalizeOrder(raw: unknown): Order {
     province: str(r.province ?? r.state),
     country: str(r.country),
     totalAmount: num(r.totalPrice ?? r.totalAmount),
-    totalWeight: typeof r.totalWeight === 'number' ? r.totalWeight : null,
-    currency: str(r.currency) || 'USD',
+    totalWeight: typeof r.totalWeight === "number" ? r.totalWeight : null,
+    currency: str(r.currency) || "USD",
     items: rawLineItems,
-    itemCount: typeof r.itemCount === 'number' ? r.itemCount : rawLineItems.length,
+    itemCount:
+      typeof r.itemCount === "number" ? r.itemCount : rawLineItems.length,
     tags: Array.isArray(r.tags) ? (r.tags as unknown[]).map(String) : [],
-    notes: typeof r.notes === 'string' ? r.notes : null,
-    deliveryDate: typeof r.deliveryDate === 'string' ? r.deliveryDate : null,
-    estimatedDelivery: typeof (r.estimatedArrival ?? r.estimatedDelivery) === 'string'
-      ? str(r.estimatedArrival ?? r.estimatedDelivery)
-      : null,
-    actualDelivery: typeof r.actualDelivery === 'string' ? r.actualDelivery : null,
-    driverId: typeof r.driverId === 'string' ? r.driverId : null,
+    notes: typeof r.notes === "string" ? r.notes : null,
+    deliveryDate: typeof r.deliveryDate === "string" ? r.deliveryDate : null,
+    estimatedDelivery:
+      typeof (r.estimatedArrival ?? r.estimatedDelivery) === "string"
+        ? str(r.estimatedArrival ?? r.estimatedDelivery)
+        : null,
+    actualDelivery:
+      typeof r.actualDelivery === "string" ? r.actualDelivery : null,
+    driverId: typeof r.driverId === "string" ? r.driverId : null,
     driver,
     timeSlot,
-    trackingToken: typeof r.trackingToken === 'string' ? r.trackingToken : null,
+    trackingToken: typeof r.trackingToken === "string" ? r.trackingToken : null,
     requireOTPConfirmation: Boolean(r.requireOTPConfirmation),
-    metadata: r.metadata && typeof r.metadata === 'object' && !Array.isArray(r.metadata)
-      ? (r.metadata as Record<string, unknown>)
-      : {},
+    metadata:
+      r.metadata && typeof r.metadata === "object" && !Array.isArray(r.metadata)
+        ? (r.metadata as Record<string, unknown>)
+        : {},
     createdAt: str(r.createdAt),
     updatedAt: str(r.updatedAt),
-    deliveryLat: typeof r.deliveryLat === 'number' ? r.deliveryLat : null,
-    deliveryLng: typeof r.deliveryLng === 'number' ? r.deliveryLng : null,
+    deliveryLat: typeof r.deliveryLat === "number" ? r.deliveryLat : null,
+    deliveryLng: typeof r.deliveryLng === "number" ? r.deliveryLng : null,
   };
 }
 
@@ -212,10 +231,8 @@ function normalizeOrder(raw: unknown): Order {
  * @param filters - Order filter options
  * @returns List of orders with pagination
  */
-export function useOrders(
-  filters?: OrderFilters,
-): UseApiListResult<Order> {
-  const result = useApiList<unknown>('/api/v4/orders', filters);
+export function useOrders(filters?: OrderFilters): UseApiListResult<Order> {
+  const result = useApiList<unknown>("/api/v4/orders", filters);
   const items = useMemo<Order[]>(
     () => (result.items ?? []).map(normalizeOrder),
     [result.items],
@@ -228,13 +245,13 @@ export function useOrder(id: string | null): UseApiQueryResult<Order> {
 }
 
 export function useCreateOrder(): UseApiMutationResult<Order> {
-  return useApiMutation<Order>('POST', '/api/v4/orders');
+  return useApiMutation<Order>("POST", "/api/v4/orders");
 }
 
 export function useUpdateOrderStatus(id: string): UseApiMutationResult<Order> {
-  return useApiMutation<Order>('PATCH', `/api/v4/orders/${id}/status`);
+  return useApiMutation<Order>("PATCH", `/api/v4/orders/${id}/status`);
 }
 
 export function useOrderStats(): UseApiQueryResult<OrderStats> {
-  return useApiQuery<OrderStats>('/api/v4/orders/stats');
+  return useApiQuery<OrderStats>("/api/v4/orders/stats");
 }

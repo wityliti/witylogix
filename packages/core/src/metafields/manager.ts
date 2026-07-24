@@ -11,7 +11,7 @@ import {
   ValidationResult,
   BulkMetafieldPayload,
   MetafieldDefinitionData,
-} from './types.js';
+} from "./types.js";
 
 /**
  * Local types (not from @prisma/client)
@@ -64,7 +64,7 @@ export class MetafieldManager {
     key: string,
     value: any,
     type: MetafieldType | string,
-    shopId: string
+    shopId: string,
   ): Promise<MetafieldRecord> {
     // Validate the value
     const validation = await this.validateValue(
@@ -72,12 +72,12 @@ export class MetafieldManager {
       type,
       shopId,
       namespace,
-      key
+      key,
     );
 
     if (!validation.valid) {
       throw new Error(
-        `Validation failed for ${namespace}.${key}: ${validation.errors.join(', ')}`
+        `Validation failed for ${namespace}.${key}: ${validation.errors.join(", ")}`,
       );
     }
 
@@ -122,7 +122,7 @@ export class MetafieldManager {
     entityId: string,
     namespace: string,
     key: string,
-    shopId: string
+    shopId: string,
   ): Promise<any | null> {
     const metafield = await this.db.metafield.findUnique({
       where: {
@@ -150,7 +150,7 @@ export class MetafieldManager {
     entityType: string,
     entityId: string,
     shopId: string,
-    namespace?: string
+    namespace?: string,
   ): Promise<MetafieldValue[]> {
     const where: any = {
       shopId,
@@ -164,7 +164,7 @@ export class MetafieldManager {
 
     const metafields = await this.db.metafield.findMany({
       where,
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: "asc" },
     });
 
     return metafields.map((mf: MetafieldRecord) => ({
@@ -183,7 +183,7 @@ export class MetafieldManager {
     entityId: string,
     namespace: string,
     key: string,
-    shopId: string
+    shopId: string,
   ): Promise<boolean> {
     const result = await this.db.metafield.delete({
       where: {
@@ -208,15 +208,13 @@ export class MetafieldManager {
     type: MetafieldType | string,
     shopId: string,
     namespace: string,
-    key: string
+    key: string,
   ): Promise<ValidationResult> {
     const errors: string[] = [];
 
     // Type validation
     if (!this.validateType(value, type)) {
-      errors.push(
-        `Value must be of type ${type}, got ${typeof value}`
-      );
+      errors.push(`Value must be of type ${type}, got ${typeof value}`);
       return { valid: false, errors };
     }
 
@@ -227,7 +225,7 @@ export class MetafieldManager {
           shopId,
           namespace,
           key,
-          entityType: '', // Will be overridden by unique constraint
+          entityType: "", // Will be overridden by unique constraint
         },
       },
     });
@@ -235,7 +233,7 @@ export class MetafieldManager {
     if (definition?.validations) {
       const validationErrors = this.checkValidationRules(
         value,
-        definition.validations as MetafieldValidation
+        definition.validations as MetafieldValidation,
       );
       errors.push(...validationErrors);
     }
@@ -253,7 +251,7 @@ export class MetafieldManager {
     entityType: string,
     entityId: string,
     shopId: string,
-    metafields: BulkMetafieldPayload[]
+    metafields: BulkMetafieldPayload[],
   ): Promise<MetafieldRecord[]> {
     const results: MetafieldRecord[] = [];
 
@@ -265,7 +263,7 @@ export class MetafieldManager {
         mf.key,
         mf.value,
         mf.type,
-        shopId
+        shopId,
       );
       results.push(result);
     }
@@ -277,7 +275,7 @@ export class MetafieldManager {
    * Create a metafield definition
    */
   async createDefinition(
-    definition: MetafieldDefinitionData
+    definition: MetafieldDefinitionData,
   ): Promise<MetafieldDefinitionRecord> {
     return this.db.metafieldDefinition.create({
       data: {
@@ -301,7 +299,7 @@ export class MetafieldManager {
     shopId: string,
     namespace: string,
     key: string,
-    entityType: string
+    entityType: string,
   ): Promise<MetafieldDefinitionRecord | null> {
     return this.db.metafieldDefinition.findUnique({
       where: {
@@ -321,15 +319,15 @@ export class MetafieldManager {
   private validateType(value: any, type: MetafieldType | string): boolean {
     switch (type) {
       case MetafieldType.STRING:
-        return typeof value === 'string';
+        return typeof value === "string";
       case MetafieldType.NUMBER:
-        return typeof value === 'number';
+        return typeof value === "number";
       case MetafieldType.BOOLEAN:
-        return typeof value === 'boolean';
+        return typeof value === "boolean";
       case MetafieldType.JSON:
-        return typeof value === 'object' && value !== null;
+        return typeof value === "object" && value !== null;
       case MetafieldType.DATE:
-        return value instanceof Date || typeof value === 'string';
+        return value instanceof Date || typeof value === "string";
       default:
         return false;
     }
@@ -351,17 +349,14 @@ export class MetafieldManager {
   /**
    * Private helper: Deserialize value from string
    */
-  private deserializeValue(
-    value: string,
-    type: MetafieldType | string
-  ): any {
+  private deserializeValue(value: string, type: MetafieldType | string): any {
     switch (type) {
       case MetafieldType.STRING:
         return value;
       case MetafieldType.NUMBER:
         return Number(value);
       case MetafieldType.BOOLEAN:
-        return value === 'true' || value === '1';
+        return value === "true" || value === "1";
       case MetafieldType.JSON:
         return JSON.parse(value);
       case MetafieldType.DATE:
@@ -376,27 +371,23 @@ export class MetafieldManager {
    */
   private checkValidationRules(
     value: any,
-    validations: MetafieldValidation
+    validations: MetafieldValidation,
   ): string[] {
     const errors: string[] = [];
 
     // String validations
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       if (
         validations.minLength !== undefined &&
         value.length < validations.minLength
       ) {
-        errors.push(
-          `String length must be at least ${validations.minLength}`
-        );
+        errors.push(`String length must be at least ${validations.minLength}`);
       }
       if (
         validations.maxLength !== undefined &&
         value.length > validations.maxLength
       ) {
-        errors.push(
-          `String length must be at most ${validations.maxLength}`
-        );
+        errors.push(`String length must be at most ${validations.maxLength}`);
       }
       if (validations.regex) {
         const re = new RegExp(validations.regex);
@@ -407,7 +398,7 @@ export class MetafieldManager {
     }
 
     // Numeric validations
-    if (typeof value === 'number') {
+    if (typeof value === "number") {
       if (validations.min !== undefined && value < validations.min) {
         errors.push(`Number must be at least ${validations.min}`);
       }
@@ -418,18 +409,16 @@ export class MetafieldManager {
 
     // Enum validation
     if (validations.enum && !validations.enum.includes(value)) {
-      errors.push(
-        `Value must be one of: ${validations.enum.join(', ')}`
-      );
+      errors.push(`Value must be one of: ${validations.enum.join(", ")}`);
     }
 
     // Custom validation
     if (validations.custom) {
       const result = validations.custom(value);
-      if (typeof result === 'string') {
+      if (typeof result === "string") {
         errors.push(result);
       } else if (!result) {
-        errors.push('Custom validation failed');
+        errors.push("Custom validation failed");
       }
     }
 

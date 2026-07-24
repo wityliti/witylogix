@@ -34,7 +34,10 @@ import {
   ButtonGroup,
   InlineGrid,
 } from "@shopify/polaris";
-import { createApiClientFromRequest, type PaginatedResponse } from "~/lib/api.server";
+import {
+  createApiClientFromRequest,
+  type PaginatedResponse,
+} from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
 // ─── Types ─────────────────────────────────────────────────
@@ -64,7 +67,10 @@ interface NotificationsPageData {
 
 const CHANNELS = ["EMAIL", "SMS", "WHATSAPP", "PUSH", "WEBHOOK"];
 
-const CHANNEL_BADGE_TONE: Record<string, "info" | "warning" | "success" | "critical" | undefined> = {
+const CHANNEL_BADGE_TONE: Record<
+  string,
+  "info" | "warning" | "success" | "critical" | undefined
+> = {
   EMAIL: "info",
   SMS: "warning",
   WHATSAPP: "success",
@@ -111,7 +117,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     return { templates: response.data, meta: response.meta };
   } catch {
-    return { templates: [], meta: { total: 0, page: 1, limit: 50, totalPages: 0 } };
+    return {
+      templates: [],
+      meta: { total: 0, page: 1, limit: 50, totalPages: 0 },
+    };
   }
 }
 
@@ -142,7 +151,8 @@ export default function NotificationsList() {
     setSearchParams(next);
   }
 
-  const hasActiveFilters = currentChannel || currentEventType || currentIsActive;
+  const hasActiveFilters =
+    currentChannel || currentEventType || currentIsActive;
 
   const channelOptions = [
     { label: "All Channels", value: "" },
@@ -304,13 +314,21 @@ function TemplateCard({ template }: { template: NotificationTemplate }) {
           <Text as="span" variant="bodySm" tone="subdued">
             Template Preview
           </Text>
-          <Box padding="200" background="bg-surface-secondary" borderRadius="200">
+          <Box
+            padding="200"
+            background="bg-surface-secondary"
+            borderRadius="200"
+          >
             <Text as="p" variant="bodySm">
               {bodyPreview}
             </Text>
           </Box>
           <Collapsible open={showPreview} id={`preview-${template.id}`}>
-            <Box padding="200" background="bg-surface-secondary" borderRadius="200">
+            <Box
+              padding="200"
+              background="bg-surface-secondary"
+              borderRadius="200"
+            >
               <Text as="p" variant="bodySm" breakWord>
                 {template.bodyTemplate}
               </Text>
@@ -320,7 +338,11 @@ function TemplateCard({ template }: { template: NotificationTemplate }) {
 
         {/* Actions */}
         <InlineStack gap="200" wrap>
-          <Button url={`/notifications/${template.id}/edit`} variant="primary" size="slim">
+          <Button
+            url={`/notifications/${template.id}/edit`}
+            variant="primary"
+            size="slim"
+          >
             Edit
           </Button>
           <Button onClick={() => setShowPreview(!showPreview)} size="slim">

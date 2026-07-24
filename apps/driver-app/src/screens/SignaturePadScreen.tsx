@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState } from "react";
 import {
   View,
   Text,
@@ -7,16 +7,16 @@ import {
   PanResponder,
   Dimensions,
   Alert,
-} from 'react-native';
-import SvgImpl, { Path as PathImpl } from 'react-native-svg';
+} from "react-native";
+import SvgImpl, { Path as PathImpl } from "react-native-svg";
 
 // react-native-svg v15 has a `refs` mismatch with React 18 class types
 const Svg = SvgImpl as unknown as React.ComponentType<any>;
 const Path = PathImpl as unknown as React.ComponentType<any>;
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute } from "@react-navigation/native";
 
 const PAD_HEIGHT = 220;
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const PAD_WIDTH = SCREEN_WIDTH - 32; // 16px margin each side
 
 export const SignaturePadScreen = () => {
@@ -28,7 +28,7 @@ export const SignaturePadScreen = () => {
   };
 
   const [completedPaths, setCompletedPaths] = useState<string[]>([]);
-  const currentPathRef = useRef('');
+  const currentPathRef = useRef("");
   const [, forceRender] = useState(0);
 
   const panResponder = useRef(
@@ -51,7 +51,7 @@ export const SignaturePadScreen = () => {
       onPanResponderRelease: () => {
         if (currentPathRef.current) {
           setCompletedPaths((prev) => [...prev, currentPathRef.current]);
-          currentPathRef.current = '';
+          currentPathRef.current = "";
         }
       },
     }),
@@ -59,43 +59,53 @@ export const SignaturePadScreen = () => {
 
   const handleClear = () => {
     setCompletedPaths([]);
-    currentPathRef.current = '';
+    currentPathRef.current = "";
     forceRender((n) => n + 1);
   };
 
   const handleConfirm = () => {
     if (completedPaths.length === 0) {
-      Alert.alert('No Signature', 'Please draw a signature before confirming.');
+      Alert.alert("No Signature", "Please draw a signature before confirming.");
       return;
     }
 
     const pathElements = completedPaths
-      .map((d) => `<path d="${d}" stroke="black" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`)
-      .join('');
+      .map(
+        (d) =>
+          `<path d="${d}" stroke="black" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`,
+      )
+      .join("");
 
     const svgXml = [
       `<svg xmlns="http://www.w3.org/2000/svg" width="${PAD_WIDTH}" height="${PAD_HEIGHT}">`,
       `<rect width="${PAD_WIDTH}" height="${PAD_HEIGHT}" fill="white"/>`,
       pathElements,
-      '</svg>',
-    ].join('');
+      "</svg>",
+    ].join("");
 
     // Encode SVG as a base64 data URI
     const signatureBase64 = `data:image/svg+xml;base64,${btoa(svgXml)}`;
 
-    navigation.navigate('DeliveryProof', { shipmentId, photoBase64, signatureBase64 });
+    navigation.navigate("DeliveryProof", {
+      shipmentId,
+      photoBase64,
+      signatureBase64,
+    });
   };
 
   const allPaths = completedPaths.concat(
     currentPathRef.current ? [currentPathRef.current] : [],
   );
-  const hasStrokes = completedPaths.length > 0 || currentPathRef.current.length > 0;
+  const hasStrokes =
+    completedPaths.length > 0 || currentPathRef.current.length > 0;
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Recipient Signature</Text>
-        <Text style={styles.headerSubtitle}>Ask the recipient to sign in the box below</Text>
+        <Text style={styles.headerSubtitle}>
+          Ask the recipient to sign in the box below
+        </Text>
       </View>
 
       <View style={styles.padContainer}>
@@ -123,13 +133,22 @@ export const SignaturePadScreen = () => {
       </View>
 
       <View style={styles.actions}>
-        <TouchableOpacity style={styles.clearButton} onPress={handleClear} disabled={!hasStrokes}>
-          <Text style={[styles.clearButtonText, !hasStrokes && styles.disabledText]}>
+        <TouchableOpacity
+          style={styles.clearButton}
+          onPress={handleClear}
+          disabled={!hasStrokes}
+        >
+          <Text
+            style={[styles.clearButtonText, !hasStrokes && styles.disabledText]}
+          >
             Clear
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.confirmButton, !hasStrokes && styles.confirmButtonDisabled]}
+          style={[
+            styles.confirmButton,
+            !hasStrokes && styles.confirmButtonDisabled,
+          ]}
           onPress={handleConfirm}
           disabled={!hasStrokes}
         >
@@ -137,7 +156,10 @@ export const SignaturePadScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.cancelRow} onPress={() => navigation.goBack()}>
+      <TouchableOpacity
+        style={styles.cancelRow}
+        onPress={() => navigation.goBack()}
+      >
         <Text style={styles.cancelText}>Cancel</Text>
       </TouchableOpacity>
     </View>
@@ -147,7 +169,7 @@ export const SignaturePadScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: "#0f172a",
     paddingHorizontal: 16,
   },
   header: {
@@ -155,95 +177,95 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#e2e8f0',
+    fontWeight: "700",
+    color: "#e2e8f0",
     marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 13,
-    color: '#94a3b8',
+    color: "#94a3b8",
   },
   padContainer: {
     marginTop: 8,
   },
   padLabel: {
     fontSize: 12,
-    color: '#64748b',
-    fontWeight: '600',
-    textTransform: 'uppercase',
+    color: "#64748b",
+    fontWeight: "600",
+    textTransform: "uppercase",
     letterSpacing: 0.5,
     marginBottom: 8,
   },
   padWrapper: {
     width: PAD_WIDTH,
     height: PAD_HEIGHT,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: '#334155',
-    overflow: 'hidden',
-    position: 'relative',
+    borderColor: "#334155",
+    overflow: "hidden",
+    position: "relative",
   },
   svg: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   placeholderOverlay: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   placeholderText: {
-    color: '#cbd5e1',
+    color: "#cbd5e1",
     fontSize: 15,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
   actions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginTop: 20,
     gap: 12,
   },
   clearButton: {
     flex: 1,
-    backgroundColor: '#2d3748',
+    backgroundColor: "#2d3748",
     borderRadius: 8,
     paddingVertical: 13,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#475569',
+    borderColor: "#475569",
   },
   clearButtonText: {
-    color: '#e2e8f0',
+    color: "#e2e8f0",
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   confirmButton: {
     flex: 2,
-    backgroundColor: '#3b82f6',
+    backgroundColor: "#3b82f6",
     borderRadius: 8,
     paddingVertical: 13,
-    alignItems: 'center',
+    alignItems: "center",
   },
   confirmButtonDisabled: {
-    backgroundColor: '#475569',
+    backgroundColor: "#475569",
   },
   confirmButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   disabledText: {
-    color: '#64748b',
+    color: "#64748b",
   },
   cancelRow: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 20,
   },
   cancelText: {
-    color: '#64748b',
+    color: "#64748b",
     fontSize: 14,
   },
 });

@@ -1,11 +1,23 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { X, AlertCircle, MapPin, Package, User, DollarSign, Clock } from "lucide-react";
+import {
+  X,
+  AlertCircle,
+  MapPin,
+  Package,
+  User,
+  DollarSign,
+  Clock,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { LocationInfo, PackageSpec, RecipientInfo } from "@witylogix/core/integrations/couriers";
+import type {
+  LocationInfo,
+  PackageSpec,
+  RecipientInfo,
+} from "@witylogix/core/integrations/couriers";
 
 interface Courier {
   id: string;
@@ -57,12 +69,18 @@ export function CourierAssignmentPanel({
   onAssign,
   onClose,
 }: CourierAssignmentPanelProps) {
-  const [selectedCourierId, setSelectedCourierId] = useState<string | null>(couriers[0]?.id || null);
+  const [selectedCourierId, setSelectedCourierId] = useState<string | null>(
+    couriers[0]?.id || null,
+  );
   const [isAssigning, setIsAssigning] = useState(false);
 
   const distance = useMemo(() => {
-    const latDiff = Math.abs(delivery.dropoff.latitude - delivery.pickup.latitude);
-    const lonDiff = Math.abs(delivery.dropoff.longitude - delivery.pickup.longitude);
+    const latDiff = Math.abs(
+      delivery.dropoff.latitude - delivery.pickup.latitude,
+    );
+    const lonDiff = Math.abs(
+      delivery.dropoff.longitude - delivery.pickup.longitude,
+    );
     return Math.sqrt(latDiff * latDiff + lonDiff * lonDiff) * 111; // approx km (Euclidean)
   }, [delivery]);
 
@@ -70,7 +88,10 @@ export function CourierAssignmentPanel({
   const courierCosts = useMemo<CourierCost[]>(() => {
     return couriers.map((courier) => {
       const baseCost = Math.round((distance * 1.5 + 2.5) * 100) / 100; // $1.50/km + base fee
-      const surgePricing = courier.status === "delivering" ? Math.round(baseCost * 0.15 * 100) / 100 : 0;
+      const surgePricing =
+        courier.status === "delivering"
+          ? Math.round(baseCost * 0.15 * 100) / 100
+          : 0;
       const estimatedMinutes = Math.round(distance * 2.5 + 5); // 2.5 min/km + 5 min base
 
       return {
@@ -155,7 +176,9 @@ export function CourierAssignmentPanel({
       <div className="flex-1 overflow-y-auto space-y-4 p-4">
         {/* Delivery Summary */}
         <div className="bg-wl-bg-surface border border-wl-border-subtle rounded-lg p-3 space-y-2">
-          <h4 className="font-semibold text-sm text-wl-text-primary">{delivery.orderId}</h4>
+          <h4 className="font-semibold text-sm text-wl-text-primary">
+            {delivery.orderId}
+          </h4>
           <div className="space-y-2 text-xs text-wl-text-secondary">
             <div className="flex items-start gap-2">
               <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
@@ -175,8 +198,12 @@ export function CourierAssignmentPanel({
               <div className="flex items-center gap-2">
                 <Package className="w-4 h-4 flex-shrink-0" />
                 <span>
-                  {delivery.package.weight ? `${delivery.package.weight}kg` : ""}
-                  {delivery.package.itemCount ? `, ${delivery.package.itemCount} items` : ""}
+                  {delivery.package.weight
+                    ? `${delivery.package.weight}kg`
+                    : ""}
+                  {delivery.package.itemCount
+                    ? `, ${delivery.package.itemCount} items`
+                    : ""}
                 </span>
               </div>
             )}
@@ -195,12 +222,18 @@ export function CourierAssignmentPanel({
 
         {/* Available Couriers */}
         <div>
-          <h4 className="font-semibold text-sm text-wl-text-primary mb-3">Available Couriers</h4>
+          <h4 className="font-semibold text-sm text-wl-text-primary mb-3">
+            Available Couriers
+          </h4>
           <div className="space-y-2">
             {couriers.map((courier) => {
               const cost = courierCosts.find((c) => c.courierId === courier.id);
-              const courierConflicts = conflicts.filter((c) => c.courierId === courier.id);
-              const hasErrors = courierConflicts.some((c) => c.severity === "error");
+              const courierConflicts = conflicts.filter(
+                (c) => c.courierId === courier.id,
+              );
+              const hasErrors = courierConflicts.some(
+                (c) => c.severity === "error",
+              );
               const isSelected = selectedCourierId === courier.id;
 
               return (
@@ -212,13 +245,15 @@ export function CourierAssignmentPanel({
                     isSelected
                       ? "bg-wl-primary-500/10 border-wl-primary-400"
                       : "bg-wl-bg-surface border-wl-border-subtle hover:border-wl-border-default",
-                    hasErrors && "opacity-50 cursor-not-allowed"
+                    hasErrors && "opacity-50 cursor-not-allowed",
                   )}
                 >
                   {/* Courier Header */}
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2 flex-1">
-                      <span className="text-lg">{getPartnerLogo(courier.partner)}</span>
+                      <span className="text-lg">
+                        {getPartnerLogo(courier.partner)}
+                      </span>
                       <div>
                         <p className="font-semibold text-sm text-wl-text-primary">
                           {courier.name}
@@ -229,7 +264,9 @@ export function CourierAssignmentPanel({
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
-                      <span className="text-sm font-semibold text-wl-warning-400">★</span>
+                      <span className="text-sm font-semibold text-wl-warning-400">
+                        ★
+                      </span>
                       <span className="text-xs font-medium text-wl-text-secondary">
                         {courier.rating.toFixed(1)}
                       </span>
@@ -242,20 +279,37 @@ export function CourierAssignmentPanel({
                       <span className="text-wl-text-secondary">
                         Capacity: {courier.currentLoad}/{courier.maxCapacity}
                       </span>
-                      <span className={cn(
-                        "font-medium",
-                        getCapacityColor(courier.currentLoad, courier.maxCapacity).includes("danger") && "text-wl-danger-400",
-                        getCapacityColor(courier.currentLoad, courier.maxCapacity).includes("warning") && "text-wl-warning-400",
-                        getCapacityColor(courier.currentLoad, courier.maxCapacity).includes("success") && "text-wl-success-400"
-                      )}>
-                        {Math.round((courier.currentLoad / courier.maxCapacity) * 100)}%
+                      <span
+                        className={cn(
+                          "font-medium",
+                          getCapacityColor(
+                            courier.currentLoad,
+                            courier.maxCapacity,
+                          ).includes("danger") && "text-wl-danger-400",
+                          getCapacityColor(
+                            courier.currentLoad,
+                            courier.maxCapacity,
+                          ).includes("warning") && "text-wl-warning-400",
+                          getCapacityColor(
+                            courier.currentLoad,
+                            courier.maxCapacity,
+                          ).includes("success") && "text-wl-success-400",
+                        )}
+                      >
+                        {Math.round(
+                          (courier.currentLoad / courier.maxCapacity) * 100,
+                        )}
+                        %
                       </span>
                     </div>
                     <div className="w-full bg-wl-bg-overlay rounded-full h-2 overflow-hidden">
                       <div
                         className={cn(
                           "h-full transition-all",
-                          getCapacityColor(courier.currentLoad, courier.maxCapacity)
+                          getCapacityColor(
+                            courier.currentLoad,
+                            courier.maxCapacity,
+                          ),
                         )}
                         style={{
                           width: `${Math.min((courier.currentLoad / courier.maxCapacity) * 100, 100)}%`,
@@ -288,7 +342,7 @@ export function CourierAssignmentPanel({
                             "flex items-start gap-2 p-2 rounded text-xs",
                             conflict.severity === "error"
                               ? "bg-wl-danger-bg text-wl-danger-400"
-                              : "bg-wl-warning-bg text-wl-warning-400"
+                              : "bg-wl-warning-bg text-wl-warning-400",
                           )}
                         >
                           <AlertCircle className="w-3 h-3 flex-shrink-0 mt-0.5" />

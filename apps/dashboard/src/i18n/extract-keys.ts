@@ -1,6 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-import { glob } from 'glob';
+import fs from "fs";
+import path from "path";
+import { glob } from "glob";
 
 /**
  * Translation key extraction script
@@ -21,17 +21,20 @@ const TRANSLATION_PATTERNS = [
 ];
 
 async function extractKeysFromFiles(): Promise<ExtractionResult> {
-  const srcDir = path.join(process.cwd(), 'src');
-  const allTsxFiles = await glob(path.join(srcDir, '**/*.{tsx,ts}'));
-  const tsxFiles = allTsxFiles.filter((f) =>
-    !f.includes('node_modules') && !f.includes('.next') && !f.includes('__tests__')
+  const srcDir = path.join(process.cwd(), "src");
+  const allTsxFiles = await glob(path.join(srcDir, "**/*.{tsx,ts}"));
+  const tsxFiles = allTsxFiles.filter(
+    (f) =>
+      !f.includes("node_modules") &&
+      !f.includes(".next") &&
+      !f.includes("__tests__"),
   );
 
   const keysByFile: Record<string, string[]> = {};
   const allKeys = new Set<string>();
 
   for (const file of tsxFiles) {
-    const content = fs.readFileSync(file, 'utf-8');
+    const content = fs.readFileSync(file, "utf-8");
     const keys: string[] = [];
 
     for (const pattern of TRANSLATION_PATTERNS) {
@@ -52,14 +55,14 @@ async function extractKeysFromFiles(): Promise<ExtractionResult> {
   }
 
   // Load translation files
-  const messagesDir = path.join(process.cwd(), 'messages');
-  const locales = ['en', 'es', 'fr'];
+  const messagesDir = path.join(process.cwd(), "messages");
+  const locales = ["en", "es", "fr"];
   const translations: Record<string, Set<string>> = {};
 
   for (const locale of locales) {
     const filePath = path.join(messagesDir, `${locale}.json`);
     if (fs.existsSync(filePath)) {
-      const content = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      const content = JSON.parse(fs.readFileSync(filePath, "utf-8"));
       translations[locale] = new Set(flattenKeys(content));
     }
   }
@@ -68,7 +71,9 @@ async function extractKeysFromFiles(): Promise<ExtractionResult> {
   const missingByLocale: Record<string, string[]> = {};
   for (const locale of locales) {
     const translationKeys = translations[locale] || new Set();
-    const missing = Array.from(allKeys).filter((key) => !translationKeys.has(key));
+    const missing = Array.from(allKeys).filter(
+      (key) => !translationKeys.has(key),
+    );
     if (missing.length > 0) {
       missingByLocale[locale] = missing;
     }
@@ -81,12 +86,12 @@ async function extractKeysFromFiles(): Promise<ExtractionResult> {
   };
 }
 
-function flattenKeys(obj: any, prefix = ''): string[] {
+function flattenKeys(obj: any, prefix = ""): string[] {
   const keys: string[] = [];
 
   for (const [key, value] of Object.entries(obj)) {
     const fullKey = prefix ? `${prefix}.${key}` : key;
-    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    if (typeof value === "object" && value !== null && !Array.isArray(value)) {
       keys.push(...flattenKeys(value, fullKey));
     } else {
       keys.push(fullKey);
@@ -97,14 +102,14 @@ function flattenKeys(obj: any, prefix = ''): string[] {
 }
 
 async function generateReport(): Promise<void> {
-  console.log('Extracting translation keys...\n');
+  console.log("Extracting translation keys...\n");
 
   const result = await extractKeysFromFiles();
 
   console.log(`Total unique keys found: ${result.totalKeys}\n`);
 
   if (Object.keys(result.keysByFile).length > 0) {
-    console.log('Keys by file:');
+    console.log("Keys by file:");
     for (const [file, keys] of Object.entries(result.keysByFile)) {
       console.log(`  ${file}: ${keys.length} keys`);
       keys.slice(0, 3).forEach((k) => console.log(`    - ${k}`));
@@ -114,7 +119,7 @@ async function generateReport(): Promise<void> {
   }
 
   if (Object.keys(result.missingByLocale).length > 0) {
-    console.log('Missing translations:');
+    console.log("Missing translations:");
     for (const [locale, keys] of Object.entries(result.missingByLocale)) {
       console.log(`  ${locale}: ${keys.length} missing keys`);
       keys.slice(0, 5).forEach((k) => console.log(`    - ${k}`));
@@ -122,11 +127,11 @@ async function generateReport(): Promise<void> {
     }
     console.log();
   } else {
-    console.log('All translation keys are present in all locales.\n');
+    console.log("All translation keys are present in all locales.\n");
   }
 
   // Write detailed JSON report
-  const reportPath = path.join(process.cwd(), 'i18n-extraction-report.json');
+  const reportPath = path.join(process.cwd(), "i18n-extraction-report.json");
   fs.writeFileSync(reportPath, JSON.stringify(result, null, 2));
   console.log(`Detailed report saved to: ${reportPath}`);
 }

@@ -51,7 +51,12 @@ function ctxOf(): Context {
       provider: { type: "backup-test-provider" as never, config: {} },
       witylogix: { version: "4.0.0", channel: "stable" },
     } as unknown as Context["config"],
-    logger: { debug: () => {}, info: () => {}, warn: () => {}, error: () => {} },
+    logger: {
+      debug: () => {},
+      info: () => {},
+      warn: () => {},
+      error: () => {},
+    },
     dryRun: false,
     json: false,
   };
@@ -92,9 +97,7 @@ async function readArchive(archivePath: string) {
         readFileSync(join(extractDir, "manifest.json"), "utf8"),
       ),
       hasDb: existsSync(join(extractDir, "db.sql.gz")),
-      hasConfig: existsSync(
-        join(extractDir, "config", "bench.config.yaml"),
-      ),
+      hasConfig: existsSync(join(extractDir, "config", "bench.config.yaml")),
       hasCompose: existsSync(join(extractDir, "config", "compose.yaml")),
       dir: extractDir,
     };
@@ -133,9 +136,7 @@ describe("ops/backup.run", () => {
       .trim()
       .split("\n")
       .map((l) => JSON.parse(l));
-    const event = auditLines.find(
-      (e) => e.event === "bench.backup.completed",
-    );
+    const event = auditLines.find((e) => e.event === "bench.backup.completed");
     expect(event).toBeDefined();
     expect(event.data.sizeBytes).toBeGreaterThan(0);
   });
@@ -184,7 +185,10 @@ describe("ops/backup.run", () => {
     wireDefaultDb();
     await runBackup(ctxOf(), { to: join(tmp, "out.wbak") });
     // No scratch dirs left in .bench
-    const benchEntries = readFileSync(join(tmp, ".bench", "compose.yaml"), "utf8");
+    const benchEntries = readFileSync(
+      join(tmp, ".bench", "compose.yaml"),
+      "utf8",
+    );
     expect(benchEntries).toBeTruthy();
     // Find scratch — should be zero
     const { readdirSync } = await import("node:fs");

@@ -39,13 +39,13 @@ pnpm docker:build
 
 ## Services
 
-| Service      | Port | Description                    |
-|-------------|------|--------------------------------|
-| postgres    | 5432 | PostgreSQL 16 + PostGIS        |
-| redis       | 6379 | Redis 7 (cache, jobs)          |
-| api         | 3001 | Fastify backend API            |
-| dashboard   | 3000 | Next.js admin UI               |
-| shopify-app | 3002 | Shopify embedded app           |
+| Service     | Port | Description             |
+| ----------- | ---- | ----------------------- |
+| postgres    | 5432 | PostgreSQL 16 + PostGIS |
+| redis       | 6379 | Redis 7 (cache, jobs)   |
+| api         | 3001 | Fastify backend API     |
+| dashboard   | 3000 | Next.js admin UI        |
+| shopify-app | 3002 | Shopify embedded app    |
 
 ## Optional Profiles
 
@@ -78,18 +78,18 @@ pnpm deploy         # Deploy API only
 
 ### Commands
 
-| Command | Description |
-|---------|-------------|
-| `railway.sh setup` | Provision Postgres + Redis + deploy API |
-| `railway.sh init` | Create new Railway project |
-| `railway.sh link` | Link to existing project |
-| `railway.sh deploy` | Deploy the API |
-| `railway.sh logs` | Stream deployment logs |
-| `railway.sh status` | Show deployment status |
-| `railway.sh redeploy` | Redeploy without new code |
-| `railway.sh vars list` | List variables |
-| `railway.sh open` | Open Railway dashboard |
-| `railway.sh domain` | Generate public domain |
+| Command                | Description                             |
+| ---------------------- | --------------------------------------- |
+| `railway.sh setup`     | Provision Postgres + Redis + deploy API |
+| `railway.sh init`      | Create new Railway project              |
+| `railway.sh link`      | Link to existing project                |
+| `railway.sh deploy`    | Deploy the API                          |
+| `railway.sh logs`      | Stream deployment logs                  |
+| `railway.sh status`    | Show deployment status                  |
+| `railway.sh redeploy`  | Redeploy without new code               |
+| `railway.sh vars list` | List variables                          |
+| `railway.sh open`      | Open Railway dashboard                  |
+| `railway.sh domain`    | Generate public domain                  |
 
 Options: `-s, --service`, `-e, --environment`, `-d, --detach`, `-c, --ci`
 

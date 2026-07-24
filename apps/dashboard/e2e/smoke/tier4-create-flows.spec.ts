@@ -26,16 +26,23 @@ function uniqueSuffix(): string {
 test.describe.configure({ mode: "serial" });
 
 test.describe("Tier 4 — end-to-end create flows", () => {
-  test("can create a driver via /drivers/create", async ({ authedPage }, testInfo) => {
+  test("can create a driver via /drivers/create", async ({
+    authedPage,
+  }, testInfo) => {
     const page = authedPage;
     const suffix = uniqueSuffix();
     const name = `Test Driver ${suffix}`;
     const phone = `+1555${String(Date.now()).slice(-7)}`;
 
     await page.goto("/drivers", { waitUntil: "domcontentloaded" });
-    await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 15000 })
+      .catch(() => {});
 
-    await page.getByRole("button", { name: /add driver/i }).first().click();
+    await page
+      .getByRole("button", { name: /add driver/i })
+      .first()
+      .click();
     await page.waitForURL(/\/drivers\/create$/, { timeout: 15000 });
 
     await page.getByLabel("Full name", { exact: false }).fill(name);
@@ -46,7 +53,9 @@ test.describe("Tier 4 — end-to-end create flows", () => {
 
     // Redirect back to list.
     await page.waitForURL(/\/drivers$/, { timeout: 20000 });
-    await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 15000 })
+      .catch(() => {});
     await page.waitForTimeout(1500);
 
     const bodyText = (await page.locator("body").textContent()) ?? "";
@@ -60,10 +69,14 @@ test.describe("Tier 4 — end-to-end create flows", () => {
       contentType: "image/png",
     });
 
-    expect(bodyText, `new driver "${name}" not visible after create`).toContain(name);
+    expect(bodyText, `new driver "${name}" not visible after create`).toContain(
+      name,
+    );
   });
 
-  test("can create a customer via /customers/create", async ({ authedPage }, testInfo) => {
+  test("can create a customer via /customers/create", async ({
+    authedPage,
+  }, testInfo) => {
     const page = authedPage;
     const suffix = uniqueSuffix();
     const firstName = "E2E";
@@ -71,20 +84,29 @@ test.describe("Tier 4 — end-to-end create flows", () => {
     const email = `${suffix}@e2e.example.com`;
 
     await page.goto("/customers", { waitUntil: "domcontentloaded" });
-    await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 15000 })
+      .catch(() => {});
 
-    await page.getByRole("button", { name: /add customer/i }).first().click();
+    await page
+      .getByRole("button", { name: /add customer/i })
+      .first()
+      .click();
     await page.waitForURL(/\/customers\/create$/, { timeout: 15000 });
 
     await page.getByLabel(/first name/i).fill(firstName);
     await page.getByLabel(/last name/i).fill(lastName);
     await page.getByLabel(/^email/i).fill(email);
-    await page.getByLabel(/phone/i).fill(`+1555${String(Date.now()).slice(-7)}`);
+    await page
+      .getByLabel(/phone/i)
+      .fill(`+1555${String(Date.now()).slice(-7)}`);
 
     await page.getByRole("button", { name: /create customer/i }).click();
 
     await page.waitForURL(/\/customers$/, { timeout: 20000 });
-    await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 15000 })
+      .catch(() => {});
     await page.waitForTimeout(1500);
 
     const bodyText = (await page.locator("body").textContent()) ?? "";
@@ -109,15 +131,22 @@ test.describe("Tier 4 — end-to-end create flows", () => {
     ).toBeTruthy();
   });
 
-  test("can create a zone via /zones/create", async ({ authedPage }, testInfo) => {
+  test("can create a zone via /zones/create", async ({
+    authedPage,
+  }, testInfo) => {
     const page = authedPage;
     const suffix = uniqueSuffix();
     const zoneName = `Test Zone ${suffix}`;
 
     await page.goto("/zones", { waitUntil: "domcontentloaded" });
-    await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 15000 })
+      .catch(() => {});
 
-    await page.getByRole("button", { name: /create zone/i }).first().click();
+    await page
+      .getByRole("button", { name: /create zone/i })
+      .first()
+      .click();
     await page.waitForURL(/\/zones\/create$/, { timeout: 15000 });
 
     await page.getByLabel(/zone name/i).fill(zoneName);
@@ -125,10 +154,15 @@ test.describe("Tier 4 — end-to-end create flows", () => {
     await page.getByLabel(/base rate/i).fill("9.99");
     await page.getByLabel(/per-km rate/i).fill("1.25");
 
-    await page.getByRole("button", { name: /create zone/i }).last().click();
+    await page
+      .getByRole("button", { name: /create zone/i })
+      .last()
+      .click();
 
     await page.waitForURL(/\/zones$/, { timeout: 20000 });
-    await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 15000 })
+      .catch(() => {});
     await page.waitForTimeout(1500);
 
     const bodyText = (await page.locator("body").textContent()) ?? "";
@@ -142,6 +176,9 @@ test.describe("Tier 4 — end-to-end create flows", () => {
       contentType: "image/png",
     });
 
-    expect(bodyText, `new zone "${zoneName}" not visible after create`).toContain(zoneName);
+    expect(
+      bodyText,
+      `new zone "${zoneName}" not visible after create`,
+    ).toContain(zoneName);
   });
 });

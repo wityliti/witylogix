@@ -71,7 +71,9 @@ const defaultConfig: WidgetConfig = {
 const EmptyState = ({ label }: { label: string }) => (
   <div className="flex flex-col items-center justify-center h-40 text-center p-4">
     <p className="text-sm text-wl-text-tertiary mb-1">{label}</p>
-    <p className="text-xs text-wl-text-tertiary opacity-60">Connect a data source to display this widget</p>
+    <p className="text-xs text-wl-text-tertiary opacity-60">
+      Connect a data source to display this widget
+    </p>
   </div>
 );
 
@@ -103,7 +105,7 @@ const AnalyticsWidget = ({
       case "table":
         return <EmptyState label="No table data" />;
       default:
-        return <EmptyState />;
+        return <EmptyState label="No data" />;
     }
   };
 
@@ -113,7 +115,9 @@ const AnalyticsWidget = ({
         <div className="flex items-center gap-2">
           <GripVerticalIcon className="w-4 h-4 text-wl-text-tertiary cursor-grab" />
           <div>
-            <h4 className="text-sm font-semibold text-wl-text-primary">{config.title}</h4>
+            <h4 className="text-sm font-semibold text-wl-text-primary">
+              {config.title}
+            </h4>
             <p className="text-xs text-wl-text-tertiary">{config.dataSource}</p>
           </div>
         </div>

@@ -8,7 +8,7 @@
  * - Support for S3, R2 (Cloudflare), and local filesystem
  */
 
-import type { StorageAdapter, StorageConfig } from './types.js';
+import type { StorageAdapter, StorageConfig } from "./types.js";
 
 // ─── LOCAL STORAGE ADAPTER ──────────────────────────────────────
 
@@ -26,7 +26,11 @@ export class LocalStorageAdapter implements StorageAdapter {
     // For now, we assume they're available
   }
 
-  async upload(key: string, buffer: Buffer, contentType: string): Promise<{ url: string; key: string }> {
+  async upload(
+    key: string,
+    buffer: Buffer,
+    contentType: string,
+  ): Promise<{ url: string; key: string }> {
     try {
       // In a real implementation, this would write to disk
       // For now, return mock response
@@ -42,7 +46,7 @@ export class LocalStorageAdapter implements StorageAdapter {
   async download(key: string): Promise<Buffer> {
     try {
       // In a real implementation, this would read from disk
-      throw new Error('Not implemented in mock');
+      throw new Error("Not implemented in mock");
     } catch (error) {
       throw new Error(`Failed to download file from local storage: ${error}`);
     }
@@ -94,11 +98,11 @@ export class S3StorageAdapter implements StorageAdapter {
   async upload(
     key: string,
     buffer: Buffer,
-    contentType: string
+    contentType: string,
   ): Promise<{ url: string; key: string }> {
     try {
       if (!this.s3Client) {
-        throw new Error('S3 client not initialized');
+        throw new Error("S3 client not initialized");
       }
 
       // const { PutObjectCommand } = await import('@aws-sdk/client-s3');
@@ -122,7 +126,7 @@ export class S3StorageAdapter implements StorageAdapter {
   async download(key: string): Promise<Buffer> {
     try {
       if (!this.s3Client) {
-        throw new Error('S3 client not initialized');
+        throw new Error("S3 client not initialized");
       }
 
       // const { GetObjectCommand } = await import('@aws-sdk/client-s3');
@@ -134,7 +138,7 @@ export class S3StorageAdapter implements StorageAdapter {
       // );
       // return await response.Body.transformToByteArray();
 
-      throw new Error('Not implemented');
+      throw new Error("Not implemented");
     } catch (error) {
       throw new Error(`Failed to download file from S3: ${error}`);
     }
@@ -143,7 +147,7 @@ export class S3StorageAdapter implements StorageAdapter {
   async delete(key: string): Promise<void> {
     try {
       if (!this.s3Client) {
-        throw new Error('S3 client not initialized');
+        throw new Error("S3 client not initialized");
       }
 
       // const { DeleteObjectCommand } = await import('@aws-sdk/client-s3');
@@ -169,7 +173,7 @@ export class S3StorageAdapter implements StorageAdapter {
   async getSignedUrl(key: string, expiresIn: number): Promise<string> {
     try {
       if (!this.s3Client) {
-        throw new Error('S3 client not initialized');
+        throw new Error("S3 client not initialized");
       }
 
       // const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
@@ -216,11 +220,11 @@ export class R2StorageAdapter implements StorageAdapter {
   async upload(
     key: string,
     buffer: Buffer,
-    contentType: string
+    contentType: string,
   ): Promise<{ url: string; key: string }> {
     try {
       if (!this.s3Client) {
-        throw new Error('R2 client not initialized');
+        throw new Error("R2 client not initialized");
       }
 
       // Similar to S3 but with R2 endpoint
@@ -234,10 +238,10 @@ export class R2StorageAdapter implements StorageAdapter {
   async download(key: string): Promise<Buffer> {
     try {
       if (!this.s3Client) {
-        throw new Error('R2 client not initialized');
+        throw new Error("R2 client not initialized");
       }
 
-      throw new Error('Not implemented');
+      throw new Error("Not implemented");
     } catch (error) {
       throw new Error(`Failed to download file from R2: ${error}`);
     }
@@ -246,7 +250,7 @@ export class R2StorageAdapter implements StorageAdapter {
   async delete(key: string): Promise<void> {
     try {
       if (!this.s3Client) {
-        throw new Error('R2 client not initialized');
+        throw new Error("R2 client not initialized");
       }
     } catch (error) {
       throw new Error(`Failed to delete file from R2: ${error}`);
@@ -275,21 +279,21 @@ export class R2StorageAdapter implements StorageAdapter {
 
 export function createStorageAdapter(config: StorageConfig): StorageAdapter {
   switch (config.type) {
-    case 'local':
+    case "local":
       if (!config.local) {
-        throw new Error('Local storage config is required');
+        throw new Error("Local storage config is required");
       }
       return new LocalStorageAdapter(config.local);
 
-    case 's3':
+    case "s3":
       if (!config.s3) {
-        throw new Error('S3 storage config is required');
+        throw new Error("S3 storage config is required");
       }
       return new S3StorageAdapter(config.s3);
 
-    case 'r2':
+    case "r2":
       if (!config.r2) {
-        throw new Error('R2 storage config is required');
+        throw new Error("R2 storage config is required");
       }
       return new R2StorageAdapter(config.r2);
 

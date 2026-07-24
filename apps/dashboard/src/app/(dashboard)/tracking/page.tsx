@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { MapPin, AlertCircle, Users, Truck, LayoutList, Map } from "lucide-react";
+import {
+  MapPin,
+  AlertCircle,
+  Users,
+  Truck,
+  LayoutList,
+  Map,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -124,7 +131,9 @@ export default function TrackingPage() {
     error: ordersError,
   } = useApiList<ApiOrder>("/api/v4/orders", { limit: 50 });
 
-  const { data: driverLocations } = useApiQuery<DriverLocation[]>("/api/v4/drivers/locations");
+  const { data: driverLocations } = useApiQuery<DriverLocation[]>(
+    "/api/v4/drivers/locations",
+  );
 
   const loading = driversLoading || ordersLoading;
   const error = driversError || ordersError;
@@ -314,11 +323,31 @@ export default function TrackingPage() {
                 </h2>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                   {[
-                    { label: "Pending", status: "pending", color: "text-amber-400" },
-                    { label: "Confirmed", status: "confirmed", color: "text-blue-400" },
-                    { label: "In Transit", status: "in_transit", color: "text-indigo-400" },
-                    { label: "Delivered", status: "delivered", color: "text-emerald-400" },
-                    { label: "Cancelled", status: "cancelled", color: "text-red-400" },
+                    {
+                      label: "Pending",
+                      status: "pending",
+                      color: "text-amber-400",
+                    },
+                    {
+                      label: "Confirmed",
+                      status: "confirmed",
+                      color: "text-blue-400",
+                    },
+                    {
+                      label: "In Transit",
+                      status: "in_transit",
+                      color: "text-indigo-400",
+                    },
+                    {
+                      label: "Delivered",
+                      status: "delivered",
+                      color: "text-emerald-400",
+                    },
+                    {
+                      label: "Cancelled",
+                      status: "cancelled",
+                      color: "text-red-400",
+                    },
                   ].map((item) => (
                     <div
                       key={item.label}
@@ -368,7 +397,8 @@ export default function TrackingPage() {
                             }
                             dot
                           >
-                            {DRIVER_STATUS_LABEL[driver.status] ?? driver.status}
+                            {DRIVER_STATUS_LABEL[driver.status] ??
+                              driver.status}
                           </Badge>
                         </div>
                       </div>
@@ -400,8 +430,7 @@ export default function TrackingPage() {
                 ) : (
                   <div className="divide-y divide-wl-border-default">
                     {activeOrders.slice(0, 20).map((order) => {
-                      const progress =
-                        ORDER_STATUS_PROGRESS[order.status] ?? 0;
+                      const progress = ORDER_STATUS_PROGRESS[order.status] ?? 0;
                       return (
                         <div
                           key={order.id}

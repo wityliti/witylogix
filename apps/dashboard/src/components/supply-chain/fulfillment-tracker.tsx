@@ -90,7 +90,7 @@ const FulfillmentTracker = ({
     : 0;
   const hoursRemaining = Math.floor(timeRemaining / (60 * 60 * 1000));
   const minutesRemaining = Math.floor(
-    (timeRemaining % (60 * 60 * 1000)) / (60 * 1000)
+    (timeRemaining % (60 * 60 * 1000)) / (60 * 1000),
   );
 
   const getTimeStatus = (): "critical" | "warning" | "ok" => {
@@ -104,7 +104,8 @@ const FulfillmentTracker = ({
   const timeStatus = getTimeStatus();
 
   const getProgressColor = () => {
-    if (completionPercentage >= 80) return "from-wl-success-500 to-wl-success-400";
+    if (completionPercentage >= 80)
+      return "from-wl-success-500 to-wl-success-400";
     if (completionPercentage >= 50) return "from-wl-info-500 to-wl-info-400";
     return "from-wl-primary-500 to-wl-primary-400";
   };
@@ -143,7 +144,7 @@ const FulfillmentTracker = ({
           <div
             className={cn(
               "h-full rounded-full transition-all bg-gradient-to-r",
-              getProgressColor()
+              getProgressColor(),
             )}
             style={{ width: `${completionPercentage}%` }}
           />
@@ -155,7 +156,8 @@ const FulfillmentTracker = ({
           const percentage = (stage.count / totalOrders) * 100;
           const isActive = stage.count > 0;
           const isPast =
-            index < stages.findIndex((s) => s.count > 0 || index === stages.length - 1);
+            index <
+            stages.findIndex((s) => s.count > 0 || index === stages.length - 1);
 
           return (
             <div key={stage.id}>
@@ -165,7 +167,7 @@ const FulfillmentTracker = ({
                     "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
                     isActive
                       ? "bg-wl-primary-500/20 text-wl-primary-400"
-                      : "bg-wl-bg-surface text-wl-text-tertiary"
+                      : "bg-wl-bg-surface text-wl-text-tertiary",
                   )}
                 >
                   {stage.icon}
@@ -191,7 +193,7 @@ const FulfillmentTracker = ({
                     "h-full transition-all rounded-full",
                     isPast
                       ? "bg-wl-success-400"
-                      : "bg-gradient-to-r from-wl-primary-500 to-wl-primary-400"
+                      : "bg-gradient-to-r from-wl-primary-500 to-wl-primary-400",
                   )}
                   style={{ width: `${percentage}%` }}
                 />
@@ -237,7 +239,7 @@ const FulfillmentTracker = ({
             ? "bg-wl-danger-500/10 border-wl-danger-400/20"
             : timeStatus === "warning"
               ? "bg-wl-warning-500/10 border-wl-warning-400/20"
-              : "bg-wl-success-500/10 border-wl-success-400/20"
+              : "bg-wl-success-500/10 border-wl-success-400/20",
         )}
       >
         <ClockIcon
@@ -247,7 +249,7 @@ const FulfillmentTracker = ({
               ? "text-wl-danger-400"
               : timeStatus === "warning"
                 ? "text-wl-warning-400"
-                : "text-wl-success-400"
+                : "text-wl-success-400",
           )}
         />
 
@@ -259,7 +261,7 @@ const FulfillmentTracker = ({
                 ? "text-wl-danger-400"
                 : timeStatus === "warning"
                   ? "text-wl-warning-400"
-                  : "text-wl-success-400"
+                  : "text-wl-success-400",
             )}
           >
             SLA Timer {isOverdue ? "(Overdue)" : ""}

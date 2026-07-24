@@ -15,7 +15,7 @@ import {
   RankingStrategy,
   CarrierCredentials,
   ShippingError,
-} from './shipping-types';
+} from "./shipping-types";
 
 // ============================================================================
 // Constants
@@ -28,7 +28,7 @@ const DEFAULT_CACHE_TTL_MS = 5 * 60 * 1000;
 const CARRIER_TIMEOUT_MS = 10 * 1000;
 
 /** Cache key separator */
-const CACHE_KEY_SEPARATOR = '|||';
+const CACHE_KEY_SEPARATOR = "|||";
 
 // ============================================================================
 // Types
@@ -119,7 +119,7 @@ export class RateCache {
     const destination = `${request.destination.zip}${request.destination.country}`;
     const pkgInfo = request.packages
       .map((p) => `${p.weight}${p.weightUnit}`)
-      .join('-');
+      .join("-");
 
     return `${origin}${CACHE_KEY_SEPARATOR}${destination}${CACHE_KEY_SEPARATOR}${pkgInfo}${CACHE_KEY_SEPARATOR}${carrier}`;
   }
@@ -235,7 +235,10 @@ export class CarrierCredentialManager {
    * @param carrier - Carrier code
    * @returns Credentials or undefined if not found
    */
-  getCredentials(tenantId: string, carrier: CarrierCode): CarrierCredentials | undefined {
+  getCredentials(
+    tenantId: string,
+    carrier: CarrierCode,
+  ): CarrierCredentials | undefined {
     const key = this.buildKey(tenantId, carrier);
     const creds = this.credentials.get(key);
 
@@ -266,8 +269,8 @@ export class CarrierCredentialManager {
     const carriers: CarrierCode[] = [];
 
     this.credentials.forEach((creds, key) => {
-      if (key.startsWith(tenantId + ':') && creds.isActive) {
-        const carrier = key.split(':')[1] as CarrierCode;
+      if (key.startsWith(tenantId + ":") && creds.isActive) {
+        const carrier = key.split(":")[1] as CarrierCode;
         carriers.push(carrier);
       }
     });
@@ -293,7 +296,7 @@ export class CarrierCredentialManager {
     const keysToDelete: string[] = [];
 
     this.credentials.forEach((_, key) => {
-      if (key.startsWith(tenantId + ':')) {
+      if (key.startsWith(tenantId + ":")) {
         keysToDelete.push(key);
       }
     });
@@ -330,7 +333,10 @@ export class RateRanker {
    * @param strategy - Ranking strategy
    * @returns Sorted rates with ranking scores
    */
-  static rank(rates: ShippingRate[], strategy: RankingStrategy = RankingStrategy.BEST_VALUE): ShippingRate[] {
+  static rank(
+    rates: ShippingRate[],
+    strategy: RankingStrategy = RankingStrategy.BEST_VALUE,
+  ): ShippingRate[] {
     if (rates.length === 0) {
       return [];
     }
@@ -436,9 +442,13 @@ export class ParallelRateFetcher {
    * @param config - Cache configuration
    * @param credentialManager - Credential manager (optional, creates new if not provided)
    */
-  constructor(config?: Partial<RateCacheConfig>, credentialManager?: CarrierCredentialManager) {
+  constructor(
+    config?: Partial<RateCacheConfig>,
+    credentialManager?: CarrierCredentialManager,
+  ) {
     this.cache = new RateCache(config);
-    this.credentialManager = credentialManager ?? new CarrierCredentialManager();
+    this.credentialManager =
+      credentialManager ?? new CarrierCredentialManager();
   }
 
   /**
@@ -468,11 +478,12 @@ export class ParallelRateFetcher {
     const startTime = Date.now();
 
     // Determine which carriers to query
-    const carriersToQuery = request.carriers ?? this.getDefaultCarriers(tenantId);
+    const carriersToQuery =
+      request.carriers ?? this.getDefaultCarriers(tenantId);
 
     if (carriersToQuery.length === 0) {
       throw new ShippingError(
-        'NO_CARRIERS_CONFIGURED',
+        "NO_CARRIERS_CONFIGURED",
         `No carriers configured for tenant ${tenantId}`,
       );
     }
@@ -491,7 +502,7 @@ export class ParallelRateFetcher {
     results.forEach((result, index) => {
       const carrier = carriersToQuery[index];
 
-      if (result.status === 'fulfilled') {
+      if (result.status === "fulfilled") {
         if (result.value.success && result.value.rates) {
           rates.push(...result.value.rates);
         } else if (result.value.error) {
@@ -500,10 +511,10 @@ export class ParallelRateFetcher {
             error: result.value.error,
           });
         }
-      } else if (result.status === 'rejected') {
+      } else if (result.status === "rejected") {
         failedCarriers.push({
           carrier,
-          error: result.reason?.message ?? 'Unknown error',
+          error: result.reason?.message ?? "Unknown error",
         });
       }
     });
@@ -568,7 +579,10 @@ export class ParallelRateFetcher {
       }
 
       // Check if tenant has credentials for this carrier
-      const credentials = this.credentialManager.getCredentials(tenantId, carrier);
+      const credentials = this.credentialManager.getCredentials(
+        tenantId,
+        carrier,
+      );
       if (!credentials) {
         return {
           carrier,
@@ -601,7 +615,7 @@ export class ParallelRateFetcher {
       return {
         carrier,
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
         duration,
       };
     }
@@ -630,7 +644,12 @@ export class ParallelRateFetcher {
   private timeout(ms: number): Promise<never> {
     return new Promise((_, reject) => {
       setTimeout(() => {
-        reject(new ShippingError('TIMEOUT', `Carrier request timed out after ${ms}ms`));
+        reject(
+          new ShippingError(
+            "TIMEOUT",
+            `Carrier request timed out after ${ms}ms`,
+          ),
+        );
       }, ms);
     });
   }

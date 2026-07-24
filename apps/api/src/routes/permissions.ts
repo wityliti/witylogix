@@ -16,7 +16,11 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
-import { NotFoundError, ValidationError, ConflictError } from "../lib/errors.js";
+import {
+  NotFoundError,
+  ValidationError,
+  ConflictError,
+} from "../lib/errors.js";
 
 // ─── SCHEMAS ────────────────────────────────────────────────
 
@@ -55,14 +59,21 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
     "/roles",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const { page = 1, limit = 50, custom } = request.query as {
+        const {
+          page = 1,
+          limit = 50,
+          custom,
+        } = request.query as {
           page?: number;
           limit?: number;
           custom?: boolean;
         };
 
         const pageNum = Math.max(1, parseInt(String(page)) || 1);
-        const pageSize = Math.min(100, Math.max(1, parseInt(String(limit)) || 50));
+        const pageSize = Math.min(
+          100,
+          Math.max(1, parseInt(String(limit)) || 50),
+        );
         const skip = (pageNum - 1) * pageSize;
 
         let whereClause = "WHERE shop_id = $1::uuid";
@@ -75,9 +86,11 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
         }
 
         // Get total count
-        const countResult: any[] = await (request as any).tenantDb.$queryRawUnsafe(
+        const countResult: any[] = await (
+          request as any
+        ).tenantDb.$queryRawUnsafe(
           `SELECT COUNT(*) as count FROM roles ${whereClause}`,
-          ...params
+          ...params,
         );
         const total = Number(countResult[0]?.count || 0);
 
@@ -95,7 +108,7 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
           `,
           ...params,
           pageSize,
-          skip
+          skip,
         );
 
         return {
@@ -111,7 +124,7 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to list roles");
         return reply.code(500).send({ error: "Failed to list roles" });
       }
-    }
+    },
   );
 
   // ── GET SINGLE ROLE ─────────────────────────────────────────
@@ -129,7 +142,7 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE id = $1::uuid AND shop_id = $2::uuid
           `,
           id,
-          (request as any).shopId
+          (request as any).shopId,
         );
 
         if (!role || role.length === 0) {
@@ -144,7 +157,7 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to get role");
         return reply.code(500).send({ error: "Failed to get role" });
       }
-    }
+    },
   );
 
   // ── CREATE ROLE ─────────────────────────────────────────────
@@ -162,7 +175,7 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE shop_id = $1::uuid AND name = $2::text
           `,
           (request as any).shopId,
-          body.name
+          body.name,
         );
 
         if (existing && existing.length > 0) {
@@ -181,7 +194,7 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
           body.description || null,
           false,
           JSON.stringify(body.permissions),
-          body.metadata ? JSON.stringify(body.metadata) : "{}"
+          body.metadata ? JSON.stringify(body.metadata) : "{}",
         );
 
         return reply.code(201).send(result[0]);
@@ -197,7 +210,7 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to create role");
         return reply.code(500).send({ error: "Failed to create role" });
       }
-    }
+    },
   );
 
   // ── UPDATE ROLE ─────────────────────────────────────────────
@@ -216,7 +229,7 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE id = $1::uuid AND shop_id = $2::uuid
           `,
           id,
-          (request as any).shopId
+          (request as any).shopId,
         );
 
         if (!role || role.length === 0) {
@@ -267,7 +280,7 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE id = $1::uuid AND shop_id = $2::uuid
             RETURNING *
           `,
-          ...values
+          ...values,
         );
 
         return result[0];
@@ -286,7 +299,7 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to update role");
         return reply.code(500).send({ error: "Failed to update role" });
       }
-    }
+    },
   );
 
   // ── DELETE ROLE ─────────────────────────────────────────────
@@ -303,7 +316,7 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE id = $1::uuid AND shop_id = $2::uuid
           `,
           id,
-          (request as any).shopId
+          (request as any).shopId,
         );
 
         if (!role || role.length === 0) {
@@ -316,17 +329,19 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
         }
 
         // Check if role is assigned to any users
-        const assignments: any[] = await (request as any).tenantDb.$queryRawUnsafe(
+        const assignments: any[] = await (
+          request as any
+        ).tenantDb.$queryRawUnsafe(
           `
             SELECT COUNT(*) as count FROM user_roles
             WHERE role_id = $1::uuid
           `,
-          id
+          id,
         );
 
         if (Number(assignments[0]?.count || 0) > 0) {
           throw new ConflictError(
-            "Cannot delete role that is assigned to users. Remove all assignments first."
+            "Cannot delete role that is assigned to users. Remove all assignments first.",
           );
         }
 
@@ -336,7 +351,7 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE id = $1::uuid AND shop_id = $2::uuid
           `,
           id,
-          (request as any).shopId
+          (request as any).shopId,
         );
 
         return reply.code(204).send();
@@ -350,7 +365,7 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to delete role");
         return reply.code(500).send({ error: "Failed to delete role" });
       }
-    }
+    },
   );
 
   // ── GET USER PERMISSIONS ────────────────────────────────────
@@ -368,7 +383,7 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE id = $1::uuid AND shop_id = $2::uuid
           `,
           userId,
-          (request as any).shopId
+          (request as any).shopId,
         );
 
         if (!user || user.length === 0) {
@@ -376,21 +391,25 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
         }
 
         // Get user's roles and their permissions
-        const userRoles: any[] = await (request as any).tenantDb.$queryRawUnsafe(
+        const userRoles: any[] = await (
+          request as any
+        ).tenantDb.$queryRawUnsafe(
           `
             SELECT r.id, r.name, r.permissions
             FROM user_roles ur
             JOIN roles r ON r.id = ur.role_id
             WHERE ur.user_id = $1::uuid
           `,
-          userId
+          userId,
         );
 
         // Aggregate permissions from all roles
         const allPermissions = new Set<string>();
         userRoles.forEach((role) => {
           if (Array.isArray(role.permissions)) {
-            role.permissions.forEach((perm: string) => allPermissions.add(perm));
+            role.permissions.forEach((perm: string) =>
+              allPermissions.add(perm),
+            );
           } else if (typeof role.permissions === "string") {
             const perms = JSON.parse(role.permissions);
             if (Array.isArray(perms)) {
@@ -409,9 +428,11 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
           return reply.code(404).send({ error: error.message });
         }
         fastify.log.error({ err: error }, "Failed to get user permissions");
-        return reply.code(500).send({ error: "Failed to get user permissions" });
+        return reply
+          .code(500)
+          .send({ error: "Failed to get user permissions" });
       }
-    }
+    },
   );
 
   // ── ASSIGN ROLE TO USER ─────────────────────────────────────
@@ -430,7 +451,7 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE id = $1::uuid AND shop_id = $2::uuid
           `,
           userId,
-          (request as any).shopId
+          (request as any).shopId,
         );
 
         if (!user || user.length === 0) {
@@ -444,7 +465,7 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE id = $1::uuid AND shop_id = $2::uuid
           `,
           body.roleId,
-          (request as any).shopId
+          (request as any).shopId,
         );
 
         if (!role || role.length === 0) {
@@ -458,7 +479,7 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE user_id = $1::uuid AND role_id = $2::uuid
           `,
           userId,
-          body.roleId
+          body.roleId,
         );
 
         if (existing && existing.length > 0) {
@@ -472,12 +493,12 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
             RETURNING *
           `,
           userId,
-          body.roleId
+          body.roleId,
         );
 
         fastify.log.info(
           { userId, roleId: body.roleId },
-          "Role assigned to user"
+          "Role assigned to user",
         );
 
         return reply.code(201).send(result[0]);
@@ -496,7 +517,7 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to assign role");
         return reply.code(500).send({ error: "Failed to assign role" });
       }
-    }
+    },
   );
 
   // ── REMOVE ROLE FROM USER ───────────────────────────────────
@@ -511,13 +532,15 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
         };
 
         // Verify assignment exists
-        const assignment: any[] = await (request as any).tenantDb.$queryRawUnsafe(
+        const assignment: any[] = await (
+          request as any
+        ).tenantDb.$queryRawUnsafe(
           `
             SELECT id FROM user_roles
             WHERE user_id = $1::uuid AND role_id = $2::uuid
           `,
           userId,
-          roleId
+          roleId,
         );
 
         if (!assignment || assignment.length === 0) {
@@ -525,16 +548,20 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
         }
 
         // Prevent removing the last admin role if user is the only admin
-        const adminRole: any[] = await (request as any).tenantDb.$queryRawUnsafe(
+        const adminRole: any[] = await (
+          request as any
+        ).tenantDb.$queryRawUnsafe(
           `
             SELECT id FROM roles
             WHERE shop_id = $1::uuid AND name = 'ADMIN'
           `,
-          (request as any).shopId
+          (request as any).shopId,
         );
 
         if (adminRole && adminRole[0].id === roleId) {
-          const otherAdmins: any[] = await (request as any).tenantDb.$queryRawUnsafe(
+          const otherAdmins: any[] = await (
+            request as any
+          ).tenantDb.$queryRawUnsafe(
             `
               SELECT COUNT(*) as count FROM user_roles ur
               JOIN roles r ON r.id = ur.role_id
@@ -542,12 +569,12 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
               AND r.shop_id = $2::uuid
             `,
             userId,
-            (request as any).shopId
+            (request as any).shopId,
           );
 
           if (Number(otherAdmins[0]?.count || 0) === 0) {
             throw new ConflictError(
-              "Cannot remove the last admin role from the shop"
+              "Cannot remove the last admin role from the shop",
             );
           }
         }
@@ -558,13 +585,10 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
             WHERE user_id = $1::uuid AND role_id = $2::uuid
           `,
           userId,
-          roleId
+          roleId,
         );
 
-        fastify.log.info(
-          { userId, roleId },
-          "Role removed from user"
-        );
+        fastify.log.info({ userId, roleId }, "Role removed from user");
 
         return reply.code(204).send();
       } catch (error) {
@@ -577,7 +601,7 @@ async function permissionsRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to remove role");
         return reply.code(500).send({ error: "Failed to remove role" });
       }
-    }
+    },
   );
 }
 

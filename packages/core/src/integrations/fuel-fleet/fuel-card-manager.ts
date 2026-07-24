@@ -202,7 +202,7 @@ export class FuelCardManager extends EventEmitter {
    * @throws Error if provider is unknown
    */
   private getClient(
-    provider: string
+    provider: string,
   ): WEXClient | ComdataClient | FuelmanClient | EFSClient {
     switch (provider.toLowerCase()) {
       case "wex":
@@ -227,7 +227,7 @@ export class FuelCardManager extends EventEmitter {
    */
   async issueCard(
     provider: string,
-    cardData: Record<string, unknown>
+    cardData: Record<string, unknown>,
   ): Promise<CardInventory> {
     const client = this.getClient(provider);
     const card = await client.issueCard(cardData as any);
@@ -266,7 +266,7 @@ export class FuelCardManager extends EventEmitter {
    */
   async manageCardStatus(
     cardId: string,
-    action: "activate" | "suspend" | "close"
+    action: "activate" | "suspend" | "close",
   ): Promise<FuelCard> {
     const inventory = this.cardInventory.get(cardId);
     if (!inventory) {
@@ -308,7 +308,7 @@ export class FuelCardManager extends EventEmitter {
    */
   async enforcePolicyOnCards(
     policyId: string,
-    cardIds: string[]
+    cardIds: string[],
   ): Promise<{ successful: number; failed: number }> {
     const policy = this.policies.get(policyId);
     if (!policy) {
@@ -355,7 +355,7 @@ export class FuelCardManager extends EventEmitter {
         } catch {
           failed += 1;
         }
-      })
+      }),
     );
 
     return { successful, failed };
@@ -370,7 +370,7 @@ export class FuelCardManager extends EventEmitter {
    */
   async detectFraudPatterns(
     cardId: string,
-    transactions: FuelTransaction[]
+    transactions: FuelTransaction[],
   ): Promise<FraudAlert[]> {
     const alerts: FraudAlert[] = [];
     const now = Date.now();
@@ -383,13 +383,13 @@ export class FuelCardManager extends EventEmitter {
     const sorted = [...transactions].sort(
       (a, b) =>
         new Date(b.transactionDate).getTime() -
-        new Date(a.transactionDate).getTime()
+        new Date(a.transactionDate).getTime(),
     );
 
     // Velocity check - too many transactions in short time
     const lastHourStart = now - 60 * 60 * 1000;
     const recentTransactions = sorted.filter(
-      (t) => new Date(t.transactionDate).getTime() >= lastHourStart
+      (t) => new Date(t.transactionDate).getTime() >= lastHourStart,
     );
 
     if (recentTransactions.length > 5) {
@@ -418,14 +418,15 @@ export class FuelCardManager extends EventEmitter {
     const stdDev =
       Math.sqrt(
         amounts.reduce((sum, amt) => sum + Math.pow(amt - avgAmount, 2), 0) /
-          amounts.length
+          amounts.length,
       ) || 0;
 
     if (maxAmount > avgAmount + 3 * stdDev && maxAmount > 200) {
       alerts.push({
         alertId: `aa-${cardId}-${Date.now()}`,
         cardId,
-        transactionId: sorted.find((t) => t.amount === maxAmount)!.transactionId,
+        transactionId: sorted.find((t) => t.amount === maxAmount)!
+          .transactionId,
         type: "amount_anomaly" as FraudAlertType,
         severity: "high" as FraudAlertSeverity,
         message: `Unusual transaction amount: $${maxAmount} (avg: $${avgAmount.toFixed(2)})`,
@@ -451,7 +452,7 @@ export class FuelCardManager extends EventEmitter {
    * @returns Cost optimization recommendations
    */
   optimizeCosts(
-    currentCardCosts: Map<string, number>
+    currentCardCosts: Map<string, number>,
   ): CostOptimizationResult[] {
     const recommendations: CostOptimizationResult[] = [];
 
@@ -477,7 +478,7 @@ export class FuelCardManager extends EventEmitter {
 
     // Recommend switching to cheapest provider for cards above average
     const cheapestProvider = Object.entries(averageCostByProvider).reduce(
-      (a, b) => (a[1] < b[1] ? a : b)
+      (a, b) => (a[1] < b[1] ? a : b),
     )[0];
 
     currentCardCosts.forEach((cost, cardId) => {
@@ -517,12 +518,12 @@ export class FuelCardManager extends EventEmitter {
   calculateIFTA(
     transactions: FuelTransaction[],
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): IFTACalculation {
     const filteredTransactions = transactions.filter(
       (t) =>
         new Date(t.transactionDate) >= startDate &&
-        new Date(t.transactionDate) <= endDate
+        new Date(t.transactionDate) <= endDate,
     );
 
     const gallonsByState: Record<string, number> = {};
@@ -553,7 +554,7 @@ export class FuelCardManager extends EventEmitter {
     let totalTax = 0;
 
     Object.entries(gallonsByState).forEach(([state, gallons]) => {
-      const rate = stateTaxRates[state] || 0.20; // Default rate
+      const rate = stateTaxRates[state] || 0.2; // Default rate
       const tax = gallons * rate;
       taxByState[state] = tax;
       totalTax += tax;

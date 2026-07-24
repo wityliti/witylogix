@@ -9,9 +9,11 @@
 All files located in: `/packages/core/src/events/`
 
 #### 1. **index.ts** (684 lines)
+
 Main event bus and trigger engine implementation.
 
 **Contains:**
+
 - `TriggerEvent` enum (16 events covering order, shipment, driver, delivery, payment lifecycle)
 - `TriggerRule` interface with conditions support
 - `EventBus` class (pub/sub pattern)
@@ -35,6 +37,7 @@ Main event bus and trigger engine implementation.
   - `triggerEngine` - Global trigger engine instance
 
 **Features:**
+
 - Zero external dependencies
 - Full TypeScript type safety
 - Comprehensive JSDoc comments
@@ -42,9 +45,11 @@ Main event bus and trigger engine implementation.
 - Async-aware (proper Promise handling)
 
 #### 2. **template-vars.ts** (577 lines)
+
 Template variable extraction and formatting.
 
 **Contains:**
+
 - `buildShipmentVars(shipment)` - 20+ shipment variables
   - IDs, tracking, zone, weight, dimensions, addresses, status, dates
 - `buildOrderVars(order)` - 20+ order variables
@@ -68,6 +73,7 @@ Template variable extraction and formatting.
   - `getPaymentStatusDisplay()` - Payment status humanization
 
 **Features:**
+
 - Human-readable variable names (snake_case)
 - Automatic formatting (currency, dates, etc.)
 - Safety checks (null/undefined handling)
@@ -75,9 +81,11 @@ Template variable extraction and formatting.
 - Extensible helper functions
 
 #### 3. **example.ts** (466 lines)
+
 Comprehensive usage examples and demo code.
 
 **Contains:**
+
 - Mock implementations (ruleLoader, queueHandler)
 - Example 1: Shipment delivered event
 - Example 2: Delivery failed with 5-minute delay
@@ -90,15 +98,18 @@ Comprehensive usage examples and demo code.
 - Example setup function with dependency injection
 
 **Features:**
+
 - Production-like patterns
 - Database/queue integration examples
 - All events demonstrated
 - Clear console output for learning
 
 #### 4. **README.md** (320 lines)
+
 Quick start and reference guide.
 
 **Contains:**
+
 - Overview and architecture diagram
 - Quick start (3-step setup)
 - Supported events list (16 events)
@@ -111,9 +122,11 @@ Quick start and reference guide.
 - Integration checklist
 
 #### 5. **INTEGRATION_GUIDE.md** (650+ lines)
+
 Comprehensive integration and setup documentation.
 
 **Contains:**
+
 - Architecture diagram
 - 4-step setup instructions
 - Usage examples (Shipment, Payment services)
@@ -172,6 +185,7 @@ EventBus → TriggerEngine → notificationQueue.add() → NotificationOrchestra
 ```
 
 The `NotificationQueueHandler` receives:
+
 - `templateId` - Reference to template from `/templates` module
 - `channel` - One of: EMAIL, SMS, WHATSAPP, PUSH
 - `recipient` - Email/phone/user ID
@@ -181,10 +195,12 @@ The `NotificationQueueHandler` receives:
 ## Event Types Supported
 
 ### Order Lifecycle (2)
+
 - `ORDER_CREATED` - New order placed
 - `ORDER_CONFIRMED` - Order confirmed
 
 ### Shipment Lifecycle (8)
+
 - `SHIPMENT_CREATED`
 - `SHIPMENT_LABEL_CREATED`
 - `SHIPMENT_PICKED_UP`
@@ -195,14 +211,17 @@ The `NotificationQueueHandler` receives:
 - `SHIPMENT_RETURNED`
 
 ### Driver Events (2)
+
 - `DRIVER_ASSIGNED`
 - `DRIVER_NEAR_DELIVERY` (500m geofence)
 
 ### Delivery Events (2)
+
 - `DELIVERY_ATTEMPTED`
 - `DELIVERY_PROOF_SUBMITTED`
 
 ### Payment Events (2)
+
 - `PAYMENT_RECEIVED`
 - `PAYMENT_FAILED`
 
@@ -237,14 +256,14 @@ CREATE TABLE notification_trigger_rules (
 
 ## Condition Operators
 
-| Operator | Type | Example |
-|----------|------|---------|
-| `eq` | Equality | `zone === "north"` |
-| `neq` | Not equals | `zone !== "south"` |
-| `gt` | Greater than | `total > 100` |
-| `lt` | Less than | `weight < 5` |
-| `contains` | Substring | `address.includes("PO")` |
-| `in` | Array contains | `["z1", "z2"].includes(zone)` |
+| Operator   | Type           | Example                       |
+| ---------- | -------------- | ----------------------------- |
+| `eq`       | Equality       | `zone === "north"`            |
+| `neq`      | Not equals     | `zone !== "south"`            |
+| `gt`       | Greater than   | `total > 100`                 |
+| `lt`       | Less than      | `weight < 5`                  |
+| `contains` | Substring      | `address.includes("PO")`      |
+| `in`       | Array contains | `["z1", "z2"].includes(zone)` |
 
 ## Example Usage
 
@@ -257,12 +276,12 @@ const triggerEngine = new NotificationTriggerEngine(
   eventBus,
   async (shopId) => {
     return await prisma.notificationTriggerRule.findMany({
-      where: { shopId, isActive: true }
+      where: { shopId, isActive: true },
     });
   },
   async (item) => {
     await notificationQueue.add("send", item);
-  }
+  },
 );
 ```
 
@@ -309,24 +328,28 @@ POST /api/shops/shop_123/notification-triggers
 ## Code Quality
 
 ✅ **TypeScript**
+
 - Full type safety
 - No `any` types
 - Strict mode enabled
 - Proper error types
 
 ✅ **Documentation**
+
 - JSDoc on every public function
 - Architecture diagrams
 - Usage examples
 - Integration guide
 
 ✅ **Error Handling**
+
 - Try/catch blocks
 - Graceful degradation
 - Error logging
 - Result reporting
 
 ✅ **Testing**
+
 - Example test cases
 - Mock implementations
 - Type checking passing
@@ -334,13 +357,13 @@ POST /api/shops/shop_123/notification-triggers
 
 ## Performance Characteristics
 
-| Operation | Time | Notes |
-|-----------|------|-------|
-| Event emission | <1ms | In-memory handler execution |
-| Rule loading | 10-50ms | Depends on DB query |
-| Condition evaluation | <1ms | Per condition |
-| Template var building | <1ms | Object creation |
-| Total processing | 20-100ms | Per event (with DB) |
+| Operation             | Time     | Notes                       |
+| --------------------- | -------- | --------------------------- |
+| Event emission        | <1ms     | In-memory handler execution |
+| Rule loading          | 10-50ms  | Depends on DB query         |
+| Condition evaluation  | <1ms     | Per condition               |
+| Template var building | <1ms     | Object creation             |
+| Total processing      | 20-100ms | Per event (with DB)         |
 
 ## Security Considerations
 

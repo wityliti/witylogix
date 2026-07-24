@@ -13,8 +13,8 @@ import {
   RoleNotFoundError,
   RoleImmutableError,
   InvalidPermissionError,
-} from './types';
-import { PolicyEngine } from './policy-engine';
+} from "./types";
+import { PolicyEngine } from "./policy-engine";
 
 /**
  * RoleManager
@@ -197,7 +197,11 @@ export class RoleManager {
   /**
    * Remove a role from a user
    */
-  async removeRoleFromUser(userId: string, tenantId: string, roleId: string): Promise<void> {
+  async removeRoleFromUser(
+    userId: string,
+    tenantId: string,
+    roleId: string,
+  ): Promise<void> {
     const key = `${tenantId}:${userId}`;
     const userRoles = this.userRoles.get(key);
 
@@ -236,9 +240,15 @@ export class RoleManager {
    * Get effective permissions for a user
    * Merges permissions from all assigned roles
    */
-  async getEffectivePermissions(userId: string, tenantId: string): Promise<Permission[]> {
+  async getEffectivePermissions(
+    userId: string,
+    tenantId: string,
+  ): Promise<Permission[]> {
     // Check cache first
-    const cachedPermissions = this.policyEngine.getCachedPermissions(userId, tenantId);
+    const cachedPermissions = this.policyEngine.getCachedPermissions(
+      userId,
+      tenantId,
+    );
     if (cachedPermissions) {
       return cachedPermissions;
     }
@@ -285,21 +295,23 @@ export class RoleManager {
    */
   private validatePermissions(permissions: Permission[]): void {
     if (!Array.isArray(permissions)) {
-      throw new InvalidPermissionError('Permissions must be an array');
+      throw new InvalidPermissionError("Permissions must be an array");
     }
 
     for (const permission of permissions) {
       if (!permission.resource) {
-        throw new InvalidPermissionError('Permission must have a resource');
+        throw new InvalidPermissionError("Permission must have a resource");
       }
       if (!permission.action) {
-        throw new InvalidPermissionError('Permission must have an action');
+        throw new InvalidPermissionError("Permission must have an action");
       }
-      if (typeof permission.resource !== 'string') {
-        throw new InvalidPermissionError('Permission resource must be a string');
+      if (typeof permission.resource !== "string") {
+        throw new InvalidPermissionError(
+          "Permission resource must be a string",
+        );
       }
-      if (typeof permission.action !== 'string') {
-        throw new InvalidPermissionError('Permission action must be a string');
+      if (typeof permission.action !== "string") {
+        throw new InvalidPermissionError("Permission action must be a string");
       }
     }
   }
@@ -311,7 +323,7 @@ export class RoleManager {
   private invalidateRoleCache(roleId: string): void {
     for (const [key, userRoles] of this.userRoles.entries()) {
       if (userRoles.some((ur) => ur.roleId === roleId)) {
-        const [tenantId, userId] = key.split(':');
+        const [tenantId, userId] = key.split(":");
         this.policyEngine.invalidateCache(userId, tenantId);
       }
     }
@@ -320,7 +332,11 @@ export class RoleManager {
   /**
    * Check if a user has a specific role
    */
-  async hasRole(userId: string, tenantId: string, roleId: string): Promise<boolean> {
+  async hasRole(
+    userId: string,
+    tenantId: string,
+    roleId: string,
+  ): Promise<boolean> {
     const userRoles = await this.getUserRoles(userId, tenantId);
     return userRoles.some((role) => role.id === roleId);
   }

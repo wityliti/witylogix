@@ -10,7 +10,7 @@
  * Returns driver count forecasts with reliability metrics.
  */
 
-import type { DriverForecast } from './types.js';
+import type { DriverForecast } from "./types.js";
 
 /**
  * Driver shift data structure
@@ -21,7 +21,7 @@ export interface DriverShift {
   startHour: number;
   endHour: number;
   zoneId: string;
-  vehicleType: 'bicycle' | 'motorcycle' | 'car' | 'van' | 'truck';
+  vehicleType: "bicycle" | "motorcycle" | "car" | "van" | "truck";
   packageCapacity: number;
   noShowHistory?: number; // 0-1, historical no-show rate
 }
@@ -129,7 +129,10 @@ export class DriverAvailabilityPredictor {
         shift.packageCapacity ||
         this.CAPACITY_DEFAULTS[shift.vehicleType] ||
         30;
-      return sum + capacity * (1 - (shift.noShowHistory || this.DEFAULT_NO_SHOW_RATE));
+      return (
+        sum +
+        capacity * (1 - (shift.noShowHistory || this.DEFAULT_NO_SHOW_RATE))
+      );
     }, 0);
 
     return {
@@ -169,9 +172,7 @@ export class DriverAvailabilityPredictor {
   /**
    * Predict availability for full day
    */
-  predictDayAvailability(
-    date: Date,
-  ): Record<number, DriverForecast> {
+  predictDayAvailability(date: Date): Record<number, DriverForecast> {
     const forecasts: Record<number, DriverForecast> = {};
 
     for (let hour = 0; hour < 24; hour++) {
@@ -206,14 +207,11 @@ export class DriverAvailabilityPredictor {
 
     shiftsForDate.forEach((shift) => {
       zonesCovered.add(shift.zoneId);
-      totalNoShowRate +=
-        shift.noShowHistory ?? this.DEFAULT_NO_SHOW_RATE;
+      totalNoShowRate += shift.noShowHistory ?? this.DEFAULT_NO_SHOW_RATE;
     });
 
     const averageNoShowRate =
-      shiftsForDate.length > 0
-        ? totalNoShowRate / shiftsForDate.length
-        : 0;
+      shiftsForDate.length > 0 ? totalNoShowRate / shiftsForDate.length : 0;
 
     return {
       totalScheduledDrivers: shiftsForDate.length,
@@ -281,9 +279,7 @@ export class DriverAvailabilityPredictor {
 
     for (let hour = 0; hour < 24; hour++) {
       const forecast = this.predictAvailability(date, hour);
-      const zoneDrivers = Math.round(
-        forecast.zoneDistribution[zoneId] ?? 0,
-      );
+      const zoneDrivers = Math.round(forecast.zoneDistribution[zoneId] ?? 0);
 
       analysis.push({
         hour,
@@ -291,7 +287,7 @@ export class DriverAvailabilityPredictor {
         totalCapacity:
           (forecast.vehicleCapacityTotal *
             (forecast.zoneDistribution[zoneId] ?? 0)) /
-          forecast.expectedAvailableDrivers || 0,
+            forecast.expectedAvailableDrivers || 0,
       });
     }
 
@@ -326,10 +322,7 @@ export class DriverAvailabilityPredictor {
 
       let shortageRisk = 0;
       if (requiredDrivers > 0) {
-        shortageRisk = Math.min(
-          1,
-          requiredDrivers / availableDrivers,
-        );
+        shortageRisk = Math.min(1, requiredDrivers / availableDrivers);
       }
 
       riskAnalysis.push({

@@ -190,7 +190,10 @@ interface EtsyReview {
 /**
  * Etsy API Client
  */
-export class EtsyClient extends ECommerceAdapterBase implements IECommerceAdapter {
+export class EtsyClient
+  extends ECommerceAdapterBase
+  implements IECommerceAdapter
+{
   private baseUrl = "https://openapi.etsy.com/v3";
   private clientId: string;
   private clientSecret: string;
@@ -206,7 +209,9 @@ export class EtsyClient extends ECommerceAdapterBase implements IECommerceAdapte
     super(config);
 
     if (!config.apiKey || !config.apiSecret || !config.accessToken) {
-      throw new Error("Etsy API requires clientId, clientSecret, and refreshToken");
+      throw new Error(
+        "Etsy API requires clientId, clientSecret, and refreshToken",
+      );
     }
 
     this.clientId = config.apiKey;
@@ -258,7 +263,11 @@ export class EtsyClient extends ECommerceAdapterBase implements IECommerceAdapte
   /**
    * Make authenticated request to Etsy API
    */
-  private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  private async request<T>(
+    method: string,
+    path: string,
+    body?: unknown,
+  ): Promise<T> {
     await this.rateLimiter.waitIfNeeded();
 
     const accessToken = await this.getAccessToken();
@@ -274,7 +283,9 @@ export class EtsyClient extends ECommerceAdapterBase implements IECommerceAdapte
     });
 
     if (!response.ok) {
-      throw new Error(`Etsy API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Etsy API error: ${response.status} ${response.statusText}`,
+      );
     }
 
     return (await response.json()) as T;
@@ -291,7 +302,9 @@ export class EtsyClient extends ECommerceAdapterBase implements IECommerceAdapte
         results: EtsyReceipt[];
       }>("GET", `/receipts?limit=${Math.min(options?.limit ?? 100, 100)}`);
 
-      orders.push(...response.results.map((receipt) => this.normalizeReceipt(receipt)));
+      orders.push(
+        ...response.results.map((receipt) => this.normalizeReceipt(receipt)),
+      );
     } catch (error) {
       this.logger.error("Failed to get orders from Etsy", error);
     }
@@ -314,7 +327,10 @@ export class EtsyClient extends ECommerceAdapterBase implements IECommerceAdapte
   /**
    * Update order
    */
-  async updateOrder(orderId: string, data: Partial<ECommerceOrder>): Promise<ECommerceOrder> {
+  async updateOrder(
+    orderId: string,
+    data: Partial<ECommerceOrder>,
+  ): Promise<ECommerceOrder> {
     await this.request<unknown>("PUT", `/receipts/${orderId}`, {
       message_from_seller: data.notes,
     });
@@ -331,9 +347,14 @@ export class EtsyClient extends ECommerceAdapterBase implements IECommerceAdapte
     try {
       const response = await this.request<{
         results: EtsyListing[];
-      }>("GET", `/shops/self/listings?limit=${Math.min(options?.limit ?? 100, 100)}&status=active`);
+      }>(
+        "GET",
+        `/shops/self/listings?limit=${Math.min(options?.limit ?? 100, 100)}&status=active`,
+      );
 
-      products.push(...response.results.map((listing) => this.normalizeListing(listing)));
+      products.push(
+        ...response.results.map((listing) => this.normalizeListing(listing)),
+      );
     } catch (error) {
       this.logger.error("Failed to get products from Etsy", error);
     }
@@ -386,7 +407,10 @@ export class EtsyClient extends ECommerceAdapterBase implements IECommerceAdapte
   /**
    * Update product (listing)
    */
-  async updateProduct(productId: string, data: Partial<ECommerceProduct>): Promise<ECommerceProduct> {
+  async updateProduct(
+    productId: string,
+    data: Partial<ECommerceProduct>,
+  ): Promise<ECommerceProduct> {
     const updateData: Record<string, unknown> = {};
 
     if (data.title) updateData.title = data.title;
@@ -422,14 +446,20 @@ export class EtsyClient extends ECommerceAdapterBase implements IECommerceAdapte
   /**
    * Update customer
    */
-  async updateCustomer(customerId: string, data: Partial<ECommerceCustomer>): Promise<ECommerceCustomer> {
+  async updateCustomer(
+    customerId: string,
+    data: Partial<ECommerceCustomer>,
+  ): Promise<ECommerceCustomer> {
     throw new Error("Etsy does not provide customer endpoints");
   }
 
   /**
    * Create fulfillment (shipment)
    */
-  async createFulfillment(orderId: string, request: FulfillmentRequest): Promise<FulfillmentResponse> {
+  async createFulfillment(
+    orderId: string,
+    request: FulfillmentRequest,
+  ): Promise<FulfillmentResponse> {
     try {
       const shipments = request.trackingNumber
         ? [
@@ -515,14 +545,12 @@ export class EtsyClient extends ECommerceAdapterBase implements IECommerceAdapte
   /**
    * Update inventory
    */
-  async updateInventory(request: InventoryUpdateRequest): Promise<ECommerceInventory> {
-    await this.request<unknown>(
-      "PUT",
-      `/listings/${request.variantId}`,
-      {
-        quantity: request.quantity,
-      },
-    );
+  async updateInventory(
+    request: InventoryUpdateRequest,
+  ): Promise<ECommerceInventory> {
+    await this.request<unknown>("PUT", `/listings/${request.variantId}`, {
+      quantity: request.quantity,
+    });
 
     return this.getInventory(request.variantId);
   }
@@ -579,10 +607,11 @@ export class EtsyClient extends ECommerceAdapterBase implements IECommerceAdapte
   private normalizeReceipt(receipt: EtsyReceipt): ECommerceOrder {
     const status: OrderStatus = this.mapReceiptStatus(receipt.status);
     const paymentStatus: PaymentStatus = "captured";
-    const fulfillmentStatus: FulfillmentStatus =
-      receipt.transactions?.some((t) => t.shipping?.length)
-        ? "complete"
-        : "pending";
+    const fulfillmentStatus: FulfillmentStatus = receipt.transactions?.some(
+      (t) => t.shipping?.length,
+    )
+      ? "complete"
+      : "pending";
 
     return {
       id: receipt.receipt_id.toString(),
@@ -625,7 +654,8 @@ export class EtsyClient extends ECommerceAdapterBase implements IECommerceAdapte
         postalCode: receipt.zip || "",
         country: "US",
       },
-      lineItems: receipt.transactions?.map((t) => this.normalizeTransaction(t)) || [],
+      lineItems:
+        receipt.transactions?.map((t) => this.normalizeTransaction(t)) || [],
       paymentMethod: receipt.payment_method,
       createdAt: new Date(receipt.creation_tsz * 1000),
       updatedAt: new Date(receipt.last_modified_tsz * 1000),
@@ -635,7 +665,9 @@ export class EtsyClient extends ECommerceAdapterBase implements IECommerceAdapte
   /**
    * Normalize Etsy transaction to line item
    */
-  private normalizeTransaction(transaction: EtsyTransaction): ECommerceLineItem {
+  private normalizeTransaction(
+    transaction: EtsyTransaction,
+  ): ECommerceLineItem {
     return {
       id: transaction.transaction_id.toString(),
       name: transaction.title || "",

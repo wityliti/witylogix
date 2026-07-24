@@ -4,7 +4,7 @@
  * ~300 lines
  */
 
-import { createHmac, randomBytes, createHash } from 'crypto';
+import { createHmac, randomBytes, createHash } from "crypto";
 
 // ───────────────────────────────────────────────────────────────────────────
 // TYPES
@@ -26,14 +26,14 @@ export interface OAuth2Config {
 
 export interface OAuth2Token {
   access_token: string;
-  token_type: 'Bearer';
+  token_type: "Bearer";
   expires_in: number;
   refresh_token?: string;
   scope?: string;
 }
 
 export interface JWTConfig {
-  algorithm: 'RS256' | 'HS256';
+  algorithm: "RS256" | "HS256";
   expirySeconds?: number;
   secret?: string;
   privateKey?: string;
@@ -55,26 +55,44 @@ export class APIKeyValidator {
 
   constructor(config: APIKeyValidatorConfig) {
     this.config = {
-      headerName: 'x-api-key',
-      queryParamName: 'api_key',
+      headerName: "x-api-key",
+      queryParamName: "api_key",
       ...config,
     };
   }
 
-  validateFromHeaders(headers: Record<string, string | string[] | undefined>): boolean {
+  validateFromHeaders(
+    headers: Record<string, string | string[] | undefined>,
+  ): boolean {
     const value = headers[this.config.headerName.toLowerCase()];
-    const key = typeof value === 'string' ? value : Array.isArray(value) ? value[0] : undefined;
+    const key =
+      typeof value === "string"
+        ? value
+        : Array.isArray(value)
+          ? value[0]
+          : undefined;
     return !!key && this.config.validKeys.includes(key);
   }
 
   validateFromQuery(query: Record<string, string | string[]>): boolean {
     const value = query[this.config.queryParamName];
-    const key = typeof value === 'string' ? value : Array.isArray(value) ? value[0] : undefined;
+    const key =
+      typeof value === "string"
+        ? value
+        : Array.isArray(value)
+          ? value[0]
+          : undefined;
     return !!key && this.config.validKeys.includes(key);
   }
 
-  validate(headers: Record<string, string | string[] | undefined>, query?: Record<string, string | string[]>): boolean {
-    return this.validateFromHeaders(headers) || (query ? this.validateFromQuery(query) : false);
+  validate(
+    headers: Record<string, string | string[] | undefined>,
+    query?: Record<string, string | string[]>,
+  ): boolean {
+    return (
+      this.validateFromHeaders(headers) ||
+      (query ? this.validateFromQuery(query) : false)
+    );
   }
 
   addKey(key: string): void {
@@ -129,7 +147,7 @@ export class OAuth2Server {
    * Generate authorization code for /authorize endpoint
    */
   generateAuthCode(redirectUri: string, scope?: string): string {
-    const code = `code_${randomBytes(16).toString('hex')}`;
+    const code = `code_${randomBytes(16).toString("hex")}`;
     const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
 
     this.authCodes.set(code, {
@@ -149,10 +167,19 @@ export class OAuth2Server {
   /**
    * Exchange authorization code for tokens (called at /token endpoint)
    */
-  exchangeAuthCode(code: string, clientId: string, clientSecret: string, redirectUri: string): OAuth2Token | null {
+  exchangeAuthCode(
+    code: string,
+    clientId: string,
+    clientSecret: string,
+    redirectUri: string,
+  ): OAuth2Token | null {
     const stored = this.authCodes.get(code);
 
-    if (!stored || stored.clientId !== clientId || stored.redirectUri !== redirectUri) {
+    if (
+      !stored ||
+      stored.clientId !== clientId ||
+      stored.redirectUri !== redirectUri
+    ) {
       return null;
     }
 
@@ -166,8 +193,8 @@ export class OAuth2Server {
     }
 
     // Generate tokens
-    const accessToken = `access_${randomBytes(32).toString('hex')}`;
-    const refreshToken = `refresh_${randomBytes(32).toString('hex')}`;
+    const accessToken = `access_${randomBytes(32).toString("hex")}`;
+    const refreshToken = `refresh_${randomBytes(32).toString("hex")}`;
     const expiresAt = Date.now() + this.config.tokenExpirySeconds! * 1000;
 
     this.tokens.set(accessToken, {
@@ -185,7 +212,7 @@ export class OAuth2Server {
 
     return {
       access_token: accessToken,
-      token_type: 'Bearer',
+      token_type: "Bearer",
       expires_in: this.config.tokenExpirySeconds!,
       refresh_token: refreshToken,
       scope: stored.scope,
@@ -195,7 +222,11 @@ export class OAuth2Server {
   /**
    * Refresh an access token
    */
-  refreshAccessToken(refreshToken: string, clientId: string, clientSecret: string): OAuth2Token | null {
+  refreshAccessToken(
+    refreshToken: string,
+    clientId: string,
+    clientSecret: string,
+  ): OAuth2Token | null {
     if (clientSecret !== this.config.clientSecret) {
       return null;
     }
@@ -211,8 +242,8 @@ export class OAuth2Server {
     }
 
     // Generate new access token
-    const newAccessToken = `access_${randomBytes(32).toString('hex')}`;
-    const newRefreshToken = `refresh_${randomBytes(32).toString('hex')}`;
+    const newAccessToken = `access_${randomBytes(32).toString("hex")}`;
+    const newRefreshToken = `refresh_${randomBytes(32).toString("hex")}`;
     const expiresAt = Date.now() + this.config.tokenExpirySeconds! * 1000;
 
     // Update mappings
@@ -230,7 +261,7 @@ export class OAuth2Server {
 
     return {
       access_token: newAccessToken,
-      token_type: 'Bearer',
+      token_type: "Bearer",
       expires_in: this.config.tokenExpirySeconds!,
       refresh_token: newRefreshToken,
       scope: stored.scope,
@@ -282,13 +313,15 @@ export class BasicAuthValidator {
   }
 
   validateFromHeader(authHeader: string | undefined): boolean {
-    if (!authHeader || !authHeader.startsWith('Basic ')) {
+    if (!authHeader || !authHeader.startsWith("Basic ")) {
       return false;
     }
 
     try {
-      const credentials = Buffer.from(authHeader.slice(6), 'base64').toString('utf-8');
-      const [username, password] = credentials.split(':');
+      const credentials = Buffer.from(authHeader.slice(6), "base64").toString(
+        "utf-8",
+      );
+      const [username, password] = credentials.split(":");
       return this.validCredentials.get(username) === password;
     } catch {
       return false;
@@ -312,7 +345,7 @@ export class BearerTokenValidator {
   }
 
   validateFromHeader(authHeader: string | undefined): boolean {
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return false;
     }
     const token = authHeader.slice(7);
@@ -342,22 +375,24 @@ export class JWTHandler {
    * Sign a JWT token using HS256 only (simplified, no RS256 support)
    */
   sign(payload: JWTPayload): string {
-    if (this.config.algorithm !== 'HS256' || !this.config.secret) {
-      throw new Error('Only HS256 with secret is supported');
+    if (this.config.algorithm !== "HS256" || !this.config.secret) {
+      throw new Error("Only HS256 with secret is supported");
     }
 
-    const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+    const header = Buffer.from(
+      JSON.stringify({ alg: "HS256", typ: "JWT" }),
+    ).toString("base64url");
     const body = Buffer.from(
       JSON.stringify({
         ...payload,
         iat: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + this.config.expirySeconds,
-      })
-    ).toString('base64url');
+      }),
+    ).toString("base64url");
 
-    const signature = createHmac('sha256', this.config.secret)
+    const signature = createHmac("sha256", this.config.secret)
       .update(`${header}.${body}`)
-      .digest('base64url');
+      .digest("base64url");
 
     return `${header}.${body}.${signature}`;
   }
@@ -366,27 +401,29 @@ export class JWTHandler {
    * Verify a JWT token
    */
   verify(token: string): JWTPayload | null {
-    if (this.config.algorithm !== 'HS256' || !this.config.secret) {
+    if (this.config.algorithm !== "HS256" || !this.config.secret) {
       return null;
     }
 
     try {
-      const [headerB64, bodyB64, signatureB64] = token.split('.');
+      const [headerB64, bodyB64, signatureB64] = token.split(".");
       if (!headerB64 || !bodyB64 || !signatureB64) {
         return null;
       }
 
       // Verify signature
-      const expectedSignature = createHmac('sha256', this.config.secret)
+      const expectedSignature = createHmac("sha256", this.config.secret)
         .update(`${headerB64}.${bodyB64}`)
-        .digest('base64url');
+        .digest("base64url");
 
       if (signatureB64 !== expectedSignature) {
         return null;
       }
 
       // Parse payload
-      const payload = JSON.parse(Buffer.from(bodyB64, 'base64url').toString('utf-8'));
+      const payload = JSON.parse(
+        Buffer.from(bodyB64, "base64url").toString("utf-8"),
+      );
 
       // Check expiration
       if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
@@ -409,28 +446,36 @@ export class HMACSignatureGenerator {
    * Generate HMAC-SHA256 signature (used by Stripe, Shopify, etc.)
    */
   static generateStripeSignature(payload: string, secret: string): string {
-    return createHmac('sha256', secret).update(payload).digest('hex');
+    return createHmac("sha256", secret).update(payload).digest("hex");
   }
 
   /**
    * Generate HMAC-SHA256 signature with timestamp (Shopify style)
    */
   static generateShopifySignature(payload: string, secret: string): string {
-    return Buffer.from(createHmac('sha256', secret).update(payload, 'utf8').digest('base64')).toString('base64');
+    return Buffer.from(
+      createHmac("sha256", secret).update(payload, "utf8").digest("base64"),
+    ).toString("base64");
   }
 
   /**
    * Generate HMAC-SHA1 signature (older providers)
    */
   static generateHMACSHA1(payload: string, secret: string): string {
-    return createHmac('sha1', secret).update(payload).digest('hex');
+    return createHmac("sha1", secret).update(payload).digest("hex");
   }
 
   /**
    * Verify HMAC-SHA256 signature
    */
-  static verifyHMACSHA256(payload: string, signature: string, secret: string): boolean {
-    const expectedSignature = createHmac('sha256', secret).update(payload).digest('hex');
+  static verifyHMACSHA256(
+    payload: string,
+    signature: string,
+    secret: string,
+  ): boolean {
+    const expectedSignature = createHmac("sha256", secret)
+      .update(payload)
+      .digest("hex");
     return signature === expectedSignature;
   }
 }

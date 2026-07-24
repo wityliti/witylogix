@@ -5,13 +5,8 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import {
-  EventWebhookBridge,
-} from "../event-bridge";
-import type {
-  EventEnvelope,
-  EventMetadata,
-} from "../../event-bus/types.js";
+import { EventWebhookBridge } from "../event-bridge";
+import type { EventEnvelope, EventMetadata } from "../../event-bus/types.js";
 import type { WebhookEndpoint } from "../types";
 
 /**
@@ -430,7 +425,9 @@ describe("EventWebhookBridge", () => {
     it("should list subscribed event types", async () => {
       const metrics = bridge.getMetrics();
       expect(metrics.subscribedEventTypes.length).toBeGreaterThan(0);
-      expect(metrics.subscriptionsCount).toBe(metrics.subscribedEventTypes.length);
+      expect(metrics.subscriptionsCount).toBe(
+        metrics.subscribedEventTypes.length,
+      );
     });
 
     it("should reset metrics", () => {
@@ -457,9 +454,7 @@ describe("EventWebhookBridge", () => {
     });
 
     it("should handle webhook endpoint fetch errors gracefully", async () => {
-      prisma.webhookEndpoint.findMany.mockRejectedValue(
-        new Error("DB error"),
-      );
+      prisma.webhookEndpoint.findMany.mockRejectedValue(new Error("DB error"));
 
       const envelope = createMockEventEnvelope();
 

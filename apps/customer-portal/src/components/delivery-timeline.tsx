@@ -1,26 +1,26 @@
-'use client';
+"use client";
 
-import { Check, Clock } from 'lucide-react';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
-import type { DeliveryTimestep } from '@/types';
+import { Check, Clock } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import type { DeliveryTimestep } from "@/types";
 
 interface DeliveryTimelineProps {
   steps: DeliveryTimestep[];
 }
 
-const stepLabels: Record<DeliveryTimestep['step'], string> = {
-  ordered: 'Order Placed',
-  confirmed: 'Confirmed',
-  'out-for-delivery': 'Out for Delivery',
-  delivered: 'Delivered',
+const stepLabels: Record<DeliveryTimestep["step"], string> = {
+  ordered: "Order Placed",
+  confirmed: "Confirmed",
+  "out-for-delivery": "Out for Delivery",
+  delivered: "Delivered",
 };
 
 export function DeliveryTimeline({ steps }: DeliveryTimelineProps) {
   return (
     <div className="space-y-0">
       {steps.map((step, index) => {
-        const isCompleted = step.status === 'completed';
+        const isCompleted = step.status === "completed";
         const isLast = index === steps.length - 1;
 
         return (
@@ -29,10 +29,10 @@ export function DeliveryTimeline({ steps }: DeliveryTimelineProps) {
             <div className="flex flex-col items-center">
               <div
                 className={cn(
-                  'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0',
+                  "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
                   isCompleted
-                    ? 'bg-wl-success-500'
-                    : 'bg-wl-neutral-800 border border-wl-border-default'
+                    ? "bg-wl-success-500"
+                    : "bg-wl-neutral-800 border border-wl-border-default",
                 )}
               >
                 {isCompleted ? (
@@ -42,24 +42,32 @@ export function DeliveryTimeline({ steps }: DeliveryTimelineProps) {
                 )}
               </div>
               {!isLast && (
-                <div className={cn(
-                  'w-px flex-1 min-h-[2rem]',
-                  isCompleted ? 'bg-wl-success-500/40' : 'bg-wl-border-subtle'
-                )} />
+                <div
+                  className={cn(
+                    "w-px flex-1 min-h-[2rem]",
+                    isCompleted
+                      ? "bg-wl-success-500/40"
+                      : "bg-wl-border-subtle",
+                  )}
+                />
               )}
             </div>
 
             {/* Content */}
             <div className="pb-6 pt-1">
-              <p className={cn(
-                'text-sm font-medium',
-                isCompleted ? 'text-wl-text-primary' : 'text-wl-text-tertiary'
-              )}>
+              <p
+                className={cn(
+                  "text-sm font-medium",
+                  isCompleted
+                    ? "text-wl-text-primary"
+                    : "text-wl-text-tertiary",
+                )}
+              >
                 {stepLabels[step.step]}
               </p>
               {step.timestamp && (
                 <p className="text-xs text-wl-text-tertiary mt-0.5">
-                  {format(step.timestamp, 'MMM d, h:mm a')}
+                  {format(step.timestamp, "MMM d, h:mm a")}
                 </p>
               )}
               {step.details && (

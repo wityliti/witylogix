@@ -2,8 +2,8 @@
  * Delivered Email Template
  */
 
-import { DeliveryEmailData } from '../types';
-import { baseLayout } from './base-layout';
+import { DeliveryEmailData } from "../types";
+import { baseLayout } from "./base-layout";
 
 export function deliveredTemplate(data: DeliveryEmailData): string {
   const content = `

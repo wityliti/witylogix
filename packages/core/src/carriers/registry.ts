@@ -4,7 +4,13 @@
  * Handles rate shopping across multiple carriers
  */
 
-import { CarrierAdapter, CarrierCode, RateRequest, RateResponse, CarrierError } from './types';
+import {
+  CarrierAdapter,
+  CarrierCode,
+  RateRequest,
+  RateResponse,
+  CarrierError,
+} from "./types";
 
 /**
  * Central registry for all carrier adapters
@@ -21,7 +27,9 @@ export class CarrierRegistry {
    */
   register(adapter: CarrierAdapter): void {
     if (this.adapters.has(adapter.code)) {
-      throw new Error(`Carrier adapter '${adapter.code}' is already registered`);
+      throw new Error(
+        `Carrier adapter '${adapter.code}' is already registered`,
+      );
     }
 
     this.adapters.set(adapter.code, adapter);
@@ -47,7 +55,7 @@ export class CarrierRegistry {
     if (!adapter) {
       throw new CarrierError(
         code,
-        'ADAPTER_NOT_FOUND',
+        "ADAPTER_NOT_FOUND",
         `Carrier adapter '${code}' is not registered`,
       );
     }
@@ -113,7 +121,7 @@ export class CarrierRegistry {
       : this.getAll();
 
     if (adaptersToQuery.length === 0) {
-      throw new Error('No carriers available for rate shopping');
+      throw new Error("No carriers available for rate shopping");
     }
 
     // Fetch rates from all adapters in parallel
@@ -125,7 +133,7 @@ export class CarrierRegistry {
         // Log error but continue with other carriers
         console.error(
           `Error fetching rates from ${adapter.code}:`,
-          error instanceof Error ? error.message : 'Unknown error',
+          error instanceof Error ? error.message : "Unknown error",
         );
         // Return empty array for this carrier
         return [];
@@ -181,7 +189,7 @@ export class CarrierRegistry {
     const rates = await this.shopRates(request, carrierCodes);
 
     if (rates.length === 0) {
-      throw new Error('No shipping rates available from any carrier');
+      throw new Error("No shipping rates available from any carrier");
     }
 
     return rates[0]; // Already sorted by price

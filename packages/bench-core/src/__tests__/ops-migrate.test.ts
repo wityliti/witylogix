@@ -54,7 +54,12 @@ function ctxOf(
       witylogix: { version: "4.0.0", channel: "stable" },
       services,
     } as unknown as Context["config"],
-    logger: { debug: () => {}, info: () => {}, warn: () => {}, error: () => {} },
+    logger: {
+      debug: () => {},
+      info: () => {},
+      warn: () => {},
+      error: () => {},
+    },
     dryRun: false,
     json: false,
   };
@@ -120,11 +125,12 @@ describe("ops/migrate.run — windowed", () => {
     expect(r.migrationsApplied).toBe(2);
     expect(stopMock).toHaveBeenCalledTimes(APP_SERVICES.length);
     expect(startMock).toHaveBeenCalledTimes(APP_SERVICES.length);
-    expect(runOneShotMock).toHaveBeenCalledWith(
-      expect.anything(),
-      "api",
-      ["pnpm", "prisma", "migrate", "deploy"],
-    );
+    expect(runOneShotMock).toHaveBeenCalledWith(expect.anything(), "api", [
+      "pnpm",
+      "prisma",
+      "migrate",
+      "deploy",
+    ]);
   });
 
   it("short-circuits when no pending migrations and --force not set", async () => {
@@ -192,7 +198,11 @@ describe("ops/migrate.run — windowed", () => {
             drained: false,
           }),
         })
-        .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({}) })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({}),
+        })
         .mockResolvedValueOnce({
           ok: true,
           status: 200,
@@ -235,7 +245,11 @@ describe("ops/migrate.run — windowed", () => {
             drained: false,
           }),
         })
-        .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({}) })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({}),
+        })
         .mockResolvedValueOnce({
           ok: true,
           status: 200,
@@ -285,9 +299,8 @@ describe("ops/migrate.run — windowed", () => {
 
     // Speed up the 15 × 2s polling loop by stubbing setTimeout to immediate
     const origSetTimeout = globalThis.setTimeout;
-    vi.stubGlobal(
-      "setTimeout",
-      (cb: (...args: unknown[]) => unknown) => origSetTimeout(cb, 0),
+    vi.stubGlobal("setTimeout", (cb: (...args: unknown[]) => unknown) =>
+      origSetTimeout(cb, 0),
     );
 
     const r = await runMigrate(ctxOf(), { skipBackup: true });
@@ -309,7 +322,11 @@ describe("ops/migrate.run — windowed", () => {
             drained: false,
           }),
         })
-        .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({}) })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({}),
+        })
         .mockResolvedValueOnce({
           ok: true,
           status: 200,
@@ -342,7 +359,11 @@ describe("ops/migrate.run — windowed", () => {
             drained: false,
           }),
         })
-        .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({}) }),
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({}),
+        }),
     );
     await expect(runMigrate(ctxOf(), { skipBackup: true })).rejects.toThrow();
 

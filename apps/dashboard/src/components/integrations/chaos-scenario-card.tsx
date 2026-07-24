@@ -164,7 +164,9 @@ export function ChaosScenarioCard({
           <div className="grid grid-cols-2 gap-4 text-xs">
             <div>
               <div className="text-wl-text-secondary mb-1">Target Provider</div>
-              <div className="font-medium text-wl-text-primary">{targetProvider}</div>
+              <div className="font-medium text-wl-text-primary">
+                {targetProvider}
+              </div>
             </div>
             {executionStart && (
               <div>
@@ -219,7 +221,9 @@ export function ChaosScenarioCard({
                     <div className="flex-1">
                       <div className="flex items-center gap-1">
                         <div className="w-2 h-2 rounded-full bg-wl-success-500" />
-                        <span className="text-xs text-wl-text-secondary">Passed</span>
+                        <span className="text-xs text-wl-text-secondary">
+                          Passed
+                        </span>
                         <span className="ml-auto text-sm font-semibold text-wl-success-600">
                           {resultsSummary.assertionsPassed}
                         </span>
@@ -228,7 +232,9 @@ export function ChaosScenarioCard({
                     <div className="flex-1">
                       <div className="flex items-center gap-1">
                         <div className="w-2 h-2 rounded-full bg-wl-danger-500" />
-                        <span className="text-xs text-wl-text-secondary">Failed</span>
+                        <span className="text-xs text-wl-text-secondary">
+                          Failed
+                        </span>
                         <span className="ml-auto text-sm font-semibold text-wl-danger-600">
                           {resultsSummary.assertionsFailed}
                         </span>
@@ -250,13 +256,16 @@ export function ChaosScenarioCard({
                           "font-semibold",
                           resultsSummary.metricsImpact.latencyChangePercent > 0
                             ? "text-wl-danger-600"
-                            : "text-wl-success-600"
+                            : "text-wl-success-600",
                         )}
                       >
                         {resultsSummary.metricsImpact.latencyChangePercent > 0
                           ? "+"
                           : ""}
-                        {resultsSummary.metricsImpact.latencyChangePercent.toFixed(1)}%
+                        {resultsSummary.metricsImpact.latencyChangePercent.toFixed(
+                          1,
+                        )}
+                        %
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
@@ -264,15 +273,19 @@ export function ChaosScenarioCard({
                       <span
                         className={cn(
                           "font-semibold",
-                          resultsSummary.metricsImpact.errorRateChangePercent > 0
+                          resultsSummary.metricsImpact.errorRateChangePercent >
+                            0
                             ? "text-wl-danger-600"
-                            : "text-wl-success-600"
+                            : "text-wl-success-600",
                         )}
                       >
                         {resultsSummary.metricsImpact.errorRateChangePercent > 0
                           ? "+"
                           : ""}
-                        {resultsSummary.metricsImpact.errorRateChangePercent.toFixed(1)}%
+                        {resultsSummary.metricsImpact.errorRateChangePercent.toFixed(
+                          1,
+                        )}
+                        %
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
@@ -280,15 +293,20 @@ export function ChaosScenarioCard({
                       <span
                         className={cn(
                           "font-semibold",
-                          resultsSummary.metricsImpact.throughputChangePercent < 0
+                          resultsSummary.metricsImpact.throughputChangePercent <
+                            0
                             ? "text-wl-danger-600"
-                            : "text-wl-success-600"
+                            : "text-wl-success-600",
                         )}
                       >
-                        {resultsSummary.metricsImpact.throughputChangePercent > 0
+                        {resultsSummary.metricsImpact.throughputChangePercent >
+                        0
                           ? "+"
                           : ""}
-                        {resultsSummary.metricsImpact.throughputChangePercent.toFixed(1)}%
+                        {resultsSummary.metricsImpact.throughputChangePercent.toFixed(
+                          1,
+                        )}
+                        %
                       </span>
                     </div>
                   </div>
@@ -307,7 +325,7 @@ export function ChaosScenarioCard({
               className={cn(
                 "flex-1 px-3 py-2 rounded text-xs font-medium transition-colors",
                 "bg-wl-primary-500 text-white hover:bg-wl-primary-600",
-                isExecuting && "opacity-60 cursor-not-allowed"
+                isExecuting && "opacity-60 cursor-not-allowed",
               )}
             >
               {isExecuting ? "Starting..." : "Run"}

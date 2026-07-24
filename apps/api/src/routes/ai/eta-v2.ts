@@ -12,17 +12,17 @@
  *   GET    /api/ai/eta-v2/health              Health check
  */
 
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { z } from 'zod';
-import { requireAuth, requireRole } from '../../middleware/auth.js';
-import { tenantContext } from '../../middleware/tenant.js';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import { z } from "zod";
+import { requireAuth, requireRole } from "../../middleware/auth.js";
+import { tenantContext } from "../../middleware/tenant.js";
 import {
   EnsemblePredictor,
   featureExtractor,
   ModelPerformanceTracker,
   type HistoricalDelivery,
   type FeatureVector,
-} from '@witylogix/core/ai-eta-v2';
+} from "@witylogix/core/ai-eta-v2";
 
 // ─── Global Instances ───────────────────────────────────────────
 // In production, these would be stored in a database/cache
@@ -54,9 +54,7 @@ const predictETASchema = z.object({
   distance_km: z.number().positive(),
   departure_time: z.string().datetime(),
   driver_experience_years: z.number().min(0).default(3),
-  vehicle_type: z
-    .enum(['bike', 'car', 'van', 'truck'])
-    .default('car'),
+  vehicle_type: z.enum(["bike", "car", "van", "truck"]).default("car"),
   num_stops_remaining: z.number().min(0).default(1),
   historical_avg_minutes: z.number().positive().default(30),
   weather_intensity: z.number().min(0).max(10).default(0),
@@ -77,15 +75,21 @@ const trainSchema = z.object({
     z.object({
       delivery_id: z.string(),
       distance_km: z.number(),
-      zone_type: z.enum(['urban-core', 'urban', 'suburban', 'rural', 'highway']),
+      zone_type: z.enum([
+        "urban-core",
+        "urban",
+        "suburban",
+        "rural",
+        "highway",
+      ]),
       hour: z.number().min(0).max(23),
       day_of_week: z.number().min(0).max(6),
       is_holiday: z.boolean(),
-      weather_condition: z.enum(['clear', 'rain', 'snow', 'fog', 'unknown']),
+      weather_condition: z.enum(["clear", "rain", "snow", "fog", "unknown"]),
       weather_intensity: z.number().min(0).max(10),
-      traffic_condition: z.enum(['light', 'moderate', 'heavy', 'unknown']),
+      traffic_condition: z.enum(["light", "moderate", "heavy", "unknown"]),
       driver_experience_score: z.number().min(0).max(1),
-      vehicle_type: z.enum(['bike', 'car', 'van', 'truck']),
+      vehicle_type: z.enum(["bike", "car", "van", "truck"]),
       num_stops: z.number().min(0),
       actual_duration_minutes: z.number().positive(),
       temperature_celsius: z.number(),
@@ -102,18 +106,20 @@ const calibrateSchema = z.object({
 
 // ─── Route Plugin ───────────────────────────────────────────
 
-export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<void> {
+export default async function aiETAV2Routes(
+  fastify: FastifyInstance,
+): Promise<void> {
   // All routes require authentication + tenant context
-  fastify.addHook('preHandler', requireAuth);
-  fastify.addHook('preHandler', tenantContext);
+  fastify.addHook("preHandler", requireAuth);
+  fastify.addHook("preHandler", tenantContext);
 
   // ── POST /api/ai/eta-v2/predict — Single Prediction ────────────
 
   fastify.post<{ Body: z.infer<typeof predictETASchema> }>(
-    '/predict',
+    "/predict",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const body = predictETASchema.parse(request.body);
-      const tenantId = (request as any).tenantId || 'default';
+      const tenantId = (request as any).tenantId || "default";
 
       try {
         const ensemble = getEnsemble(tenantId);
@@ -139,7 +145,7 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
 
         // Record this prediction for tracking
         tracker.recordResult(
-          'ensemble',
+          "ensemble",
           prediction.predicted_duration_minutes,
           0, // Actual unknown at prediction time
         );
@@ -158,10 +164,10 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error({ err: error }, 'Error predicting ETA:');
+        fastify.log.error({ err: error }, "Error predicting ETA:");
         return reply.status(500).send({
-          error: 'Failed to predict ETA',
-          message: error instanceof Error ? error.message : 'Unknown error',
+          error: "Failed to predict ETA",
+          message: error instanceof Error ? error.message : "Unknown error",
         });
       }
     },
@@ -170,10 +176,10 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
   // ── POST /api/ai/eta-v2/batch-predict — Batch Predictions ──────
 
   fastify.post<{ Body: z.infer<typeof batchPredictSchema> }>(
-    '/batch-predict',
+    "/batch-predict",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const body = batchPredictSchema.parse(request.body);
-      const tenantId = (request as any).tenantId || 'default';
+      const tenantId = (request as any).tenantId || "default";
 
       try {
         const ensemble = getEnsemble(tenantId);
@@ -209,7 +215,7 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
           });
 
           tracker.recordResult(
-            'ensemble',
+            "ensemble",
             prediction.predicted_duration_minutes,
             0,
           );
@@ -225,10 +231,10 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error({ err: error }, 'Error in batch ETA prediction:');
+        fastify.log.error({ err: error }, "Error in batch ETA prediction:");
         return reply.status(500).send({
-          error: 'Failed to predict batch ETAs',
-          message: error instanceof Error ? error.message : 'Unknown error',
+          error: "Failed to predict batch ETAs",
+          message: error instanceof Error ? error.message : "Unknown error",
         });
       }
     },
@@ -237,51 +243,53 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
   // ── POST /api/ai/eta-v2/train — Trigger Retraining ────────────
 
   fastify.post<{ Body: z.infer<typeof trainSchema> }>(
-    '/train',
+    "/train",
     {
-      preHandler: [requireRole('ADMIN')],
+      preHandler: [requireRole("ADMIN")],
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const body = trainSchema.parse(request.body);
-      const tenantId = (request as any).tenantId || 'default';
+      const tenantId = (request as any).tenantId || "default";
 
       try {
         const ensemble = getEnsemble(tenantId);
 
         // Convert to proper types
-        const deliveries: HistoricalDelivery[] = body.historical_deliveries.map((d) => ({
-          delivery_id: d.delivery_id,
-          distance_km: d.distance_km,
-          zone_type: d.zone_type,
-          hour: d.hour,
-          day_of_week: d.day_of_week,
-          is_holiday: d.is_holiday,
-          weather_condition: d.weather_condition,
-          weather_intensity: d.weather_intensity,
-          traffic_condition: d.traffic_condition,
-          driver_experience_score: d.driver_experience_score,
-          vehicle_type: d.vehicle_type,
-          num_stops: d.num_stops,
-          actual_duration_minutes: d.actual_duration_minutes,
-          timestamp: new Date(),
-          temperature_celsius: 20,
-          wind_speed_kmh: 0,
-          precipitation_mm: 0,
-        }));
+        const deliveries: HistoricalDelivery[] = body.historical_deliveries.map(
+          (d) => ({
+            delivery_id: d.delivery_id,
+            distance_km: d.distance_km,
+            zone_type: d.zone_type,
+            hour: d.hour,
+            day_of_week: d.day_of_week,
+            is_holiday: d.is_holiday,
+            weather_condition: d.weather_condition,
+            weather_intensity: d.weather_intensity,
+            traffic_condition: d.traffic_condition,
+            driver_experience_score: d.driver_experience_score,
+            vehicle_type: d.vehicle_type,
+            num_stops: d.num_stops,
+            actual_duration_minutes: d.actual_duration_minutes,
+            timestamp: new Date(),
+            temperature_celsius: 20,
+            wind_speed_kmh: 0,
+            precipitation_mm: 0,
+          }),
+        );
 
         ensemble.fit(deliveries);
 
         return reply.send({
           success: true,
           samples_trained: deliveries.length,
-          message: 'Models trained successfully',
+          message: "Models trained successfully",
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error({ err: error }, 'Error training models:');
+        fastify.log.error({ err: error }, "Error training models:");
         return reply.status(500).send({
-          error: 'Failed to train models',
-          message: error instanceof Error ? error.message : 'Unknown error',
+          error: "Failed to train models",
+          message: error instanceof Error ? error.message : "Unknown error",
         });
       }
     },
@@ -290,9 +298,9 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
   // ── GET /api/ai/eta-v2/model-performance — Performance Metrics ──
 
   fastify.get(
-    '/model-performance',
+    "/model-performance",
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const tenantId = (request as any).tenantId || 'default';
+      const tenantId = (request as any).tenantId || "default";
       const { model_name } = request.query as { model_name?: string };
 
       try {
@@ -306,9 +314,9 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error({ err: error }, 'Error getting model performance:');
+        fastify.log.error({ err: error }, "Error getting model performance:");
         return reply.status(500).send({
-          error: 'Failed to get model performance',
+          error: "Failed to get model performance",
         });
       }
     },
@@ -317,9 +325,9 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
   // ── GET /api/ai/eta-v2/feature-importance — Feature Importance ──
 
   fastify.get(
-    '/feature-importance',
+    "/feature-importance",
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const tenantId = (request as any).tenantId || 'default';
+      const tenantId = (request as any).tenantId || "default";
 
       try {
         const ensemble = getEnsemble(tenantId);
@@ -336,9 +344,9 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error({ err: error }, 'Error getting feature importance:');
+        fastify.log.error({ err: error }, "Error getting feature importance:");
         return reply.status(500).send({
-          error: 'Failed to get feature importance',
+          error: "Failed to get feature importance",
         });
       }
     },
@@ -347,18 +355,18 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
   // ── POST /api/ai/eta-v2/calibrate — Calibrate Models ──────────
 
   fastify.post<{ Body: z.infer<typeof calibrateSchema> }>(
-    '/calibrate',
+    "/calibrate",
     {
-      preHandler: [requireRole('ADMIN')],
+      preHandler: [requireRole("ADMIN")],
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const body = calibrateSchema.parse(request.body);
-      const tenantId = (request as any).tenantId || 'default';
+      const tenantId = (request as any).tenantId || "default";
 
       try {
         if (body.predictions.length !== body.actuals.length) {
           return reply.status(400).send({
-            error: 'Predictions and actuals arrays must have same length',
+            error: "Predictions and actuals arrays must have same length",
           });
         }
 
@@ -371,9 +379,9 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error({ err: error }, 'Error calibrating models:');
+        fastify.log.error({ err: error }, "Error calibrating models:");
         return reply.status(500).send({
-          error: 'Failed to calibrate models',
+          error: "Failed to calibrate models",
         });
       }
     },
@@ -382,16 +390,18 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
   // ── GET /api/ai/eta-v2/accuracy-report — Accuracy Report ───────
 
   fastify.get(
-    '/accuracy-report',
+    "/accuracy-report",
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const tenantId = (request as any).tenantId || 'default';
+      const tenantId = (request as any).tenantId || "default";
       const { days } = request.query as { days?: string };
 
       try {
         const tracker = getTracker(tenantId);
-        const daysBack = parseInt(days || '7', 10);
+        const daysBack = parseInt(days || "7", 10);
         const now = new Date();
-        const periodStart = new Date(now.getTime() - daysBack * 24 * 60 * 60 * 1000);
+        const periodStart = new Date(
+          now.getTime() - daysBack * 24 * 60 * 60 * 1000,
+        );
 
         const report = tracker.generateReport(periodStart, now);
 
@@ -401,9 +411,9 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error({ err: error }, 'Error generating accuracy report:');
+        fastify.log.error({ err: error }, "Error generating accuracy report:");
         return reply.status(500).send({
-          error: 'Failed to generate accuracy report',
+          error: "Failed to generate accuracy report",
         });
       }
     },
@@ -412,10 +422,10 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
   // ── GET /api/ai/eta-v2/health — Health Check ──────────────────
 
   fastify.get(
-    '/health',
+    "/health",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const tenantId = (request as any).tenantId || 'default';
+        const tenantId = (request as any).tenantId || "default";
         const ensemble = getEnsemble(tenantId);
         const weights = ensemble.getWeights();
 
@@ -430,22 +440,23 @@ export default async function aiETAV2Routes(fastify: FastifyInstance): Promise<v
 
         return reply.send({
           healthy,
-          status: healthy ? 'operational' : 'degraded',
+          status: healthy ? "operational" : "degraded",
           models: {
             time_of_day_weight: weights.timeOfDay.toFixed(3),
             distance_decay_weight: weights.distanceDecay.toFixed(3),
-            historical_similarity_weight: weights.historicalSimilarity.toFixed(3),
+            historical_similarity_weight:
+              weights.historicalSimilarity.toFixed(3),
             traffic_weight: weights.traffic.toFixed(3),
             weather_weight: weights.weather.toFixed(3),
           },
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        fastify.log.error({ err: error }, 'Error checking health:');
+        fastify.log.error({ err: error }, "Error checking health:");
         return reply.status(500).send({
           healthy: false,
-          status: 'error',
-          error: 'Health check failed',
+          status: "error",
+          error: "Health check failed",
         });
       }
     },

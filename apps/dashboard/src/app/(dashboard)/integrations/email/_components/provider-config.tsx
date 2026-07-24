@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Copy, Settings, Plus } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Copy, Settings, Plus } from "lucide-react";
 
 interface Domain {
   domain: string;
@@ -17,8 +17,8 @@ interface Domain {
 
 interface ProviderConfigProps {
   name: string;
-  status: 'active' | 'inactive' | 'error';
-  configType: 'api_key' | 'oauth';
+  status: "active" | "inactive" | "error";
+  configType: "api_key" | "oauth";
   apiKey?: string;
   domains: Domain[];
   sendingLimits: {
@@ -41,7 +41,7 @@ export function ProviderConfig({
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>Configuration</span>
-          <Badge variant={status === 'active' ? 'success' : 'default'}>
+          <Badge variant={status === "active" ? "success" : "default"}>
             {status}
           </Badge>
         </CardTitle>
@@ -54,7 +54,7 @@ export function ProviderConfig({
           </h4>
           <div className="p-4 bg-wl-bg-surface rounded-lg border border-wl-border-default">
             <div className="text-sm text-gray-400 mb-2">
-              {configType === 'api_key' ? 'API Key' : 'OAuth 2.0'}
+              {configType === "api_key" ? "API Key" : "OAuth 2.0"}
             </div>
             {apiKey && (
               <div className="font-mono text-xs text-gray-500 flex items-center justify-between p-2 bg-wl-bg-root rounded">
@@ -86,8 +86,8 @@ export function ProviderConfig({
                   <div className="font-mono text-sm text-white">
                     {domain.domain}
                   </div>
-                  <Badge variant={domain.verified ? 'success' : 'warning'}>
-                    {domain.verified ? 'Verified' : 'Pending'}
+                  <Badge variant={domain.verified ? "success" : "warning"}>
+                    {domain.verified ? "Verified" : "Pending"}
                   </Badge>
                 </div>
                 {domain.dnsRecords.length > 0 && (
@@ -98,7 +98,7 @@ export function ProviderConfig({
                         className="text-xs p-2 bg-wl-bg-root rounded font-mono text-gray-500"
                       >
                         <div>
-                          <span className="text-cyan-400">{record.type}</span>{' '}
+                          <span className="text-cyan-400">{record.type}</span>{" "}
                           {record.name}
                         </div>
                         <div className="text-gray-400 mt-1">{record.value}</div>
@@ -146,7 +146,7 @@ export function ProviderConfig({
 
         {/* Actions */}
         <div className="flex gap-2 pt-4 border-t border-wl-border-default">
-          {status === 'active' && (
+          {status === "active" && (
             <>
               <Button variant="secondary" size="sm">
                 <Settings className="w-4 h-4 mr-1" />
@@ -157,7 +157,7 @@ export function ProviderConfig({
               </Button>
             </>
           )}
-          {status === 'inactive' && (
+          {status === "inactive" && (
             <Button variant="primary" size="sm" className="w-full">
               Connect Provider
             </Button>

@@ -78,14 +78,16 @@ export function EventCard({
     <Card
       className={cn(
         "hover:border-wl-border-default transition-all duration-200",
-        expanded && "border-wl-border-default"
+        expanded && "border-wl-border-default",
       )}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-4 pb-4 border-b border-wl-border-subtle">
         <div className="flex items-start gap-3 flex-1 min-w-0">
           {/* Icon */}
-          <div className="flex-shrink-0 text-wl-text-secondary mt-1">{icon}</div>
+          <div className="flex-shrink-0 text-wl-text-secondary mt-1">
+            {icon}
+          </div>
 
           {/* Content */}
           <div className="flex-1 min-w-0">
@@ -118,7 +120,8 @@ export function EventCard({
             {/* Entity Type and Correlation ID */}
             <div className="flex items-center gap-3 mt-2 text-xs text-wl-text-tertiary flex-wrap">
               <span className="inline-block">
-                Entity: <span className="text-wl-text-secondary">{entityType}</span>
+                Entity:{" "}
+                <span className="text-wl-text-secondary">{entityType}</span>
               </span>
               {correlationId && (
                 <span className="inline-block">
@@ -151,7 +154,7 @@ export function EventCard({
               "flex items-center justify-center",
               "w-8 h-8 rounded-md",
               "text-wl-text-secondary hover:text-wl-text-primary hover:bg-wl-bg-overlay",
-              "transition-colors duration-200"
+              "transition-colors duration-200",
             )}
             aria-label={expanded ? "Collapse payload" : "Expand payload"}
           >

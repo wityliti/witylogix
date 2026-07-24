@@ -1,24 +1,40 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import dynamic from 'next/dynamic';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { useApiList } from '@/hooks/use-api';
-import { api } from '@/lib/api';
-import type { OrderPin, OrderPinStatus } from '@/components/map/order-layer';
-import { ClipboardList, Plus, Search, X, List, Map, MapPin } from 'lucide-react';
+import { useState, useMemo } from "react";
+import dynamic from "next/dynamic";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { useApiList } from "@/hooks/use-api";
+import { api } from "@/lib/api";
+import type { OrderPin, OrderPinStatus } from "@/components/map/order-layer";
+import {
+  ClipboardList,
+  Plus,
+  Search,
+  X,
+  List,
+  Map,
+  MapPin,
+} from "lucide-react";
 
-const JobsMapView = dynamic(() => import('./components/jobs-map-view'), { ssr: false });
+const JobsMapView = dynamic(() => import("./components/jobs-map-view"), {
+  ssr: false,
+});
 
-type WorkOrderStatus = 'created' | 'scheduled' | 'dispatched' | 'in_progress' | 'completed' | 'cancelled';
-type WorkOrderPriority = 'low' | 'medium' | 'high' | 'urgent';
-type WorkOrderType = 'installation' | 'maintenance' | 'repair' | 'inspection';
+type WorkOrderStatus =
+  | "created"
+  | "scheduled"
+  | "dispatched"
+  | "in_progress"
+  | "completed"
+  | "cancelled";
+type WorkOrderPriority = "low" | "medium" | "high" | "urgent";
+type WorkOrderType = "installation" | "maintenance" | "repair" | "inspection";
 
 interface RawOrder {
   id: string;
@@ -32,7 +48,12 @@ interface RawOrder {
   deliveryDate: string | null;
   updatedAt: string;
   driver: { id: string; name: string; phone: string } | null;
-  timeSlot: { id: string; name: string; startTime: string; endTime: string } | null;
+  timeSlot: {
+    id: string;
+    name: string;
+    startTime: string;
+    endTime: string;
+  } | null;
 }
 
 interface WorkOrder {
@@ -53,43 +74,48 @@ interface WorkOrder {
 }
 
 function toJobPinStatus(status: WorkOrderStatus): OrderPinStatus {
-  if (status === 'created' || status === 'scheduled') return 'pending';
-  if (status === 'dispatched' || status === 'in_progress') return 'in_transit';
-  if (status === 'cancelled') return 'delayed';
-  return 'assigned';
+  if (status === "created" || status === "scheduled") return "pending";
+  if (status === "dispatched" || status === "in_progress") return "in_transit";
+  if (status === "cancelled") return "delayed";
+  return "assigned";
 }
 
-function toJobPinPriority(priority: WorkOrderPriority): 'low' | 'medium' | 'high' {
-  if (priority === 'urgent' || priority === 'high') return 'high';
-  if (priority === 'medium') return 'medium';
-  return 'low';
+function toJobPinPriority(
+  priority: WorkOrderPriority,
+): "low" | "medium" | "high" {
+  if (priority === "urgent" || priority === "high") return "high";
+  if (priority === "medium") return "medium";
+  return "low";
 }
 
 const statusVariant = (
-  status: WorkOrderStatus
-): 'success' | 'warning' | 'info' | 'primary' | 'default' => {
-  const map: Record<WorkOrderStatus, 'success' | 'warning' | 'info' | 'primary' | 'default'> = {
-    created: 'default',
-    scheduled: 'info',
-    dispatched: 'info',
-    in_progress: 'warning',
-    completed: 'success',
-    cancelled: 'default',
+  status: WorkOrderStatus,
+): "success" | "warning" | "info" | "primary" | "default" => {
+  const map: Record<
+    WorkOrderStatus,
+    "success" | "warning" | "info" | "primary" | "default"
+  > = {
+    created: "default",
+    scheduled: "info",
+    dispatched: "info",
+    in_progress: "warning",
+    completed: "success",
+    cancelled: "default",
   };
   return map[status];
 };
 
 const priorityVariant = (
-  priority: WorkOrderPriority
-): 'danger' | 'warning' | 'info' | 'primary' | 'default' | 'success' => {
+  priority: WorkOrderPriority,
+): "danger" | "warning" | "info" | "primary" | "default" | "success" => {
   const map: Record<
     WorkOrderPriority,
-    'danger' | 'warning' | 'info' | 'primary' | 'default' | 'success'
+    "danger" | "warning" | "info" | "primary" | "default" | "success"
   > = {
-    low: 'default',
-    medium: 'info',
-    high: 'warning',
-    urgent: 'danger',
+    low: "default",
+    medium: "info",
+    high: "warning",
+    urgent: "danger",
   };
   return map[priority];
 };
@@ -105,43 +131,53 @@ interface CreateWorkOrderForm {
 }
 
 const DEFAULT_FORM: CreateWorkOrderForm = {
-  customerName: '',
-  customerPhone: '',
-  serviceType: 'installation',
-  priority: 'medium',
-  preferredDate: '',
-  description: '',
-  location: '',
+  customerName: "",
+  customerPhone: "",
+  serviceType: "installation",
+  priority: "medium",
+  preferredDate: "",
+  description: "",
+  location: "",
 };
 
 export default function JobsPage() {
-  const [statusFilter, setStatusFilter] = useState<WorkOrderStatus | 'all'>('all');
-  const [priorityFilter, setPriorityFilter] = useState<WorkOrderPriority | 'all'>('all');
-  const [typeFilter, setTypeFilter] = useState<WorkOrderType | 'all'>('all');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<WorkOrderStatus | "all">(
+    "all",
+  );
+  const [priorityFilter, setPriorityFilter] = useState<
+    WorkOrderPriority | "all"
+  >("all");
+  const [typeFilter, setTypeFilter] = useState<WorkOrderType | "all">("all");
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [form, setForm] = useState<CreateWorkOrderForm>(DEFAULT_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [view, setView] = useState<'list' | 'map'>('list');
+  const [view, setView] = useState<"list" | "map">("list");
 
-  const { items: allOrders, loading, error, refetch } = useApiList<WorkOrder>(
-    '/api/v4/field-service/jobs'
-  );
+  const {
+    items: allOrders,
+    loading,
+    error,
+    refetch,
+  } = useApiList<WorkOrder>("/api/v4/field-service/jobs");
 
   const filteredOrders = useMemo(() => {
     let result = [...allOrders];
-    if (statusFilter !== 'all') result = result.filter((o) => o.status === statusFilter);
-    if (priorityFilter !== 'all') result = result.filter((o) => o.priority === priorityFilter);
-    if (typeFilter !== 'all') result = result.filter((o) => o.serviceType === typeFilter);
+    if (statusFilter !== "all")
+      result = result.filter((o) => o.status === statusFilter);
+    if (priorityFilter !== "all")
+      result = result.filter((o) => o.priority === priorityFilter);
+    if (typeFilter !== "all")
+      result = result.filter((o) => o.serviceType === typeFilter);
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter(
         (o) =>
           o.jobNumber.toLowerCase().includes(term) ||
           o.customerName.toLowerCase().includes(term) ||
-          (o.description?.toLowerCase().includes(term) ?? false)
+          (o.description?.toLowerCase().includes(term) ?? false),
       );
     }
     return result;
@@ -165,18 +201,24 @@ export default function JobsPage() {
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
-  const selectedJobData = selectedJob ? allOrders.find((o) => o.id === selectedJob) : null;
+  const selectedJobData = selectedJob
+    ? allOrders.find((o) => o.id === selectedJob)
+    : null;
 
   async function handleCreateOrder(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.customerName.trim() || !form.description.trim() || !form.location.trim()) {
-      setSubmitError('Customer name, description, and location are required.');
+    if (
+      !form.customerName.trim() ||
+      !form.description.trim() ||
+      !form.location.trim()
+    ) {
+      setSubmitError("Customer name, description, and location are required.");
       return;
     }
     setSubmitting(true);
     setSubmitError(null);
     try {
-      await api.post('/api/v4/orders', {
+      await api.post("/api/v4/orders", {
         customerName: form.customerName,
         customerPhone: form.customerPhone || undefined,
         serviceType: form.serviceType,
@@ -184,13 +226,15 @@ export default function JobsPage() {
         deliveryDate: form.preferredDate || undefined,
         notes: form.description,
         addressLine1: form.location,
-        type: 'field-service',
+        type: "field-service",
       });
       setForm(DEFAULT_FORM);
       setShowCreateForm(false);
       await refetch();
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : 'Failed to create work order');
+      setSubmitError(
+        err instanceof Error ? err.message : "Failed to create work order",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -206,28 +250,35 @@ export default function JobsPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-content-primary mb-2">Work Order Management</h1>
+            <h1 className="text-3xl font-bold text-content-primary mb-2">
+              Work Order Management
+            </h1>
             <p className="text-content-secondary">
-              {filteredOrders.length} orders ·{' '}
-              {allOrders.filter((o) => o.status === 'completed').length} completed today
+              {filteredOrders.length} orders ·{" "}
+              {allOrders.filter((o) => o.status === "completed").length}{" "}
+              completed today
             </p>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex rounded overflow-hidden border border-border-subtle">
               <button
-                onClick={() => setView('list')}
+                onClick={() => setView("list")}
                 className={cn(
-                  'px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors',
-                  view === 'list' ? 'bg-brand-primary text-white' : 'bg-transparent text-content-secondary hover:text-content-primary',
+                  "px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors",
+                  view === "list"
+                    ? "bg-brand-primary text-white"
+                    : "bg-transparent text-content-secondary hover:text-content-primary",
                 )}
               >
                 <List size={13} /> List
               </button>
               <button
-                onClick={() => setView('map')}
+                onClick={() => setView("map")}
                 className={cn(
-                  'px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors border-l border-border-subtle',
-                  view === 'map' ? 'bg-brand-primary text-white' : 'bg-transparent text-content-secondary hover:text-content-primary',
+                  "px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors border-l border-border-subtle",
+                  view === "map"
+                    ? "bg-brand-primary text-white"
+                    : "bg-transparent text-content-secondary hover:text-content-primary",
                 )}
               >
                 <Map size={13} /> Map
@@ -254,42 +305,52 @@ export default function JobsPage() {
         <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-content-secondary text-sm font-medium">Total Orders</span>
+              <span className="text-content-secondary text-sm font-medium">
+                Total Orders
+              </span>
               <ClipboardList className="text-brand-primary" size={20} />
             </div>
-            <p className="text-3xl font-bold text-content-primary">{allOrders.length}</p>
+            <p className="text-3xl font-bold text-content-primary">
+              {allOrders.length}
+            </p>
           </div>
         </Card>
         <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-content-secondary text-sm font-medium">In Progress</span>
+              <span className="text-content-secondary text-sm font-medium">
+                In Progress
+              </span>
               <div className="w-5 h-5 rounded-full bg-warning" />
             </div>
             <p className="text-3xl font-bold text-content-primary">
-              {allOrders.filter((o) => o.status === 'in_progress').length}
+              {allOrders.filter((o) => o.status === "in_progress").length}
             </p>
           </div>
         </Card>
         <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-content-secondary text-sm font-medium">Completed</span>
+              <span className="text-content-secondary text-sm font-medium">
+                Completed
+              </span>
               <div className="w-5 h-5 rounded-full bg-success" />
             </div>
             <p className="text-3xl font-bold text-content-primary">
-              {allOrders.filter((o) => o.status === 'completed').length}
+              {allOrders.filter((o) => o.status === "completed").length}
             </p>
           </div>
         </Card>
         <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-content-secondary text-sm font-medium">Urgent</span>
+              <span className="text-content-secondary text-sm font-medium">
+                Urgent
+              </span>
               <div className="w-5 h-5 rounded-full bg-danger" />
             </div>
             <p className="text-3xl font-bold text-content-primary">
-              {allOrders.filter((o) => o.priority === 'urgent').length}
+              {allOrders.filter((o) => o.priority === "urgent").length}
             </p>
           </div>
         </Card>
@@ -327,7 +388,7 @@ export default function JobsPage() {
                     type="text"
                     placeholder="John Smith"
                     value={form.customerName}
-                    onChange={(e) => updateForm('customerName', e.target.value)}
+                    onChange={(e) => updateForm("customerName", e.target.value)}
                     className="w-full px-3 py-2 rounded border border-border-subtle bg-surface-primary text-content-primary text-sm focus:border-brand-primary focus:outline-none transition-colors"
                     required
                   />
@@ -340,7 +401,9 @@ export default function JobsPage() {
                     type="tel"
                     placeholder="+1 555-0000"
                     value={form.customerPhone}
-                    onChange={(e) => updateForm('customerPhone', e.target.value)}
+                    onChange={(e) =>
+                      updateForm("customerPhone", e.target.value)
+                    }
                     className="w-full px-3 py-2 rounded border border-border-subtle bg-surface-primary text-content-primary text-sm focus:border-brand-primary focus:outline-none transition-colors"
                   />
                 </div>
@@ -355,7 +418,7 @@ export default function JobsPage() {
                   <select
                     value={form.serviceType}
                     onChange={(e) =>
-                      updateForm('serviceType', e.target.value as WorkOrderType)
+                      updateForm("serviceType", e.target.value as WorkOrderType)
                     }
                     className="w-full px-3 py-2 rounded border border-border-subtle bg-surface-primary text-content-primary text-sm focus:border-brand-primary focus:outline-none transition-colors"
                   >
@@ -372,7 +435,10 @@ export default function JobsPage() {
                   <select
                     value={form.priority}
                     onChange={(e) =>
-                      updateForm('priority', e.target.value as WorkOrderPriority)
+                      updateForm(
+                        "priority",
+                        e.target.value as WorkOrderPriority,
+                      )
                     }
                     className="w-full px-3 py-2 rounded border border-border-subtle bg-surface-primary text-content-primary text-sm focus:border-brand-primary focus:outline-none transition-colors"
                   >
@@ -389,7 +455,9 @@ export default function JobsPage() {
                   <input
                     type="date"
                     value={form.preferredDate}
-                    onChange={(e) => updateForm('preferredDate', e.target.value)}
+                    onChange={(e) =>
+                      updateForm("preferredDate", e.target.value)
+                    }
                     className="w-full px-3 py-2 rounded border border-border-subtle bg-surface-primary text-content-primary text-sm focus:border-brand-primary focus:outline-none transition-colors"
                   />
                 </div>
@@ -404,7 +472,7 @@ export default function JobsPage() {
                   placeholder="Describe the work needed..."
                   rows={4}
                   value={form.description}
-                  onChange={(e) => updateForm('description', e.target.value)}
+                  onChange={(e) => updateForm("description", e.target.value)}
                   className="w-full px-3 py-2 rounded border border-border-subtle bg-surface-primary text-content-primary text-sm focus:border-brand-primary focus:outline-none transition-colors"
                   required
                 />
@@ -419,7 +487,7 @@ export default function JobsPage() {
                   type="text"
                   placeholder="123 Main St, New York, NY"
                   value={form.location}
-                  onChange={(e) => updateForm('location', e.target.value)}
+                  onChange={(e) => updateForm("location", e.target.value)}
                   className="w-full px-3 py-2 rounded border border-border-subtle bg-surface-primary text-content-primary text-sm focus:border-brand-primary focus:outline-none transition-colors"
                   required
                 />
@@ -433,7 +501,7 @@ export default function JobsPage() {
                   type="submit"
                   disabled={submitting}
                 >
-                  {submitting ? 'Creating...' : 'Create Work Order'}
+                  {submitting ? "Creating..." : "Create Work Order"}
                 </Button>
                 <Button
                   variant="secondary"
@@ -469,61 +537,69 @@ export default function JobsPage() {
           <div className="flex gap-2 flex-wrap">
             {(
               [
-                'all',
-                'created',
-                'scheduled',
-                'dispatched',
-                'in_progress',
-                'completed',
+                "all",
+                "created",
+                "scheduled",
+                "dispatched",
+                "in_progress",
+                "completed",
               ] as const
             ).map((status) => (
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
                 className={cn(
-                  'px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border',
+                  "px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border",
                   statusFilter === status
-                    ? 'bg-brand-primary text-white border-brand-primary'
-                    : 'border-border-subtle bg-transparent text-content-secondary hover:border-border-default'
+                    ? "bg-brand-primary text-white border-brand-primary"
+                    : "border-border-subtle bg-transparent text-content-secondary hover:border-border-default",
                 )}
               >
-                {status === 'all' ? 'All Status' : status.replace(/_/g, ' ')}
+                {status === "all" ? "All Status" : status.replace(/_/g, " ")}
               </button>
             ))}
           </div>
           <div className="flex gap-2 flex-wrap">
-            {(['all', 'low', 'medium', 'high', 'urgent'] as const).map((priority) => (
-              <button
-                key={priority}
-                onClick={() => setPriorityFilter(priority)}
-                className={cn(
-                  'px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border',
-                  priorityFilter === priority
-                    ? 'bg-warning text-white border-warning'
-                    : 'border-border-subtle bg-transparent text-content-secondary hover:border-border-default'
-                )}
-              >
-                {priority === 'all' ? 'All Priority' : priority}
-              </button>
-            ))}
+            {(["all", "low", "medium", "high", "urgent"] as const).map(
+              (priority) => (
+                <button
+                  key={priority}
+                  onClick={() => setPriorityFilter(priority)}
+                  className={cn(
+                    "px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border",
+                    priorityFilter === priority
+                      ? "bg-warning text-white border-warning"
+                      : "border-border-subtle bg-transparent text-content-secondary hover:border-border-default",
+                  )}
+                >
+                  {priority === "all" ? "All Priority" : priority}
+                </button>
+              ),
+            )}
           </div>
 
           {/* Type Filter */}
           <div className="flex gap-2 flex-wrap">
             {(
-              ['all', 'installation', 'maintenance', 'repair', 'inspection'] as const
+              [
+                "all",
+                "installation",
+                "maintenance",
+                "repair",
+                "inspection",
+              ] as const
             ).map((type) => (
               <button
                 key={type}
                 onClick={() => setTypeFilter(type)}
                 className={cn(
-                  'px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border',
+                  "px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border",
                   typeFilter === type
-                    ? 'bg-info text-white border-info'
-                    : 'border-border-subtle bg-transparent text-content-secondary hover:border-border-default'
+                    ? "bg-info text-white border-info"
+                    : "border-border-subtle bg-transparent text-content-secondary hover:border-border-default",
                 )}
               >
-                {type === 'all' ? 'All Types' : type}
+                {type === "all" ? "All Types" : type}
               </button>
             ))}
           </div>
@@ -531,17 +607,19 @@ export default function JobsPage() {
       </div>
 
       {/* Map View */}
-      {view === 'map' && (
+      {view === "map" && (
         <div
           className="relative rounded-lg overflow-hidden border border-border-subtle mb-5"
-          style={{ height: 'calc(100vh - 400px)', minHeight: '400px' }}
+          style={{ height: "calc(100vh - 400px)", minHeight: "400px" }}
         >
           {jobPins.length === 0 ? (
             <div className="flex items-center justify-center h-full bg-surface-secondary text-content-tertiary text-sm">
               <div className="text-center">
                 <MapPin size={28} className="mx-auto mb-2 opacity-40" />
                 <p>No geocoded jobs to display</p>
-                <p className="text-xs mt-1 opacity-60">Jobs need delivery coordinates to appear on the map</p>
+                <p className="text-xs mt-1 opacity-60">
+                  Jobs need delivery coordinates to appear on the map
+                </p>
               </div>
             </div>
           ) : (
@@ -557,8 +635,10 @@ export default function JobsPage() {
       {/* Work Orders Table + Detail Panel */}
       <div
         className={cn(
-          'grid gap-5',
-          selectedJobData ? 'grid-cols-1 lg:grid-cols-[1fr_450px]' : 'grid-cols-1'
+          "grid gap-5",
+          selectedJobData
+            ? "grid-cols-1 lg:grid-cols-[1fr_450px]"
+            : "grid-cols-1",
         )}
       >
         {/* Table Card */}
@@ -569,9 +649,16 @@ export default function JobsPage() {
 
           {filteredOrders.length === 0 ? (
             <div className="p-12 text-center text-content-tertiary">
-              <ClipboardList className="mx-auto mb-3 text-content-muted" size={32} />
-              <p className="font-medium text-content-secondary">No work orders found</p>
-              <p className="text-sm mt-1">Try adjusting your filters or create a new work order</p>
+              <ClipboardList
+                className="mx-auto mb-3 text-content-muted"
+                size={32}
+              />
+              <p className="font-medium text-content-secondary">
+                No work orders found
+              </p>
+              <p className="text-sm mt-1">
+                Try adjusting your filters or create a new work order
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -607,8 +694,9 @@ export default function JobsPage() {
                       key={order.id}
                       onClick={() => setSelectedJob(order.id)}
                       className={cn(
-                        'hover:bg-surface-secondary transition-colors cursor-pointer',
-                        selectedJobData?.id === order.id && 'bg-surface-secondary'
+                        "hover:bg-surface-secondary transition-colors cursor-pointer",
+                        selectedJobData?.id === order.id &&
+                          "bg-surface-secondary",
                       )}
                     >
                       <td className="px-4 py-3 text-content-primary font-mono text-xs">
@@ -616,10 +704,12 @@ export default function JobsPage() {
                       </td>
                       <td className="px-4 py-3 text-content-secondary">
                         <div>{order.customerName}</div>
-                        <div className="text-xs text-content-tertiary">{order.customerPhone}</div>
+                        <div className="text-xs text-content-tertiary">
+                          {order.customerPhone}
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-content-secondary capitalize text-xs">
-                        {order.serviceType.replace(/_/g, ' ')}
+                        {order.serviceType.replace(/_/g, " ")}
                       </td>
                       <td className="px-4 py-3">
                         <Badge variant={priorityVariant(order.priority)}>
@@ -628,14 +718,14 @@ export default function JobsPage() {
                       </td>
                       <td className="px-4 py-3">
                         <Badge variant={statusVariant(order.status)}>
-                          {order.status.replace(/_/g, ' ')}
+                          {order.status.replace(/_/g, " ")}
                         </Badge>
                       </td>
                       <td className="px-4 py-3 text-content-secondary text-xs">
-                        {order.assignedTechName || '—'}
+                        {order.assignedTechName || "—"}
                       </td>
                       <td className="px-4 py-3 text-content-secondary text-xs">
-                        {order.eta || '—'}
+                        {order.eta || "—"}
                       </td>
                     </tr>
                   ))}
@@ -648,7 +738,7 @@ export default function JobsPage() {
         {selectedJobData && (
           <Card
             className="sticky overflow-y-auto"
-            style={{ top: '24px', maxHeight: 'calc(100vh - 200px)' }}
+            style={{ top: "24px", maxHeight: "calc(100vh - 200px)" }}
           >
             <CardHeader className="border-b border-border-subtle">
               <div className="flex justify-between items-center">
@@ -668,7 +758,7 @@ export default function JobsPage() {
                 </div>
                 <div className="flex gap-2 mb-3">
                   <Badge variant={statusVariant(selectedJobData.status)}>
-                    {selectedJobData.status.replace(/_/g, ' ')}
+                    {selectedJobData.status.replace(/_/g, " ")}
                   </Badge>
                   <Badge variant={priorityVariant(selectedJobData.priority)}>
                     {selectedJobData.priority}
@@ -696,7 +786,9 @@ export default function JobsPage() {
                 <div className="text-xs font-semibold text-content-tertiary uppercase mb-2">
                   Location
                 </div>
-                <div className="text-sm text-content-primary">{selectedJobData.location}</div>
+                <div className="text-sm text-content-primary">
+                  {selectedJobData.location}
+                </div>
               </div>
 
               <div className="h-px bg-border-subtle" />
@@ -705,7 +797,9 @@ export default function JobsPage() {
                 <div className="text-xs font-semibold text-content-tertiary uppercase mb-2">
                   Description
                 </div>
-                <div className="text-sm text-content-secondary">{selectedJobData.description}</div>
+                <div className="text-sm text-content-secondary">
+                  {selectedJobData.description}
+                </div>
               </div>
 
               <div className="h-px bg-border-subtle" />
@@ -714,11 +808,19 @@ export default function JobsPage() {
                 <Button variant="primary" size="sm" className="w-full text-xs">
                   Edit Details
                 </Button>
-                <Button variant="secondary" size="sm" className="w-full text-xs">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="w-full text-xs"
+                >
                   Assign Technician
                 </Button>
-                {selectedJobData.status === 'in_progress' && (
-                  <Button variant="primary" size="sm" className="w-full text-xs">
+                {selectedJobData.status === "in_progress" && (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    className="w-full text-xs"
+                  >
                     Mark Complete
                   </Button>
                 )}

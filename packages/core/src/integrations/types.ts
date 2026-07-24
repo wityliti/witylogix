@@ -32,13 +32,25 @@ export type CommunicationSubcategory = "email" | "sms" | "whatsapp" | "push";
 // ─── Integration App Metadata ────────────────────────────────
 
 /** Status of an integration in the marketplace. Matches Prisma IntegrationStatus enum. */
-export type IntegrationStatus = "AVAILABLE" | "COMING_SOON" | "BETA" | "DEPRECATED";
+export type IntegrationStatus =
+  | "AVAILABLE"
+  | "COMING_SOON"
+  | "BETA"
+  | "DEPRECATED";
 
 /** How authentication works. Matches Prisma IntegrationAuthType enum. */
-export type IntegrationAuthType = "API_KEY" | "OAUTH" | "NONE" | "MULTI_CREDENTIAL";
+export type IntegrationAuthType =
+  | "API_KEY"
+  | "OAUTH"
+  | "NONE"
+  | "MULTI_CREDENTIAL";
 
 /** Health status for installed integrations. Matches Prisma IntegrationHealthStatus enum. */
-export type IntegrationHealthStatus = "HEALTHY" | "DEGRADED" | "ERROR" | "UNKNOWN";
+export type IntegrationHealthStatus =
+  | "HEALTHY"
+  | "DEGRADED"
+  | "ERROR"
+  | "UNKNOWN";
 
 /**
  * Describes a single credential field for dynamic form generation.
@@ -114,7 +126,10 @@ export interface IntegrationProvider {
    * Called when a tenant installs this integration.
    * Validates credentials and performs initial setup.
    */
-  onInstall?(credentials: Record<string, unknown>, config: Record<string, unknown>): Promise<void>;
+  onInstall?(
+    credentials: Record<string, unknown>,
+    config: Record<string, unknown>,
+  ): Promise<void>;
 
   /**
    * Called when a tenant uninstalls this integration.
@@ -126,7 +141,9 @@ export interface IntegrationProvider {
    * Called periodically or on-demand to sync data.
    * (e.g., inventory sync, order import)
    */
-  onSync?(config: Record<string, unknown>): Promise<{ synced: number; errors: number }>;
+  onSync?(
+    config: Record<string, unknown>,
+  ): Promise<{ synced: number; errors: number }>;
 
   /**
    * Called when a webhook is received from the external service.

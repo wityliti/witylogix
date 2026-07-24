@@ -27,7 +27,7 @@ import type {
 class MockAdapter implements IShippingAdapter {
   constructor(
     private rates: ShipmentRate[],
-    private name: string
+    private name: string,
   ) {}
 
   async validateConfig(): Promise<void> {
@@ -262,7 +262,7 @@ describe("CarrierRateEngine", () => {
       });
 
       const allWithinThreshold = comparison.rates.every(
-        (r) => r.estimatedDays <= 3
+        (r) => r.estimatedDays <= 3,
       );
       expect(allWithinThreshold).toBe(true);
       expect(comparison.rates.length).toBe(3); // FedEx Overnight (1d) + UPS Express (2d) + USPS Priority (3d)
@@ -388,10 +388,10 @@ describe("CarrierRateEngine", () => {
       });
 
       const groundRate = comparison.rates.find(
-        (r) => r.rateId === "fedex_ground"
+        (r) => r.rateId === "fedex_ground",
       );
       const overnightRate = comparison.rates.find(
-        (r) => r.rateId === "fedex_overnight"
+        (r) => r.rateId === "fedex_overnight",
       );
 
       expect(groundRate?.price).toBe(1500); // Clamped to minPrice

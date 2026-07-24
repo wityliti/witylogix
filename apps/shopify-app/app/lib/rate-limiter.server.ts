@@ -47,7 +47,11 @@ export function checkRateLimit(
   if (!entry || entry.resetAt < now) {
     // New window
     store.set(key, { count: 1, resetAt: now + windowMs });
-    return { allowed: true, remaining: maxRequests - 1, resetAt: now + windowMs };
+    return {
+      allowed: true,
+      remaining: maxRequests - 1,
+      resetAt: now + windowMs,
+    };
   }
 
   const newCount = entry.count + 1;
@@ -62,13 +66,19 @@ export function checkRateLimit(
     };
   }
 
-  return { allowed: true, remaining: maxRequests - newCount, resetAt: entry.resetAt };
+  return {
+    allowed: true,
+    remaining: maxRequests - newCount,
+    resetAt: entry.resetAt,
+  };
 }
 
 /**
  * Apply rate limit headers to a Response.
  */
-export function rateLimitHeaders(result: RateLimitResult): Record<string, string> {
+export function rateLimitHeaders(
+  result: RateLimitResult,
+): Record<string, string> {
   const headers: Record<string, string> = {
     "X-RateLimit-Remaining": String(result.remaining),
     "X-RateLimit-Reset": new Date(result.resetAt).toUTCString(),

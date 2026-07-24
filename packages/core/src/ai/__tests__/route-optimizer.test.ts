@@ -80,7 +80,7 @@ describe("Route Optimizer", () => {
       },
       {
         id: "stop_5",
-        coordinate: { latitude: 40.7549, longitude: -73.9840 },
+        coordinate: { latitude: 40.7549, longitude: -73.984 },
         timeWindow: {
           openTime: new Date("2026-03-16T11:00:00"),
           closeTime: new Date("2026-03-16T19:00:00"),
@@ -149,7 +149,10 @@ describe("Route Optimizer", () => {
 
       const result = optimizeRoutes(request);
 
-      const assignedStops = result.routes.reduce((sum, r) => sum + r.stops.length, 0);
+      const assignedStops = result.routes.reduce(
+        (sum, r) => sum + r.stops.length,
+        0,
+      );
       const unassignedCount = result.unassignedStops.length;
 
       expect(assignedStops + unassignedCount).toBe(stops.length);
@@ -262,7 +265,8 @@ describe("Route Optimizer", () => {
       const result = optimizeRoutes(request);
 
       const stopCounts = result.routes.map((r) => r.stops.length);
-      const avgStops = stopCounts.reduce((a, b) => a + b, 0) / stopCounts.length;
+      const avgStops =
+        stopCounts.reduce((a, b) => a + b, 0) / stopCounts.length;
 
       // Workload should be relatively balanced
       for (const count of stopCounts) {
@@ -327,8 +331,10 @@ describe("Route Optimizer", () => {
 
         // Times should be in ascending order
         for (let i = 1; i < route.estimatedArrivalTimes.length; i++) {
-          expect(route.estimatedArrivalTimes[i].getTime()).toBeGreaterThanOrEqual(
-            route.estimatedArrivalTimes[i - 1].getTime()
+          expect(
+            route.estimatedArrivalTimes[i].getTime(),
+          ).toBeGreaterThanOrEqual(
+            route.estimatedArrivalTimes[i - 1].getTime(),
           );
         }
       }
@@ -495,7 +501,10 @@ describe("Route Optimizer", () => {
       const result = optimizeRoutes(request);
 
       expect(result.routes.length).toBeGreaterThan(0);
-      const assignedCount = result.routes.reduce((sum, r) => sum + r.stops.length, 0);
+      const assignedCount = result.routes.reduce(
+        (sum, r) => sum + r.stops.length,
+        0,
+      );
       expect(assignedCount).toBe(1);
     });
 
@@ -511,7 +520,10 @@ describe("Route Optimizer", () => {
 
       expect(result.routes.length).toBeGreaterThan(0);
       // Should still try to assign some stops
-      const assignedCount = result.routes.reduce((sum, r) => sum + r.stops.length, 0);
+      const assignedCount = result.routes.reduce(
+        (sum, r) => sum + r.stops.length,
+        0,
+      );
       expect(assignedCount).toBeGreaterThan(0);
     });
 

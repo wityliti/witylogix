@@ -107,7 +107,15 @@ export function clarkeWrightSavings(
     }
 
     // Check if we can merge these routes
-    if (canMergeRoutes(routes[routeI], routes[routeJ], stops, vehicles, distanceMatrix)) {
+    if (
+      canMergeRoutes(
+        routes[routeI],
+        routes[routeJ],
+        stops,
+        vehicles,
+        distanceMatrix,
+      )
+    ) {
       // Merge route J into route I (append)
       routes[routeI] = [...routes[routeI], ...routes[routeJ]];
       routes[routeJ] = [];
@@ -128,7 +136,11 @@ export function clarkeWrightSavings(
  * @param j - Second stop index
  * @returns Savings value
  */
-function computeSaving(distanceMatrix: number[][], i: number, j: number): number {
+function computeSaving(
+  distanceMatrix: number[][],
+  i: number,
+  j: number,
+): number {
   // In distanceMatrix, depot is at index 0, stops at 1 onwards
   const depotIndex = 0;
 
@@ -215,10 +227,12 @@ export function assignRoutesToVehicles(
 ): number[] {
   const routeToVehicle: number[] = Array(routes.length).fill(-1);
   const vehicleUsed = Array(vehicles.length).fill(false);
-  const vehicleLoads: Array<{ weight: number; volume: number }> = vehicles.map(() => ({
-    weight: 0,
-    volume: 0,
-  }));
+  const vehicleLoads: Array<{ weight: number; volume: number }> = vehicles.map(
+    () => ({
+      weight: 0,
+      volume: 0,
+    }),
+  );
 
   // Sort routes by size (largest first) for better packing
   const sortedRouteIndices = routes
@@ -285,7 +299,10 @@ export function assignRoutesToVehicles(
  * @param distanceMatrix - Distance matrix
  * @returns Total distance of all routes
  */
-export function calculateTotalDistance(routes: number[][], distanceMatrix: number[][]): number {
+export function calculateTotalDistance(
+  routes: number[][],
+  distanceMatrix: number[][],
+): number {
   let totalDistance = 0;
 
   for (const route of routes) {

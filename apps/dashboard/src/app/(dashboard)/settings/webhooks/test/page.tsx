@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useApiMutation } from '@/hooks/use-api';
-import { Header } from '@/components/layout/header';
+import { useState } from "react";
+import { useApiMutation } from "@/hooks/use-api";
+import { Header } from "@/components/layout/header";
 import {
   Card,
   CardHeader,
@@ -10,11 +10,11 @@ import {
   CardContent,
   CardDescription,
   CardFooter,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import {
   Send,
   Copy,
@@ -23,14 +23,14 @@ import {
   Clock,
   ChevronDown,
   ChevronUp,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface TestSend {
   id: string;
   timestamp: Date;
   eventType: string;
   endpoint: string;
-  status: 'success' | 'failed' | 'pending';
+  status: "success" | "failed" | "pending";
   statusCode?: number;
   duration: number;
   responseBody?: string;
@@ -76,16 +76,19 @@ const SAMPLE_PAYLOADS: Record<string, Record<string, any>> = {
 };
 
 export default function WebhookTestPage() {
-  const { execute: sendTestWebhook } = useApiMutation<{ success: boolean; statusCode: number; duration: number; response: string | null }>('POST', '/api/v4/outbound-webhooks/test');
+  const { execute: sendTestWebhook } = useApiMutation<{
+    success: boolean;
+    statusCode: number;
+    duration: number;
+    response: string | null;
+  }>("POST", "/api/v4/outbound-webhooks/test");
 
-  const [selectedEvent, setSelectedEvent] = useState('shipment.created');
-  const [endpoint, setEndpoint] = useState('https://webhook.example.com/events');
+  const [selectedEvent, setSelectedEvent] = useState("shipment.created");
+  const [endpoint, setEndpoint] = useState(
+    "https://webhook.example.com/events",
+  );
   const [customPayload, setCustomPayload] = useState(
-    JSON.stringify(
-      SAMPLE_PAYLOADS['shipment.created'] || {},
-      null,
-      2
-    )
+    JSON.stringify(SAMPLE_PAYLOADS["shipment.created"] || {}, null, 2),
   );
   const [isLoading, setIsLoading] = useState(false);
   const [testSends, setTestSends] = useState<TestSend[]>([]);
@@ -101,7 +104,7 @@ export default function WebhookTestPage() {
   const handleEventChange = (eventId: string) => {
     setSelectedEvent(eventId);
     setCustomPayload(
-      JSON.stringify(SAMPLE_PAYLOADS[eventId] || { event: eventId }, null, 2)
+      JSON.stringify(SAMPLE_PAYLOADS[eventId] || { event: eventId }, null, 2),
     );
   };
 
@@ -109,7 +112,11 @@ export default function WebhookTestPage() {
     setIsLoading(true);
     try {
       const payload = JSON.parse(customPayload);
-      const result = await sendTestWebhook({ url: endpoint, eventType: selectedEvent, payload });
+      const result = await sendTestWebhook({
+        url: endpoint,
+        eventType: selectedEvent,
+        payload,
+      });
       const newSend: TestSend = {
         id: `test-${Date.now()}`,
         timestamp: new Date(),
@@ -185,7 +192,7 @@ export default function WebhookTestPage() {
                         "px-4 py-2 rounded-lg text-sm font-medium transition-all border",
                         selectedEvent === event.id
                           ? "bg-blue-500 text-white border-blue-500"
-                          : "border-wl-border-default hover:bg-wl-bg-elevated"
+                          : "border-wl-border-default hover:bg-wl-bg-elevated",
                       )}
                     >
                       {event.label}
@@ -280,7 +287,7 @@ export default function WebhookTestPage() {
                         <button
                           onClick={() =>
                             setExpandedSendId(
-                              expandedSendId === send.id ? null : send.id
+                              expandedSendId === send.id ? null : send.id,
                             )
                           }
                           className="w-full p-3 hover:bg-wl-bg-elevated transition-colors flex items-center justify-between"
@@ -355,7 +362,7 @@ export default function WebhookTestPage() {
                               onClick={() =>
                                 copyToClipboard(
                                   send.responseBody || "",
-                                  "Response copied"
+                                  "Response copied",
                                 )
                               }
                             >

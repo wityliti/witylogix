@@ -40,10 +40,13 @@ describe("TenantContext", () => {
 
   describe("hasPermission", () => {
     it("should check if context has permission", () => {
-      const context = new TenantContext("org-123", undefined, "user-789", "MEMBER", [
-        "READ",
-        "WRITE",
-      ]);
+      const context = new TenantContext(
+        "org-123",
+        undefined,
+        "user-789",
+        "MEMBER",
+        ["READ", "WRITE"],
+      );
 
       expect(context.hasPermission("READ")).toBe(true);
       expect(context.hasPermission("WRITE")).toBe(true);
@@ -51,9 +54,13 @@ describe("TenantContext", () => {
     });
 
     it("ADMIN should have all permissions", () => {
-      const context = new TenantContext("org-123", undefined, "user-789", "ADMIN", [
+      const context = new TenantContext(
+        "org-123",
+        undefined,
+        "user-789",
         "ADMIN",
-      ]);
+        ["ADMIN"],
+      );
 
       expect(context.hasPermission("READ")).toBe(true);
       expect(context.hasPermission("WRITE")).toBe(true);
@@ -82,9 +89,13 @@ describe("TenantContext", () => {
 
   describe("toJSON", () => {
     it("should serialize context", () => {
-      const context = new TenantContext("org-123", "workspace-456", "user-789", "ADMIN", [
+      const context = new TenantContext(
+        "org-123",
+        "workspace-456",
+        "user-789",
         "ADMIN",
-      ]);
+        ["ADMIN"],
+      );
 
       const json = context.toJSON();
 
@@ -383,11 +394,13 @@ describe("requireTenantContext", () => {
 describe("checkTenantPermission", () => {
   it("should allow request with required permission", () => {
     const req = {
-      tenantContext: new TenantContext("org-123", undefined, "user-789", "ADMIN", [
-        "READ",
-        "WRITE",
-        "DELETE",
-      ]),
+      tenantContext: new TenantContext(
+        "org-123",
+        undefined,
+        "user-789",
+        "ADMIN",
+        ["READ", "WRITE", "DELETE"],
+      ),
     } as any as Request;
 
     const res = {
@@ -406,7 +419,13 @@ describe("checkTenantPermission", () => {
 
   it("should reject request without required permission", () => {
     const req = {
-      tenantContext: new TenantContext("org-123", undefined, "user-789", "VIEWER", ["READ"]),
+      tenantContext: new TenantContext(
+        "org-123",
+        undefined,
+        "user-789",
+        "VIEWER",
+        ["READ"],
+      ),
     } as any as Request;
 
     const res = {

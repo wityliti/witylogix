@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { useApiList } from '@/hooks/use-api';
-import { cn } from '@/lib/utils';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { useState, useMemo } from "react";
+import { useApiList } from "@/hooks/use-api";
+import { cn } from "@/lib/utils";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   useCredentialManager,
   type Credential,
   type RotationSchedule,
-} from '@/hooks/use-integration-health';
+} from "@/hooks/use-integration-health";
 import {
   AlertCircle,
   AlertTriangle,
@@ -21,7 +21,7 @@ import {
   Lock,
   ChevronDown,
   Clock,
-} from 'lucide-react';
+} from "lucide-react";
 
 /**
  * Credential Manager
@@ -74,7 +74,7 @@ function VaultStatusCard({
                   ? "bg-emerald-500"
                   : healthScore >= 60
                     ? "bg-amber-500"
-                    : "bg-red-500"
+                    : "bg-red-500",
               )}
               style={{ width: `${healthScore}%` }}
             />
@@ -87,7 +87,8 @@ function VaultStatusCard({
 
 function RotationTimeline({ schedules }: { schedules: RotationSchedule[] }) {
   const sorted = [...schedules].sort(
-    (a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime()
+    (a, b) =>
+      new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime(),
   );
 
   return (
@@ -105,7 +106,7 @@ function RotationTimeline({ schedules }: { schedules: RotationSchedule[] }) {
                     ? "bg-emerald-500"
                     : isOverdue
                       ? "bg-red-500"
-                      : "bg-cyan-500"
+                      : "bg-cyan-500",
                 )}
               />
               {idx < sorted.length - 1 && (
@@ -113,9 +114,7 @@ function RotationTimeline({ schedules }: { schedules: RotationSchedule[] }) {
               )}
             </div>
             <div className="flex-1 pt-1">
-              <p className="font-medium text-white">
-                {schedule.provider}
-              </p>
+              <p className="font-medium text-white">{schedule.provider}</p>
               <p className="text-xs text-gray-400 mt-1">
                 {new Date(schedule.scheduledDate).toLocaleString()}
               </p>
@@ -183,7 +182,7 @@ export default function CredentialsPage() {
   const overdueRotations = useMemo(() => {
     if (!credentials?.rotationSchedule) return [];
     return credentials.rotationSchedule.filter(
-      (r) => r.status === "pending" && new Date(r.scheduledDate) < new Date()
+      (r) => r.status === "pending" && new Date(r.scheduledDate) < new Date(),
     );
   }, [credentials?.rotationSchedule]);
 
@@ -220,10 +219,12 @@ export default function CredentialsPage() {
             <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
             <div>
               <h3 className="font-semibold text-white">
-                {overdueRotations.length} Credential Rotation{overdueRotations.length !== 1 ? "s" : ""} Overdue
+                {overdueRotations.length} Credential Rotation
+                {overdueRotations.length !== 1 ? "s" : ""} Overdue
               </h3>
               <p className="text-sm text-gray-400 mt-1">
-                These credentials should have been rotated. Please rotate them as soon as possible.
+                These credentials should have been rotated. Please rotate them
+                as soon as possible.
               </p>
             </div>
           </div>
@@ -256,21 +257,22 @@ export default function CredentialsPage() {
       )}
 
       {/* Rotation Schedule Timeline */}
-      {credentials?.rotationSchedule && credentials.rotationSchedule.length > 0 && (
-        <Card className="bg-wl-bg-surface border-wl-border-default">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Rotation Schedule
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <RotationTimeline schedules={credentials.rotationSchedule} />
-          </CardContent>
-        </Card>
-      )}
+      {credentials?.rotationSchedule &&
+        credentials.rotationSchedule.length > 0 && (
+          <Card className="bg-wl-bg-surface border-wl-border-default">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  Rotation Schedule
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <RotationTimeline schedules={credentials.rotationSchedule} />
+            </CardContent>
+          </Card>
+        )}
 
       {/* Credential Inventory */}
       <Card className="bg-wl-bg-surface border-wl-border-default">
@@ -285,8 +287,9 @@ export default function CredentialsPage() {
             {sortedCredentials.map((credential) => {
               const isExpired = new Date(credential.expiryDate) < new Date();
               const expiresIn = Math.floor(
-                (new Date(credential.expiryDate).getTime() - new Date().getTime()) /
-                  (1000 * 60 * 60 * 24)
+                (new Date(credential.expiryDate).getTime() -
+                  new Date().getTime()) /
+                  (1000 * 60 * 60 * 24),
               );
 
               return (
@@ -333,7 +336,7 @@ export default function CredentialsPage() {
                       <ChevronDown
                         className={cn(
                           "w-4 h-4 text-gray-400 transition-transform",
-                          expandedCredentials[credential.id] && "rotate-180"
+                          expandedCredentials[credential.id] && "rotate-180",
                         )}
                       />
                     </div>
@@ -351,26 +354,32 @@ export default function CredentialsPage() {
                         <div>
                           <p className="text-gray-400 mb-1">Last Rotated</p>
                           <p className="font-medium text-white">
-                            {new Date(credential.lastRotated).toLocaleDateString()}
+                            {new Date(
+                              credential.lastRotated,
+                            ).toLocaleDateString()}
                           </p>
                         </div>
                         <div>
                           <p className="text-gray-400 mb-1">Expires In</p>
-                          <p className={cn(
-                            "font-medium",
-                            isExpired
-                              ? "text-red-400"
-                              : expiresIn <= 7
-                                ? "text-amber-400"
-                                : "text-emerald-400"
-                          )}>
+                          <p
+                            className={cn(
+                              "font-medium",
+                              isExpired
+                                ? "text-red-400"
+                                : expiresIn <= 7
+                                  ? "text-amber-400"
+                                  : "text-emerald-400",
+                            )}
+                          >
                             {isExpired ? "Expired" : `${expiresIn} days`}
                           </p>
                         </div>
                         <div>
                           <p className="text-gray-400 mb-1">Expiry Date</p>
                           <p className="font-medium text-white">
-                            {new Date(credential.expiryDate).toLocaleDateString()}
+                            {new Date(
+                              credential.expiryDate,
+                            ).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
@@ -402,7 +411,9 @@ export default function CredentialsPage() {
                           <input
                             type="datetime-local"
                             value={scheduleDateInput}
-                            onChange={(e) => setScheduleDateInput(e.target.value)}
+                            onChange={(e) =>
+                              setScheduleDateInput(e.target.value)
+                            }
                             className="w-full px-2 py-1 text-sm rounded bg-wl-bg-surface border border-wl-border-default text-white focus:outline-none focus:border-blue-500"
                           />
                           <div className="flex gap-2">
@@ -411,7 +422,7 @@ export default function CredentialsPage() {
                               onClick={() => {
                                 scheduleRotation(
                                   credential.id,
-                                  scheduleDateInput
+                                  scheduleDateInput,
                                 );
                                 setShowScheduleForm(null);
                                 setScheduleDateInput("");
@@ -466,7 +477,8 @@ export default function CredentialsPage() {
                 <Badge variant="danger">Exposed</Badge>
               </div>
               <p className="text-xs text-gray-400 mb-3">
-                Remediation: Rotate this credential immediately and revoke access.
+                Remediation: Rotate this credential immediately and revoke
+                access.
               </p>
               <div className="flex gap-2">
                 <Button size="sm" variant="danger" className="gap-1">
@@ -492,7 +504,8 @@ export default function CredentialsPage() {
                 <Badge variant="warning">Risky</Badge>
               </div>
               <p className="text-xs text-gray-400 mb-3">
-                Remediation: Move this to a secure secrets manager. Ensure .env is in .gitignore.
+                Remediation: Move this to a secure secrets manager. Ensure .env
+                is in .gitignore.
               </p>
               <Button size="sm" variant="secondary">
                 View Details

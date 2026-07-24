@@ -86,7 +86,7 @@ async function workflowDriverRoutes(fastify: FastifyInstance): Promise<void> {
       request: FastifyRequest<{
         Body: z.infer<typeof assignDriverSchema>;
       }>,
-      reply: FastifyReply
+      reply: FastifyReply,
     ) => {
       const body = assignDriverSchema.parse(request.body);
 
@@ -113,9 +113,11 @@ async function workflowDriverRoutes(fastify: FastifyInstance): Promise<void> {
         throw new NotFoundError(`Order ${body.orderId} not found`);
       }
 
-      if (!["PENDING", "ASSIGNED_WAIT", "READY_FOR_PICKUP"].includes(order.status)) {
+      if (
+        !["PENDING", "ASSIGNED_WAIT", "READY_FOR_PICKUP"].includes(order.status)
+      ) {
         throw new ConflictError(
-          `Cannot assign driver to order with status: ${order.status}`
+          `Cannot assign driver to order with status: ${order.status}`,
         );
       }
 
@@ -150,7 +152,8 @@ async function workflowDriverRoutes(fastify: FastifyInstance): Promise<void> {
         orderId: body.orderId,
         shopId: tenantId,
         pickupLocation: body.pickupLocation as GeoLocation | undefined,
-        deliveryLocation: body.deliveryLocation || (order.deliveryCoordinates as GeoLocation),
+        deliveryLocation:
+          body.deliveryLocation || (order.deliveryCoordinates as GeoLocation),
         vehicleType: body.vehicleType,
         weight: body.weight || (order.totalWeight as number),
         value: body.value,
@@ -169,12 +172,12 @@ async function workflowDriverRoutes(fastify: FastifyInstance): Promise<void> {
         execution = await engine.executeWorkflow(
           "assignDriver",
           workflowInput,
-          workflowContext
+          workflowContext,
         );
       } catch (error) {
         fastify.log.error("Driver assignment workflow failed", error);
         throw new InternalServerError(
-          `Driver assignment workflow failed: ${error instanceof Error ? error.message : String(error)}`
+          `Driver assignment workflow failed: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
 
@@ -253,7 +256,7 @@ async function workflowDriverRoutes(fastify: FastifyInstance): Promise<void> {
           executionId: execution.id,
         },
       };
-    }
+    },
   );
 
   // ── GET /api/workflow/drivers/assign/:orderId/execution ──
@@ -268,7 +271,7 @@ async function workflowDriverRoutes(fastify: FastifyInstance): Promise<void> {
         Params: { orderId: string };
         Querystring: z.infer<typeof getExecutionQuerySchema>;
       }>,
-      reply: FastifyReply
+      reply: FastifyReply,
     ) => {
       const { orderId } = request.params;
       const { executionId } = getExecutionQuerySchema.parse(request.query);
@@ -292,7 +295,7 @@ async function workflowDriverRoutes(fastify: FastifyInstance): Promise<void> {
 
       if (!execution) {
         throw new NotFoundError(
-          `Workflow execution not found for order ${orderId}`
+          `Workflow execution not found for order ${orderId}`,
         );
       }
 
@@ -309,7 +312,7 @@ async function workflowDriverRoutes(fastify: FastifyInstance): Promise<void> {
           durationMs: execution.durationMs,
         },
       };
-    }
+    },
   );
 
   // ── POST /api/workflow/drivers/assign/:orderId/retry ──
@@ -324,7 +327,7 @@ async function workflowDriverRoutes(fastify: FastifyInstance): Promise<void> {
         Params: { orderId: string };
         Body: z.infer<typeof retrySchema>;
       }>,
-      reply: FastifyReply
+      reply: FastifyReply,
     ) => {
       const { orderId } = request.params;
       const { executionId } = retrySchema.parse(request.body);
@@ -348,7 +351,7 @@ async function workflowDriverRoutes(fastify: FastifyInstance): Promise<void> {
 
       if (!["failed", "compensated"].includes(previousExecution.status)) {
         throw new ConflictError(
-          `Cannot retry execution with status: ${previousExecution.status}`
+          `Cannot retry execution with status: ${previousExecution.status}`,
         );
       }
 
@@ -385,12 +388,12 @@ async function workflowDriverRoutes(fastify: FastifyInstance): Promise<void> {
         execution = await engine.executeWorkflow(
           "assignDriver",
           previousExecution.input,
-          workflowContext
+          workflowContext,
         );
       } catch (error) {
         fastify.log.error("Driver assignment workflow retry failed", error);
         throw new InternalServerError(
-          `Driver assignment retry failed: ${error instanceof Error ? error.message : String(error)}`
+          `Driver assignment retry failed: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
 
@@ -461,7 +464,7 @@ async function workflowDriverRoutes(fastify: FastifyInstance): Promise<void> {
           previousExecutionId: executionId,
         },
       };
-    }
+    },
   );
 }
 

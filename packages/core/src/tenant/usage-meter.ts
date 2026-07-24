@@ -67,7 +67,7 @@ export function recordUsage(
   responseTimeMs: number,
   requestSizeBytes: number,
   responseSizeBytes: number,
-  ipAddress: string
+  ipAddress: string,
 ): void {
   usageBuffer.push({
     orgId,
@@ -154,7 +154,7 @@ async function flushUsageBuffer(): Promise<void> {
 export async function getUsageSummary(
   orgId: string,
   startDate: Date,
-  endDate: Date
+  endDate: Date,
 ): Promise<UsageMetrics> {
   // Query daily summaries (fast)
   const summaries = await prisma.usageSummary.findMany({
@@ -188,7 +188,8 @@ export async function getUsageSummary(
 
     if (summary.topEndpoints && Array.isArray(summary.topEndpoints)) {
       (summary.topEndpoints as any).forEach((ep: any) => {
-        endpointCounts[ep.endpoint] = (endpointCounts[ep.endpoint] || 0) + ep.count;
+        endpointCounts[ep.endpoint] =
+          (endpointCounts[ep.endpoint] || 0) + ep.count;
         allTopEndpoints.push({
           endpoint: ep.endpoint,
           count: ep.count,
@@ -243,7 +244,7 @@ export async function getUsageSummary(
  */
 export async function checkQuota(
   orgId: string,
-  limits?: { maxRequestsPerDay: number }
+  limits?: { maxRequestsPerDay: number },
 ): Promise<boolean> {
   // Default limits (would normally come from plan/tenant context)
   const maxRequests = limits?.maxRequestsPerDay || Number.MAX_SAFE_INTEGER;
@@ -279,7 +280,7 @@ export async function checkQuota(
  */
 export async function getTodayQuotaStatus(
   orgId: string,
-  maxRequestsPerDay: number
+  maxRequestsPerDay: number,
 ): Promise<{
   used: number;
   limit: number;
@@ -324,7 +325,7 @@ export async function getTopEndpoints(
   orgId: string,
   startDate: Date,
   endDate: Date,
-  limit: number = 10
+  limit: number = 10,
 ): Promise<
   Array<{
     endpoint: string;
@@ -379,7 +380,7 @@ export async function getTopEndpoints(
   // Map to response format
   return records.map((record) => {
     const errorRecord = errorCounts.find(
-      (e) => e.endpoint === record.endpoint && e.method === record.method
+      (e) => e.endpoint === record.endpoint && e.method === record.method,
     );
 
     return {
@@ -435,7 +436,7 @@ export async function aggregateDailyUsage(): Promise<void> {
     }
 
     console.log(
-      `[UsageMeter] Aggregated usage for ${orgsWithUsage.length} organizations`
+      `[UsageMeter] Aggregated usage for ${orgsWithUsage.length} organizations`,
     );
   } catch (err) {
     console.error("[UsageMeter] Aggregation job failed:", err);
@@ -446,10 +447,7 @@ export async function aggregateDailyUsage(): Promise<void> {
 /**
  * Aggregate usage for a single organization and date.
  */
-async function aggregateOrgUsage(
-  orgId: string,
-  period: Date
-): Promise<void> {
+async function aggregateOrgUsage(orgId: string, period: Date): Promise<void> {
   const endOfDay = new Date(period);
   endOfDay.setUTCDate(endOfDay.getUTCDate() + 1);
 
@@ -472,11 +470,11 @@ async function aggregateOrgUsage(
   const requestCount = records.length;
   const bandwidthBytes = records.reduce(
     (sum, r) => sum + r.requestSizeBytes + r.responseSizeBytes,
-    0
+    0,
   );
   const errorCount = records.filter((r) => r.statusCode >= 400).length;
   const avgResponseTimeMs = Math.round(
-    records.reduce((sum, r) => sum + r.responseTimeMs, 0) / requestCount
+    records.reduce((sum, r) => sum + r.responseTimeMs, 0) / requestCount,
   );
 
   // Calculate unique endpoints and top endpoints
@@ -558,7 +556,7 @@ export async function cleanupOldRecords(retentionDays: number): Promise<void> {
   });
 
   console.log(
-    `[UsageMeter] Deleted ${deleted.count} usage records older than ${retentionDays} days`
+    `[UsageMeter] Deleted ${deleted.count} usage records older than ${retentionDays} days`,
   );
 }
 

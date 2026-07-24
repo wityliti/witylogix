@@ -193,7 +193,7 @@ export class CarrierRateEngine {
    */
   async compareRates(
     request: ShipmentRequest,
-    criteria: RateRankingCriteria = { sortBy: "price" }
+    criteria: RateRankingCriteria = { sortBy: "price" },
   ): Promise<RateComparison> {
     const cacheKey = this.cache.generateKey(request);
 
@@ -219,11 +219,11 @@ export class CarrierRateEngine {
         } catch (error: unknown) {
           console.error(
             `Error fetching rates from ${name}:`,
-            error instanceof Error ? error.message : String(error)
+            error instanceof Error ? error.message : String(error),
           );
           return [];
         }
-      }
+      },
     );
 
     const allRateArrays = await Promise.all(ratePromises);
@@ -253,14 +253,14 @@ export class CarrierRateEngine {
    */
   private rankRates(
     rates: ShipmentRate[],
-    criteria: RateRankingCriteria
+    criteria: RateRankingCriteria,
   ): ShipmentRate[] {
     let filtered = rates;
 
     // Filter by delivery days
     if (criteria.maxDeliveryDays !== undefined) {
       filtered = filtered.filter(
-        (r) => r.estimatedDays <= criteria.maxDeliveryDays!
+        (r) => r.estimatedDays <= criteria.maxDeliveryDays!,
       );
     }
 
@@ -339,7 +339,7 @@ export class CarrierRateEngine {
    */
   async getBestRate(
     request: ShipmentRequest,
-    criteria: RateRankingCriteria = { sortBy: "price" }
+    criteria: RateRankingCriteria = { sortBy: "price" },
   ): Promise<ShipmentRate | null> {
     const comparison = await this.compareRates(request, criteria);
     return comparison.rates.length > 0 ? comparison.rates[0] : null;

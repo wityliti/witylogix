@@ -8,13 +8,13 @@
  * - Generate QR codes for delivery tracking
  */
 
-import QRCode from 'qrcode';
+import QRCode from "qrcode";
 import type {
   QRVerification,
   BarcodeVerification,
   QRCodePOD,
   BarcodePOD,
-} from './types.js';
+} from "./types.js";
 
 // ─── CONSTANTS ──────────────────────────────────────────────────
 
@@ -39,7 +39,7 @@ export class QRScannerService {
   validateQRCode(
     scannedData: string,
     expectedData: string,
-    options: { fuzzyMatch?: boolean; fuzzyThreshold?: number } = {}
+    options: { fuzzyMatch?: boolean; fuzzyThreshold?: number } = {},
   ): QRVerification {
     if (!scannedData || !expectedData) {
       return {
@@ -63,7 +63,10 @@ export class QRScannerService {
     // Fuzzy match if enabled
     if (options.fuzzyMatch) {
       const threshold = options.fuzzyThreshold || QR_MATCH_THRESHOLD;
-      const similarity = this.calculateStringSimilarity(scannedData, expectedData);
+      const similarity = this.calculateStringSimilarity(
+        scannedData,
+        expectedData,
+      );
 
       return {
         valid: similarity >= threshold,
@@ -90,13 +93,13 @@ export class QRScannerService {
    */
   async generateDeliveryQR(
     deliveryId: string,
-    options: { errorCorrection?: 'L' | 'M' | 'Q' | 'H'; width?: number } = {}
+    options: { errorCorrection?: "L" | "M" | "Q" | "H"; width?: number } = {},
   ): Promise<{ qrData: string; qrImageBase64: string }> {
     if (!deliveryId) {
-      throw new Error('Delivery ID is required');
+      throw new Error("Delivery ID is required");
     }
 
-    const errorCorrection = options.errorCorrection || 'M';
+    const errorCorrection = options.errorCorrection || "M";
     const width = options.width || 300;
 
     try {
@@ -106,13 +109,13 @@ export class QRScannerService {
       // Generate QR code as PNG
       const qrImageBase64 = await QRCode.toDataURL(qrData, {
         errorCorrectionLevel: errorCorrection,
-        type: 'image/png',
+        type: "image/png",
         quality: 0.95,
         margin: 1,
         width,
         color: {
-          dark: '#000000',
-          light: '#FFFFFF',
+          dark: "#000000",
+          light: "#FFFFFF",
         },
       });
 
@@ -122,7 +125,7 @@ export class QRScannerService {
       };
     } catch (error) {
       throw new Error(
-        `Failed to generate QR code: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to generate QR code: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -134,18 +137,22 @@ export class QRScannerService {
     scannedData: string,
     expectedData: string,
     deliveryId: string,
-    options?: { fuzzyMatch?: boolean; fuzzyThreshold?: number }
+    options?: { fuzzyMatch?: boolean; fuzzyThreshold?: number },
   ): Promise<QRCodePOD> {
-    const verification = this.validateQRCode(scannedData, expectedData, options);
+    const verification = this.validateQRCode(
+      scannedData,
+      expectedData,
+      options,
+    );
 
     const podRecord: QRCodePOD = {
       id: `pod-qr-${deliveryId}-${Date.now()}`,
       deliveryId,
-      method: 'qr_scan',
+      method: "qr_scan",
       scannedData,
       scannedAt: new Date(),
       verification,
-      status: verification.valid ? 'verified' : 'rejected',
+      status: verification.valid ? "verified" : "rejected",
     };
 
     return podRecord;
@@ -161,7 +168,7 @@ export class QRScannerService {
   validateBarcode(
     scannedBarcode: string,
     expectedBarcode: string,
-    options: { format?: string; strictMatch?: boolean } = {}
+    options: { format?: string; strictMatch?: boolean } = {},
   ): BarcodeVerification {
     if (!scannedBarcode || !expectedBarcode) {
       return {
@@ -176,7 +183,8 @@ export class QRScannerService {
 
     // Validate format
     if (format && BARCODE_FORMATS[format as keyof typeof BARCODE_FORMATS]) {
-      const formatRegex = BARCODE_FORMATS[format as keyof typeof BARCODE_FORMATS];
+      const formatRegex =
+        BARCODE_FORMATS[format as keyof typeof BARCODE_FORMATS];
       if (!formatRegex.test(scannedBarcode)) {
         return {
           valid: false,
@@ -205,19 +213,23 @@ export class QRScannerService {
     scannedBarcode: string,
     expectedBarcode: string,
     deliveryId: string,
-    options?: { format?: string; strictMatch?: boolean }
+    options?: { format?: string; strictMatch?: boolean },
   ): BarcodePOD {
-    const verification = this.validateBarcode(scannedBarcode, expectedBarcode, options);
+    const verification = this.validateBarcode(
+      scannedBarcode,
+      expectedBarcode,
+      options,
+    );
 
     const podRecord: BarcodePOD = {
       id: `pod-barcode-${deliveryId}-${Date.now()}`,
       deliveryId,
-      method: 'barcode',
+      method: "barcode",
       scannedBarcode,
       barcodeFormat: verification.format,
       scannedAt: new Date(),
       verification,
-      status: verification.valid ? 'verified' : 'rejected',
+      status: verification.valid ? "verified" : "rejected",
     };
 
     return podRecord;
@@ -230,18 +242,18 @@ export class QRScannerService {
    */
   private detectBarcodeFormat(barcode: string): string | undefined {
     if (/^\d{13}$/.test(barcode)) {
-      return 'EAN13';
+      return "EAN13";
     }
     if (/^\d{8}$/.test(barcode)) {
-      return 'EAN8';
+      return "EAN8";
     }
     if (/^\d{12}$/.test(barcode)) {
-      return 'UPC_A';
+      return "UPC_A";
     }
     if (/^[0-9A-Z\-. $/+%]{1,}$/.test(barcode)) {
-      return 'CODE39';
+      return "CODE39";
     }
-    return 'CODE128'; // Most flexible format
+    return "CODE128"; // Most flexible format
   }
 
   /**
@@ -282,7 +294,7 @@ export class QRScannerService {
         matrix[i][j] = Math.min(
           matrix[i - 1][j] + 1, // deletion
           matrix[i][j - 1] + 1, // insertion
-          matrix[i - 1][j - 1] + cost // substitution
+          matrix[i - 1][j - 1] + cost, // substitution
         );
       }
     }

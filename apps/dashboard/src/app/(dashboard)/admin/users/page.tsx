@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { Header } from '@/components/layout/header';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Modal } from '@/components/ui/modal';
-import { cn } from '@/lib/utils';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { useApiList } from '@/hooks/use-api';
+import { useState, useMemo } from "react";
+import { Header } from "@/components/layout/header";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
+import { cn } from "@/lib/utils";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { useApiList } from "@/hooks/use-api";
 import {
   Users,
   UserCheck,
@@ -46,23 +46,33 @@ interface User {
 
 function getRoleClass(role: string): string {
   switch (role) {
-    case 'admin': return 'bg-red-100 text-red-800';
-    case 'manager': return 'bg-blue-100 text-blue-800';
-    case 'driver': return 'bg-green-100 text-green-800';
-    default: return 'bg-gray-100 text-gray-800';
+    case "admin":
+      return "bg-red-100 text-red-800";
+    case "manager":
+      return "bg-blue-100 text-blue-800";
+    case "driver":
+      return "bg-green-100 text-green-800";
+    default:
+      return "bg-gray-100 text-gray-800";
   }
 }
 
 const getRoleColor = (role: User["role"]): string => {
   switch (role) {
-    case "admin":    return "bg-wl-danger-bg text-wl-danger-400 border border-wl-danger-400/40";
-    case "manager":  return "bg-purple-500/10 text-purple-400 border border-purple-500/40";
-    case "operator": return "bg-wl-info-bg text-wl-info-400 border border-wl-info-400/40";
-    default:         return "bg-wl-neutral-700/40 text-wl-neutral-400 border border-wl-neutral-400/40";
+    case "admin":
+      return "bg-wl-danger-bg text-wl-danger-400 border border-wl-danger-400/40";
+    case "manager":
+      return "bg-purple-500/10 text-purple-400 border border-purple-500/40";
+    case "operator":
+      return "bg-wl-info-bg text-wl-info-400 border border-wl-info-400/40";
+    default:
+      return "bg-wl-neutral-700/40 text-wl-neutral-400 border border-wl-neutral-400/40";
   }
 };
 
-const getStatusBadgeVariant = (status: User["status"]): "success" | "warning" | "danger" | "info" | "default" => {
+const getStatusBadgeVariant = (
+  status: User["status"],
+): "success" | "warning" | "danger" | "info" | "default" => {
   switch (status) {
     case "active":
       return "success";
@@ -76,13 +86,27 @@ const getStatusBadgeVariant = (status: User["status"]): "success" | "warning" | 
 };
 
 // User Detail Modal
-const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen: boolean; onClose: () => void }) => {
-  const [expandedSections, setExpandedSections] = useState<string[]>(["overview"]);
+const UserDetailModal = ({
+  user,
+  isOpen,
+  onClose,
+}: {
+  user: User | null;
+  isOpen: boolean;
+  onClose: () => void;
+}) => {
+  const [expandedSections, setExpandedSections] = useState<string[]>([
+    "overview",
+  ]);
 
   if (!user) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`User Details: ${user.name}`}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`User Details: ${user.name}`}
+    >
       <div className="flex flex-col gap-4">
         {/* Overview Section */}
         <div className="border-b border-wl-border-default pb-3">
@@ -91,12 +115,16 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
               setExpandedSections(
                 expandedSections.includes("overview")
                   ? expandedSections.filter((s) => s !== "overview")
-                  : [...expandedSections, "overview"]
+                  : [...expandedSections, "overview"],
               )
             }
             className="bg-transparent border-0 text-white font-semibold text-sm cursor-pointer flex items-center gap-2 py-2"
           >
-            {expandedSections.includes("overview") ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            {expandedSections.includes("overview") ? (
+              <ChevronUp className="w-4 h-4" />
+            ) : (
+              <ChevronDown className="w-4 h-4" />
+            )}
             Overview
           </button>
           {expandedSections.includes("overview") && (
@@ -144,12 +172,16 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
               setExpandedSections(
                 expandedSections.includes("activity")
                   ? expandedSections.filter((s) => s !== "activity")
-                  : [...expandedSections, "activity"]
+                  : [...expandedSections, "activity"],
               )
             }
             className="bg-transparent border-0 text-white font-semibold text-sm cursor-pointer flex items-center gap-2 py-2"
           >
-            {expandedSections.includes("activity") ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            {expandedSections.includes("activity") ? (
+              <ChevronUp className="w-4 h-4" />
+            ) : (
+              <ChevronDown className="w-4 h-4" />
+            )}
             Activity
           </button>
           {expandedSections.includes("activity") && (
@@ -181,12 +213,16 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
               setExpandedSections(
                 expandedSections.includes("permissions")
                   ? expandedSections.filter((s) => s !== "permissions")
-                  : [...expandedSections, "permissions"]
+                  : [...expandedSections, "permissions"],
               )
             }
             className="bg-transparent border-0 text-white font-semibold text-sm cursor-pointer flex items-center gap-2 py-2"
           >
-            {expandedSections.includes("permissions") ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            {expandedSections.includes("permissions") ? (
+              <ChevronUp className="w-4 h-4" />
+            ) : (
+              <ChevronDown className="w-4 h-4" />
+            )}
             Permissions ({user.permissions.length})
           </button>
           {expandedSections.includes("permissions") && (
@@ -207,19 +243,27 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
               setExpandedSections(
                 expandedSections.includes("auth")
                   ? expandedSections.filter((s) => s !== "auth")
-                  : [...expandedSections, "auth"]
+                  : [...expandedSections, "auth"],
               )
             }
             className="bg-transparent border-0 text-white font-semibold text-sm cursor-pointer flex items-center gap-2 py-2"
           >
-            {expandedSections.includes("auth") ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            {expandedSections.includes("auth") ? (
+              <ChevronUp className="w-4 h-4" />
+            ) : (
+              <ChevronDown className="w-4 h-4" />
+            )}
             Auth Providers ({user.authProviders.length})
           </button>
           {expandedSections.includes("auth") && (
             <div className="flex flex-wrap gap-2 mt-3">
               {user.authProviders.length > 0 ? (
                 user.authProviders.map((provider) => (
-                  <Badge key={provider} variant="success" className="text-xs capitalize">
+                  <Badge
+                    key={provider}
+                    variant="success"
+                    className="text-xs capitalize"
+                  >
                     {provider}
                   </Badge>
                 ))
@@ -237,7 +281,10 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
           <Button variant="secondary" size="sm">
             Reset Password
           </Button>
-          <Button variant={user.status === "active" ? "danger" : "primary"} size="sm">
+          <Button
+            variant={user.status === "active" ? "danger" : "primary"}
+            size="sm"
+          >
             {user.status === "active" ? "Suspend" : "Activate"}
           </Button>
           <Button variant="ghost" size="sm">
@@ -251,20 +298,26 @@ const UserDetailModal = ({ user, isOpen, onClose }: { user: User | null; isOpen:
 
 // Users Table
 export default function AdminUsersPage() {
-  const { items: users, loading, error, refetch } = useApiList<User>('/api/v4/users');
-  const [searchTerm, setSearchTerm] = useState('');
+  const {
+    items: users,
+    loading,
+    error,
+    refetch,
+  } = useApiList<User>("/api/v4/users");
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   if (loading && users.length === 0) return <LoadingSkeleton />;
-  if (error && users.length === 0) return <ErrorState message={error.message} onRetry={refetch} />;
+  if (error && users.length === 0)
+    return <ErrorState message={error.message} onRetry={refetch} />;
 
   const filteredUsers = useMemo(() => {
     return users.filter(
       (user) =>
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+        user.email.toLowerCase().includes(searchTerm.toLowerCase()),
     );
   }, [users, searchTerm]);
 
@@ -313,7 +366,7 @@ export default function AdminUsersPage() {
                     Active
                   </p>
                   <p className="text-white text-2xl font-bold m-0">
-                    {users.filter((u) => u.status === 'active').length}
+                    {users.filter((u) => u.status === "active").length}
                   </p>
                 </div>
                 <UserCheck className="w-6 h-6 text-green-500" />
@@ -329,7 +382,7 @@ export default function AdminUsersPage() {
                     Admins
                   </p>
                   <p className="text-white text-2xl font-bold m-0">
-                    {users.filter((u) => u.role === 'admin').length}
+                    {users.filter((u) => u.role === "admin").length}
                   </p>
                 </div>
                 <Shield className="w-6 h-6 text-red-500" />
@@ -345,7 +398,7 @@ export default function AdminUsersPage() {
                     Pending Invites
                   </p>
                   <p className="text-white text-2xl font-bold m-0">
-                    {users.filter((u) => u.status === 'invited').length}
+                    {users.filter((u) => u.status === "invited").length}
                   </p>
                 </div>
                 <Mail className="w-6 h-6 text-amber-500" />
@@ -406,7 +459,8 @@ export default function AdminUsersPage() {
                     key={user.id}
                     className="border-b border-wl-border-default transition-colors duration-200 cursor-pointer"
                     style={{
-                      backgroundColor: idx % 2 === 0 ? "transparent" : "#1a1a2e",
+                      backgroundColor:
+                        idx % 2 === 0 ? "transparent" : "#1a1a2e",
                     }}
                     onClick={() => handleUserClick(user)}
                   >
@@ -430,15 +484,14 @@ export default function AdminUsersPage() {
                         {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                       </Badge>
                     </td>
-                    <td className="p-3 text-white text-sm">
-                      {user.store}
-                    </td>
+                    <td className="p-3 text-white text-sm">{user.store}</td>
                     <td className="p-3 text-center">
                       <Badge
                         variant={getStatusBadgeVariant(user.status)}
                         className="text-xs"
                       >
-                        {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                        {user.status.charAt(0).toUpperCase() +
+                          user.status.slice(1)}
                       </Badge>
                     </td>
                     <td className="p-3 text-gray-400 text-xs">
@@ -464,7 +517,11 @@ export default function AdminUsersPage() {
         </Card>
       </div>
 
-      <UserDetailModal user={selectedUser} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <UserDetailModal
+        user={selectedUser}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </>
   );
 }

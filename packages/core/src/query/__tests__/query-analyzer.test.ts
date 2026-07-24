@@ -28,7 +28,7 @@ describe("QueryAnalyzer", () => {
   describe("Query Analysis", () => {
     it("should provide fallback analysis when EXPLAIN unavailable", async () => {
       mockPrisma.$queryRawUnsafe.mockRejectedValueOnce(
-        new Error("EXPLAIN not available")
+        new Error("EXPLAIN not available"),
       );
 
       const sql = "SELECT * FROM users WHERE id = $1";
@@ -96,7 +96,8 @@ describe("QueryAnalyzer", () => {
         },
       ]);
 
-      const sql = "SELECT u.*, o.* FROM users u JOIN orders o ON u.id = o.user_id";
+      const sql =
+        "SELECT u.*, o.* FROM users u JOIN orders o ON u.id = o.user_id";
       const analysis = await analyzer.analyzeQuery(sql);
 
       expect(analysis.joins.length).toBeGreaterThan(0);
@@ -177,9 +178,7 @@ describe("QueryAnalyzer", () => {
       const sql = "SELECT * FROM products WHERE category_id = $1";
       const analysis = await analyzer.analyzeQuery(sql, [5]);
 
-      expect(
-        analysis.suggestions.some((s) => s.includes("index"))
-      ).toBe(true);
+      expect(analysis.suggestions.some((s) => s.includes("index"))).toBe(true);
     });
 
     it("should suggest query optimization for joins", async () => {
@@ -199,9 +198,7 @@ describe("QueryAnalyzer", () => {
       const sql = "SELECT * FROM users, orders WHERE users.id = orders.user_id";
       const analysis = await analyzer.analyzeQuery(sql);
 
-      expect(
-        analysis.suggestions.some((s) => s.includes("join"))
-      ).toBe(true);
+      expect(analysis.suggestions.some((s) => s.includes("join"))).toBe(true);
     });
 
     it("should provide optimization suggestions", async () => {
@@ -246,7 +243,10 @@ describe("QueryAnalyzer", () => {
         },
       ]);
 
-      const analysis = await analyzer.analyzeQuery("SELECT * FROM users WHERE id = $1", [1]);
+      const analysis = await analyzer.analyzeQuery(
+        "SELECT * FROM users WHERE id = $1",
+        [1],
+      );
       expect(analysis.hasSequentialScan).toBe(false);
       expect(analysis.severity).toBe("low");
     });
@@ -282,7 +282,7 @@ describe("QueryAnalyzer", () => {
       ]);
 
       const analysis = await analyzer.analyzeQuery(
-        "SELECT COUNT(*) FROM t1 JOIN t2 ON t1.id = t2.id"
+        "SELECT COUNT(*) FROM t1 JOIN t2 ON t1.id = t2.id",
       );
       expect(analysis.joins.length).toBeGreaterThan(0);
     });

@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import { forwardRef, type SVGProps } from 'react';
-import { cn } from '@/lib/utils';
+import { forwardRef, type SVGProps } from "react";
+import { cn } from "@/lib/utils";
 
 type Platform =
-  | 'shopify'
-  | 'woocommerce'
-  | 'bigcommerce'
-  | 'magento'
-  | 'etsy'
-  | 'ebay'
-  | 'square'
-  | 'amazon';
+  | "shopify"
+  | "woocommerce"
+  | "bigcommerce"
+  | "magento"
+  | "etsy"
+  | "ebay"
+  | "square"
+  | "amazon";
 
-type LogoSize = 'sm' | 'md' | 'lg';
+type LogoSize = "sm" | "md" | "lg";
 
 interface PlatformLogoProps extends SVGProps<SVGSVGElement> {
   /** E-commerce platform identifier */
@@ -34,59 +34,59 @@ const platformConfig: Record<
   }
 > = {
   shopify: {
-    name: 'Shopify',
-    initials: 'SH',
-    bgColor: 'bg-green-600',
-    textColor: 'text-white',
+    name: "Shopify",
+    initials: "SH",
+    bgColor: "bg-green-600",
+    textColor: "text-white",
   },
   woocommerce: {
-    name: 'WooCommerce',
-    initials: 'WC',
-    bgColor: 'bg-purple-600',
-    textColor: 'text-white',
+    name: "WooCommerce",
+    initials: "WC",
+    bgColor: "bg-purple-600",
+    textColor: "text-white",
   },
   bigcommerce: {
-    name: 'BigCommerce',
-    initials: 'BC',
-    bgColor: 'bg-blue-600',
-    textColor: 'text-white',
+    name: "BigCommerce",
+    initials: "BC",
+    bgColor: "bg-blue-600",
+    textColor: "text-white",
   },
   magento: {
-    name: 'Magento',
-    initials: 'MG',
-    bgColor: 'bg-orange-600',
-    textColor: 'text-white',
+    name: "Magento",
+    initials: "MG",
+    bgColor: "bg-orange-600",
+    textColor: "text-white",
   },
   etsy: {
-    name: 'Etsy',
-    initials: 'ET',
-    bgColor: 'bg-yellow-500',
-    textColor: 'text-white',
+    name: "Etsy",
+    initials: "ET",
+    bgColor: "bg-yellow-500",
+    textColor: "text-white",
   },
   ebay: {
-    name: 'eBay',
-    initials: 'EB',
-    bgColor: 'bg-red-600',
-    textColor: 'text-white',
+    name: "eBay",
+    initials: "EB",
+    bgColor: "bg-red-600",
+    textColor: "text-white",
   },
   square: {
-    name: 'Square',
-    initials: 'SQ',
-    bgColor: 'bg-slate-700',
-    textColor: 'text-white',
+    name: "Square",
+    initials: "SQ",
+    bgColor: "bg-slate-700",
+    textColor: "text-white",
   },
   amazon: {
-    name: 'Amazon',
-    initials: 'AM',
-    bgColor: 'bg-amber-600',
-    textColor: 'text-white',
+    name: "Amazon",
+    initials: "AM",
+    bgColor: "bg-amber-600",
+    textColor: "text-white",
   },
 };
 
 const sizeClasses: Record<LogoSize, string> = {
-  sm: 'w-5 h-5 text-xs',
-  md: 'w-8 h-8 text-sm',
-  lg: 'w-12 h-12 text-base',
+  sm: "w-5 h-5 text-xs",
+  md: "w-8 h-8 text-sm",
+  lg: "w-12 h-12 text-base",
 };
 
 const ShopifyLogo = (props: SVGProps<SVGSVGElement>) => (
@@ -137,7 +137,10 @@ const AmazonLogo = (props: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-const logoComponents: Record<Platform, React.ComponentType<SVGProps<SVGSVGElement>>> = {
+const logoComponents: Record<
+  Platform,
+  React.ComponentType<SVGProps<SVGSVGElement>>
+> = {
   shopify: ShopifyLogo,
   woocommerce: WooCommerceLogo,
   bigcommerce: BigCommerceLogo,
@@ -160,14 +163,8 @@ const logoComponents: Record<Platform, React.ComponentType<SVGProps<SVGSVGElemen
  */
 const PlatformLogo = forwardRef<SVGSVGElement, PlatformLogoProps>(
   (
-    {
-      platform,
-      size = 'md',
-      showFallback = true,
-      className,
-      ...props
-    },
-    ref
+    { platform, size = "md", showFallback = true, className, ...props },
+    ref,
   ) => {
     const config = platformConfig[platform];
     const LogoComponent = logoComponents[platform];
@@ -176,13 +173,13 @@ const PlatformLogo = forwardRef<SVGSVGElement, PlatformLogoProps>(
       return (
         <div
           className={cn(
-            'inline-flex items-center justify-center',
-            'rounded-lg font-semibold',
+            "inline-flex items-center justify-center",
+            "rounded-lg font-semibold",
             sizeClasses[size],
             config.bgColor,
             config.textColor,
-            'transition-all duration-200 ease-default',
-            className
+            "transition-all duration-200 ease-default",
+            className,
           )}
           title={config.name}
           aria-label={`${config.name} logo`}
@@ -199,17 +196,17 @@ const PlatformLogo = forwardRef<SVGSVGElement, PlatformLogoProps>(
         className={cn(
           sizeClasses[size],
           config.textColor,
-          'transition-all duration-200 ease-default',
-          className
+          "transition-all duration-200 ease-default",
+          className,
         )}
         aria-label={`${config.name} logo`}
         {...props}
       />
     );
-  }
+  },
 );
 
-PlatformLogo.displayName = 'PlatformLogo';
+PlatformLogo.displayName = "PlatformLogo";
 
 export { PlatformLogo };
 export type { Platform, LogoSize };

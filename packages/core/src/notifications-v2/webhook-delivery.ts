@@ -29,7 +29,7 @@ export class WebhookManager {
   static registerWebhook(
     url: string,
     events: WebhookEventType[],
-    secret?: string
+    secret?: string,
   ): Webhook {
     const id = `webhook_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const webhookSecret = secret || crypto.randomBytes(32).toString("hex");
@@ -67,7 +67,7 @@ export class WebhookManager {
    */
   static updateWebhook(
     id: string,
-    updates: Partial<Webhook>
+    updates: Partial<Webhook>,
   ): Webhook | undefined {
     const webhook = webhookStore.get(id);
     if (!webhook) {
@@ -99,7 +99,7 @@ export class WebhookManager {
   static async fireWebhook(
     webhook: Webhook,
     event: WebhookEventType,
-    payload: Record<string, any>
+    payload: Record<string, any>,
   ): Promise<WebhookDeliveryResult> {
     try {
       // Check if webhook is active
@@ -130,7 +130,7 @@ export class WebhookManager {
       // Generate HMAC signature
       const signature = this.generateSignature(
         JSON.stringify(webhookPayload),
-        webhook.secret
+        webhook.secret,
       );
 
       // For now, log instead of actually delivering (mock implementation)
@@ -168,7 +168,8 @@ export class WebhookManager {
         timestamp: new Date(),
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       return {
         success: false,
         error: errorMessage,
@@ -182,7 +183,7 @@ export class WebhookManager {
    */
   static async fireWebhooks(
     event: WebhookEventType,
-    payload: Record<string, any>
+    payload: Record<string, any>,
   ): Promise<Array<{ webhook: Webhook; result: WebhookDeliveryResult }>> {
     const webhooks = this.listWebhooks();
     const results: Array<{ webhook: Webhook; result: WebhookDeliveryResult }> =
@@ -200,10 +201,7 @@ export class WebhookManager {
    * Generate HMAC signature for webhook
    */
   private static generateSignature(payload: string, secret: string): string {
-    return crypto
-      .createHmac("sha256", secret)
-      .update(payload)
-      .digest("hex");
+    return crypto.createHmac("sha256", secret).update(payload).digest("hex");
   }
 
   /**
@@ -212,12 +210,12 @@ export class WebhookManager {
   static verifySignature(
     payload: string,
     signature: string,
-    secret: string
+    secret: string,
   ): boolean {
     const expectedSignature = this.generateSignature(payload, secret);
     return crypto.timingSafeEqual(
       Buffer.from(signature),
-      Buffer.from(expectedSignature)
+      Buffer.from(expectedSignature),
     );
   }
 

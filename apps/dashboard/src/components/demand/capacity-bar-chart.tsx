@@ -28,8 +28,12 @@ export function CapacityBarChart({
 
       const padding = { top: 30, right: 40, bottom: 60, left: 60 };
       const barWidth = Math.max(40, 600 / data.length);
-      const chartHeight = Math.max(300, data.length * 50 + padding.top + padding.bottom);
-      const chartWidth = data.length * (barWidth + 20) + padding.left + padding.right;
+      const chartHeight = Math.max(
+        300,
+        data.length * 50 + padding.top + padding.bottom,
+      );
+      const chartWidth =
+        data.length * (barWidth + 20) + padding.left + padding.right;
 
       return {
         maxCapacity: max,
@@ -46,7 +50,7 @@ export function CapacityBarChart({
       const normalized = value / maxCapacity;
       return barHeight - normalized * barHeight;
     },
-    [maxCapacity, barHeight]
+    [maxCapacity, barHeight],
   );
 
   const getStatusColor = (utilizationRate: number): string => {
@@ -55,30 +59,30 @@ export function CapacityBarChart({
     return "rgb(239, 68, 68)"; // Red - insufficient
   };
 
-  const getGapPercentage = (
-    current: number,
-    recommended: number
-  ): number => {
+  const getGapPercentage = (current: number, recommended: number): number => {
     if (recommended === 0) return 0;
     return ((recommended - current) / recommended) * 100;
   };
 
-  const handleBarHover = useCallback((zone: CapacityData | null, event?: React.MouseEvent) => {
-    if (zone) {
-      setHoveredZoneId(zone.zoneId);
-      if (event) {
-        setTooltipPos({ x: event.clientX, y: event.clientY });
+  const handleBarHover = useCallback(
+    (zone: CapacityData | null, event?: React.MouseEvent) => {
+      if (zone) {
+        setHoveredZoneId(zone.zoneId);
+        if (event) {
+          setTooltipPos({ x: event.clientX, y: event.clientY });
+        }
+      } else {
+        setHoveredZoneId(null);
       }
-    } else {
-      setHoveredZoneId(null);
-    }
-  }, []);
+    },
+    [],
+  );
 
   const handleBarClick = useCallback(
     (zone: CapacityData) => {
       onBarClick?.(zone.zoneId);
     },
-    [onBarClick]
+    [onBarClick],
   );
 
   return (
@@ -86,7 +90,11 @@ export function CapacityBarChart({
       <div className="flex flex-col gap-4">
         {/* Chart */}
         <div className="overflow-x-auto border border-wl-border-subtle rounded-lg bg-wl-bg-surface p-4">
-          <svg width={chartWidth} height={chartHeight} className="bg-transparent">
+          <svg
+            width={chartWidth}
+            height={chartHeight}
+            className="bg-transparent"
+          >
             {/* Horizontal grid lines */}
             {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
               const y = padding.top + (1 - ratio) * barHeight;
@@ -131,7 +139,7 @@ export function CapacityBarChart({
               const statusColor = getStatusColor(zone.utilizationRate);
               const gapPct = getGapPercentage(
                 zone.currentCapacity,
-                zone.recommendedCapacity
+                zone.recommendedCapacity,
               );
 
               return (
@@ -251,9 +259,7 @@ export function CapacityBarChart({
             {/* Recommended capacity */}
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-green-500/30 rounded border border-green-500 border-dashed" />
-              <span className="text-xs text-wl-text-tertiary">
-                Recommended
-              </span>
+              <span className="text-xs text-wl-text-tertiary">Recommended</span>
             </div>
 
             {/* Status indicators */}
@@ -292,7 +298,7 @@ export function CapacityBarChart({
               if (zone.zoneId !== hoveredZoneId) return null;
               const gapPct = getGapPercentage(
                 zone.currentCapacity,
-                zone.recommendedCapacity
+                zone.recommendedCapacity,
               );
               return (
                 <div key={zone.zoneId}>

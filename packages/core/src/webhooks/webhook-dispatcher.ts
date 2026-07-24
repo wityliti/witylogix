@@ -67,7 +67,7 @@ export class WebhookDispatcher {
     url: string,
     payload: Record<string, unknown>,
     secret: string,
-    options: DispatchOptions = {}
+    options: DispatchOptions = {},
   ): Promise<DispatchResponse> {
     const metadata: WebhookRequestMetadata = {
       startTime: Date.now(),
@@ -85,7 +85,7 @@ export class WebhookDispatcher {
       const payloadString = JSON.stringify(payload);
       if (payloadString.length > this.maxPayloadSize) {
         throw new Error(
-          `Webhook payload exceeds maximum size of ${this.maxPayloadSize} bytes`
+          `Webhook payload exceeds maximum size of ${this.maxPayloadSize} bytes`,
         );
       }
 
@@ -97,7 +97,7 @@ export class WebhookDispatcher {
       const headers = this.buildHeaders(
         signature,
         timestamp,
-        options.customHeaders
+        options.customHeaders,
       );
 
       // Dispatch request with timeout
@@ -135,7 +135,8 @@ export class WebhookDispatcher {
     } catch (error) {
       metadata.endTime = Date.now();
       metadata.duration = metadata.endTime - metadata.startTime;
-      metadata.lastError = error instanceof Error ? error.message : String(error);
+      metadata.lastError =
+        error instanceof Error ? error.message : String(error);
 
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
@@ -160,12 +161,12 @@ export class WebhookDispatcher {
       payload: Record<string, unknown>;
       secret: string;
       options?: DispatchOptions;
-    }>
+    }>,
   ): Promise<DispatchResponse[]> {
     return Promise.all(
       requests.map((req) =>
-        this.dispatch(req.url, req.payload, req.secret, req.options)
-      )
+        this.dispatch(req.url, req.payload, req.secret, req.options),
+      ),
     );
   }
 
@@ -179,7 +180,7 @@ export class WebhookDispatcher {
   private buildHeaders(
     signature: string,
     timestamp: string,
-    customHeaders?: Record<string, string>
+    customHeaders?: Record<string, string>,
   ): Record<string, string> {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -218,7 +219,7 @@ export class WebhookDispatcher {
   static verifySignature(
     payload: string,
     signature: string,
-    secret: string
+    secret: string,
   ): boolean {
     const hmac = createHmac("sha256", secret);
     hmac.update(payload);

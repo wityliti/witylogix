@@ -10,13 +10,16 @@ const TEST_CREDS = {
  * Login via API and set auth cookie — reused across all test suites.
  */
 async function loginViaAPI(page: Page) {
-  const response = await page.request.post("http://localhost:8000/api/v4/auth/login", {
-    data: {
-      email: TEST_CREDS.email,
-      password: TEST_CREDS.password,
-      shopDomain: TEST_CREDS.shopDomain,
+  const response = await page.request.post(
+    "http://localhost:8000/api/v4/auth/login",
+    {
+      data: {
+        email: TEST_CREDS.email,
+        password: TEST_CREDS.password,
+        shopDomain: TEST_CREDS.shopDomain,
+      },
     },
-  });
+  );
 
   expect(response.ok()).toBeTruthy();
   const body = await response.json();
@@ -52,7 +55,7 @@ async function loginViaAPI(page: Page) {
 async function verifyPageLoads(
   page: Page,
   path: string,
-  contentPattern?: RegExp
+  contentPattern?: RegExp,
 ) {
   await page.goto(path, { waitUntil: "commit", timeout: 25000 });
   await page.waitForTimeout(3000);
@@ -76,7 +79,11 @@ test.describe("Shipments Pages", () => {
   });
 
   test("shipments list loads", async ({ page }) => {
-    await verifyPageLoads(page, "/shipments", /shipment|tracking|status|delivery/i);
+    await verifyPageLoads(
+      page,
+      "/shipments",
+      /shipment|tracking|status|delivery/i,
+    );
   });
 
   test("shipments list shows stat cards and table", async ({ page }) => {
@@ -101,7 +108,9 @@ test.describe("Shipments Pages", () => {
     if (btnCount > 0) {
       await filterBtn.click();
       await page.waitForTimeout(1000);
-      const bodyText = await page.locator("body").textContent({ timeout: 5000 });
+      const bodyText = await page
+        .locator("body")
+        .textContent({ timeout: 5000 });
       expect(bodyText).not.toContain("Application error");
     }
   });
@@ -112,14 +121,14 @@ test.describe("Shipments Pages", () => {
     await page.waitForTimeout(3000);
 
     // Try to click the first shipment row link
-    const shipmentLink = page
-      .locator("a[href*='/shipments/']")
-      .first();
+    const shipmentLink = page.locator("a[href*='/shipments/']").first();
     const linkCount = await shipmentLink.count();
     if (linkCount > 0) {
       await shipmentLink.click();
       await page.waitForTimeout(3000);
-      const bodyText = await page.locator("body").textContent({ timeout: 10000 });
+      const bodyText = await page
+        .locator("body")
+        .textContent({ timeout: 10000 });
       expect(bodyText).not.toContain("Application error");
       expect(bodyText).not.toContain("Internal Server Error");
     }
@@ -136,11 +145,20 @@ test.describe("Shipping Labels Pages", () => {
   });
 
   test("shipping labels page loads", async ({ page }) => {
-    await verifyPageLoads(page, "/shipping/labels", /label|carrier|shipment|print/i);
+    await verifyPageLoads(
+      page,
+      "/shipping/labels",
+      /label|carrier|shipment|print/i,
+    );
   });
 
-  test("shipping labels page shows content without errors", async ({ page }) => {
-    await page.goto("/shipping/labels", { waitUntil: "commit", timeout: 25000 });
+  test("shipping labels page shows content without errors", async ({
+    page,
+  }) => {
+    await page.goto("/shipping/labels", {
+      waitUntil: "commit",
+      timeout: 25000,
+    });
     await page.waitForTimeout(3000);
     const bodyText = await page.locator("body").textContent({ timeout: 10000 });
     expect(bodyText).not.toContain("Application error");
@@ -149,7 +167,10 @@ test.describe("Shipping Labels Pages", () => {
   });
 
   test("shipping labels supports search", async ({ page }) => {
-    await page.goto("/shipping/labels", { waitUntil: "commit", timeout: 25000 });
+    await page.goto("/shipping/labels", {
+      waitUntil: "commit",
+      timeout: 25000,
+    });
     await page.waitForTimeout(3000);
 
     const searchInput = page
@@ -159,7 +180,9 @@ test.describe("Shipping Labels Pages", () => {
     if (inputCount > 0) {
       await searchInput.fill("test");
       await page.waitForTimeout(1500);
-      const bodyText = await page.locator("body").textContent({ timeout: 5000 });
+      const bodyText = await page
+        .locator("body")
+        .textContent({ timeout: 5000 });
       expect(bodyText).not.toContain("Application error");
     }
   });
@@ -175,11 +198,20 @@ test.describe("Shipping Tracking Pages", () => {
   });
 
   test("shipping tracking page loads", async ({ page }) => {
-    await verifyPageLoads(page, "/shipping/tracking", /track|carrier|status|shipment/i);
+    await verifyPageLoads(
+      page,
+      "/shipping/tracking",
+      /track|carrier|status|shipment/i,
+    );
   });
 
-  test("shipping tracking page shows content without errors", async ({ page }) => {
-    await page.goto("/shipping/tracking", { waitUntil: "commit", timeout: 25000 });
+  test("shipping tracking page shows content without errors", async ({
+    page,
+  }) => {
+    await page.goto("/shipping/tracking", {
+      waitUntil: "commit",
+      timeout: 25000,
+    });
     await page.waitForTimeout(3000);
     const bodyText = await page.locator("body").textContent({ timeout: 10000 });
     expect(bodyText).not.toContain("Application error");
@@ -188,7 +220,10 @@ test.describe("Shipping Tracking Pages", () => {
   });
 
   test("shipping tracking supports carrier filter", async ({ page }) => {
-    await page.goto("/shipping/tracking", { waitUntil: "commit", timeout: 25000 });
+    await page.goto("/shipping/tracking", {
+      waitUntil: "commit",
+      timeout: 25000,
+    });
     await page.waitForTimeout(3000);
 
     const filterBtn = page
@@ -199,7 +234,9 @@ test.describe("Shipping Tracking Pages", () => {
     if (btnCount > 0) {
       await filterBtn.click();
       await page.waitForTimeout(1000);
-      const bodyText = await page.locator("body").textContent({ timeout: 5000 });
+      const bodyText = await page
+        .locator("body")
+        .textContent({ timeout: 5000 });
       expect(bodyText).not.toContain("Application error");
     }
   });
@@ -225,7 +262,9 @@ test.describe("Returns Pages", () => {
     expect(bodyText).not.toContain("Application error");
     expect(bodyText).not.toContain("Internal Server Error");
     // Should show return status stages
-    expect(bodyText?.toLowerCase()).toMatch(/requested|approved|received|refunded/i);
+    expect(bodyText?.toLowerCase()).toMatch(
+      /requested|approved|received|refunded/i,
+    );
   });
 
   test("returns page create button is present", async ({ page }) => {
@@ -240,7 +279,9 @@ test.describe("Returns Pages", () => {
     if (btnCount > 0) {
       await createBtn.click();
       await page.waitForTimeout(1000);
-      const bodyText = await page.locator("body").textContent({ timeout: 5000 });
+      const bodyText = await page
+        .locator("body")
+        .textContent({ timeout: 5000 });
       expect(bodyText).not.toContain("Application error");
     }
   });
@@ -267,24 +308,33 @@ test.describe("Shipments API", () => {
   });
 
   test("GET /api/v4/shipments returns paginated list", async ({ request }) => {
-    const response = await request.get("http://localhost:8000/api/v4/shipments?limit=10", {
-      headers: { Authorization: `Bearer ${authToken}` },
-    });
+    const response = await request.get(
+      "http://localhost:8000/api/v4/shipments?limit=10",
+      {
+        headers: { Authorization: `Bearer ${authToken}` },
+      },
+    );
     // Accept 200 or 401 (if token format differs) — just must not 500
     expect(response.status()).not.toBe(500);
   });
 
   test("GET /api/v4/returns returns paginated list", async ({ request }) => {
-    const response = await request.get("http://localhost:8000/api/v4/returns?limit=10", {
-      headers: { Authorization: `Bearer ${authToken}` },
-    });
+    const response = await request.get(
+      "http://localhost:8000/api/v4/returns?limit=10",
+      {
+        headers: { Authorization: `Bearer ${authToken}` },
+      },
+    );
     expect(response.status()).not.toBe(500);
   });
 
   test("GET /api/v4/returns/stats returns statistics", async ({ request }) => {
-    const response = await request.get("http://localhost:8000/api/v4/returns/stats", {
-      headers: { Authorization: `Bearer ${authToken}` },
-    });
+    const response = await request.get(
+      "http://localhost:8000/api/v4/returns/stats",
+      {
+        headers: { Authorization: `Bearer ${authToken}` },
+      },
+    );
     expect(response.status()).not.toBe(500);
   });
 });

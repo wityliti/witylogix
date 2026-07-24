@@ -1,6 +1,6 @@
-import { Queue, Worker, QueueEvents, Job } from 'bullmq';
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { Redis } from 'ioredis';
+import { Queue, Worker, QueueEvents, Job } from "bullmq";
+import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import { Redis } from "ioredis";
 
 export interface QueueStats {
   name: string;
@@ -28,7 +28,7 @@ export interface JobDetails {
   processedOn?: number;
   finishedOn?: number;
   logs: string[];
-  status: 'waiting' | 'active' | 'completed' | 'failed' | 'delayed' | 'paused';
+  status: "waiting" | "active" | "completed" | "failed" | "delayed" | "paused";
 }
 
 export interface QueueHealth {
@@ -65,12 +65,12 @@ export class QueueDashboard {
       if (!queue) continue;
 
       const counts = await queue.getJobCounts(
-        'active',
-        'waiting',
-        'completed',
-        'failed',
-        'delayed',
-        'paused'
+        "active",
+        "waiting",
+        "completed",
+        "failed",
+        "delayed",
+        "paused",
       );
 
       const isPaused = await queue.isPaused();
@@ -94,7 +94,10 @@ export class QueueDashboard {
     return stats;
   }
 
-  async getJobDetails(queueName: string, jobId: string): Promise<JobDetails | null> {
+  async getJobDetails(
+    queueName: string,
+    jobId: string,
+  ): Promise<JobDetails | null> {
     const queue = this.queues.get(queueName);
     if (!queue) return null;
 
@@ -106,18 +109,18 @@ export class QueueDashboard {
     const logs = await job.logs(0, -1);
 
     return {
-      id: job.id || '',
+      id: job.id || "",
       name: job.name,
       data: job.data,
-      progress: typeof progress === 'number' ? progress : 0,
+      progress: typeof progress === "number" ? progress : 0,
       attempts: job.attemptsMade || 0,
       maxAttempts: job.opts?.attempts || 0,
       failedReason: job.failedReason,
       timestamp: job.timestamp || 0,
       processedOn: job.processedOn,
       finishedOn: job.finishedOn,
-      logs: logs.map(log => log.msg),
-      status: (state as JobDetails['status']) || 'waiting',
+      logs: logs.map((log) => log.msg),
+      status: (state as JobDetails["status"]) || "waiting",
     };
   }
 
@@ -129,7 +132,7 @@ export class QueueDashboard {
     if (!job) return false;
 
     try {
-      await job.retry('failed');
+      await job.retry("failed");
       return true;
     } catch (error) {
       return false;
@@ -145,7 +148,7 @@ export class QueueDashboard {
 
     for (const job of failedJobs) {
       try {
-        await job.retry('failed');
+        await job.retry("failed");
         retried++;
       } catch (error) {
         // Continue with next job
@@ -170,7 +173,10 @@ export class QueueDashboard {
     }
   }
 
-  async cleanCompletedJobs(queueName: string, olderThanDays: number): Promise<number> {
+  async cleanCompletedJobs(
+    queueName: string,
+    olderThanDays: number,
+  ): Promise<number> {
     const queue = this.queues.get(queueName);
     if (!queue) return 0;
 
@@ -230,16 +236,14 @@ export class QueueDashboard {
     }
 
     try {
-      const counts = await queue.getJobCounts(
-        'completed',
-        'failed'
-      );
+      const counts = await queue.getJobCounts("completed", "failed");
 
       const totalProcessed = counts.completed || 0;
       const totalFailed = counts.failed || 0;
-      const errorRate = totalProcessed > 0
-        ? (totalFailed / (totalProcessed + totalFailed)) * 100
-        : 0;
+      const errorRate =
+        totalProcessed > 0
+          ? (totalFailed / (totalProcessed + totalFailed)) * 100
+          : 0;
 
       // Calculate throughput per minute from Redis stats
       const statsKey = `bull:${queueName}:stats:processed`;
@@ -273,107 +277,116 @@ export class QueueDashboard {
 
 export async function registerQueueDashboard(
   fastify: FastifyInstance,
-  dashboard: QueueDashboard
+  dashboard: QueueDashboard,
 ): Promise<void> {
   // Get all queues with stats
-  fastify.get('/api/queues', async (request: FastifyRequest, reply: FastifyReply) => {
-    const stats = await dashboard.getAllQueuesStats();
-    return reply.send({ queues: stats });
-  });
+  fastify.get(
+    "/api/queues",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const stats = await dashboard.getAllQueuesStats();
+      return reply.send({ queues: stats });
+    },
+  );
 
   // Get job details
   fastify.get<{ Params: { queueName: string; jobId: string } }>(
-    '/api/queues/:queueName/jobs/:jobId',
+    "/api/queues/:queueName/jobs/:jobId",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { queueName, jobId } = request.params as any;
       const job = await dashboard.getJobDetails(queueName, jobId);
 
       if (!job) {
-        return reply.status(404).send({ error: 'Job not found' });
+        return reply.status(404).send({ error: "Job not found" });
       }
 
       return reply.send(job);
-    }
+    },
   );
 
   // Retry single job
   fastify.post<{ Params: { queueName: string; jobId: string } }>(
-    '/api/queues/:queueName/jobs/:jobId/retry',
+    "/api/queues/:queueName/jobs/:jobId/retry",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { queueName, jobId } = request.params as any;
       const success = await dashboard.retryJob(queueName, jobId);
 
       if (!success) {
-        return reply.status(400).send({ error: 'Failed to retry job' });
+        return reply.status(400).send({ error: "Failed to retry job" });
       }
 
       return reply.send({ success: true });
-    }
+    },
   );
 
   // Retry all failed jobs
   fastify.post<{ Params: { queueName: string } }>(
-    '/api/queues/:queueName/retry-all-failed',
+    "/api/queues/:queueName/retry-all-failed",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { queueName } = request.params as any;
       const count = await dashboard.retryAllFailed(queueName);
       return reply.send({ retriedCount: count });
-    }
+    },
   );
 
   // Remove job
   fastify.delete<{ Params: { queueName: string; jobId: string } }>(
-    '/api/queues/:queueName/jobs/:jobId',
+    "/api/queues/:queueName/jobs/:jobId",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { queueName, jobId } = request.params as any;
       const success = await dashboard.removeJob(queueName, jobId);
 
       if (!success) {
-        return reply.status(400).send({ error: 'Failed to remove job' });
+        return reply.status(400).send({ error: "Failed to remove job" });
       }
 
       return reply.send({ success: true });
-    }
+    },
   );
 
   // Clean completed jobs older than X days
-  fastify.post<{ Params: { queueName: string }; Body: { olderThanDays: number } }>(
-    '/api/queues/:queueName/clean-completed',
+  fastify.post<{
+    Params: { queueName: string };
+    Body: { olderThanDays: number };
+  }>(
+    "/api/queues/:queueName/clean-completed",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { queueName } = request.params as any;
       const { olderThanDays } = request.body as any;
-      const cleaned = await dashboard.cleanCompletedJobs(queueName, olderThanDays || 7);
+      const cleaned = await dashboard.cleanCompletedJobs(
+        queueName,
+        olderThanDays || 7,
+      );
       return reply.send({ cleanedCount: cleaned });
-    }
+    },
   );
 
   // Pause queue
   fastify.post<{ Params: { queueName: string } }>(
-    '/api/queues/:queueName/pause',
+    "/api/queues/:queueName/pause",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { queueName } = request.params as any;
       const success = await dashboard.pauseQueue(queueName);
 
       if (!success) {
-        return reply.status(400).send({ error: 'Failed to pause queue' });
+        return reply.status(400).send({ error: "Failed to pause queue" });
       }
 
       return reply.send({ success: true });
-    }
+    },
   );
 
   // Resume queue
   fastify.post<{ Params: { queueName: string } }>(
-    '/api/queues/:queueName/resume',
+    "/api/queues/:queueName/resume",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { queueName } = request.params as any;
       const success = await dashboard.resumeQueue(queueName);
 
       if (!success) {
-        return reply.status(400).send({ error: 'Failed to resume queue' });
+        return reply.status(400).send({ error: "Failed to resume queue" });
       }
 
       return reply.send({ success: true });
-    }
+    },
   );
 }

@@ -23,7 +23,7 @@ import type {
   IsochroneRequest,
   IsochroneResponse,
   RoutingAdapterConfig,
-} from './types.js';
+} from "./types.js";
 
 export interface TruckAttributes {
   maxAxles?: number;
@@ -31,8 +31,8 @@ export interface TruckAttributes {
   maxLength?: number; // meters
   maxWeight?: number; // kilograms
   maxWeightPerAxle?: number; // kilograms
-  tunnelCategory?: 'B' | 'C' | 'D' | 'E';
-  hazmatTables?: ('ADR' | 'IMDG' | 'IATA')[];
+  tunnelCategory?: "B" | "C" | "D" | "E";
+  hazmatTables?: ("ADR" | "IMDG" | "IATA")[];
   shippedHazmatClasses?: string[];
 }
 
@@ -130,7 +130,7 @@ interface HERERoute {
 
 interface HEREIsolineResult {
   range: {
-    type: 'time' | 'distance';
+    type: "time" | "distance";
     value: number;
   };
   level?: number;
@@ -187,7 +187,7 @@ class TokenBucketRateLimiter {
  * Circuit breaker implementation
  */
 class CircuitBreaker {
-  private state: 'closed' | 'open' | 'half_open' = 'closed';
+  private state: "closed" | "open" | "half_open" = "closed";
   private failureCount = 0;
   private failureThreshold: number;
   private resetTimeout: number;
@@ -198,35 +198,38 @@ class CircuitBreaker {
     this.resetTimeout = resetTimeout;
   }
 
-  getState(): 'closed' | 'open' | 'half_open' {
-    if (this.state === 'open' && Date.now() - this.lastFailureTime > this.resetTimeout) {
-      this.state = 'half_open';
+  getState(): "closed" | "open" | "half_open" {
+    if (
+      this.state === "open" &&
+      Date.now() - this.lastFailureTime > this.resetTimeout
+    ) {
+      this.state = "half_open";
     }
     return this.state;
   }
 
   recordSuccess(): void {
     this.failureCount = 0;
-    this.state = 'closed';
+    this.state = "closed";
   }
 
   recordFailure(): void {
     this.failureCount++;
     this.lastFailureTime = Date.now();
     if (this.failureCount >= this.failureThreshold) {
-      this.state = 'open';
+      this.state = "open";
     }
   }
 
   async call<T>(fn: () => Promise<T>): Promise<T> {
     const currentState = this.getState();
-    if (currentState === 'open') {
-      throw new Error('Circuit breaker is open');
+    if (currentState === "open") {
+      throw new Error("Circuit breaker is open");
     }
 
     try {
       const result = await fn();
-      if (currentState === 'half_open') {
+      if (currentState === "half_open") {
         this.recordSuccess();
       }
       return result;
@@ -242,7 +245,7 @@ class CircuitBreaker {
  */
 export class HERERoutingClient {
   private apiKey: string;
-  private baseUrl = 'https://router.hereapi.com/v8';
+  private baseUrl = "https://router.hereapi.com/v8";
   private rateLimit: number;
   private timeout: number;
 
@@ -257,7 +260,7 @@ export class HERERoutingClient {
 
   constructor(config: RoutingAdapterConfig) {
     if (!config.apiKey) {
-      throw new Error('HERE Routing API key is required');
+      throw new Error("HERE Routing API key is required");
     }
 
     this.apiKey = config.apiKey;
@@ -272,7 +275,9 @@ export class HERERoutingClient {
   /**
    * Normalize coordinate to LatLng format
    */
-  private normalizeCoordinate(coord: [number, number] | { lat: number; lng: number }): { lat: number; lng: number } {
+  private normalizeCoordinate(
+    coord: [number, number] | { lat: number; lng: number },
+  ): { lat: number; lng: number } {
     if (Array.isArray(coord)) {
       return { lat: coord[0], lng: coord[1] };
     }
@@ -282,7 +287,10 @@ export class HERERoutingClient {
   /**
    * Calculate a single route
    */
-  async route(request: RouteRequest, options?: RouteOptions): Promise<RouteResponse> {
+  async route(
+    request: RouteRequest,
+    options?: RouteOptions,
+  ): Promise<RouteResponse> {
     const startTime = Date.now();
     try {
       this.totalRequests++;
@@ -291,50 +299,59 @@ export class HERERoutingClient {
       const origin = this.normalizeCoordinate(request.origin);
       const destination = this.normalizeCoordinate(request.destination);
 
-      const waypoints = request.waypoints?.map((w) => this.normalizeCoordinate(w)) || [];
+      const waypoints =
+        request.waypoints?.map((w) => this.normalizeCoordinate(w)) || [];
       const allPoints = [origin, ...waypoints, destination];
-      const routePoints = allPoints.map((p) => `${p.lat},${p.lng}`).join(';');
+      const routePoints = allPoints.map((p) => `${p.lat},${p.lng}`).join(";");
 
       const params = new URLSearchParams({
         apiKey: this.apiKey,
-        transportMode: request.costing === 'truck' ? 'truck' : 'car',
-        return: 'polyline,summary,legs,turnByTurnActions',
+        transportMode: request.costing === "truck" ? "truck" : "car",
+        return: "polyline,summary,legs,turnByTurnActions",
       });
 
       // Add alternative routes
       if (options?.alternatives) {
-        params.append('alternatives', 'true');
+        params.append("alternatives", "true");
       }
 
       // Add departure time for traffic-aware routing
       if (options?.departureTime) {
-        params.append('departureTime', options.departureTime.toISOString());
+        params.append("departureTime", options.departureTime.toISOString());
       }
 
       // Add truck options
-      if (request.costing === 'truck' && options?.truck) {
+      if (request.costing === "truck" && options?.truck) {
         const truck = options.truck;
-        if (truck.maxHeight) params.append('limitedHeight', String(truck.maxHeight));
-        if (truck.maxWeight) params.append('limitedWeight', String(truck.maxWeight));
-        if (truck.maxLength) params.append('limitedLength', String(truck.maxLength));
-        if (truck.tunnelCategory) params.append('tunnelCategory', truck.tunnelCategory);
-        if (truck.hazmatTables) params.append('hazmatTables', truck.hazmatTables.join(','));
+        if (truck.maxHeight)
+          params.append("limitedHeight", String(truck.maxHeight));
+        if (truck.maxWeight)
+          params.append("limitedWeight", String(truck.maxWeight));
+        if (truck.maxLength)
+          params.append("limitedLength", String(truck.maxLength));
+        if (truck.tunnelCategory)
+          params.append("tunnelCategory", truck.tunnelCategory);
+        if (truck.hazmatTables)
+          params.append("hazmatTables", truck.hazmatTables.join(","));
       }
 
       // Add route avoidance options
-      if (options?.avoidTolls) params.append('avoid[tollRoads]', 'true');
-      if (options?.avoidMotorways) params.append('avoid[motorways]', 'true');
-      if (options?.avoidFerries) params.append('avoid[ferries]', 'true');
+      if (options?.avoidTolls) params.append("avoid[tollRoads]", "true");
+      if (options?.avoidMotorways) params.append("avoid[motorways]", "true");
+      if (options?.avoidFerries) params.append("avoid[ferries]", "true");
 
       const response = await this.circuitBreaker.call(async () => {
         const controller = new AbortController();
         const id = setTimeout(() => controller.abort(), this.timeout);
         try {
-          return await fetch(`${this.baseUrl}/routes?${routePoints}&${params.toString()}`, {
-            method: 'GET',
-            signal: controller.signal,
-            headers: { 'Accept': 'application/json' },
-          });
+          return await fetch(
+            `${this.baseUrl}/routes?${routePoints}&${params.toString()}`,
+            {
+              method: "GET",
+              signal: controller.signal,
+              headers: { Accept: "application/json" },
+            },
+          );
         } finally {
           clearTimeout(id);
         }
@@ -344,12 +361,12 @@ export class HERERoutingClient {
         throw new Error(`HERE Routing API error: ${response.statusText}`);
       }
 
-      const data = await response.json() as {
+      const data = (await response.json()) as {
         routes: HERERoute[];
       };
 
       if (!data.routes || data.routes.length === 0) {
-        throw new Error('No routes found');
+        throw new Error("No routes found");
       }
 
       const route = data.routes[0];
@@ -361,7 +378,7 @@ export class HERERoutingClient {
         steps: leg.links.map((link) => ({
           distance_m: link.length,
           duration_s: link.duration,
-          instruction: `${link.direction}: ${link.road.names[0] || 'unnamed'}`,
+          instruction: `${link.direction}: ${link.road.names[0] || "unnamed"}`,
           maneuver: link.turn,
           way_name: link.road.names[0],
           start_location: link.id ? { lat: 0, lng: 0 } : { lat: 0, lng: 0 },
@@ -404,11 +421,13 @@ export class HERERoutingClient {
       await this.rateLimiter.acquire();
 
       const origins = request.origins.map((o) => this.normalizeCoordinate(o));
-      const destinations = request.destinations.map((d) => this.normalizeCoordinate(d));
+      const destinations = request.destinations.map((d) =>
+        this.normalizeCoordinate(d),
+      );
 
       const params = new URLSearchParams({
         apiKey: this.apiKey,
-        transportMode: request.costing === 'truck' ? 'truck' : 'car',
+        transportMode: request.costing === "truck" ? "truck" : "car",
       });
 
       const payload = {
@@ -421,11 +440,11 @@ export class HERERoutingClient {
         const id = setTimeout(() => controller.abort(), this.timeout);
         try {
           return await fetch(`${this.baseUrl}/matrix?${params.toString()}`, {
-            method: 'POST',
+            method: "POST",
             signal: controller.signal,
             headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
+              Accept: "application/json",
+              "Content-Type": "application/json",
             },
             body: JSON.stringify(payload),
           });
@@ -438,7 +457,7 @@ export class HERERoutingClient {
         throw new Error(`HERE Matrix API error: ${response.statusText}`);
       }
 
-      const data = await response.json() as {
+      const data = (await response.json()) as {
         matrix?: Array<Array<{ distance: number; time: number }>>;
       };
 
@@ -446,8 +465,8 @@ export class HERERoutingClient {
         row.map((cell) => ({
           distance_m: cell.distance,
           duration_s: Math.ceil(cell.time / 1000),
-          status: 'OK' as const,
-        }))
+          status: "OK" as const,
+        })),
       );
 
       const responseObj: MatrixResponse = {
@@ -481,9 +500,9 @@ export class HERERoutingClient {
       const params = new URLSearchParams({
         apiKey: this.apiKey,
         origin: `${center.lat},${center.lng}`,
-        transportMode: request.costing === 'truck' ? 'truck' : 'car',
-        range: request.contours.map((c) => c.value).join(','),
-        rangeType: request.contours[0]?.value ? 'time' : 'distance',
+        transportMode: request.costing === "truck" ? "truck" : "car",
+        range: request.contours.map((c) => c.value).join(","),
+        rangeType: request.contours[0]?.value ? "time" : "distance",
       });
 
       const response = await this.circuitBreaker.call(async () => {
@@ -491,9 +510,9 @@ export class HERERoutingClient {
         const id = setTimeout(() => controller.abort(), this.timeout);
         try {
           return await fetch(`${this.baseUrl}/isoline?${params.toString()}`, {
-            method: 'GET',
+            method: "GET",
             signal: controller.signal,
-            headers: { 'Accept': 'application/json' },
+            headers: { Accept: "application/json" },
           });
         } finally {
           clearTimeout(id);
@@ -504,26 +523,26 @@ export class HERERoutingClient {
         throw new Error(`HERE Isoline API error: ${response.statusText}`);
       }
 
-      const data = await response.json() as {
+      const data = (await response.json()) as {
         isolines?: HEREIsolineResult[];
       };
 
       const contours = (data.isolines || []).map((iso, index) => ({
         feature: {
-          type: 'Feature' as const,
+          type: "Feature" as const,
           geometry: {
-            type: 'Polygon' as const,
+            type: "Polygon" as const,
             coordinates: [],
           },
           properties: {},
         },
         value: iso.range.value,
-        color: request.contours[index]?.color || '#ff0000',
+        color: request.contours[index]?.color || "#ff0000",
       }));
 
       const responseObj: IsochroneResponse = {
         contours,
-        attribution: 'HERE Maps',
+        attribution: "HERE Maps",
       };
 
       this.successfulRequests++;
@@ -541,14 +560,18 @@ export class HERERoutingClient {
    * Get metrics
    */
   getMetrics() {
-    const avgResponseTime = this.totalRequests > 0 ? this.totalResponseTime / this.totalRequests : 0;
+    const avgResponseTime =
+      this.totalRequests > 0 ? this.totalResponseTime / this.totalRequests : 0;
 
     return {
       totalRequests: this.totalRequests,
       successfulRequests: this.successfulRequests,
       failedRequests: this.failedRequests,
       averageResponseTime: avgResponseTime,
-      successRate: this.totalRequests > 0 ? this.successfulRequests / this.totalRequests : 0,
+      successRate:
+        this.totalRequests > 0
+          ? this.successfulRequests / this.totalRequests
+          : 0,
     };
   }
 

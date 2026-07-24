@@ -35,6 +35,7 @@ console.log(efficiency.breakdown); // Component scores
 ```
 
 **API:**
+
 - `calculateRouteEfficiency(routeId, planned, gpsTrace, weights?)` - Single route
 - `calculateRouteEfficiencyBatch(routes)` - Multiple routes with summary stats
 
@@ -51,17 +52,21 @@ Composite driver performance score based on:
 Includes trend analysis, peer comparison, and badge assignment.
 
 ```typescript
-import { calculateDriverScore } from '@witylogix/core/ai-analytics';
+import { calculateDriverScore } from "@witylogix/core/ai-analytics";
 
 const score = calculateDriverScore(
   {
-    driverId: 'driver_456',
-    dateRange: { start: Date.now() - 7*24*60*60*1000, end: Date.now() },
-    deliveries: { totalCount: 45, onTimeCount: 41, firstAttemptSuccessCount: 43 },
+    driverId: "driver_456",
+    dateRange: { start: Date.now() - 7 * 24 * 60 * 60 * 1000, end: Date.now() },
+    deliveries: {
+      totalCount: 45,
+      onTimeCount: 41,
+      firstAttemptSuccessCount: 43,
+    },
     ratings: { average: 4.6, count: 42 },
     routeEfficiency: { average: 87, count: 45 },
     speedCompliance: { percentWithinLimit: 92, averageExcessKmh: 3 },
-    zoneId: 'zone_1',
+    zoneId: "zone_1",
   },
   {}, // custom weights (optional)
   [78, 80, 82, 84, 85], // historical scores for trend
@@ -73,12 +78,14 @@ console.log(score.badges); // ['top_performer', 'most_improved', etc]
 ```
 
 **Badges:**
+
 - `top_performer` - Top 10% by score
 - `most_improved` - Improving trend + above 50th percentile
 - `consistent` - All metrics >80, stable trend
 - `needs_coaching` - Score <50
 
 **API:**
+
 - `calculateDriverScore(metrics, weights?, historicalScores?)` - Single driver
 - `calculateDriverScoreBatch(driverMetrics)` - Multiple drivers
 
@@ -94,17 +101,20 @@ Returns predictions with 80% and 95% confidence intervals.
 Auto-calibrates by tracking prediction accuracy.
 
 ```typescript
-import { predictDeliveryWindow, recordDelivery } from '@witylogix/core/ai-analytics';
+import {
+  predictDeliveryWindow,
+  recordDelivery,
+} from "@witylogix/core/ai-analytics";
 
 const prediction = predictDeliveryWindow({
-  orderId: 'ord_789',
+  orderId: "ord_789",
   distanceRemaining: 5000, // meters
   currentTrafficFactor: 1.2, // 1.0 = normal
   driverHistoricalSpeed: 40, // km/h
   timeOfDay: 14, // 0-23
   dayOfWeek: 3, // 0-6
-  stopComplexity: 'apartment',
-  weather: { condition: 'rain', temperature: 15 },
+  stopComplexity: "apartment",
+  weather: { condition: "rain", temperature: 15 },
 });
 
 console.log(prediction.estimatedArrival); // Unix timestamp
@@ -121,6 +131,7 @@ recordDelivery(
 ```
 
 **API:**
+
 - `predictDeliveryWindow(context)` - Single delivery
 - `predictDeliveryWindowBatch(contexts)` - Multiple deliveries
 - `recordDelivery(predicted, actual, context)` - Calibration
@@ -161,11 +172,13 @@ console.log(result.patterns); // Recurring anomalies at same location/time
 ```
 
 **Severity Levels:**
+
 - `critical` - Severe operational issue
 - `warning` - Notable deviation, needs attention
 - `info` - Minor anomaly, informational only
 
 **API:**
+
 - `detectAnomalies(route, thresholds?, speedLimitKmh?)` - Single route
 - `detectAnomaliesBatch(routes)` - Multiple routes
 
@@ -179,15 +192,15 @@ Calculates CO2 emissions for routes:
 - **Savings Calculator**: Compares optimized vs unoptimized routing
 
 ```typescript
-import { calculateCO2, getCO2Summary } from '@witylogix/core/ai-analytics';
+import { calculateCO2, getCO2Summary } from "@witylogix/core/ai-analytics";
 
 const report = calculateCO2(
-  'route_123',
+  "route_123",
   45000, // distance in meters
   120, // duration in minutes
   15, // idle time in minutes
-  'van',
-  'suburban',
+  "van",
+  "suburban",
 );
 
 console.log(report.actualCO2); // kg
@@ -196,7 +209,7 @@ console.log(report.savedCO2); // kg saved by optimization
 console.log(report.efficiency); // g/km
 
 // Get tenant-wide summary
-const summary = getCO2Summary('tenant_1', '2026-03-01', '2026-03-31');
+const summary = getCO2Summary("tenant_1", "2026-03-01", "2026-03-31");
 console.log(summary.totalActualCO2);
 console.log(summary.averageSavingsPercent);
 console.log(summary.vehicleBreakdown);
@@ -204,6 +217,7 @@ console.log(summary.trend); // Daily trend
 ```
 
 **API:**
+
 - `calculateCO2(routeId, distance, duration, idleTime, vehicleType?, terrain?)` - Single route
 - `calculateCO2Batch(routes)` - Multiple routes
 - `getCO2Summary(tenantId, startDate, endDate)` - Tenant summary
@@ -220,11 +234,11 @@ import {
   detectAnomalies,
   calculateCO2,
   recordBenchmark,
-} from '@witylogix/core/ai-analytics';
+} from "@witylogix/core/ai-analytics";
 
 // Analyze a completed route
-const route = fetchRoute('route_123');
-const gpsTrace = fetchGPSTrace('route_123');
+const route = fetchRoute("route_123");
+const gpsTrace = fetchGPSTrace("route_123");
 
 // Calculate efficiency
 const efficiency = calculateRouteEfficiency(route.id, route.planned, gpsTrace);
@@ -274,7 +288,7 @@ return {
 import {
   predictDeliveryWindow,
   recordDelivery,
-} from '@witylogix/core/ai-analytics';
+} from "@witylogix/core/ai-analytics";
 
 // Get real-time traffic
 const traffic = fetchCurrentTraffic();
@@ -302,23 +316,19 @@ sendETAToCustomer({
 });
 
 // Later: record actual for model improvement
-recordDelivery(
-  prediction.models.ensemble,
-  actualMinutes,
-  prediction.context,
-);
+recordDelivery(prediction.models.ensemble, actualMinutes, prediction.context);
 ```
 
 ### Driver Leaderboard
 
 ```typescript
-import { calculateDriverScoreBatch } from '@witylogix/core/ai-analytics';
+import { calculateDriverScoreBatch } from "@witylogix/core/ai-analytics";
 
 // Get all drivers in zone
-const drivers = fetchDrivers({ zoneId: 'zone_1' });
+const drivers = fetchDrivers({ zoneId: "zone_1" });
 
 const scores = calculateDriverScoreBatch(
-  drivers.map(d => ({
+  drivers.map((d) => ({
     metrics: {
       driverId: d.id,
       dateRange: { start: weekAgo, end: now },
@@ -326,7 +336,7 @@ const scores = calculateDriverScoreBatch(
       ratings: d.weeklyMetrics.ratings,
       routeEfficiency: d.weeklyMetrics.efficiency,
       speedCompliance: d.weeklyMetrics.speedCompliance,
-      zoneId: 'zone_1',
+      zoneId: "zone_1",
     },
     historicalScores: d.scoreHistory.slice(-4), // Last 4 weeks
   })),
@@ -353,6 +363,7 @@ All routes require authentication and tenant context.
 Returns route efficiency score with breakdown.
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -369,6 +380,7 @@ Returns route efficiency score with breakdown.
 Returns driver performance score with trends and badges.
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -386,6 +398,7 @@ Returns driver performance score with trends and badges.
 Predicts delivery arrival time.
 
 **Request:**
+
 ```json
 {
   "orderId": "ord_123",
@@ -395,11 +408,12 @@ Predicts delivery arrival time.
   "timeOfDay": 14,
   "dayOfWeek": 3,
   "stopComplexity": "apartment",
-  "weather": {"condition": "rain", "temperature": 15}
+  "weather": { "condition": "rain", "temperature": 15 }
 }
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -422,6 +436,7 @@ Predicts delivery arrival time.
 Detects anomalies on a route.
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -449,6 +464,7 @@ Detects anomalies on a route.
 Returns CO2 report for a route.
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -467,10 +483,12 @@ Returns CO2 report for a route.
 Returns tenant-wide CO2 summary.
 
 **Query Parameters:**
+
 - `startDate` - ISO date string
 - `endDate` - ISO date string
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -489,10 +507,12 @@ Returns tenant-wide CO2 summary.
 Returns driver leaderboard.
 
 **Query Parameters:**
+
 - `period` - '24h' | '7d' | '30d' (default: '7d')
 - `zoneId` - Zone filter (optional)
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -523,6 +543,7 @@ npm test -- anomaly-detector.test.ts
 ```
 
 Test coverage includes:
+
 - Component calculation accuracy
 - Ensemble weighting and calibration
 - Edge cases and boundary conditions

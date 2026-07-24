@@ -240,7 +240,10 @@ export class OmnitrocsXrsV2Client extends ELDAdapter {
 
     try {
       await this.executeWithRetry(() =>
-        this.makeRequest<{ organization: { id: string } }>("GET", "/organization")
+        this.makeRequest<{ organization: { id: string } }>(
+          "GET",
+          "/organization",
+        ),
       );
       this.logEvent({
         type: "diagnostic-event",
@@ -257,7 +260,7 @@ export class OmnitrocsXrsV2Client extends ELDAdapter {
   async getDriverLogs(
     driverId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<ELDDriverLog[]> {
     const response = await this.executeWithRetry(() =>
       this.makeRequest<{ logs: XrsLogEntry[]; cursor?: string }>(
@@ -267,8 +270,8 @@ export class OmnitrocsXrsV2Client extends ELDAdapter {
           startTime: startDate.toISOString(),
           endTime: endDate.toISOString(),
           limit: 100,
-        }
-      )
+        },
+      ),
     );
 
     return response.logs.map((log, idx) => ({
@@ -283,7 +286,9 @@ export class OmnitrocsXrsV2Client extends ELDAdapter {
       hours: getHoursDifference(new Date(log.startTime), new Date(log.endTime)),
       startLocation: log.location ? { ...log.location } : undefined,
       endLocation: log.location ? { ...log.location } : undefined,
-      remarks: log.unidentifiedDriving ? "Unidentified driving detected" : undefined,
+      remarks: log.unidentifiedDriving
+        ? "Unidentified driving detected"
+        : undefined,
       sequence: idx,
       edited: log.editRequests ? log.editRequests.length > 0 : false,
       createdAt: new Date(log.createdAt),
@@ -296,15 +301,19 @@ export class OmnitrocsXrsV2Client extends ELDAdapter {
    */
   async getDutyStatus(driverId: string): Promise<ELDDutyStatus> {
     const driver = await this.executeWithRetry(() =>
-      this.makeRequest<XrsDriver>("GET", `/drivers/${driverId}`)
+      this.makeRequest<XrsDriver>("GET", `/drivers/${driverId}`),
     );
 
     return {
       id: `ds_${driver.id}`,
       accountId: this.config.accountId || "",
       driverId: driver.id,
-      status: driver.currentStatus ? this.mapDutyStatus(driver.currentStatus.status) : "off-duty",
-      changedAt: driver.currentStatus ? new Date(driver.currentStatus.timestamp) : new Date(),
+      status: driver.currentStatus
+        ? this.mapDutyStatus(driver.currentStatus.status)
+        : "off-duty",
+      changedAt: driver.currentStatus
+        ? new Date(driver.currentStatus.timestamp)
+        : new Date(),
       availableHoursDriving: driver.hosAvailable?.driving ?? 11,
       availableHoursOnDuty: driver.hosAvailable?.onDuty ?? 14,
       createdAt: new Date(),
@@ -317,7 +326,7 @@ export class OmnitrocsXrsV2Client extends ELDAdapter {
   async setDutyStatus(
     driverId: string,
     status: DutyStatus,
-    location?: { latitude: number; longitude: number }
+    location?: { latitude: number; longitude: number },
   ): Promise<ELDDutyStatus> {
     const payload = {
       status: this.mapDutyStatusReverse(status),
@@ -325,7 +334,12 @@ export class OmnitrocsXrsV2Client extends ELDAdapter {
     };
 
     await this.executeWithRetry(() =>
-      this.makeRequest("POST", `/drivers/${driverId}/duty-status`, null, payload)
+      this.makeRequest(
+        "POST",
+        `/drivers/${driverId}/duty-status`,
+        null,
+        payload,
+      ),
     );
 
     this.logEvent({
@@ -340,7 +354,10 @@ export class OmnitrocsXrsV2Client extends ELDAdapter {
   /**
    * Get HOS violations for driver.
    */
-  async getViolations(driverId: string, days: number = 30): Promise<ELDViolation[]> {
+  async getViolations(
+    driverId: string,
+    days: number = 30,
+  ): Promise<ELDViolation[]> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
@@ -351,8 +368,8 @@ export class OmnitrocsXrsV2Client extends ELDAdapter {
         {
           startDate: startDate.toISOString(),
           limit: 1000,
-        }
-      )
+        },
+      ),
     );
 
     return response.violations.map((v) => ({
@@ -379,7 +396,7 @@ export class OmnitrocsXrsV2Client extends ELDAdapter {
    */
   async getVehicle(vehicleId: string): Promise<ELDVehicle> {
     const vehicle = await this.executeWithRetry(() =>
-      this.makeRequest<XrsVehicle>("GET", `/vehicles/${vehicleId}`)
+      this.makeRequest<XrsVehicle>("GET", `/vehicles/${vehicleId}`),
     );
 
     return {
@@ -391,7 +408,9 @@ export class OmnitrocsXrsV2Client extends ELDAdapter {
       model: vehicle.model,
       year: vehicle.year,
       odometerMiles: vehicle.odometer,
-      fuelType: (vehicle.fuelType as "diesel" | "gasoline" | "electric" | "hybrid") || undefined,
+      fuelType:
+        (vehicle.fuelType as "diesel" | "gasoline" | "electric" | "hybrid") ||
+        undefined,
       currentLocation: vehicle.currentLocation
         ? {
             latitude: vehicle.currentLocation.latitude,
@@ -400,7 +419,9 @@ export class OmnitrocsXrsV2Client extends ELDAdapter {
           }
         : undefined,
       activeFaults: vehicle.diagnostics || [],
-      maintenanceStatus: (vehicle.status === "maintenance" ? "pending" : "good") as any,
+      maintenanceStatus: (vehicle.status === "maintenance"
+        ? "pending"
+        : "good") as any,
       createdAt: new Date(vehicle.createdAt),
       updatedAt: new Date(vehicle.updatedAt),
     };
@@ -422,8 +443,8 @@ export class OmnitrocsXrsV2Client extends ELDAdapter {
           {
             limit: 100,
             ...(cursor && { cursor }),
-          }
-        )
+          },
+        ),
       );
 
       for (const v of response.vehicles) {
@@ -455,8 +476,8 @@ export class OmnitrocsXrsV2Client extends ELDAdapter {
         "POST",
         `/vehicles/${dvir.vehicleId}/dvir`,
         null,
-        payload
-      )
+        payload,
+      ),
     );
 
     this.logEvent({
@@ -496,8 +517,8 @@ export class OmnitrocsXrsV2Client extends ELDAdapter {
         {
           startDate: startDate.toISOString(),
           limit: 1000,
-        }
-      )
+        },
+      ),
     );
 
     return response.dvirs.map((d) => ({
@@ -522,56 +543,73 @@ export class OmnitrocsXrsV2Client extends ELDAdapter {
     return this.executeWithRetry(() =>
       this.makeRequest<XrsRoute[]>("GET", `/drivers/${driverId}/routes`, {
         status: "in-progress,pending",
-      })
+      }),
     );
   }
 
   /**
    * Get performance analytics for driver.
    */
-  async getPerformance(driverId: string, period: string = "monthly"): Promise<XrsPerformance> {
+  async getPerformance(
+    driverId: string,
+    period: string = "monthly",
+  ): Promise<XrsPerformance> {
     return this.executeWithRetry(() =>
-      this.makeRequest<XrsPerformance>("GET", `/drivers/${driverId}/performance`, {
-        period,
-      })
+      this.makeRequest<XrsPerformance>(
+        "GET",
+        `/drivers/${driverId}/performance`,
+        {
+          period,
+        },
+      ),
     );
   }
 
   /**
    * Get driver scorecard.
    */
-  async getScorecard(driverId: string, period: string = "monthly"): Promise<XrsScorecard> {
+  async getScorecard(
+    driverId: string,
+    period: string = "monthly",
+  ): Promise<XrsScorecard> {
     return this.executeWithRetry(() =>
       this.makeRequest<XrsScorecard>("GET", `/drivers/${driverId}/scorecard`, {
         period,
-      })
+      }),
     );
   }
 
   /**
    * Get vehicle utilization report.
    */
-  async getVehicleUtilization(vehicleId: string, startDate: Date, endDate: Date): Promise<any> {
+  async getVehicleUtilization(
+    vehicleId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<any> {
     return this.executeWithRetry(() =>
       this.makeRequest<any>("GET", `/vehicles/${vehicleId}/utilization`, {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
-      })
+      }),
     );
   }
 
   /**
    * Get compliance report (FMCSA transfer ready, roadside export).
    */
-  async getComplianceReport(driverId: string, period: string = "monthly"): Promise<XrsComplianceReport> {
+  async getComplianceReport(
+    driverId: string,
+    period: string = "monthly",
+  ): Promise<XrsComplianceReport> {
     return this.executeWithRetry(() =>
       this.makeRequest<XrsComplianceReport>(
         "GET",
         `/drivers/${driverId}/compliance-report`,
         {
           period,
-        }
-      )
+        },
+      ),
     );
   }
 
@@ -584,8 +622,8 @@ export class OmnitrocsXrsV2Client extends ELDAdapter {
         "POST",
         `/drivers/${driverId}/fmcsa-transfer`,
         null,
-        {}
-      )
+        {},
+      ),
     );
     return response.fileUrl;
   }
@@ -630,7 +668,10 @@ export class OmnitrocsXrsV2Client extends ELDAdapter {
   async healthCheck(): Promise<boolean> {
     try {
       await this.executeWithRetry(() =>
-        this.makeRequest<{ organization: { id: string } }>("GET", "/organization")
+        this.makeRequest<{ organization: { id: string } }>(
+          "GET",
+          "/organization",
+        ),
       );
       return true;
     } catch {
@@ -647,7 +688,7 @@ export class OmnitrocsXrsV2Client extends ELDAdapter {
     method: string,
     path: string,
     params?: Record<string, unknown> | null,
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     const url = new URL(`${this.baseUrl}${path}`);
 
@@ -676,7 +717,7 @@ export class OmnitrocsXrsV2Client extends ELDAdapter {
 
     if (!response.ok) {
       throw new Error(
-        `Omnitracs XRS API error: ${response.status} ${response.statusText}`
+        `Omnitracs XRS API error: ${response.status} ${response.statusText}`,
       );
     }
 

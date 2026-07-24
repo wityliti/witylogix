@@ -22,7 +22,9 @@ class RateLimiter {
   async waitIfNeeded(): Promise<void> {
     const now = Date.now();
     // Remove timestamps outside the current window
-    this.requestTimes = this.requestTimes.filter((t) => t > now - this.windowMs);
+    this.requestTimes = this.requestTimes.filter(
+      (t) => t > now - this.windowMs,
+    );
 
     if (this.requestTimes.length >= this.maxRequests) {
       const oldestTime = this.requestTimes[0];
@@ -239,7 +241,9 @@ export class GeotabSDKClient {
   /**
    * Get status data (engine diagnostics)
    */
-  async getStatusData(search?: GeotabSearchCriteria): Promise<GeotabStatusData[]> {
+  async getStatusData(
+    search?: GeotabSearchCriteria,
+  ): Promise<GeotabStatusData[]> {
     await this.ensureAuthenticated();
     return this.jsonrpcCall<GeotabStatusData[]>("Get", {
       typeName: "StatusData",
@@ -250,7 +254,9 @@ export class GeotabSDKClient {
   /**
    * Get fault data (DTC codes)
    */
-  async getFaultData(search?: GeotabSearchCriteria): Promise<GeotabFaultData[]> {
+  async getFaultData(
+    search?: GeotabSearchCriteria,
+  ): Promise<GeotabFaultData[]> {
     await this.ensureAuthenticated();
     return this.jsonrpcCall<GeotabFaultData[]>("Get", {
       typeName: "FaultData",
@@ -261,7 +267,10 @@ export class GeotabSDKClient {
   /**
    * Get trips for a device
    */
-  async getTrips(deviceId: string, search?: GeotabSearchCriteria): Promise<GeotabTrip[]> {
+  async getTrips(
+    deviceId: string,
+    search?: GeotabSearchCriteria,
+  ): Promise<GeotabTrip[]> {
     await this.ensureAuthenticated();
     return this.jsonrpcCall<GeotabTrip[]>("Get", {
       typeName: "Trip",
@@ -412,7 +421,10 @@ export class GeotabSDKClient {
 
       if (result.error) {
         // Handle session expiry
-        if (result.error.code === -2147483648 || result.error.message.includes("InvalidUserException")) {
+        if (
+          result.error.code === -2147483648 ||
+          result.error.message.includes("InvalidUserException")
+        ) {
           this.sessionId = undefined;
           throw new GeotabSDKError(
             "SESSION_EXPIRED",
@@ -431,10 +443,7 @@ export class GeotabSDKClient {
       }
 
       if (!result.result) {
-        throw new GeotabSDKError(
-          "NO_RESULT",
-          "API returned no result",
-        );
+        throw new GeotabSDKError("NO_RESULT", "API returned no result");
       }
 
       return result.result as T;
@@ -451,16 +460,10 @@ export class GeotabSDKClient {
           );
         }
 
-        throw new GeotabSDKError(
-          "NETWORK_ERROR",
-          error.message,
-        );
+        throw new GeotabSDKError("NETWORK_ERROR", error.message);
       }
 
-      throw new GeotabSDKError(
-        "UNKNOWN_ERROR",
-        String(error),
-      );
+      throw new GeotabSDKError("UNKNOWN_ERROR", String(error));
     }
   }
 
@@ -469,7 +472,7 @@ export class GeotabSDKClient {
    */
   private async ensureAuthenticated(): Promise<void> {
     // Check if session has expired (24-hour timeout)
-    if (!this.sessionId || (Date.now() - this.lastAuthTime) > this.authTimeout) {
+    if (!this.sessionId || Date.now() - this.lastAuthTime > this.authTimeout) {
       await this.authenticate();
     }
   }

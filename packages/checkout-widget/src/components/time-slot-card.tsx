@@ -64,7 +64,7 @@ export function TimeSlotCard({
         "relative p-4 rounded-lg border-2 transition-all duration-200",
         "text-left w-full",
         stateStyles[state],
-        className
+        className,
       )}
       aria-pressed={state === "selected"}
       aria-disabled={state === "full"}
@@ -86,7 +86,7 @@ export function TimeSlotCard({
                   ? "bg-wl-danger-500"
                   : state === "few-left"
                     ? "bg-wl-warning-500"
-                    : "bg-wl-success-500"
+                    : "bg-wl-success-500",
               )}
               style={{ width: `${capacityPercent}%` }}
             />

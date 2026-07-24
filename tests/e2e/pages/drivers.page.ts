@@ -1,4 +1,4 @@
-import { Page, Locator, expect } from '@playwright/test';
+import { Page, Locator, expect } from "@playwright/test";
 
 export interface DriverData {
   name: string;
@@ -27,13 +27,25 @@ export class DriversPage {
   constructor(page: Page) {
     this.page = page;
     this.pageTitle = page.locator('h1, [data-testid="page-title"]');
-    this.driverRows = page.locator('tbody tr, [data-testid="driver-row"], [role="row"]');
-    this.driverTable = page.locator('table, [data-testid="drivers-table"], [role="grid"]');
-    this.searchInput = page.locator('input[placeholder*="Search"], input[placeholder*="Driver"]');
-    this.availabilityFilter = page.locator('select, [data-testid="availability-filter"]');
-    this.statusBadges = page.locator('[data-testid="status-badge"], .status-badge, [role="status"]');
+    this.driverRows = page.locator(
+      'tbody tr, [data-testid="driver-row"], [role="row"]',
+    );
+    this.driverTable = page.locator(
+      'table, [data-testid="drivers-table"], [role="grid"]',
+    );
+    this.searchInput = page.locator(
+      'input[placeholder*="Search"], input[placeholder*="Driver"]',
+    );
+    this.availabilityFilter = page.locator(
+      'select, [data-testid="availability-filter"]',
+    );
+    this.statusBadges = page.locator(
+      '[data-testid="status-badge"], .status-badge, [role="status"]',
+    );
     this.loadingSpinner = page.locator('[data-testid="loading"], .spinner');
-    this.assignDriverButton = page.locator('button:has-text("Assign"), [data-testid="assign-btn"]');
+    this.assignDriverButton = page.locator(
+      'button:has-text("Assign"), [data-testid="assign-btn"]',
+    );
     this.modal = page.locator('[role="dialog"], .modal');
   }
 
@@ -41,7 +53,7 @@ export class DriversPage {
    * Navigate to drivers page
    */
   async navigateToList(): Promise<void> {
-    await this.page.goto('/dashboard/drivers', { waitUntil: 'networkidle' });
+    await this.page.goto("/dashboard/drivers", { waitUntil: "networkidle" });
     await this.waitForPageLoad();
   }
 
@@ -49,9 +61,9 @@ export class DriversPage {
    * Wait for page to load
    */
   async waitForPageLoad(): Promise<void> {
-    await this.page.waitForLoadState('networkidle', { timeout: 10000 });
+    await this.page.waitForLoadState("networkidle", { timeout: 10000 });
     try {
-      await this.loadingSpinner.waitFor({ state: 'hidden', timeout: 5000 });
+      await this.loadingSpinner.waitFor({ state: "hidden", timeout: 5000 });
     } catch {
       // Spinner might not exist
     }
@@ -70,7 +82,7 @@ export class DriversPage {
   async openDriverDetails(name: string): Promise<void> {
     const driverRow = await this.getDriverByName(name);
     await driverRow.click();
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState("networkidle");
   }
 
   /**
@@ -78,9 +90,11 @@ export class DriversPage {
    */
   async getDriverStatus(name: string): Promise<string> {
     const driverRow = await this.getDriverByName(name);
-    const statusElement = driverRow.locator('[data-testid="status"], .status, [role="status"]');
+    const statusElement = driverRow.locator(
+      '[data-testid="status"], .status, [role="status"]',
+    );
     const status = await statusElement.textContent();
-    return status?.trim() || '';
+    return status?.trim() || "";
   }
 
   /**
@@ -90,10 +104,14 @@ export class DriversPage {
     await this.openDriverDetails(name);
 
     // Find and click status button/dropdown
-    await this.page.click('button:has-text("Change Status"), [data-testid="status-dropdown"]');
+    await this.page.click(
+      'button:has-text("Change Status"), [data-testid="status-dropdown"]',
+    );
 
     // Select new status
-    await this.page.click(`[data-value="${newStatus}"], button:has-text("${newStatus}")`);
+    await this.page.click(
+      `[data-value="${newStatus}"], button:has-text("${newStatus}")`,
+    );
 
     await this.waitForPageLoad();
   }
@@ -110,14 +128,18 @@ export class DriversPage {
 
     // If modal appears, fill in order ID if needed
     try {
-      await this.modal.waitFor({ state: 'visible', timeout: 5000 });
+      await this.modal.waitFor({ state: "visible", timeout: 5000 });
 
       if (orderId) {
-        const orderInput = this.modal.locator('input[placeholder*="Order"], input[name*="order"]');
+        const orderInput = this.modal.locator(
+          'input[placeholder*="Order"], input[name*="order"]',
+        );
         await orderInput.fill(orderId);
       }
 
-      const confirmBtn = this.modal.locator('button:has-text("Confirm"), button[type="submit"]');
+      const confirmBtn = this.modal.locator(
+        'button:has-text("Confirm"), button[type="submit"]',
+      );
       await confirmBtn.click();
     } catch {
       // No modal, assignment complete
@@ -139,7 +161,7 @@ export class DriversPage {
    */
   async searchDriver(query: string): Promise<void> {
     await this.searchInput.fill(query);
-    await this.page.keyboard.press('Enter');
+    await this.page.keyboard.press("Enter");
     await this.waitForPageLoad();
   }
 
@@ -152,13 +174,18 @@ export class DriversPage {
 
     for (let i = 0; i < count; i++) {
       const row = this.driverRows.nth(i);
-      const name = await row.locator('td, [data-testid="driver-name"]').first().textContent();
-      const status = await row.locator('[data-testid="status"], .status').textContent();
+      const name = await row
+        .locator('td, [data-testid="driver-name"]')
+        .first()
+        .textContent();
+      const status = await row
+        .locator('[data-testid="status"], .status')
+        .textContent();
 
       if (name) {
         drivers.push({
           name: name.trim(),
-          status: status?.trim() || '',
+          status: status?.trim() || "",
         });
       }
     }
@@ -177,7 +204,7 @@ export class DriversPage {
    * Verify drivers page is displayed
    */
   async expectDriversPage(): Promise<void> {
-    await expect(this.pageTitle).toContainText('Drivers');
+    await expect(this.pageTitle).toContainText("Drivers");
     await expect(this.driverTable).toBeVisible();
   }
 
@@ -192,10 +219,15 @@ export class DriversPage {
   /**
    * Verify driver status
    */
-  async expectDriverStatus(name: string, expectedStatus: string): Promise<void> {
+  async expectDriverStatus(
+    name: string,
+    expectedStatus: string,
+  ): Promise<void> {
     const status = await this.getDriverStatus(name);
     if (!status.includes(expectedStatus)) {
-      throw new Error(`Expected driver status to contain "${expectedStatus}", got "${status}"`);
+      throw new Error(
+        `Expected driver status to contain "${expectedStatus}", got "${status}"`,
+      );
     }
   }
 }

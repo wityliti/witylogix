@@ -218,8 +218,7 @@ export class DashboardDataProvider {
 
     const successCount = this.sumValues(successResult);
     const totalCount = this.sumValues(allResult);
-    const successRate =
-      totalCount > 0 ? (successCount / totalCount) * 100 : 0;
+    const successRate = totalCount > 0 ? (successCount / totalCount) * 100 : 0;
 
     const chart: ChartData = {
       title: "Delivery Success Rate",

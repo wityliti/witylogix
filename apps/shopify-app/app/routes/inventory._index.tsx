@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import {
   Page,
   Layout,
@@ -13,7 +13,7 @@ import {
   DataTable,
   Badge,
   Select,
-} from '@shopify/polaris';
+} from "@shopify/polaris";
 
 interface InventoryItem {
   id: string;
@@ -22,7 +22,7 @@ interface InventoryItem {
   sku: string;
   quantity: number;
   reorderPoint: number;
-  status: 'in-stock' | 'low-stock' | 'out-of-stock';
+  status: "in-stock" | "low-stock" | "out-of-stock";
   lastRestockDate: string;
 }
 
@@ -30,41 +30,41 @@ export default function InventoryIndex() {
   const navigate = useNavigate();
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
 
   useEffect(() => {
     setLoading(true);
     const mockItems: InventoryItem[] = [
       {
-        id: '1',
-        productTitle: 'Classic T-Shirt',
-        variantTitle: 'Blue - Size M',
-        sku: 'TSH-001-BLU-M',
+        id: "1",
+        productTitle: "Classic T-Shirt",
+        variantTitle: "Blue - Size M",
+        sku: "TSH-001-BLU-M",
         quantity: 245,
         reorderPoint: 50,
-        status: 'in-stock',
-        lastRestockDate: '2026-02-28T10:00:00Z',
+        status: "in-stock",
+        lastRestockDate: "2026-02-28T10:00:00Z",
       },
       {
-        id: '2',
-        productTitle: 'Classic T-Shirt',
-        variantTitle: 'Red - Size L',
-        sku: 'TSH-001-RED-L',
+        id: "2",
+        productTitle: "Classic T-Shirt",
+        variantTitle: "Red - Size L",
+        sku: "TSH-001-RED-L",
         quantity: 32,
         reorderPoint: 50,
-        status: 'low-stock',
-        lastRestockDate: '2026-02-15T10:00:00Z',
+        status: "low-stock",
+        lastRestockDate: "2026-02-15T10:00:00Z",
       },
       {
-        id: '3',
-        productTitle: 'Denim Jeans',
-        variantTitle: 'Black - Size 32',
-        sku: 'DNM-001-BLK-32',
+        id: "3",
+        productTitle: "Denim Jeans",
+        variantTitle: "Black - Size 32",
+        sku: "DNM-001-BLK-32",
         quantity: 0,
         reorderPoint: 20,
-        status: 'out-of-stock',
-        lastRestockDate: '2026-01-30T10:00:00Z',
+        status: "out-of-stock",
+        lastRestockDate: "2026-01-30T10:00:00Z",
       },
     ];
     setTimeout(() => {
@@ -74,9 +74,11 @@ export default function InventoryIndex() {
   }, []);
 
   const filteredItems = items.filter((item) => {
-    const matchesSearch = item.productTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch =
+      item.productTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.sku.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || item.status === filterStatus;
+    const matchesStatus =
+      filterStatus === "all" || item.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
 
@@ -89,14 +91,16 @@ export default function InventoryIndex() {
     item.status,
   ]);
 
-  const getStatusColor = (status: string): 'success' | 'warning' | 'critical' | undefined => {
+  const getStatusColor = (
+    status: string,
+  ): "success" | "warning" | "critical" | undefined => {
     switch (status) {
-      case 'in-stock':
-        return 'success';
-      case 'low-stock':
-        return 'warning';
-      case 'out-of-stock':
-        return 'critical';
+      case "in-stock":
+        return "success";
+      case "low-stock":
+        return "warning";
+      case "out-of-stock":
+        return "critical";
       default:
         return undefined;
     }
@@ -106,8 +110,8 @@ export default function InventoryIndex() {
     <Page
       title="Inventory"
       primaryAction={{
-        content: 'Adjust Stock',
-        onAction: () => navigate('/app/inventory/new'),
+        content: "Adjust Stock",
+        onAction: () => navigate("/app/inventory/new"),
       }}
     >
       <Layout>
@@ -122,15 +126,15 @@ export default function InventoryIndex() {
                   onChange={setSearchTerm}
                   autoComplete="off"
                   clearButton
-                  onClearButtonClick={() => setSearchTerm('')}
+                  onClearButtonClick={() => setSearchTerm("")}
                 />
                 <Select
                   label="Status"
                   options={[
-                    { label: 'All Statuses', value: 'all' },
-                    { label: 'In Stock', value: 'in-stock' },
-                    { label: 'Low Stock', value: 'low-stock' },
-                    { label: 'Out of Stock', value: 'out-of-stock' },
+                    { label: "All Statuses", value: "all" },
+                    { label: "In Stock", value: "in-stock" },
+                    { label: "Low Stock", value: "low-stock" },
+                    { label: "Out of Stock", value: "out-of-stock" },
                   ]}
                   value={filterStatus}
                   onChange={setFilterStatus}
@@ -156,8 +160,22 @@ export default function InventoryIndex() {
           ) : (
             <Card>
               <DataTable
-                columnContentTypes={['text', 'text', 'text', 'numeric', 'numeric', 'text']}
-                headings={['Product', 'Variant', 'SKU', 'Quantity', 'Reorder Point', 'Status']}
+                columnContentTypes={[
+                  "text",
+                  "text",
+                  "text",
+                  "numeric",
+                  "numeric",
+                  "text",
+                ]}
+                headings={[
+                  "Product",
+                  "Variant",
+                  "SKU",
+                  "Quantity",
+                  "Reorder Point",
+                  "Status",
+                ]}
                 rows={rows.map((row) => [
                   ...row.slice(0, -1),
                   <Badge key={row[5]} tone={getStatusColor(row[5])}>

@@ -55,10 +55,12 @@ describe("ELDComplianceEngine", () => {
 
       const violations = engine.detectDailyViolations(
         logsExceeding11,
-        new Date("2026-03-12")
+        new Date("2026-03-12"),
       );
 
-      const violation11 = violations.find((v) => v.violationType === "hours-11");
+      const violation11 = violations.find(
+        (v) => v.violationType === "hours-11",
+      );
       expect(violation11).toBeDefined();
       expect(violation11?.severity).toBe("critical");
     });
@@ -75,10 +77,12 @@ describe("ELDComplianceEngine", () => {
 
       const violations = engine.detectDailyViolations(
         logsWithin11,
-        new Date("2026-03-12")
+        new Date("2026-03-12"),
       );
 
-      const violation11 = violations.find((v) => v.violationType === "hours-11");
+      const violation11 = violations.find(
+        (v) => v.violationType === "hours-11",
+      );
       expect(violation11).toBeUndefined();
     });
 
@@ -103,10 +107,12 @@ describe("ELDComplianceEngine", () => {
 
       const violations = engine.detectDailyViolations(
         logsExceeding14,
-        new Date("2026-03-12")
+        new Date("2026-03-12"),
       );
 
-      const violation14 = violations.find((v) => v.violationType === "hours-14");
+      const violation14 = violations.find(
+        (v) => v.violationType === "hours-14",
+      );
       expect(violation14).toBeDefined();
       expect(violation14?.severity).toBe("critical");
     });
@@ -123,10 +129,12 @@ describe("ELDComplianceEngine", () => {
 
       const violations = engine.detectDailyViolations(
         logsNeedingBreak,
-        new Date("2026-03-12")
+        new Date("2026-03-12"),
       );
 
-      const breakViolation = violations.find((v) => v.violationType === "break-30min");
+      const breakViolation = violations.find(
+        (v) => v.violationType === "break-30min",
+      );
       expect(breakViolation).toBeDefined();
     });
 
@@ -142,14 +150,19 @@ describe("ELDComplianceEngine", () => {
 
       const violations = engine.detectDailyViolations(
         cleanLogs,
-        new Date("2026-03-12")
+        new Date("2026-03-12"),
       );
 
-      expect(violations.filter((v) => v.severity === "critical")).toHaveLength(0);
+      expect(violations.filter((v) => v.severity === "critical")).toHaveLength(
+        0,
+      );
     });
 
     it("should return empty array for empty logs", () => {
-      const violations = engine.detectDailyViolations([], new Date("2026-03-12"));
+      const violations = engine.detectDailyViolations(
+        [],
+        new Date("2026-03-12"),
+      );
 
       expect(violations).toHaveLength(0);
     });
@@ -166,20 +179,19 @@ describe("ELDComplianceEngine", () => {
         ...mockLogs[0],
         id: `log_${i}`,
         startTime: new Date(
-          new Date("2026-03-08T01:00:00Z").getTime() + i * 86400000
+          new Date("2026-03-08T01:00:00Z").getTime() + i * 86400000,
         ),
         endTime: new Date(
-          new Date("2026-03-08T10:00:00Z").getTime() + i * 86400000
+          new Date("2026-03-08T10:00:00Z").getTime() + i * 86400000,
         ),
         hours: 9,
       }));
 
-      const violations = engine.detect8DayViolations(
-        logsExceeding60,
-        endDate
-      );
+      const violations = engine.detect8DayViolations(logsExceeding60, endDate);
 
-      const violation60 = violations.find((v) => v.violationType === "hours-60-70");
+      const violation60 = violations.find(
+        (v) => v.violationType === "hours-60-70",
+      );
       expect(violation60).toBeDefined();
       expect(violation60?.severity).toBe("critical");
     });
@@ -193,21 +205,20 @@ describe("ELDComplianceEngine", () => {
         ...mockLogs[0],
         id: `log_${i}`,
         startTime: new Date(
-          new Date("2026-03-09T08:00:00Z").getTime() + i * 86400000
+          new Date("2026-03-09T08:00:00Z").getTime() + i * 86400000,
         ),
         endTime: new Date(
-          new Date("2026-03-09T18:00:00Z").getTime() + i * 86400000
+          new Date("2026-03-09T18:00:00Z").getTime() + i * 86400000,
         ),
         dutyStatus: i % 2 === 0 ? "driving" : "on-duty",
         hours: 10.5, // 4 driving * 10.5 = 42h, 3 on-duty * 10.5 = 31.5h, total = 73.5h > 70h
       }));
 
-      const violations = engine.detect8DayViolations(
-        logsExceeding70,
-        endDate
-      );
+      const violations = engine.detect8DayViolations(logsExceeding70, endDate);
 
-      const violation70 = violations.find((v) => v.violationType === "hours-60-70");
+      const violation70 = violations.find(
+        (v) => v.violationType === "hours-60-70",
+      );
       expect(violation70).toBeDefined();
     });
 
@@ -216,17 +227,17 @@ describe("ELDComplianceEngine", () => {
         ...mockLogs[0],
         id: `log_${i}`,
         startTime: new Date(
-          new Date("2026-03-05").getTime() + i * 86400000 + 28800000
+          new Date("2026-03-05").getTime() + i * 86400000 + 28800000,
         ),
         endTime: new Date(
-          new Date("2026-03-05").getTime() + i * 86400000 + 35200000
+          new Date("2026-03-05").getTime() + i * 86400000 + 35200000,
         ),
         hours: 5, // 8 days * 5 hours = 40 hours
       }));
 
       const violations = engine.detect8DayViolations(
         cleanLogs,
-        new Date("2026-03-13")
+        new Date("2026-03-13"),
       );
 
       expect(violations).toHaveLength(0);
@@ -246,7 +257,7 @@ describe("ELDComplianceEngine", () => {
       engine.addExemption(exemption);
       const activeExemptions = engine.getActiveExemptions(
         "driver_1",
-        new Date("2026-03-12")
+        new Date("2026-03-12"),
       );
 
       expect(activeExemptions).toHaveLength(1);
@@ -264,7 +275,7 @@ describe("ELDComplianceEngine", () => {
       engine.addExemption(exemption);
       const activeExemptions = engine.getActiveExemptions(
         "driver_1",
-        new Date("2026-03-15")
+        new Date("2026-03-15"),
       );
 
       expect(activeExemptions).toHaveLength(0);
@@ -291,10 +302,12 @@ describe("ELDComplianceEngine", () => {
 
       const violations = engine.detectDailyViolations(
         logsExceeding11,
-        new Date("2026-03-12")
+        new Date("2026-03-12"),
       );
 
-      const violation11 = violations.find((v) => v.violationType === "hours-11");
+      const violation11 = violations.find(
+        (v) => v.violationType === "hours-11",
+      );
       expect(violation11).toBeUndefined();
     });
   });
@@ -360,7 +373,10 @@ describe("ELDComplianceEngine", () => {
         },
       ];
 
-      const fleetCompliance = engine.calculateFleetCompliance("acc_123", drivers);
+      const fleetCompliance = engine.calculateFleetCompliance(
+        "acc_123",
+        drivers,
+      );
 
       expect(fleetCompliance.totalDrivers).toBe(2);
       expect(fleetCompliance.driversInCompliance).toBe(1);
@@ -400,7 +416,7 @@ describe("ELDComplianceEngine", () => {
       const summary = engine.aggregateMultiProviderHOS(
         "driver_1",
         multiProviderLogs,
-        new Date("2026-03-12")
+        new Date("2026-03-12"),
       );
 
       expect(summary.hours11).toBe(8);
@@ -425,7 +441,7 @@ describe("ELDComplianceEngine", () => {
       const summary = engine.aggregateMultiProviderHOS(
         "driver_1",
         mixedLogs,
-        new Date("2026-03-12")
+        new Date("2026-03-12"),
       );
 
       expect(summary.hours11).toBe(5);
@@ -455,7 +471,7 @@ describe("ELDComplianceEngine", () => {
         "acc_123",
         "driver_1",
         new Date("2026-03-12"),
-        violations
+        violations,
       );
 
       expect(entry.accountId).toBe("acc_123");
@@ -470,7 +486,7 @@ describe("ELDComplianceEngine", () => {
         "acc_123",
         "driver_1",
         new Date("2026-03-12"),
-        violations
+        violations,
       );
 
       const entries = engine.getAuditLog("acc_123", "driver_1");
@@ -485,13 +501,13 @@ describe("ELDComplianceEngine", () => {
         "acc_123",
         "driver_1",
         new Date("2026-03-12"),
-        violations
+        violations,
       );
       engine.createAuditLogEntry(
         "acc_456",
         "driver_2",
         new Date("2026-03-12"),
-        violations
+        violations,
       );
 
       const entries = engine.getAuditLog("acc_123");
@@ -521,7 +537,7 @@ describe("ELDComplianceEngine", () => {
         "acc_123",
         "driver_1",
         new Date("2026-03-12"),
-        violations
+        violations,
       );
 
       const csv = engine.exportAuditLog("acc_123", "csv");
@@ -539,7 +555,7 @@ describe("ELDComplianceEngine", () => {
         "acc_123",
         "driver_1",
         new Date("2026-03-12"),
-        violations
+        violations,
       );
 
       const json = engine.exportAuditLog("acc_123", "json");

@@ -84,10 +84,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       },
     });
   } catch {
-    return Response.json(
-      { error: "Service unavailable" },
-      { status: 503 },
-    );
+    return Response.json({ error: "Service unavailable" }, { status: 503 });
   }
 }
 
@@ -115,9 +112,6 @@ export async function action({ request }: ActionFunctionArgs) {
     const data = await response.json();
     return Response.json(data, { status: response.status });
   } catch {
-    return Response.json(
-      { error: "Service unavailable" },
-      { status: 503 },
-    );
+    return Response.json({ error: "Service unavailable" }, { status: 503 });
   }
 }

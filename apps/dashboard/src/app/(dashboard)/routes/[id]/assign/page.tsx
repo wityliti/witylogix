@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useState, useMemo } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   ArrowLeft,
   Search,
@@ -12,15 +12,15 @@ import {
   AlertCircle,
   MapPin,
   Clock,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { useApiQuery, useApiMutation, useApiList } from '@/hooks/use-api';
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { useApiQuery, useApiMutation, useApiList } from "@/hooks/use-api";
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -55,18 +55,18 @@ interface ApiDriver {
   phone: string;
   vehicleType: string;
   vehiclePlate: string | null;
-  status: 'OFFLINE' | 'AVAILABLE' | 'ON_ROUTE' | 'ON_BREAK';
+  status: "OFFLINE" | "AVAILABLE" | "ON_ROUTE" | "ON_BREAK";
   maxCapacity: number;
 }
 
 const DRIVER_STATUS_BADGE: Record<
-  ApiDriver['status'],
-  'default' | 'success' | 'warning' | 'danger'
+  ApiDriver["status"],
+  "default" | "success" | "warning" | "danger"
 > = {
-  AVAILABLE: 'success',
-  OFFLINE: 'default',
-  ON_ROUTE: 'warning',
-  ON_BREAK: 'warning',
+  AVAILABLE: "success",
+  OFFLINE: "default",
+  ON_ROUTE: "warning",
+  ON_BREAK: "warning",
 };
 
 // ─── Loading Skeleton ─────────────────────────────────────────
@@ -103,18 +103,24 @@ interface DriverCardProps {
   onSelect: () => void;
 }
 
-function DriverCard({ driver, isSelected, isCurrentDriver, onSelect }: DriverCardProps) {
-  const canAssign = driver.status === 'AVAILABLE' || driver.status === 'OFFLINE';
+function DriverCard({
+  driver,
+  isSelected,
+  isCurrentDriver,
+  onSelect,
+}: DriverCardProps) {
+  const canAssign =
+    driver.status === "AVAILABLE" || driver.status === "OFFLINE";
 
   return (
     <Card
       className={cn(
-        'transition-all cursor-pointer',
+        "transition-all cursor-pointer",
         isSelected
-          ? 'border-blue-500 bg-blue-500/5'
+          ? "border-blue-500 bg-blue-500/5"
           : canAssign
-            ? 'border-wl-border-default bg-wl-bg-surface hover:border-wl-border-strong'
-            : 'border-wl-border-default bg-wl-bg-sunken opacity-60 cursor-not-allowed',
+            ? "border-wl-border-default bg-wl-bg-surface hover:border-wl-border-strong"
+            : "border-wl-border-default bg-wl-bg-sunken opacity-60 cursor-not-allowed",
       )}
       onClick={() => canAssign && onSelect()}
     >
@@ -125,21 +131,26 @@ function DriverCard({ driver, isSelected, isCurrentDriver, onSelect }: DriverCar
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-semibold text-white text-sm">{driver.name}</span>
+              <span className="font-semibold text-white text-sm">
+                {driver.name}
+              </span>
               {isCurrentDriver && (
                 <Badge variant="primary" className="text-xs">
                   Current
                 </Badge>
               )}
-              <Badge variant={DRIVER_STATUS_BADGE[driver.status]} className="text-xs">
-                {driver.status.replace('_', ' ')}
+              <Badge
+                variant={DRIVER_STATUS_BADGE[driver.status]}
+                className="text-xs"
+              >
+                {driver.status.replace("_", " ")}
               </Badge>
             </div>
             <div className="flex gap-4 mt-1 text-xs text-wl-text-secondary flex-wrap">
               <span className="flex items-center gap-1">
                 <Truck className="w-3 h-3" />
                 {driver.vehicleType}
-                {driver.vehiclePlate ? ` · ${driver.vehiclePlate}` : ''}
+                {driver.vehiclePlate ? ` · ${driver.vehiclePlate}` : ""}
               </span>
               <span>{driver.phone}</span>
               <span>Capacity: {driver.maxCapacity}</span>
@@ -147,7 +158,8 @@ function DriverCard({ driver, isSelected, isCurrentDriver, onSelect }: DriverCar
             {!canAssign && (
               <p className="text-xs text-amber-500 mt-1 flex items-center gap-1">
                 <AlertCircle className="w-3 h-3" />
-                Driver is currently {driver.status.toLowerCase().replace('_', ' ')}
+                Driver is currently{" "}
+                {driver.status.toLowerCase().replace("_", " ")}
               </p>
             )}
           </div>
@@ -174,13 +186,16 @@ export default function RouteAssignPage() {
     refetch: refetchRoute,
   } = useApiQuery<RouteSummary>(id ? `/api/v4/routes/${id}` : null);
 
-  const { items: drivers, loading: driversLoading } = useApiList<ApiDriver>('/api/v4/drivers');
+  const { items: drivers, loading: driversLoading } =
+    useApiList<ApiDriver>("/api/v4/drivers");
 
-  const { execute: assignDriver, loading: assigning, error: assignError } = useApiMutation<
-    RouteSummary
-  >('POST', `/api/v4/routes/${id}/assign`);
+  const {
+    execute: assignDriver,
+    loading: assigning,
+    error: assignError,
+  } = useApiMutation<RouteSummary>("POST", `/api/v4/routes/${id}/assign`);
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
 
   const filteredDrivers = useMemo(() => {
@@ -191,7 +206,7 @@ export default function RouteAssignPage() {
         d.name.toLowerCase().includes(q) ||
         d.vehicleType.toLowerCase().includes(q) ||
         d.phone.includes(q) ||
-        (d.vehiclePlate ?? '').toLowerCase().includes(q),
+        (d.vehiclePlate ?? "").toLowerCase().includes(q),
     );
   }, [drivers, searchQuery]);
 
@@ -220,10 +235,10 @@ export default function RouteAssignPage() {
   }
 
   const availableDrivers = filteredDrivers.filter(
-    (d) => d.status === 'AVAILABLE' || d.status === 'OFFLINE',
+    (d) => d.status === "AVAILABLE" || d.status === "OFFLINE",
   );
   const unavailableDrivers = filteredDrivers.filter(
-    (d) => d.status !== 'AVAILABLE' && d.status !== 'OFFLINE',
+    (d) => d.status !== "AVAILABLE" && d.status !== "OFFLINE",
   );
 
   const selectedDriver = drivers.find((d) => d.id === selectedDriverId);
@@ -240,11 +255,14 @@ export default function RouteAssignPage() {
         </Link>
         <div>
           <h1 className="text-xl font-bold text-white">
-            Assign Driver — {route.name ?? `Route ${new Date(route.date).toLocaleDateString()}`}
+            Assign Driver —{" "}
+            {route.name ?? `Route ${new Date(route.date).toLocaleDateString()}`}
           </h1>
           <p className="text-sm text-wl-text-secondary mt-0.5">
-            {route.stops.length} stops ·{' '}
-            {route.totalDistance ? `${Number(route.totalDistance).toFixed(1)} km` : 'Distance TBD'}
+            {route.stops.length} stops ·{" "}
+            {route.totalDistance
+              ? `${Number(route.totalDistance).toFixed(1)} km`
+              : "Distance TBD"}
           </p>
         </div>
       </div>
@@ -321,7 +339,9 @@ export default function RouteAssignPage() {
           {/* Current Assignment */}
           <Card className="bg-wl-bg-surface border border-wl-border-default">
             <CardHeader className="pb-3 border-b border-wl-border-default">
-              <CardTitle className="text-sm text-white">Current Assignment</CardTitle>
+              <CardTitle className="text-sm text-white">
+                Current Assignment
+              </CardTitle>
             </CardHeader>
             <CardContent className="p-4">
               {route.driver ? (
@@ -330,8 +350,12 @@ export default function RouteAssignPage() {
                     <User className="w-4 h-4 text-blue-400" />
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-white">{route.driver.name}</div>
-                    <div className="text-xs text-wl-text-secondary">{route.driver.vehicleType}</div>
+                    <div className="text-sm font-medium text-white">
+                      {route.driver.name}
+                    </div>
+                    <div className="text-xs text-wl-text-secondary">
+                      {route.driver.vehicleType}
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -350,11 +374,16 @@ export default function RouteAssignPage() {
             </CardHeader>
             <CardContent className="p-3 max-h-64 overflow-y-auto">
               {route.stops.length === 0 ? (
-                <p className="text-xs text-gray-500 text-center py-4">No stops on this route.</p>
+                <p className="text-xs text-gray-500 text-center py-4">
+                  No stops on this route.
+                </p>
               ) : (
                 <div className="flex flex-col gap-2">
                   {route.stops.map((stop) => (
-                    <div key={stop.id} className="flex items-start gap-2 text-xs">
+                    <div
+                      key={stop.id}
+                      className="flex items-start gap-2 text-xs"
+                    >
                       <div className="w-5 h-5 rounded-full bg-wl-bg-overlay flex items-center justify-center text-wl-text-secondary font-bold flex-shrink-0 mt-0.5">
                         {stop.sequence + 1}
                       </div>
@@ -437,7 +466,7 @@ export default function RouteAssignPage() {
               className="w-full"
             >
               <CheckCircle className="w-4 h-4" />
-              {assigning ? 'Assigning...' : 'Confirm Assignment'}
+              {assigning ? "Assigning..." : "Confirm Assignment"}
             </Button>
           </div>
         </div>

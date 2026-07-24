@@ -41,10 +41,7 @@ class WebhookAnalytics {
   private endpointMetrics = new Map<string, any>();
   private latencies: Map<string, number[]> = new Map();
 
-  recordDelivery(
-    endpointId: string,
-    delivery: any
-  ): void {
+  recordDelivery(endpointId: string, delivery: any): void {
     this.deliveries.push({
       ...delivery,
       endpointId,
@@ -63,48 +60,34 @@ class WebhookAnalytics {
     }
   }
 
-  recordDLQEntry(
-    endpointId: string,
-    entry: any
-  ): void {
+  recordDLQEntry(endpointId: string, entry: any): void {
     this.dlqEntries.push({
       ...entry,
       endpointId,
     });
   }
 
-  calculateSuccessRate(
-    endpointId: string
-  ): number {
+  calculateSuccessRate(endpointId: string): number {
     const forEndpoint = this.deliveries.filter(
-      (d) => d.endpointId === endpointId
+      (d) => d.endpointId === endpointId,
     );
 
     if (forEndpoint.length === 0) return 100;
 
-    const successes = forEndpoint.filter(
-      (d) => d.success
-    ).length;
+    const successes = forEndpoint.filter((d) => d.success).length;
     return (successes / forEndpoint.length) * 100;
   }
 
-  calculateFailureRate(
-    endpointId: string
-  ): number {
+  calculateFailureRate(endpointId: string): number {
     return 100 - this.calculateSuccessRate(endpointId);
   }
 
-  calculateLatencyPercentile(
-    endpointId: string,
-    percentile: number
-  ): number {
+  calculateLatencyPercentile(endpointId: string, percentile: number): number {
     const latencies = this.latencies.get(endpointId) || [];
     if (latencies.length === 0) return 0;
 
     const sorted = [...latencies].sort((a, b) => a - b);
-    const index = Math.ceil(
-      (percentile / 100) * sorted.length - 1
-    );
+    const index = Math.ceil((percentile / 100) * sorted.length - 1);
 
     return sorted[Math.max(0, index)];
   }
@@ -119,19 +102,15 @@ class WebhookAnalytics {
 
   getMetrics(endpointId: string): DeliveryMetrics {
     const forEndpoint = this.deliveries.filter(
-      (d) => d.endpointId === endpointId
+      (d) => d.endpointId === endpointId,
     );
 
     const dlqForEndpoint = this.dlqEntries.filter(
-      (d) => d.endpointId === endpointId
+      (d) => d.endpointId === endpointId,
     );
 
-    const successful = forEndpoint.filter(
-      (d) => d.success
-    ).length;
-    const failed = forEndpoint.filter(
-      (d) => !d.success
-    ).length;
+    const successful = forEndpoint.filter((d) => d.success).length;
+    const failed = forEndpoint.filter((d) => !d.success).length;
 
     const total = forEndpoint.length;
 
@@ -140,29 +119,16 @@ class WebhookAnalytics {
       successCount: successful,
       failureCount: failed,
       dlqCount: dlqForEndpoint.length,
-      successRate:
-        total > 0 ? (successful / total) * 100 : 100,
-      failureRate:
-        total > 0 ? (failed / total) * 100 : 0,
+      successRate: total > 0 ? (successful / total) * 100 : 100,
+      failureRate: total > 0 ? (failed / total) * 100 : 0,
       avgLatency: this.calculateAverageLatency(endpointId),
-      p50Latency: this.calculateLatencyPercentile(
-        endpointId,
-        50
-      ),
-      p95Latency: this.calculateLatencyPercentile(
-        endpointId,
-        95
-      ),
-      p99Latency: this.calculateLatencyPercentile(
-        endpointId,
-        99
-      ),
+      p50Latency: this.calculateLatencyPercentile(endpointId, 50),
+      p95Latency: this.calculateLatencyPercentile(endpointId, 95),
+      p99Latency: this.calculateLatencyPercentile(endpointId, 99),
     };
   }
 
-  calculateHealthScore(
-    endpointId: string
-  ): HealthScore {
+  calculateHealthScore(endpointId: string): HealthScore {
     const metrics = this.getMetrics(endpointId);
 
     let score = 100;
@@ -176,19 +142,14 @@ class WebhookAnalytics {
     // Latency factor (30% weight)
     const maxAcceptableLatency = 1000;
     const latencyRatio =
-      Math.min(
-        metrics.p95Latency,
-        maxAcceptableLatency
-      ) / maxAcceptableLatency;
+      Math.min(metrics.p95Latency, maxAcceptableLatency) / maxAcceptableLatency;
     score -= (1 - latencyRatio) * 30;
     factors.latency = metrics.p95Latency;
 
     // DLQ factor (20% weight)
     const totalDeliveries = metrics.totalAttempts;
     const dlqRatio =
-      totalDeliveries > 0
-        ? metrics.dlqCount / totalDeliveries
-        : 0;
+      totalDeliveries > 0 ? metrics.dlqCount / totalDeliveries : 0;
     score -= dlqRatio * 20;
     factors.dlq = metrics.dlqCount;
 
@@ -215,15 +176,10 @@ class WebhookAnalytics {
   }
 
   getDLQDepthForEndpoint(endpointId: string): number {
-    return this.dlqEntries.filter(
-      (d) => d.endpointId === endpointId
-    ).length;
+    return this.dlqEntries.filter((d) => d.endpointId === endpointId).length;
   }
 
-  getDeliveryHistory(
-    endpointId: string,
-    limit: number = 100
-  ): any[] {
+  getDeliveryHistory(endpointId: string, limit: number = 100): any[] {
     return this.deliveries
       .filter((d) => d.endpointId === endpointId)
       .slice(-limit);
@@ -231,9 +187,7 @@ class WebhookAnalytics {
 
   getEndpointHealthMetrics(endpointId: string) {
     const metrics = this.getMetrics(endpointId);
-    const healthScore = this.calculateHealthScore(
-      endpointId
-    );
+    const healthScore = this.calculateHealthScore(endpointId);
 
     return {
       endpointId,
@@ -265,20 +219,18 @@ describe("Webhook Analytics", () => {
 
       analytics.recordDelivery(
         endpointId,
-        createWebhookDelivery("evt-1", endpointId)
+        createWebhookDelivery("evt-1", endpointId),
       );
       analytics.recordDelivery(
         endpointId,
-        createWebhookDelivery("evt-2", endpointId)
+        createWebhookDelivery("evt-2", endpointId),
       );
       analytics.recordDelivery(
         endpointId,
-        createFailedWebhookDelivery("evt-3", endpointId)
+        createFailedWebhookDelivery("evt-3", endpointId),
       );
 
-      const successRate = analytics.calculateSuccessRate(
-        endpointId
-      );
+      const successRate = analytics.calculateSuccessRate(endpointId);
 
       expect(successRate).toBeLessThanOrEqual(100);
       expect(successRate).toBeGreaterThanOrEqual(0);
@@ -291,26 +243,23 @@ describe("Webhook Analytics", () => {
         if (i < 7) {
           analytics.recordDelivery(
             endpointId,
-            createWebhookDelivery(`evt-${i}`, endpointId)
+            createWebhookDelivery(`evt-${i}`, endpointId),
           );
         } else {
           analytics.recordDelivery(
             endpointId,
-            createFailedWebhookDelivery(`evt-${i}`, endpointId)
+            createFailedWebhookDelivery(`evt-${i}`, endpointId),
           );
         }
       }
 
-      const failureRate =
-        analytics.calculateFailureRate(endpointId);
+      const failureRate = analytics.calculateFailureRate(endpointId);
 
       expect(failureRate).toBeCloseTo(30, 5);
     });
 
     it("should return 100% success for empty endpoint", () => {
-      const rate = analytics.calculateSuccessRate(
-        "empty-endpoint"
-      );
+      const rate = analytics.calculateSuccessRate("empty-endpoint");
 
       expect(rate).toBe(100);
     });
@@ -324,17 +273,16 @@ describe("Webhook Analytics", () => {
         endpointId,
         createWebhookDelivery("evt-1", endpointId, {
           responseTime: 100,
-        })
+        }),
       );
       analytics.recordDelivery(
         endpointId,
         createWebhookDelivery("evt-2", endpointId, {
           responseTime: 500,
-        })
+        }),
       );
 
-      const avgLatency =
-        analytics.calculateAverageLatency(endpointId);
+      const avgLatency = analytics.calculateAverageLatency(endpointId);
 
       expect(avgLatency).toBeGreaterThan(0);
     });
@@ -342,28 +290,19 @@ describe("Webhook Analytics", () => {
     it("should calculate percentiles", () => {
       const endpointId = "ep-percentiles";
 
-      const latencies = [
-        100, 150, 200, 250, 300, 350, 400, 450, 500,
-        1000,
-      ];
+      const latencies = [100, 150, 200, 250, 300, 350, 400, 450, 500, 1000];
 
       latencies.forEach((latency, i) => {
         analytics.recordDelivery(
           endpointId,
           createWebhookDelivery(`evt-${i}`, endpointId, {
             responseTime: latency,
-          })
+          }),
         );
       });
 
-      const p50 = analytics.calculateLatencyPercentile(
-        endpointId,
-        50
-      );
-      const p95 = analytics.calculateLatencyPercentile(
-        endpointId,
-        95
-      );
+      const p50 = analytics.calculateLatencyPercentile(endpointId, 50);
+      const p95 = analytics.calculateLatencyPercentile(endpointId, 95);
 
       expect(p95).toBeGreaterThanOrEqual(p50);
     });
@@ -375,23 +314,22 @@ describe("Webhook Analytics", () => {
         endpointId,
         createWebhookDelivery("evt-1", endpointId, {
           responseTime: 100,
-        })
+        }),
       );
       analytics.recordDelivery(
         endpointId,
         createWebhookDelivery("evt-2", endpointId, {
           responseTime: 200,
-        })
+        }),
       );
       analytics.recordDelivery(
         endpointId,
         createWebhookDelivery("evt-3", endpointId, {
           responseTime: 300,
-        })
+        }),
       );
 
-      const avg =
-        analytics.calculateAverageLatency(endpointId);
+      const avg = analytics.calculateAverageLatency(endpointId);
 
       expect(avg).toBe(200);
     });
@@ -427,12 +365,8 @@ describe("Webhook Analytics", () => {
         reason: "max_retries",
       });
 
-      expect(analytics.getDLQDepthForEndpoint("ep-1")).toBe(
-        2
-      );
-      expect(analytics.getDLQDepthForEndpoint("ep-2")).toBe(
-        1
-      );
+      expect(analytics.getDLQDepthForEndpoint("ep-1")).toBe(2);
+      expect(analytics.getDLQDepthForEndpoint("ep-2")).toBe(1);
     });
   });
 
@@ -446,28 +380,21 @@ describe("Webhook Analytics", () => {
             endpointId,
             createWebhookDelivery(`evt-${i}`, endpointId, {
               responseTime: 200,
-            })
+            }),
           );
         } else {
           analytics.recordDelivery(
             endpointId,
-            createFailedWebhookDelivery(
-              `evt-${i}`,
-              endpointId
-            )
+            createFailedWebhookDelivery(`evt-${i}`, endpointId),
           );
         }
       }
 
-      const score = analytics.calculateHealthScore(
-        endpointId
-      );
+      const score = analytics.calculateHealthScore(endpointId);
 
       expect(score.score).toBeGreaterThan(0);
       expect(score.score).toBeLessThanOrEqual(100);
-      expect(
-        ["healthy", "degraded", "unhealthy"]
-      ).toContain(score.status);
+      expect(["healthy", "degraded", "unhealthy"]).toContain(score.status);
     });
 
     it("should mark healthy endpoints", () => {
@@ -478,13 +405,11 @@ describe("Webhook Analytics", () => {
           endpointId,
           createWebhookDelivery(`evt-${i}`, endpointId, {
             responseTime: 100,
-          })
+          }),
         );
       }
 
-      const score = analytics.calculateHealthScore(
-        endpointId
-      );
+      const score = analytics.calculateHealthScore(endpointId);
 
       expect(score.score).toBeGreaterThan(85);
     });
@@ -498,22 +423,17 @@ describe("Webhook Analytics", () => {
             endpointId,
             createWebhookDelivery(`evt-${i}`, endpointId, {
               responseTime: 800,
-            })
+            }),
           );
         } else {
           analytics.recordDelivery(
             endpointId,
-            createFailedWebhookDelivery(
-              `evt-${i}`,
-              endpointId
-            )
+            createFailedWebhookDelivery(`evt-${i}`, endpointId),
           );
         }
       }
 
-      const score = analytics.calculateHealthScore(
-        endpointId
-      );
+      const score = analytics.calculateHealthScore(endpointId);
 
       expect(score.score).toBeLessThan(90);
       expect(score.score).toBeGreaterThan(60);
@@ -525,16 +445,11 @@ describe("Webhook Analytics", () => {
       for (let i = 0; i < 20; i++) {
         analytics.recordDelivery(
           endpointId,
-          createFailedWebhookDelivery(
-            `evt-${i}`,
-            endpointId
-          )
+          createFailedWebhookDelivery(`evt-${i}`, endpointId),
         );
       }
 
-      const score = analytics.calculateHealthScore(
-        endpointId
-      );
+      const score = analytics.calculateHealthScore(endpointId);
 
       expect(score.score).toBeLessThan(70);
     });
@@ -547,13 +462,11 @@ describe("Webhook Analytics", () => {
       for (let i = 0; i < 10; i++) {
         analytics.recordDelivery(
           endpointId,
-          createWebhookDelivery(`evt-${i}`, endpointId)
+          createWebhookDelivery(`evt-${i}`, endpointId),
         );
       }
 
-      const history = analytics.getDeliveryHistory(
-        endpointId
-      );
+      const history = analytics.getDeliveryHistory(endpointId);
 
       expect(history.length).toBe(10);
     });
@@ -564,14 +477,11 @@ describe("Webhook Analytics", () => {
       for (let i = 0; i < 150; i++) {
         analytics.recordDelivery(
           endpointId,
-          createWebhookDelivery(`evt-${i}`, endpointId)
+          createWebhookDelivery(`evt-${i}`, endpointId),
         );
       }
 
-      const history = analytics.getDeliveryHistory(
-        endpointId,
-        50
-      );
+      const history = analytics.getDeliveryHistory(endpointId, 50);
 
       expect(history.length).toBeLessThanOrEqual(50);
     });
@@ -586,12 +496,11 @@ describe("Webhook Analytics", () => {
           endpointId,
           createWebhookDelivery(`evt-${i}`, endpointId, {
             responseTime: Math.random() * 500 + 100,
-          })
+          }),
         );
       }
 
-      const metrics =
-        analytics.getEndpointHealthMetrics(endpointId);
+      const metrics = analytics.getEndpointHealthMetrics(endpointId);
 
       expect(metrics.endpointId).toBe(endpointId);
       expect(metrics.uptime).toBeDefined();

@@ -4,30 +4,33 @@ Route optimization and navigation are critical for delivery performance. Witylog
 
 ## Supported Providers
 
-| Provider | Type | Best For | Cost Model | Coverage |
-|----------|------|----------|-----------|----------|
-| **Mapbox** | Managed | Scale + features | Pay-per-request | Global |
-| **OSRM** | Open source | Self-hosting | Free | Global |
-| **HERE Maps** | Managed | Enterprise | Pay-per-request | Global |
-| **Valhalla** | Open source | Self-hosting | Free | Global |
-| **VROOM** | Open source | VRP solving | Free | Global |
-| **Routific** | Managed | AI optimization | Monthly plan | Global |
-| **OptimoRoute** | Managed | Delivery platforms | Monthly plan | Global |
-| **Route4Me** | Managed | Multi-stop routing | Pay-per-request | Global |
-| **GraphHopper** | Open source | Flexible routing | Free + paid | Global |
-| **TomTom** | Managed | Real-time traffic | Pay-per-request | Global |
+| Provider        | Type        | Best For           | Cost Model      | Coverage |
+| --------------- | ----------- | ------------------ | --------------- | -------- |
+| **Mapbox**      | Managed     | Scale + features   | Pay-per-request | Global   |
+| **OSRM**        | Open source | Self-hosting       | Free            | Global   |
+| **HERE Maps**   | Managed     | Enterprise         | Pay-per-request | Global   |
+| **Valhalla**    | Open source | Self-hosting       | Free            | Global   |
+| **VROOM**       | Open source | VRP solving        | Free            | Global   |
+| **Routific**    | Managed     | AI optimization    | Monthly plan    | Global   |
+| **OptimoRoute** | Managed     | Delivery platforms | Monthly plan    | Global   |
+| **Route4Me**    | Managed     | Multi-stop routing | Pay-per-request | Global   |
+| **GraphHopper** | Open source | Flexible routing   | Free + paid     | Global   |
+| **TomTom**      | Managed     | Real-time traffic  | Pay-per-request | Global   |
 
 ## Setup by Provider
 
 ### Mapbox
+
 **Best for**: Balanced feature set, production scale, real-time ETA.
 
 #### 1. Get API Key
+
 - Log in to [mapbox.com](https://mapbox.com)
 - Create new access token under **Tokens**
 - Copy public token (starts with `pk_`)
 
 #### 2. Configure in Witylogix
+
 ```javascript
 const routing = await client.integrations.create({
   provider: "mapbox",
@@ -35,25 +38,28 @@ const routing = await client.integrations.create({
     apiKey: "pk_YOUR_TOKEN_HERE",
   },
   config: {
-    mode: "driving",           // walking, cycling, driving
-    includeTraffic: true,       // real-time traffic costs extra
-    alternatives: 2,           // return alternate routes
-    steps: true,               // detailed turn-by-turn
+    mode: "driving", // walking, cycling, driving
+    includeTraffic: true, // real-time traffic costs extra
+    alternatives: 2, // return alternate routes
+    steps: true, // detailed turn-by-turn
     annotations: ["duration", "distance", "congestion"],
   },
 });
 ```
 
 #### 3. Test Route
+
 ```bash
 curl https://api.mapbox.com/directions/v5/mapbox/driving/[lon],[lon];[lon],[lon] \
   ?access_token=pk_YOUR_TOKEN_HERE
 ```
 
 ### OSRM (Open Source)
+
 **Best for**: Self-hosted, no external costs, full data privacy.
 
 #### 1. Deploy OSRM Server
+
 ```bash
 # Docker deployment
 docker run -d --name osrm-backend \
@@ -63,6 +69,7 @@ docker run -d --name osrm-backend \
 ```
 
 #### 2. Configure in Witylogix
+
 ```javascript
 const routing = await client.integrations.create({
   provider: "osrm",
@@ -79,6 +86,7 @@ const routing = await client.integrations.create({
 ```
 
 #### 3. Preprocess Map Data
+
 ```bash
 # Extract your region's OSM data
 osmium extract -b -75.5,40.0,-74.5,41.0 --complete-ways \
@@ -91,14 +99,17 @@ osrm-customize northeast.osrm
 ```
 
 ### HERE Maps
+
 **Best for**: Enterprise scale, real-time traffic, comprehensive coverage.
 
 #### 1. Get API Key
+
 - Sign up at [developer.here.com](https://developer.here.com)
 - Create **REST API Key** under Projects
 - Copy the API key
 
 #### 2. Configure in Witylogix
+
 ```javascript
 const routing = await client.integrations.create({
   provider: "here",
@@ -106,8 +117,8 @@ const routing = await client.integrations.create({
     apiKey: "YOUR_HERE_API_KEY",
   },
   config: {
-    mode: "fastest",           // fastest, shortest
-    traffic: "enabled",        // historical or realtime
+    mode: "fastest", // fastest, shortest
+    traffic: "enabled", // historical or realtime
     alternatives: 3,
     returnInstructions: true,
     spans: true,
@@ -116,9 +127,11 @@ const routing = await client.integrations.create({
 ```
 
 ### Valhalla
+
 **Best for**: Open source, complex routing, isochrones.
 
 #### 1. Deploy Valhalla
+
 ```bash
 docker run -d --name valhalla \
   -p 8002:8002 \
@@ -127,6 +140,7 @@ docker run -d --name valhalla \
 ```
 
 #### 2. Configure in Witylogix
+
 ```javascript
 const routing = await client.integrations.create({
   provider: "valhalla",
@@ -134,7 +148,7 @@ const routing = await client.integrations.create({
     url: "http://your-valhalla-server:8002",
   },
   config: {
-    costing: "auto",           // auto, pedestrian, bikeshare, taxi
+    costing: "auto", // auto, pedestrian, bikeshare, taxi
     includeAlternates: true,
     steps: true,
   },
@@ -142,9 +156,11 @@ const routing = await client.integrations.create({
 ```
 
 ### VROOM (Vehicle Routing Optimization)
+
 **Best for**: Complex VRP, multi-vehicle routing.
 
 #### 1. Deploy VROOM Server
+
 ```bash
 docker run -d --name vroom \
   -p 3000:3000 \
@@ -152,6 +168,7 @@ docker run -d --name vroom \
 ```
 
 #### 2. Configure Optimization
+
 ```javascript
 const optimization = await client.routing.optimize({
   integration: "vroom",
@@ -174,14 +191,17 @@ const optimization = await client.routing.optimize({
 ```
 
 ### Routific
+
 **Best for**: AI-powered optimization, managed service, white-label.
 
 #### 1. Get API Key
+
 - Log in to [routific.com](https://routific.com)
 - Under **Account**, copy API token
 - Enable OAuth if using white-label
 
 #### 2. Configure in Witylogix
+
 ```javascript
 const routing = await client.integrations.create({
   provider: "routific",
@@ -189,10 +209,10 @@ const routing = await client.integrations.create({
     apiKey: "YOUR_ROUTIFIC_API_KEY",
   },
   config: {
-    optimizationLevel: 3,      // 1-3, higher = slower but better
+    optimizationLevel: 3, // 1-3, higher = slower but better
     vehicle: {
-      maxDistance: 500,        // km/day
-      maxDuration: 28800,      // seconds/day
+      maxDistance: 500, // km/day
+      maxDuration: 28800, // seconds/day
       costPerKm: 0.5,
     },
   },
@@ -200,14 +220,17 @@ const routing = await client.integrations.create({
 ```
 
 ### OptimoRoute
+
 **Best for**: Delivery-focused, mobile app, real-time tracking.
 
 #### 1. Get API Key
+
 - Log in to [optimoroute.com](https://optimoroute.com)
 - Navigate to **Settings → API**
 - Generate new token
 
 #### 2. Configure in Witylogix
+
 ```javascript
 const routing = await client.integrations.create({
   provider: "optimoroute",
@@ -216,21 +239,24 @@ const routing = await client.integrations.create({
   },
   config: {
     defaultVehicleCapacity: 50,
-    defaultDrivingSpeed: 40,   // km/h
+    defaultDrivingSpeed: 40, // km/h
     defaultBreakTime: 0,
   },
 });
 ```
 
 ### Route4Me
+
 **Best for**: Dynamic routing, live tracking, delivery proof.
 
 #### 1. Get API Key
+
 - Sign up at [route4me.com](https://route4me.com)
 - Copy **API Key** from dashboard
 - Note your **Member ID**
 
 #### 2. Configure in Witylogix
+
 ```javascript
 const routing = await client.integrations.create({
   provider: "route4me",
@@ -239,20 +265,23 @@ const routing = await client.integrations.create({
     memberId: "YOUR_MEMBER_ID",
   },
   config: {
-    optimization: "distance",  // time, distance, or none
+    optimization: "distance", // time, distance, or none
     routePathOutput: "Points", // Points or Shapefile
   },
 });
 ```
 
 ### GraphHopper
+
 **Best for**: Flexible routing, custom profiles, open data.
 
 #### 1. Get API Key
+
 - Sign up at [graphhopper.com](https://graphhopper.com)
 - Copy **API Key** from dashboard
 
 #### 2. Configure in Witylogix
+
 ```javascript
 const routing = await client.integrations.create({
   provider: "graphhopper",
@@ -260,7 +289,7 @@ const routing = await client.integrations.create({
     apiKey: "YOUR_GRAPHHOPPER_API_KEY",
   },
   config: {
-    profile: "car",            // car, foot, bike, hike, wheelchair
+    profile: "car", // car, foot, bike, hike, wheelchair
     locale: "en",
     customWeighting: false,
   },
@@ -268,14 +297,17 @@ const routing = await client.integrations.create({
 ```
 
 ### TomTom
+
 **Best for**: Real-time traffic, global coverage, high-volume.
 
 #### 1. Get API Key
+
 - Create account at [tomtom.com/developers](https://developer.tomtom.com)
 - Create **API Key** under your project
 - Enable **Maps API** and **Routing API**
 
 #### 2. Configure in Witylogix
+
 ```javascript
 const routing = await client.integrations.create({
   provider: "tomtom",
@@ -283,8 +315,8 @@ const routing = await client.integrations.create({
     apiKey: "YOUR_TOMTOM_API_KEY",
   },
   config: {
-    traffic: "live",           // none, historical, live
-    routeType: "fastest",      // fastest, shortest, eco
+    traffic: "live", // none, historical, live
+    routeType: "fastest", // fastest, shortest, eco
     vehicleType: "car",
   },
 });
@@ -339,6 +371,7 @@ Return error to application
 ```
 
 ### Configure Fallback Chain
+
 ```javascript
 const routing = await client.integrations.create({
   provider: "mapbox",
@@ -354,6 +387,7 @@ const routing = await client.integrations.create({
 ## Cost Optimization
 
 ### Routing Quota Comparison
+
 - **Mapbox**: $0.50 per 1,000 directions requests
 - **HERE**: ~$0.90 per 1,000 requests
 - **OSRM**: Free (self-hosted)
@@ -361,6 +395,7 @@ const routing = await client.integrations.create({
 - **GraphHopper**: Free tier, then ~$0.50 per 1,000
 
 ### Cost Reduction Tips
+
 1. **Batch requests** — Group multiple destinations per call
 2. **Cache results** — Don't re-request identical routes
 3. **Use alternatives sparingly** — Each alternative costs extra
@@ -388,13 +423,13 @@ console.log(stats);
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Route too slow/expensive | Wrong provider | Try faster provider like OSRM |
-| Inaccurate ETAs | Traffic not included | Enable traffic in config |
-| Timeouts | Provider overloaded | Increase timeout, add fallback |
-| No routes found | Invalid coordinates | Validate lat/lon format |
-| Wrong path | Avoidance options | Review toll/ferry/highway options |
+| Issue                    | Cause                | Solution                          |
+| ------------------------ | -------------------- | --------------------------------- |
+| Route too slow/expensive | Wrong provider       | Try faster provider like OSRM     |
+| Inaccurate ETAs          | Traffic not included | Enable traffic in config          |
+| Timeouts                 | Provider overloaded  | Increase timeout, add fallback    |
+| No routes found          | Invalid coordinates  | Validate lat/lon format           |
+| Wrong path               | Avoidance options    | Review toll/ferry/highway options |
 
 ## Next Steps
 

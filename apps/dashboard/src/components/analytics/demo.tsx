@@ -88,25 +88,8 @@ export function AnalyticsDemoDashboard() {
     [22, 24, 26, 28, 30, 32, 34, 36],
   ];
 
-  const heatmapRowLabels = [
-    "Mon",
-    "Tue",
-    "Wed",
-    "Thu",
-    "Fri",
-    "Sat",
-    "Sun",
-  ];
-  const heatmapColLabels = [
-    "00",
-    "04",
-    "08",
-    "12",
-    "16",
-    "20",
-    "24",
-    "28",
-  ];
+  const heatmapRowLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const heatmapColLabels = ["00", "04", "08", "12", "16", "20", "24", "28"];
 
   // Mock data for Sparkline
   const sparklineData = [12, 15, 13, 17, 16, 18, 20, 19, 22, 21];
@@ -143,8 +126,7 @@ export function AnalyticsDemoDashboard() {
       id: "date",
       header: "Date",
       accessorKey: "date",
-      cell: (value) =>
-        new Date(value as string).toLocaleDateString(),
+      cell: (value) => new Date(value as string).toLocaleDateString(),
     },
   ];
 
@@ -224,10 +206,7 @@ export function AnalyticsDemoDashboard() {
           Date Range Picker
         </h2>
         <div className="max-w-md">
-          <DateRangePicker
-            value={dateRange}
-            onChange={setDateRange}
-          />
+          <DateRangePicker value={dateRange} onChange={setDateRange} />
         </div>
       </section>
 

@@ -15,6 +15,7 @@ The integration system follows a three-layer architecture:
 ### Integration Lifecycle
 
 #### 1. Install
+
 Select and install an integration from the Integration Catalog. The system validates your API credentials and permissions.
 
 ```
@@ -22,17 +23,22 @@ Install → Validate Credentials → Store Configuration → Health Check
 ```
 
 #### 2. Configure
+
 Set up provider-specific options: data sync frequency, field mapping, event subscriptions, webhook endpoints.
 
 #### 3. Health Check
+
 Automatic periodic verification that the connection is active and responsive:
+
 - Ping provider API endpoints
 - Validate credentials haven't expired
 - Monitor sync queue depth
 - Alert on failures
 
 #### 4. Use
+
 Access integrated data through:
+
 - **REST API** — Query and mutate integrated data
 - **Webhooks** — Listen for provider events in real-time
 - **Automated Syncs** — Background jobs sync data on schedule
@@ -71,6 +77,7 @@ When your provider account has insufficient quota or credits, Witylogix can opti
 - **Resumption**: When provider quota resets, automatically resume using your account
 
 Example: Routing quota exceeded
+
 ```
 Request → Provider API (quota full)
          → Fallback to Witylogix Metered Routing
@@ -111,12 +118,12 @@ Each provider defines required scopes. You can revoke integrations anytime from 
 ```yaml
 Shopify OAuth:
   scopes:
-    - "write_orders"      # Create/update orders
-    - "read_orders"       # Read order data
-    - "write_inventory"   # Sync inventory
+    - "write_orders" # Create/update orders
+    - "read_orders" # Read order data
+    - "write_inventory" # Sync inventory
   permissions:
-    - admin/orders       # Order management
-    - admin/inventory    # Inventory management
+    - admin/orders # Order management
+    - admin/inventory # Inventory management
 ```
 
 ## Webhook Delivery for Integration Events
@@ -140,14 +147,11 @@ driver.location.changed   → Real-time GPS update
 const webhook = await client.webhooks.create({
   integration: "shopify",
   url: "https://your-api.com/webhooks/shopify",
-  events: [
-    "shipment.created",
-    "shipment.completed",
-  ],
+  events: ["shipment.created", "shipment.completed"],
   retryPolicy: {
     maxRetries: 3,
     initialDelay: 5000, // 5 seconds
-    maxDelay: 300000,   // 5 minutes
+    maxDelay: 300000, // 5 minutes
   },
 });
 ```
@@ -175,6 +179,7 @@ function verifyWebhookSignature(payload, signature, secret) {
 ## Data Sync Patterns
 
 ### Real-time Sync
+
 For critical data (orders, shipments, locations), sync occurs immediately:
 
 ```
@@ -182,6 +187,7 @@ Event triggered → Webhook fired → Your system updated (< 1 second)
 ```
 
 ### Scheduled Sync
+
 For background data (inventory, catalog, pricing), sync runs on schedule:
 
 ```
@@ -192,6 +198,7 @@ Every 30 minutes → Query provider API
 ```
 
 ### On-demand Sync
+
 Manually trigger sync for specific resources:
 
 ```javascript
@@ -205,23 +212,33 @@ const sync = await client.integrations.sync({
 ## Provider Categories
 
 ### Routing & Optimization
+
 Navigate and optimize delivery routes with map providers:
+
 - Mapbox, OSRM, HERE Maps, Valhalla, Google Maps
 
 ### Telematics & GPS
+
 Track vehicle and driver location:
+
 - Samsara, Geotab, Motive, Verizon Connect, Flespi
 
 ### ERP Systems
+
 Sync orders and inventory with business systems:
+
 - SAP, NetSuite, Dynamics 365, Sage, Odoo
 
 ### CRM Platforms
+
 Integrate customer and prospect data:
+
 - Salesforce, HubSpot, Dynamics, Zoho
 
 ### Messaging & Communications
+
 Send notifications via SMS, email, push:
+
 - Twilio, SendGrid, Firebase, OneSignal
 
 ### And 15+ more categories...
@@ -229,6 +246,7 @@ Send notifications via SMS, email, push:
 ## Monitoring & Debugging
 
 ### Health Dashboard
+
 Monitor integration status in real-time:
 
 ```
@@ -240,6 +258,7 @@ Slack Notifications  ❌ Failed      1h ago        100%
 ```
 
 ### Logs & Audit Trail
+
 View detailed logs of all integration activity:
 
 ```
@@ -253,12 +272,12 @@ Timestamp           Event               Details
 
 ### Error Handling
 
-| Error Type | Cause | Action |
-|-----------|-------|--------|
-| Authentication Failed | Invalid credentials | Revalidate API keys, rotate if exposed |
-| Rate Limited | Quota exceeded | Wait for quota reset or enable fallback |
-| Schema Mismatch | Data incompatible | Review field mapping configuration |
-| Network Timeout | Provider unreachable | Check provider status page, retry |
+| Error Type            | Cause                | Action                                  |
+| --------------------- | -------------------- | --------------------------------------- |
+| Authentication Failed | Invalid credentials  | Revalidate API keys, rotate if exposed  |
+| Rate Limited          | Quota exceeded       | Wait for quota reset or enable fallback |
+| Schema Mismatch       | Data incompatible    | Review field mapping configuration      |
+| Network Timeout       | Provider unreachable | Check provider status page, retry       |
 
 ## Security & Compliance
 

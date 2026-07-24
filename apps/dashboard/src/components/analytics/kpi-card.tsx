@@ -61,7 +61,7 @@ export function KPICard({
             ? "bg-wl-success-500"
             : displayTrend === "down"
               ? "bg-wl-danger-500"
-              : "bg-wl-primary-500"
+              : "bg-wl-primary-500",
         )}
         aria-hidden="true"
       />
@@ -75,9 +75,7 @@ export function KPICard({
                 {title}
               </h4>
               {compareLabel && (
-                <p className="text-xs text-wl-text-tertiary">
-                  {compareLabel}
-                </p>
+                <p className="text-xs text-wl-text-tertiary">{compareLabel}</p>
               )}
             </div>
 
@@ -94,7 +92,7 @@ export function KPICard({
               <span
                 className={cn(
                   "text-3xl font-bold tabular-nums",
-                  "text-wl-text-primary"
+                  "text-wl-text-primary",
                 )}
               >
                 {value}
@@ -113,7 +111,7 @@ export function KPICard({
                   <span
                     className={cn(
                       "inline-block",
-                      displayTrend === "up" && "rotate-180"
+                      displayTrend === "up" && "rotate-180",
                     )}
                   >
                     {displayTrend === "up" ? "↓" : "↑"}
@@ -124,9 +122,7 @@ export function KPICard({
             </div>
 
             {changeLabel && (
-              <p className="text-xs text-wl-text-tertiary">
-                {changeLabel}
-              </p>
+              <p className="text-xs text-wl-text-tertiary">{changeLabel}</p>
             )}
           </div>
 

@@ -12,8 +12,8 @@ import type {
   DemandForecast,
   DemandPattern,
   HistoricalDeliveryData,
-} from './types.js';
-import { HoltWintersModel, DEFAULT_HOURLY_PROFILE } from './holt-winters.js';
+} from "./types.js";
+import { HoltWintersModel, DEFAULT_HOURLY_PROFILE } from "./holt-winters.js";
 
 /**
  * Simple linear regression for trend analysis
@@ -60,8 +60,8 @@ export class DemandPredictor {
    * Holiday dates (can be extended with actual holiday calendar)
    */
   private readonly HOLIDAYS = [
-    { month: 1, day: 1, name: 'New Year' },
-    { month: 12, day: 25, name: 'Christmas' },
+    { month: 1, day: 1, name: "New Year" },
+    { month: 12, day: 25, name: "Christmas" },
     { month: 12, day: 31, name: "New Year's Eve" },
   ];
 
@@ -99,7 +99,9 @@ export class DemandPredictor {
     }
 
     for (const [zoneId, dailyMap] of zoneDailyCounts) {
-      const sorted = [...dailyMap.entries()].sort(([a], [b]) => a.localeCompare(b));
+      const sorted = [...dailyMap.entries()].sort(([a], [b]) =>
+        a.localeCompare(b),
+      );
       const series = sorted.map(([, count]) => count);
 
       const hw = new HoltWintersModel();
@@ -146,11 +148,7 @@ export class DemandPredictor {
    * Predict demand for a specific zone, date, and hour.
    * Blends Holt-Winters weekly forecast with historical averages.
    */
-  predictDemand(
-    zoneId: string,
-    date: Date,
-    hour: number,
-  ): DemandForecast {
+  predictDemand(zoneId: string, date: Date, hour: number): DemandForecast {
     const dayOfWeek = date.getDay();
     const pattern = this.getHistoricalPattern(zoneId, dayOfWeek);
 
@@ -170,7 +168,8 @@ export class DemandPredictor {
     if (hw?.trained) {
       const hwForecast = hw.forecast(1);
       const hwDayTotal = hwForecast.forecast[0] ?? 0;
-      const hwHourlyOrders = hwDayTotal * (DEFAULT_HOURLY_PROFILE[hour] ?? 1 / 24);
+      const hwHourlyOrders =
+        hwDayTotal * (DEFAULT_HOURLY_PROFILE[hour] ?? 1 / 24);
       // Blend 60% Holt-Winters + 40% historical regression
       hwAdjustedOrders = 0.6 * hwHourlyOrders + 0.4 * hwAdjustedOrders;
     }
@@ -179,7 +178,11 @@ export class DemandPredictor {
 
     // Determine trend direction
     const trend =
-      trendFactor > 1.05 ? 'increasing' : trendFactor < 0.95 ? 'decreasing' : 'stable';
+      trendFactor > 1.05
+        ? "increasing"
+        : trendFactor < 0.95
+          ? "decreasing"
+          : "stable";
 
     // Calculate confidence (higher with more data)
     const dataPoints = this.historicalData.filter(
@@ -233,9 +236,7 @@ export class DemandPredictor {
         if (hourData.length === 0) {
           return 5; // Default fallback
         }
-        return (
-          hourData.reduce((sum, d) => sum + 1, 0) / hourData.length
-        );
+        return hourData.reduce((sum, d) => sum + 1, 0) / hourData.length;
       });
 
     // Weekend multiplier
@@ -297,10 +298,7 @@ export class DemandPredictor {
    */
   private calculateTrendFactor(zoneId: string, dayOfWeek: number): number {
     const zoneData = this.historicalData.filter(
-      (d) =>
-        d.zoneId === zoneId &&
-        d.dayOfWeek === dayOfWeek &&
-        d.success,
+      (d) => d.zoneId === zoneId && d.dayOfWeek === dayOfWeek && d.success,
     );
 
     if (zoneData.length < 3) {
@@ -319,7 +317,7 @@ export class DemandPredictor {
 
     // Convert slope to factor
     // Positive slope = increasing trend
-    const trendFactor = 1 + (result.slope * 0.1); // Cap trend impact at ±10%
+    const trendFactor = 1 + result.slope * 0.1; // Cap trend impact at ±10%
     return Math.max(0.8, Math.min(trendFactor, 1.2));
   }
 
@@ -374,15 +372,10 @@ export class DemandPredictor {
   /**
    * Check if hour is peak hour for zone
    */
-  private isPeakHour(
-    zoneId: string,
-    dayOfWeek: number,
-    hour: number,
-  ): boolean {
+  private isPeakHour(zoneId: string, dayOfWeek: number, hour: number): boolean {
     const pattern = this.getHistoricalPattern(zoneId, dayOfWeek);
     const hourlyAverage = pattern.hourlyAverages[hour] || 0;
-    const overallAverage =
-      pattern.hourlyAverages.reduce((a, b) => a + b) / 24;
+    const overallAverage = pattern.hourlyAverages.reduce((a, b) => a + b) / 24;
 
     // Peak if 30% above average
     return hourlyAverage > overallAverage * 1.3;
@@ -434,8 +427,9 @@ export class DemandPredictor {
     // Calculate peak hour
     const hourCounts = Array(24)
       .fill(0)
-      .map((_, hour) =>
-        zoneData.filter((d) => d.hourOfDay === hour && d.success).length,
+      .map(
+        (_, hour) =>
+          zoneData.filter((d) => d.hourOfDay === hour && d.success).length,
       );
     const peakHour = hourCounts.indexOf(Math.max(...hourCounts));
 
@@ -443,12 +437,12 @@ export class DemandPredictor {
     const dayOfWeekPatterns: Record<number, number> = {};
     for (let day = 0; day < 7; day++) {
       const dayData = zoneData.filter((d) => d.dayOfWeek === day && d.success);
-      dayOfWeekPatterns[day] = dayData.length / Math.max(zoneData.length / 7, 1);
+      dayOfWeekPatterns[day] =
+        dayData.length / Math.max(zoneData.length / 7, 1);
     }
 
-    const days = new Set(zoneData.map((d) =>
-      d.orderPlacedAt.toDateString(),
-    )).size;
+    const days = new Set(zoneData.map((d) => d.orderPlacedAt.toDateString()))
+      .size;
 
     return {
       totalDeliveries: zoneData.length,

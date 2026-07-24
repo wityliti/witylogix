@@ -1,9 +1,9 @@
 /**
  * Locations Module
- * 
+ *
  * Comprehensive location management system with geo-fencing, warehouse operations,
  * and advanced location features for the Witylogix platform.
- * 
+ *
  * Re-exports all types and utilities for easy access.
  */
 
@@ -24,7 +24,7 @@ export type {
   BoundingBox,
   CoverageArea,
   WarehouseAssignment,
-} from './types';
+} from "./types";
 
 // Export geo-fence utilities
 export {
@@ -37,7 +37,7 @@ export {
   createPolygonFence,
   isValidPolygon,
   getBoundingBox,
-} from './geo-fence';
+} from "./geo-fence";
 
 // Export warehouse utilities
 export {
@@ -48,7 +48,7 @@ export {
   calculateCoverageArea,
   assignToNearestWarehouse,
   getWarehouseStats,
-} from './warehouse';
+} from "./warehouse";
 
 // Export address utilities
 export {
@@ -61,7 +61,7 @@ export {
   isValidAddress,
   addressesMatch,
   extractPostalCode,
-} from './address';
+} from "./address";
 
 import type {
   Location,
@@ -72,14 +72,14 @@ import type {
   GeoFence,
   GeoFenceCheck,
   NormalizedAddress,
-} from './types';
+} from "./types";
 
 import {
   calculateDistance,
   checkGeoFence,
   isPointInPolygon,
   isPointInCircle,
-} from './geo-fence';
+} from "./geo-fence";
 
 import {
   calculateCapacity,
@@ -87,17 +87,17 @@ import {
   findWarehousesInRange,
   sortByDistance,
   assignToNearestWarehouse,
-} from './warehouse';
+} from "./warehouse";
 
 import {
   validateCoordinates,
   normalizeAddress,
   estimateGeocode,
-} from './address';
+} from "./address";
 
 /**
  * LocationService
- * 
+ *
  * Main service class combining all location-related functionality.
  * Provides a convenient API for location management, geo-fencing, and warehouse operations.
  */
@@ -115,7 +115,7 @@ export class LocationService {
   static findNearby(
     center: Coordinates,
     locations: Location[],
-    maxDistanceKm: number = 10
+    maxDistanceKm: number = 10,
   ): LocationWithDistance[] {
     return findWarehousesInRange(center, maxDistanceKm, locations);
   }
@@ -123,7 +123,10 @@ export class LocationService {
   /**
    * Sort locations by distance
    */
-  static sortByDistance(origin: Coordinates, locations: Location[]): LocationWithDistance[] {
+  static sortByDistance(
+    origin: Coordinates,
+    locations: Location[],
+  ): LocationWithDistance[] {
     return sortByDistance(origin, locations);
   }
 
@@ -132,7 +135,7 @@ export class LocationService {
    */
   static findNearest(
     origin: Coordinates,
-    locations: Location[]
+    locations: Location[],
   ): (Location & { distance: number }) | null {
     return findNearestWarehouse(origin, locations);
   }
@@ -140,7 +143,10 @@ export class LocationService {
   /**
    * Get warehouse capacity
    */
-  static getCapacity(location: Location, activeShipments: number): WarehouseCapacity {
+  static getCapacity(
+    location: Location,
+    activeShipments: number,
+  ): WarehouseCapacity {
     return calculateCapacity(location, activeShipments);
   }
 
@@ -161,7 +167,10 @@ export class LocationService {
   /**
    * Assign order to nearest warehouse
    */
-  static assignWarehouse(order: { deliveryAddress: Coordinates }, warehouses: Location[]) {
+  static assignWarehouse(
+    order: { deliveryAddress: Coordinates },
+    warehouses: Location[],
+  ) {
     return assignToNearestWarehouse(order, warehouses);
   }
 
@@ -182,7 +191,10 @@ export class LocationService {
   /**
    * Search for locations based on filters
    */
-  static search(locations: Location[], filters: LocationSearchFilter): Location[] {
+  static search(
+    locations: Location[],
+    filters: LocationSearchFilter,
+  ): Location[] {
     return locations.filter((location) => {
       // Filter by type
       if (filters.type && location.type !== filters.type) {
@@ -190,13 +202,19 @@ export class LocationService {
       }
 
       // Filter by active status
-      if (filters.isActive !== undefined && location.isActive !== filters.isActive) {
+      if (
+        filters.isActive !== undefined &&
+        location.isActive !== filters.isActive
+      ) {
         return false;
       }
 
       // Filter by distance from coordinates
       if (filters.nearCoordinates && filters.maxDistance !== undefined) {
-        const distance = calculateDistance(filters.nearCoordinates, location.coordinates);
+        const distance = calculateDistance(
+          filters.nearCoordinates,
+          location.coordinates,
+        );
         const maxDistanceMeters = filters.maxDistance * 1000;
 
         if (distance > maxDistanceMeters) {
@@ -222,21 +240,26 @@ export class LocationService {
   /**
    * Validate location object
    */
-  static validateLocation(location: Partial<Location>): { valid: boolean; errors: string[] } {
+  static validateLocation(location: Partial<Location>): {
+    valid: boolean;
+    errors: string[];
+  } {
     const errors: string[] = [];
 
-    if (!location.id) errors.push('ID is required');
-    if (!location.shopId) errors.push('Shop ID is required');
-    if (!location.name) errors.push('Name is required');
-    if (!location.type) errors.push('Type is required');
-    if (!location.address) errors.push('Address is required');
-    if (!location.coordinates) errors.push('Coordinates are required');
-    else if (!validateCoordinates(location.coordinates.lat, location.coordinates.lng)) {
-      errors.push('Invalid coordinates');
+    if (!location.id) errors.push("ID is required");
+    if (!location.shopId) errors.push("Shop ID is required");
+    if (!location.name) errors.push("Name is required");
+    if (!location.type) errors.push("Type is required");
+    if (!location.address) errors.push("Address is required");
+    if (!location.coordinates) errors.push("Coordinates are required");
+    else if (
+      !validateCoordinates(location.coordinates.lat, location.coordinates.lng)
+    ) {
+      errors.push("Invalid coordinates");
     }
 
-    if (!location.operatingHours) errors.push('Operating hours are required');
-    if (!location.contactInfo) errors.push('Contact info is required');
+    if (!location.operatingHours) errors.push("Operating hours are required");
+    if (!location.contactInfo) errors.push("Contact info is required");
 
     return {
       valid: errors.length === 0,

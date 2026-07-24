@@ -15,27 +15,25 @@ import { checkUsageLimit } from "@witylogix/core/billing/index.js";
 
 // In your route handler
 const shop = await request.tenantDb.shop.findUnique({
-  where: { id: request.shopId }
+  where: { id: request.shopId },
 });
 
 const shipmentCount = await request.tenantDb.shipment.count({
-  where: { shopId: request.shopId }
+  where: { shopId: request.shopId },
 });
 
-const limitCheck = checkUsageLimit(
-  shop.planTier,
-  "shipments",
-  shipmentCount
-);
+const limitCheck = checkUsageLimit(shop.planTier, "shipments", shipmentCount);
 
 if (!limitCheck.allowed) {
   throw new ConflictError(
-    `Shipment limit reached. Upgrade your plan at /billing/subscription`
+    `Shipment limit reached. Upgrade your plan at /billing/subscription`,
   );
 }
 
 // Continue with creating shipment
-await request.tenantDb.shipment.create({ /* ... */ });
+await request.tenantDb.shipment.create({
+  /* ... */
+});
 ```
 
 ### Recording Metrics
@@ -58,8 +56,8 @@ The system automatically records metrics:
 
 ```typescript
 // GET /api/v4/billing/subscription
-const response = await fetch('/api/v4/billing/subscription', {
-  headers: { 'Authorization': `Bearer ${token}` }
+const response = await fetch("/api/v4/billing/subscription", {
+  headers: { Authorization: `Bearer ${token}` },
 });
 
 const subscription = await response.json();
@@ -72,8 +70,8 @@ console.log(subscription.overageProjection.willExceedShipments); // false
 
 ```typescript
 // GET /api/v4/billing/usage
-const response = await fetch('/api/v4/billing/usage', {
-  headers: { 'Authorization': `Bearer ${token}` }
+const response = await fetch("/api/v4/billing/usage", {
+  headers: { Authorization: `Bearer ${token}` },
 });
 
 const usage = await response.json();
@@ -83,7 +81,7 @@ const shipmentPercent = usage.usage.shipments.percentageUsed;
 const shipmentRemaining = usage.usage.shipments.remaining;
 
 // Show daily trends
-usage.trends.dailyShipments.forEach(day => {
+usage.trends.dailyShipments.forEach((day) => {
   console.log(`${day.date}: ${day.count} shipments`);
 });
 ```
@@ -92,13 +90,13 @@ usage.trends.dailyShipments.forEach(day => {
 
 ```typescript
 // POST /api/v4/billing/subscription
-const response = await fetch('/api/v4/billing/subscription', {
-  method: 'POST',
+const response = await fetch("/api/v4/billing/subscription", {
+  method: "POST",
   headers: {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
   },
-  body: JSON.stringify({ planId: 'GROWTH' })
+  body: JSON.stringify({ planId: "GROWTH" }),
 });
 
 const result = await response.json();
@@ -112,12 +110,12 @@ console.log(result.confirmationUrl); // Direct to Shopify
 ```typescript
 import { PLANS } from "@witylogix/core/billing/index.js";
 
-PLANS.STARTER.shipmentsPerMonth // 500
-PLANS.STARTER.driversLimit // 5
-PLANS.STARTER.apiCallsPerMonth // 10,000
-PLANS.STARTER.notificationsPerMonth // 5,000
+PLANS.STARTER.shipmentsPerMonth; // 500
+PLANS.STARTER.driversLimit; // 5
+PLANS.STARTER.apiCallsPerMonth; // 10,000
+PLANS.STARTER.notificationsPerMonth; // 5,000
 
-PLANS.ENTERPRISE.shipmentsPerMonth // Infinity
+PLANS.ENTERPRISE.shipmentsPerMonth; // Infinity
 ```
 
 ### Feature Flags
@@ -144,11 +142,11 @@ const limitCheck = checkUsageLimit(plan, "shipments", currentCount);
 
 if (!limitCheck.allowed) {
   return reply.status(429).send({
-    error: 'Plan limit reached',
+    error: "Plan limit reached",
     limit: limitCheck.limit,
     current: currentCount,
     remaining: limitCheck.remaining,
-    upgradeUrl: '/billing/plans'
+    upgradeUrl: "/billing/plans",
   });
 }
 ```
@@ -160,8 +158,8 @@ const limitCheck = checkUsageLimit(plan, "shipments", currentCount);
 
 if (limitCheck.percentageUsed > 80) {
   await notifyUser({
-    type: 'warning',
-    message: `You're using ${limitCheck.percentageUsed}% of your shipment limit`
+    type: "warning",
+    message: `You're using ${limitCheck.percentageUsed}% of your shipment limit`,
   });
 }
 ```
@@ -171,12 +169,16 @@ if (limitCheck.percentageUsed > 80) {
 ```typescript
 import { calculateProration } from "@witylogix/core/billing/index.js";
 
-const billingPeriodEnd = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+const billingPeriodEnd = new Date(
+  new Date().getFullYear(),
+  new Date().getMonth() + 1,
+  0,
+);
 const daysRemaining = Math.ceil(
-  (billingPeriodEnd.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+  (billingPeriodEnd.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24),
 );
 
-const dueAmount = calculateProration('STARTER', 'GROWTH', daysRemaining);
+const dueAmount = calculateProration("STARTER", "GROWTH", daysRemaining);
 
 // Positive = charge, Negative = credit
 if (dueAmount > 0) {
@@ -220,12 +222,12 @@ import type { PlanTier } from "@prisma/client";
 import type { UsageSummary, LimitCheckResult } from "@witylogix/core/billing";
 
 // Plan tiers
-type PlanTier = 'FREE' | 'STARTER' | 'GROWTH' | 'ENTERPRISE';
+type PlanTier = "FREE" | "STARTER" | "GROWTH" | "ENTERPRISE";
 
 // Usage summary response
 interface UsageSummary {
   plan: PlanTier;
-  status: 'active' | 'trial' | 'cancelled' | 'past_due';
+  status: "active" | "trial" | "cancelled" | "past_due";
   billingCycle: string;
   nextBillingDate: Date | null;
   currentMetrics: UsageMetrics;
@@ -259,13 +261,14 @@ interface LimitCheckResult {
 **Solution:** Check current usage and recommend plan upgrade.
 
 ```typescript
-const usage = await fetch('/api/v4/billing/usage');
+const usage = await fetch("/api/v4/billing/usage");
 console.log(usage.limits); // Show which limits are exceeded
 ```
 
 ### Issue: Metrics not updating
 
 **Metrics are recorded automatically** when you:
+
 - Create shipments (Shipment model)
 - Create drivers (Driver model)
 - Make API calls (RoutingMeterEvent model)
@@ -278,7 +281,7 @@ No manual recording needed!
 **Use the provided function** - it handles all the math:
 
 ```typescript
-const amount = calculateProration('STARTER', 'GROWTH', daysRemaining);
+const amount = calculateProration("STARTER", "GROWTH", daysRemaining);
 // Returns exact charge/credit amount
 ```
 

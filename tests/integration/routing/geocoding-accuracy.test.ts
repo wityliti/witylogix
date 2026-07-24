@@ -6,9 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import {
-  createMockHTTPClient,
-} from "../helpers/integration-test-helpers.js";
+import { createMockHTTPClient } from "../helpers/integration-test-helpers.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TYPES & INTERFACES
@@ -124,7 +122,8 @@ describe("Geocoding - Forward Geocoding (Address → Coordinates)", () => {
               {
                 title: "The White House",
                 address: {
-                  label: "1600 Pennsylvania Ave NW, Washington, DC 20500, United States",
+                  label:
+                    "1600 Pennsylvania Ave NW, Washington, DC 20500, United States",
                   city: "Washington",
                   state: "DC",
                   postalCode: "20500",
@@ -713,7 +712,10 @@ describe("Geocoding - Provider Fallback", () => {
 
 describe("Geocoding - Accuracy Across Providers", () => {
   it("should compare results from multiple providers", async () => {
-    const providers: Map<string, ReturnType<typeof createMockHTTPClient>> = new Map();
+    const providers: Map<
+      string,
+      ReturnType<typeof createMockHTTPClient>
+    > = new Map();
 
     providers.set(
       "here",
@@ -723,9 +725,7 @@ describe("Geocoding - Accuracy Across Providers", () => {
             url: /here/,
             status: 200,
             data: {
-              items: [
-                { position: { lat: 38.8977, lng: -77.0365 } },
-              ],
+              items: [{ position: { lat: 38.8977, lng: -77.0365 } }],
             },
           },
         ],

@@ -7,16 +7,10 @@
 
 import type { FastifyInstance, FastifyPluginAsync } from "fastify";
 import fp from "fastify-plugin";
-import {
-  EventWebhookBridge,
-} from "@witylogix/core/webhooks";
+import { EventWebhookBridge } from "@witylogix/core/webhooks";
 import type { EventWebhookBridgeConfig } from "@witylogix/core/webhooks";
-import {
-  TypedEventBus,
-} from "@witylogix/core/event-bus";
-import {
-  WebhookManager,
-} from "@witylogix/core/webhooks";
+import { TypedEventBus } from "@witylogix/core/event-bus";
+import { WebhookManager } from "@witylogix/core/webhooks";
 
 /**
  * Event Webhook Bridge Plugin Configuration
@@ -35,10 +29,7 @@ interface EventWebhookBridgePluginOptions {
 const eventWebhookBridgePlugin: FastifyPluginAsync<
   EventWebhookBridgePluginOptions
 > = async (fastify: FastifyInstance, options) => {
-  const {
-    config = {},
-    enabled = true,
-  } = options;
+  const { config = {}, enabled = true } = options;
 
   if (!enabled) {
     fastify.log.info("[EventWebhookBridge] Plugin is disabled");
@@ -62,18 +53,13 @@ const eventWebhookBridgePlugin: FastifyPluginAsync<
     const webhookManager = new WebhookManager(prisma);
 
     // Create EventWebhookBridge instance
-    const bridge = new EventWebhookBridge(
-      eventBus,
-      webhookManager,
-      prisma,
-      {
-        consumerGroup: config.consumerGroup ?? "webhook-bridge",
-        replay: config.replay ?? false,
-        batchSize: config.batchSize ?? 10,
-        verbose: config.verbose ?? false,
-        tags: config.tags,
-      },
-    );
+    const bridge = new EventWebhookBridge(eventBus, webhookManager, prisma, {
+      consumerGroup: config.consumerGroup ?? "webhook-bridge",
+      replay: config.replay ?? false,
+      batchSize: config.batchSize ?? 10,
+      verbose: config.verbose ?? false,
+      tags: config.tags,
+    });
 
     // Start the bridge
     await bridge.start();
@@ -118,7 +104,10 @@ const eventWebhookBridgePlugin: FastifyPluginAsync<
     });
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
-    fastify.log.error("[EventWebhookBridge] Plugin initialization failed:", errorMsg);
+    fastify.log.error(
+      "[EventWebhookBridge] Plugin initialization failed:",
+      errorMsg,
+    );
     throw error;
   }
 };

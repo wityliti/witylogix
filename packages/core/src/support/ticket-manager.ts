@@ -3,7 +3,7 @@
  * Manages support tickets, messages, and feature requests
  */
 
-import { PrismaClient } from '@witylogix/db';
+import { PrismaClient } from "@witylogix/db";
 import {
   SupportTicket,
   SupportMessage,
@@ -21,28 +21,28 @@ import {
   FeatureRequestListResponse,
   TicketStatus,
   TicketPriority,
-} from './types';
+} from "./types";
 
 // ─── ERROR CLASSES ──────────────────────────────────────────────────
 
 export class TicketNotFoundError extends Error {
   constructor(ticketId: string) {
     super(`Support ticket not found: ${ticketId}`);
-    this.name = 'TicketNotFoundError';
+    this.name = "TicketNotFoundError";
   }
 }
 
 export class FeatureRequestNotFoundError extends Error {
   constructor(requestId: string) {
     super(`Feature request not found: ${requestId}`);
-    this.name = 'FeatureRequestNotFoundError';
+    this.name = "FeatureRequestNotFoundError";
   }
 }
 
 export class TicketError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'TicketError';
+    this.name = "TicketError";
   }
 }
 
@@ -57,7 +57,7 @@ export class TicketManager {
   async createTicket(
     shopId: string,
     userId: string,
-    data: CreateTicketRequest
+    data: CreateTicketRequest,
   ): Promise<SupportTicket> {
     const ticket = await this.prisma.supportTicket.create({
       data: {
@@ -65,10 +65,10 @@ export class TicketManager {
         userId,
         subject: data.subject,
         description: data.description,
-        priority: data.priority || 'medium',
+        priority: data.priority || "medium",
         category: data.category,
         tags: data.tags || [],
-        status: 'open',
+        status: "open",
       },
     });
 
@@ -78,7 +78,10 @@ export class TicketManager {
   /**
    * Update a support ticket
    */
-  async updateTicket(ticketId: string, data: UpdateTicketRequest): Promise<SupportTicket> {
+  async updateTicket(
+    ticketId: string,
+    data: UpdateTicketRequest,
+  ): Promise<SupportTicket> {
     const ticket = await this.prisma.supportTicket.findUnique({
       where: { id: ticketId },
     });
@@ -109,7 +112,7 @@ export class TicketManager {
   async addMessage(
     ticketId: string,
     userId: string,
-    data: AddMessageRequest
+    data: AddMessageRequest,
   ): Promise<SupportMessage> {
     const ticket = await this.prisma.supportTicket.findUnique({
       where: { id: ticketId },
@@ -135,7 +138,10 @@ export class TicketManager {
   /**
    * Assign ticket to a team member
    */
-  async assignTicket(ticketId: string, assigneeId: string): Promise<SupportTicket> {
+  async assignTicket(
+    ticketId: string,
+    assigneeId: string,
+  ): Promise<SupportTicket> {
     const ticket = await this.prisma.supportTicket.findUnique({
       where: { id: ticketId },
     });
@@ -148,7 +154,7 @@ export class TicketManager {
       where: { id: ticketId },
       data: {
         assigneeId,
-        status: 'in_progress',
+        status: "in_progress",
       },
     });
 
@@ -170,7 +176,7 @@ export class TicketManager {
     const updated = await this.prisma.supportTicket.update({
       where: { id: ticketId },
       data: {
-        status: 'resolved',
+        status: "resolved",
       },
     });
 
@@ -192,7 +198,7 @@ export class TicketManager {
     const updated = await this.prisma.supportTicket.update({
       where: { id: ticketId },
       data: {
-        status: 'closed',
+        status: "closed",
       },
     });
 
@@ -202,12 +208,14 @@ export class TicketManager {
   /**
    * Get ticket with messages
    */
-  async getTicketWithMessages(ticketId: string): Promise<SupportTicketWithMessages | null> {
+  async getTicketWithMessages(
+    ticketId: string,
+  ): Promise<SupportTicketWithMessages | null> {
     const ticket = await this.prisma.supportTicket.findUnique({
       where: { id: ticketId },
       include: {
         messages: {
-          orderBy: { createdAt: 'asc' },
+          orderBy: { createdAt: "asc" },
         },
       },
     });
@@ -228,7 +236,7 @@ export class TicketManager {
   async listTickets(
     shopId: string,
     filters?: TicketFilterOptions,
-    pagination?: PaginationOptions
+    pagination?: PaginationOptions,
   ): Promise<TicketListResponse> {
     const limit = pagination?.limit || 20;
     const offset = pagination?.offset || 0;
@@ -255,15 +263,15 @@ export class TicketManager {
     }
     if (filters?.searchTerm) {
       where.OR = [
-        { subject: { contains: filters.searchTerm, mode: 'insensitive' } },
-        { description: { contains: filters.searchTerm, mode: 'insensitive' } },
+        { subject: { contains: filters.searchTerm, mode: "insensitive" } },
+        { description: { contains: filters.searchTerm, mode: "insensitive" } },
       ];
     }
 
     const [tickets, total] = await Promise.all([
       this.prisma.supportTicket.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         take: limit,
         skip: offset,
       }),
@@ -295,7 +303,7 @@ export class TicketManager {
   async createFeatureRequest(
     shopId: string,
     userId: string,
-    data: CreateFeatureRequestRequest
+    data: CreateFeatureRequestRequest,
   ): Promise<FeatureRequest> {
     const request = await this.prisma.featureRequest.create({
       data: {
@@ -304,7 +312,7 @@ export class TicketManager {
         title: data.title,
         description: data.description,
         category: data.category,
-        status: 'submitted',
+        status: "submitted",
         votes: 0,
       },
     });
@@ -317,7 +325,7 @@ export class TicketManager {
    */
   async updateFeatureRequest(
     requestId: string,
-    data: UpdateFeatureRequestRequest
+    data: UpdateFeatureRequestRequest,
   ): Promise<FeatureRequest> {
     const request = await this.prisma.featureRequest.findUnique({
       where: { id: requestId },
@@ -368,7 +376,7 @@ export class TicketManager {
   async listFeatureRequests(
     shopId: string,
     filters?: FeatureRequestFilterOptions,
-    pagination?: PaginationOptions
+    pagination?: PaginationOptions,
   ): Promise<FeatureRequestListResponse> {
     const limit = pagination?.limit || 20;
     const offset = pagination?.offset || 0;
@@ -387,15 +395,15 @@ export class TicketManager {
     }
     if (filters?.searchTerm) {
       where.OR = [
-        { title: { contains: filters.searchTerm, mode: 'insensitive' } },
-        { description: { contains: filters.searchTerm, mode: 'insensitive' } },
+        { title: { contains: filters.searchTerm, mode: "insensitive" } },
+        { description: { contains: filters.searchTerm, mode: "insensitive" } },
       ];
     }
 
     const [requests, total] = await Promise.all([
       this.prisma.featureRequest.findMany({
         where,
-        orderBy: { votes: 'desc' },
+        orderBy: { votes: "desc" },
         take: limit,
         skip: offset,
       }),
@@ -451,7 +459,9 @@ export class TicketManager {
       userId: message.userId,
       content: message.content,
       isInternal: message.isInternal,
-      attachments: message.attachments ? JSON.parse(JSON.stringify(message.attachments)) : [],
+      attachments: message.attachments
+        ? JSON.parse(JSON.stringify(message.attachments))
+        : [],
       createdAt: message.createdAt,
     };
   }
@@ -476,4 +486,5 @@ export class TicketManager {
 }
 
 // Export singleton instance
-export const ticketManager = (prisma: PrismaClient) => new TicketManager(prisma);
+export const ticketManager = (prisma: PrismaClient) =>
+  new TicketManager(prisma);

@@ -40,64 +40,61 @@ export default async function calendarRuleRoutes(
 
   // ── GET / — List calendar rules ────────────────────────────
 
-  fastify.get(
-    "/",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const query = listQuerySchema.parse(request.query);
-      const shopId = request.shopId;
+  fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
+    const query = listQuerySchema.parse(request.query);
+    const shopId = request.shopId;
 
-      const where: Record<string, unknown> = { shopId };
+    const where: Record<string, unknown> = { shopId };
 
-      if (query.shippingProfileId) {
-        where.shippingProfileId = query.shippingProfileId;
-      }
+    if (query.shippingProfileId) {
+      where.shippingProfileId = query.shippingProfileId;
+    }
 
-      if (query.type) {
-        where.type = query.type;
-      }
+    if (query.type) {
+      where.type = query.type;
+    }
 
-      if (query.isActive !== undefined) {
-        where.isActive = query.isActive;
-      }
+    if (query.isActive !== undefined) {
+      where.isActive = query.isActive;
+    }
 
-      const [rules, total] = await Promise.all([
-        request.tenantDb.calendarRule.findMany({
-          where,
-          orderBy: [{ priority: "asc" }, { createdAt: "desc" }],
-          take: query.limit,
-          skip: (query.page - 1) * query.limit,
-          select: {
-            id: true,
-            shippingProfileId: true,
-            name: true,
-            type: true,
-            daysOfWeek: true,
-            startTime: true,
-            endTime: true,
-            cutoffMinutes: true,
-            maxCapacityPerDay: true,
-            isActive: true,
-            priority: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        }),
-        request.tenantDb.calendarRule.count({ where }),
-      ]);
-
-      const totalPages = Math.ceil(total / query.limit);
-
-      return {
-        data: rules,
-        pagination: {
-          page: query.page,
-          limit: query.limit,
-          total,
-          totalPages,
+    const [rules, total] = await Promise.all([
+      request.tenantDb.calendarRule.findMany({
+        where,
+        orderBy: [{ priority: "asc" }, { createdAt: "desc" }],
+        take: query.limit,
+        skip: (query.page - 1) * query.limit,
+        select: {
+          id: true,
+          shippingProfileId: true,
+          name: true,
+          type: true,
+          daysOfWeek: true,
+          startTime: true,
+          endTime: true,
+          cutoffMinutes: true,
+          maxCapacityPerDay: true,
+          isActive: true,
+          priority: true,
+          createdAt: true,
+          updatedAt: true,
         },
-      };
-    },
-  );
+      }),
+      request.tenantDb.calendarRule.count({ where }),
+    ]);
+
+    const totalPages = Math.ceil(total / query.limit);
+
+    return {
+      data: rules,
+      pagination: {
+        page: query.page,
+        limit: query.limit,
+        total,
+        totalPages,
+      },
+    };
+  });
 
   // ── GET /:id — Get single rule ──────────────────────────────
 
@@ -135,10 +132,7 @@ export default async function calendarRuleRoutes(
         });
 
         if (!profile) {
-          throw new NotFoundError(
-            "ShippingProfile",
-            body.shippingProfileId,
-          );
+          throw new NotFoundError("ShippingProfile", body.shippingProfileId);
         }
       }
 
@@ -154,7 +148,9 @@ export default async function calendarRuleRoutes(
           cutoffMinutes: body.cutoffMinutes,
           maxCapacityPerDay: body.maxCapacityPerDay || null,
           blackoutDates: body.blackoutDates as string[],
-          effectiveFrom: body.effectiveFrom ? new Date(body.effectiveFrom) : null,
+          effectiveFrom: body.effectiveFrom
+            ? new Date(body.effectiveFrom)
+            : null,
           effectiveTo: body.effectiveTo ? new Date(body.effectiveTo) : null,
           surcharge: body.surcharge,
           priority: body.priority,
@@ -192,10 +188,7 @@ export default async function calendarRuleRoutes(
         });
 
         if (!profile) {
-          throw new NotFoundError(
-            "ShippingProfile",
-            body.shippingProfileId,
-          );
+          throw new NotFoundError("ShippingProfile", body.shippingProfileId);
         }
       }
 

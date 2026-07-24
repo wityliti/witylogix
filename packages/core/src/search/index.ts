@@ -11,7 +11,12 @@
  */
 
 export { SearchEngine, createSearchEngine } from "./search-engine.js";
-export type { SearchableEntity, SearchConfig, SearchResult, SearchHighlight } from "./search-engine.js";
+export type {
+  SearchableEntity,
+  SearchConfig,
+  SearchResult,
+  SearchHighlight,
+} from "./search-engine.js";
 
 export {
   SearchApiService,
@@ -38,4 +43,7 @@ export type {
 } from "./filter-builder.js";
 
 export { SearchAnalytics, createSearchAnalytics } from "./search-analytics.js";
-export type { SearchAnalyticsEvent, SearchAnalyticsReport } from "./search-analytics.js";
+export type {
+  SearchAnalyticsEvent,
+  SearchAnalyticsReport,
+} from "./search-analytics.js";

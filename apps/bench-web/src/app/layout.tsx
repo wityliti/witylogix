@@ -28,8 +28,12 @@ export default function RootLayout({
         <div className="min-h-screen flex">
           <aside className="w-60 border-r border-gray-800 bg-[#0f0f17]">
             <div className="p-4 border-b border-gray-800">
-              <div className="font-semibold tracking-tight">Witylogix Cloud</div>
-              <div className="text-xs text-gray-500 font-mono">bench-web · 0.0.1</div>
+              <div className="font-semibold tracking-tight">
+                Witylogix Cloud
+              </div>
+              <div className="text-xs text-gray-500 font-mono">
+                bench-web · 0.0.1
+              </div>
             </div>
             <nav className="p-2 space-y-1">
               {NAV.map(({ href, label, icon: Icon }) => (
@@ -44,7 +48,8 @@ export default function RootLayout({
               ))}
             </nav>
             <div className="px-4 pt-6 text-xs text-gray-600">
-              Phase 1: internal use only.<br />
+              Phase 1: internal use only.
+              <br />
               Phase 2: public sign-up.
             </div>
           </aside>

@@ -145,8 +145,7 @@ export class SecretScanner {
       },
       {
         name: "MySQL URI",
-        pattern:
-          /mysql:\/\/[^@:]+:[^@]+@[^\s/]+(?:\/[^\s?]*)?(?:\?[^\s]*)*/,
+        pattern: /mysql:\/\/[^@:]+:[^@]+@[^\s/]+(?:\/[^\s?]*)?(?:\?[^\s]*)*/,
       },
 
       // Private Keys
@@ -345,7 +344,7 @@ export class SecretScanner {
     obj: unknown,
     path: string,
     secrets: SecretDetectionResult["secrets"],
-    depth: number = 0
+    depth: number = 0,
   ): unknown {
     // Prevent deep recursion
     if (depth > 10) {
@@ -371,7 +370,7 @@ export class SecretScanner {
 
     if (Array.isArray(obj)) {
       return obj.map((item, idx) =>
-        this.scanObjectRecursive(item, `${path}[${idx}]`, secrets, depth + 1)
+        this.scanObjectRecursive(item, `${path}[${idx}]`, secrets, depth + 1),
       );
     }
 
@@ -383,7 +382,7 @@ export class SecretScanner {
           value,
           fieldPath,
           secrets,
-          depth + 1
+          depth + 1,
         );
       }
       return scanned;
@@ -401,7 +400,10 @@ export class SecretScanner {
     let redacted = value;
 
     for (const patternDef of this.patterns) {
-      redacted = redacted.replace(patternDef.pattern, `[REDACTED_${patternDef.name.toUpperCase()}]`);
+      redacted = redacted.replace(
+        patternDef.pattern,
+        `[REDACTED_${patternDef.name.toUpperCase()}]`,
+      );
     }
 
     return redacted;

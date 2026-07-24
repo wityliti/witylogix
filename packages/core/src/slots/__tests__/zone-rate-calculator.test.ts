@@ -150,7 +150,9 @@ describe("ZoneRateCalculator", () => {
       });
 
       expect(rate.weightFee).toBeGreaterThan(0);
-      expect(rate.breakdown.some((b) => b.method === "weight_based")).toBe(true);
+      expect(rate.breakdown.some((b) => b.method === "weight_based")).toBe(
+        true,
+      );
     });
 
     it("should apply cart value tier pricing", async () => {
@@ -271,7 +273,9 @@ describe("ZoneRateCalculator", () => {
     it("should throw error if zone not found", async () => {
       mockDb.deliveryZone.findUnique.mockResolvedValue(null);
 
-      await expect(calculator.getDeliveryFreeThreshold("invalid")).rejects.toThrow();
+      await expect(
+        calculator.getDeliveryFreeThreshold("invalid"),
+      ).rejects.toThrow();
     });
   });
 

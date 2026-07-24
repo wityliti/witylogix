@@ -79,9 +79,7 @@ describe("PreferenceManager", () => {
       });
 
       const updated = PreferenceManager.getPreferences(customerId);
-      expect(
-        updated.channels.email.eventTypes.order_confirmed
-      ).toBe(false);
+      expect(updated.channels.email.eventTypes.order_confirmed).toBe(false);
     });
 
     it("should update updatedAt timestamp", () => {
@@ -98,7 +96,9 @@ describe("PreferenceManager", () => {
       });
 
       const updated = PreferenceManager.getPreferences(customerId);
-      expect(updated.updatedAt.getTime()).toBeGreaterThanOrEqual(before.getTime());
+      expect(updated.updatedAt.getTime()).toBeGreaterThanOrEqual(
+        before.getTime(),
+      );
     });
   });
 
@@ -109,7 +109,7 @@ describe("PreferenceManager", () => {
       const shouldSend = PreferenceManager.shouldSend(
         customerId,
         "email",
-        "order_confirmed"
+        "order_confirmed",
       );
 
       expect(shouldSend).toBe(true);
@@ -122,7 +122,7 @@ describe("PreferenceManager", () => {
       const shouldSend = PreferenceManager.shouldSend(
         customerId,
         "email",
-        "order_confirmed"
+        "order_confirmed",
       );
 
       expect(shouldSend).toBe(false);
@@ -130,16 +130,12 @@ describe("PreferenceManager", () => {
 
     it("should return false when event is disabled for channel", () => {
       PreferenceManager.getPreferences(customerId);
-      PreferenceManager.disableEventType(
-        customerId,
-        "sms",
-        "order_confirmed"
-      );
+      PreferenceManager.disableEventType(customerId, "sms", "order_confirmed");
 
       const shouldSend = PreferenceManager.shouldSend(
         customerId,
         "sms",
-        "order_confirmed"
+        "order_confirmed",
       );
 
       expect(shouldSend).toBe(false);
@@ -151,7 +147,7 @@ describe("PreferenceManager", () => {
       const shouldSend = PreferenceManager.shouldSend(
         customerId,
         "push",
-        "delivery_scheduled"
+        "delivery_scheduled",
       );
 
       expect(shouldSend).toBe(true);
@@ -202,7 +198,7 @@ describe("PreferenceManager", () => {
       PreferenceManager.disableEventType(
         customerId,
         "email",
-        "order_confirmed"
+        "order_confirmed",
       );
 
       const prefs = PreferenceManager.getPreferences(customerId);
@@ -216,7 +212,7 @@ describe("PreferenceManager", () => {
 
       const channels = PreferenceManager.getAvailableChannels(
         customerId,
-        "order_confirmed"
+        "order_confirmed",
       );
 
       expect(channels).toContain("email");
@@ -231,7 +227,7 @@ describe("PreferenceManager", () => {
 
       const channels = PreferenceManager.getAvailableChannels(
         customerId,
-        "order_confirmed"
+        "order_confirmed",
       );
 
       expect(channels).not.toContain("whatsapp");
@@ -239,15 +235,11 @@ describe("PreferenceManager", () => {
 
     it("should exclude disabled event types", () => {
       PreferenceManager.getPreferences(customerId);
-      PreferenceManager.disableEventType(
-        customerId,
-        "push",
-        "order_confirmed"
-      );
+      PreferenceManager.disableEventType(customerId, "push", "order_confirmed");
 
       const channels = PreferenceManager.getAvailableChannels(
         customerId,
-        "order_confirmed"
+        "order_confirmed",
       );
 
       expect(channels).not.toContain("push");
@@ -264,7 +256,7 @@ describe("PreferenceManager", () => {
 
       const channels = PreferenceManager.getAvailableChannels(
         customerId,
-        "order_confirmed"
+        "order_confirmed",
       );
 
       expect(channels).toHaveLength(0);
@@ -351,7 +343,7 @@ describe("PreferenceManager", () => {
 
         const channels = PreferenceManager.getAvailableChannels(
           customerId,
-          eventType
+          eventType,
         );
 
         expect(channels).toBeDefined();
@@ -361,7 +353,12 @@ describe("PreferenceManager", () => {
   });
 
   describe("Channel Coverage", () => {
-    const channels: NotificationChannel[] = ["email", "sms", "whatsapp", "push"];
+    const channels: NotificationChannel[] = [
+      "email",
+      "sms",
+      "whatsapp",
+      "push",
+    ];
 
     channels.forEach((channel) => {
       it(`should handle ${channel} channel`, () => {

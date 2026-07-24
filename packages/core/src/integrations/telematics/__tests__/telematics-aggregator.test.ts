@@ -92,7 +92,11 @@ describe("TelematicsAggregator", () => {
         externalVehicleId: id,
         engineRunning: true,
         faultCodes: [
-          { code: "P0101", description: "Mass air flow error", severity: "warning" },
+          {
+            code: "P0101",
+            description: "Mass air flow error",
+            severity: "warning",
+          },
         ],
         timestamp: new Date(),
       })),
@@ -125,21 +129,33 @@ describe("TelematicsAggregator", () => {
 
   describe("registerProvider", () => {
     it("should register a provider", () => {
-      aggregator.registerProvider("samsara", mockAdapter1 as ITelematicsAdapter);
+      aggregator.registerProvider(
+        "samsara",
+        mockAdapter1 as ITelematicsAdapter,
+      );
       // No assertion needed, just ensure no error is thrown
     });
 
     it("should throw error if provider already registered", () => {
-      aggregator.registerProvider("samsara", mockAdapter1 as ITelematicsAdapter);
+      aggregator.registerProvider(
+        "samsara",
+        mockAdapter1 as ITelematicsAdapter,
+      );
       expect(() => {
-        aggregator.registerProvider("samsara", mockAdapter2 as ITelematicsAdapter);
+        aggregator.registerProvider(
+          "samsara",
+          mockAdapter2 as ITelematicsAdapter,
+        );
       }).toThrow("already registered");
     });
   });
 
   describe("unregisterProvider", () => {
     it("should unregister a provider", () => {
-      aggregator.registerProvider("samsara", mockAdapter1 as ITelematicsAdapter);
+      aggregator.registerProvider(
+        "samsara",
+        mockAdapter1 as ITelematicsAdapter,
+      );
       aggregator.unregisterProvider("samsara");
       // Should not throw on second unregister (no-op)
       aggregator.unregisterProvider("samsara");
@@ -148,7 +164,10 @@ describe("TelematicsAggregator", () => {
 
   describe("getUnifiedFleet", () => {
     it("should return deduplicated vehicles from all providers", async () => {
-      aggregator.registerProvider("samsara", mockAdapter1 as ITelematicsAdapter);
+      aggregator.registerProvider(
+        "samsara",
+        mockAdapter1 as ITelematicsAdapter,
+      );
       aggregator.registerProvider("geotab", mockAdapter2 as ITelematicsAdapter);
 
       const fleet = await aggregator.getUnifiedFleet();
@@ -170,8 +189,14 @@ describe("TelematicsAggregator", () => {
         }),
       };
 
-      aggregator.registerProvider("samsara", mockAdapter1 as ITelematicsAdapter);
-      aggregator.registerProvider("failing", failingAdapter as ITelematicsAdapter);
+      aggregator.registerProvider(
+        "samsara",
+        mockAdapter1 as ITelematicsAdapter,
+      );
+      aggregator.registerProvider(
+        "failing",
+        failingAdapter as ITelematicsAdapter,
+      );
 
       const fleet = await aggregator.getUnifiedFleet();
 
@@ -181,7 +206,10 @@ describe("TelematicsAggregator", () => {
 
   describe("getBestPosition", () => {
     it("should return freshest position from multiple providers", async () => {
-      aggregator.registerProvider("samsara", mockAdapter1 as ITelematicsAdapter);
+      aggregator.registerProvider(
+        "samsara",
+        mockAdapter1 as ITelematicsAdapter,
+      );
       aggregator.registerProvider("geotab", mockAdapter2 as ITelematicsAdapter);
 
       const fleet = await aggregator.getUnifiedFleet();
@@ -195,9 +223,9 @@ describe("TelematicsAggregator", () => {
     });
 
     it("should throw error if vehicle not found", async () => {
-      await expect(
-        aggregator.getBestPosition("nonexistent"),
-      ).rejects.toThrow("not found");
+      await expect(aggregator.getBestPosition("nonexistent")).rejects.toThrow(
+        "not found",
+      );
     });
 
     it("should return null if no positions available", async () => {
@@ -225,7 +253,10 @@ describe("TelematicsAggregator", () => {
 
   describe("getConsolidatedAlerts", () => {
     it("should return consolidated alerts from all providers", async () => {
-      aggregator.registerProvider("samsara", mockAdapter1 as ITelematicsAdapter);
+      aggregator.registerProvider(
+        "samsara",
+        mockAdapter1 as ITelematicsAdapter,
+      );
       aggregator.registerProvider("geotab", mockAdapter2 as ITelematicsAdapter);
 
       const fleet = await aggregator.getUnifiedFleet();
@@ -311,7 +342,10 @@ describe("TelematicsAggregator", () => {
 
   describe("getMergedDiagnostics", () => {
     it("should merge diagnostics from multiple providers", async () => {
-      aggregator.registerProvider("samsara", mockAdapter1 as ITelematicsAdapter);
+      aggregator.registerProvider(
+        "samsara",
+        mockAdapter1 as ITelematicsAdapter,
+      );
       aggregator.registerProvider("geotab", mockAdapter2 as ITelematicsAdapter);
 
       const fleet = await aggregator.getUnifiedFleet();
@@ -320,7 +354,9 @@ describe("TelematicsAggregator", () => {
       const vehicleWithBoth = fleet.find((v) => v.providers.length > 1);
 
       if (vehicleWithBoth) {
-        const diagnostics = await aggregator.getMergedDiagnostics(vehicleWithBoth.id);
+        const diagnostics = await aggregator.getMergedDiagnostics(
+          vehicleWithBoth.id,
+        );
 
         expect(diagnostics).toBeDefined();
         expect(diagnostics?.engineRunning).toBeDefined();
@@ -354,7 +390,10 @@ describe("TelematicsAggregator", () => {
 
   describe("getFleetHealthScore", () => {
     it("should calculate fleet health score", async () => {
-      aggregator.registerProvider("samsara", mockAdapter1 as ITelematicsAdapter);
+      aggregator.registerProvider(
+        "samsara",
+        mockAdapter1 as ITelematicsAdapter,
+      );
       aggregator.registerProvider("geotab", mockAdapter2 as ITelematicsAdapter);
 
       const score = await aggregator.getFleetHealthScore();
@@ -370,7 +409,10 @@ describe("TelematicsAggregator", () => {
 
   describe("getProviderStatus", () => {
     it("should return status of all providers", async () => {
-      aggregator.registerProvider("samsara", mockAdapter1 as ITelematicsAdapter);
+      aggregator.registerProvider(
+        "samsara",
+        mockAdapter1 as ITelematicsAdapter,
+      );
       aggregator.registerProvider("geotab", mockAdapter2 as ITelematicsAdapter);
 
       const status = await aggregator.getProviderStatus();
@@ -388,7 +430,10 @@ describe("TelematicsAggregator", () => {
         }),
       };
 
-      aggregator.registerProvider("failing", failingAdapter as ITelematicsAdapter);
+      aggregator.registerProvider(
+        "failing",
+        failingAdapter as ITelematicsAdapter,
+      );
 
       const status = await aggregator.getProviderStatus();
 
@@ -403,7 +448,10 @@ describe("TelematicsAggregator", () => {
         matchBy: ["licensePlate"],
       });
 
-      aggregator.registerProvider("samsara", mockAdapter1 as ITelematicsAdapter);
+      aggregator.registerProvider(
+        "samsara",
+        mockAdapter1 as ITelematicsAdapter,
+      );
       aggregator.registerProvider("geotab", mockAdapter2 as ITelematicsAdapter);
 
       const fleet = await aggregator.getUnifiedFleet();
@@ -426,7 +474,10 @@ describe("TelematicsAggregator", () => {
         ]),
       };
 
-      aggregator.registerProvider("provider1", mockAdapter1 as ITelematicsAdapter);
+      aggregator.registerProvider(
+        "provider1",
+        mockAdapter1 as ITelematicsAdapter,
+      );
       aggregator.registerProvider("provider2", adapter as ITelematicsAdapter);
 
       const fleet = await aggregator.getUnifiedFleet();
@@ -435,7 +486,10 @@ describe("TelematicsAggregator", () => {
     });
 
     it("should maintain provider mappings for deduplicated vehicles", async () => {
-      aggregator.registerProvider("samsara", mockAdapter1 as ITelematicsAdapter);
+      aggregator.registerProvider(
+        "samsara",
+        mockAdapter1 as ITelematicsAdapter,
+      );
       aggregator.registerProvider("geotab", mockAdapter2 as ITelematicsAdapter);
 
       const fleet = await aggregator.getUnifiedFleet();
@@ -444,9 +498,9 @@ describe("TelematicsAggregator", () => {
       );
 
       if (vehicleWithMultipleProviders) {
-        expect(Object.keys(vehicleWithMultipleProviders.externalVehicleIds).length).toBe(
-          vehicleWithMultipleProviders.providers.length,
-        );
+        expect(
+          Object.keys(vehicleWithMultipleProviders.externalVehicleIds).length,
+        ).toBe(vehicleWithMultipleProviders.providers.length);
       }
     });
   });
@@ -459,8 +513,14 @@ describe("TelematicsAggregator", () => {
         }),
       };
 
-      aggregator.registerProvider("failing", failingAdapter as ITelematicsAdapter);
-      aggregator.registerProvider("working", mockAdapter1 as ITelematicsAdapter);
+      aggregator.registerProvider(
+        "failing",
+        failingAdapter as ITelematicsAdapter,
+      );
+      aggregator.registerProvider(
+        "working",
+        mockAdapter1 as ITelematicsAdapter,
+      );
 
       const fleet = await aggregator.getUnifiedFleet();
       expect(fleet.length).toBeGreaterThan(0);
@@ -481,8 +541,14 @@ describe("TelematicsAggregator", () => {
         }),
       };
 
-      aggregator.registerProvider("samsara", mockAdapter1 as ITelematicsAdapter);
-      aggregator.registerProvider("partial", partialAdapter as ITelematicsAdapter);
+      aggregator.registerProvider(
+        "samsara",
+        mockAdapter1 as ITelematicsAdapter,
+      );
+      aggregator.registerProvider(
+        "partial",
+        partialAdapter as ITelematicsAdapter,
+      );
 
       const fleet = await aggregator.getUnifiedFleet();
       expect(fleet.length).toBeGreaterThan(0);

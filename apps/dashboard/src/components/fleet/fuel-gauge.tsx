@@ -110,11 +110,23 @@ export function FuelGauge({
             <stop offset="0%" stopColor="#ef4444" stopOpacity="0.8" />
             <stop offset="100%" stopColor="#dc2626" stopOpacity="1" />
           </linearGradient>
-          <linearGradient id="yellowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient
+            id="yellowGradient"
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="100%"
+          >
             <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.8" />
             <stop offset="100%" stopColor="#d97706" stopOpacity="1" />
           </linearGradient>
-          <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient
+            id="greenGradient"
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="100%"
+          >
             <stop offset="0%" stopColor="#10b981" stopOpacity="0.8" />
             <stop offset="100%" stopColor="#059669" stopOpacity="1" />
           </linearGradient>

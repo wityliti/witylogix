@@ -1,16 +1,16 @@
-import { source } from '@/lib/source';
-import { notFound } from 'next/navigation';
+import { source } from "@/lib/source";
+import { notFound } from "next/navigation";
 import {
   DocsPage,
   DocsBody,
   DocsDescription,
   DocsTitle,
-} from 'fumadocs-ui/page';
-import defaultMdxComponents from 'fumadocs-ui/mdx';
-import { Card, Cards } from 'fumadocs-ui/components/card';
-import type { Metadata } from 'next';
+} from "fumadocs-ui/page";
+import defaultMdxComponents from "fumadocs-ui/mdx";
+import { Card, Cards } from "fumadocs-ui/components/card";
+import type { Metadata } from "next";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{ slug?: string[] }>;
@@ -27,7 +27,7 @@ export default async function Page({ params }: PageProps) {
     <DocsPage
       toc={page.data.toc}
       tableOfContent={{
-        style: 'clerk',
+        style: "clerk",
       }}
     >
       <div className="animate-fade-up">
@@ -51,7 +51,9 @@ export async function generateStaticParams() {
   return source.generateParams();
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const page = source.getPage(slug);
   if (!page) return {};

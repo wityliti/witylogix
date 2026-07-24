@@ -2,7 +2,14 @@
 
 import { memo, useState, useCallback, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarImage, AvatarFallback, Button, Badge, Card } from "@/components/ui";
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+  Button,
+  Badge,
+  Card,
+} from "@/components/ui";
 
 interface ContactCardProps {
   id: string;
@@ -127,12 +134,18 @@ const ContactCardContent = memo(
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <h3 className="text-sm font-semibold text-wl-text-primary truncate">{name}</h3>
+                  <h3 className="text-sm font-semibold text-wl-text-primary truncate">
+                    {name}
+                  </h3>
                   {title && (
-                    <p className="text-xs text-wl-text-secondary truncate">{title}</p>
+                    <p className="text-xs text-wl-text-secondary truncate">
+                      {title}
+                    </p>
                   )}
                   {company && (
-                    <p className="text-xs text-wl-text-tertiary truncate">{company}</p>
+                    <p className="text-xs text-wl-text-tertiary truncate">
+                      {company}
+                    </p>
                   )}
                 </div>
               </div>
@@ -175,7 +188,9 @@ const ContactCardContent = memo(
               {/* Deal Value */}
               {dealValue && (
                 <div className="mt-2 flex items-center gap-2">
-                  <span className="text-xs text-wl-text-secondary">Deal Value:</span>
+                  <span className="text-xs text-wl-text-secondary">
+                    Deal Value:
+                  </span>
                   <span className="text-sm font-semibold text-wl-success-400">
                     {formatCurrency(dealValue)}
                   </span>
@@ -279,8 +294,12 @@ const ContactCardContent = memo(
                 {/* Notes */}
                 {notes && (
                   <div>
-                    <h4 className="text-xs font-semibold text-wl-text-primary mb-2">Notes</h4>
-                    <p className="text-xs text-wl-text-secondary leading-relaxed">{notes}</p>
+                    <h4 className="text-xs font-semibold text-wl-text-primary mb-2">
+                      Notes
+                    </h4>
+                    <p className="text-xs text-wl-text-secondary leading-relaxed">
+                      {notes}
+                    </p>
                   </div>
                 )}
 
@@ -300,7 +319,9 @@ const ContactCardContent = memo(
                             <p className="text-xs font-medium text-wl-text-primary truncate">
                               {deal.name}
                             </p>
-                            <p className="text-xs text-wl-text-tertiary">{deal.stage}</p>
+                            <p className="text-xs text-wl-text-tertiary">
+                              {deal.stage}
+                            </p>
                           </div>
                           <p className="text-xs font-semibold text-wl-success-400 flex-shrink-0">
                             {formatCurrency(deal.value)}
@@ -316,7 +337,7 @@ const ContactCardContent = memo(
         )}
       </Card>
     );
-  }
+  },
 );
 
 ContactCardContent.displayName = "ContactCardContent";
@@ -329,7 +350,11 @@ export const ContactCard = memo(function ContactCard(props: ContactCardProps) {
   }, []);
 
   return (
-    <ContactCardContent {...props} isExpanded={isExpanded} onToggleExpand={onToggleExpand} />
+    <ContactCardContent
+      {...props}
+      isExpanded={isExpanded}
+      onToggleExpand={onToggleExpand}
+    />
   );
 });
 

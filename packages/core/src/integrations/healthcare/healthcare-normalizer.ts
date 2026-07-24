@@ -59,7 +59,7 @@ function levenshteinDistance(a: string, b: string): number {
         matrix[i][j] = Math.min(
           matrix[i - 1][j - 1] + 1,
           matrix[i][j - 1] + 1,
-          matrix[i - 1][j] + 1
+          matrix[i - 1][j] + 1,
         );
       }
     }
@@ -92,13 +92,20 @@ function stringSimilarity(a: string, b: string): number {
 /**
  * Match two patients across providers (MPI-style).
  */
-export function matchPatients(patient1: Patient, patient2: Patient): PatientMatchScore {
+export function matchPatients(
+  patient1: Patient,
+  patient2: Patient,
+): PatientMatchScore {
   let score = 0;
   const matchedFields: string[] = [];
 
   // Match by exact MRN/medical record number
-  const mrn1 = patient1.identifier?.find((id) => id.system.includes("mrn") || id.system.includes("medical-record"));
-  const mrn2 = patient2.identifier?.find((id) => id.system.includes("mrn") || id.system.includes("medical-record"));
+  const mrn1 = patient1.identifier?.find(
+    (id) => id.system.includes("mrn") || id.system.includes("medical-record"),
+  );
+  const mrn2 = patient2.identifier?.find(
+    (id) => id.system.includes("mrn") || id.system.includes("medical-record"),
+  );
 
   if (mrn1 && mrn2 && mrn1.value === mrn2.value) {
     score += 50;
@@ -110,10 +117,14 @@ export function matchPatients(patient1: Patient, patient2: Patient): PatientMatc
   const name2 = patient2.name?.[0];
 
   if (name1 && name2) {
-    const familySimilarity = stringSimilarity(name1.family || "", name2.family || "");
-    const givenSimilarity = name1.given && name2.given
-      ? stringSimilarity(name1.given[0] || "", name2.given[0] || "")
-      : 0;
+    const familySimilarity = stringSimilarity(
+      name1.family || "",
+      name2.family || "",
+    );
+    const givenSimilarity =
+      name1.given && name2.given
+        ? stringSimilarity(name1.given[0] || "", name2.given[0] || "")
+        : 0;
 
     const nameScore = (familySimilarity * 0.6 + givenSimilarity * 0.4) * 30;
     score += nameScore;
@@ -124,7 +135,11 @@ export function matchPatients(patient1: Patient, patient2: Patient): PatientMatc
   }
 
   // Match by date of birth
-  if (patient1.birthDate && patient2.birthDate && patient1.birthDate === patient2.birthDate) {
+  if (
+    patient1.birthDate &&
+    patient2.birthDate &&
+    patient1.birthDate === patient2.birthDate
+  ) {
     score += 15;
     matchedFields.push("dob");
   }
@@ -151,9 +166,12 @@ export function matchPatients(patient1: Patient, patient2: Patient): PatientMatc
 /**
  * Built-in terminology mappings (simplified).
  */
-const terminologyMappings: Record<string, Record<string, TerminologyMapping>> = {
+const terminologyMappings: Record<
+  string,
+  Record<string, TerminologyMapping>
+> = {
   "ICD-10-to-SNOMED-CT": {
-    "I10": {
+    I10: {
       sourceSystem: "ICD-10",
       sourceCode: "I10",
       targetSystem: "SNOMED-CT",
@@ -162,7 +180,7 @@ const terminologyMappings: Record<string, Record<string, TerminologyMapping>> = 
       sourceDisplay: "Essential (primary) hypertension",
       targetDisplay: "Essential hypertension",
     },
-    "E11": {
+    E11: {
       sourceSystem: "ICD-10",
       sourceCode: "E11",
       targetSystem: "SNOMED-CT",
@@ -198,7 +216,7 @@ const terminologyMappings: Record<string, Record<string, TerminologyMapping>> = 
 export function translateCode(
   sourceSystem: CodeSystem,
   sourceCode: string,
-  targetSystem: CodeSystem
+  targetSystem: CodeSystem,
 ): TerminologyMapping | null {
   const key = `${sourceSystem}-to-${targetSystem}`;
   const mapping = terminologyMappings[key]?.[sourceCode];
@@ -215,7 +233,10 @@ export function translateCode(
 /**
  * Unit conversion factors (base SI units).
  */
-const unitConversions: Record<string, Record<string, number | ((v: number) => number)>> = {
+const unitConversions: Record<
+  string,
+  Record<string, number | ((v: number) => number)>
+> = {
   // Weight
   kg: { kg: 1, lb: 2.20462, g: 1000 },
   lb: { kg: 0.453592, lb: 1, g: 453.592 },
@@ -230,8 +251,16 @@ const unitConversions: Record<string, Record<string, number | ((v: number) => nu
 
   // Temperature (Celsius)
   C: { C: 1, F: (v: number) => v * 1.8 + 32, K: (v: number) => v + 273.15 },
-  F: { C: (v: number) => (v - 32) / 1.8, F: 1, K: (v: number) => (v - 32) / 1.8 + 273.15 },
-  K: { C: (v: number) => v - 273.15, F: (v: number) => (v - 273.15) * 1.8 + 32, K: 1 },
+  F: {
+    C: (v: number) => (v - 32) / 1.8,
+    F: 1,
+    K: (v: number) => (v - 32) / 1.8 + 273.15,
+  },
+  K: {
+    C: (v: number) => v - 273.15,
+    F: (v: number) => (v - 273.15) * 1.8 + 32,
+    K: 1,
+  },
 
   // Glucose (mg/dL to mmol/L)
   "mg/dL": { "mg/dL": 1, "mmol/L": 0.0555 },
@@ -241,7 +270,11 @@ const unitConversions: Record<string, Record<string, number | ((v: number) => nu
 /**
  * Convert a value from one unit to another.
  */
-export function convertUnit(value: number, fromUnit: string, toUnit: string): number {
+export function convertUnit(
+  value: number,
+  fromUnit: string,
+  toUnit: string,
+): number {
   const conversions = unitConversions[fromUnit];
 
   if (!conversions) {
@@ -268,9 +301,13 @@ export function convertUnit(value: number, fromUnit: string, toUnit: string): nu
  */
 export function normalizeObservation(
   observation: Observation,
-  targetUnit: string
+  targetUnit: string,
 ): Observation {
-  if (!observation.value || typeof observation.value === "string" || !("value" in observation.value)) {
+  if (
+    !observation.value ||
+    typeof observation.value === "string" ||
+    !("value" in observation.value)
+  ) {
     return observation;
   }
 
@@ -287,7 +324,11 @@ export function normalizeObservation(
   }
 
   try {
-    const convertedValue = convertUnit(currentValue.value, currentUnit, targetUnit);
+    const convertedValue = convertUnit(
+      currentValue.value,
+      currentUnit,
+      targetUnit,
+    );
 
     return {
       ...observation,
@@ -417,10 +458,12 @@ export function hashPHI(value: string, salt: string = ""): string {
  */
 export function normalizeObservations(
   observations: Observation[],
-  targetUnits: Record<string, string>
+  targetUnits: Record<string, string>,
 ): Observation[] {
   return observations.map((obs) => {
-    const loincCode = obs.code?.coding?.find((c) => c.system.includes("loinc"))?.code;
+    const loincCode = obs.code?.coding?.find((c) =>
+      c.system.includes("loinc"),
+    )?.code;
     const targetUnit = loincCode ? targetUnits[loincCode] : undefined;
 
     if (!targetUnit) {
@@ -442,9 +485,13 @@ export function normalizePatients(patients: Patient[]): Patient[] {
       ...n,
       family: n.family
         ?.split(" ")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .map(
+          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+        )
         .join(" "),
-      given: n.given?.map((g) => g.charAt(0).toUpperCase() + g.slice(1).toLowerCase()),
+      given: n.given?.map(
+        (g) => g.charAt(0).toUpperCase() + g.slice(1).toLowerCase(),
+      ),
     })),
     // Standardize phone numbers (remove formatting)
     telecom: p.telecom?.map((t) => ({

@@ -123,7 +123,7 @@ export class DeliveryLog {
 
     // Sort by timestamp descending (newest first)
     results = results.sort(
-      (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+      (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
     );
 
     // Apply pagination
@@ -143,7 +143,7 @@ export class DeliveryLog {
   getStatistics(
     endpointId: string,
     from?: Date,
-    to?: Date
+    to?: Date,
   ): DeliveryStatistics {
     const entries = this.search({
       endpointId,
@@ -202,7 +202,11 @@ export class DeliveryLog {
    * @param to - End date
    * @returns Statistics by event type
    */
-  getEventTypeStats(tenantId: string, from?: Date, to?: Date): {
+  getEventTypeStats(
+    tenantId: string,
+    from?: Date,
+    to?: Date,
+  ): {
     [eventType: string]: DeliveryStatistics;
   } {
     const entries = this.search({
@@ -219,13 +223,13 @@ export class DeliveryLog {
       const typeEntries = entries.filter((e) => e.eventType === eventType);
 
       const successCount = typeEntries.filter(
-        (e) => e.status === "success"
+        (e) => e.status === "success",
       ).length;
       const failureCount = typeEntries.filter(
-        (e) => e.status === "failure"
+        (e) => e.status === "failure",
       ).length;
       const timeoutCount = typeEntries.filter(
-        (e) => e.status === "timeout"
+        (e) => e.status === "timeout",
       ).length;
 
       const durations = typeEntries.map((e) => e.durationMs);
@@ -263,7 +267,7 @@ export class DeliveryLog {
    */
   getTrendingFailures(
     tenantId: string,
-    hours: number = 24
+    hours: number = 24,
   ): Array<{ error: string; count: number }> {
     const from = new Date(Date.now() - hours * 60 * 60 * 1000);
 
@@ -308,7 +312,7 @@ export class DeliveryLog {
     const initialLength = this.entries.length;
 
     this.entries = this.entries.filter(
-      (entry) => now - entry.timestamp.getTime() <= this.retentionMs
+      (entry) => now - entry.timestamp.getTime() <= this.retentionMs,
     );
 
     return initialLength - this.entries.length;
@@ -319,9 +323,12 @@ export class DeliveryLog {
    */
   private startCleanupTimer(): void {
     // Run cleanup every 24 hours
-    this.cleanupInterval = setInterval(() => {
-      this.cleanup();
-    }, 24 * 60 * 60 * 1000);
+    this.cleanupInterval = setInterval(
+      () => {
+        this.cleanup();
+      },
+      24 * 60 * 60 * 1000,
+    );
 
     if (this.cleanupInterval.unref) {
       this.cleanupInterval.unref();

@@ -29,7 +29,7 @@ function escapeCSVField(value: any): string {
 export function generateCSV<T extends { id?: string | number }>(
   data: T[],
   columns: ColumnDef<T>[],
-  options: ExportOptions = {}
+  options: ExportOptions = {},
 ): string {
   if (data.length === 0) return "";
 
@@ -50,7 +50,7 @@ export function generateCSV<T extends { id?: string | number }>(
 
         return escapeCSVField(value);
       })
-      .join(",")
+      .join(","),
   );
 
   return [headers, ...rows].join("\n");
@@ -62,7 +62,7 @@ export function generateCSV<T extends { id?: string | number }>(
 export function generateJSON<T extends { id?: string | number }>(
   data: T[],
   columns: ColumnDef<T>[],
-  options: ExportOptions = {}
+  options: ExportOptions = {},
 ): string {
   const { dateFormat = (d) => d.toISOString() } = options;
 
@@ -92,7 +92,7 @@ export function generateJSON<T extends { id?: string | number }>(
 export function exportAsCSV<T extends { id?: string | number }>(
   data: T[],
   columns: ColumnDef<T>[],
-  options: ExportOptions = {}
+  options: ExportOptions = {},
 ): void {
   const { filename = "export.csv" } = options;
   const csv = generateCSV(data, columns, options);
@@ -105,7 +105,7 @@ export function exportAsCSV<T extends { id?: string | number }>(
 export function exportAsJSON<T extends { id?: string | number }>(
   data: T[],
   columns: ColumnDef<T>[],
-  options: ExportOptions = {}
+  options: ExportOptions = {},
 ): void {
   const { filename = "export.json" } = options;
   const json = generateJSON(data, columns, options);
@@ -118,7 +118,7 @@ export function exportAsJSON<T extends { id?: string | number }>(
 export async function copyToClipboard<T extends { id?: string | number }>(
   data: T[],
   columns: ColumnDef<T>[],
-  format: "csv" | "json" = "csv"
+  format: "csv" | "json" = "csv",
 ): Promise<boolean> {
   try {
     const content =
@@ -140,7 +140,7 @@ export async function copyToClipboard<T extends { id?: string | number }>(
 function downloadFile(
   content: string,
   filename: string,
-  mimeType: string
+  mimeType: string,
 ): void {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
@@ -161,11 +161,9 @@ export function exportSelectedRows<T extends { id?: string | number }>(
   selectedIds: (string | number)[],
   columns: ColumnDef<T>[],
   format: "csv" | "json",
-  options: ExportOptions = {}
+  options: ExportOptions = {},
 ): void {
-  const selectedData = data.filter((row) =>
-    selectedIds.includes(row.id!)
-  );
+  const selectedData = data.filter((row) => selectedIds.includes(row.id!));
 
   if (format === "csv") {
     exportAsCSV(selectedData, columns, options);
@@ -178,7 +176,7 @@ export function exportSelectedRows<T extends { id?: string | number }>(
  * Build column header mapping for export
  */
 export function buildColumnHeaderMap<T extends { id?: string | number }>(
-  columns: ColumnDef<T>[]
+  columns: ColumnDef<T>[],
 ): Record<string, string> {
   const map: Record<string, string> = {};
   columns.forEach((col) => {

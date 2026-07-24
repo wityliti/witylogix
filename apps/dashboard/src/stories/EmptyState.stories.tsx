@@ -18,7 +18,8 @@ export const NoData: Story = {
   args: {
     icon: <Inbox size={32} />,
     title: "No data available",
-    description: "There is nothing to display here. Start by creating a new item.",
+    description:
+      "There is nothing to display here. Start by creating a new item.",
   },
 };
 

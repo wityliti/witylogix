@@ -108,7 +108,10 @@ interface OverSizeThreshold {
  * Calculate fuel surcharge based on carrier and base rate
  * Fuel surcharges are typically percentage-based and vary by carrier
  */
-export function calculateFuelSurcharge(baseRate: number, carrier: string): Surcharge {
+export function calculateFuelSurcharge(
+  baseRate: number,
+  carrier: string,
+): Surcharge {
   const percentage = FUEL_SURCHARGES[carrier] || 0.085;
   const amount = baseRate * percentage;
 
@@ -143,7 +146,10 @@ export function calculateResidentialSurcharge(
  * Calculate oversize surcharge
  * Applied when package dimensions exceed carrier thresholds
  */
-export function calculateOversizeSurcharge(pkg: RatePackage, carrier: string): Surcharge | null {
+export function calculateOversizeSurcharge(
+  pkg: RatePackage,
+  carrier: string,
+): Surcharge | null {
   const threshold = OVERSIZE_THRESHOLDS[carrier];
   if (!threshold || !pkg.length || !pkg.width || !pkg.height) {
     return null;
@@ -288,7 +294,10 @@ export function calculateAllSurcharges(
   surcharges.push(calculateFuelSurcharge(baseRate, carrier));
 
   // Residential delivery
-  const residentialSurcharge = calculateResidentialSurcharge(carrier, isResidential);
+  const residentialSurcharge = calculateResidentialSurcharge(
+    carrier,
+    isResidential,
+  );
   if (residentialSurcharge) surcharges.push(residentialSurcharge);
 
   // Oversize (per package)
@@ -304,13 +313,24 @@ export function calculateAllSurcharges(
   }
 
   // Remote area
-  const remoteSurcharge = calculateRemoteAreaSurcharge(baseRate, destPostal, destCountry, zone);
+  const remoteSurcharge = calculateRemoteAreaSurcharge(
+    baseRate,
+    destPostal,
+    destCountry,
+    zone,
+  );
   if (remoteSurcharge) surcharges.push(remoteSurcharge);
 
   // Optional surcharges
   if (options?.insurance) {
-    const totalDeclaredValue = packages.reduce((sum, pkg) => sum + (pkg.declaredValue || 0), 0);
-    const insuranceSurcharge = calculateInsuranceSurcharge(totalDeclaredValue, carrier);
+    const totalDeclaredValue = packages.reduce(
+      (sum, pkg) => sum + (pkg.declaredValue || 0),
+      0,
+    );
+    const insuranceSurcharge = calculateInsuranceSurcharge(
+      totalDeclaredValue,
+      carrier,
+    );
     if (insuranceSurcharge) surcharges.push(insuranceSurcharge);
   }
 

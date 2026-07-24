@@ -1,6 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, AlertCircle, AlertTriangle, Info as InfoIcon } from "lucide-react";
+import {
+  CheckCircle2,
+  AlertCircle,
+  AlertTriangle,
+  Info as InfoIcon,
+} from "lucide-react";
 
 const meta = {
   title: "UI/Toast",

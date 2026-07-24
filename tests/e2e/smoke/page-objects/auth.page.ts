@@ -1,4 +1,4 @@
-import { Page, Locator, expect } from '@playwright/test';
+import { Page, Locator, expect } from "@playwright/test";
 
 /**
  * Auth Page Object Model for Smoke Tests
@@ -19,23 +19,39 @@ export class SmokeAuthPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.emailInput = page.locator('input[type="email"], input[name="email"]').first();
-    this.passwordInput = page.locator('input[type="password"], input[name="password"]').first();
+    this.emailInput = page
+      .locator('input[type="email"], input[name="email"]')
+      .first();
+    this.passwordInput = page
+      .locator('input[type="password"], input[name="password"]')
+      .first();
     this.submitButton = page.locator('button[type="submit"]');
-    this.errorMessage = page.locator('[data-testid="error-message"], .error, [role="alert"]');
-    this.successMessage = page.locator('[data-testid="success-message"], .success, [role="status"]');
-    this.registerLink = page.locator('a:has-text("Register"), a:has-text("Sign up"), a:has-text("Create account")');
-    this.forgotPasswordLink = page.locator('a:has-text("Forgot password"), a:has-text("forgot")');
+    this.errorMessage = page.locator(
+      '[data-testid="error-message"], .error, [role="alert"]',
+    );
+    this.successMessage = page.locator(
+      '[data-testid="success-message"], .success, [role="status"]',
+    );
+    this.registerLink = page.locator(
+      'a:has-text("Register"), a:has-text("Sign up"), a:has-text("Create account")',
+    );
+    this.forgotPasswordLink = page.locator(
+      'a:has-text("Forgot password"), a:has-text("forgot")',
+    );
     this.pageTitle = page.locator('h1, [data-testid="page-title"]');
-    this.mfaInput = page.locator('input[name="mfa"], input[name="code"], input[name="totp"]');
-    this.mfaSubmitButton = page.locator('button:has-text("Verify"), button:has-text("Submit")');
+    this.mfaInput = page.locator(
+      'input[name="mfa"], input[name="code"], input[name="totp"]',
+    );
+    this.mfaSubmitButton = page.locator(
+      'button:has-text("Verify"), button:has-text("Submit")',
+    );
   }
 
   /**
    * Navigate to login page
    */
   async navigateToLogin(): Promise<void> {
-    await this.page.goto('/login', { waitUntil: 'networkidle' });
+    await this.page.goto("/login", { waitUntil: "networkidle" });
     await expect(this.emailInput).toBeVisible({ timeout: 5000 });
   }
 
@@ -43,8 +59,8 @@ export class SmokeAuthPage {
    * Navigate to register page
    */
   async navigateToRegister(): Promise<void> {
-    await this.page.goto('/register', { waitUntil: 'networkidle' });
-    await expect(this.page.locator('form')).toBeVisible({ timeout: 5000 });
+    await this.page.goto("/register", { waitUntil: "networkidle" });
+    await expect(this.page.locator("form")).toBeVisible({ timeout: 5000 });
   }
 
   /**
@@ -59,7 +75,12 @@ export class SmokeAuthPage {
   /**
    * Register new account
    */
-  async register(email: string, password: string, firstName: string, lastName: string): Promise<void> {
+  async register(
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string,
+  ): Promise<void> {
     await this.navigateToRegister();
     await this.page.fill('input[name="email"]', email);
     await this.page.fill('input[name="password"]', password);

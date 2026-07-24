@@ -36,9 +36,7 @@ export {
 } from "./use-field-array";
 
 // Real-time WebSocket hooks
-export {
-  useRealtime,
-} from "./use-realtime";
+export { useRealtime } from "./use-realtime";
 
 export {
   useMapTracking,

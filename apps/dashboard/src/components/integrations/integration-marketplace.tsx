@@ -16,7 +16,15 @@ import {
 } from "lucide-react";
 
 type IntegrationStatus = "connected" | "available" | "coming_soon";
-type Category = "erp" | "crm" | "accounting" | "communication" | "logistics" | "analytics" | "payment" | "marketing";
+type Category =
+  | "erp"
+  | "crm"
+  | "accounting"
+  | "communication"
+  | "logistics"
+  | "analytics"
+  | "payment"
+  | "marketing";
 
 interface Integration {
   id: string;
@@ -180,7 +188,9 @@ export function IntegrationMarketplace({
 }: IntegrationMarketplaceProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
-  const [expandedIntegration, setExpandedIntegration] = useState<string | null>(null);
+  const [expandedIntegration, setExpandedIntegration] = useState<string | null>(
+    null,
+  );
 
   const categories = useMemo(() => {
     return [...new Set(integrations.map((i) => i.category))] as Category[];
@@ -211,7 +221,9 @@ export function IntegrationMarketplace({
   }, [integrations, searchQuery, selectedCategories]);
 
   const stats = useMemo(() => {
-    const connectedCount = integrations.filter((i) => i.status === "connected").length;
+    const connectedCount = integrations.filter(
+      (i) => i.status === "connected",
+    ).length;
     const categoriesCovered = new Set(integrations.map((i) => i.category)).size;
 
     return {
@@ -224,7 +236,9 @@ export function IntegrationMarketplace({
 
   const toggleCategory = (category: Category) => {
     setSelectedCategories((prev) =>
-      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]
+      prev.includes(category)
+        ? prev.filter((c) => c !== category)
+        : [...prev, category],
     );
   };
 
@@ -266,7 +280,7 @@ export function IntegrationMarketplace({
     <div
       className={cn(
         "flex flex-col bg-wl-bg-surface border border-wl-border-subtle rounded-lg overflow-hidden",
-        className
+        className,
       )}
     >
       {/* Header */}
@@ -275,8 +289,12 @@ export function IntegrationMarketplace({
           <div className="flex items-center gap-3">
             <Zap className="w-5 h-5 text-wl-primary-500" />
             <div>
-              <h3 className="text-base font-semibold text-wl-text-primary">Integration Marketplace</h3>
-              <p className="text-xs text-wl-text-secondary mt-1">Discover and connect 124+ integrations</p>
+              <h3 className="text-base font-semibold text-wl-text-primary">
+                Integration Marketplace
+              </h3>
+              <p className="text-xs text-wl-text-secondary mt-1">
+                Discover and connect 124+ integrations
+              </p>
             </div>
           </div>
         </div>
@@ -285,19 +303,27 @@ export function IntegrationMarketplace({
         <div className="grid grid-cols-4 gap-2">
           <div className="p-2 bg-wl-bg-surface rounded-lg">
             <p className="text-xs text-wl-text-secondary">Connected</p>
-            <p className="text-lg font-bold text-wl-success-400">{stats.connected}</p>
+            <p className="text-lg font-bold text-wl-success-400">
+              {stats.connected}
+            </p>
           </div>
           <div className="p-2 bg-wl-bg-surface rounded-lg">
             <p className="text-xs text-wl-text-secondary">Available</p>
-            <p className="text-lg font-bold text-wl-primary-500">{stats.available}</p>
+            <p className="text-lg font-bold text-wl-primary-500">
+              {stats.available}
+            </p>
           </div>
           <div className="p-2 bg-wl-bg-surface rounded-lg">
             <p className="text-xs text-wl-text-secondary">Categories</p>
-            <p className="text-lg font-bold text-wl-text-primary">{stats.categories}</p>
+            <p className="text-lg font-bold text-wl-text-primary">
+              {stats.categories}
+            </p>
           </div>
           <div className="p-2 bg-wl-bg-surface rounded-lg">
             <p className="text-xs text-wl-text-secondary">Total</p>
-            <p className="text-lg font-bold text-wl-text-primary">{stats.total}</p>
+            <p className="text-lg font-bold text-wl-text-primary">
+              {stats.total}
+            </p>
           </div>
         </div>
 
@@ -315,7 +341,9 @@ export function IntegrationMarketplace({
 
         {/* Category filters */}
         <div>
-          <p className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">Categories</p>
+          <p className="text-xs font-semibold text-wl-text-secondary uppercase mb-2">
+            Categories
+          </p>
           <div className="flex flex-wrap gap-2">
             {categories.map((category) => (
               <button
@@ -325,7 +353,7 @@ export function IntegrationMarketplace({
                   "px-3 py-1 rounded-full text-xs font-medium transition-all",
                   selectedCategories.includes(category)
                     ? "bg-wl-primary-500 text-white"
-                    : "bg-wl-bg-surface border border-wl-border-subtle text-wl-text-secondary hover:border-wl-border-default"
+                    : "bg-wl-bg-surface border border-wl-border-subtle text-wl-text-secondary hover:border-wl-border-default",
                 )}
               >
                 {categoryLabels[category]}
@@ -344,10 +372,14 @@ export function IntegrationMarketplace({
                 key={integration.id}
                 className={cn(
                   "border border-wl-border-subtle rounded-lg bg-wl-bg-overlay overflow-hidden transition-all duration-200 hover:border-wl-primary-500 hover:shadow-md cursor-pointer",
-                  expandedIntegration === integration.id && "col-span-full"
+                  expandedIntegration === integration.id && "col-span-full",
                 )}
                 onClick={() =>
-                  setExpandedIntegration(expandedIntegration === integration.id ? null : integration.id)
+                  setExpandedIntegration(
+                    expandedIntegration === integration.id
+                      ? null
+                      : integration.id,
+                  )
                 }
               >
                 <div className="p-4">
@@ -368,7 +400,9 @@ export function IntegrationMarketplace({
 
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <h4 className="font-semibold text-wl-text-primary">{integration.name}</h4>
+                          <h4 className="font-semibold text-wl-text-primary">
+                            {integration.name}
+                          </h4>
                           {integration.isNew && (
                             <Badge variant="primary" className="text-xs">
                               New
@@ -391,20 +425,27 @@ export function IntegrationMarketplace({
                   </div>
 
                   {/* Description */}
-                  <p className="text-xs text-wl-text-secondary mb-3">{integration.description}</p>
+                  <p className="text-xs text-wl-text-secondary mb-3">
+                    {integration.description}
+                  </p>
 
                   {/* Rating */}
                   <div className="flex items-center gap-2 mb-3 text-xs">
                     <Star className="w-4 h-4 text-wl-warning-500 fill-wl-warning-500" />
-                    <span className="font-medium text-wl-text-primary">{integration.rating}</span>
-                    <span className="text-wl-text-secondary">({integration.reviewCount} reviews)</span>
+                    <span className="font-medium text-wl-text-primary">
+                      {integration.rating}
+                    </span>
+                    <span className="text-wl-text-secondary">
+                      ({integration.reviewCount} reviews)
+                    </span>
                   </div>
 
                   {/* Status and action */}
                   <div className="flex items-center justify-between">
                     {getStatusBadge(integration.status)}
 
-                    {!expandedIntegration || expandedIntegration !== integration.id ? (
+                    {!expandedIntegration ||
+                    expandedIntegration !== integration.id ? (
                       integration.status === "available" ? (
                         <Button
                           size="sm"
@@ -418,7 +459,11 @@ export function IntegrationMarketplace({
                           Connect
                         </Button>
                       ) : integration.status === "connected" ? (
-                        <Button size="sm" variant="ghost" className="flex items-center gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="flex items-center gap-1"
+                        >
                           Manage
                         </Button>
                       ) : (
@@ -438,7 +483,11 @@ export function IntegrationMarketplace({
                         </h5>
                         <div className="flex flex-wrap gap-1">
                           {integration.features.map((feature) => (
-                            <Badge key={feature} variant="default" className="text-xs">
+                            <Badge
+                              key={feature}
+                              variant="default"
+                              className="text-xs"
+                            >
                               {feature}
                             </Badge>
                           ))}
@@ -481,7 +530,9 @@ export function IntegrationMarketplace({
             <div>
               <Zap className="w-8 h-8 mx-auto mb-2 opacity-50" />
               <p className="text-sm font-medium">No integrations found</p>
-              <p className="text-xs mt-1">Try adjusting your search or filters</p>
+              <p className="text-xs mt-1">
+                Try adjusting your search or filters
+              </p>
             </div>
           </div>
         )}

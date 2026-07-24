@@ -136,9 +136,7 @@ export class WorkflowSocketEmitter {
   /**
    * Get rooms for an event based on context
    */
-  private getRooms(
-    payload: WorkflowEventBase,
-  ): string[] {
+  private getRooms(payload: WorkflowEventBase): string[] {
     const rooms: string[] = [];
 
     if (payload.orgId) {
@@ -203,7 +201,9 @@ export class WorkflowSocketEmitter {
   /**
    * Get stored events for reconnection
    */
-  getStoredEvents(executionId: string): Array<{ eventName: string; payload: any }> {
+  getStoredEvents(
+    executionId: string,
+  ): Array<{ eventName: string; payload: any }> {
     return this.eventStore.get(`events:${executionId}`) || [];
   }
 
@@ -332,9 +332,12 @@ export class WorkflowSocketEmitter {
       this.subscribeToExecution(socket, data.executionId);
     });
 
-    socket.on("workflow:subscribe_execution", (data: { executionId: string }) => {
-      this.subscribeToExecution(socket, data.executionId);
-    });
+    socket.on(
+      "workflow:subscribe_execution",
+      (data: { executionId: string }) => {
+        this.subscribeToExecution(socket, data.executionId);
+      },
+    );
 
     socket.on("workflow:subscribe_org", (data: { orgId: string }) => {
       this.subscribeToOrg(socket, data.orgId);
@@ -353,7 +356,9 @@ export class WorkflowSocketEmitter {
     let cleanedCount = 0;
 
     for (const [key, events] of this.eventStore) {
-      const filtered = (events as any[]).filter((e) => now - e.timestamp < maxAgeMs);
+      const filtered = (events as any[]).filter(
+        (e) => now - e.timestamp < maxAgeMs,
+      );
 
       if (filtered.length === 0) {
         this.eventStore.delete(key);

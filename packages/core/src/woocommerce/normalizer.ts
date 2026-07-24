@@ -5,7 +5,10 @@
  * CreateShipmentInput.  Zero Shopify-specific imports.
  */
 
-import type { WooCommerceOrder, WooCommerceAddress } from '../platforms/adapters/woocommerce';
+import type {
+  WooCommerceOrder,
+  WooCommerceAddress,
+} from "../platforms/adapters/woocommerce";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -33,12 +36,12 @@ export interface ShipmentItem {
 }
 
 export type WooCommerceShipmentStatus =
-  | 'pending'
-  | 'ready_for_fulfillment'
-  | 'delivered'
-  | 'cancelled'
-  | 'returned'
-  | 'on_hold';
+  | "pending"
+  | "ready_for_fulfillment"
+  | "delivered"
+  | "cancelled"
+  | "returned"
+  | "on_hold";
 
 export interface CreateShipmentInput {
   /** `wc_order_{id}` — prevents cross-platform collisions */
@@ -62,12 +65,12 @@ export interface CreateShipmentInput {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const WC_STATUS_MAP: Record<string, WooCommerceShipmentStatus> = {
-  pending: 'pending',
-  processing: 'ready_for_fulfillment',
-  completed: 'delivered',
-  cancelled: 'cancelled',
-  refunded: 'returned',
-  'on-hold': 'on_hold',
+  pending: "pending",
+  processing: "ready_for_fulfillment",
+  completed: "delivered",
+  cancelled: "cancelled",
+  refunded: "returned",
+  "on-hold": "on_hold",
 };
 
 /**
@@ -75,12 +78,12 @@ const WC_STATUS_MAP: Record<string, WooCommerceShipmentStatus> = {
  * In production this should be populated from tenant/store settings.
  */
 const STORE_ADDRESS_FALLBACK: ShipmentAddress = {
-  name: 'Store',
-  street1: '',
-  city: '',
-  state: '',
-  zip: '',
-  country: '',
+  name: "Store",
+  street1: "",
+  city: "",
+  state: "",
+  zip: "",
+  country: "",
 };
 
 function isBillingComplete(billing: WooCommerceAddress): boolean {
@@ -88,7 +91,7 @@ function isBillingComplete(billing: WooCommerceAddress): boolean {
 }
 
 function mapAddress(addr: WooCommerceAddress): ShipmentAddress {
-  const name = [addr.first_name, addr.last_name].filter(Boolean).join(' ');
+  const name = [addr.first_name, addr.last_name].filter(Boolean).join(" ");
   return {
     name,
     ...(addr.company ? { company: addr.company } : {}),
@@ -113,9 +116,11 @@ function mapAddress(addr: WooCommerceAddress): ShipmentAddress {
  * @param wcOrder  WooCommerce order from REST API v3
  * @returns        CreateShipmentInput ready for WityLogix shipment creation
  */
-export function normalizeWooCommerceOrder(wcOrder: WooCommerceOrder): CreateShipmentInput {
+export function normalizeWooCommerceOrder(
+  wcOrder: WooCommerceOrder,
+): CreateShipmentInput {
   const status: WooCommerceShipmentStatus =
-    WC_STATUS_MAP[wcOrder.status] ?? 'pending';
+    WC_STATUS_MAP[wcOrder.status] ?? "pending";
 
   const deliveryAddress = mapAddress(wcOrder.shipping);
 
@@ -133,7 +138,7 @@ export function normalizeWooCommerceOrder(wcOrder: WooCommerceOrder): CreateShip
 
   const carrierServiceCode =
     Array.isArray(wcOrder.shipping_lines) && wcOrder.shipping_lines.length > 0
-      ? (wcOrder.shipping_lines[0] as any).method_id ?? undefined
+      ? ((wcOrder.shipping_lines[0] as any).method_id ?? undefined)
       : undefined;
 
   const declaredValue = parseFloat(wcOrder.total) || 0;
@@ -146,9 +151,13 @@ export function normalizeWooCommerceOrder(wcOrder: WooCommerceOrder): CreateShip
     delivery_address: deliveryAddress,
     pickup_address: pickupAddress,
     shipment_items: shipmentItems,
-    ...(carrierServiceCode !== undefined ? { carrier_service_code: carrierServiceCode } : {}),
+    ...(carrierServiceCode !== undefined
+      ? { carrier_service_code: carrierServiceCode }
+      : {}),
     declared_value: declaredValue,
     currency_code: wcOrder.currency,
-    ...(wcOrder.customer_note ? { delivery_instructions: wcOrder.customer_note } : {}),
+    ...(wcOrder.customer_note
+      ? { delivery_instructions: wcOrder.customer_note }
+      : {}),
   };
 }

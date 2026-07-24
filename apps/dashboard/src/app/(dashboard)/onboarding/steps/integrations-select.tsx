@@ -292,7 +292,7 @@ export function IntegrationsSelect({
 }: IntegrationsSelectProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set(CATEGORIES_ORDER.slice(0, 5))
+    new Set(CATEGORIES_ORDER.slice(0, 5)),
   );
 
   const selected = new Set(data.integrations);
@@ -319,14 +319,14 @@ export function IntegrationsSelect({
 
   const filteredCategories = useMemo(() => {
     const query = searchQuery.toLowerCase();
-    const result: Record<string, typeof INTEGRATION_CATEGORIES[string]> = {};
+    const result: Record<string, (typeof INTEGRATION_CATEGORIES)[string]> = {};
 
     for (const categoryKey of CATEGORIES_ORDER) {
       const category = INTEGRATION_CATEGORIES[categoryKey];
       const filtered = category.providers.filter(
         (p) =>
           p.name.toLowerCase().includes(query) ||
-          category.name.toLowerCase().includes(query)
+          category.name.toLowerCase().includes(query),
       );
 
       if (filtered.length > 0) {
@@ -365,7 +365,7 @@ export function IntegrationsSelect({
             "bg-wl-bg-surface border border-wl-border-default",
             "text-wl-text-primary placeholder-wl-text-tertiary",
             "transition-colors duration-200",
-            "focus:outline-none focus:border-wl-primary-400"
+            "focus:outline-none focus:border-wl-primary-400",
           )}
         />
       </div>
@@ -377,8 +377,7 @@ export function IntegrationsSelect({
           const visibleProviders = isExpanded
             ? category.providers
             : category.providers.slice(0, 4);
-          const hasMore =
-            category.providers.length > 4 && !isExpanded;
+          const hasMore = category.providers.length > 4 && !isExpanded;
 
           return (
             <div key={categoryKey} className="flex flex-col gap-3">
@@ -390,7 +389,7 @@ export function IntegrationsSelect({
                   "bg-wl-bg-surface/50 hover:bg-wl-bg-surface",
                   "border border-wl-border-subtle",
                   "transition-colors duration-200",
-                  "text-left"
+                  "text-left",
                 )}
               >
                 <div>
@@ -401,13 +400,12 @@ export function IntegrationsSelect({
                     {category.description}
                   </p>
                 </div>
-                {category.providers.length > 4 && (
-                  isExpanded ? (
+                {category.providers.length > 4 &&
+                  (isExpanded ? (
                     <ChevronUp className="w-4 h-4 text-wl-text-tertiary" />
                   ) : (
                     <ChevronDown className="w-4 h-4 text-wl-text-tertiary" />
-                  )
-                )}
+                  ))}
               </button>
 
               {/* Provider Chips */}
@@ -425,13 +423,11 @@ export function IntegrationsSelect({
                         "flex items-center gap-2",
                         isSelected
                           ? "bg-wl-primary-500/15 border-wl-primary-400 text-wl-primary-300"
-                          : "bg-wl-bg-surface border-wl-border-default text-wl-text-secondary hover:border-wl-border-strong"
+                          : "bg-wl-bg-surface border-wl-border-default text-wl-text-secondary hover:border-wl-border-strong",
                       )}
                     >
                       {provider.name}
-                      {isSelected && (
-                        <Check className="w-3 h-3" />
-                      )}
+                      {isSelected && <Check className="w-3 h-3" />}
                     </button>
                   );
                 })}
@@ -443,7 +439,7 @@ export function IntegrationsSelect({
                       "px-3 py-1.5 rounded-full text-xs font-medium",
                       "bg-wl-bg-surface border border-wl-border-default",
                       "text-wl-primary-400 hover:bg-wl-primary-500/10",
-                      "transition-all duration-200"
+                      "transition-all duration-200",
                     )}
                   >
                     Show More Tools +

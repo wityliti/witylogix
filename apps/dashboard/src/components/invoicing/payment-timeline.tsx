@@ -61,8 +61,14 @@ export const PaymentTimeline = forwardRef<HTMLDivElement, PaymentTimelineProps>(
   ({ payments, startingBalance = 0, className, ...props }, ref) => {
     if (payments.length === 0) {
       return (
-        <div ref={ref} className={cn("px-8 py-12 text-center", className)} {...props}>
-          <p className="text-wl-text-tertiary text-sm">No payment history yet</p>
+        <div
+          ref={ref}
+          className={cn("px-8 py-12 text-center", className)}
+          {...props}
+        >
+          <p className="text-wl-text-tertiary text-sm">
+            No payment history yet
+          </p>
         </div>
       );
     }
@@ -71,8 +77,12 @@ export const PaymentTimeline = forwardRef<HTMLDivElement, PaymentTimelineProps>(
     type PaymentWithBalance = Payment & { balance: number };
     const paymentWithBalance: PaymentWithBalance[] = [];
     payments.forEach((payment, index) => {
-      const previousBalance = index === 0 ? (startingBalance ?? 0) : paymentWithBalance[index - 1].balance;
-      const newBalance = previousBalance - (payment.status === "completed" ? payment.amount : 0);
+      const previousBalance =
+        index === 0
+          ? (startingBalance ?? 0)
+          : paymentWithBalance[index - 1].balance;
+      const newBalance =
+        previousBalance - (payment.status === "completed" ? payment.amount : 0);
       paymentWithBalance.push({ ...payment, balance: newBalance });
     });
 
@@ -99,16 +109,27 @@ export const PaymentTimeline = forwardRef<HTMLDivElement, PaymentTimelineProps>(
                       isCompleted && "bg-wl-success-500 border-wl-success-600",
                       isFailed && "bg-wl-danger-500 border-wl-danger-600",
                       isRefunded && "bg-wl-neutral-400 border-wl-neutral-500",
-                      !isCompleted && !isFailed && !isRefunded && "bg-wl-primary-500 border-wl-primary-600"
+                      !isCompleted &&
+                        !isFailed &&
+                        !isRefunded &&
+                        "bg-wl-primary-500 border-wl-primary-600",
                     )}
                   >
                     {isCompleted && (
-                      <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <svg
+                        className="w-2.5 h-2.5 text-white"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
                         <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
                       </svg>
                     )}
                     {isFailed && (
-                      <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <svg
+                        className="w-2.5 h-2.5 text-white"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
                         <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
                       </svg>
                     )}
@@ -135,7 +156,8 @@ export const PaymentTimeline = forwardRef<HTMLDivElement, PaymentTimelineProps>(
                           }
                           className="text-xs"
                         >
-                          {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
+                          {payment.status.charAt(0).toUpperCase() +
+                            payment.status.slice(1)}
                         </Badge>
                       </div>
                       <p className="text-xs text-wl-text-secondary">
@@ -153,19 +175,27 @@ export const PaymentTimeline = forwardRef<HTMLDivElement, PaymentTimelineProps>(
                   <div className="bg-wl-bg-surface border border-wl-border-subtle rounded p-2 text-xs space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="text-wl-text-secondary">Reference:</span>
-                      <span className="font-mono text-wl-text-primary">{payment.referenceNumber}</span>
+                      <span className="font-mono text-wl-text-primary">
+                        {payment.referenceNumber}
+                      </span>
                     </div>
 
                     {payment.completedAt && (
                       <div className="flex items-center justify-between">
-                        <span className="text-wl-text-secondary">Completed:</span>
-                        <span className="text-wl-text-secondary">{formatDate(payment.completedAt)}</span>
+                        <span className="text-wl-text-secondary">
+                          Completed:
+                        </span>
+                        <span className="text-wl-text-secondary">
+                          {formatDate(payment.completedAt)}
+                        </span>
                       </div>
                     )}
 
                     {/* Running balance */}
                     <div className="flex items-center justify-between pt-1 border-t border-wl-border-subtle">
-                      <span className="text-wl-text-secondary">Running Balance:</span>
+                      <span className="text-wl-text-secondary">
+                        Running Balance:
+                      </span>
                       <span className="font-semibold text-wl-text-primary">
                         {formatCurrency(payment.balance)}
                       </span>
@@ -175,7 +205,11 @@ export const PaymentTimeline = forwardRef<HTMLDivElement, PaymentTimelineProps>(
                   {/* Partial payment indicator */}
                   {payment.amount < 100 && (
                     <div className="mt-2 flex items-center gap-1.5 text-xs text-wl-warning-400">
-                      <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                      <svg
+                        className="w-3 h-3 flex-shrink-0"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
                         <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
                       </svg>
                       <span>Partial payment</span>
@@ -191,30 +225,46 @@ export const PaymentTimeline = forwardRef<HTMLDivElement, PaymentTimelineProps>(
         <div className="mt-6 pt-4 border-t border-wl-border-subtle">
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-wl-bg-surface rounded-lg px-3 py-2">
-              <p className="text-xs text-wl-text-secondary mb-1">Total Received</p>
+              <p className="text-xs text-wl-text-secondary mb-1">
+                Total Received
+              </p>
               <p className="font-semibold text-wl-text-primary">
                 {formatCurrency(
-                  paymentWithBalance.reduce((sum, p) => sum + (p.status === "completed" ? p.amount : 0), 0)
+                  paymentWithBalance.reduce(
+                    (sum, p) => sum + (p.status === "completed" ? p.amount : 0),
+                    0,
+                  ),
                 )}
               </p>
             </div>
             <div className="bg-wl-bg-surface rounded-lg px-3 py-2">
-              <p className="text-xs text-wl-text-secondary mb-1">Current Balance</p>
+              <p className="text-xs text-wl-text-secondary mb-1">
+                Current Balance
+              </p>
               <p className="font-semibold text-wl-text-primary">
-                {formatCurrency(paymentWithBalance[paymentWithBalance.length - 1]?.balance || 0)}
+                {formatCurrency(
+                  paymentWithBalance[paymentWithBalance.length - 1]?.balance ||
+                    0,
+                )}
               </p>
             </div>
             <div className="bg-wl-bg-surface rounded-lg px-3 py-2">
-              <p className="text-xs text-wl-text-secondary mb-1">Payment Count</p>
+              <p className="text-xs text-wl-text-secondary mb-1">
+                Payment Count
+              </p>
               <p className="font-semibold text-wl-text-primary">
-                {paymentWithBalance.filter((p) => p.status === "completed").length}/{paymentWithBalance.length}
+                {
+                  paymentWithBalance.filter((p) => p.status === "completed")
+                    .length
+                }
+                /{paymentWithBalance.length}
               </p>
             </div>
           </div>
         </div>
       </div>
     );
-  }
+  },
 );
 
 PaymentTimeline.displayName = "PaymentTimeline";

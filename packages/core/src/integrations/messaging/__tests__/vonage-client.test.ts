@@ -55,7 +55,9 @@ describe("VonageClient", () => {
         provider: "vonage",
         apiSecret: "secret",
       };
-      expect(() => new VonageClient(invalidConfig)).toThrow("Vonage apiKey is required");
+      expect(() => new VonageClient(invalidConfig)).toThrow(
+        "Vonage apiKey is required",
+      );
     });
 
     it("should throw error if apiSecret is missing", () => {
@@ -63,7 +65,9 @@ describe("VonageClient", () => {
         provider: "vonage",
         apiKey: "key",
       };
-      expect(() => new VonageClient(invalidConfig)).toThrow("Vonage apiSecret is required");
+      expect(() => new VonageClient(invalidConfig)).toThrow(
+        "Vonage apiSecret is required",
+      );
     });
 
     it("should initialize with valid config", () => {
@@ -176,7 +180,7 @@ describe("VonageClient", () => {
         "SENDER",
         "https://example.com/image.jpg",
         "image",
-        "Here is an image"
+        "Here is an image",
       );
 
       expect(result.success).toBeDefined();
@@ -189,7 +193,7 @@ describe("VonageClient", () => {
         "SENDER",
         "https://example.com/video.mp4",
         "video",
-        "Check out this video"
+        "Check out this video",
       );
 
       expect(result.timestamp).toBeInstanceOf(Date);
@@ -201,7 +205,7 @@ describe("VonageClient", () => {
         "SENDER",
         "https://example.com/audio.mp3",
         "audio",
-        "Listen to this"
+        "Listen to this",
       );
 
       expect(result.timestamp).toBeInstanceOf(Date);
@@ -226,7 +230,7 @@ describe("VonageClient", () => {
           name: "",
           language: "",
         },
-        "Hello from WhatsApp!"
+        "Hello from WhatsApp!",
       );
 
       expect(result.timestamp).toBeInstanceOf(Date);
@@ -267,13 +271,19 @@ describe("VonageClient", () => {
     });
 
     it("should verify 2FA code", async () => {
-      const verifyResult = await client.verify2FACode("request-id-123", "123456");
+      const verifyResult = await client.verify2FACode(
+        "request-id-123",
+        "123456",
+      );
 
       expect(typeof verifyResult).toBe("boolean");
     });
 
     it("should reject invalid 2FA code", async () => {
-      const verifyResult = await client.verify2FACode("request-id-123", "invalid");
+      const verifyResult = await client.verify2FACode(
+        "request-id-123",
+        "invalid",
+      );
 
       expect(typeof verifyResult).toBe("boolean");
     });

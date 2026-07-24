@@ -196,7 +196,9 @@ export class RequestLogger extends EventEmitter {
         statusCode: response.statusCode,
         latency,
         bodySize: response.bodySize,
-        rateLimitHeaders: rateLimitHeaders ? Object.keys(rateLimitHeaders) : undefined,
+        rateLimitHeaders: rateLimitHeaders
+          ? Object.keys(rateLimitHeaders)
+          : undefined,
       },
       "Integration API response",
     );
@@ -297,7 +299,13 @@ export class RequestLogger extends EventEmitter {
       const parsed = new URL(url);
 
       // Remove sensitive query parameters
-      const sensitiveParams = ["api_key", "apiKey", "token", "secret", "password"];
+      const sensitiveParams = [
+        "api_key",
+        "apiKey",
+        "token",
+        "secret",
+        "password",
+      ];
       for (const param of sensitiveParams) {
         if (parsed.searchParams.has(param)) {
           parsed.searchParams.set(param, "[REDACTED]");
@@ -315,11 +323,16 @@ export class RequestLogger extends EventEmitter {
       return parsed.toString();
     } catch {
       // If URL parsing fails, return masked version
-      return url.replace(/([?&](api_key|token|secret|password)=)[^&]*/gi, "$1[REDACTED]");
+      return url.replace(
+        /([?&](api_key|token|secret|password)=)[^&]*/gi,
+        "$1[REDACTED]",
+      );
     }
   }
 
-  private sanitizeHeaders(headers: Record<string, string>): Record<string, string> {
+  private sanitizeHeaders(
+    headers: Record<string, string>,
+  ): Record<string, string> {
     const sanitized: Record<string, string> = {};
 
     for (const [key, value] of Object.entries(headers)) {
@@ -334,7 +347,9 @@ export class RequestLogger extends EventEmitter {
   }
 
   private isSensitiveHeader(headerName: string): boolean {
-    return this.sensitiveHeaderPatterns.some((pattern) => pattern.test(headerName));
+    return this.sensitiveHeaderPatterns.some((pattern) =>
+      pattern.test(headerName),
+    );
   }
 
   private shipLog(event: LogShipEvent): void {

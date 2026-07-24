@@ -3,11 +3,15 @@
  * Shows delivery rates and pricing breakdown
  */
 
-import React from 'react';
-import { TrendingDown, Info } from 'lucide-react';
-import { getCostBreakdown, formatPrice, getFreeDeliveryMessage } from '../utils/rate-calculator';
-import type { ZoneRate } from '../types';
-import clsx from 'clsx';
+import React from "react";
+import { TrendingDown, Info } from "lucide-react";
+import {
+  getCostBreakdown,
+  formatPrice,
+  getFreeDeliveryMessage,
+} from "../utils/rate-calculator";
+import type { ZoneRate } from "../types";
+import clsx from "clsx";
 
 interface ZoneRateDisplayProps {
   zoneRate: ZoneRate;
@@ -26,16 +30,25 @@ export const ZoneRateDisplay: React.FC<ZoneRateDisplayProps> = ({
   compact = false,
   showBreakdown = true,
 }) => {
-  const breakdown = getCostBreakdown(orderValue, zoneRate, distanceKm, weightKg);
+  const breakdown = getCostBreakdown(
+    orderValue,
+    zoneRate,
+    distanceKm,
+    weightKg,
+  );
   const qualifiesForFreeDelivery = orderValue >= zoneRate.freeDeliveryThreshold;
 
   return (
-    <div className={clsx('wl-w-full wl-space-y-4', { 'wl-max-w-md': compact })}>
+    <div className={clsx("wl-w-full wl-space-y-4", { "wl-max-w-md": compact })}>
       {/* Zone info */}
       <div className="wl-flex wl-items-center wl-justify-between wl-p-4 wl-bg-wl-muted/30 wl-rounded-lg">
         <div>
-          <h3 className="wl-font-semibold wl-text-wl-foreground">{zoneRate.zoneName}</h3>
-          <p className="wl-text-sm wl-text-wl-muted-foreground">Delivery zone</p>
+          <h3 className="wl-font-semibold wl-text-wl-foreground">
+            {zoneRate.zoneName}
+          </h3>
+          <p className="wl-text-sm wl-text-wl-muted-foreground">
+            Delivery zone
+          </p>
         </div>
         {zoneRate.enabled && (
           <div className="wl-text-right">
@@ -49,7 +62,9 @@ export const ZoneRateDisplay: React.FC<ZoneRateDisplayProps> = ({
         <div className="wl-space-y-3">
           {/* Base rate */}
           <div className="wl-flex wl-items-center wl-justify-between wl-text-sm">
-            <span className="wl-text-wl-muted-foreground">Base delivery rate</span>
+            <span className="wl-text-wl-muted-foreground">
+              Base delivery rate
+            </span>
             <span className="wl-font-medium wl-text-wl-foreground">
               {formatPrice(breakdown.baseRate, breakdown.currency)}
             </span>
@@ -92,16 +107,20 @@ export const ZoneRateDisplay: React.FC<ZoneRateDisplayProps> = ({
 
           {/* Delivery fee with free delivery highlight */}
           <div className="wl-flex wl-items-center wl-justify-between">
-            <span className={clsx('wl-text-sm wl-font-medium', {
-              'wl-text-wl-success': qualifiesForFreeDelivery,
-              'wl-text-wl-foreground': !qualifiesForFreeDelivery,
-            })}>
+            <span
+              className={clsx("wl-text-sm wl-font-medium", {
+                "wl-text-wl-success": qualifiesForFreeDelivery,
+                "wl-text-wl-foreground": !qualifiesForFreeDelivery,
+              })}
+            >
               Delivery fee
             </span>
             {qualifiesForFreeDelivery ? (
               <div className="wl-flex wl-items-center wl-gap-1">
                 <TrendingDown className="wl-w-4 wl-h-4 wl-text-wl-success" />
-                <span className="wl-font-semibold wl-text-wl-success">FREE</span>
+                <span className="wl-font-semibold wl-text-wl-success">
+                  FREE
+                </span>
               </div>
             ) : (
               <span className="wl-font-semibold wl-text-wl-foreground">
@@ -115,7 +134,9 @@ export const ZoneRateDisplay: React.FC<ZoneRateDisplayProps> = ({
       {/* Total */}
       <div className="wl-p-4 wl-bg-wl-accent/10 wl-rounded-lg wl-border wl-border-wl-accent/30">
         <div className="wl-flex wl-items-center wl-justify-between">
-          <span className="wl-font-semibold wl-text-wl-foreground">Total estimate</span>
+          <span className="wl-font-semibold wl-text-wl-foreground">
+            Total estimate
+          </span>
           <span className="wl-text-2xl wl-font-bold wl-text-wl-accent">
             {formatPrice(breakdown.total, breakdown.currency)}
           </span>
@@ -138,17 +159,27 @@ export const ZoneRateDisplay: React.FC<ZoneRateDisplayProps> = ({
       <div className="wl-p-3 wl-bg-wl-muted/30 wl-rounded-lg">
         <div className="wl-flex wl-items-center wl-gap-2 wl-mb-2">
           <TrendingDown className="wl-w-4 wl-h-4 wl-text-wl-muted-foreground" />
-          <p className="wl-text-xs wl-font-semibold wl-text-wl-foreground">Free delivery threshold</p>
+          <p className="wl-text-xs wl-font-semibold wl-text-wl-foreground">
+            Free delivery threshold
+          </p>
         </div>
         <p className="wl-text-sm wl-text-wl-muted-foreground">
-          Orders above {formatPrice(zoneRate.freeDeliveryThreshold, breakdown.currency)} qualify for free delivery
+          Orders above{" "}
+          {formatPrice(zoneRate.freeDeliveryThreshold, breakdown.currency)}{" "}
+          qualify for free delivery
         </p>
       </div>
 
       {/* Rate details */}
       <div className="wl-text-xs wl-text-wl-muted-foreground wl-space-y-1">
-        <p>Distance rate: {formatPrice(zoneRate.distanceFeePerKm, breakdown.currency)}/km</p>
-        <p>Weight surcharge: {formatPrice(zoneRate.weightSurchargePerKg, breakdown.currency)}/kg</p>
+        <p>
+          Distance rate:{" "}
+          {formatPrice(zoneRate.distanceFeePerKm, breakdown.currency)}/km
+        </p>
+        <p>
+          Weight surcharge:{" "}
+          {formatPrice(zoneRate.weightSurchargePerKg, breakdown.currency)}/kg
+        </p>
       </div>
     </div>
   );

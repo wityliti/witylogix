@@ -1,14 +1,17 @@
-'use client';
+"use client";
 
-import { WLMap } from '@/components/map/wl-map';
-import { PinLayer } from '@/components/map/pin-layer';
-import type { PinStatus } from '@/components/map/pin-layer';
+import { WLMap } from "@/components/map/wl-map";
+import { PinLayer } from "@/components/map/pin-layer";
+import type { PinStatus } from "@/components/map/pin-layer";
 
 function toPinStatus(status: string): PinStatus {
-  if (status === 'DELIVERED') return 'assigned';
-  if (['IN_TRANSIT', 'PICKED_UP', 'OUT_FOR_DELIVERY', 'ARRIVED'].includes(status)) return 'in_transit';
-  if (['FAILED', 'RETURNED', 'CANCELLED'].includes(status)) return 'delayed';
-  return 'open';
+  if (status === "DELIVERED") return "assigned";
+  if (
+    ["IN_TRANSIT", "PICKED_UP", "OUT_FOR_DELIVERY", "ARRIVED"].includes(status)
+  )
+    return "in_transit";
+  if (["FAILED", "RETURNED", "CANCELLED"].includes(status)) return "delayed";
+  return "open";
 }
 
 interface ShipmentLocationMapProps {
@@ -33,7 +36,9 @@ export default function ShipmentLocationMap({
       className="h-full w-full rounded-xl overflow-hidden"
     >
       <PinLayer
-        pins={[{ id: shipmentId, lng, lat, status: toPinStatus(status), label }]}
+        pins={[
+          { id: shipmentId, lng, lat, status: toPinStatus(status), label },
+        ]}
       />
     </WLMap>
   );

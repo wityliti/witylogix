@@ -15,12 +15,18 @@ import type { APIRequestContext } from "@playwright/test";
  * robust against class/DOM shape changes.
  */
 
-const API_URL = process.env.API_URL ?? (process.env.TARGET === "staging"
-  ? "https://witylogix-staging.up.railway.app"
-  : "http://localhost:8000");
+const API_URL =
+  process.env.API_URL ??
+  (process.env.TARGET === "staging"
+    ? "https://witylogix-staging.up.railway.app"
+    : "http://localhost:8000");
 
-async function getAuthedRequest(request: APIRequestContext): Promise<{ token: string; request: APIRequestContext }> {
-  const response = await request.post(`${API_URL}/api/v4/auth/login`, { data: DEMO_CREDS });
+async function getAuthedRequest(
+  request: APIRequestContext,
+): Promise<{ token: string; request: APIRequestContext }> {
+  const response = await request.post(`${API_URL}/api/v4/auth/login`, {
+    data: DEMO_CREDS,
+  });
   expect(response.ok(), `login failed: ${response.status()}`).toBeTruthy();
   const body = await response.json();
   const token = body.data?.accessToken ?? body.accessToken;
@@ -62,21 +68,45 @@ const DEFAULT_EXTRACT = (body: unknown): number => {
 };
 
 const API_CHECKS: ApiCheck[] = [
-  { name: "drivers", path: "/api/v4/drivers", minCount: 5, extractCount: DEFAULT_EXTRACT },
-  { name: "customers", path: "/api/v4/customers", minCount: 8, extractCount: DEFAULT_EXTRACT },
-  { name: "orders", path: "/api/v4/orders", minCount: 25, extractCount: DEFAULT_EXTRACT },
-  { name: "zones", path: "/api/v4/zones", minCount: 3, extractCount: DEFAULT_EXTRACT },
+  {
+    name: "drivers",
+    path: "/api/v4/drivers",
+    minCount: 5,
+    extractCount: DEFAULT_EXTRACT,
+  },
+  {
+    name: "customers",
+    path: "/api/v4/customers",
+    minCount: 8,
+    extractCount: DEFAULT_EXTRACT,
+  },
+  {
+    name: "orders",
+    path: "/api/v4/orders",
+    minCount: 25,
+    extractCount: DEFAULT_EXTRACT,
+  },
+  {
+    name: "zones",
+    path: "/api/v4/zones",
+    minCount: 3,
+    extractCount: DEFAULT_EXTRACT,
+  },
 ];
 
 test.describe("Tier 2a — API returns seeded data", () => {
   for (const check of API_CHECKS) {
-    test(`${check.name} API returns at least ${check.minCount} records`, async ({ request }, testInfo) => {
+    test(`${check.name} API returns at least ${check.minCount} records`, async ({
+      request,
+    }, testInfo) => {
       const { token } = await getAuthedRequest(request);
       const response = await request.get(`${API_URL}${check.path}`, {
         headers: { authorization: `Bearer ${token}` },
       });
       const status = response.status();
-      const body = await response.json().catch(async () => ({ raw: await response.text() }));
+      const body = await response
+        .json()
+        .catch(async () => ({ raw: await response.text() }));
       const count = check.extractCount(body);
 
       testInfo.annotations.push({
@@ -85,7 +115,10 @@ test.describe("Tier 2a — API returns seeded data", () => {
       });
 
       expect(status, `${check.path} returned ${status}`).toBe(200);
-      expect(count, `${check.path} returned ${count}, expected ≥${check.minCount}`).toBeGreaterThanOrEqual(check.minCount);
+      expect(
+        count,
+        `${check.path} returned ${count}, expected ≥${check.minCount}`,
+      ).toBeGreaterThanOrEqual(check.minCount);
     });
   }
 });
@@ -97,23 +130,45 @@ type ActionRoute = {
 };
 
 const ACTION_ROUTES: ActionRoute[] = [
-  { name: "drivers", path: "/drivers", buttonName: /add driver|new driver|create driver/i },
+  {
+    name: "drivers",
+    path: "/drivers",
+    buttonName: /add driver|new driver|create driver/i,
+  },
   // Customers has no "Add Customer" — records are synced from Shopify.
-  { name: "customers", path: "/customers", buttonName: /sync from shopify|add customer|new customer/i },
-  { name: "orders", path: "/orders", buttonName: /create order|new order|add order|import/i },
-  { name: "zones", path: "/zones", buttonName: /create zone|new zone|add zone/i },
+  {
+    name: "customers",
+    path: "/customers",
+    buttonName: /sync from shopify|add customer|new customer/i,
+  },
+  {
+    name: "orders",
+    path: "/orders",
+    buttonName: /create order|new order|add order|import/i,
+  },
+  {
+    name: "zones",
+    path: "/zones",
+    buttonName: /create zone|new zone|add zone/i,
+  },
 ];
 
 test.describe("Tier 2b — primary action buttons respond", () => {
   for (const route of ACTION_ROUTES) {
-    test(`${route.name} primary action opens a creator`, async ({ authedPage }, testInfo) => {
+    test(`${route.name} primary action opens a creator`, async ({
+      authedPage,
+    }, testInfo) => {
       const page = authedPage;
       await page.goto(route.path, { waitUntil: "domcontentloaded" });
-      await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {});
+      await page
+        .waitForLoadState("networkidle", { timeout: 15000 })
+        .catch(() => {});
 
       // Wait for the primary button to actually render. Both strategies in
       // parallel, then race whichever resolves first.
-      const byRole = page.getByRole("button", { name: route.buttonName }).first();
+      const byRole = page
+        .getByRole("button", { name: route.buttonName })
+        .first();
       const byText = page
         .locator("button")
         .filter({ hasText: route.buttonName })

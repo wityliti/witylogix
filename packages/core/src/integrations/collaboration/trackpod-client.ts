@@ -41,7 +41,7 @@ interface TrackPODDriver {
 
 interface TrackPODProofOfDelivery {
   job_id: string;
-  pod_type: 'photo' | 'signature' | 'both';
+  pod_type: "photo" | "signature" | "both";
   photo_urls?: string[];
   signature_url?: string;
   recipient_name: string;
@@ -57,21 +57,21 @@ export class TrackPODClient {
   constructor(api_key: string, sandbox_mode: boolean = false) {
     this.api_key = api_key;
     this.base_url = sandbox_mode
-      ? 'https://sandbox.trackpod.com/api'
-      : 'https://api.trackpod.com/api';
+      ? "https://sandbox.trackpod.com/api"
+      : "https://api.trackpod.com/api";
   }
 
   private getHeaders(): Record<string, string> {
     return {
-      'Authorization': `Bearer ${this.api_key}`,
-      'Content-Type': 'application/json',
+      Authorization: `Bearer ${this.api_key}`,
+      "Content-Type": "application/json",
     };
   }
 
   async createOrder(order: Partial<TrackPODOrder>): Promise<TrackPODOrder> {
     try {
       const response = await fetch(`${this.base_url}/orders`, {
-        method: 'POST',
+        method: "POST",
         headers: this.getHeaders(),
         body: JSON.stringify(order),
       });
@@ -82,14 +82,16 @@ export class TrackPODClient {
 
       return (await response.json()) as TrackPODOrder;
     } catch (error) {
-      throw new Error(`Failed to create Track-POD order: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to create Track-POD order: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   async getOrder(job_id: string): Promise<TrackPODOrder | null> {
     try {
       const response = await fetch(`${this.base_url}/orders/${job_id}`, {
-        method: 'GET',
+        method: "GET",
         headers: this.getHeaders(),
       });
 
@@ -103,14 +105,19 @@ export class TrackPODClient {
 
       return (await response.json()) as TrackPODOrder;
     } catch (error) {
-      throw new Error(`Failed to get Track-POD order: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get Track-POD order: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
-  async updateOrder(job_id: string, updates: Partial<TrackPODOrder>): Promise<TrackPODOrder> {
+  async updateOrder(
+    job_id: string,
+    updates: Partial<TrackPODOrder>,
+  ): Promise<TrackPODOrder> {
     try {
       const response = await fetch(`${this.base_url}/orders/${job_id}`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: this.getHeaders(),
         body: JSON.stringify(updates),
       });
@@ -121,7 +128,9 @@ export class TrackPODClient {
 
       return (await response.json()) as TrackPODOrder;
     } catch (error) {
-      throw new Error(`Failed to update Track-POD order: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to update Track-POD order: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -133,17 +142,18 @@ export class TrackPODClient {
   }): Promise<TrackPODOrder[]> {
     try {
       const query_params = new URLSearchParams();
-      if (filters?.status) query_params.append('status', filters.status);
-      if (filters?.date) query_params.append('date', filters.date);
-      if (filters?.limit) query_params.append('limit', String(filters.limit));
-      if (filters?.offset) query_params.append('offset', String(filters.offset));
+      if (filters?.status) query_params.append("status", filters.status);
+      if (filters?.date) query_params.append("date", filters.date);
+      if (filters?.limit) query_params.append("limit", String(filters.limit));
+      if (filters?.offset)
+        query_params.append("offset", String(filters.offset));
 
       const response = await fetch(
         `${this.base_url}/orders?${query_params.toString()}`,
         {
-          method: 'GET',
+          method: "GET",
           headers: this.getHeaders(),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -153,14 +163,16 @@ export class TrackPODClient {
       const data = (await response.json()) as { orders: TrackPODOrder[] };
       return data.orders;
     } catch (error) {
-      throw new Error(`Failed to list Track-POD orders: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to list Track-POD orders: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   async createRoute(route: Partial<TrackPODRoute>): Promise<TrackPODRoute> {
     try {
       const response = await fetch(`${this.base_url}/routes`, {
-        method: 'POST',
+        method: "POST",
         headers: this.getHeaders(),
         body: JSON.stringify(route),
       });
@@ -171,14 +183,16 @@ export class TrackPODClient {
 
       return (await response.json()) as TrackPODRoute;
     } catch (error) {
-      throw new Error(`Failed to create Track-POD route: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to create Track-POD route: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   async getRoute(route_id: string): Promise<TrackPODRoute | null> {
     try {
       const response = await fetch(`${this.base_url}/routes/${route_id}`, {
-        method: 'GET',
+        method: "GET",
         headers: this.getHeaders(),
       });
 
@@ -192,16 +206,21 @@ export class TrackPODClient {
 
       return (await response.json()) as TrackPODRoute;
     } catch (error) {
-      throw new Error(`Failed to get Track-POD route: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get Track-POD route: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   async optimizeRoute(route_id: string): Promise<TrackPODRoute> {
     try {
-      const response = await fetch(`${this.base_url}/routes/${route_id}/optimize`, {
-        method: 'POST',
-        headers: this.getHeaders(),
-      });
+      const response = await fetch(
+        `${this.base_url}/routes/${route_id}/optimize`,
+        {
+          method: "POST",
+          headers: this.getHeaders(),
+        },
+      );
 
       if (!response.ok) {
         throw new Error(`Track-POD API error: ${response.statusText}`);
@@ -209,14 +228,16 @@ export class TrackPODClient {
 
       return (await response.json()) as TrackPODRoute;
     } catch (error) {
-      throw new Error(`Failed to optimize Track-POD route: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to optimize Track-POD route: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   async getDriver(driver_id: string): Promise<TrackPODDriver | null> {
     try {
       const response = await fetch(`${this.base_url}/drivers/${driver_id}`, {
-        method: 'GET',
+        method: "GET",
         headers: this.getHeaders(),
       });
 
@@ -230,21 +251,23 @@ export class TrackPODClient {
 
       return (await response.json()) as TrackPODDriver;
     } catch (error) {
-      throw new Error(`Failed to get Track-POD driver: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get Track-POD driver: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   async listDrivers(filters?: { status?: string }): Promise<TrackPODDriver[]> {
     try {
       const query_params = new URLSearchParams();
-      if (filters?.status) query_params.append('status', filters.status);
+      if (filters?.status) query_params.append("status", filters.status);
 
       const response = await fetch(
         `${this.base_url}/drivers?${query_params.toString()}`,
         {
-          method: 'GET',
+          method: "GET",
           headers: this.getHeaders(),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -254,13 +277,13 @@ export class TrackPODClient {
       const data = (await response.json()) as { drivers: TrackPODDriver[] };
       return data.drivers;
     } catch (error) {
-      throw new Error(`Failed to list Track-POD drivers: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to list Track-POD drivers: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
-  async getDriverTracking(
-    driver_id: string
-  ): Promise<{
+  async getDriverTracking(driver_id: string): Promise<{
     driver_id: string;
     current_location: { latitude: number; longitude: number };
     current_route: string | null;
@@ -268,10 +291,13 @@ export class TrackPODClient {
     last_update: string;
   } | null> {
     try {
-      const response = await fetch(`${this.base_url}/drivers/${driver_id}/tracking`, {
-        method: 'GET',
-        headers: this.getHeaders(),
-      });
+      const response = await fetch(
+        `${this.base_url}/drivers/${driver_id}/tracking`,
+        {
+          method: "GET",
+          headers: this.getHeaders(),
+        },
+      );
 
       if (response.status === 404) {
         return null;
@@ -289,30 +315,42 @@ export class TrackPODClient {
         last_update: string;
       };
     } catch (error) {
-      throw new Error(`Failed to get Track-POD driver tracking: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get Track-POD driver tracking: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   async submitProofOfDelivery(pod: TrackPODProofOfDelivery): Promise<boolean> {
     try {
-      const response = await fetch(`${this.base_url}/orders/${pod.job_id}/proof-of-delivery`, {
-        method: 'POST',
-        headers: this.getHeaders(),
-        body: JSON.stringify(pod),
-      });
+      const response = await fetch(
+        `${this.base_url}/orders/${pod.job_id}/proof-of-delivery`,
+        {
+          method: "POST",
+          headers: this.getHeaders(),
+          body: JSON.stringify(pod),
+        },
+      );
 
       return response.ok;
     } catch (error) {
-      throw new Error(`Failed to submit Track-POD proof of delivery: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to submit Track-POD proof of delivery: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
-  async getProofOfDelivery(job_id: string): Promise<TrackPODProofOfDelivery | null> {
+  async getProofOfDelivery(
+    job_id: string,
+  ): Promise<TrackPODProofOfDelivery | null> {
     try {
-      const response = await fetch(`${this.base_url}/orders/${job_id}/proof-of-delivery`, {
-        method: 'GET',
-        headers: this.getHeaders(),
-      });
+      const response = await fetch(
+        `${this.base_url}/orders/${job_id}/proof-of-delivery`,
+        {
+          method: "GET",
+          headers: this.getHeaders(),
+        },
+      );
 
       if (response.status === 404) {
         return null;
@@ -324,25 +362,29 @@ export class TrackPODClient {
 
       return (await response.json()) as TrackPODProofOfDelivery;
     } catch (error) {
-      throw new Error(`Failed to get Track-POD proof of delivery: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get Track-POD proof of delivery: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   async notifyCustomer(
     job_id: string,
     customer_phone: string,
-    message: string
+    message: string,
   ): Promise<boolean> {
     try {
       const response = await fetch(`${this.base_url}/orders/${job_id}/notify`, {
-        method: 'POST',
+        method: "POST",
         headers: this.getHeaders(),
         body: JSON.stringify({ customer_phone, message }),
       });
 
       return response.ok;
     } catch (error) {
-      throw new Error(`Failed to notify customer: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to notify customer: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -353,10 +395,13 @@ export class TrackPODClient {
     customer_name: string;
   } | null> {
     try {
-      const response = await fetch(`${this.base_url}/orders/${job_id}/confirmation`, {
-        method: 'GET',
-        headers: this.getHeaders(),
-      });
+      const response = await fetch(
+        `${this.base_url}/orders/${job_id}/confirmation`,
+        {
+          method: "GET",
+          headers: this.getHeaders(),
+        },
+      );
 
       if (response.status === 404) {
         return null;
@@ -373,7 +418,9 @@ export class TrackPODClient {
         customer_name: string;
       };
     } catch (error) {
-      throw new Error(`Failed to get Track-POD delivery confirmation: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get Track-POD delivery confirmation: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 }

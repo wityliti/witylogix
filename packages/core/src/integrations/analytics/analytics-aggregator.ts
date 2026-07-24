@@ -11,7 +11,7 @@
  * - Cache layer with invalidation
  */
 
-import { AnalyticsAdapter } from './analytics-adapter.js';
+import { AnalyticsAdapter } from "./analytics-adapter.js";
 import type {
   AnalyticsConfig,
   QueryDefinition,
@@ -23,7 +23,7 @@ import type {
   AggregationLevel,
   MetricComparison,
   FederatedDashboardResult,
-} from './types.js';
+} from "./types.js";
 
 interface AggregatorConfig {
   /** Provider instances mapped by name */
@@ -68,8 +68,11 @@ export class AnalyticsAggregator {
 
   constructor(config: AggregatorConfig) {
     this.providers = config.providers;
-    this.defaultProvider = config.defaultProvider || Array.from(config.providers.keys())[0] || '';
-    this.cacheTtl = config.cache?.ttlSeconds ? config.cache.ttlSeconds * 1000 : 3600000;
+    this.defaultProvider =
+      config.defaultProvider || Array.from(config.providers.keys())[0] || "";
+    this.cacheTtl = config.cache?.ttlSeconds
+      ? config.cache.ttlSeconds * 1000
+      : 3600000;
     this.normalizationRules = config.normalizationRules || {};
     this.cache = new Map();
   }
@@ -82,13 +85,15 @@ export class AnalyticsAggregator {
    */
   async executeAggregatedQuery(
     query: QueryDefinition,
-    providerNames?: string[]
+    providerNames?: string[],
   ): Promise<Array<{ provider: string; result: QueryResult }>> {
-    const targetProviders: string[] = providerNames || Array.from(this.providers.keys());
+    const targetProviders: string[] =
+      providerNames || Array.from(this.providers.keys());
     const results: Array<{ provider: string; result: QueryResult }> = [];
 
     for (const providerName of targetProviders) {
-      const provider: AnalyticsAdapter | undefined = this.providers.get(providerName);
+      const provider: AnalyticsAdapter | undefined =
+        this.providers.get(providerName);
 
       if (!provider) {
         console.warn(`Provider ${providerName} not found`);
@@ -115,7 +120,7 @@ export class AnalyticsAggregator {
       } catch (error: unknown) {
         console.error(
           `Failed to execute query on ${providerName}:`,
-          error instanceof Error ? error.message : String(error)
+          error instanceof Error ? error.message : String(error),
         );
       }
     }
@@ -130,7 +135,7 @@ export class AnalyticsAggregator {
    * @returns Federated dashboard result
    */
   async federateDashboards(
-    dashboards: Array<{ provider: string; dashboard: DashboardDefinition }>
+    dashboards: Array<{ provider: string; dashboard: DashboardDefinition }>,
   ): Promise<FederatedDashboardResult> {
     const startTime: number = Date.now();
     const federatedId: string = `federated-${Date.now()}`;
@@ -138,7 +143,8 @@ export class AnalyticsAggregator {
     const metrics: AnalyticsMetric[] = [];
 
     for (const { provider, dashboard } of dashboards) {
-      const providerInstance: AnalyticsAdapter | undefined = this.providers.get(provider);
+      const providerInstance: AnalyticsAdapter | undefined =
+        this.providers.get(provider);
 
       if (!providerInstance) {
         console.warn(`Provider ${provider} not found`);
@@ -147,7 +153,9 @@ export class AnalyticsAggregator {
 
       for (const widget of dashboard.widgets) {
         try {
-          const queryResult: QueryResult = await providerInstance.executeQuery(widget.query);
+          const queryResult: QueryResult = await providerInstance.executeQuery(
+            widget.query,
+          );
 
           federatedWidgets.push({
             widgetId: widget.id,
@@ -159,7 +167,7 @@ export class AnalyticsAggregator {
           const extractedMetrics: AnalyticsMetric[] = this._extractMetrics(
             widget,
             queryResult,
-            provider
+            provider,
           );
           metrics.push(...extractedMetrics);
         } catch (error: unknown) {
@@ -167,7 +175,7 @@ export class AnalyticsAggregator {
             widgetId: widget.id,
             source: provider,
             error: {
-              code: 'WIDGET_EXECUTION_ERROR',
+              code: "WIDGET_EXECUTION_ERROR",
               message: error instanceof Error ? error.message : String(error),
               retryable: false,
             },
@@ -193,13 +201,15 @@ export class AnalyticsAggregator {
    */
   async getNormalizedMetrics(
     metricNames: string[],
-    providerNames?: string[]
+    providerNames?: string[],
   ): Promise<AnalyticsMetric[]> {
-    const targetProviders: string[] = providerNames || Array.from(this.providers.keys());
+    const targetProviders: string[] =
+      providerNames || Array.from(this.providers.keys());
     const metrics: AnalyticsMetric[] = [];
 
     for (const providerName of targetProviders) {
-      const provider: AnalyticsAdapter | undefined = this.providers.get(providerName);
+      const provider: AnalyticsAdapter | undefined =
+        this.providers.get(providerName);
 
       if (!provider) {
         continue;
@@ -211,16 +221,21 @@ export class AnalyticsAggregator {
             id: `${providerName}-${metricName}`,
             name: metricName,
             value: 0,
-            unit: 'count',
+            unit: "count",
             source: providerName,
             timestamp: new Date(),
           };
 
           // Apply normalization rules
-          const normalized: AnalyticsMetric = this._applyNormalization(metric, metricName);
+          const normalized: AnalyticsMetric = this._applyNormalization(
+            metric,
+            metricName,
+          );
           metrics.push(normalized);
         } catch (error: unknown) {
-          console.error(`Failed to retrieve metric ${metricName} from ${providerName}`);
+          console.error(
+            `Failed to retrieve metric ${metricName} from ${providerName}`,
+          );
         }
       }
     }
@@ -236,15 +251,17 @@ export class AnalyticsAggregator {
    */
   async compareMetrics(
     metricName: string,
-    providerNames?: string[]
+    providerNames?: string[],
   ): Promise<MetricComparison> {
-    const targetProviders: string[] = providerNames || Array.from(this.providers.keys());
+    const targetProviders: string[] =
+      providerNames || Array.from(this.providers.keys());
     const values: Record<string, number> = {};
     const differences: Record<string, number> = {};
     const percentDifferences: Record<string, number> = {};
 
     for (const providerName of targetProviders) {
-      const provider: AnalyticsAdapter | undefined = this.providers.get(providerName);
+      const provider: AnalyticsAdapter | undefined =
+        this.providers.get(providerName);
 
       if (!provider) {
         continue;
@@ -266,7 +283,8 @@ export class AnalyticsAggregator {
 
     Object.entries(values).forEach(([provider, value]) => {
       differences[provider] = value - maxValue;
-      percentDifferences[provider] = maxValue > 0 ? ((value - maxValue) / maxValue) * 100 : 0;
+      percentDifferences[provider] =
+        maxValue > 0 ? ((value - maxValue) / maxValue) * 100 : 0;
     });
 
     return {
@@ -275,11 +293,15 @@ export class AnalyticsAggregator {
       differences,
       percentDifferences,
       highestValue: {
-        source: Object.entries(values).reduce((a, b) => (a[1] > b[1] ? a : b))[0],
+        source: Object.entries(values).reduce((a, b) =>
+          a[1] > b[1] ? a : b,
+        )[0],
         value: maxValue,
       },
       lowestValue: {
-        source: Object.entries(values).reduce((a, b) => (a[1] < b[1] ? a : b))[0],
+        source: Object.entries(values).reduce((a, b) =>
+          a[1] < b[1] ? a : b,
+        )[0],
         value: minValue,
       },
     };
@@ -293,9 +315,9 @@ export class AnalyticsAggregator {
    */
   aggregateMetricsByLevel(
     metrics: AnalyticsMetric[],
-    level: AggregationLevel
+    level: AggregationLevel,
   ): AnalyticsMetric[] {
-    if (level === 'raw') {
+    if (level === "raw") {
       return metrics;
     }
 
@@ -318,7 +340,8 @@ export class AnalyticsAggregator {
     for (const metricGroup of aggregated.values()) {
       if (metricGroup.length === 0) continue;
 
-      const avgValue: number = metricGroup.reduce((sum, m) => sum + m.value, 0) / metricGroup.length;
+      const avgValue: number =
+        metricGroup.reduce((sum, m) => sum + m.value, 0) / metricGroup.length;
       const firstMetric: AnalyticsMetric = metricGroup[0];
 
       result.push({
@@ -342,16 +365,16 @@ export class AnalyticsAggregator {
       name: string;
       metrics: string[];
       providers: string[];
-      format: 'email' | 's3' | 'webhook';
+      format: "email" | "s3" | "webhook";
       destination: string;
     },
-    cronExpression: string
+    cronExpression: string,
   ): string {
     const scheduleId: string = `schedule-${Date.now()}`;
 
     // In production, this would persist to database and use a job scheduler
     console.log(
-      `Scheduled report aggregation: ${scheduleId} using cron: ${cronExpression}`
+      `Scheduled report aggregation: ${scheduleId} using cron: ${cronExpression}`,
     );
 
     return scheduleId;
@@ -406,7 +429,7 @@ export class AnalyticsAggregator {
     this.clearCache(name);
 
     if (this.defaultProvider === name) {
-      this.defaultProvider = Array.from(this.providers.keys())[0] || '';
+      this.defaultProvider = Array.from(this.providers.keys())[0] || "";
     }
   }
 
@@ -420,18 +443,18 @@ export class AnalyticsAggregator {
   private _extractMetrics(
     widget: DashboardWidget,
     result: QueryResult,
-    provider: string
+    provider: string,
   ): AnalyticsMetric[] {
     const metrics: AnalyticsMetric[] = [];
 
     for (const row of result.rows) {
       for (const [columnName, value] of Object.entries(row)) {
-        if (typeof value === 'number') {
+        if (typeof value === "number") {
           metrics.push({
             id: `${provider}-${widget.id}-${columnName}`,
             name: columnName,
             value,
-            unit: 'count',
+            unit: "count",
             source: provider,
             timestamp: new Date(),
             category: widget.title,
@@ -445,9 +468,10 @@ export class AnalyticsAggregator {
 
   private _applyNormalization(
     metric: AnalyticsMetric,
-    metricName: string
+    metricName: string,
   ): AnalyticsMetric {
-    const rule: MetricNormalizationRule | undefined = this.normalizationRules[metricName];
+    const rule: MetricNormalizationRule | undefined =
+      this.normalizationRules[metricName];
 
     if (!rule) {
       return metric;
@@ -462,17 +486,17 @@ export class AnalyticsAggregator {
     if (rule.unitConversion) {
       // Apply unit conversion
       switch (rule.unitConversion) {
-        case 'bytes_to_mb':
+        case "bytes_to_mb":
           normalized.value = metric.value / (1024 * 1024);
-          normalized.unit = 'MB';
+          normalized.unit = "MB";
           break;
-        case 'ms_to_seconds':
+        case "ms_to_seconds":
           normalized.value = metric.value / 1000;
-          normalized.unit = 'seconds';
+          normalized.unit = "seconds";
           break;
-        case 'percent_to_decimal':
+        case "percent_to_decimal":
           normalized.value = metric.value / 100;
-          normalized.unit = 'decimal';
+          normalized.unit = "decimal";
           break;
         default:
           break;
@@ -483,22 +507,22 @@ export class AnalyticsAggregator {
   }
 
   private _getTimeBucket(date: Date, level: AggregationLevel): string {
-    const pad = (n: number) => String(n).padStart(2, '0');
+    const pad = (n: number) => String(n).padStart(2, "0");
 
     switch (level) {
-      case 'hourly':
+      case "hourly":
         return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}-${pad(date.getHours())}`;
-      case 'daily':
+      case "daily":
         return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-      case 'weekly':
+      case "weekly":
         const weekStart: Date = new Date(date);
         weekStart.setDate(date.getDate() - date.getDay());
         return `${weekStart.getFullYear()}-W${pad(Math.ceil((date.getDate() - date.getDay()) / 7))}`;
-      case 'monthly':
+      case "monthly":
         return `${date.getFullYear()}-${pad(date.getMonth() + 1)}`;
-      case 'yearly':
+      case "yearly":
         return `${date.getFullYear()}`;
-      case 'raw':
+      case "raw":
       default:
         return date.toISOString();
     }

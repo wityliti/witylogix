@@ -5,7 +5,11 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { MagentoClient } from "../magento-client.js";
-import type { ECommerceAdapterConfig, ECommerceOrder, ECommerceProduct } from "../types.js";
+import type {
+  ECommerceAdapterConfig,
+  ECommerceOrder,
+  ECommerceProduct,
+} from "../types.js";
 
 const mockFetch = vi.fn();
 
@@ -165,12 +169,10 @@ describe("MagentoClient", () => {
     };
 
     it("should fetch orders", async () => {
-      mockFetch
-        .mockResolvedValueOnce(tokenResponse)
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({ items: [mockOrderData], total_count: 1 }),
-        });
+      mockFetch.mockResolvedValueOnce(tokenResponse).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ items: [mockOrderData], total_count: 1 }),
+      });
 
       const orders = await client.getOrders({ limit: 10 });
       expect(orders).toHaveLength(1);
@@ -179,12 +181,10 @@ describe("MagentoClient", () => {
     });
 
     it("should fetch order by ID", async () => {
-      mockFetch
-        .mockResolvedValueOnce(tokenResponse)
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => mockOrderData,
-        });
+      mockFetch.mockResolvedValueOnce(tokenResponse).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockOrderData,
+      });
 
       const order = await client.getOrderById("1");
       expect(order.id).toBe("1");
@@ -193,12 +193,10 @@ describe("MagentoClient", () => {
     });
 
     it("should update order", async () => {
-      mockFetch
-        .mockResolvedValueOnce(tokenResponse)
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => mockOrderData,
-        });
+      mockFetch.mockResolvedValueOnce(tokenResponse).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockOrderData,
+      });
 
       const updated = await client.updateOrder("1", { notes: "Updated order" });
       expect(updated.id).toBe("1");
@@ -237,12 +235,10 @@ describe("MagentoClient", () => {
     };
 
     it("should fetch products", async () => {
-      mockFetch
-        .mockResolvedValueOnce(tokenResponse)
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({ items: [mockProductData], total_count: 1 }),
-        });
+      mockFetch.mockResolvedValueOnce(tokenResponse).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ items: [mockProductData], total_count: 1 }),
+      });
 
       const products = await client.getProducts({ limit: 10 });
       expect(products).toHaveLength(1);
@@ -251,12 +247,10 @@ describe("MagentoClient", () => {
     });
 
     it("should fetch product by ID", async () => {
-      mockFetch
-        .mockResolvedValueOnce(tokenResponse)
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => mockProductData,
-        });
+      mockFetch.mockResolvedValueOnce(tokenResponse).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockProductData,
+      });
 
       const product = await client.getProductById("1");
       expect(product.id).toBe("1");
@@ -265,12 +259,10 @@ describe("MagentoClient", () => {
     });
 
     it("should create product", async () => {
-      mockFetch
-        .mockResolvedValueOnce(tokenResponse)
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => mockProductData,
-        });
+      mockFetch.mockResolvedValueOnce(tokenResponse).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockProductData,
+      });
 
       const product = await client.createProduct({
         id: "1",
@@ -298,12 +290,10 @@ describe("MagentoClient", () => {
     });
 
     it("should update product", async () => {
-      mockFetch
-        .mockResolvedValueOnce(tokenResponse)
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => mockProductData,
-        });
+      mockFetch.mockResolvedValueOnce(tokenResponse).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockProductData,
+      });
 
       const updated = await client.updateProduct("1", {
         title: "Updated Product",
@@ -343,12 +333,10 @@ describe("MagentoClient", () => {
     };
 
     it("should fetch customers", async () => {
-      mockFetch
-        .mockResolvedValueOnce(tokenResponse)
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({ items: [mockCustomerData], total_count: 1 }),
-        });
+      mockFetch.mockResolvedValueOnce(tokenResponse).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ items: [mockCustomerData], total_count: 1 }),
+      });
 
       const customers = await client.getCustomers();
       expect(customers).toHaveLength(1);
@@ -356,12 +344,10 @@ describe("MagentoClient", () => {
     });
 
     it("should fetch customer by ID", async () => {
-      mockFetch
-        .mockResolvedValueOnce(tokenResponse)
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => mockCustomerData,
-        });
+      mockFetch.mockResolvedValueOnce(tokenResponse).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockCustomerData,
+      });
 
       const customer = await client.getCustomerById("5");
       expect(customer.id).toBe("5");
@@ -369,12 +355,10 @@ describe("MagentoClient", () => {
     });
 
     it("should update customer", async () => {
-      mockFetch
-        .mockResolvedValueOnce(tokenResponse)
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => mockCustomerData,
-        });
+      mockFetch.mockResolvedValueOnce(tokenResponse).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockCustomerData,
+      });
 
       const updated = await client.updateCustomer("5", {
         firstName: "Jane",
@@ -435,18 +419,16 @@ describe("MagentoClient", () => {
     };
 
     it("should update inventory", async () => {
-      mockFetch
-        .mockResolvedValueOnce(tokenResponse)
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({
-            extension_attributes: {
-              stock_item: {
-                qty: 75,
-              },
+      mockFetch.mockResolvedValueOnce(tokenResponse).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          extension_attributes: {
+            stock_item: {
+              qty: 75,
             },
-          }),
-        });
+          },
+        }),
+      });
 
       const inventory = await client.updateInventory({
         variantId: "PRODUCT-001",
@@ -458,18 +440,16 @@ describe("MagentoClient", () => {
     });
 
     it("should get inventory", async () => {
-      mockFetch
-        .mockResolvedValueOnce(tokenResponse)
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({
-            extension_attributes: {
-              stock_item: {
-                qty: 100,
-              },
+      mockFetch.mockResolvedValueOnce(tokenResponse).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          extension_attributes: {
+            stock_item: {
+              qty: 100,
             },
-          }),
-        });
+          },
+        }),
+      });
 
       const inventory = await client.getInventory("PRODUCT-001");
       expect(inventory.quantity).toBe(100);
@@ -487,7 +467,10 @@ describe("MagentoClient", () => {
 
     it("should reject invalid webhook signature", () => {
       const payload = JSON.stringify({ id: 1 });
-      const isValid = client.verifyWebhookSignature(payload, "invalid-signature");
+      const isValid = client.verifyWebhookSignature(
+        payload,
+        "invalid-signature",
+      );
       expect(isValid).toBe(false);
     });
 

@@ -90,7 +90,7 @@ export function HOSClock({
           className={cn(
             "absolute inset-0 rounded-full bg-gradient-to-br opacity-0 blur-xl",
             colors.bg,
-            isViolation && showAnimation && "animate-pulse"
+            isViolation && showAnimation && "animate-pulse",
           )}
         />
 
@@ -124,23 +124,25 @@ export function HOSClock({
             strokeDasharray={circumference}
             strokeDashoffset={animate ? strokeDashoffset : strokeDashoffset}
             style={{
-              filter: isViolation && showAnimation ? "drop-shadow(0 0 6px rgba(239, 68, 68, 0.8))" : "none",
+              filter:
+                isViolation && showAnimation
+                  ? "drop-shadow(0 0 6px rgba(239, 68, 68, 0.8))"
+                  : "none",
             }}
           />
 
           {/* Center circle */}
-          <circle
-            cx="50"
-            cy="50"
-            r="38"
-            fill="rgb(30, 30, 30)"
-            opacity="0.8"
-          />
+          <circle cx="50" cy="50" r="38" fill="rgb(30, 30, 30)" opacity="0.8" />
         </svg>
 
         {/* Center content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <div className={cn("text-center transition-opacity duration-300", colors.text)}>
+          <div
+            className={cn(
+              "text-center transition-opacity duration-300",
+              colors.text,
+            )}
+          >
             <div className="text-3xl font-bold tabular-nums">
               {String(hours).padStart(2, "0")}
               <span className="text-lg">:</span>

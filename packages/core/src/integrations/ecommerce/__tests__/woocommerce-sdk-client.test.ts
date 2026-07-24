@@ -518,10 +518,7 @@ describe("WooCommerceClient", () => {
       const payload = { test: "data" };
       const invalidSignature = "invalid-signature";
 
-      const isValid = client.verifyWebhookSignature(
-        payload,
-        invalidSignature,
-      );
+      const isValid = client.verifyWebhookSignature(payload, invalidSignature);
 
       expect(isValid).toBe(false);
     });
@@ -573,7 +570,11 @@ describe("WooCommerceClient", () => {
 
       const requests = [
         { method: "POST", path: "/products", body: { name: "Product 1" } },
-        { method: "PUT", path: "/products/2", body: { name: "Updated Product" } },
+        {
+          method: "PUT",
+          path: "/products/2",
+          body: { name: "Updated Product" },
+        },
       ];
 
       const results = await client.batch(requests);

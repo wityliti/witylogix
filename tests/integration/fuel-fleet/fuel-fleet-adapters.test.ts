@@ -60,7 +60,7 @@ describe("WEX Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(oauthToken), { status: 200 })
+        new Response(JSON.stringify(oauthToken), { status: 200 }),
       );
 
       expect(oauthToken.access_token).toMatch(/^wex_oauth_token_/);
@@ -73,7 +73,7 @@ describe("WEX Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(refreshResponse), { status: 200 })
+        new Response(JSON.stringify(refreshResponse), { status: 200 }),
       );
 
       expect(refreshResponse.access_token).toBeDefined();
@@ -92,7 +92,7 @@ describe("WEX Adapter Integration", () => {
 
     it("should retrieve card balance", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(mockCard), { status: 200 })
+        new Response(JSON.stringify(mockCard), { status: 200 }),
       );
 
       expect(mockCard.balance).toBeGreaterThan(0);
@@ -107,7 +107,7 @@ describe("WEX Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(updatedCard), { status: 200 })
+        new Response(JSON.stringify(updatedCard), { status: 200 }),
       );
 
       expect(updatedCard.dailyLimit).toBe(500);
@@ -121,7 +121,7 @@ describe("WEX Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(suspendedCard), { status: 200 })
+        new Response(JSON.stringify(suspendedCard), { status: 200 }),
       );
 
       expect(suspendedCard.status).toBe("suspended");
@@ -135,7 +135,7 @@ describe("WEX Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(reactivatedCard), { status: 200 })
+        new Response(JSON.stringify(reactivatedCard), { status: 200 }),
       );
 
       expect(reactivatedCard.status).toBe("active");
@@ -160,7 +160,7 @@ describe("WEX Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(transactions), { status: 200 })
+        new Response(JSON.stringify(transactions), { status: 200 }),
       );
 
       expect(transactions.transactions).toHaveLength(1);
@@ -177,7 +177,7 @@ describe("WEX Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(filteredTransactions), { status: 200 })
+        new Response(JSON.stringify(filteredTransactions), { status: 200 }),
       );
 
       expect(filteredTransactions.transactions).toHaveLength(1);
@@ -194,7 +194,7 @@ describe("WEX Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(analytics), { status: 200 })
+        new Response(JSON.stringify(analytics), { status: 200 }),
       );
 
       expect(analytics.avgPricePerGallon).toBeGreaterThan(0);
@@ -219,7 +219,7 @@ describe("WEX Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(stations), { status: 200 })
+        new Response(JSON.stringify(stations), { status: 200 }),
       );
 
       expect(stations.stations).toHaveLength(1);
@@ -232,7 +232,7 @@ describe("WEX Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(filteredStations), { status: 200 })
+        new Response(JSON.stringify(filteredStations), { status: 200 }),
       );
 
       expect(filteredStations.matchingStations).toBeGreaterThan(0);
@@ -251,10 +251,12 @@ describe("WEX Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(prices), { status: 200 })
+        new Response(JSON.stringify(prices), { status: 200 }),
       );
 
-      expect(prices.prices.diesel).toBeGreaterThan(prices.prices.regularUnleaded);
+      expect(prices.prices.diesel).toBeGreaterThan(
+        prices.prices.regularUnleaded,
+      );
     });
   });
 });
@@ -280,7 +282,7 @@ describe("Comdata Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(authResponse), { status: 200 })
+        new Response(JSON.stringify(authResponse), { status: 200 }),
       );
 
       expect(authResponse.sessionId).toBeDefined();
@@ -298,7 +300,7 @@ describe("Comdata Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(issuance), { status: 201 })
+        new Response(JSON.stringify(issuance), { status: 201 }),
       );
 
       expect(issuance.status).toBe("issued");
@@ -313,7 +315,7 @@ describe("Comdata Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(tracking), { status: 200 })
+        new Response(JSON.stringify(tracking), { status: 200 }),
       );
 
       expect(tracking.status).toBe("in_transit");
@@ -327,7 +329,7 @@ describe("Comdata Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(activation), { status: 200 })
+        new Response(JSON.stringify(activation), { status: 200 }),
       );
 
       expect(activation.status).toBe("active");
@@ -346,7 +348,7 @@ describe("Comdata Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(checkCode), { status: 201 })
+        new Response(JSON.stringify(checkCode), { status: 201 }),
       );
 
       expect(checkCode.code).toBeDefined();
@@ -362,7 +364,7 @@ describe("Comdata Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(validation), { status: 200 })
+        new Response(JSON.stringify(validation), { status: 200 }),
       );
 
       expect(validation.valid).toBe(true);
@@ -377,7 +379,7 @@ describe("Comdata Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(redemption), { status: 200 })
+        new Response(JSON.stringify(redemption), { status: 200 }),
       );
 
       expect(redemption.status).toBe("redeemed");
@@ -396,7 +398,7 @@ describe("Comdata Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(transfer), { status: 201 })
+        new Response(JSON.stringify(transfer), { status: 201 }),
       );
 
       expect(transfer.status).toBe("pending");
@@ -410,7 +412,7 @@ describe("Comdata Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(completed), { status: 200 })
+        new Response(JSON.stringify(completed), { status: 200 }),
       );
 
       expect(completed.status).toBe("completed");
@@ -430,7 +432,7 @@ describe("Comdata Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(history), { status: 200 })
+        new Response(JSON.stringify(history), { status: 200 }),
       );
 
       expect(history.transfers).toHaveLength(1);
@@ -459,7 +461,7 @@ describe("Fuelman Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(authResponse), { status: 200 })
+        new Response(JSON.stringify(authResponse), { status: 200 }),
       );
 
       expect(authResponse.apiToken).toBeDefined();
@@ -477,7 +479,7 @@ describe("Fuelman Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(limit), { status: 200 })
+        new Response(JSON.stringify(limit), { status: 200 }),
       );
 
       expect(limit.dailyLimit).toBe(500);
@@ -491,7 +493,7 @@ describe("Fuelman Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(restriction), { status: 200 })
+        new Response(JSON.stringify(restriction), { status: 200 }),
       );
 
       expect(restriction.allowedGrades).toContain("diesel");
@@ -505,7 +507,7 @@ describe("Fuelman Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(timeRestriction), { status: 200 })
+        new Response(JSON.stringify(timeRestriction), { status: 200 }),
       );
 
       expect(timeRestriction.blockedDays).toContain("sunday");
@@ -519,7 +521,7 @@ describe("Fuelman Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(merchantRestriction), { status: 200 })
+        new Response(JSON.stringify(merchantRestriction), { status: 200 }),
       );
 
       expect(merchantRestriction.allowedCategories).toContain("truck_stops");
@@ -548,7 +550,7 @@ describe("Fuelman Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(ifta), { status: 200 })
+        new Response(JSON.stringify(ifta), { status: 200 }),
       );
 
       expect(ifta.reportLines).toHaveLength(2);
@@ -566,7 +568,7 @@ describe("Fuelman Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(taxCalc), { status: 200 })
+        new Response(JSON.stringify(taxCalc), { status: 200 }),
       );
 
       expect(taxCalc.totalTaxDue).toBeGreaterThan(0);
@@ -581,7 +583,7 @@ describe("Fuelman Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(reportFile), { status: 200 })
+        new Response(JSON.stringify(reportFile), { status: 200 }),
       );
 
       expect(reportFile.format).toBe("pdf");
@@ -605,7 +607,7 @@ describe("Fuelman Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(jurisdictionTracking), { status: 200 })
+        new Response(JSON.stringify(jurisdictionTracking), { status: 200 }),
       );
 
       expect(jurisdictionTracking.jurisdictions).toHaveLength(2);
@@ -634,7 +636,7 @@ describe("EFS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(authResponse), { status: 200 })
+        new Response(JSON.stringify(authResponse), { status: 200 }),
       );
 
       expect(authResponse.sessionToken).toBeDefined();
@@ -653,7 +655,7 @@ describe("EFS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(moneyCode), { status: 201 })
+        new Response(JSON.stringify(moneyCode), { status: 201 }),
       );
 
       expect(moneyCode.code).toBeDefined();
@@ -675,7 +677,7 @@ describe("EFS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(usage), { status: 200 })
+        new Response(JSON.stringify(usage), { status: 200 }),
       );
 
       expect(usage.balanceRemaining).toBe(250.0);
@@ -690,7 +692,7 @@ describe("EFS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(expiration), { status: 200 })
+        new Response(JSON.stringify(expiration), { status: 200 }),
       );
 
       expect(expiration.status).toBe("expired");
@@ -709,7 +711,7 @@ describe("EFS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(settlement), { status: 200 })
+        new Response(JSON.stringify(settlement), { status: 200 }),
       );
 
       expect(settlement.status).toBe("processed");
@@ -727,7 +729,7 @@ describe("EFS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(details), { status: 200 })
+        new Response(JSON.stringify(details), { status: 200 }),
       );
 
       expect(details.breakdown).toHaveLength(3);
@@ -745,7 +747,7 @@ describe("EFS Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(dispute), { status: 201 })
+        new Response(JSON.stringify(dispute), { status: 201 }),
       );
 
       expect(dispute.status).toBe("under_review");
@@ -779,7 +781,7 @@ describe("Fuel Card Manager (Aggregator) Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(inventory), { status: 200 })
+        new Response(JSON.stringify(inventory), { status: 200 }),
       );
 
       expect(inventory.totalCards).toBe(150);
@@ -799,10 +801,12 @@ describe("Fuel Card Manager (Aggregator) Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(statusReport), { status: 200 })
+        new Response(JSON.stringify(statusReport), { status: 200 }),
       );
 
-      expect(statusReport.activeCards).toBeGreaterThan(statusReport.suspendedCards);
+      expect(statusReport.activeCards).toBeGreaterThan(
+        statusReport.suspendedCards,
+      );
     });
   });
 
@@ -820,7 +824,7 @@ describe("Fuel Card Manager (Aggregator) Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(anomaly), { status: 200 })
+        new Response(JSON.stringify(anomaly), { status: 200 }),
       );
 
       expect(anomaly.severity).toBeDefined();
@@ -837,7 +841,7 @@ describe("Fuel Card Manager (Aggregator) Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(geoAnomaly), { status: 200 })
+        new Response(JSON.stringify(geoAnomaly), { status: 200 }),
       );
 
       expect(geoAnomaly.severity).toBe("high");
@@ -855,7 +859,7 @@ describe("Fuel Card Manager (Aggregator) Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(duplicates), { status: 200 })
+        new Response(JSON.stringify(duplicates), { status: 200 }),
       );
 
       expect(duplicates.fraud_score).toBeGreaterThan(0.9);
@@ -871,7 +875,7 @@ describe("Fuel Card Manager (Aggregator) Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(blockAction), { status: 200 })
+        new Response(JSON.stringify(blockAction), { status: 200 }),
       );
 
       expect(blockAction.requiresManualReview).toBe(true);
@@ -887,13 +891,13 @@ describe("Fuel Card Manager (Aggregator) Integration", () => {
         avgCostPerGallon: 3.08,
         costByProvider: {
           wex: { totalSpent: 12000, avgCostPerGallon: 3.05 },
-          comdata: { totalSpent: 14000, avgCostPerGallon: 3.10 },
+          comdata: { totalSpent: 14000, avgCostPerGallon: 3.1 },
           fuelman: { totalSpent: 9000, avgCostPerGallon: 3.08 },
         },
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(costAnalysis), { status: 200 })
+        new Response(JSON.stringify(costAnalysis), { status: 200 }),
       );
 
       expect(costAnalysis.totalSpent).toBeGreaterThan(30000);
@@ -910,7 +914,7 @@ describe("Fuel Card Manager (Aggregator) Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(recommendations), { status: 200 })
+        new Response(JSON.stringify(recommendations), { status: 200 }),
       );
 
       expect(recommendations.estimatedMonthlySavings).toBeGreaterThan(0);
@@ -923,7 +927,7 @@ describe("Fuel Card Manager (Aggregator) Integration", () => {
           {
             stationId: "station_001",
             name: "Premium Truck Stop",
-            avgPricPerGallon: 3.50,
+            avgPricPerGallon: 3.5,
             transactionCount: 15,
             totalSpent: 3000,
           },
@@ -938,7 +942,7 @@ describe("Fuel Card Manager (Aggregator) Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(stationAnalysis), { status: 200 })
+        new Response(JSON.stringify(stationAnalysis), { status: 200 }),
       );
 
       expect(stationAnalysis.expensiveStations).toHaveLength(2);
@@ -955,11 +959,11 @@ describe("Fuel Card Manager (Aggregator) Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(bulkProgram), { status: 200 })
+        new Response(JSON.stringify(bulkProgram), { status: 200 }),
       );
 
       expect(bulkProgram.bulkDiscountedRate).toBeLessThan(
-        bulkProgram.currentFuelCost
+        bulkProgram.currentFuelCost,
       );
     });
   });
@@ -969,7 +973,7 @@ describe("Fuel Card Manager (Aggregator) Integration", () => {
       mockFetch.mockResolvedValueOnce(
         new Response(JSON.stringify({ error: "Provider unavailable" }), {
           status: 503,
-        })
+        }),
       );
 
       mockFetch.mockResolvedValueOnce(
@@ -979,8 +983,8 @@ describe("Fuel Card Manager (Aggregator) Integration", () => {
             failoverProvider: "comdata",
             status: "failover_active",
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
 
       expect(mockFetch).toBeDefined();
@@ -996,7 +1000,7 @@ describe("Fuel Card Manager (Aggregator) Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(failoverResult), { status: 200 })
+        new Response(JSON.stringify(failoverResult), { status: 200 }),
       );
 
       expect(failoverResult.accessMaintained).toBe(true);

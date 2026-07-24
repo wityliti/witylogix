@@ -60,7 +60,9 @@ export async function verifyWooCommerceCredentials(
   const base = normaliseStoreUrl(storeUrl);
   const endpoint = `${base}/wp-json/wc/v3/system_status`;
 
-  const basicAuth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString("base64");
+  const basicAuth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString(
+    "base64",
+  );
 
   const response = await fetch(endpoint, {
     method: "GET",
@@ -85,7 +87,9 @@ export async function verifyWooCommerceCredentials(
   const json = (await response.json()) as WCSystemStatus;
 
   if (!json?.store?.name) {
-    throw new Error("Unexpected response from WooCommerce. Verify the Store URL.");
+    throw new Error(
+      "Unexpected response from WooCommerce. Verify the Store URL.",
+    );
   }
 
   return json;

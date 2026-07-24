@@ -57,7 +57,10 @@ export class SMSChannel {
 
       // Check message length and warn if exceeds limits
       const characterCount = params.message.length;
-      if (characterCount > this.MAX_SMS_LENGTH && characterCount > this.MAX_CONCATENATED_SMS_LENGTH * 3) {
+      if (
+        characterCount > this.MAX_SMS_LENGTH &&
+        characterCount > this.MAX_CONCATENATED_SMS_LENGTH * 3
+      ) {
         return {
           accepted: false,
           error: `Message too long (${characterCount} chars). Max 480 characters for concatenated SMS.`,
@@ -91,7 +94,8 @@ export class SMSChannel {
         characterCount,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       return {
         accepted: false,
         error: errorMessage,
@@ -119,7 +123,10 @@ export class SMSChannel {
   /**
    * Truncate message to fit SMS character limit
    */
-  truncateMessage(message: string, maxLength: number = this.MAX_SMS_LENGTH): string {
+  truncateMessage(
+    message: string,
+    maxLength: number = this.MAX_SMS_LENGTH,
+  ): string {
     if (message.length <= maxLength) {
       return message;
     }
@@ -181,7 +188,10 @@ export class SMSChannel {
   /**
    * Build out-for-delivery message
    */
-  static buildOutForDeliveryMessage(driverName: string, trackingUrl: string): string {
+  static buildOutForDeliveryMessage(
+    driverName: string,
+    trackingUrl: string,
+  ): string {
     return `Your package is out for delivery! Driver: ${driverName}. Track: ${trackingUrl}`;
   }
 }

@@ -48,13 +48,21 @@ export default function EditRoutePage() {
   const params = useParams();
   const id = params.id as string;
 
-  const { data: route, loading, error, refetch } = useApiQuery<RouteFormData>(
-    id ? `/api/v4/routes/${id}` : null
-  );
+  const {
+    data: route,
+    loading,
+    error,
+    refetch,
+  } = useApiQuery<RouteFormData>(id ? `/api/v4/routes/${id}` : null);
   const { data: drivers } = useApiQuery<Driver[]>(`/api/v4/drivers`);
   const { data: vehicles } = useApiQuery<Vehicle[]>(`/api/v4/vehicles`);
-  const { data: availableOrders } = useApiQuery<AvailableOrder[]>(`/api/v4/orders?available=true`);
-  const { execute: updateRoute } = useApiMutation<RouteFormData>("PATCH", `/api/v4/routes/${id}`);
+  const { data: availableOrders } = useApiQuery<AvailableOrder[]>(
+    `/api/v4/orders?available=true`,
+  );
+  const { execute: updateRoute } = useApiMutation<RouteFormData>(
+    "PATCH",
+    `/api/v4/routes/${id}`,
+  );
 
   const [formData, setFormData] = useState<RouteFormData | null>(null);
   const [draggedStop, setDraggedStop] = useState<number | null>(null);
@@ -63,7 +71,8 @@ export default function EditRoutePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  const currentFormData = formData || route || { name: '', date: '', driverId: '', vehicleId: '', stops: [] };
+  const currentFormData = formData ||
+    route || { name: "", date: "", driverId: "", vehicleId: "", stops: [] };
   const driversList = drivers || [];
   const vehiclesList = vehicles || [];
   const ordersList = availableOrders || [];
@@ -84,7 +93,9 @@ export default function EditRoutePage() {
     );
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...(prev || currentFormData),
@@ -96,7 +107,9 @@ export default function EditRoutePage() {
   const handleRemoveStop = (stopId: string) => {
     setFormData((prev) => ({
       ...(prev || currentFormData),
-      stops: (prev || currentFormData).stops.filter((stop) => stop.id !== stopId),
+      stops: (prev || currentFormData).stops.filter(
+        (stop) => stop.id !== stopId,
+      ),
     }));
     setHasChanges(true);
   };
@@ -165,7 +178,7 @@ export default function EditRoutePage() {
       await updateRoute(currentFormData);
       setHasChanges(false);
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : 'Failed to save route');
+      setSaveError(err instanceof Error ? err.message : "Failed to save route");
     } finally {
       setIsSaving(false);
     }
@@ -191,7 +204,9 @@ export default function EditRoutePage() {
     <div className="min-h-screen bg-wl-bg-root p-6 text-wl-text-primary">
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-white mb-2">Edit Route</h1>
-        <p className="text-sm text-wl-text-secondary">Modify route details, reorder stops, and optimize delivery sequence</p>
+        <p className="text-sm text-wl-text-secondary">
+          Modify route details, reorder stops, and optimize delivery sequence
+        </p>
       </div>
 
       <div className="max-w-4xl mb-8">
@@ -204,7 +219,9 @@ export default function EditRoutePage() {
               <CardContent>
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div>
-                    <label className="block text-white text-sm font-semibold mb-2">Route Name</label>
+                    <label className="block text-white text-sm font-semibold mb-2">
+                      Route Name
+                    </label>
                     <input
                       type="text"
                       name="name"
@@ -214,7 +231,9 @@ export default function EditRoutePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-white text-sm font-semibold mb-2">Delivery Date</label>
+                    <label className="block text-white text-sm font-semibold mb-2">
+                      Delivery Date
+                    </label>
                     <input
                       type="date"
                       name="date"
@@ -226,7 +245,9 @@ export default function EditRoutePage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-white text-sm font-semibold mb-2">Assign Driver</label>
+                    <label className="block text-white text-sm font-semibold mb-2">
+                      Assign Driver
+                    </label>
                     <select
                       name="driverId"
                       value={currentFormData.driverId}
@@ -241,7 +262,9 @@ export default function EditRoutePage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-white text-sm font-semibold mb-2">Vehicle</label>
+                    <label className="block text-white text-sm font-semibold mb-2">
+                      Vehicle
+                    </label>
                     <select
                       name="vehicleId"
                       value={currentFormData.vehicleId}
@@ -266,16 +289,28 @@ export default function EditRoutePage() {
               <CardContent>
                 <div className="grid grid-cols-3 gap-3 mb-6">
                   <div className="p-4 rounded-md bg-wl-bg-root border border-wl-border-default text-center">
-                    <div className="text-lg font-bold text-blue-500 mb-0.5">{currentFormData.stops.length}</div>
-                    <div className="text-xs text-wl-text-secondary">Total Stops</div>
+                    <div className="text-lg font-bold text-blue-500 mb-0.5">
+                      {currentFormData.stops.length}
+                    </div>
+                    <div className="text-xs text-wl-text-secondary">
+                      Total Stops
+                    </div>
                   </div>
                   <div className="p-4 rounded-md bg-wl-bg-root border border-wl-border-default text-center">
-                    <div className="text-lg font-bold text-blue-500 mb-0.5">{estimatedDistance.toFixed(1)}km</div>
-                    <div className="text-xs text-wl-text-secondary">Est. Distance</div>
+                    <div className="text-lg font-bold text-blue-500 mb-0.5">
+                      {estimatedDistance.toFixed(1)}km
+                    </div>
+                    <div className="text-xs text-wl-text-secondary">
+                      Est. Distance
+                    </div>
                   </div>
                   <div className="p-4 rounded-md bg-wl-bg-root border border-wl-border-default text-center">
-                    <div className="text-lg font-bold text-blue-500 mb-0.5">{estimatedDuration}min</div>
-                    <div className="text-xs text-wl-text-secondary">Est. Duration</div>
+                    <div className="text-lg font-bold text-blue-500 mb-0.5">
+                      {estimatedDuration}min
+                    </div>
+                    <div className="text-xs text-wl-text-secondary">
+                      Est. Duration
+                    </div>
                   </div>
                 </div>
 
@@ -284,13 +319,13 @@ export default function EditRoutePage() {
                     <div
                       key={stop.id}
                       className={cn(
-                        'p-3 rounded-md grid gap-3 items-center cursor-grab transition-all',
-                        'border border-wl-border-default',
+                        "p-3 rounded-md grid gap-3 items-center cursor-grab transition-all",
+                        "border border-wl-border-default",
                         draggedStop === idx
-                          ? 'bg-blue-600/20 border-blue-500 opacity-70'
-                          : 'bg-wl-bg-surface',
+                          ? "bg-blue-600/20 border-blue-500 opacity-70"
+                          : "bg-wl-bg-surface",
                       )}
-                      style={{ gridTemplateColumns: '24px 1fr auto auto' }}
+                      style={{ gridTemplateColumns: "24px 1fr auto auto" }}
                       draggable
                       onDragStart={() => handleDragStart(idx)}
                       onDragOver={handleDragOver}
@@ -339,7 +374,9 @@ export default function EditRoutePage() {
 
                 {showAddStop && (
                   <div className="mt-4 p-4 rounded-md bg-wl-bg-surface border border-wl-border-default">
-                    <h4 className="text-wl-text-primary text-sm font-semibold mb-3">Available Orders</h4>
+                    <h4 className="text-wl-text-primary text-sm font-semibold mb-3">
+                      Available Orders
+                    </h4>
                     <div className="flex flex-col gap-2 max-h-96 overflow-y-auto">
                       {ordersList.map((order) => (
                         <div
@@ -348,7 +385,9 @@ export default function EditRoutePage() {
                           onClick={() => handleAddStop(order)}
                         >
                           <div className="flex justify-between items-center mb-1.5">
-                            <span className="font-semibold text-white">{order.id}</span>
+                            <span className="font-semibold text-white">
+                              {order.id}
+                            </span>
                             <Badge>{order.priority.toUpperCase()}</Badge>
                           </div>
                           <div className="text-wl-text-secondary mb-1">
@@ -374,7 +413,10 @@ export default function EditRoutePage() {
               <CardContent>
                 <div className="p-3 rounded-md bg-wl-bg-root border border-wl-border-default">
                   <div className="text-white text-sm font-semibold mb-2">
-                    {driversList.find((d) => d.id === currentFormData.driverId)?.name}
+                    {
+                      driversList.find((d) => d.id === currentFormData.driverId)
+                        ?.name
+                    }
                   </div>
                   <div className="text-wl-text-secondary text-xs leading-relaxed">
                     <div>ID: {currentFormData.driverId}</div>
@@ -391,11 +433,20 @@ export default function EditRoutePage() {
               <CardContent>
                 <div className="p-3 rounded-md bg-wl-bg-root border border-wl-border-default">
                   <div className="text-white text-sm font-semibold mb-2">
-                    {vehiclesList.find((v) => v.id === currentFormData.vehicleId)?.name}
+                    {
+                      vehiclesList.find(
+                        (v) => v.id === currentFormData.vehicleId,
+                      )?.name
+                    }
                   </div>
                   <div className="text-wl-text-secondary text-xs leading-relaxed">
                     <div>
-                      Capacity: {vehiclesList.find((v) => v.id === currentFormData.vehicleId)?.capacity}
+                      Capacity:{" "}
+                      {
+                        vehiclesList.find(
+                          (v) => v.id === currentFormData.vehicleId,
+                        )?.capacity
+                      }
                     </div>
                     <div className="mt-2">Status: Available</div>
                   </div>
@@ -447,8 +498,12 @@ export default function EditRoutePage() {
           Cancel
         </Button>
         <div className="flex gap-3">
-          <Button variant="primary" disabled={!hasChanges || isSaving} onClick={handleSave}>
-            {isSaving ? 'Saving...' : 'Save Changes'}
+          <Button
+            variant="primary"
+            disabled={!hasChanges || isSaving}
+            onClick={handleSave}
+          >
+            {isSaving ? "Saving..." : "Save Changes"}
           </Button>
         </div>
       </div>

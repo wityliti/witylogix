@@ -373,7 +373,8 @@ describe("Trend Detection", () => {
     const currentScore = 50;
     const previousScore = 0;
 
-    const percentage = previousScore > 0 ? (currentScore / previousScore) * 100 : 0;
+    const percentage =
+      previousScore > 0 ? (currentScore / previousScore) * 100 : 0;
     expect(percentage).toBe(0);
   });
 });
@@ -388,7 +389,8 @@ describe("Risk Flag Identification", () => {
       totalDeliveries: 100,
     };
 
-    const onTimeRate = (metrics.onTimeDeliveries / metrics.totalDeliveries) * 100;
+    const onTimeRate =
+      (metrics.onTimeDeliveries / metrics.totalDeliveries) * 100;
     expect(onTimeRate).toBeLessThan(80);
   });
 
@@ -399,7 +401,8 @@ describe("Risk Flag Identification", () => {
       totalDeliveries: 100,
     };
 
-    const damageRate = (metrics.damagedDeliveries / metrics.totalDeliveries) * 100;
+    const damageRate =
+      (metrics.damagedDeliveries / metrics.totalDeliveries) * 100;
     expect(damageRate).toBeGreaterThan(3);
   });
 
@@ -454,20 +457,22 @@ describe("Auto-Suspension Trigger", () => {
 
   it("should recommend review for score 60-75", () => {
     const score = 70;
-    const recommendedAction = score < 60 ? "suspend" : score < 75 ? "review" : "active";
+    const recommendedAction =
+      score < 60 ? "suspend" : score < 75 ? "review" : "active";
     expect(recommendedAction).toBe("review");
   });
 
   it("should keep active for score > 75", () => {
     const score = 85;
-    const recommendedAction = score < 60 ? "suspend" : score < 75 ? "review" : "active";
+    const recommendedAction =
+      score < 60 ? "suspend" : score < 75 ? "review" : "active";
     expect(recommendedAction).toBe("active");
   });
 
   it("should handle boundary at 60", () => {
     const scores = [59, 60, 61];
-    const actions = scores.map(
-      (s) => s < 60 ? "suspend" : s < 75 ? "review" : "active"
+    const actions = scores.map((s) =>
+      s < 60 ? "suspend" : s < 75 ? "review" : "active",
     );
 
     expect(actions).toEqual(["suspend", "review", "review"]);
@@ -475,8 +480,8 @@ describe("Auto-Suspension Trigger", () => {
 
   it("should handle boundary at 75", () => {
     const scores = [74, 75, 76];
-    const actions = scores.map(
-      (s) => s < 60 ? "suspend" : s < 75 ? "review" : "active"
+    const actions = scores.map((s) =>
+      s < 60 ? "suspend" : s < 75 ? "review" : "active",
     );
 
     expect(actions).toEqual(["review", "active", "active"]);

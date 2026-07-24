@@ -46,13 +46,13 @@ describe("LytxDriveCamClient", () => {
               access_token: "token_123",
               expires_in: 3600,
             }),
-            { status: 200 }
-          )
+            { status: 200 },
+          ),
         )
         .mockResolvedValueOnce(
           new Response(JSON.stringify({ account: { id: "acc_123" } }), {
             status: 200,
-          })
+          }),
         );
 
       await expect(client.initialize()).resolves.not.toThrow();
@@ -63,7 +63,7 @@ describe("LytxDriveCamClient", () => {
       const invalidClient = new LytxDriveCamClient(invalidConfig);
 
       expect(() => invalidClient.initialize()).rejects.toThrow(
-        "Lytx DriveCam OAuth2 credentials"
+        "Lytx DriveCam OAuth2 credentials",
       );
     });
   });
@@ -77,13 +77,13 @@ describe("LytxDriveCamClient", () => {
               access_token: "token_123",
               expires_in: 3600,
             }),
-            { status: 200 }
-          )
+            { status: 200 },
+          ),
         )
         .mockResolvedValueOnce(
           new Response(JSON.stringify({ account: { id: "acc_123" } }), {
             status: 200,
-          })
+          }),
         );
     });
 
@@ -114,7 +114,7 @@ describe("LytxDriveCamClient", () => {
       ];
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockEvents), { status: 200 })
+        new Response(JSON.stringify(mockEvents), { status: 200 }),
       );
 
       const events = await client.getEvents("driver_1", 30);
@@ -140,7 +140,7 @@ describe("LytxDriveCamClient", () => {
       ];
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockEvents), { status: 200 })
+        new Response(JSON.stringify(mockEvents), { status: 200 }),
       );
 
       const violations = await client.getViolations("driver_1", 30);
@@ -159,8 +159,8 @@ describe("LytxDriveCamClient", () => {
             access_token: "token_123",
             expires_in: 3600,
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
     });
 
@@ -180,7 +180,7 @@ describe("LytxDriveCamClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockClip), { status: 200 })
+        new Response(JSON.stringify(mockClip), { status: 200 }),
       );
 
       const clip = await client.requestVideoClip("event_1");
@@ -196,7 +196,7 @@ describe("LytxDriveCamClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockResponse), { status: 200 })
+        new Response(JSON.stringify(mockResponse), { status: 200 }),
       );
 
       const startTime = new Date("2026-03-12T08:15:00Z");
@@ -204,7 +204,7 @@ describe("LytxDriveCamClient", () => {
       const downloadUrl = await client.downloadVideoClip(
         "event_1",
         startTime,
-        endTime
+        endTime,
       );
 
       expect(downloadUrl).toContain("https://api.lytx.com");
@@ -219,8 +219,8 @@ describe("LytxDriveCamClient", () => {
             access_token: "token_123",
             expires_in: 3600,
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
     });
 
@@ -251,7 +251,7 @@ describe("LytxDriveCamClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDriver), { status: 200 })
+        new Response(JSON.stringify(mockDriver), { status: 200 }),
       );
 
       const driver = await client.getDriver("driver_1");
@@ -283,7 +283,7 @@ describe("LytxDriveCamClient", () => {
       ];
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDrivers), { status: 200 })
+        new Response(JSON.stringify(mockDrivers), { status: 200 }),
       );
 
       const drivers = await client.getDrivers();
@@ -301,8 +301,8 @@ describe("LytxDriveCamClient", () => {
             access_token: "token_123",
             expires_in: 3600,
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
     });
 
@@ -326,7 +326,7 @@ describe("LytxDriveCamClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockScore), { status: 200 })
+        new Response(JSON.stringify(mockScore), { status: 200 }),
       );
 
       const score = await client.getSafetyScore("driver_1", "monthly");
@@ -346,7 +346,7 @@ describe("LytxDriveCamClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockFleetScore), { status: 200 })
+        new Response(JSON.stringify(mockFleetScore), { status: 200 }),
       );
 
       const fleetScore = await client.getFleetSafetyScore("monthly");
@@ -363,8 +363,8 @@ describe("LytxDriveCamClient", () => {
             access_token: "token_123",
             expires_in: 3600,
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
     });
 
@@ -379,12 +379,12 @@ describe("LytxDriveCamClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockSession), { status: 200 })
+        new Response(JSON.stringify(mockSession), { status: 200 }),
       );
 
       const session = await client.createCoachingSession(
         "event_1",
-        "Safety Coaching"
+        "Safety Coaching",
       );
 
       expect(session.sessionId).toBe("session_1");
@@ -404,10 +404,13 @@ describe("LytxDriveCamClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockSession), { status: 200 })
+        new Response(JSON.stringify(mockSession), { status: 200 }),
       );
 
-      const session = await client.completeCoachingSession("session_1", "driver_1");
+      const session = await client.completeCoachingSession(
+        "session_1",
+        "driver_1",
+      );
 
       expect(session.status).toBe("completed");
       expect(session.signedOffBy).toBe("driver_1");
@@ -422,8 +425,8 @@ describe("LytxDriveCamClient", () => {
             access_token: "token_123",
             expires_in: 3600,
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
     });
 
@@ -453,7 +456,7 @@ describe("LytxDriveCamClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockReport), { status: 200 })
+        new Response(JSON.stringify(mockReport), { status: 200 }),
       );
 
       const report = await client.getSafetyReport("driver_1", "monthly");
@@ -472,8 +475,8 @@ describe("LytxDriveCamClient", () => {
             access_token: "token_123",
             expires_in: 3600,
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
     });
 
@@ -487,7 +490,7 @@ describe("LytxDriveCamClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockStream), { status: 200 })
+        new Response(JSON.stringify(mockStream), { status: 200 }),
       );
 
       const stream = await client.requestLiveStream("vehicle_1", 300);
@@ -506,8 +509,8 @@ describe("LytxDriveCamClient", () => {
             access_token: "token_123",
             expires_in: 3600,
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
     });
 
@@ -525,7 +528,7 @@ describe("LytxDriveCamClient", () => {
       ];
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockAlerts), { status: 200 })
+        new Response(JSON.stringify(mockAlerts), { status: 200 }),
       );
 
       const alerts = await client.getAlerts("critical");
@@ -536,7 +539,7 @@ describe("LytxDriveCamClient", () => {
 
     it("should acknowledge alert", async () => {
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify({}), { status: 200 })
+        new Response(JSON.stringify({}), { status: 200 }),
       );
 
       await expect(client.acknowledgeAlert("alert_1")).resolves.not.toThrow();
@@ -552,13 +555,13 @@ describe("LytxDriveCamClient", () => {
               access_token: "token_123",
               expires_in: 3600,
             }),
-            { status: 200 }
-          )
+            { status: 200 },
+          ),
         )
         .mockResolvedValueOnce(
           new Response(JSON.stringify({ account: { id: "acc_123" } }), {
             status: 200,
-          })
+          }),
         );
 
       const isHealthy = await client.healthCheck();
@@ -568,7 +571,7 @@ describe("LytxDriveCamClient", () => {
 
     it("should return false for failed health check", async () => {
       vi.spyOn(global, "fetch").mockRejectedValueOnce(
-        new Error("Connection timeout")
+        new Error("Connection timeout"),
       );
 
       const isHealthy = await client.healthCheck();

@@ -4,7 +4,7 @@
  * Uses cron-like scheduling for recurring campaigns
  */
 
-import { CampaignSchedule } from './types.js';
+import { CampaignSchedule } from "./types.js";
 
 /**
  * Scheduled campaign job
@@ -16,7 +16,7 @@ export interface ScheduledJob {
   scheduledAt: Date;
   timezone: string;
   maxSendsPerMinute: number;
-  status: 'pending' | 'in_progress' | 'completed' | 'failed' | 'cancelled';
+  status: "pending" | "in_progress" | "completed" | "failed" | "cancelled";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -46,7 +46,7 @@ export interface ScheduledCampaignResult {
 export class SchedulerError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'SchedulerError';
+    this.name = "SchedulerError";
   }
 }
 
@@ -54,10 +54,10 @@ export class SchedulerError extends Error {
  * Channel rate limit constants based on provider limits
  */
 const CHANNEL_RATE_LIMITS: Record<string, number> = {
-  email: 300,     // SendGrid default rate limit
-  sms: 60,        // Twilio rate limit
-  whatsapp: 80,   // Meta limit
-  push: 500,      // FCM batch limit
+  email: 300, // SendGrid default rate limit
+  sms: 60, // Twilio rate limit
+  whatsapp: 80, // Meta limit
+  push: 500, // FCM batch limit
 };
 
 /**
@@ -79,9 +79,7 @@ export class CampaignScheduler {
    */
   private scheduledJobs: Map<string, ScheduledJob> = new Map();
 
-  constructor(
-    private rateLimitOverrides?: Partial<Record<string, number>>
-  ) {
+  constructor(private rateLimitOverrides?: Partial<Record<string, number>>) {
     // Apply any custom rate limits
     if (rateLimitOverrides) {
       Object.assign(this.defaultRateLimits, rateLimitOverrides);
@@ -101,10 +99,12 @@ export class CampaignScheduler {
     campaignId: string,
     tenantId: string,
     schedule: CampaignSchedule,
-    campaignType?: string
+    campaignType?: string,
   ): ScheduledJob {
     if (!campaignId || !tenantId || !schedule) {
-      throw new SchedulerError('campaignId, tenantId, and schedule are required');
+      throw new SchedulerError(
+        "campaignId, tenantId, and schedule are required",
+      );
     }
 
     // Validate scheduled time is in future
@@ -112,11 +112,11 @@ export class CampaignScheduler {
     const now = new Date();
 
     if (scheduledAt <= now) {
-      throw new SchedulerError('Campaign must be scheduled for a future time');
+      throw new SchedulerError("Campaign must be scheduled for a future time");
     }
 
     // Get timezone, default to UTC
-    const timezone = schedule.timezone || 'UTC';
+    const timezone = schedule.timezone || "UTC";
 
     // Validate timezone is valid
     this.validateTimezone(timezone);
@@ -126,7 +126,7 @@ export class CampaignScheduler {
 
     // Determine rate limit based on campaign type
     // Use provided campaign type or default to email
-    const channelType = campaignType?.toLowerCase() || 'email';
+    const channelType = campaignType?.toLowerCase() || "email";
     const maxSendsPerMinute = this.getMaxSendsPerMinute(channelType);
 
     const job: ScheduledJob = {
@@ -136,7 +136,7 @@ export class CampaignScheduler {
       scheduledAt,
       timezone,
       maxSendsPerMinute,
-      status: 'pending',
+      status: "pending",
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -152,8 +152,8 @@ export class CampaignScheduler {
   cancel(campaignId: string): boolean {
     // Find and cancel the job for this campaign
     for (const [jobId, job] of this.scheduledJobs.entries()) {
-      if (job.campaignId === campaignId && job.status === 'pending') {
-        job.status = 'cancelled';
+      if (job.campaignId === campaignId && job.status === "pending") {
+        job.status = "cancelled";
         job.updatedAt = new Date();
         this.scheduledJobs.set(jobId, job);
         return true;
@@ -170,7 +170,7 @@ export class CampaignScheduler {
     const results: ScheduledCampaignResult[] = [];
 
     for (const job of this.scheduledJobs.values()) {
-      if (job.tenantId === tenantId && job.status === 'pending') {
+      if (job.tenantId === tenantId && job.status === "pending") {
         results.push({
           campaignId: job.campaignId,
           scheduledAt: job.scheduledAt,
@@ -199,7 +199,7 @@ export class CampaignScheduler {
    */
   updateJobStatus(
     jobId: string,
-    status: 'pending' | 'in_progress' | 'completed' | 'failed' | 'cancelled'
+    status: "pending" | "in_progress" | "completed" | "failed" | "cancelled",
   ): ScheduledJob {
     const job = this.scheduledJobs.get(jobId);
     if (!job) {
@@ -236,10 +236,7 @@ export class CampaignScheduler {
    * Calculate delay between batches to respect rate limits
    * Returns delay in milliseconds
    */
-  calculateDelayBetweenBatches(
-    channel: string,
-    batchSize: number
-  ): number {
+  calculateDelayBetweenBatches(channel: string, batchSize: number): number {
     const maxPerMinute = this.getMaxSendsPerMinute(channel);
     const delayMs = (batchSize / maxPerMinute) * 60 * 1000;
 
@@ -252,31 +249,31 @@ export class CampaignScheduler {
   private validateTimezone(timezone: string): void {
     // List of valid IANA timezones (subset for demo)
     const validTimezones = [
-      'UTC',
-      'America/New_York',
-      'America/Los_Angeles',
-      'America/Chicago',
-      'Europe/London',
-      'Europe/Paris',
-      'Europe/Berlin',
-      'Asia/Tokyo',
-      'Asia/Shanghai',
-      'Asia/Hong_Kong',
-      'Asia/Singapore',
-      'Asia/Dubai',
-      'Asia/Kolkata',
-      'Australia/Sydney',
-      'Australia/Melbourne',
-      'Pacific/Auckland',
-      'America/Toronto',
-      'America/Mexico_City',
-      'America/Sao_Paulo',
-      'Africa/Johannesburg',
+      "UTC",
+      "America/New_York",
+      "America/Los_Angeles",
+      "America/Chicago",
+      "Europe/London",
+      "Europe/Paris",
+      "Europe/Berlin",
+      "Asia/Tokyo",
+      "Asia/Shanghai",
+      "Asia/Hong_Kong",
+      "Asia/Singapore",
+      "Asia/Dubai",
+      "Asia/Kolkata",
+      "Australia/Sydney",
+      "Australia/Melbourne",
+      "Pacific/Auckland",
+      "America/Toronto",
+      "America/Mexico_City",
+      "America/Sao_Paulo",
+      "Africa/Johannesburg",
     ];
 
     if (!validTimezones.includes(timezone)) {
       throw new SchedulerError(
-        `Invalid timezone: ${timezone}. Must be a valid IANA timezone string.`
+        `Invalid timezone: ${timezone}. Must be a valid IANA timezone string.`,
       );
     }
   }
@@ -312,7 +309,9 @@ export class CampaignScheduler {
 
     for (const [jobId, job] of this.scheduledJobs.entries()) {
       if (
-        (job.status === 'completed' || job.status === 'failed' || job.status === 'cancelled') &&
+        (job.status === "completed" ||
+          job.status === "failed" ||
+          job.status === "cancelled") &&
         job.updatedAt < cutoffDate
       ) {
         this.scheduledJobs.delete(jobId);

@@ -23,8 +23,13 @@ export function ColorLegend({
   className,
   compact = false,
 }: ColorLegendProps) {
-  const [visibilityState, setVisibilityState] = useState<Record<string, boolean>>(
-    routes.reduce((acc, route) => ({ ...acc, [route.id]: route.isVisible !== false }), {})
+  const [visibilityState, setVisibilityState] = useState<
+    Record<string, boolean>
+  >(
+    routes.reduce(
+      (acc, route) => ({ ...acc, [route.id]: route.isVisible !== false }),
+      {},
+    ),
   );
 
   const handleToggle = (routeId: string) => {
@@ -45,7 +50,7 @@ export function ColorLegend({
               "border border-wl-border-subtle transition-all duration-200",
               visibilityState[route.id]
                 ? "bg-wl-bg-secondary border-wl-border-default"
-                : "bg-wl-bg-secondary opacity-50 border-dashed"
+                : "bg-wl-bg-secondary opacity-50 border-dashed",
             )}
             aria-pressed={visibilityState[route.id]}
             aria-label={`Toggle ${route.driverName} route`}
@@ -75,7 +80,7 @@ export function ColorLegend({
               "hover:bg-wl-bg-secondary hover:border-wl-primary-500",
               visibilityState[route.id]
                 ? "bg-wl-bg-elevated"
-                : "bg-wl-bg-secondary opacity-50"
+                : "bg-wl-bg-secondary opacity-50",
             )}
             aria-pressed={visibilityState[route.id]}
             aria-label={`Toggle ${route.driverName} route on map`}
@@ -85,7 +90,8 @@ export function ColorLegend({
               className={cn(
                 "w-4 h-4 rounded-full border-2 border-white shadow-md",
                 "flex-shrink-0 transition-transform duration-200",
-                visibilityState[route.id] && "ring-2 ring-offset-2 ring-wl-primary-500"
+                visibilityState[route.id] &&
+                  "ring-2 ring-offset-2 ring-wl-primary-500",
               )}
               style={{ backgroundColor: route.color }}
             />

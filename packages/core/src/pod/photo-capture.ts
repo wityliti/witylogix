@@ -9,13 +9,18 @@
  * - Support for JPEG and PNG formats
  */
 
-import sharp from 'sharp';
-import type { PhotoPOD, PhotoValidationResult, PhotoMetadata, GeoLocation } from './types.js';
+import sharp from "sharp";
+import type {
+  PhotoPOD,
+  PhotoValidationResult,
+  PhotoMetadata,
+  GeoLocation,
+} from "./types.js";
 
 // ─── CONSTANTS ──────────────────────────────────────────────────
 
 const MAX_PHOTO_SIZE = 5 * 1024 * 1024; // 5MB
-const ALLOWED_FORMATS = ['jpeg', 'png'];
+const ALLOWED_FORMATS = ["jpeg", "png"];
 const THUMBNAIL_SIZE = { width: 200, height: 200 };
 const MIN_PHOTO_DIMENSION = 320;
 
@@ -46,15 +51,17 @@ export class PhotoCaptureService {
    */
   async processPhoto(
     imageBuffer: Buffer,
-    deliveryId: string
+    deliveryId: string,
   ): Promise<PhotoPOD | null> {
     // Validate buffer
     if (!imageBuffer || imageBuffer.length === 0) {
-      throw new Error('Empty image buffer');
+      throw new Error("Empty image buffer");
     }
 
     if (imageBuffer.length > MAX_PHOTO_SIZE) {
-      throw new Error(`Image exceeds maximum size of ${MAX_PHOTO_SIZE / 1024 / 1024}MB`);
+      throw new Error(
+        `Image exceeds maximum size of ${MAX_PHOTO_SIZE / 1024 / 1024}MB`,
+      );
     }
 
     // Process with sharp
@@ -63,17 +70,22 @@ export class PhotoCaptureService {
 
     // Validate format
     if (!metadata.format || !ALLOWED_FORMATS.includes(metadata.format)) {
-      throw new Error(`Unsupported format: ${metadata.format}. Allowed: ${ALLOWED_FORMATS.join(', ')}`);
+      throw new Error(
+        `Unsupported format: ${metadata.format}. Allowed: ${ALLOWED_FORMATS.join(", ")}`,
+      );
     }
 
     // Validate dimensions
     if (!metadata.width || !metadata.height) {
-      throw new Error('Unable to determine image dimensions');
+      throw new Error("Unable to determine image dimensions");
     }
 
-    if (metadata.width < MIN_PHOTO_DIMENSION || metadata.height < MIN_PHOTO_DIMENSION) {
+    if (
+      metadata.width < MIN_PHOTO_DIMENSION ||
+      metadata.height < MIN_PHOTO_DIMENSION
+    ) {
       throw new Error(
-        `Image too small. Minimum: ${MIN_PHOTO_DIMENSION}x${MIN_PHOTO_DIMENSION}px`
+        `Image too small. Minimum: ${MIN_PHOTO_DIMENSION}x${MIN_PHOTO_DIMENSION}px`,
       );
     }
 
@@ -85,10 +97,12 @@ export class PhotoCaptureService {
     const photoMetadata: PhotoMetadata = {
       width: metadata.width,
       height: metadata.height,
-      format: metadata.format as 'jpeg' | 'png',
+      format: metadata.format as "jpeg" | "png",
       size: imageBuffer.length,
       capturedAt: this.extractCaptureDate(exifData) || new Date(),
-      deviceInfo: metadata.chromaSubsampling ? `Chroma: ${metadata.chromaSubsampling}` : undefined,
+      deviceInfo: metadata.chromaSubsampling
+        ? `Chroma: ${metadata.chromaSubsampling}`
+        : undefined,
       exifData: exifData as any,
       hasGeoTag: !!geoLocation,
       geoLocation,
@@ -98,13 +112,13 @@ export class PhotoCaptureService {
     const podRecord: PhotoPOD = {
       id: `pod-${deliveryId}-${Date.now()}`,
       deliveryId,
-      method: 'photo',
-      imageUrl: '', // Will be set by storage adapter
-      thumbnailUrl: '', // Will be set by storage adapter
+      method: "photo",
+      imageUrl: "", // Will be set by storage adapter
+      thumbnailUrl: "", // Will be set by storage adapter
       imageKey: `deliveries/${deliveryId}/photos/${Date.now()}.${metadata.format}`,
       metadata: photoMetadata,
       capturedAt: photoMetadata.capturedAt,
-      status: 'pending',
+      status: "pending",
     };
 
     return podRecord;
@@ -119,23 +133,25 @@ export class PhotoCaptureService {
    */
   async generateThumbnail(
     imageBuffer: Buffer,
-    size: { width: number; height: number } = THUMBNAIL_SIZE
+    size: { width: number; height: number } = THUMBNAIL_SIZE,
   ): Promise<Buffer> {
     if (!imageBuffer || imageBuffer.length === 0) {
-      throw new Error('Empty image buffer');
+      throw new Error("Empty image buffer");
     }
 
     try {
       const thumbnail = await sharp(imageBuffer)
         .resize(size.width, size.height, {
-          fit: 'cover',
+          fit: "cover",
           withoutEnlargement: true,
         })
         .toBuffer();
 
       return thumbnail;
     } catch (error) {
-      throw new Error(`Failed to generate thumbnail: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to generate thumbnail: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -154,8 +170,14 @@ export class PhotoCaptureService {
 
       // Try to extract GPS coordinates
       // EXIF format: [degrees, minutes, seconds]
-      const latitude = this.extractGPSCoordinate(exif.GPSLatitude, exif.GPSLatitudeRef);
-      const longitude = this.extractGPSCoordinate(exif.GPSLongitude, exif.GPSLongitudeRef);
+      const latitude = this.extractGPSCoordinate(
+        exif.GPSLatitude,
+        exif.GPSLatitudeRef,
+      );
+      const longitude = this.extractGPSCoordinate(
+        exif.GPSLongitude,
+        exif.GPSLongitudeRef,
+      );
 
       if (latitude === null || longitude === null) {
         return null;
@@ -192,11 +214,13 @@ export class PhotoCaptureService {
     const issues: string[] = [];
 
     if (!imageBuffer || imageBuffer.length === 0) {
-      issues.push('Image buffer is empty');
+      issues.push("Image buffer is empty");
     }
 
     if (imageBuffer.length > MAX_PHOTO_SIZE) {
-      issues.push(`Image exceeds maximum size of ${MAX_PHOTO_SIZE / 1024 / 1024}MB`);
+      issues.push(
+        `Image exceeds maximum size of ${MAX_PHOTO_SIZE / 1024 / 1024}MB`,
+      );
     }
 
     let metadata: any = null;
@@ -209,19 +233,22 @@ export class PhotoCaptureService {
       }
 
       if (!metadata.width || !metadata.height) {
-        issues.push('Unable to determine image dimensions');
+        issues.push("Unable to determine image dimensions");
       }
 
       if (metadata.width && metadata.height) {
-        if (metadata.width < MIN_PHOTO_DIMENSION || metadata.height < MIN_PHOTO_DIMENSION) {
+        if (
+          metadata.width < MIN_PHOTO_DIMENSION ||
+          metadata.height < MIN_PHOTO_DIMENSION
+        ) {
           issues.push(
-            `Image too small. Minimum: ${MIN_PHOTO_DIMENSION}x${MIN_PHOTO_DIMENSION}px`
+            `Image too small. Minimum: ${MIN_PHOTO_DIMENSION}x${MIN_PHOTO_DIMENSION}px`,
           );
         }
       }
     } catch (error) {
       issues.push(
-        `Image processing error: ${error instanceof Error ? error.message : String(error)}`
+        `Image processing error: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
 
@@ -277,7 +304,9 @@ export class PhotoCaptureService {
    */
   private parseExifDate(dateString: string): Date | null {
     try {
-      const match = dateString.match(/(\d{4}):(\d{2}):(\d{2})\s+(\d{2}):(\d{2}):(\d{2})/);
+      const match = dateString.match(
+        /(\d{4}):(\d{2}):(\d{2})\s+(\d{2}):(\d{2}):(\d{2})/,
+      );
       if (!match) {
         return null;
       }
@@ -297,7 +326,7 @@ export class PhotoCaptureService {
    */
   private extractGPSCoordinate(
     value: [number, number, number] | undefined,
-    ref: string | undefined
+    ref: string | undefined,
   ): number | null {
     if (!value || !Array.isArray(value) || value.length < 2) {
       return null;
@@ -308,7 +337,7 @@ export class PhotoCaptureService {
       let coordinate = degrees + minutes / 60 + (seconds || 0) / 3600;
 
       // Apply direction reference
-      if (ref === 'S' || ref === 'W') {
+      if (ref === "S" || ref === "W") {
         coordinate = -coordinate;
       }
 

@@ -24,6 +24,7 @@ Task("Interface design", "Design clean domain interfaces", "core-architect")
 ## DDD Implementation Strategy
 
 ### Current Architecture Analysis
+
 ```
 ├── PROBLEMATIC: core/orchestrator.ts (1,440 lines - GOD OBJECT)
 │   ├── Task management responsibilities
@@ -48,6 +49,7 @@ Task("Interface design", "Design clean domain interfaces", "core-architect")
 ### Domain Boundaries
 
 #### 1. Task Management Domain
+
 ```typescript
 // core/domains/task-management/
 interface TaskManagementDomain {
@@ -70,6 +72,7 @@ interface TaskManagementDomain {
 ```
 
 #### 2. Session Management Domain
+
 ```typescript
 // core/domains/session-management/
 interface SessionManagementDomain {
@@ -91,6 +94,7 @@ interface SessionManagementDomain {
 ```
 
 #### 3. Health Monitoring Domain
+
 ```typescript
 // core/domains/health-monitoring/
 interface HealthMonitoringDomain {
@@ -114,6 +118,7 @@ interface HealthMonitoringDomain {
 ## Microkernel Architecture Pattern
 
 ### Core Kernel
+
 ```typescript
 // core/kernel/claude-flow-kernel.ts
 export class ClaudeFlowKernel {
@@ -123,9 +128,9 @@ export class ClaudeFlowKernel {
 
   async initialize(): Promise<void> {
     // Load core domains
-    await this.loadDomain('task-management', new TaskManagementDomain());
-    await this.loadDomain('session-management', new SessionManagementDomain());
-    await this.loadDomain('health-monitoring', new HealthMonitoringDomain());
+    await this.loadDomain("task-management", new TaskManagementDomain());
+    await this.loadDomain("session-management", new SessionManagementDomain());
+    await this.loadDomain("health-monitoring", new HealthMonitoringDomain());
 
     // Wire up domain events
     this.setupDomainEventHandlers();
@@ -147,6 +152,7 @@ export class ClaudeFlowKernel {
 ```
 
 ### Plugin Architecture
+
 ```typescript
 // core/plugins/
 interface DomainPlugin {
@@ -160,17 +166,22 @@ interface DomainPlugin {
 
 // Example: Swarm Coordination Plugin
 export class SwarmCoordinationPlugin implements DomainPlugin {
-  name = 'swarm-coordination';
-  version = '3.0.0';
-  dependencies = ['task-management', 'session-management'];
+  name = "swarm-coordination";
+  version = "3.0.0";
+  dependencies = ["task-management", "session-management"];
 
   async initialize(kernel: ClaudeFlowKernel): Promise<void> {
-    const taskDomain = kernel.getDomain<TaskManagementDomain>('task-management');
-    const sessionDomain = kernel.getDomain<SessionManagementDomain>('session-management');
+    const taskDomain =
+      kernel.getDomain<TaskManagementDomain>("task-management");
+    const sessionDomain =
+      kernel.getDomain<SessionManagementDomain>("session-management");
 
     // Register swarm coordination services
-    this.swarmCoordinator = new UnifiedSwarmCoordinator(taskDomain, sessionDomain);
-    kernel.registerService('swarm-coordinator', this.swarmCoordinator);
+    this.swarmCoordinator = new UnifiedSwarmCoordinator(
+      taskDomain,
+      sessionDomain,
+    );
+    kernel.registerService("swarm-coordinator", this.swarmCoordinator);
   }
 }
 ```
@@ -178,6 +189,7 @@ export class SwarmCoordinationPlugin implements DomainPlugin {
 ## Domain Events & Integration
 
 ### Event-Driven Communication
+
 ```typescript
 // core/shared/domain-events/
 abstract class DomainEvent {
@@ -199,7 +211,7 @@ export class TaskAssignedEvent extends DomainEvent {
   constructor(
     taskId: string,
     public readonly agentId: string,
-    public readonly priority: Priority
+    public readonly priority: Priority,
   ) {
     super(taskId);
   }
@@ -209,7 +221,7 @@ export class TaskCompletedEvent extends DomainEvent {
   constructor(
     taskId: string,
     public readonly result: TaskResult,
-    public readonly duration: number
+    public readonly duration: number,
   ) {
     super(taskId);
   }
@@ -220,20 +232,20 @@ export class TaskCompletedEvent extends DomainEvent {
 export class TaskCompletedHandler {
   constructor(
     private metricsRepository: IMetricsRepository,
-    private sessionService: SessionLifecycleService
+    private sessionService: SessionLifecycleService,
   ) {}
 
   async handle(event: TaskCompletedEvent): Promise<void> {
     // Update metrics
     await this.metricsRepository.recordTaskCompletion(
       event.aggregateId,
-      event.duration
+      event.duration,
     );
 
     // Update session state
     await this.sessionService.markTaskCompleted(
       event.aggregateId,
-      event.result
+      event.result,
     );
   }
 }
@@ -258,13 +270,14 @@ export class TaskCompletedHandler {
 ```
 
 ### Application Layer (Use Cases)
+
 ```typescript
 // core/application/use-cases/
 export class AssignTaskUseCase {
   constructor(
     private taskRepository: ITaskRepository,
     private agentRepository: IAgentRepository,
-    private eventBus: DomainEventBus
+    private eventBus: DomainEventBus,
   ) {}
 
   async execute(command: AssignTaskCommand): Promise<TaskResult> {
@@ -282,9 +295,9 @@ export class AssignTaskUseCase {
     await this.taskRepository.save(task);
 
     // 5. Publish domain events
-    task.getUncommittedEvents().forEach(event =>
-      this.eventBus.publish(event)
-    );
+    task
+      .getUncommittedEvents()
+      .forEach((event) => this.eventBus.publish(event));
 
     // 6. Return result
     return TaskResult.success(task);
@@ -295,66 +308,54 @@ export class AssignTaskUseCase {
 ## Module Configuration
 
 ### Bounded Context Modules
+
 ```typescript
 // core/domains/task-management/module.ts
 export const taskManagementModule = {
-  name: 'task-management',
+  name: "task-management",
 
-  entities: [
-    TaskEntity,
-    TaskQueueEntity
-  ],
+  entities: [TaskEntity, TaskQueueEntity],
 
-  valueObjects: [
-    TaskIdVO,
-    TaskStatusVO,
-    PriorityVO
-  ],
+  valueObjects: [TaskIdVO, TaskStatusVO, PriorityVO],
 
-  services: [
-    TaskSchedulingService,
-    TaskValidationService
-  ],
+  services: [TaskSchedulingService, TaskValidationService],
 
-  repositories: [
-    { provide: ITaskRepository, useClass: SqliteTaskRepository }
-  ],
+  repositories: [{ provide: ITaskRepository, useClass: SqliteTaskRepository }],
 
-  eventHandlers: [
-    TaskAssignedHandler,
-    TaskCompletedHandler
-  ]
+  eventHandlers: [TaskAssignedHandler, TaskCompletedHandler],
 };
 ```
 
 ## Migration Strategy
 
 ### Phase 1: Extract Domain Services
+
 ```typescript
 // Extract services from orchestrator.ts
 const extractionPlan = {
   week1: [
-    'TaskManager → task-management domain',
-    'SessionManager → session-management domain'
+    "TaskManager → task-management domain",
+    "SessionManager → session-management domain",
   ],
   week2: [
-    'HealthMonitor → health-monitoring domain',
-    'LifecycleManager → lifecycle-management domain'
+    "HealthMonitor → health-monitoring domain",
+    "LifecycleManager → lifecycle-management domain",
   ],
   week3: [
-    'EventCoordinator → event-coordination domain',
-    'Wire up domain events'
-  ]
+    "EventCoordinator → event-coordination domain",
+    "Wire up domain events",
+  ],
 };
 ```
 
 ### Phase 2: Implement Clean Interfaces
+
 ```typescript
 // Clean separation with dependency injection
 export class TaskController {
   constructor(
-    @Inject('AssignTaskUseCase') private assignTask: AssignTaskUseCase,
-    @Inject('CompleteTaskUseCase') private completeTask: CompleteTaskUseCase
+    @Inject("AssignTaskUseCase") private assignTask: AssignTaskUseCase,
+    @Inject("CompleteTaskUseCase") private completeTask: CompleteTaskUseCase,
   ) {}
 
   async assign(request: AssignTaskRequest): Promise<TaskResponse> {
@@ -366,38 +367,44 @@ export class TaskController {
 ```
 
 ### Phase 3: Plugin System
+
 ```typescript
 // Enable plugin-based extensions
 const pluginSystem = {
-  core: ['task-management', 'session-management', 'health-monitoring'],
-  optional: ['swarm-coordination', 'learning-integration', 'performance-monitoring']
+  core: ["task-management", "session-management", "health-monitoring"],
+  optional: [
+    "swarm-coordination",
+    "learning-integration",
+    "performance-monitoring",
+  ],
 };
 ```
 
 ## Testing Strategy
 
 ### Domain Testing (London School TDD)
+
 ```typescript
 // Pure domain logic testing
-describe('Task Entity', () => {
+describe("Task Entity", () => {
   let task: TaskEntity;
   let mockAgent: jest.Mocked<AgentEntity>;
 
   beforeEach(() => {
-    task = new TaskEntity(TaskId.create(), 'Test task');
+    task = new TaskEntity(TaskId.create(), "Test task");
     mockAgent = createMock<AgentEntity>();
   });
 
-  it('should assign to agent when valid', () => {
+  it("should assign to agent when valid", () => {
     mockAgent.canAcceptTask.mockReturnValue(true);
 
     task.assignTo(mockAgent);
 
     expect(task.assignedAgent).toBe(mockAgent);
-    expect(task.status.value).toBe('assigned');
+    expect(task.status.value).toBe("assigned");
   });
 
-  it('should emit TaskAssignedEvent when assigned', () => {
+  it("should emit TaskAssignedEvent when assigned", () => {
     mockAgent.canAcceptTask.mockReturnValue(true);
 
     task.assignTo(mockAgent);
@@ -428,6 +435,7 @@ describe('Task Entity', () => {
 ## Usage Examples
 
 ### Complete Domain Extraction
+
 ```bash
 # Full DDD architecture implementation
 Task("DDD architecture implementation",
@@ -436,6 +444,7 @@ Task("DDD architecture implementation",
 ```
 
 ### Plugin Development
+
 ```bash
 # Create domain plugin
 npm run create:plugin -- --name swarm-coordination --template domain

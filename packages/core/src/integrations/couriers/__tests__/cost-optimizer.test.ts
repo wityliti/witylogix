@@ -193,8 +193,12 @@ describe("CostOptimizer", () => {
 
       expect(comparison.estimates.length).toBe(3);
       expect(comparison.cheapest.provider).toBe("onfleet");
-      expect(comparison.cheapest.effectiveCost).toBeLessThanOrEqual(comparison.averageCost);
-      expect(comparison.costRange.min).toBeLessThanOrEqual(comparison.costRange.max);
+      expect(comparison.cheapest.effectiveCost).toBeLessThanOrEqual(
+        comparison.averageCost,
+      );
+      expect(comparison.costRange.min).toBeLessThanOrEqual(
+        comparison.costRange.max,
+      );
       expect(comparison.potentialSavings.vsAverage).toBeGreaterThanOrEqual(0);
       expect(comparison.recommendation).toBeDefined();
     });
@@ -331,11 +335,17 @@ describe("CostOptimizer", () => {
 
       optimizer.registerVolumeDiscount("onfleet", discount);
 
-      const deliveries: DeliveryRequest[] = Array.from({ length: 5 }, (_, i) => ({
-        orderId: `order-${i}`,
-        pickup: { latitude: 40.7128, longitude: -74.006 },
-        dropoff: { latitude: 40.7489 + i * 0.01, longitude: -73.968 + i * 0.01 },
-      }));
+      const deliveries: DeliveryRequest[] = Array.from(
+        { length: 5 },
+        (_, i) => ({
+          orderId: `order-${i}`,
+          pickup: { latitude: 40.7128, longitude: -74.006 },
+          dropoff: {
+            latitude: 40.7489 + i * 0.01,
+            longitude: -73.968 + i * 0.01,
+          },
+        }),
+      );
 
       const options: CourierOption[] = [
         {
@@ -364,7 +374,9 @@ describe("CostOptimizer", () => {
         },
       ];
 
-      const routingResults = new Map(deliveries.map((d) => [d.orderId!, { options }]));
+      const routingResults = new Map(
+        deliveries.map((d) => [d.orderId!, { options }]),
+      );
 
       const result = optimizer.optimizeBatchCost(deliveries, routingResults);
 
@@ -378,7 +390,9 @@ describe("CostOptimizer", () => {
 
       expect(roi.period).toBe("30d");
       expect(roi.totalDeliveries).toBe(0);
-      expect(roi.recommendations).toContain("Insufficient data for ROI calculation");
+      expect(roi.recommendations).toContain(
+        "Insufficient data for ROI calculation",
+      );
     });
 
     it("should calculate ROI with cost history", () => {
@@ -424,7 +438,9 @@ describe("CostOptimizer", () => {
       const forecast = optimizer.forecastCosts("onfleet", "daily", 7);
 
       expect(forecast.forecasts.length).toBe(0);
-      expect(forecast.recommendations).toContain("Insufficient historical data for forecast");
+      expect(forecast.recommendations).toContain(
+        "Insufficient historical data for forecast",
+      );
     });
 
     it("should forecast costs with historical data", () => {

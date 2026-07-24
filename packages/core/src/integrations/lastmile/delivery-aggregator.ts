@@ -7,10 +7,10 @@ import type {
   Location,
   PlatformType,
   PlatformMetrics,
-} from './types';
-import { DoorDashDriveClient } from './doordash-drive-client';
-import { UberEatsClient } from './ubereats-client';
-import { GrubhubClient } from './grubhub-client';
+} from "./types";
+import { DoorDashDriveClient } from "./doordash-drive-client";
+import { UberEatsClient } from "./ubereats-client";
+import { GrubhubClient } from "./grubhub-client";
 
 interface AggregatorConfig {
   doordash?: {
@@ -44,7 +44,7 @@ interface QuoteComparison {
   ubereats?: LastMileQuote;
   grubhub?: LastMileQuote;
   recommended_platform: PlatformType;
-  reason: 'fastest' | 'cheapest' | 'best_rated';
+  reason: "fastest" | "cheapest" | "best_rated";
 }
 
 interface TrackingUpdate {
@@ -77,9 +77,9 @@ export class DeliveryAggregator {
         config.doordash.key_id,
         config.doordash.signing_secret,
         config.doordash.webhook_secret,
-        this.sandbox_mode
+        this.sandbox_mode,
       );
-      this.enabled_platforms.push('doordash');
+      this.enabled_platforms.push("doordash");
     }
 
     if (config.ubereats && config.ubereats.enabled) {
@@ -88,9 +88,9 @@ export class DeliveryAggregator {
         config.ubereats.oauth_client_secret,
         config.ubereats.initial_token,
         config.ubereats.webhook_secret,
-        this.sandbox_mode
+        this.sandbox_mode,
       );
-      this.enabled_platforms.push('ubereats');
+      this.enabled_platforms.push("ubereats");
     }
 
     if (config.grubhub && config.grubhub.enabled) {
@@ -101,9 +101,9 @@ export class DeliveryAggregator {
         config.grubhub.oauth_client_id,
         config.grubhub.oauth_client_secret,
         config.grubhub.initial_token,
-        this.sandbox_mode
+        this.sandbox_mode,
       );
-      this.enabled_platforms.push('grubhub');
+      this.enabled_platforms.push("grubhub");
     }
 
     this.initializeMetrics();
@@ -135,7 +135,7 @@ export class DeliveryAggregator {
 
   async createDelivery(
     platform: PlatformType,
-    delivery: Partial<LastMileDelivery>
+    delivery: Partial<LastMileDelivery>,
   ): Promise<LastMileDelivery> {
     const adapter = this.getAdapter(platform);
     if (!adapter) {
@@ -145,15 +145,18 @@ export class DeliveryAggregator {
     try {
       const created_delivery = await adapter.createDelivery(delivery);
       this.delivery_cache.set(created_delivery.id, created_delivery);
-      this.recordMetric(platform, 'total_deliveries', 1);
+      this.recordMetric(platform, "total_deliveries", 1);
       return created_delivery;
     } catch (error) {
-      this.recordMetric(platform, 'failed_deliveries', 1);
+      this.recordMetric(platform, "failed_deliveries", 1);
       throw error;
     }
   }
 
-  async getDelivery(platform: PlatformType, delivery_id: string): Promise<LastMileDelivery | null> {
+  async getDelivery(
+    platform: PlatformType,
+    delivery_id: string,
+  ): Promise<LastMileDelivery | null> {
     const cached = this.delivery_cache.get(delivery_id);
     if (cached) {
       return cached;
@@ -175,7 +178,7 @@ export class DeliveryAggregator {
   async updateDelivery(
     platform: PlatformType,
     delivery_id: string,
-    updates: Partial<LastMileDelivery>
+    updates: Partial<LastMileDelivery>,
   ): Promise<LastMileDelivery> {
     const adapter = this.getAdapter(platform);
     if (!adapter) {
@@ -187,7 +190,10 @@ export class DeliveryAggregator {
     return updated_delivery;
   }
 
-  async cancelDelivery(platform: PlatformType, delivery_id: string): Promise<LastMileDelivery> {
+  async cancelDelivery(
+    platform: PlatformType,
+    delivery_id: string,
+  ): Promise<LastMileDelivery> {
     const adapter = this.getAdapter(platform);
     if (!adapter) {
       throw new Error(`Platform ${platform} is not enabled`);
@@ -195,14 +201,14 @@ export class DeliveryAggregator {
 
     const cancelled_delivery = await adapter.cancelDelivery(delivery_id);
     this.delivery_cache.delete(delivery_id);
-    this.recordMetric(platform, 'cancelled_deliveries', 1);
+    this.recordMetric(platform, "cancelled_deliveries", 1);
     return cancelled_delivery;
   }
 
   async getQuote(
     pickup: Location,
     dropoff: Location,
-    options?: QuoteOptions
+    options?: QuoteOptions,
   ): Promise<QuoteComparison> {
     const cache_key = `${pickup.latitude}-${pickup.longitude}-${dropoff.latitude}-${dropoff.longitude}`;
     const cached = this.quote_cache.get(cache_key);
@@ -229,7 +235,7 @@ export class DeliveryAggregator {
           })
           .catch(() => {
             // Handle error silently, continue with other platforms
-          })
+          }),
       );
     }
 
@@ -240,7 +246,7 @@ export class DeliveryAggregator {
           .then((q) => {
             quotes.ubereats = q;
           })
-          .catch(() => {})
+          .catch(() => {}),
       );
     }
 
@@ -251,7 +257,7 @@ export class DeliveryAggregator {
           .then((q) => {
             quotes.grubhub = q;
           })
-          .catch(() => {})
+          .catch(() => {}),
       );
     }
 
@@ -263,7 +269,9 @@ export class DeliveryAggregator {
     return comparison;
   }
 
-  private compareQuotes(quotes: Record<PlatformType, LastMileQuote | null>): QuoteComparison {
+  private compareQuotes(
+    quotes: Record<PlatformType, LastMileQuote | null>,
+  ): QuoteComparison {
     const valid_quotes = Object.entries(quotes)
       .filter(([_, q]) => q !== null)
       .map(([platform, quote]) => ({
@@ -272,27 +280,30 @@ export class DeliveryAggregator {
       }));
 
     if (valid_quotes.length === 0) {
-      throw new Error('No quotes available from any platform');
+      throw new Error("No quotes available from any platform");
     }
 
     // Find cheapest
     const cheapest = valid_quotes.reduce((min, curr) =>
-      curr.quote.total < min.quote.total ? curr : min
+      curr.quote.total < min.quote.total ? curr : min,
     );
 
     // Find fastest (shortest duration)
     const fastest = valid_quotes.reduce((min, curr) =>
-      curr.quote.duration_seconds < min.quote.duration_seconds ? curr : min
+      curr.quote.duration_seconds < min.quote.duration_seconds ? curr : min,
     );
 
     // Default to cheapest
     let recommended_platform = cheapest.platform;
-    let reason: 'fastest' | 'cheapest' | 'best_rated' = 'cheapest';
+    let reason: "fastest" | "cheapest" | "best_rated" = "cheapest";
 
     // Use fastest if time difference is significant
-    if (fastest.quote.duration_seconds < cheapest.quote.duration_seconds * 0.8) {
+    if (
+      fastest.quote.duration_seconds <
+      cheapest.quote.duration_seconds * 0.8
+    ) {
       recommended_platform = fastest.platform;
-      reason = 'fastest';
+      reason = "fastest";
     }
 
     const result: QuoteComparison = {
@@ -307,7 +318,10 @@ export class DeliveryAggregator {
     return result;
   }
 
-  async getTracking(platform: PlatformType, delivery_id: string): Promise<LastMileTracking> {
+  async getTracking(
+    platform: PlatformType,
+    delivery_id: string,
+  ): Promise<LastMileTracking> {
     const adapter = this.getAdapter(platform);
     if (!adapter) {
       throw new Error(`Platform ${platform} is not enabled`);
@@ -330,7 +344,9 @@ export class DeliveryAggregator {
       .slice(0, limit);
   }
 
-  async getMetrics(platform?: PlatformType): Promise<PlatformMetrics | Map<PlatformType, PlatformMetrics>> {
+  async getMetrics(
+    platform?: PlatformType,
+  ): Promise<PlatformMetrics | Map<PlatformType, PlatformMetrics>> {
     if (platform) {
       const metrics = this.metrics_by_platform.get(platform);
       if (!metrics) {
@@ -343,7 +359,10 @@ export class DeliveryAggregator {
   }
 
   async getCommissionAnalysis(): Promise<{
-    by_platform: Record<PlatformType, { total_commissions: number; commission_rate: number }>;
+    by_platform: Record<
+      PlatformType,
+      { total_commissions: number; commission_rate: number }
+    >;
     total: number;
     average_rate: number;
   }> {
@@ -380,9 +399,11 @@ export class DeliveryAggregator {
 
   async failoverToNextPlatform(
     primary_platform: PlatformType,
-    delivery: Partial<LastMileDelivery>
+    delivery: Partial<LastMileDelivery>,
   ): Promise<LastMileDelivery> {
-    const available_platforms = this.enabled_platforms.filter((p) => p !== primary_platform);
+    const available_platforms = this.enabled_platforms.filter(
+      (p) => p !== primary_platform,
+    );
 
     for (const platform of available_platforms) {
       try {
@@ -402,7 +423,10 @@ export class DeliveryAggregator {
     return true;
   }
 
-  async syncOrders(platform: PlatformType, filters?: DeliveryFilterOptions): Promise<LastMileDelivery[]> {
+  async syncOrders(
+    platform: PlatformType,
+    filters?: DeliveryFilterOptions,
+  ): Promise<LastMileDelivery[]> {
     const adapter = this.getAdapter(platform);
     if (!adapter) {
       throw new Error(`Platform ${platform} is not enabled`);
@@ -417,7 +441,9 @@ export class DeliveryAggregator {
     return deliveries;
   }
 
-  async listAllDeliveries(filters?: DeliveryFilterOptions): Promise<LastMileDelivery[]> {
+  async listAllDeliveries(
+    filters?: DeliveryFilterOptions,
+  ): Promise<LastMileDelivery[]> {
     const all_deliveries: LastMileDelivery[] = [];
 
     for (const platform of this.enabled_platforms) {
@@ -434,26 +460,30 @@ export class DeliveryAggregator {
     }
 
     return all_deliveries.sort(
-      (a, b) => b.created_at.getTime() - a.created_at.getTime()
+      (a, b) => b.created_at.getTime() - a.created_at.getTime(),
     );
   }
 
   private getAdapter(
-    platform: PlatformType
+    platform: PlatformType,
   ): DoorDashDriveClient | UberEatsClient | GrubhubClient | null {
     switch (platform) {
-      case 'doordash':
+      case "doordash":
         return this.doordash;
-      case 'ubereats':
+      case "ubereats":
         return this.ubereats;
-      case 'grubhub':
+      case "grubhub":
         return this.grubhub;
       default:
         return null;
     }
   }
 
-  private recordMetric(platform: PlatformType, metric: string, value: number): void {
+  private recordMetric(
+    platform: PlatformType,
+    metric: string,
+    value: number,
+  ): void {
     const metrics = this.metrics_by_platform.get(platform);
     if (metrics) {
       (metrics as any)[metric] = ((metrics as any)[metric] || 0) + value;

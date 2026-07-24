@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
  * Features: color-coded event types, date grouping, pagination
  */
 
-export type EventType = 'success' | 'warning' | 'error' | 'info';
+export type EventType = "success" | "warning" | "error" | "info";
 
 export interface TimelineEvent {
   id: string;
@@ -28,14 +28,24 @@ export interface StatusTimelineProps {
 }
 
 function formatDate(date: Date): string {
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 function formatTime(date: Date): string {
-  return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  return date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
 }
 
-function groupEventsByDate(events: TimelineEvent[]): Record<string, TimelineEvent[]> {
+function groupEventsByDate(
+  events: TimelineEvent[],
+): Record<string, TimelineEvent[]> {
   const grouped: Record<string, TimelineEvent[]> = {};
 
   events.forEach((event) => {
@@ -49,49 +59,55 @@ function groupEventsByDate(events: TimelineEvent[]): Record<string, TimelineEven
   return grouped;
 }
 
-export function StatusTimeline({ events, onEventSelect, className }: StatusTimelineProps) {
+export function StatusTimeline({
+  events,
+  onEventSelect,
+  className,
+}: StatusTimelineProps) {
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
   const [itemsToShow, setItemsToShow] = useState(10);
 
   const groupedEvents = groupEventsByDate(events);
-  const sortedDates = Object.keys(groupedEvents).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+  const sortedDates = Object.keys(groupedEvents).sort(
+    (a, b) => new Date(b).getTime() - new Date(a).getTime(),
+  );
 
   const getEventColor = (type: EventType): string => {
     switch (type) {
-      case 'success':
-        return 'var(--wl-success-500)';
-      case 'warning':
-        return 'var(--wl-warning-500)';
-      case 'error':
-        return 'var(--wl-danger-500)';
-      case 'info':
-        return 'var(--wl-info-500)';
+      case "success":
+        return "var(--wl-success-500)";
+      case "warning":
+        return "var(--wl-warning-500)";
+      case "error":
+        return "var(--wl-danger-500)";
+      case "info":
+        return "var(--wl-info-500)";
     }
   };
 
   const getEventBadgeClass = (type: EventType): string => {
     switch (type) {
-      case 'success':
-        return 'bg-wl-success-100 dark:bg-wl-success-900/30 text-wl-success-700 dark:text-wl-success-300';
-      case 'warning':
-        return 'bg-wl-warning-100 dark:bg-wl-warning-900/30 text-wl-warning-700 dark:text-wl-warning-300';
-      case 'error':
-        return 'bg-wl-danger-100 dark:bg-wl-danger-900/30 text-wl-danger-700 dark:text-wl-danger-300';
-      case 'info':
-        return 'bg-wl-info-100 dark:bg-wl-info-900/30 text-wl-info-700 dark:text-wl-info-300';
+      case "success":
+        return "bg-wl-success-100 dark:bg-wl-success-900/30 text-wl-success-700 dark:text-wl-success-300";
+      case "warning":
+        return "bg-wl-warning-100 dark:bg-wl-warning-900/30 text-wl-warning-700 dark:text-wl-warning-300";
+      case "error":
+        return "bg-wl-danger-100 dark:bg-wl-danger-900/30 text-wl-danger-700 dark:text-wl-danger-300";
+      case "info":
+        return "bg-wl-info-100 dark:bg-wl-info-900/30 text-wl-info-700 dark:text-wl-info-300";
     }
   };
 
   const getEventIcon = (type: EventType): string => {
     switch (type) {
-      case 'success':
-        return '✓';
-      case 'warning':
-        return '⚠';
-      case 'error':
-        return '✕';
-      case 'info':
-        return 'ℹ';
+      case "success":
+        return "✓";
+      case "warning":
+        return "⚠";
+      case "error":
+        return "✕";
+      case "info":
+        return "ℹ";
     }
   };
 
@@ -100,18 +116,20 @@ export function StatusTimeline({ events, onEventSelect, className }: StatusTimel
   return (
     <div
       className={cn(
-        'border border-wl-border-subtle rounded-lg bg-wl-bg-surface overflow-hidden flex flex-col',
-        className
+        "border border-wl-border-subtle rounded-lg bg-wl-bg-surface overflow-hidden flex flex-col",
+        className,
       )}
-      style={{ height: '600px' }}
+      style={{ height: "600px" }}
     >
       {/* Header */}
       <div className="border-b border-wl-border-subtle bg-wl-surface-hover p-4">
-        <h3 className="text-lg font-semibold text-wl-text-primary mb-2">Event Timeline</h3>
+        <h3 className="text-lg font-semibold text-wl-text-primary mb-2">
+          Event Timeline
+        </h3>
         <div className="flex items-center justify-between text-xs text-wl-text-secondary">
           <span>{events.length} total events</span>
           <div className="flex items-center gap-3">
-            {['success', 'warning', 'error', 'info'].map((type) => {
+            {["success", "warning", "error", "info"].map((type) => {
               const count = events.filter((e) => e.type === type).length;
               return (
                 <div key={type} className="flex items-center gap-1">
@@ -121,7 +139,9 @@ export function StatusTimeline({ events, onEventSelect, className }: StatusTimel
                       backgroundColor: getEventColor(type as EventType),
                     }}
                   />
-                  <span>{type}: {count}</span>
+                  <span>
+                    {type}: {count}
+                  </span>
                 </div>
               );
             })}
@@ -140,19 +160,24 @@ export function StatusTimeline({ events, onEventSelect, className }: StatusTimel
             {/* Timeline line */}
             <div
               className="absolute left-4 top-0 bottom-0 w-0.5"
-              style={{ backgroundColor: 'var(--wl-border-subtle)' }}
+              style={{ backgroundColor: "var(--wl-border-subtle)" }}
             />
 
             {/* Events */}
             <div className="space-y-6 relative z-10">
               {visibleEvents.map((event, index) => {
                 const isExpanded = expandedEventId === event.id;
-                const isLastInDate = index === events.length - 1 || formatDate(visibleEvents[index + 1]?.timestamp) !== formatDate(event.timestamp);
+                const isLastInDate =
+                  index === events.length - 1 ||
+                  formatDate(visibleEvents[index + 1]?.timestamp) !==
+                    formatDate(event.timestamp);
 
                 return (
                   <div key={event.id} className="relative">
                     {/* Date Header */}
-                    {(index === 0 || formatDate(visibleEvents[index - 1]?.timestamp) !== formatDate(event.timestamp)) && (
+                    {(index === 0 ||
+                      formatDate(visibleEvents[index - 1]?.timestamp) !==
+                        formatDate(event.timestamp)) && (
                       <div className="flex items-center gap-3 mb-4 ml-16">
                         <div className="text-xs font-semibold text-wl-text-secondary uppercase">
                           {formatDate(event.timestamp)}
@@ -178,9 +203,7 @@ export function StatusTimeline({ events, onEventSelect, className }: StatusTimel
                               backgroundColor: getEventColor(event.type),
                             }}
                           />
-                          <div
-                            className="absolute left-1/2 top-1/2 w-2 h-2 rounded-full -translate-x-1/2 -translate-y-1/2 bg-wl-bg-surface"
-                          />
+                          <div className="absolute left-1/2 top-1/2 w-2 h-2 rounded-full -translate-x-1/2 -translate-y-1/2 bg-wl-bg-surface" />
                         </div>
 
                         {/* Content */}
@@ -188,8 +211,8 @@ export function StatusTimeline({ events, onEventSelect, className }: StatusTimel
                           <div className="flex items-center gap-2 mb-1">
                             <span
                               className={cn(
-                                'px-2 py-0.5 rounded text-xs font-semibold flex items-center gap-1',
-                                getEventBadgeClass(event.type)
+                                "px-2 py-0.5 rounded text-xs font-semibold flex items-center gap-1",
+                                getEventBadgeClass(event.type),
                               )}
                             >
                               <span>{getEventIcon(event.type)}</span>
@@ -200,17 +223,21 @@ export function StatusTimeline({ events, onEventSelect, className }: StatusTimel
                             </span>
                           </div>
 
-                          <h4 className="text-sm font-semibold text-wl-text-primary mb-1">{event.title}</h4>
-                          <p className="text-sm text-wl-text-secondary">{event.description}</p>
+                          <h4 className="text-sm font-semibold text-wl-text-primary mb-1">
+                            {event.title}
+                          </h4>
+                          <p className="text-sm text-wl-text-secondary">
+                            {event.description}
+                          </p>
 
                           {/* Expand indicator */}
                           {(event.details || event.metadata) && (
                             <div className="text-xs text-wl-primary-500 mt-2 font-medium flex items-center gap-1">
-                              {isExpanded ? 'Hide' : 'Show'} details
+                              {isExpanded ? "Hide" : "Show"} details
                               <span
                                 className={cn(
-                                  'transition-transform',
-                                  isExpanded && 'rotate-180'
+                                  "transition-transform",
+                                  isExpanded && "rotate-180",
                                 )}
                               >
                                 ▾
@@ -228,7 +255,9 @@ export function StatusTimeline({ events, onEventSelect, className }: StatusTimel
                               <div className="text-xs font-semibold text-wl-text-secondary mb-2 uppercase">
                                 Details
                               </div>
-                              <p className="text-sm text-wl-text-secondary">{event.details}</p>
+                              <p className="text-sm text-wl-text-secondary">
+                                {event.details}
+                              </p>
                             </div>
                           )}
 
@@ -239,9 +268,9 @@ export function StatusTimeline({ events, onEventSelect, className }: StatusTimel
                               </div>
                               <pre
                                 className={cn(
-                                  'text-xs overflow-x-auto rounded p-2',
-                                  'bg-wl-bg-surface border border-wl-border-subtle',
-                                  'text-wl-text-secondary font-mono'
+                                  "text-xs overflow-x-auto rounded p-2",
+                                  "bg-wl-bg-surface border border-wl-border-subtle",
+                                  "text-wl-text-secondary font-mono",
                                 )}
                               >
                                 {JSON.stringify(event.metadata, null, 2)}
@@ -264,9 +293,9 @@ export function StatusTimeline({ events, onEventSelect, className }: StatusTimel
             <button
               onClick={() => setItemsToShow(itemsToShow + 10)}
               className={cn(
-                'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-                'bg-wl-primary-100 text-wl-primary-700 hover:bg-wl-primary-200',
-                'dark:bg-wl-primary-900/30 dark:text-wl-primary-300 dark:hover:bg-wl-primary-900/50'
+                "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                "bg-wl-primary-100 text-wl-primary-700 hover:bg-wl-primary-200",
+                "dark:bg-wl-primary-900/30 dark:text-wl-primary-300 dark:hover:bg-wl-primary-900/50",
               )}
             >
               Load More ({events.length - itemsToShow} remaining)

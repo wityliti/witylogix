@@ -13,11 +13,13 @@
 This decision documents the **platform source abstraction strategy** to decouple Witylogix from Shopify-specific field names and enable support for multiple e-commerce platforms (WooCommerce, Magento, custom storefronts).
 
 **Current Problem:**
+
 - Data models contain Shopify-specific fields: `shopifyOrderId`, `shopifyProductId`, `shopifyCustomerId`, `shopifyCollectionId`
 - Prevents supporting WooCommerce and Magento without code changes
 - Competitive disadvantage (Fleetbase is platform-agnostic)
 
 **Key Changes:**
+
 1. Rename Shopify-specific fields to generic names:
    - `shopifyOrderId` → `externalOrderId`
    - `shopifyProductId` → `externalProductId`
@@ -34,6 +36,7 @@ This decision documents the **platform source abstraction strategy** to decouple
    - Consumers don't need to know platform details
 
 **Outcome:**
+
 - Supports multi-platform without model duplication
 - Type-safe platform discrimination
 - Maintains Shopify-first stability (default source = SHOPIFY)
@@ -48,6 +51,7 @@ This decision documents the **platform source abstraction strategy** to decouple
 The Witylogix data model is tightly coupled to Shopify:
 
 **Order Model (packages/db/prisma/schema/04-orders.prisma):**
+
 ```prisma
 model Order {
   id                  String  @id
@@ -61,6 +65,7 @@ model Order {
 ```
 
 **Product Model (packages/db/prisma/schema/25-cache-models.prisma):**
+
 ```prisma
 model Product {
   id               String @id
@@ -72,6 +77,7 @@ model Product {
 ```
 
 **Customer Model:**
+
 ```prisma
 model Customer {
   id                String @id
@@ -83,6 +89,7 @@ model Customer {
 ```
 
 **Consequences:**
+
 1. **Adding WooCommerce requires:**
    - New `woocommerceProductId`, `woocommerceCustomerId` fields
    - Separate unique constraints for each platform
@@ -90,6 +97,7 @@ model Customer {
    - Database schema explosion
 
 2. **Query Complexity:**
+
    ```typescript
    // Current: Only works for Shopify
    const product = await db.product.findUnique({
@@ -110,12 +118,14 @@ model Customer {
 ### Competitive Analysis
 
 **Fleetbase** (logistics competitor):
+
 - Supports 40+ e-commerce platforms (Shopify, WooCommerce, Magento, BigCommerce, Custom)
 - Generic `externalId` and `source` on all models
 - Single set of business logic works across all platforms
 - Massive TAM advantage over Shopify-only solutions
 
 **Impact on Witylogix:**
+
 - Current: Can only serve Shopify merchants
 - Target: Serve entire mid-market e-commerce segment
 - Roadmap: WooCommerce (40% of e-commerce), Magento (15%), Custom (10%)
@@ -123,12 +133,14 @@ model Customer {
 ### Roadmap Alignment
 
 **Q1 2026 (Sprint 3.4):** ADR-014 decision + Phase 1 implementation
+
 - Rename fields and add source enum
 - Update unique constraints
 - Update all consumer code
 - Maintain backward compatibility via migration
 
 **Q2 2026:** Phase 2 implementation + WooCommerce adapter
+
 - Build WooCommerce webhook normalizer
 - Implement WooCommerce product sync
 - Test multi-platform order workflows
@@ -138,6 +150,7 @@ model Customer {
 ### Existing Patterns
 
 **ADR-008: Auth Provider Abstraction** shows similar approach:
+
 ```typescript
 enum AuthProvider {
   GOOGLE = "GOOGLE",
@@ -147,7 +160,7 @@ enum AuthProvider {
 
 interface AuthConfig {
   provider: AuthProvider;
-  credentials: unknown;  // Provider-specific
+  credentials: unknown; // Provider-specific
 }
 ```
 
@@ -156,6 +169,7 @@ This ADR follows same pattern for e-commerce platforms.
 ### Breaking Change Assessment
 
 **Migration Scope:**
+
 - Prisma schema: Update 4 models + 8 indexes
 - Database migration: Rename columns, drop old unique constraints, add new ones
 - Consumer code: Update 40+ query sites (findUnique with new constraint names)
@@ -163,6 +177,7 @@ This ADR follows same pattern for e-commerce platforms.
 - Tests: Update ~30 test files with new model fields
 
 **Risk Level:** Medium-High
+
 - Data-affecting change (columns rename)
 - Must maintain transactional integrity during migration
 - Requires comprehensive testing before production
@@ -174,6 +189,7 @@ This ADR follows same pattern for e-commerce platforms.
 ### 1. Field Renaming Strategy
 
 **Order Model Changes:**
+
 ```prisma
 model Order {
   id                  String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -193,6 +209,7 @@ model Order {
 ```
 
 **Product Model Changes:**
+
 ```prisma
 model Product {
   id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -211,6 +228,7 @@ model Product {
 ```
 
 **Customer Model Changes:**
+
 ```prisma
 model Customer {
   id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -229,6 +247,7 @@ model Customer {
 ```
 
 **Collection Model (if exists):**
+
 ```prisma
 model Collection {
   id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -253,7 +272,7 @@ export enum PlatformSource {
   SHOPIFY = "SHOPIFY",
   WOOCOMMERCE = "WOOCOMMERCE",
   MAGENTO = "MAGENTO",
-  CUSTOM = "CUSTOM",  // For custom/self-hosted storefronts
+  CUSTOM = "CUSTOM", // For custom/self-hosted storefronts
 }
 
 /**
@@ -268,9 +287,9 @@ export function isPlatformSource(value: string): value is PlatformSource {
  * Used in event payloads, queue messages, and external integrations
  */
 export interface ExternalReference {
-  externalId: string;        // Platform-specific ID (e.g., "1234567890")
-  source: PlatformSource;    // Which platform this ID came from
-  externalNumber?: string;   // Optional order/customer number (e.g., "#1001")
+  externalId: string; // Platform-specific ID (e.g., "1234567890")
+  source: PlatformSource; // Which platform this ID came from
+  externalNumber?: string; // Optional order/customer number (e.g., "#1001")
 }
 
 /**
@@ -287,6 +306,7 @@ export type ExternalEntity<T extends PlatformSource = PlatformSource> = {
 ### 3. Queue Payload Normalization
 
 **Before (Shopify-specific):**
+
 ```typescript
 interface OrderCreatedPayload {
   shopId: string;
@@ -297,6 +317,7 @@ interface OrderCreatedPayload {
 ```
 
 **After (Platform-generic):**
+
 ```typescript
 interface OrderCreatedPayload {
   shopId: string;
@@ -308,6 +329,7 @@ interface OrderCreatedPayload {
 ```
 
 **Webhook Normalization:**
+
 ```typescript
 // Shopify webhook handler
 async function handleShopifyOrderCreated(payload: ShopifyOrderPayload) {
@@ -338,6 +360,7 @@ async function handleWooOrderCreated(payload: WooOrderPayload) {
 ```
 
 **Queue Consumer (Platform-agnostic):**
+
 ```typescript
 // Consumer doesn't care which platform order came from
 async function processOrderCreated(payload: OrderCreatedPayload) {
@@ -355,7 +378,7 @@ async function processOrderCreated(payload: OrderCreatedPayload) {
   // All downstream services use same payload format
   await notificationQueue.enqueue({
     orderId: order.id,
-    source: order.source,  // Available for platform-specific logic if needed
+    source: order.source, // Available for platform-specific logic if needed
     // ...
   });
 }
@@ -364,11 +387,13 @@ async function processOrderCreated(payload: OrderCreatedPayload) {
 ### 4. Consumer Code Updates
 
 **Before (Shopify-specific queries):**
+
 ```typescript
 // apps/api/src/services/order.ts
 const order = await db.order.findUnique({
   where: {
-    shopId_shopifyOrderId: {  // PROBLEM: Hardcoded Shopify constraint
+    shopId_shopifyOrderId: {
+      // PROBLEM: Hardcoded Shopify constraint
       shopId,
       shopifyOrderId,
     },
@@ -377,26 +402,29 @@ const order = await db.order.findUnique({
 ```
 
 **After (Platform-agnostic queries):**
+
 ```typescript
 // apps/api/src/services/order.ts
 const order = await db.order.findUnique({
   where: {
-    shopId_externalOrderId_source: {  // NEW: Source discriminator
+    shopId_externalOrderId_source: {
+      // NEW: Source discriminator
       shopId,
       externalOrderId,
-      source: PlatformSource.SHOPIFY,  // Explicitly specified
+      source: PlatformSource.SHOPIFY, // Explicitly specified
     },
   },
 });
 ```
 
 **Or with helper function:**
+
 ```typescript
 // packages/core/src/db/helpers.ts
 export function getOrderByExternalId(
   shopId: string,
   externalOrderId: string,
-  source: PlatformSource = PlatformSource.SHOPIFY
+  source: PlatformSource = PlatformSource.SHOPIFY,
 ) {
   return db.order.findUnique({
     where: {
@@ -412,6 +440,7 @@ const order = await getOrderByExternalId(shopId, externalOrderId);
 ### 5. Type Safety with TypeScript
 
 **Discriminated Union Pattern (for future platform-specific logic):**
+
 ```typescript
 type OrderByPlatform =
   | { source: PlatformSource.SHOPIFY; shopifyMetadata: ShopifyOrderMeta }
@@ -429,19 +458,21 @@ function processPlatformSpecificLogic(order: OrderByPlatform) {
 ```
 
 **Optional: Extend Order type per platform:**
+
 ```typescript
 // Future: If needed for platform-specific fields
 interface Order {
   id: string;
   source: PlatformSource;
   // ... shared fields
-  metadata: Record<string, unknown>;  // Platform-specific data stored here
+  metadata: Record<string, unknown>; // Platform-specific data stored here
 }
 ```
 
 ### 6. Migration Strategy
 
 **Phase 1 (Sprint 3.4): Data Model + Basic Refactoring**
+
 1. Create Prisma migration: rename columns, add source enum
 2. Update Prisma schema
 3. Generate new Prisma client
@@ -452,6 +483,7 @@ interface Order {
 8. Deploy Phase 1 with feature flag
 
 **Phase 2 (Q2 2026): WooCommerce Integration**
+
 1. Build WooCommerce webhook normalizer
 2. Add WooCommerce configuration to Shop model
 3. Implement WooCommerce OAuth flow
@@ -459,6 +491,7 @@ interface Order {
 5. Deploy Phase 2
 
 **Database Migration (Detailed):**
+
 ```sql
 -- Step 1: Add new columns
 ALTER TABLE orders ADD COLUMN external_order_id TEXT;
@@ -488,6 +521,7 @@ ALTER TABLE orders DROP COLUMN shopify_order_number;
 ### 7. Default Platform = SHOPIFY
 
 **Key Decision:** Default `source = SHOPIFY` for backward compatibility
+
 - Existing Shopify shops don't need migration of the source column
 - Queries will include Shopify default if not specified
 - WooCommerce shops explicitly set `source = WOOCOMMERCE`
@@ -497,7 +531,7 @@ ALTER TABLE orders DROP COLUMN shopify_order_number;
 const shopifyOrders = await db.order.findMany({
   where: {
     shopId,
-    source: PlatformSource.SHOPIFY,  // Can be explicit
+    source: PlatformSource.SHOPIFY, // Can be explicit
   },
 });
 
@@ -589,14 +623,14 @@ const allOrders = await db.order.findMany({
 
 ### Trade-offs
 
-| Aspect | With Abstraction | Without Abstraction |
-|--------|------------------|---------------------|
-| **Schema Cleanliness** | Single table per entity | Duplicate columns per platform |
-| **Query Complexity** | Slightly higher (include source) | Simple (platform-agnostic) |
-| **Adding New Platform** | Update normalizer only | Update schema + consumers |
-| **TAM** | 60+ platforms possible | Shopify only (15% market) |
-| **Competitive Position** | Parity with Fleetbase | Behind competitors |
-| **Refactoring Effort** | High (Phase 1) | Zero |
+| Aspect                   | With Abstraction                 | Without Abstraction            |
+| ------------------------ | -------------------------------- | ------------------------------ |
+| **Schema Cleanliness**   | Single table per entity          | Duplicate columns per platform |
+| **Query Complexity**     | Slightly higher (include source) | Simple (platform-agnostic)     |
+| **Adding New Platform**  | Update normalizer only           | Update schema + consumers      |
+| **TAM**                  | 60+ platforms possible           | Shopify only (15% market)      |
+| **Competitive Position** | Parity with Fleetbase            | Behind competitors             |
+| **Refactoring Effort**   | High (Phase 1)                   | Zero                           |
 
 ---
 
@@ -607,11 +641,13 @@ const allOrders = await db.order.findMany({
 **Approach:** Create `Order`, `WooOrder`, `MagentoOrder` tables with shared interface
 
 **Pros:**
+
 - Minimal schema changes
 - Shopify logic isolated
 - Easy to add platform-specific fields
 
 **Cons:**
+
 - Table explosion (3 tables per entity: Order, WooOrder, MagentoOrder)
 - Consumer code must know which table to query
 - Duplication of indexes and constraints
@@ -629,10 +665,12 @@ model Order {
 ```
 
 **Pros:**
+
 - No schema changes needed
 - Platform IDs co-located
 
 **Cons:**
+
 - No type safety (runtime errors)
 - Can't index on external ID (no unique constraint)
 - Queries become complex (JSON path syntax)
@@ -644,10 +682,12 @@ model Order {
 **Approach:** Use inheritance (ShopifyOrder extends Order)
 
 **Pros:**
+
 - Encapsulation of platform-specific logic
 - OOP pattern
 
 **Cons:**
+
 - Prisma doesn't support inheritance well
 - Adds table complexity
 - Queries become complex
@@ -666,11 +706,13 @@ model Order {
 ```
 
 **Pros:**
+
 - Zero-downtime transition
 - Gradual deprecation
 - Backwards compatibility
 
 **Cons:**
+
 - Database bloat (duplicate data)
 - Confusing for new developers
 - Migration complexity (keep in sync)
@@ -681,10 +723,12 @@ model Order {
 **Approach:** Each platform has own database shard
 
 **Pros:**
+
 - Complete platform isolation
 - Easier scaling per platform
 
 **Cons:**
+
 - Operational complexity (manage multiple DBs)
 - Cross-platform queries impossible
 - Deployment complexity
@@ -697,6 +741,7 @@ model Order {
 ### Phase 1: Data Model + Refactoring (Sprint 3.4)
 
 **Week 1: Preparation**
+
 1. Create feature branch: `adr-014/phase-1-abstraction`
 2. Create Prisma migration file
 3. Update schema files:
@@ -706,6 +751,7 @@ model Order {
 5. Regenerate Prisma client: `pnpm db:generate`
 
 **Week 2: Consumer Updates**
+
 1. Find all `shopifyOrderId` references:
    ```bash
    grep -r "shopifyOrderId\|shopifyProductId\|shopifyCustomerId" \
@@ -716,6 +762,7 @@ model Order {
 4. Create migration shim if needed for backward compatibility
 
 **Week 3: Testing**
+
 1. Update unit tests: 30+ test files
    - Order creation tests
    - Product sync tests
@@ -725,6 +772,7 @@ model Order {
 4. Load testing: 1000 order lookups/sec
 
 **Week 4: Deployment**
+
 1. Code review and approval
 2. Merge to main
 3. Deploy to staging (no schema changes yet)
@@ -742,6 +790,7 @@ model Order {
 ### Test Coverage
 
 **Unit Tests:**
+
 - `PlatformSource` enum: All values valid
 - `isPlatformSource()` guard: Validates correctly
 - Order creation: source defaults to SHOPIFY
@@ -749,12 +798,14 @@ model Order {
 - Customer queries: filters by source
 
 **Integration Tests:**
+
 - Order created with source=SHOPIFY: findUnique works
 - Product sync with source=SHOPIFY: cache works
 - Customer lookup: finds correct source
 - Migration preserves data: before/after counts match
 
 **Migration Tests:**
+
 - Data migration: 100% of records have source = SHOPIFY
 - Unique constraints: no duplicates on (shopId, externalId, source)
 - Old unique constraint removed: no orphaned indexes
@@ -796,7 +847,10 @@ describe("getOrderByExternalId", () => {
       },
     });
 
-    const found = await getOrderByExternalId("shop-123", "gid://shopify/Order/123");
+    const found = await getOrderByExternalId(
+      "shop-123",
+      "gid://shopify/Order/123",
+    );
     expect(found).toEqual(order);
   });
 
@@ -879,7 +933,7 @@ async function verifyMigration() {
   `;
   console.assert(
     duplicates.length === 0,
-    "Found duplicate (shopId, externalOrderId, source)"
+    "Found duplicate (shopId, externalOrderId, source)",
   );
 
   // Check: Old column removed
@@ -910,14 +964,17 @@ async function verifyMigration() {
 ### Implementation Files
 
 **Schema:**
+
 - `/packages/db/prisma/schema/04-orders.prisma` — Order model changes
 - `/packages/db/prisma/schema/25-cache-models.prisma` — Product, Customer changes
 
 **Types:**
+
 - `/packages/types/src/platform.ts` — PlatformSource enum and helpers (NEW)
 - `/packages/types/src/index.ts` — Export PlatformSource
 
 **Consumers:**
+
 - `/apps/api/src/services/order.ts` — Order queries
 - `/apps/api/src/services/product.ts` — Product queries
 - `/apps/api/src/services/customer.ts` — Customer queries
@@ -925,10 +982,12 @@ async function verifyMigration() {
 - `/packages/core/src/db/helpers.ts` — Query helpers (NEW)
 
 **Tests:**
+
 - `/apps/api/src/**/*.test.ts` — All consumer tests
 - `/packages/types/src/platform.test.ts` — Enum tests (NEW)
 
 **Database:**
+
 - `/packages/db/prisma/migrations/[timestamp]_platform_source_abstraction/` — Migration (NEW)
 
 ### External References

@@ -7,8 +7,8 @@
  * - Real-time monitoring and predictive insights
  */
 
-import { z } from 'zod';
-import type { FastifyRequest, FastifyReply } from 'fastify';
+import { z } from "zod";
+import type { FastifyRequest, FastifyReply } from "fastify";
 import {
   MultiSignalAnalyzer,
   LatencyAnomalyDetector,
@@ -17,7 +17,7 @@ import {
   AnomalyCorrelator,
   type IntegrationMetric,
   type CompositeAnomalyScore,
-} from './integration-anomaly-detector.js';
+} from "./integration-anomaly-detector.js";
 import {
   RemediationRecommender,
   AutoRemediationEngine,
@@ -26,7 +26,7 @@ import {
   type RemediationRecommendation,
   type RemediationExecution,
   type RemediationRule,
-} from './integration-auto-remediation.js';
+} from "./integration-auto-remediation.js";
 import {
   GrowthProjector,
   ProviderLimitForecaster,
@@ -38,7 +38,7 @@ import {
   type CapacitySimulation,
   type SLAMetrics,
   type CapacityAlert,
-} from './integration-capacity-planner.js';
+} from "./integration-capacity-planner.js";
 
 // ─── ZOD SCHEMAS ────────────────────────────────────────────────────────────
 
@@ -61,14 +61,14 @@ const AnomalyDetectionRequestSchema = z.object({
 
 const RemediationExecuteRequestSchema = z.object({
   actionType: z.enum([
-    'circuit_break',
-    'failover',
-    'throttle',
-    'retry_config_change',
-    'cache_enable',
-    'alert_ops',
-    'credential_rotate',
-    'provider_restart',
+    "circuit_break",
+    "failover",
+    "throttle",
+    "retry_config_change",
+    "cache_enable",
+    "alert_ops",
+    "credential_rotate",
+    "provider_restart",
   ]),
   providerId: z.string().min(1),
   description: z.string().optional(),
@@ -78,12 +78,12 @@ const RemediationExecuteRequestSchema = z.object({
 const CapacityForecastRequestSchema = z.object({
   providerId: z.string().min(1),
   days: z.number().int().min(1).max(365).default(30),
-  projectionType: z.enum(['linear', 'exponential']).default('linear'),
+  projectionType: z.enum(["linear", "exponential"]).default("linear"),
 });
 
 const CostAnalysisRequestSchema = z.object({
   providerId: z.string().min(1).optional(),
-  period: z.enum(['daily', 'monthly', 'yearly']).default('monthly'),
+  period: z.enum(["daily", "monthly", "yearly"]).default("monthly"),
 });
 
 const CapacitySimulationRequestSchema = z.object({
@@ -139,7 +139,7 @@ const slaPredictor = new SLAPredictor();
  */
 export async function handleGetAnomalies(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<ApiResponse<CompositeAnomalyScore[]>> {
   try {
     return {
@@ -163,7 +163,7 @@ export async function handleGetAnomalies(
  */
 export async function handleGetAnomaliesByProvider(
   request: FastifyRequest<{ Params: { providerId: string } }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<ApiResponse<CompositeAnomalyScore>> {
   try {
     const { providerId } = request.params;
@@ -196,7 +196,7 @@ export async function handleGetAnomaliesByProvider(
  */
 export async function handleDetectAnomalies(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<ApiResponse<CompositeAnomalyScore>> {
   try {
     const body = AnomalyDetectionRequestSchema.parse(request.body);
@@ -223,7 +223,11 @@ export async function handleDetectAnomalies(
       volumeDetector.detectTrafficSpike(body.providerId),
     ];
 
-    const score = analyzer.analyzeSignals(signals, body.providerId, body.category);
+    const score = analyzer.analyzeSignals(
+      signals,
+      body.providerId,
+      body.category,
+    );
 
     return {
       success: true,
@@ -235,7 +239,7 @@ export async function handleDetectAnomalies(
       reply.status(400);
       return {
         success: false,
-        error: 'Validation error: ' + error.errors[0].message,
+        error: "Validation error: " + error.errors[0].message,
         timestamp: new Date().toISOString(),
       };
     }
@@ -253,12 +257,18 @@ export async function handleDetectAnomalies(
  * Get remediation recommendations
  */
 export async function handleGetRemediationRecommendations(
-  request: FastifyRequest<{ Querystring: { providerId: string; anomalyType: string; score: string } }>,
-  reply: FastifyReply
+  request: FastifyRequest<{
+    Querystring: { providerId: string; anomalyType: string; score: string };
+  }>,
+  reply: FastifyReply,
 ): Promise<ApiResponse<RemediationRecommendation>> {
   try {
     const { providerId, anomalyType, score } = request.query;
-    const recommendation = recommender.recommend(anomalyType, parseFloat(score), providerId);
+    const recommendation = recommender.recommend(
+      anomalyType,
+      parseFloat(score),
+      providerId,
+    );
 
     return {
       success: true,
@@ -281,7 +291,7 @@ export async function handleGetRemediationRecommendations(
  */
 export async function handleExecuteRemediation(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<ApiResponse<RemediationExecution>> {
   try {
     const body = RemediationExecuteRequestSchema.parse(request.body);
@@ -290,18 +300,20 @@ export async function handleExecuteRemediation(
       actionId: `action_${Date.now()}`,
       actionType: body.actionType,
       providerId: body.providerId,
-      description: body.description || '',
+      description: body.description || "",
       estimatedEffectiveness: 0.7,
-      estimatedImpact: 'medium' as const,
+      estimatedImpact: "medium" as const,
       executionTime: 5000,
-      isDestructive: ['circuit_break', 'provider_restart'].includes(body.actionType),
+      isDestructive: ["circuit_break", "provider_restart"].includes(
+        body.actionType,
+      ),
       rollbackPossible: true,
     };
 
     const execution = await remediationEngine.executeAction(action);
 
     return {
-      success: execution.status === 'success',
+      success: execution.status === "success",
       data: execution,
       timestamp: new Date().toISOString(),
     };
@@ -310,7 +322,7 @@ export async function handleExecuteRemediation(
       reply.status(400);
       return {
         success: false,
-        error: 'Validation error: ' + error.errors[0].message,
+        error: "Validation error: " + error.errors[0].message,
         timestamp: new Date().toISOString(),
       };
     }
@@ -328,8 +340,10 @@ export async function handleExecuteRemediation(
  * Get available remediation playbooks
  */
 export async function handleGetPlaybooks(
-  request: FastifyRequest<{ Querystring: { anomalyType: string; severity: string } }>,
-  reply: FastifyReply
+  request: FastifyRequest<{
+    Querystring: { anomalyType: string; severity: string };
+  }>,
+  reply: FastifyReply,
 ): Promise<ApiResponse<any>> {
   try {
     const { anomalyType, severity } = request.query;
@@ -337,7 +351,7 @@ export async function handleGetPlaybooks(
 
     return {
       success: true,
-      data: playbook || { message: 'No playbook found' },
+      data: playbook || { message: "No playbook found" },
       timestamp: new Date().toISOString(),
     };
   } catch (error) {
@@ -356,16 +370,22 @@ export async function handleGetPlaybooks(
  */
 export async function handleGetCapacityForecast(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<ApiResponse<any>> {
   try {
     const query = CapacityForecastRequestSchema.parse(request.query);
 
     let projection;
-    if (query.projectionType === 'linear') {
-      projection = growthProjector.projectLinearGrowth(query.providerId, query.days);
+    if (query.projectionType === "linear") {
+      projection = growthProjector.projectLinearGrowth(
+        query.providerId,
+        query.days,
+      );
     } else {
-      projection = growthProjector.projectExponentialGrowth(query.providerId, query.days);
+      projection = growthProjector.projectExponentialGrowth(
+        query.providerId,
+        query.days,
+      );
     }
 
     return {
@@ -378,7 +398,7 @@ export async function handleGetCapacityForecast(
       reply.status(400);
       return {
         success: false,
-        error: 'Validation error: ' + error.errors[0].message,
+        error: "Validation error: " + error.errors[0].message,
         timestamp: new Date().toISOString(),
       };
     }
@@ -397,7 +417,7 @@ export async function handleGetCapacityForecast(
  */
 export async function handleGetCostAnalysis(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<ApiResponse<any>> {
   try {
     const query = CostAnalysisRequestSchema.parse(request.query);
@@ -417,7 +437,7 @@ export async function handleGetCostAnalysis(
       reply.status(400);
       return {
         success: false,
-        error: 'Validation error: ' + error.errors[0].message,
+        error: "Validation error: " + error.errors[0].message,
         timestamp: new Date().toISOString(),
       };
     }
@@ -436,14 +456,14 @@ export async function handleGetCostAnalysis(
  */
 export async function handleGetLimitForecasts(
   request: FastifyRequest<{ Querystring: { providerId: string } }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<ApiResponse<any>> {
   try {
     const { providerId } = request.query;
     const forecasts = [
-      limitForecaster.forecastLimit(providerId, 'requests'),
-      limitForecaster.forecastLimit(providerId, 'data_transfer'),
-      limitForecaster.forecastLimit(providerId, 'compute'),
+      limitForecaster.forecastLimit(providerId, "requests"),
+      limitForecaster.forecastLimit(providerId, "data_transfer"),
+      limitForecaster.forecastLimit(providerId, "compute"),
     ];
 
     return {
@@ -467,13 +487,13 @@ export async function handleGetLimitForecasts(
  */
 export async function handleGetSLAPredictions(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<ApiResponse<SLAMetrics>> {
   try {
     const query = SLAPredictionRequestSchema.parse(request.query);
     const prediction = slaPredictor.predictSLABreach(
       query.providerId,
-      query.commitmentPercentage
+      query.commitmentPercentage,
     );
 
     return {
@@ -486,7 +506,7 @@ export async function handleGetSLAPredictions(
       reply.status(400);
       return {
         success: false,
-        error: 'Validation error: ' + error.errors[0].message,
+        error: "Validation error: " + error.errors[0].message,
         timestamp: new Date().toISOString(),
       };
     }
@@ -505,7 +525,7 @@ export async function handleGetSLAPredictions(
  */
 export async function handleSimulateCapacity(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<ApiResponse<CapacitySimulation>> {
   try {
     const body = CapacitySimulationRequestSchema.parse(request.body);
@@ -521,7 +541,7 @@ export async function handleSimulateCapacity(
       reply.status(400);
       return {
         success: false,
-        error: 'Validation error: ' + error.errors[0].message,
+        error: "Validation error: " + error.errors[0].message,
         timestamp: new Date().toISOString(),
       };
     }
@@ -540,7 +560,7 @@ export async function handleSimulateCapacity(
  */
 export async function handleGetIncidentPredictions(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<ApiResponse<any>> {
   try {
     const query = IncidentPredictionRequestSchema.parse(request.query);
@@ -556,7 +576,7 @@ export async function handleGetIncidentPredictions(
       reply.status(400);
       return {
         success: false,
-        error: 'Validation error: ' + error.errors[0].message,
+        error: "Validation error: " + error.errors[0].message,
         timestamp: new Date().toISOString(),
       };
     }
@@ -575,11 +595,11 @@ export async function handleGetIncidentPredictions(
  */
 export async function handleHealthCheck(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<ApiResponse<{ status: string }>> {
   return {
     success: true,
-    data: { status: 'healthy' },
+    data: { status: "healthy" },
     timestamp: new Date().toISOString(),
   };
 }
@@ -590,15 +610,17 @@ export async function handleHealthCheck(
  */
 export async function handleRegisterProvider(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<ApiResponse<{ providerId: string }>> {
   try {
-    const body = z.object({
-      providerId: z.string().min(1),
-      category: z.string(),
-      rateLimit: z.number().positive(),
-      currentTier: z.string(),
-    }).parse(request.body);
+    const body = z
+      .object({
+        providerId: z.string().min(1),
+        category: z.string(),
+        rateLimit: z.number().positive(),
+        currentTier: z.string(),
+      })
+      .parse(request.body);
 
     const capacity: ProviderCapacity = {
       providerId: body.providerId,
@@ -623,7 +645,7 @@ export async function handleRegisterProvider(
       reply.status(400);
       return {
         success: false,
-        error: 'Validation error: ' + error.errors[0].message,
+        error: "Validation error: " + error.errors[0].message,
         timestamp: new Date().toISOString(),
       };
     }

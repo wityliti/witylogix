@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Check, Loader2, Save, User, Bell } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { PageLoader, ErrorMessage } from '@/components/loading-skeleton';
-import { useQuery, useMutation } from '@/lib/use-api';
-import type { ApiUserProfile } from '@/lib/portal-api';
-import { ROUTES } from '@/lib/portal-api';
-import type { CustomerPreferences, NotificationChannel } from '@/types';
+import { useEffect, useState } from "react";
+import { Check, Loader2, Save, User, Bell } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { PageLoader, ErrorMessage } from "@/components/loading-skeleton";
+import { useQuery, useMutation } from "@/lib/use-api";
+import type { ApiUserProfile } from "@/lib/portal-api";
+import { ROUTES } from "@/lib/portal-api";
+import type { CustomerPreferences, NotificationChannel } from "@/types";
 
 // ─── Envelopes ────────────────────────────────────────────────
 
@@ -18,44 +18,60 @@ interface ProfileEnvelope {
 
 // ─── Notification channels ────────────────────────────────────
 
-const NOTIFICATION_CHANNELS: { id: NotificationChannel; label: string; description: string }[] = [
-  { id: 'email', label: 'Email', description: 'Status updates and delivery confirmations' },
-  { id: 'sms', label: 'SMS', description: 'Quick updates via text message' },
-  { id: 'push', label: 'Push Notifications', description: 'Real-time alerts on your device' },
+const NOTIFICATION_CHANNELS: {
+  id: NotificationChannel;
+  label: string;
+  description: string;
+}[] = [
+  {
+    id: "email",
+    label: "Email",
+    description: "Status updates and delivery confirmations",
+  },
+  { id: "sms", label: "SMS", description: "Quick updates via text message" },
+  {
+    id: "push",
+    label: "Push Notifications",
+    description: "Real-time alerts on your device",
+  },
 ];
 
 // ─── Component ────────────────────────────────────────────────
 
 export default function PreferencesPage() {
-  const { data: envelope, loading, error, refetch } = useQuery<ProfileEnvelope>(
-    ROUTES.AUTH_ME,
-  );
+  const {
+    data: envelope,
+    loading,
+    error,
+    refetch,
+  } = useQuery<ProfileEnvelope>(ROUTES.AUTH_ME);
 
   const profile = envelope?.data;
 
   // Local form state seeded from API
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [notifications, setNotifications] = useState<Partial<Record<NotificationChannel, boolean>>>(
-    {
-      email: true,
-      sms: false,
-      push: false,
-    },
-  );
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [notifications, setNotifications] = useState<
+    Partial<Record<NotificationChannel, boolean>>
+  >({
+    email: true,
+    sms: false,
+    push: false,
+  });
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Seed form once profile loads
   useEffect(() => {
     if (!profile) return;
-    setName(profile.name ?? '');
-    setPhone(profile.phone ?? '');
+    setName(profile.name ?? "");
+    setPhone(profile.phone ?? "");
   }, [profile]);
 
-  const { mutate: saveProfile, loading: saving, error: saveError } = useMutation<ProfileEnvelope>(
-    ROUTES.AUTH_ME,
-    'PATCH',
-  );
+  const {
+    mutate: saveProfile,
+    loading: saving,
+    error: saveError,
+  } = useMutation<ProfileEnvelope>(ROUTES.AUTH_ME, "PATCH");
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,18 +85,28 @@ export default function PreferencesPage() {
   };
 
   if (loading) return <PageLoader />;
-  if (error) return <div className="page-container"><ErrorMessage message={error.message} onRetry={refetch} /></div>;
+  if (error)
+    return (
+      <div className="page-container">
+        <ErrorMessage message={error.message} onRetry={refetch} />
+      </div>
+    );
 
   return (
     <div className="page-container animate-fade-in">
       <div className="page-header">
         <h1 className="page-title">Preferences</h1>
-        <p className="page-subtitle">Manage your profile and notification settings</p>
+        <p className="page-subtitle">
+          Manage your profile and notification settings
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl">
         {/* Profile section */}
-        <form onSubmit={handleSave} className="section-card stagger-1 flex flex-col gap-5">
+        <form
+          onSubmit={handleSave}
+          className="section-card stagger-1 flex flex-col gap-5"
+        >
           <div className="flex items-center gap-2 mb-1">
             <User size={18} className="text-wl-primary-500" />
             <h2 className="font-semibold text-wl-text-primary">Profile</h2>
@@ -108,7 +134,7 @@ export default function PreferencesPage() {
             <input
               id="pref-email"
               type="email"
-              value={profile?.email ?? ''}
+              value={profile?.email ?? ""}
               readOnly
               className="input w-full opacity-60 cursor-not-allowed"
               title="Email cannot be changed here"
@@ -149,8 +175,8 @@ export default function PreferencesPage() {
               type="submit"
               disabled={saving}
               className={cn(
-                'btn btn-primary',
-                saving && 'opacity-50 cursor-not-allowed',
+                "btn btn-primary",
+                saving && "opacity-50 cursor-not-allowed",
               )}
             >
               {saving ? (
@@ -172,7 +198,9 @@ export default function PreferencesPage() {
         <div className="section-card stagger-2 flex flex-col gap-4">
           <div className="flex items-center gap-2 mb-1">
             <Bell size={18} className="text-wl-primary-500" />
-            <h2 className="font-semibold text-wl-text-primary">Notifications</h2>
+            <h2 className="font-semibold text-wl-text-primary">
+              Notifications
+            </h2>
           </div>
           <p className="text-sm text-wl-text-secondary -mt-2">
             Choose how you want to receive delivery updates.
@@ -182,10 +210,10 @@ export default function PreferencesPage() {
             <label
               key={channel.id}
               className={cn(
-                'flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer',
+                "flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer",
                 notifications[channel.id]
-                  ? 'border-wl-primary-500 bg-wl-bg-elevated'
-                  : 'border-wl-border-subtle hover:border-wl-border-default',
+                  ? "border-wl-primary-500 bg-wl-bg-elevated"
+                  : "border-wl-border-subtle hover:border-wl-border-default",
               )}
             >
               <input
@@ -200,15 +228,19 @@ export default function PreferencesPage() {
                 className="mt-0.5 accent-wl-primary-500"
               />
               <div>
-                <p className="text-sm font-medium text-wl-text-primary">{channel.label}</p>
-                <p className="text-xs text-wl-text-tertiary mt-0.5">{channel.description}</p>
+                <p className="text-sm font-medium text-wl-text-primary">
+                  {channel.label}
+                </p>
+                <p className="text-xs text-wl-text-tertiary mt-0.5">
+                  {channel.description}
+                </p>
               </div>
             </label>
           ))}
 
           <p className="text-xs text-wl-text-tertiary mt-2">
-            Notification channel preferences are saved per delivery — configure them in the tracking
-            view for each active order.
+            Notification channel preferences are saved per delivery — configure
+            them in the tracking view for each active order.
           </p>
         </div>
       </div>

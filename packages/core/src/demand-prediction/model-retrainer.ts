@@ -11,8 +11,8 @@
  * - Detailed retraining logs with metrics
  */
 
-import { EventEmitter } from 'events';
-import type { ModelPerformanceMetrics } from './types';
+import { EventEmitter } from "events";
+import type { ModelPerformanceMetrics } from "./types";
 
 // ═══════════════════════════════════════════════════════════════
 // TYPES
@@ -33,7 +33,7 @@ export interface TrainingDataPoint {
  */
 export interface ModelVersion {
   version: number;
-  modelType: 'seasonal' | 'regression' | 'pattern' | 'ensemble';
+  modelType: "seasonal" | "regression" | "pattern" | "ensemble";
   trainedAt: Date;
   trainingDataSize: number;
   metrics: ModelPerformanceMetrics;
@@ -52,8 +52,8 @@ export interface ModelVersion {
 export interface RetrainingJob {
   id: string;
   zoneId: string;
-  modelType: 'seasonal' | 'regression' | 'pattern' | 'ensemble';
-  status: 'pending' | 'running' | 'completed' | 'failed';
+  modelType: "seasonal" | "regression" | "pattern" | "ensemble";
+  status: "pending" | "running" | "completed" | "failed";
 
   // Timing
   requestedAt: Date;
@@ -74,7 +74,7 @@ export interface RetrainingJob {
   promoted: boolean;
 
   // Metadata
-  reason: 'scheduled' | 'degradation_detected' | 'manual' | 'data_refresh';
+  reason: "scheduled" | "degradation_detected" | "manual" | "data_refresh";
   error?: string;
 }
 
@@ -108,7 +108,7 @@ export interface RetrainingReport {
   jobId: string;
   zoneId: string;
   modelType: string;
-  status: 'success' | 'failure' | 'no_improvement';
+  status: "success" | "failure" | "no_improvement";
 
   // Metrics comparison
   oldMetrics: ModelPerformanceMetrics;
@@ -149,7 +149,10 @@ export class ModelRetrainer extends EventEmitter {
   private retrainingHistory: RetrainingReport[] = [];
   private lastRetrainingTime: Map<string, Date> = new Map();
   private jobCounter: number = 0;
-  private accuracyHistory: Map<string, Array<{ accuracy: number; timestamp: Date }>> = new Map();
+  private accuracyHistory: Map<
+    string,
+    Array<{ accuracy: number; timestamp: Date }>
+  > = new Map();
 
   constructor(config?: Partial<RetrainingConfig>) {
     super();
@@ -172,7 +175,10 @@ export class ModelRetrainer extends EventEmitter {
    * Check if model should be retrained
    * Compares current accuracy to historical baseline
    */
-  shouldRetrain(zoneId: string, currentMetrics: ModelPerformanceMetrics): boolean {
+  shouldRetrain(
+    zoneId: string,
+    currentMetrics: ModelPerformanceMetrics,
+  ): boolean {
     const history = this.accuracyHistory.get(zoneId) || [];
 
     if (history.length === 0) {
@@ -188,18 +194,20 @@ export class ModelRetrainer extends EventEmitter {
     }
 
     const baselineAccuracy =
-      recentHistory.reduce((sum, h) => sum + h.accuracy, 0) / recentHistory.length;
+      recentHistory.reduce((sum, h) => sum + h.accuracy, 0) /
+      recentHistory.length;
 
     // Check if degraded - for MAPE, higher is worse
     const currentAccuracy = currentMetrics.mape; // Mean Absolute Percentage Error
-    const degradation = ((currentAccuracy - baselineAccuracy) / baselineAccuracy) * 100;
+    const degradation =
+      ((currentAccuracy - baselineAccuracy) / baselineAccuracy) * 100;
 
     const shouldRetrain =
       degradation > this.config.accuracyDegradationThreshold ||
       currentAccuracy > this.config.minAccuracyScore;
 
     if (shouldRetrain) {
-      this.emit('degradation_detected', {
+      this.emit("degradation_detected", {
         zoneId,
         baselineAccuracy,
         currentAccuracy,
@@ -233,7 +241,10 @@ export class ModelRetrainer extends EventEmitter {
    * Collect training data for a model
    * Gathers recent historical data for retraining
    */
-  collectTrainingData(zoneId: string, lookbackDays?: number): TrainingDataPoint[] {
+  collectTrainingData(
+    zoneId: string,
+    lookbackDays?: number,
+  ): TrainingDataPoint[] {
     const days = lookbackDays || this.config.maxDataDays;
     const dataPoints: TrainingDataPoint[] = [];
 
@@ -242,7 +253,10 @@ export class ModelRetrainer extends EventEmitter {
     const now = new Date();
     const startDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 
-    const pointCount = Math.max(this.config.minSamplesRequired * 2, Math.min(days * 24, 720));
+    const pointCount = Math.max(
+      this.config.minSamplesRequired * 2,
+      Math.min(days * 24, 720),
+    );
     for (let i = 0; i < pointCount; i++) {
       const timestamp = new Date(startDate.getTime() + i * 60 * 60 * 1000);
 
@@ -257,7 +271,8 @@ export class ModelRetrainer extends EventEmitter {
         features: {
           hour: timestamp.getHours(),
           dayOfWeek: timestamp.getDay(),
-          isWeekend: timestamp.getDay() === 0 || timestamp.getDay() === 6 ? 1 : 0,
+          isWeekend:
+            timestamp.getDay() === 0 || timestamp.getDay() === 6 ? 1 : 0,
           isHoliday: 0, // Would be fetched from calendar
           temperature: 20 + Math.random() * 15,
           promotion: Math.random() > 0.8 ? 1 : 0,
@@ -266,7 +281,9 @@ export class ModelRetrainer extends EventEmitter {
       });
     }
 
-    return dataPoints.length >= this.config.minSamplesRequired ? dataPoints : [];
+    return dataPoints.length >= this.config.minSamplesRequired
+      ? dataPoints
+      : [];
   }
 
   /**
@@ -275,12 +292,18 @@ export class ModelRetrainer extends EventEmitter {
    */
   async retrain(
     zoneId: string,
-    modelType: 'seasonal' | 'regression' | 'pattern' | 'ensemble',
+    modelType: "seasonal" | "regression" | "pattern" | "ensemble",
     trainingData: TrainingDataPoint[],
-    reason: 'scheduled' | 'degradation_detected' | 'manual' | 'data_refresh' = 'manual'
+    reason:
+      | "scheduled"
+      | "degradation_detected"
+      | "manual"
+      | "data_refresh" = "manual",
   ): Promise<RetrainingJob> {
     if (trainingData.length < this.config.minSamplesRequired) {
-      throw new Error(`Insufficient training data. Need ${this.config.minSamplesRequired}, got ${trainingData.length}`);
+      throw new Error(
+        `Insufficient training data. Need ${this.config.minSamplesRequired}, got ${trainingData.length}`,
+      );
     }
 
     const jobId = `retrain-${Date.now()}-${++this.jobCounter}`;
@@ -289,7 +312,7 @@ export class ModelRetrainer extends EventEmitter {
       id: jobId,
       zoneId,
       modelType,
-      status: 'pending',
+      status: "pending",
       requestedAt: new Date(),
       trainingDataSize: trainingData.length,
       dataWindow: {
@@ -303,7 +326,7 @@ export class ModelRetrainer extends EventEmitter {
     this.retrainingJobs.set(jobId, job);
 
     // Simulate async retraining
-    job.status = 'running';
+    job.status = "running";
     job.startedAt = new Date();
 
     try {
@@ -333,23 +356,25 @@ export class ModelRetrainer extends EventEmitter {
       job.newMetrics = newMetrics;
 
       // Calculate improvement
-      const mapeImprovement = ((oldMetrics.mape - newMetrics.mape) / oldMetrics.mape) * 100;
-      const r2Improvement = ((newMetrics.r2Score - oldMetrics.r2Score) / oldMetrics.r2Score) * 100;
+      const mapeImprovement =
+        ((oldMetrics.mape - newMetrics.mape) / oldMetrics.mape) * 100;
+      const r2Improvement =
+        ((newMetrics.r2Score - oldMetrics.r2Score) / oldMetrics.r2Score) * 100;
       const improvement = (mapeImprovement + r2Improvement) / 2;
 
       job.improvementPercent = improvement;
-      job.status = 'completed';
+      job.status = "completed";
       job.completedAt = new Date();
 
-      this.emit('retraining_completed', job);
+      this.emit("retraining_completed", job);
 
       return job;
     } catch (error) {
-      job.status = 'failed';
-      job.error = error instanceof Error ? error.message : 'Unknown error';
+      job.status = "failed";
+      job.error = error instanceof Error ? error.message : "Unknown error";
       job.completedAt = new Date();
 
-      this.emit('retraining_failed', job);
+      this.emit("retraining_failed", job);
 
       throw error;
     }
@@ -362,22 +387,28 @@ export class ModelRetrainer extends EventEmitter {
   validateRetrained(
     zoneId: string,
     oldMetrics: ModelPerformanceMetrics,
-    newMetrics: ModelPerformanceMetrics
+    newMetrics: ModelPerformanceMetrics,
   ): {
     isImprovement: boolean;
     improvementPercent: number;
     recommendation: string;
   } {
     // Calculate overall improvement score
-    const mapeImprovement = ((oldMetrics.mape - newMetrics.mape) / oldMetrics.mape) * 100;
-    const r2Improvement = ((newMetrics.r2Score - oldMetrics.r2Score) / oldMetrics.r2Score) * 100;
-    const precisionImprovement = ((newMetrics.precision - oldMetrics.precision) / oldMetrics.precision) * 100;
+    const mapeImprovement =
+      ((oldMetrics.mape - newMetrics.mape) / oldMetrics.mape) * 100;
+    const r2Improvement =
+      ((newMetrics.r2Score - oldMetrics.r2Score) / oldMetrics.r2Score) * 100;
+    const precisionImprovement =
+      ((newMetrics.precision - oldMetrics.precision) / oldMetrics.precision) *
+      100;
 
-    const overallImprovement = (mapeImprovement + r2Improvement + precisionImprovement) / 3;
+    const overallImprovement =
+      (mapeImprovement + r2Improvement + precisionImprovement) / 3;
 
-    const isImprovement = overallImprovement >= this.config.minImprovementPercent;
+    const isImprovement =
+      overallImprovement >= this.config.minImprovementPercent;
 
-    let recommendation = '';
+    let recommendation = "";
     if (isImprovement) {
       recommendation = `Promote model: ${overallImprovement.toFixed(2)}% improvement`;
     } else {
@@ -400,7 +431,11 @@ export class ModelRetrainer extends EventEmitter {
       return false;
     }
 
-    const validation = this.validateRetrained(job.zoneId, job.oldMetrics || ({} as any), job.newMetrics);
+    const validation = this.validateRetrained(
+      job.zoneId,
+      job.oldMetrics || ({} as any),
+      job.newMetrics,
+    );
 
     if (!validation.isImprovement) {
       return false;
@@ -445,7 +480,7 @@ export class ModelRetrainer extends EventEmitter {
       jobId,
       zoneId: job.zoneId,
       modelType: job.modelType,
-      status: 'success',
+      status: "success",
       oldMetrics: job.oldMetrics || ({} as any),
       newMetrics: job.newMetrics,
       improvementPercent: validation.improvementPercent,
@@ -453,14 +488,18 @@ export class ModelRetrainer extends EventEmitter {
       reason: validation.recommendation,
       requestedAt: job.requestedAt,
       completedAt: job.completedAt || new Date(),
-      durationSeconds: Math.round(((job.completedAt || new Date()).getTime() - job.requestedAt.getTime()) / 1000),
+      durationSeconds: Math.round(
+        ((job.completedAt || new Date()).getTime() -
+          job.requestedAt.getTime()) /
+          1000,
+      ),
       trainingDataSize: job.trainingDataSize,
       dataWindow: job.dataWindow,
     };
 
     this.retrainingHistory.push(report);
 
-    this.emit('model_promoted', {
+    this.emit("model_promoted", {
       zoneId: job.zoneId,
       modelType: job.modelType,
       version: newVersion.version,
@@ -485,7 +524,9 @@ export class ModelRetrainer extends EventEmitter {
    */
   getActiveModel(zoneId: string): ModelVersion | null {
     const versions = this.getModelVersions(zoneId);
-    return versions.find((v) => v.active) || versions[versions.length - 1] || null;
+    return (
+      versions.find((v) => v.active) || versions[versions.length - 1] || null
+    );
   }
 
   /**
@@ -537,10 +578,13 @@ export class ModelRetrainer extends EventEmitter {
 
     return {
       totalJobsRun: reports.length,
-      successfulJobs: reports.filter((r) => r.status === 'success').length,
+      successfulJobs: reports.filter((r) => r.status === "success").length,
       promotedModels: promoted.length,
       averageImprovement:
-        promoted.length > 0 ? promoted.reduce((sum, r) => sum + r.improvementPercent, 0) / promoted.length : 0,
+        promoted.length > 0
+          ? promoted.reduce((sum, r) => sum + r.improvementPercent, 0) /
+            promoted.length
+          : 0,
       activeModes: this.modelVersions.size,
     };
   }

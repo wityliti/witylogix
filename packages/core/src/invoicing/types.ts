@@ -5,11 +5,22 @@
 
 // ─── INVOICE TYPES ──────────────────────────────────────────────────
 
-export type InvoiceStatus = 'draft' | 'finalized' | 'sent' | 'paid' | 'overdue' | 'voided';
+export type InvoiceStatus =
+  | "draft"
+  | "finalized"
+  | "sent"
+  | "paid"
+  | "overdue"
+  | "voided";
 
-export type DiscountType = 'percentage' | 'fixed';
+export type DiscountType = "percentage" | "fixed";
 
-export type PaymentMethod = 'credit_card' | 'bank_transfer' | 'check' | 'cash' | 'other';
+export type PaymentMethod =
+  | "credit_card"
+  | "bank_transfer"
+  | "check"
+  | "cash"
+  | "other";
 
 export interface InvoiceLineItem {
   id: string;
@@ -183,7 +194,7 @@ export interface CreateInvoiceParams {
   currency?: string; // Default: USD
   notes?: string;
   terms?: string; // Payment terms / T&C
-  status?: 'draft' | 'sent'; // Initial status; default: draft
+  status?: "draft" | "sent"; // Initial status; default: draft
   taxRate?: number; // Simple tax percentage (alternative to taxConfig)
   discountPercentage?: number; // Simple discount % (alternative to discounts array)
   discounts?: {
@@ -255,34 +266,40 @@ export interface InvoiceDetailedSummary extends InvoiceSummary {
 export class InvoiceError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'InvoiceError';
+    this.name = "InvoiceError";
   }
 }
 
 export class InvoiceNotFoundError extends InvoiceError {
   constructor(invoiceId: string) {
     super(`Invoice not found: ${invoiceId}`);
-    this.name = 'InvoiceNotFoundError';
+    this.name = "InvoiceNotFoundError";
   }
 }
 
 export class InvalidInvoiceStateError extends InvoiceError {
-  constructor(invoiceId: string, currentStatus: InvoiceStatus, operation: string) {
-    super(`Cannot ${operation} invoice ${invoiceId} in status ${currentStatus}`);
-    this.name = 'InvalidInvoiceStateError';
+  constructor(
+    invoiceId: string,
+    currentStatus: InvoiceStatus,
+    operation: string,
+  ) {
+    super(
+      `Cannot ${operation} invoice ${invoiceId} in status ${currentStatus}`,
+    );
+    this.name = "InvalidInvoiceStateError";
   }
 }
 
 export class RateCardNotFoundError extends InvoiceError {
   constructor(rateCardId: string) {
     super(`Rate card not found: ${rateCardId}`);
-    this.name = 'RateCardNotFoundError';
+    this.name = "RateCardNotFoundError";
   }
 }
 
 export class DeliveryNotFoundError extends InvoiceError {
   constructor(deliveryId: string) {
     super(`Delivery/Order not found: ${deliveryId}`);
-    this.name = 'DeliveryNotFoundError';
+    this.name = "DeliveryNotFoundError";
   }
 }

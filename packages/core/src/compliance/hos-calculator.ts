@@ -31,7 +31,7 @@ export class HOSCalculator {
     if (logs.length === 0) return 11 * 60; // 660 minutes
 
     const sortedLogs = [...logs].sort(
-      (a, b) => a.startTime.getTime() - b.startTime.getTime()
+      (a, b) => a.startTime.getTime() - b.startTime.getTime(),
     );
 
     const driving11Window = this.find11HourWindow(sortedLogs);
@@ -57,7 +57,7 @@ export class HOSCalculator {
     if (logs.length === 0) return 14 * 60; // 840 minutes
 
     const sortedLogs = [...logs].sort(
-      (a, b) => a.startTime.getTime() - b.startTime.getTime()
+      (a, b) => a.startTime.getTime() - b.startTime.getTime(),
     );
 
     const window14 = this.find14HourWindow(sortedLogs);
@@ -76,14 +76,14 @@ export class HOSCalculator {
    */
   static calculateCycleRemaining(
     logs: LogEntry[],
-    cycleRule: CycleRule
+    cycleRule: CycleRule,
   ): number {
     if (logs.length === 0) {
       return cycleRule.maxDrivingHours * 60;
     }
 
     const sortedLogs = [...logs].sort(
-      (a, b) => a.startTime.getTime() - b.startTime.getTime()
+      (a, b) => a.startTime.getTime() - b.startTime.getTime(),
     );
 
     // Get window based on cycle type
@@ -92,7 +92,9 @@ export class HOSCalculator {
     const windowStart = now - cycleDays * 24 * 3600000;
 
     const cycleWindow = sortedLogs.filter(
-      (log) => log.startTime.getTime() >= windowStart && log.startTime.getTime() <= now
+      (log) =>
+        log.startTime.getTime() >= windowStart &&
+        log.startTime.getTime() <= now,
     );
 
     const drivingMinutes = cycleWindow.reduce((sum, log) => {
@@ -119,17 +121,14 @@ export class HOSCalculator {
     }
 
     const sortedLogs = [...logs].sort(
-      (a, b) => a.startTime.getTime() - b.startTime.getTime()
+      (a, b) => a.startTime.getTime() - b.startTime.getTime(),
     );
 
     // Find the time of last break (off-duty or sleeper)
     let lastBreakTime: Date | null = null;
     for (let i = sortedLogs.length - 1; i >= 0; i--) {
       const log = sortedLogs[i];
-      if (
-        log.dutyStatus === "OFF_DUTY" ||
-        log.dutyStatus === "SLEEPER_BERTH"
-      ) {
+      if (log.dutyStatus === "OFF_DUTY" || log.dutyStatus === "SLEEPER_BERTH") {
         // Must be at least 30 minutes
         if (log.hours >= 0.5) {
           lastBreakTime = log.endTime;
@@ -175,7 +174,7 @@ export class HOSCalculator {
     if (logs.length === 0) return null;
 
     const sortedLogs = [...logs].sort(
-      (a, b) => a.startTime.getTime() - b.startTime.getTime()
+      (a, b) => a.startTime.getTime() - b.startTime.getTime(),
     );
 
     const lastLog = sortedLogs[sortedLogs.length - 1];
@@ -213,14 +212,14 @@ export class HOSCalculator {
    */
   static calculateSleeperBerthCredit(
     logs: LogEntry[],
-    splits: SleeperBerthSplit[]
+    splits: SleeperBerthSplit[],
   ): { qualifies: boolean; creditMinutes: number } {
     if (logs.length === 0) {
       return { qualifies: false, creditMinutes: 0 };
     }
 
     const sortedLogs = [...logs].sort(
-      (a, b) => a.startTime.getTime() - b.startTime.getTime()
+      (a, b) => a.startTime.getTime() - b.startTime.getTime(),
     );
 
     // Look for consecutive sleeper + off-duty periods matching defined splits
@@ -263,9 +262,7 @@ export class HOSCalculator {
    * Calculate 34-hour restart eligibility (49 CFR 395.8(a)(4)).
    * US rules require 2x 1-5am periods for restart to be valid.
    */
-  static calculate34HourRestart(
-    logs: LogEntry[]
-  ): RestartQualification {
+  static calculate34HourRestart(logs: LogEntry[]): RestartQualification {
     if (logs.length === 0) {
       return {
         eligible: true,
@@ -277,7 +274,7 @@ export class HOSCalculator {
     }
 
     const sortedLogs = [...logs].sort(
-      (a, b) => a.startTime.getTime() - b.startTime.getTime()
+      (a, b) => a.startTime.getTime() - b.startTime.getTime(),
     );
 
     // Check for consecutive off-duty + sleeper periods totaling >= 34 hours
@@ -315,7 +312,7 @@ export class HOSCalculator {
         (log) =>
           log.startTime >= restartStartTime &&
           log.endTime <= restartEndTime &&
-          (log.dutyStatus === "OFF_DUTY" || log.dutyStatus === "SLEEPER_BERTH")
+          (log.dutyStatus === "OFF_DUTY" || log.dutyStatus === "SLEEPER_BERTH"),
       );
 
       let periodCount = 0;
@@ -351,7 +348,7 @@ export class HOSCalculator {
   static projectAvailability(
     logs: LogEntry[],
     hoursNeeded: number,
-    cycleRule: CycleRule
+    cycleRule: CycleRule,
   ): {
     canDrive: boolean;
     availableAt?: Date;
@@ -365,7 +362,7 @@ export class HOSCalculator {
     const maxDrivable = Math.min(
       drivingRemaining,
       windowRemaining,
-      cycleRemaining
+      cycleRemaining,
     );
     const neededMinutes = hoursNeeded * 60;
 
@@ -374,7 +371,11 @@ export class HOSCalculator {
     }
 
     const nextAvailable = this.calculateNextAvailableDriving(logs);
-    return { canDrive: false, availableAt: nextAvailable || undefined, maxDrivable };
+    return {
+      canDrive: false,
+      availableAt: nextAvailable || undefined,
+      maxDrivable,
+    };
   }
 
   /**
@@ -384,7 +385,10 @@ export class HOSCalculator {
     const now = new Date();
     const drivingRemaining11 = this.calculateDrivingRemaining(logs);
     const windowRemaining14 = this.calculateWindowRemaining(logs);
-    const cycleRemaining = this.calculateCycleRemaining(logs, ruleSet.cycleRule);
+    const cycleRemaining = this.calculateCycleRemaining(
+      logs,
+      ruleSet.cycleRule,
+    );
     const breakStatus = this.calculateBreakRequired(logs);
     const nextAvailable = this.calculateNextAvailableDriving(logs);
 
@@ -416,18 +420,19 @@ export class HOSCalculator {
       asOf: now,
       drivingMinutes11,
       drivingRemaining11,
-      onDutyMinutes14: Math.max(
-        0,
-        totalOnDutyMinutes14 - drivingMinutes11
-      ),
+      onDutyMinutes14: Math.max(0, totalOnDutyMinutes14 - drivingMinutes11),
       totalOnDutyMinutes14,
       windowRemaining14,
-      drivingMinutes8Day: (ruleSet.cycleRule.maxDrivingHours * 60) - cycleRemaining,
+      drivingMinutes8Day:
+        ruleSet.cycleRule.maxDrivingHours * 60 - cycleRemaining,
       cycleRemaining8Day: cycleRemaining,
       minutesSinceBreak: breakStatus.minutesSinceBreak,
       breakRequired: breakStatus.required,
       breakDeadline: breakStatus.deadline,
-      canDrive: !breakStatus.required && drivingRemaining11 > 0 && windowRemaining14 > 0,
+      canDrive:
+        !breakStatus.required &&
+        drivingRemaining11 > 0 &&
+        windowRemaining14 > 0,
       nextAvailableDriving: nextAvailable,
     };
   }
@@ -443,7 +448,7 @@ export class HOSCalculator {
     // Start from the most recent log and work backwards
     const now = Date.now();
     const sortedLogs = [...logs].sort(
-      (a, b) => b.startTime.getTime() - a.startTime.getTime()
+      (a, b) => b.startTime.getTime() - a.startTime.getTime(),
     );
 
     let offDutyStart: Date | null = null;
@@ -457,11 +462,15 @@ export class HOSCalculator {
       } else {
         // Driving or on-duty
         if (offDutyStart) {
-          const offDutyMinutes = (offDutyStart.getTime() - log.endTime.getTime()) / 60000;
+          const offDutyMinutes =
+            (offDutyStart.getTime() - log.endTime.getTime()) / 60000;
           if (offDutyMinutes >= 10 * 60) {
             // Found 10-hour off-duty period
             return sortedLogs
-              .filter((l) => l.startTime >= log.endTime && l.startTime <= new Date(now))
+              .filter(
+                (l) =>
+                  l.startTime >= log.endTime && l.startTime <= new Date(now),
+              )
               .sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
           }
         }
@@ -482,7 +491,7 @@ export class HOSCalculator {
 
     const now = Date.now();
     const sortedLogs = [...logs].sort(
-      (a, b) => a.startTime.getTime() - b.startTime.getTime()
+      (a, b) => a.startTime.getTime() - b.startTime.getTime(),
     );
 
     // Find the first on-duty or driving after last off-duty
@@ -506,7 +515,7 @@ export class HOSCalculator {
     return sortedLogs.filter(
       (l) =>
         l.startTime >= windowStart &&
-        l.startTime <= new Date(Math.min(windowEnd.getTime(), now))
+        l.startTime <= new Date(Math.min(windowEnd.getTime(), now)),
     );
   }
 

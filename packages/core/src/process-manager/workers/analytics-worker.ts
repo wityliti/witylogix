@@ -215,8 +215,7 @@ export class AnalyticsWorker extends BaseWorker {
     // Aggregate by event name
     const aggregates: Record<string, number> = {};
     for (const event of events) {
-      aggregates[event.eventName] =
-        (aggregates[event.eventName] || 0) + 1;
+      aggregates[event.eventName] = (aggregates[event.eventName] || 0) + 1;
     }
 
     // Store aggregation
@@ -294,9 +293,7 @@ export class AnalyticsWorker extends BaseWorker {
     const uniqueEventTypes = new Set<string>();
 
     for (const agg of aggregations) {
-      Object.keys(agg.data).forEach((key) =>
-        uniqueEventTypes.add(key),
-      );
+      Object.keys(agg.data).forEach((key) => uniqueEventTypes.add(key));
     }
 
     // Create report
@@ -367,13 +364,14 @@ export class AnalyticsWorker extends BaseWorker {
     });
 
     // Delete old aggregations
-    const deletedAggregations = await this.prisma.analyticsAggregation.deleteMany({
-      where: {
-        period: {
-          lt: cutoffDate.toISOString(),
+    const deletedAggregations =
+      await this.prisma.analyticsAggregation.deleteMany({
+        where: {
+          period: {
+            lt: cutoffDate.toISOString(),
+          },
         },
-      },
-    });
+      });
 
     console.log(
       JSON.stringify({
@@ -467,10 +465,7 @@ export class AnalyticsWorker extends BaseWorker {
       );
 
       const startTime = Date.now();
-      while (
-        this.activeJobs.size > 0 &&
-        Date.now() - startTime < 5000
-      ) {
+      while (this.activeJobs.size > 0 && Date.now() - startTime < 5000) {
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
 

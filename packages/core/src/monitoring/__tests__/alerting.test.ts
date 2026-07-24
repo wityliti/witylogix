@@ -327,7 +327,7 @@ describe("Alert Manager", () => {
       await webhook.send(alert);
       expect(fetchMock).toHaveBeenCalledWith(
         "https://example.com/alerts",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -411,7 +411,7 @@ describe("Alert Manager", () => {
       await slack.send(alert);
       expect(fetchMock).toHaveBeenCalledWith(
         "https://hooks.slack.com/services/xxx",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
   });

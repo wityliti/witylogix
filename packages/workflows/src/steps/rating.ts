@@ -37,7 +37,7 @@ export const calculateRateStep: WorkflowStep<RatingInput, RatingOutput> = {
 
   async invoke(
     input: RatingInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<RatingOutput>> {
     const logger = context.logger;
     logger?.info("Starting rate calculation", {
@@ -49,7 +49,7 @@ export const calculateRateStep: WorkflowStep<RatingInput, RatingOutput> = {
     try {
       // ─── Fetch Zone Configuration ──────────────────────────────────
       // In production, fetch from DeliveryZone model
-      const prisma = (context.prisma as any);
+      const prisma = context.prisma as any;
       const zone = await prisma.deliveryZone.findUnique({
         where: { id: input.zoneId },
       });

@@ -32,6 +32,7 @@ witylogix-platform/
 ## Core Functions
 
 ### 1. calculateOnTimePercentage
+
 ```typescript
 import { calculateOnTimePercentage } from "@witylogix/core/analytics";
 
@@ -40,6 +41,7 @@ const percentage = calculateOnTimePercentage(routes, dateRange);
 ```
 
 ### 2. calculatePlannedVsActual
+
 ```typescript
 import { calculatePlannedVsActual } from "@witylogix/core/analytics";
 
@@ -48,6 +50,7 @@ const comparisons = calculatePlannedVsActual(routes);
 ```
 
 ### 3. calculateDriverScorecard
+
 ```typescript
 import { calculateDriverScorecard } from "@witylogix/core/analytics";
 
@@ -56,6 +59,7 @@ const scorecard = calculateDriverScorecard("driver-1", routes, "30d");
 ```
 
 ### 4. calculateCO2Estimates
+
 ```typescript
 import { calculateCO2Estimates } from "@witylogix/core/analytics";
 
@@ -64,6 +68,7 @@ const co2Data = calculateCO2Estimates(routes);
 ```
 
 ### 5. calculateServiceLevelMetrics
+
 ```typescript
 import { calculateServiceLevelMetrics } from "@witylogix/core/analytics";
 
@@ -72,6 +77,7 @@ const sla = calculateServiceLevelMetrics("tenant-1", routes, dateRange);
 ```
 
 ### 6. calculateRouteEfficiency
+
 ```typescript
 import { calculateRouteEfficiency } from "@witylogix/core/analytics";
 
@@ -82,6 +88,7 @@ const efficiency = calculateRouteEfficiency(route);
 ## API Endpoints
 
 ### GET /route-performance
+
 ```bash
 curl "http://localhost:3000/api/analytics/route-performance?period=30d"
 
@@ -101,6 +108,7 @@ curl "http://localhost:3000/api/analytics/route-performance?period=30d"
 ```
 
 ### GET /route-performance/planned-vs-actual
+
 ```bash
 curl "http://localhost:3000/api/analytics/route-performance/planned-vs-actual?granularity=daily"
 
@@ -123,6 +131,7 @@ curl "http://localhost:3000/api/analytics/route-performance/planned-vs-actual?gr
 ```
 
 ### GET /route-performance/drivers
+
 ```bash
 curl "http://localhost:3000/api/analytics/route-performance/drivers?period=30d&limit=10"
 
@@ -152,6 +161,7 @@ curl "http://localhost:3000/api/analytics/route-performance/drivers?period=30d&l
 ```
 
 ### GET /route-performance/efficiency
+
 ```bash
 curl "http://localhost:3000/api/analytics/route-performance/efficiency"
 
@@ -174,6 +184,7 @@ curl "http://localhost:3000/api/analytics/route-performance/efficiency"
 ```
 
 ### GET /route-performance/co2
+
 ```bash
 curl "http://localhost:3000/api/analytics/route-performance/co2"
 
@@ -199,6 +210,7 @@ curl "http://localhost:3000/api/analytics/route-performance/co2"
 ```
 
 ### GET /route-performance/sla-compliance
+
 ```bash
 curl "http://localhost:3000/api/analytics/route-performance/sla-compliance"
 
@@ -224,6 +236,7 @@ curl "http://localhost:3000/api/analytics/route-performance/sla-compliance"
 ## Component Usage
 
 ### PlannedActualChart
+
 ```typescript
 import { PlannedActualChart } from "@/app/(dashboard)/analytics/route-performance/components/planned-actual-chart";
 
@@ -236,6 +249,7 @@ import { PlannedActualChart } from "@/app/(dashboard)/analytics/route-performanc
 ```
 
 ### DriverLeaderboard
+
 ```typescript
 import { DriverLeaderboard } from "@/app/(dashboard)/analytics/route-performance/components/driver-leaderboard";
 
@@ -250,6 +264,7 @@ import { DriverLeaderboard } from "@/app/(dashboard)/analytics/route-performance
 ```
 
 ### EfficiencyHeatmap
+
 ```typescript
 import { EfficiencyHeatmap } from "@/app/(dashboard)/analytics/route-performance/components/efficiency-heatmap";
 
@@ -262,6 +277,7 @@ import { EfficiencyHeatmap } from "@/app/(dashboard)/analytics/route-performance
 ```
 
 ### CO2Tracker
+
 ```typescript
 import { CO2Tracker } from "@/app/(dashboard)/analytics/route-performance/components/co2-tracker";
 
@@ -274,6 +290,7 @@ import { CO2Tracker } from "@/app/(dashboard)/analytics/route-performance/compon
 ```
 
 ### SLACompliance
+
 ```typescript
 import { SLACompliance } from "@/app/(dashboard)/analytics/route-performance/components/sla-compliance";
 
@@ -287,13 +304,14 @@ import { SLACompliance } from "@/app/(dashboard)/analytics/route-performance/com
 ## Data Model Examples
 
 ### RouteData (input to analytics functions)
+
 ```typescript
 interface RouteData {
   id: string;
   driverId: string;
   vehicleType: "motorcycle" | "van" | "truck-small" | "truck-large";
-  plannedDistance: number;      // km
-  plannedDuration: number;      // minutes
+  plannedDistance: number; // km
+  plannedDuration: number; // minutes
   actualDistance?: number;
   actualDuration?: number;
   stops: DeliveryStop[];
@@ -304,10 +322,10 @@ interface DeliveryStop {
   orderId: string;
   estimatedArrival: Date;
   actualArrival?: Date;
-  estimatedDuration: number;    // minutes
+  estimatedDuration: number; // minutes
   actualDuration?: number;
   status: "planned" | "attempted" | "delivered" | "failed" | "returned";
-  customerRating?: number;      // 1-5
+  customerRating?: number; // 1-5
   firstAttempt?: boolean;
   slaTier?: "premium" | "standard" | "economy";
 }
@@ -316,12 +334,14 @@ interface DeliveryStop {
 ## Testing
 
 Run tests with:
+
 ```bash
 cd /sessions/wizardly-great-planck/mnt/Witylogix/witylogix-platform
 pnpm test packages/core/src/analytics/__tests__/route-analytics.test.ts
 ```
 
 Test categories:
+
 - ✅ On-time percentage (100%, 0%, mixed, exclusions)
 - ✅ Planned vs actual variance (positive, negative, thresholds)
 - ✅ Driver scorecard (composition, trending)
@@ -331,37 +351,44 @@ Test categories:
 
 ## Metric Calculations Quick Reference
 
-| Metric | Formula | Notes |
-|--------|---------|-------|
-| On-Time % | OnTime / Total × 100 | 5-min buffer, excludes failed/returned |
-| Variance | Actual - Planned (mins) | Positive = delayed, Negative = efficient |
-| Variance % | Variance / Planned × 100 | Threshold: >15% triggers review |
-| Composite Score | 0.4×OnTime + 0.3×Efficiency + 0.2×Rating + 0.1×FirstAttempt | 0-100, driver KPI |
-| CO2 Saved | Planned CO2 - Actual CO2 (kg) | Based on distance × emission factor |
-| SLA Compliance | OnTime / Total × 100 (per tier) | Tier windows: Premium 2h, Standard 4h, Economy 8h |
-| Efficiency Rating | Based on distance deviation + idle % | Excellent, Good, Fair, Poor |
+| Metric            | Formula                                                     | Notes                                             |
+| ----------------- | ----------------------------------------------------------- | ------------------------------------------------- |
+| On-Time %         | OnTime / Total × 100                                        | 5-min buffer, excludes failed/returned            |
+| Variance          | Actual - Planned (mins)                                     | Positive = delayed, Negative = efficient          |
+| Variance %        | Variance / Planned × 100                                    | Threshold: >15% triggers review                   |
+| Composite Score   | 0.4×OnTime + 0.3×Efficiency + 0.2×Rating + 0.1×FirstAttempt | 0-100, driver KPI                                 |
+| CO2 Saved         | Planned CO2 - Actual CO2 (kg)                               | Based on distance × emission factor               |
+| SLA Compliance    | OnTime / Total × 100 (per tier)                             | Tier windows: Premium 2h, Standard 4h, Economy 8h |
+| Efficiency Rating | Based on distance deviation + idle %                        | Excellent, Good, Fair, Poor                       |
 
 ## Common Issues & Solutions
 
 ### Issue: Missing imports
+
 **Solution:** Use named imports from @witylogix/core/analytics
+
 ```typescript
 import { calculateOnTimePercentage } from "@witylogix/core/analytics";
 ```
 
 ### Issue: Type errors in components
+
 **Solution:** Import component types from route-analytics-types.ts
+
 ```typescript
 import type { PlannedActualChartProps } from "@witylogix/core/analytics";
 ```
 
 ### Issue: Charts not rendering
+
 **Solution:** Ensure Recharts is installed and data structure matches expected format
+
 ```bash
 pnpm add recharts
 ```
 
 ### Issue: API endpoint 404
+
 **Solution:** Verify route file is imported in API router setup (check apps/api/src/routes/index.ts)
 
 ## Performance Optimization
@@ -393,6 +420,7 @@ pnpm add recharts
 ## Questions?
 
 Refer to:
+
 1. ADR-025 for architecture decisions
 2. Test cases for usage examples
 3. Component props interfaces for API contract

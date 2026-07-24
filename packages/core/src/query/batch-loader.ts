@@ -123,9 +123,7 @@ export class BatchLoader<K, V> {
    * @returns Promise resolving to array of values
    */
   async loadMany(id: string, keys: K[]): Promise<V[]> {
-    const results = await Promise.all(
-      keys.map((key) => this.load(id, key))
-    );
+    const results = await Promise.all(keys.map((key) => this.load(id, key)));
     return results;
   }
 
@@ -212,9 +210,7 @@ export class BatchLoader<K, V> {
         if (value !== undefined) {
           queue.callbacks[i](value);
         } else {
-          queue.callbacks[i](
-            new Error(`No result for key: ${key}`)
-          );
+          queue.callbacks[i](new Error(`No result for key: ${key}`));
         }
       }
     } catch (error) {
@@ -252,7 +248,7 @@ export class BatchLoader<K, V> {
 export function createPrismaBatchLoader(prisma: any) {
   return function <T extends Record<string, any>>(
     model: string,
-    idField: string = "id"
+    idField: string = "id",
   ) {
     return new BatchLoader<string, T>({
       batchWindow: 10,
@@ -288,17 +284,17 @@ export class CompositeKeyBatchLoader<K extends Record<string, any>, V> {
     config: LoaderConfig & {
       keySerializer?: (key: K) => string;
       keyDeserializer?: (serialized: string) => K;
-    }
+    },
   ) {
     const hasCustomSerializer = !!config.keySerializer;
-    this.keySerializer = config.keySerializer || ((key) =>
-      JSON.stringify(key)
-    );
+    this.keySerializer = config.keySerializer || ((key) => JSON.stringify(key));
     // If a custom serializer is provided without a deserializer,
     // pass the serialized string through as-is (the batch function must handle it)
-    this.keyDeserializer = config.keyDeserializer || (hasCustomSerializer
-      ? ((k: string) => k as unknown as K)
-      : ((k: string) => JSON.parse(k) as K));
+    this.keyDeserializer =
+      config.keyDeserializer ||
+      (hasCustomSerializer
+        ? (k: string) => k as unknown as K
+        : (k: string) => JSON.parse(k) as K);
 
     this.loader = new BatchLoader<string, V>({
       ...config,
@@ -313,9 +309,8 @@ export class CompositeKeyBatchLoader<K extends Record<string, any>, V> {
         const reserializedMap = new Map<string, V>();
         result.forEach((value, key) => {
           // If key is already a string (from passthrough deserializer), use directly
-          const serialized = typeof key === 'string'
-            ? key
-            : this.keySerializer(key as any);
+          const serialized =
+            typeof key === "string" ? key : this.keySerializer(key as any);
           reserializedMap.set(serialized, value);
         });
 

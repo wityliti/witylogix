@@ -7,65 +7,71 @@
  * Transaction status enumeration
  */
 export type TransactionStatus =
-  | 'pending'
-  | 'authorized'
-  | 'captured'
-  | 'settled'
-  | 'refunded'
-  | 'voided'
-  | 'failed';
+  | "pending"
+  | "authorized"
+  | "captured"
+  | "settled"
+  | "refunded"
+  | "voided"
+  | "failed";
 
 /**
  * Payment method type enumeration
  */
 export type PaymentMethodType =
-  | 'card'
-  | 'ach'
-  | 'paypal'
-  | 'apple-pay'
-  | 'google-pay'
-  | 'bank-transfer';
+  | "card"
+  | "ach"
+  | "paypal"
+  | "apple-pay"
+  | "google-pay"
+  | "bank-transfer";
 
 /**
  * Card type enumeration
  */
-export type CardType = 'visa' | 'mastercard' | 'amex' | 'discover' | 'diners' | 'jcb';
+export type CardType =
+  | "visa"
+  | "mastercard"
+  | "amex"
+  | "discover"
+  | "diners"
+  | "jcb";
 
 /**
  * Refund reason enumeration
  */
 export type RefundReason =
-  | 'customer_request'
-  | 'duplicate'
-  | 'fraudulent'
-  | 'unrecognized'
-  | 'product_unsatisfactory'
-  | 'cancelled_order'
-  | 'other';
+  | "customer_request"
+  | "duplicate"
+  | "fraudulent"
+  | "unrecognized"
+  | "product_unsatisfactory"
+  | "cancelled_order"
+  | "other";
 
 /**
  * Dispute reason enumeration
  */
 export type DisputeReason =
-  | 'fraudulent'
-  | 'authorization_issue'
-  | 'chargeback'
-  | 'inquiry'
-  | 'processing_error'
-  | 'unrecognized'
-  | 'general';
+  | "fraudulent"
+  | "authorization_issue"
+  | "chargeback"
+  | "inquiry"
+  | "processing_error"
+  | "unrecognized"
+  | "general";
 
 /**
  * Dispute status enumeration
  */
 export type DisputeStatus =
-  | 'opened'
-  | 'under_review'
-  | 'evidence_submitted'
-  | 'resolved'
-  | 'lost'
-  | 'won'
-  | 'expired';
+  | "opened"
+  | "under_review"
+  | "evidence_submitted"
+  | "resolved"
+  | "lost"
+  | "won"
+  | "expired";
 
 /**
  * Payment transaction metadata
@@ -84,7 +90,7 @@ export interface PaymentTransaction {
   metadata?: Record<string, any>;
   authorizationCode?: string;
   riskScore?: number;
-  riskLevel?: 'low' | 'medium' | 'high';
+  riskLevel?: "low" | "medium" | "high";
   avs?: {
     code: string;
     message: string;
@@ -152,7 +158,7 @@ export interface CardDetails {
  * ACH bank transfer details (tokenized)
  */
 export interface ACHDetails {
-  accountType: 'checking' | 'savings';
+  accountType: "checking" | "savings";
   accountHolderName: string;
   routingNumber?: string; // Last 4 digits only
   accountNumber?: string; // Last 4 digits only
@@ -213,7 +219,7 @@ export interface PaymentRefund {
   transactionId: string;
   amount: number; // In cents
   currency: string;
-  status: 'pending' | 'completed' | 'failed';
+  status: "pending" | "completed" | "failed";
   reason: RefundReason;
   description?: string;
   metadata?: Record<string, any>;
@@ -254,12 +260,12 @@ export interface PaymentDispute {
 export interface DisputeEvidence {
   id: string;
   type:
-    | 'invoice'
-    | 'shipping_proof'
-    | 'customer_communication'
-    | 'refund_proof'
-    | 'signature_proof'
-    | 'other';
+    | "invoice"
+    | "shipping_proof"
+    | "customer_communication"
+    | "refund_proof"
+    | "signature_proof"
+    | "other";
   url: string;
   description?: string;
   uploadedAt: Date;
@@ -270,7 +276,7 @@ export interface DisputeEvidence {
  */
 export interface PaymentConfig {
   providerId: string;
-  provider: 'braintree' | 'authorize-net' | 'adyen' | 'stripe' | 'square';
+  provider: "braintree" | "authorize-net" | "adyen" | "stripe" | "square";
   credentials: {
     apiKey?: string;
     apiSecret?: string;
@@ -280,7 +286,7 @@ export interface PaymentConfig {
     clientSecret?: string;
     publicKey?: string;
     privateKey?: string;
-    environment: 'sandbox' | 'production';
+    environment: "sandbox" | "production";
   };
   webhookSecret?: string;
   webhookUrl?: string;
@@ -314,7 +320,12 @@ export interface PaymentWebhookEvent {
   providerId: string;
   provider: string;
   eventType: string;
-  resourceType: 'transaction' | 'payment_method' | 'dispute' | 'refund' | 'subscription';
+  resourceType:
+    | "transaction"
+    | "payment_method"
+    | "dispute"
+    | "refund"
+    | "subscription";
   resourceId: string;
   data: Record<string, any>;
   timestamp: Date;
@@ -336,7 +347,7 @@ export interface PaymentAdapterInterface {
     amount: number,
     currency: string,
     paymentMethodId: string,
-    options?: PaymentOptions
+    options?: PaymentOptions,
   ): Promise<PaymentTransaction>;
 
   /**
@@ -346,7 +357,7 @@ export interface PaymentAdapterInterface {
     amount: number,
     currency: string,
     paymentMethodId: string,
-    options?: PaymentOptions
+    options?: PaymentOptions,
   ): Promise<PaymentTransaction>;
 
   /**
@@ -362,14 +373,18 @@ export interface PaymentAdapterInterface {
   /**
    * Refund a captured transaction
    */
-  refund(transactionId: string, amount?: number, reason?: RefundReason): Promise<PaymentRefund>;
+  refund(
+    transactionId: string,
+    amount?: number,
+    reason?: RefundReason,
+  ): Promise<PaymentRefund>;
 
   /**
    * Create or tokenize a payment method
    */
   createPaymentMethod(
     details: PaymentMethodDetails,
-    customerId?: string
+    customerId?: string,
   ): Promise<PaymentMethod>;
 
   /**
@@ -395,12 +410,17 @@ export interface PaymentAdapterInterface {
   /**
    * Create customer vault
    */
-  createCustomer(customerData: CustomerData): Promise<{ id: string; externalId: string }>;
+  createCustomer(
+    customerData: CustomerData,
+  ): Promise<{ id: string; externalId: string }>;
 
   /**
    * Update customer information
    */
-  updateCustomer(customerId: string, data: Partial<CustomerData>): Promise<void>;
+  updateCustomer(
+    customerId: string,
+    data: Partial<CustomerData>,
+  ): Promise<void>;
 
   /**
    * Verify webhook signature
@@ -415,7 +435,10 @@ export interface PaymentAdapterInterface {
   /**
    * Handle dispute evidence submission
    */
-  submitDisputeEvidence(disputeId: string, evidence: DisputeEvidence[]): Promise<void>;
+  submitDisputeEvidence(
+    disputeId: string,
+    evidence: DisputeEvidence[],
+  ): Promise<void>;
 
   /**
    * Get dispute details
@@ -458,7 +481,7 @@ export interface PaymentMethodDetails {
   routingNumber?: string;
   accountNumber?: string;
   accountHolderName?: string;
-  accountType?: 'checking' | 'savings';
+  accountType?: "checking" | "savings";
   paypalEmail?: string;
   billingAddress?: BillingAddress;
 }

@@ -3,7 +3,7 @@
  * REST endpoints for FHIR and HL7v2 operations
  */
 
-import type { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from "express";
 import {
   FHIRResourceManager,
   FHIRBundleProcessor,
@@ -12,7 +12,7 @@ import {
   PatientMatcher,
   SearchParams,
   ValidationError,
-} from './fhir-engine';
+} from "./fhir-engine";
 import {
   HL7v2Parser,
   HL7toFHIR,
@@ -20,7 +20,7 @@ import {
   AcknowledgmentBuilder,
   SegmentData,
   MSHSegment,
-} from './hl7-parser';
+} from "./hl7-parser";
 import type {
   FHIRPatient,
   FHIREncounter,
@@ -31,7 +31,7 @@ import type {
   ClinicalEvent,
   ComplianceStatus,
   DataQualityScore,
-} from './healthcare-types';
+} from "./healthcare-types";
 
 export class HealthcareAPI {
   private resourceManager: FHIRResourceManager;
@@ -83,10 +83,13 @@ export class HealthcareAPI {
   async getPatient(req: Request, res: Response): Promise<void> {
     try {
       const { patientId } = req.params;
-      const patient = this.resourceManager.read<FHIRPatient>('Patient', patientId);
+      const patient = this.resourceManager.read<FHIRPatient>(
+        "Patient",
+        patientId,
+      );
 
       if (!patient) {
-        res.status(404).json({ error: 'Patient not found' });
+        res.status(404).json({ error: "Patient not found" });
         return;
       }
 
@@ -99,7 +102,11 @@ export class HealthcareAPI {
   async updatePatient(req: Request, res: Response): Promise<void> {
     try {
       const { patientId } = req.params;
-      const patient = { ...req.body, id: patientId, resourceType: 'Patient' } as FHIRPatient;
+      const patient = {
+        ...req.body,
+        id: patientId,
+        resourceType: "Patient",
+      } as FHIRPatient;
 
       const validation = this.validator.validate(patient);
       if (!validation.valid) {
@@ -117,10 +124,10 @@ export class HealthcareAPI {
   async deletePatient(req: Request, res: Response): Promise<void> {
     try {
       const { patientId } = req.params;
-      const deleted = this.resourceManager.delete('Patient', patientId);
+      const deleted = this.resourceManager.delete("Patient", patientId);
 
       if (!deleted) {
-        res.status(404).json({ error: 'Patient not found' });
+        res.status(404).json({ error: "Patient not found" });
         return;
       }
 
@@ -133,15 +140,18 @@ export class HealthcareAPI {
   async searchPatients(req: Request, res: Response): Promise<void> {
     try {
       const params = req.query as unknown as SearchParams;
-      const result = this.resourceManager.search<FHIRPatient>('Patient', params);
+      const result = this.resourceManager.search<FHIRPatient>(
+        "Patient",
+        params,
+      );
 
       const bundle: FHIRBundle = {
-        resourceType: 'Bundle',
-        type: 'searchset',
+        resourceType: "Bundle",
+        type: "searchset",
         total: result.total,
         entry: result.resources.map((resource) => ({
           resource,
-          search: { mode: 'match' },
+          search: { mode: "match" },
         })),
       };
 
@@ -159,8 +169,14 @@ export class HealthcareAPI {
       const incomingPatient = req.body as FHIRPatient;
       const searchParams = req.query as unknown as SearchParams;
 
-      const candidates = this.resourceManager.search<FHIRPatient>('Patient', searchParams);
-      const matches = this.patientMatcher.matchPatients(incomingPatient, candidates.resources);
+      const candidates = this.resourceManager.search<FHIRPatient>(
+        "Patient",
+        searchParams,
+      );
+      const matches = this.patientMatcher.matchPatients(
+        incomingPatient,
+        candidates.resources,
+      );
 
       res.json({
         matches,
@@ -188,10 +204,13 @@ export class HealthcareAPI {
   async getEncounter(req: Request, res: Response): Promise<void> {
     try {
       const { encounterId } = req.params;
-      const encounter = this.resourceManager.read<FHIREncounter>('Encounter', encounterId);
+      const encounter = this.resourceManager.read<FHIREncounter>(
+        "Encounter",
+        encounterId,
+      );
 
       if (!encounter) {
-        res.status(404).json({ error: 'Encounter not found' });
+        res.status(404).json({ error: "Encounter not found" });
         return;
       }
 
@@ -204,15 +223,18 @@ export class HealthcareAPI {
   async searchEncounters(req: Request, res: Response): Promise<void> {
     try {
       const params = req.query as unknown as SearchParams;
-      const result = this.resourceManager.search<FHIREncounter>('Encounter', params);
+      const result = this.resourceManager.search<FHIREncounter>(
+        "Encounter",
+        params,
+      );
 
       const bundle: FHIRBundle = {
-        resourceType: 'Bundle',
-        type: 'searchset',
+        resourceType: "Bundle",
+        type: "searchset",
         total: result.total,
         entry: result.resources.map((resource) => ({
           resource,
-          search: { mode: 'match' },
+          search: { mode: "match" },
         })),
       };
 
@@ -239,10 +261,13 @@ export class HealthcareAPI {
   async getObservation(req: Request, res: Response): Promise<void> {
     try {
       const { observationId } = req.params;
-      const observation = this.resourceManager.read<FHIRObservation>('Observation', observationId);
+      const observation = this.resourceManager.read<FHIRObservation>(
+        "Observation",
+        observationId,
+      );
 
       if (!observation) {
-        res.status(404).json({ error: 'Observation not found' });
+        res.status(404).json({ error: "Observation not found" });
         return;
       }
 
@@ -255,15 +280,18 @@ export class HealthcareAPI {
   async searchObservations(req: Request, res: Response): Promise<void> {
     try {
       const params = req.query as unknown as SearchParams;
-      const result = this.resourceManager.search<FHIRObservation>('Observation', params);
+      const result = this.resourceManager.search<FHIRObservation>(
+        "Observation",
+        params,
+      );
 
       const bundle: FHIRBundle = {
-        resourceType: 'Bundle',
-        type: 'searchset',
+        resourceType: "Bundle",
+        type: "searchset",
         total: result.total,
         entry: result.resources.map((resource) => ({
           resource,
-          search: { mode: 'match' },
+          search: { mode: "match" },
         })),
       };
 
@@ -290,15 +318,18 @@ export class HealthcareAPI {
   async searchConditions(req: Request, res: Response): Promise<void> {
     try {
       const params = req.query as unknown as SearchParams;
-      const result = this.resourceManager.search<FHIRCondition>('Condition', params);
+      const result = this.resourceManager.search<FHIRCondition>(
+        "Condition",
+        params,
+      );
 
       const bundle: FHIRBundle = {
-        resourceType: 'Bundle',
-        type: 'searchset',
+        resourceType: "Bundle",
+        type: "searchset",
         total: result.total,
         entry: result.resources.map((resource) => ({
           resource,
-          search: { mode: 'match' },
+          search: { mode: "match" },
         })),
       };
 
@@ -316,14 +347,14 @@ export class HealthcareAPI {
     try {
       const bundle = req.body as FHIRBundle;
 
-      if (bundle.type === 'transaction') {
+      if (bundle.type === "transaction") {
         const response = this.bundleProcessor.processTransactionBundle(bundle);
         res.json(response);
-      } else if (bundle.type === 'batch') {
+      } else if (bundle.type === "batch") {
         const response = this.bundleProcessor.processBatchBundle(bundle);
         res.json(response);
       } else {
-        res.status(400).json({ error: 'Unsupported bundle type' });
+        res.status(400).json({ error: "Unsupported bundle type" });
       }
     } catch (error) {
       res.status(500).json({ error: String(error) });
@@ -339,7 +370,7 @@ export class HealthcareAPI {
       const { message } = req.body as { message: string };
 
       if (!message) {
-        res.status(400).json({ error: 'HL7 message required' });
+        res.status(400).json({ error: "HL7 message required" });
         return;
       }
 
@@ -349,17 +380,17 @@ export class HealthcareAPI {
         // Handle different message types
         let fhirResources: any[] = [];
 
-        if (hl7Message.messageType.startsWith('A')) {
+        if (hl7Message.messageType.startsWith("A")) {
           // ADT messages -> Encounter
           const encounter = this.hl7toFhir.adtToEncounter(hl7Message);
           this.resourceManager.create(encounter);
           fhirResources.push(encounter);
-        } else if (hl7Message.messageType === 'ORU') {
+        } else if (hl7Message.messageType === "ORU") {
           // ORU messages -> Observation
           const observations = this.hl7toFhir.oruToObservation(hl7Message);
           observations.forEach((obs) => this.resourceManager.create(obs));
           fhirResources.push(...observations);
-        } else if (hl7Message.messageType === 'ORM') {
+        } else if (hl7Message.messageType === "ORM") {
           // ORM messages -> ServiceRequest
           const serviceRequest = this.hl7toFhir.ormToServiceRequest(hl7Message);
           fhirResources.push(serviceRequest);
@@ -368,8 +399,8 @@ export class HealthcareAPI {
         // Log clinical event
         const clinicalEvent: ClinicalEvent = {
           id: hl7Message.messageControlId,
-          patientId: '',
-          eventType: 'observation',
+          patientId: "",
+          eventType: "observation",
           eventDateTime: hl7Message.timestamp,
           eventData: { hl7MessageType: hl7Message.messageType },
           sourceSystem: hl7Message.sendingApplication,
@@ -391,11 +422,11 @@ export class HealthcareAPI {
         const ackBuilder = new AcknowledgmentBuilder();
         const nack = ackBuilder.buildNACK(
           {
-            messageControlId: 'UNKNOWN',
-            messageType: 'UNKNOWN',
+            messageControlId: "UNKNOWN",
+            messageType: "UNKNOWN",
             timestamp: new Date().toISOString(),
           } as any,
-          String(parseError)
+          String(parseError),
         );
 
         res.status(400).json({
@@ -446,7 +477,7 @@ export class HealthcareAPI {
 
       const resource = this.resourceManager.read(resourceType, resourceId);
       if (!resource) {
-        res.status(404).json({ error: 'Resource not found' });
+        res.status(404).json({ error: "Resource not found" });
         return;
       }
 
@@ -481,8 +512,9 @@ export class HealthcareAPI {
 
   private calculateCompleteness(resource: any): number {
     const fields = Object.keys(resource).length;
-    const emptyFields = Object.values(resource).filter((v) => v === undefined || v === null)
-      .length;
+    const emptyFields = Object.values(resource).filter(
+      (v) => v === undefined || v === null,
+    ).length;
     return Math.round(((fields - emptyFields) / fields) * 100);
   }
 
@@ -491,38 +523,44 @@ export class HealthcareAPI {
    */
   registerRoutes(router: any): void {
     // Patient routes
-    router.post('/patients', this.createPatient.bind(this));
-    router.get('/patients/:patientId', this.getPatient.bind(this));
-    router.put('/patients/:patientId', this.updatePatient.bind(this));
-    router.delete('/patients/:patientId', this.deletePatient.bind(this));
-    router.get('/patients', this.searchPatients.bind(this));
-    router.post('/patients/match', this.matchPatients.bind(this));
+    router.post("/patients", this.createPatient.bind(this));
+    router.get("/patients/:patientId", this.getPatient.bind(this));
+    router.put("/patients/:patientId", this.updatePatient.bind(this));
+    router.delete("/patients/:patientId", this.deletePatient.bind(this));
+    router.get("/patients", this.searchPatients.bind(this));
+    router.post("/patients/match", this.matchPatients.bind(this));
 
     // Encounter routes
-    router.post('/encounters', this.createEncounter.bind(this));
-    router.get('/encounters/:encounterId', this.getEncounter.bind(this));
-    router.get('/encounters', this.searchEncounters.bind(this));
+    router.post("/encounters", this.createEncounter.bind(this));
+    router.get("/encounters/:encounterId", this.getEncounter.bind(this));
+    router.get("/encounters", this.searchEncounters.bind(this));
 
     // Observation routes
-    router.post('/observations', this.createObservation.bind(this));
-    router.get('/observations/:observationId', this.getObservation.bind(this));
-    router.get('/observations', this.searchObservations.bind(this));
+    router.post("/observations", this.createObservation.bind(this));
+    router.get("/observations/:observationId", this.getObservation.bind(this));
+    router.get("/observations", this.searchObservations.bind(this));
 
     // Condition routes
-    router.post('/conditions', this.createCondition.bind(this));
-    router.get('/conditions', this.searchConditions.bind(this));
+    router.post("/conditions", this.createCondition.bind(this));
+    router.get("/conditions", this.searchConditions.bind(this));
 
     // Bundle routes
-    router.post('/bundle', this.processFHIRBundle.bind(this));
+    router.post("/bundle", this.processFHIRBundle.bind(this));
 
     // HL7 routes
-    router.post('/hl7/ingest', this.ingestHL7Message.bind(this));
+    router.post("/hl7/ingest", this.ingestHL7Message.bind(this));
 
     // Compliance routes
-    router.get('/patients/:patientId/compliance', this.getComplianceStatus.bind(this));
+    router.get(
+      "/patients/:patientId/compliance",
+      this.getComplianceStatus.bind(this),
+    );
 
     // Data quality routes
-    router.get('/:resourceType/:resourceId/quality', this.getDataQualityScore.bind(this));
+    router.get(
+      "/:resourceType/:resourceId/quality",
+      this.getDataQualityScore.bind(this),
+    );
   }
 }
 

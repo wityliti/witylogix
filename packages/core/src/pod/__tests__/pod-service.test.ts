@@ -9,16 +9,21 @@
  * - POD verification
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from "vitest";
 
 const { mockSharpInstance } = vi.hoisted(() => {
   const inst = {
-    metadata: vi.fn().mockResolvedValue({ width: 800, height: 600, format: 'jpeg', size: 50000 }),
+    metadata: vi.fn().mockResolvedValue({
+      width: 800,
+      height: 600,
+      format: "jpeg",
+      size: 50000,
+    }),
     resize: vi.fn().mockReturnThis(),
     jpeg: vi.fn().mockReturnThis(),
     png: vi.fn().mockReturnThis(),
     webp: vi.fn().mockReturnThis(),
-    toBuffer: vi.fn().mockResolvedValue(Buffer.from('mock-image')),
+    toBuffer: vi.fn().mockResolvedValue(Buffer.from("mock-image")),
     toFile: vi.fn().mockResolvedValue(undefined),
     rotate: vi.fn().mockReturnThis(),
     withMetadata: vi.fn().mockReturnThis(),
@@ -26,42 +31,44 @@ const { mockSharpInstance } = vi.hoisted(() => {
   return { mockSharpInstance: inst };
 });
 
-vi.mock('sharp', () => ({
+vi.mock("sharp", () => ({
   default: vi.fn(() => mockSharpInstance),
 }));
 
-vi.mock('qrcode', () => ({
+vi.mock("qrcode", () => ({
   default: {
-    toDataURL: vi.fn().mockResolvedValue('data:image/png;base64,mock'),
-    toBuffer: vi.fn().mockResolvedValue(Buffer.from('mock-qr')),
-    toString: vi.fn().mockResolvedValue('mock-qr-string'),
+    toDataURL: vi.fn().mockResolvedValue("data:image/png;base64,mock"),
+    toBuffer: vi.fn().mockResolvedValue(Buffer.from("mock-qr")),
+    toString: vi.fn().mockResolvedValue("mock-qr-string"),
   },
 }));
 
 // Bypass timeline status-transition validation in tests
-vi.mock('../delivery-timeline.js', () => ({
+vi.mock("../delivery-timeline.js", () => ({
   deliveryTimelineService: {
-    recordEvent: vi.fn().mockReturnValue({ id: 'tl-mock', status: 'delivered' }),
+    recordEvent: vi
+      .fn()
+      .mockReturnValue({ id: "tl-mock", status: "delivered" }),
     getTimeline: vi.fn().mockReturnValue([]),
   },
 }));
 
-import { PODService, createPODService } from '../pod-service.js';
-import { photoCaptureService } from '../photo-capture.js';
-import { signatureCaptureService } from '../signature-capture.js';
-import { qrScannerService } from '../qr-scanner.js';
-import type { StorageConfig } from '../types.js';
+import { PODService, createPODService } from "../pod-service.js";
+import { photoCaptureService } from "../photo-capture.js";
+import { signatureCaptureService } from "../signature-capture.js";
+import { qrScannerService } from "../qr-scanner.js";
+import type { StorageConfig } from "../types.js";
 
 // ─── SETUP ──────────────────────────────────────────────────────
 
-describe('POD Service', () => {
+describe("POD Service", () => {
   let podService: PODService;
-  const testDeliveryId = '550e8400-e29b-41d4-a716-446655440000';
+  const testDeliveryId = "550e8400-e29b-41d4-a716-446655440000";
   const storageConfig: StorageConfig = {
-    type: 'local',
+    type: "local",
     local: {
-      basePath: './test-uploads',
-      baseUrl: 'http://localhost:3000/uploads',
+      basePath: "./test-uploads",
+      baseUrl: "http://localhost:3000/uploads",
     },
   };
 
@@ -71,8 +78,8 @@ describe('POD Service', () => {
 
   // ─── PHOTO CAPTURE TESTS ────────────────────────────────────
 
-  describe('Photo Capture', () => {
-    it('should capture valid JPEG photo', async () => {
+  describe("Photo Capture", () => {
+    it("should capture valid JPEG photo", async () => {
       // Create a minimal valid JPEG buffer
       // For testing, we'll use a placeholder
       const validJpegBuffer = Buffer.from([
@@ -81,31 +88,31 @@ describe('POD Service', () => {
 
       const result = await podService.capturePOD(
         testDeliveryId,
-        'photo',
-        validJpegBuffer
+        "photo",
+        validJpegBuffer,
       );
 
       expect(result.success).toBe(true); // Mock sharp returns valid metadata regardless of buffer content
     });
 
-    it('should validate photo dimensions', async () => {
+    it("should validate photo dimensions", async () => {
       // Test with too-small image
       const result = await podService.capturePOD(
         testDeliveryId,
-        'photo',
-        Buffer.from([])
+        "photo",
+        Buffer.from([]),
       );
 
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
     });
 
-    it('should validate photo size limit', async () => {
+    it("should validate photo size limit", async () => {
       const oversizedBuffer = Buffer.alloc(6 * 1024 * 1024); // 6MB
       const result = await podService.capturePOD(
         testDeliveryId,
-        'photo',
-        oversizedBuffer
+        "photo",
+        oversizedBuffer,
       );
 
       expect(result.success).toBe(false);
@@ -114,22 +121,22 @@ describe('POD Service', () => {
 
   // ─── SIGNATURE CAPTURE TESTS ────────────────────────────────
 
-  describe('Signature Capture', () => {
-    it('should capture SVG path signature', async () => {
-      const svgPath = 'M10,10 L20,20 L30,30 L40,40';
+  describe("Signature Capture", () => {
+    it("should capture SVG path signature", async () => {
+      const svgPath = "M10,10 L20,20 L30,30 L40,40";
 
       const result = await podService.capturePOD(
         testDeliveryId,
-        'signature',
+        "signature",
         svgPath,
-        { signerName: 'John Doe' }
+        { signerName: "John Doe" },
       );
 
       expect(result.success).toBe(true);
-      expect(result.data?.method).toBe('signature');
+      expect(result.data?.method).toBe("signature");
     });
 
-    it('should capture point array signature', async () => {
+    it("should capture point array signature", async () => {
       const points = [
         { x: 10, y: 10 },
         { x: 20, y: 20 },
@@ -140,15 +147,15 @@ describe('POD Service', () => {
 
       const result = await podService.capturePOD(
         testDeliveryId,
-        'signature',
+        "signature",
         points,
-        { signerName: 'Jane Smith' }
+        { signerName: "Jane Smith" },
       );
 
       expect(result.success).toBe(true);
     });
 
-    it('should reject signature with insufficient points', async () => {
+    it("should reject signature with insufficient points", async () => {
       const points = [
         { x: 10, y: 10 },
         { x: 20, y: 20 },
@@ -156,22 +163,22 @@ describe('POD Service', () => {
 
       const result = await podService.capturePOD(
         testDeliveryId,
-        'signature',
+        "signature",
         points,
-        { signerName: 'John Doe' }
+        { signerName: "John Doe" },
       );
 
       expect(result.success).toBe(false);
     });
 
-    it('should reject signature without signer name', async () => {
-      const svgPath = 'M10,10 L20,20 L30,30 L40,40';
+    it("should reject signature without signer name", async () => {
+      const svgPath = "M10,10 L20,20 L30,30 L40,40";
 
       const result = await podService.capturePOD(
         testDeliveryId,
-        'signature',
+        "signature",
         svgPath,
-        { signerName: '' }
+        { signerName: "" },
       );
 
       expect(result.success).toBe(false);
@@ -180,32 +187,32 @@ describe('POD Service', () => {
 
   // ─── QR CODE TESTS ──────────────────────────────────────────
 
-  describe('QR Code POD', () => {
-    it('should verify matching QR codes', async () => {
+  describe("QR Code POD", () => {
+    it("should verify matching QR codes", async () => {
       const result = await podService.capturePOD(
         testDeliveryId,
-        'qr_scan',
+        "qr_scan",
         testDeliveryId,
-        { expectedData: testDeliveryId }
+        { expectedData: testDeliveryId },
       );
 
       expect(result.success).toBe(true);
-      if (result.data?.method === 'qr_scan') {
+      if (result.data?.method === "qr_scan") {
         expect(result.data.verification.valid).toBe(true);
         expect(result.data.verification.matchPercentage).toBe(100);
       }
     });
 
-    it('should reject non-matching QR codes', async () => {
+    it("should reject non-matching QR codes", async () => {
       const result = await podService.capturePOD(
         testDeliveryId,
-        'qr_scan',
-        'wrong-data',
-        { expectedData: testDeliveryId }
+        "qr_scan",
+        "wrong-data",
+        { expectedData: testDeliveryId },
       );
 
       expect(result.success).toBe(true);
-      if (result.data?.method === 'qr_scan') {
+      if (result.data?.method === "qr_scan") {
         expect(result.data.verification.valid).toBe(false);
       }
     });
@@ -213,87 +220,89 @@ describe('POD Service', () => {
 
   // ─── BARCODE TESTS ──────────────────────────────────────────
 
-  describe('Barcode POD', () => {
-    it('should verify matching barcodes', async () => {
-      const barcode = '9781234567890';
+  describe("Barcode POD", () => {
+    it("should verify matching barcodes", async () => {
+      const barcode = "9781234567890";
 
       const result = await podService.capturePOD(
         testDeliveryId,
-        'barcode',
+        "barcode",
         barcode,
-        { expectedBarcode: barcode }
+        { expectedBarcode: barcode },
       );
 
       expect(result.success).toBe(true);
-      if (result.data?.method === 'barcode') {
+      if (result.data?.method === "barcode") {
         expect(result.data.verification.valid).toBe(true);
       }
     });
 
-    it('should detect barcode format', async () => {
-      const ean13Barcode = '1234567890128';
+    it("should detect barcode format", async () => {
+      const ean13Barcode = "1234567890128";
 
       const result = await podService.capturePOD(
         testDeliveryId,
-        'barcode',
+        "barcode",
         ean13Barcode,
-        { expectedBarcode: ean13Barcode }
+        { expectedBarcode: ean13Barcode },
       );
 
       expect(result.success).toBe(true);
-      if (result.data?.method === 'barcode') {
-        expect(result.data.barcodeFormat).toBe('EAN13');
+      if (result.data?.method === "barcode") {
+        expect(result.data.barcodeFormat).toBe("EAN13");
       }
     });
   });
 
   // ─── MANUAL CONFIRMATION TESTS ──────────────────────────────
 
-  describe('Manual Confirmation POD', () => {
-    it('should record manual confirmation', async () => {
+  describe("Manual Confirmation POD", () => {
+    it("should record manual confirmation", async () => {
       const result = await podService.capturePOD(
         testDeliveryId,
-        'manual_confirm',
+        "manual_confirm",
         {},
         {
-          confirmedBy: 'Driver John',
-          notes: 'Delivered in good condition',
-        }
+          confirmedBy: "Driver John",
+          notes: "Delivered in good condition",
+        },
       );
 
       expect(result.success).toBe(true);
-      expect(result.data?.method).toBe('manual_confirm');
+      expect(result.data?.method).toBe("manual_confirm");
     });
 
-    it('should include confirmation metadata', async () => {
+    it("should include confirmation metadata", async () => {
       const result = await podService.capturePOD(
         testDeliveryId,
-        'manual_confirm',
+        "manual_confirm",
         {},
         {
-          confirmedBy: 'Driver Jane',
-          notes: 'Recipient not home, left with neighbor',
-        }
+          confirmedBy: "Driver Jane",
+          notes: "Recipient not home, left with neighbor",
+        },
       );
 
       expect(result.success).toBe(true);
-      if (result.data?.method === 'manual_confirm') {
-        expect(result.data.confirmedBy).toBe('Driver Jane');
-        expect(result.data.notes).toBe('Recipient not home, left with neighbor');
+      if (result.data?.method === "manual_confirm") {
+        expect(result.data.confirmedBy).toBe("Driver Jane");
+        expect(result.data.notes).toBe(
+          "Recipient not home, left with neighbor",
+        );
       }
     });
   });
 
   // ─── VERIFICATION TESTS ─────────────────────────────────────
 
-  describe('POD Verification', () => {
-    it('should verify valid POD record', async () => {
+  describe("POD Verification", () => {
+    it("should verify valid POD record", async () => {
       // First capture a signature
       const captureResult = await podService.capturePOD(
         testDeliveryId,
-        'signature',
-        'M10,10 L20,20 L30,30 L40,40 L50,50',
-        { signerName: 'John Doe' }
+        "signature",
+        "M10,10 L20,20 L30,30 L40,40 L50,50",
+        { signerName: "John Doe" },
       );
 
       // Then verify
@@ -303,8 +312,8 @@ describe('POD Service', () => {
       expect(verifyResult.isVerified).toBeDefined();
     });
 
-    it('should handle missing POD gracefully', async () => {
-      const nonExistentDeliveryId = '999e8400-e29b-41d4-a716-446655440999';
+    it("should handle missing POD gracefully", async () => {
+      const nonExistentDeliveryId = "999e8400-e29b-41d4-a716-446655440999";
       const result = await podService.verifyPOD(nonExistentDeliveryId);
 
       expect(result.isVerified).toBe(false);
@@ -314,37 +323,40 @@ describe('POD Service', () => {
 
   // ─── GET POD TESTS ──────────────────────────────────────────
 
-  describe('Retrieve POD', () => {
-    it('should retrieve captured POD records', async () => {
+  describe("Retrieve POD", () => {
+    it("should retrieve captured POD records", async () => {
       await podService.capturePOD(
         testDeliveryId,
-        'manual_confirm',
+        "manual_confirm",
         {},
-        { confirmedBy: 'Driver' }
+        { confirmedBy: "Driver" },
       );
 
       const records = podService.getPOD(testDeliveryId);
 
       expect(records).toHaveLength(1);
-      expect(records[0].method).toBe('manual_confirm');
+      expect(records[0].method).toBe("manual_confirm");
     });
 
-    it('should retrieve by method', async () => {
+    it("should retrieve by method", async () => {
       await podService.capturePOD(
         testDeliveryId,
-        'manual_confirm',
+        "manual_confirm",
         {},
-        { confirmedBy: 'Driver' }
+        { confirmedBy: "Driver" },
       );
 
-      const record = podService.getPODByMethod(testDeliveryId, 'manual_confirm');
+      const record = podService.getPODByMethod(
+        testDeliveryId,
+        "manual_confirm",
+      );
 
       expect(record).toBeDefined();
-      expect(record?.method).toBe('manual_confirm');
+      expect(record?.method).toBe("manual_confirm");
     });
 
-    it('should return empty for non-existent delivery', async () => {
-      const records = podService.getPOD('non-existent-id');
+    it("should return empty for non-existent delivery", async () => {
+      const records = podService.getPOD("non-existent-id");
 
       expect(records).toHaveLength(0);
     });

@@ -10,14 +10,18 @@
  * - Error handling and recovery
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { HERERoutingClient } from '../here-routing-client.js';
-import type { RoutingAdapterConfig, RouteRequest, MatrixRequest } from '../types.js';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { HERERoutingClient } from "../here-routing-client.js";
+import type {
+  RoutingAdapterConfig,
+  RouteRequest,
+  MatrixRequest,
+} from "../types.js";
 
-describe('HERERoutingClient', () => {
+describe("HERERoutingClient", () => {
   let client: HERERoutingClient;
   const mockConfig: RoutingAdapterConfig = {
-    apiKey: 'test-api-key',
+    apiKey: "test-api-key",
     rateLimit: 50,
     timeout: 30000,
   };
@@ -31,15 +35,15 @@ describe('HERERoutingClient', () => {
     vi.resetAllMocks();
   });
 
-  describe('route', () => {
-    it('should calculate a basic car route', async () => {
+  describe("route", () => {
+    it("should calculate a basic car route", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           routes: [
             {
-              id: 'route-1',
-              polyline: 'encoded_polyline_here',
+              id: "route-1",
+              polyline: "encoded_polyline_here",
               legs: [
                 {
                   summary: {
@@ -48,30 +52,33 @@ describe('HERERoutingClient', () => {
                   },
                   links: [
                     {
-                      id: 'link-1',
+                      id: "link-1",
                       length: 2500,
                       speed: 30,
                       duration: 300,
-                      direction: 'north',
+                      direction: "north",
                       road: {
-                        names: ['5th Avenue'],
+                        names: ["5th Avenue"],
                       },
                     },
                   ],
                   arrival: {
-                    place: { type: 'place', location: { lat: 40.8, lng: -74 } },
-                    time: '2024-03-12T10:05:00Z',
+                    place: { type: "place", location: { lat: 40.8, lng: -74 } },
+                    time: "2024-03-12T10:05:00Z",
                   },
                   departure: {
-                    place: { type: 'place', location: { lat: 40.7, lng: -74.1 } },
-                    time: '2024-03-12T10:00:00Z',
+                    place: {
+                      type: "place",
+                      location: { lat: 40.7, lng: -74.1 },
+                    },
+                    time: "2024-03-12T10:00:00Z",
                   },
                 },
               ],
               sections: [
                 {
-                  id: 'section-1',
-                  type: 'default',
+                  id: "section-1",
+                  type: "default",
                   summary: {
                     length: 2500,
                     duration: 300,
@@ -86,7 +93,7 @@ describe('HERERoutingClient', () => {
       const request: RouteRequest = {
         origin: { lat: 40.7, lng: -74.1 },
         destination: { lat: 40.8, lng: -74 },
-        costing: 'auto',
+        costing: "auto",
       };
 
       const response = await client.route(request);
@@ -97,32 +104,35 @@ describe('HERERoutingClient', () => {
       expect(response.legs).toHaveLength(1);
     });
 
-    it('should calculate truck route with restrictions', async () => {
+    it("should calculate truck route with restrictions", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           routes: [
             {
-              id: 'route-1',
-              polyline: 'encoded_polyline_here',
+              id: "route-1",
+              polyline: "encoded_polyline_here",
               legs: [
                 {
                   summary: { distance: 3000, duration: 360 },
                   links: [],
                   arrival: {
-                    place: { type: 'place', location: { lat: 40.8, lng: -74 } },
-                    time: '2024-03-12T10:06:00Z',
+                    place: { type: "place", location: { lat: 40.8, lng: -74 } },
+                    time: "2024-03-12T10:06:00Z",
                   },
                   departure: {
-                    place: { type: 'place', location: { lat: 40.7, lng: -74.1 } },
-                    time: '2024-03-12T10:00:00Z',
+                    place: {
+                      type: "place",
+                      location: { lat: 40.7, lng: -74.1 },
+                    },
+                    time: "2024-03-12T10:00:00Z",
                   },
                 },
               ],
               sections: [
                 {
-                  id: 'section-1',
-                  type: 'default',
+                  id: "section-1",
+                  type: "default",
                   summary: { distance: 3000, duration: 360 },
                 },
               ],
@@ -134,7 +144,7 @@ describe('HERERoutingClient', () => {
       const request: RouteRequest = {
         origin: { lat: 40.7, lng: -74.1 },
         destination: { lat: 40.8, lng: -74 },
-        costing: 'truck',
+        costing: "truck",
       };
 
       const response = await client.route(request, {
@@ -142,29 +152,29 @@ describe('HERERoutingClient', () => {
           maxHeight: 4.2,
           maxWeight: 18000,
           maxLength: 21,
-          tunnelCategory: 'B',
+          tunnelCategory: "B",
         },
       });
 
       expect(response).toBeDefined();
       expect(global.fetch).toHaveBeenCalled();
       const callUrl = (global.fetch as any).mock.calls[0][0];
-      expect(callUrl).toContain('truck');
+      expect(callUrl).toContain("truck");
     });
 
-    it('should handle waypoints', async () => {
+    it("should handle waypoints", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           routes: [
             {
-              id: 'route-1',
-              polyline: 'encoded_polyline',
+              id: "route-1",
+              polyline: "encoded_polyline",
               legs: [],
               sections: [
                 {
-                  id: 'section-1',
-                  type: 'default',
+                  id: "section-1",
+                  type: "default",
                   summary: { distance: 5000, duration: 600 },
                 },
               ],
@@ -183,34 +193,34 @@ describe('HERERoutingClient', () => {
 
       expect(response).toBeDefined();
       const callUrl = (global.fetch as any).mock.calls[0][0];
-      expect(callUrl).toContain('40.75');
+      expect(callUrl).toContain("40.75");
     });
 
-    it('should support alternative routes', async () => {
+    it("should support alternative routes", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           routes: [
             {
-              id: 'route-1',
-              polyline: 'encoded_polyline_1',
+              id: "route-1",
+              polyline: "encoded_polyline_1",
               legs: [],
               sections: [
                 {
-                  id: 'section-1',
-                  type: 'default',
+                  id: "section-1",
+                  type: "default",
                   summary: { distance: 2500, duration: 300 },
                 },
               ],
             },
             {
-              id: 'route-2',
-              polyline: 'encoded_polyline_2',
+              id: "route-2",
+              polyline: "encoded_polyline_2",
               legs: [],
               sections: [
                 {
-                  id: 'section-1',
-                  type: 'default',
+                  id: "section-1",
+                  type: "default",
                   summary: { distance: 2800, duration: 330 },
                 },
               ],
@@ -227,22 +237,22 @@ describe('HERERoutingClient', () => {
       await client.route(request, { alternatives: true });
 
       const callUrl = (global.fetch as any).mock.calls[0][0];
-      expect(callUrl).toContain('alternatives=true');
+      expect(callUrl).toContain("alternatives=true");
     });
 
-    it('should handle array coordinates', async () => {
+    it("should handle array coordinates", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           routes: [
             {
-              id: 'route-1',
-              polyline: 'encoded_polyline',
+              id: "route-1",
+              polyline: "encoded_polyline",
               legs: [],
               sections: [
                 {
-                  id: 'section-1',
-                  type: 'default',
+                  id: "section-1",
+                  type: "default",
                   summary: { distance: 2500, duration: 300 },
                 },
               ],
@@ -261,10 +271,10 @@ describe('HERERoutingClient', () => {
       expect(response).toBeDefined();
     });
 
-    it('should throw error on API failure', async () => {
+    it("should throw error on API failure", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: false,
-        statusText: 'Unauthorized',
+        statusText: "Unauthorized",
       });
 
       const request: RouteRequest = {
@@ -275,7 +285,7 @@ describe('HERERoutingClient', () => {
       await expect(client.route(request)).rejects.toThrow();
     });
 
-    it('should throw error when no routes found', async () => {
+    it("should throw error when no routes found", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -292,8 +302,8 @@ describe('HERERoutingClient', () => {
     });
   });
 
-  describe('matrix', () => {
-    it('should calculate distance/time matrix', async () => {
+  describe("matrix", () => {
+    it("should calculate distance/time matrix", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -332,7 +342,7 @@ describe('HERERoutingClient', () => {
       expect(response.matrix[0]).toHaveLength(3);
     });
 
-    it('should handle POST method', async () => {
+    it("should handle POST method", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -354,10 +364,10 @@ describe('HERERoutingClient', () => {
 
       expect(global.fetch).toHaveBeenCalled();
       const call = (global.fetch as any).mock.calls[0];
-      expect(call[1].method).toBe('POST');
+      expect(call[1].method).toBe("POST");
     });
 
-    it('should support truck routing for matrix', async () => {
+    it("should support truck routing for matrix", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -373,19 +383,19 @@ describe('HERERoutingClient', () => {
       const request: MatrixRequest = {
         origins: [{ lat: 0, lng: 0 }],
         destinations: [{ lat: 1, lng: 1 }],
-        costing: 'truck',
+        costing: "truck",
       };
 
       await client.matrix(request);
 
       const callUrl = (global.fetch as any).mock.calls[0][0];
-      expect(callUrl).toContain('truck');
+      expect(callUrl).toContain("truck");
     });
 
-    it('should throw error on failure', async () => {
+    it("should throw error on failure", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: false,
-        statusText: 'Bad Request',
+        statusText: "Bad Request",
       });
 
       const request: MatrixRequest = {
@@ -397,25 +407,25 @@ describe('HERERoutingClient', () => {
     });
   });
 
-  describe('isoline', () => {
-    it('should generate time-based isochrone', async () => {
+  describe("isoline", () => {
+    it("should generate time-based isochrone", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           isolines: [
             {
               range: {
-                type: 'time',
+                type: "time",
                 value: 300,
               },
-              shape: 'encoded_polygon',
+              shape: "encoded_polygon",
             },
             {
               range: {
-                type: 'time',
+                type: "time",
                 value: 600,
               },
-              shape: 'encoded_polygon_2',
+              shape: "encoded_polygon_2",
             },
           ],
         }),
@@ -424,8 +434,8 @@ describe('HERERoutingClient', () => {
       const request = {
         center: { lat: 40.7, lng: -74.1 },
         contours: [
-          { value: 300, color: '#ff0000' },
-          { value: 600, color: '#00ff00' },
+          { value: 300, color: "#ff0000" },
+          { value: 600, color: "#00ff00" },
         ],
       };
 
@@ -436,17 +446,17 @@ describe('HERERoutingClient', () => {
       expect(response.contours[1].value).toBe(600);
     });
 
-    it('should generate distance-based isochrone', async () => {
+    it("should generate distance-based isochrone", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           isolines: [
             {
               range: {
-                type: 'distance',
+                type: "distance",
                 value: 5000,
               },
-              shape: 'encoded_polygon',
+              shape: "encoded_polygon",
             },
           ],
         }),
@@ -460,17 +470,17 @@ describe('HERERoutingClient', () => {
       await client.isoline(request);
 
       const callUrl = (global.fetch as any).mock.calls[0][0];
-      expect(callUrl).toContain('isoline');
+      expect(callUrl).toContain("isoline");
     });
 
-    it('should support array center coordinates', async () => {
+    it("should support array center coordinates", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           isolines: [
             {
-              range: { type: 'time', value: 300 },
-              shape: 'encoded_polygon',
+              range: { type: "time", value: 300 },
+              shape: "encoded_polygon",
             },
           ],
         }),
@@ -486,10 +496,10 @@ describe('HERERoutingClient', () => {
       expect(response.contours).toHaveLength(1);
     });
 
-    it('should throw error on API failure', async () => {
+    it("should throw error on API failure", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: false,
-        statusText: 'Service Unavailable',
+        statusText: "Service Unavailable",
       });
 
       const request = {
@@ -501,17 +511,23 @@ describe('HERERoutingClient', () => {
     });
   });
 
-  describe('Rate limiting', () => {
-    it('should enforce rate limiting', async () => {
+  describe("Rate limiting", () => {
+    it("should enforce rate limiting", async () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: async () => ({
           routes: [
             {
-              id: 'route-1',
-              polyline: 'encoded',
+              id: "route-1",
+              polyline: "encoded",
               legs: [],
-              sections: [{ id: 's1', type: 'default', summary: { distance: 1000, duration: 100 } }],
+              sections: [
+                {
+                  id: "s1",
+                  type: "default",
+                  summary: { distance: 1000, duration: 100 },
+                },
+              ],
             },
           ],
         }),
@@ -525,9 +541,18 @@ describe('HERERoutingClient', () => {
       const startTime = Date.now();
 
       // Send requests sequentially to test rate limiting
-      await slowClient.route({ origin: { lat: 0, lng: 0 }, destination: { lat: 1, lng: 1 } });
-      await slowClient.route({ origin: { lat: 0, lng: 0 }, destination: { lat: 2, lng: 2 } });
-      await slowClient.route({ origin: { lat: 0, lng: 0 }, destination: { lat: 3, lng: 3 } });
+      await slowClient.route({
+        origin: { lat: 0, lng: 0 },
+        destination: { lat: 1, lng: 1 },
+      });
+      await slowClient.route({
+        origin: { lat: 0, lng: 0 },
+        destination: { lat: 2, lng: 2 },
+      });
+      await slowClient.route({
+        origin: { lat: 0, lng: 0 },
+        destination: { lat: 3, lng: 3 },
+      });
 
       const elapsed = Date.now() - startTime;
       // With 1 token/sec, after first request, each subsequent request waits ~100ms+ for refill
@@ -535,9 +560,9 @@ describe('HERERoutingClient', () => {
     });
   });
 
-  describe('Circuit breaker', () => {
-    it('should open circuit after multiple failures', async () => {
-      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
+  describe("Circuit breaker", () => {
+    it("should open circuit after multiple failures", async () => {
+      global.fetch = vi.fn().mockRejectedValue(new Error("Network error"));
 
       const request: RouteRequest = {
         origin: { lat: 40.7, lng: -74.1 },
@@ -553,21 +578,29 @@ describe('HERERoutingClient', () => {
       }
 
       // Circuit should be open now
-      await expect(client.route(request)).rejects.toThrow('Circuit breaker is open');
+      await expect(client.route(request)).rejects.toThrow(
+        "Circuit breaker is open",
+      );
     });
   });
 
-  describe('Metrics', () => {
-    it('should track request metrics', async () => {
+  describe("Metrics", () => {
+    it("should track request metrics", async () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: async () => ({
           routes: [
             {
-              id: 'route-1',
-              polyline: 'encoded',
+              id: "route-1",
+              polyline: "encoded",
               legs: [],
-              sections: [{ id: 's1', type: 'default', summary: { distance: 1000, duration: 100 } }],
+              sections: [
+                {
+                  id: "s1",
+                  type: "default",
+                  summary: { distance: 1000, duration: 100 },
+                },
+              ],
             },
           ],
         }),
@@ -579,8 +612,14 @@ describe('HERERoutingClient', () => {
       };
 
       await client.route(request);
-      await client.matrix({ origins: [{ lat: 0, lng: 0 }], destinations: [{ lat: 1, lng: 1 }] });
-      await client.isoline({ center: { lat: 0, lng: 0 }, contours: [{ value: 300 }] });
+      await client.matrix({
+        origins: [{ lat: 0, lng: 0 }],
+        destinations: [{ lat: 1, lng: 1 }],
+      });
+      await client.isoline({
+        center: { lat: 0, lng: 0 },
+        contours: [{ value: 300 }],
+      });
 
       const metrics = client.getMetrics();
 
@@ -589,22 +628,29 @@ describe('HERERoutingClient', () => {
       expect(metrics.averageResponseTime).toBeGreaterThanOrEqual(0);
     });
 
-    it('should calculate success rate', async () => {
-      global.fetch = vi.fn()
+    it("should calculate success rate", async () => {
+      global.fetch = vi
+        .fn()
         .mockResolvedValueOnce({
           ok: true,
           json: async () => ({
             routes: [
               {
-                id: 'route-1',
-                polyline: 'encoded',
+                id: "route-1",
+                polyline: "encoded",
                 legs: [],
-                sections: [{ id: 's1', type: 'default', summary: { distance: 1000, duration: 100 } }],
+                sections: [
+                  {
+                    id: "s1",
+                    type: "default",
+                    summary: { distance: 1000, duration: 100 },
+                  },
+                ],
               },
             ],
           }),
         })
-        .mockRejectedValueOnce(new Error('Timeout'));
+        .mockRejectedValueOnce(new Error("Timeout"));
 
       const request: RouteRequest = {
         origin: { lat: 0, lng: 0 },
@@ -624,16 +670,22 @@ describe('HERERoutingClient', () => {
       expect(metrics.successRate).toBe(0.5);
     });
 
-    it('should reset metrics', async () => {
+    it("should reset metrics", async () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: async () => ({
           routes: [
             {
-              id: 'route-1',
-              polyline: 'encoded',
+              id: "route-1",
+              polyline: "encoded",
               legs: [],
-              sections: [{ id: 's1', type: 'default', summary: { distance: 1000, duration: 100 } }],
+              sections: [
+                {
+                  id: "s1",
+                  type: "default",
+                  summary: { distance: 1000, duration: 100 },
+                },
+              ],
             },
           ],
         }),

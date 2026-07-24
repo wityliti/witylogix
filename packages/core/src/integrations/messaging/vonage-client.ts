@@ -28,7 +28,7 @@ interface VonageHTTPClient {
     method: string,
     path: string,
     headers?: Record<string, string>,
-    body?: string
+    body?: string,
   ): Promise<Record<string, unknown>>;
 }
 
@@ -95,7 +95,9 @@ export class VonageClient extends MessagingAdapter {
         throw new Error("Invalid Vonage credentials");
       }
     } catch (error) {
-      throw new Error(`Vonage validation failed: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Vonage validation failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -112,11 +114,20 @@ export class VonageClient extends MessagingAdapter {
         text: message.body,
         type: message.type || "text",
         // Vonage-specific options
-        ...(message.metadata?.clientRef ? { client_ref: message.metadata.clientRef } : {}),
+        ...(message.metadata?.clientRef
+          ? { client_ref: message.metadata.clientRef }
+          : {}),
       };
 
-      const response = await this.makeRequest("POST", "/sms/json", undefined, JSON.stringify(payload));
-      const messages = response.messages as Array<Record<string, unknown>> | undefined;
+      const response = await this.makeRequest(
+        "POST",
+        "/sms/json",
+        undefined,
+        JSON.stringify(payload),
+      );
+      const messages = response.messages as
+        | Array<Record<string, unknown>>
+        | undefined;
 
       if (messages && messages.length > 0) {
         const msgResponse = messages[0];
@@ -152,7 +163,7 @@ export class VonageClient extends MessagingAdapter {
     from: string,
     mediaUrl: string,
     mediaType: "image" | "video" | "audio",
-    caption?: string
+    caption?: string,
   ): Promise<SendResult> {
     return this.executeWithProtections(async () => {
       const messageId = `mms_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -167,7 +178,12 @@ export class VonageClient extends MessagingAdapter {
         },
       };
 
-      const response = await this.makeRequest("POST", "/v2/messages", undefined, JSON.stringify(payload));
+      const response = await this.makeRequest(
+        "POST",
+        "/v2/messages",
+        undefined,
+        JSON.stringify(payload),
+      );
 
       if (response.message_uuid) {
         this.trackDelivery(messageId, "sent");
@@ -198,7 +214,7 @@ export class VonageClient extends MessagingAdapter {
   async sendWhatsApp(
     to: string,
     template: VonageWhatsAppTemplate,
-    freeformText?: string
+    freeformText?: string,
   ): Promise<SendResult> {
     return this.executeWithProtections(async () => {
       const messageId = `wa_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -221,7 +237,12 @@ export class VonageClient extends MessagingAdapter {
             },
           };
 
-      const response = await this.makeRequest("POST", "/v2/messages", undefined, JSON.stringify(payload));
+      const response = await this.makeRequest(
+        "POST",
+        "/v2/messages",
+        undefined,
+        JSON.stringify(payload),
+      );
 
       if (response.message_uuid) {
         this.trackDelivery(messageId, "sent");
@@ -275,7 +296,7 @@ export class VonageClient extends MessagingAdapter {
     to: string,
     brandName: string,
     length: number = 4,
-    timeout: number = 600
+    timeout: number = 600,
   ): Promise<SendResult> {
     return this.executeWithProtections(async () => {
       const payload = {
@@ -285,7 +306,12 @@ export class VonageClient extends MessagingAdapter {
         next_event_wait: timeout,
       };
 
-      const response = await this.makeRequest("POST", "/verify/json", undefined, JSON.stringify(payload));
+      const response = await this.makeRequest(
+        "POST",
+        "/verify/json",
+        undefined,
+        JSON.stringify(payload),
+      );
 
       if (response.request_id && response.status === "0") {
         return {
@@ -315,7 +341,12 @@ export class VonageClient extends MessagingAdapter {
         code,
       };
 
-      const response = await this.makeRequest("POST", "/verify/check/json", undefined, JSON.stringify(payload));
+      const response = await this.makeRequest(
+        "POST",
+        "/verify/check/json",
+        undefined,
+        JSON.stringify(payload),
+      );
       return response.status === "0";
     } catch {
       return false;
@@ -327,7 +358,7 @@ export class VonageClient extends MessagingAdapter {
    */
   async lookupNumber(
     number: string,
-    level: "basic" | "standard" | "advanced" = "standard"
+    level: "basic" | "standard" | "advanced" = "standard",
   ): Promise<Record<string, unknown>> {
     return this.executeWithProtections(async () => {
       const path = `/ni/${level}/json?number=${encodeURIComponent(number)}`;
@@ -342,7 +373,7 @@ export class VonageClient extends MessagingAdapter {
     countryCode: string,
     features?: string[],
     size: number = 10,
-    index: number = 0
+    index: number = 0,
   ): Promise<Record<string, unknown>> {
     return this.executeWithProtections(async () => {
       const params = new URLSearchParams({
@@ -370,7 +401,12 @@ export class VonageClient extends MessagingAdapter {
         country: countryCode,
       };
 
-      const response = await this.makeRequest("POST", "/number/buy", undefined, JSON.stringify(payload));
+      const response = await this.makeRequest(
+        "POST",
+        "/number/buy",
+        undefined,
+        JSON.stringify(payload),
+      );
 
       if (response.error_code === "200") {
         return {
@@ -410,7 +446,9 @@ export class VonageClient extends MessagingAdapter {
     // Additional processing for delivery receipts
     if (payload.eventType === "delivery") {
       // Update delivery database, trigger webhooks, etc.
-      console.log(`Message ${receipt.messageId} delivered to ${receipt.recipient}`);
+      console.log(
+        `Message ${receipt.messageId} delivered to ${receipt.recipient}`,
+      );
     }
   }
 
@@ -435,7 +473,7 @@ export class VonageClient extends MessagingAdapter {
     method: string,
     path: string,
     headers?: Record<string, string>,
-    body?: string
+    body?: string,
   ): Promise<Record<string, unknown>> {
     const url = new URL(path, this.baseUrl);
 
@@ -469,7 +507,9 @@ export class VonageClient extends MessagingAdapter {
     const response = await fetch(url.toString(), options);
 
     if (!response.ok) {
-      throw new Error(`Vonage API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Vonage API error: ${response.status} ${response.statusText}`,
+      );
     }
 
     const contentType = response.headers.get("content-type");

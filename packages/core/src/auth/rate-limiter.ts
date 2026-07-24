@@ -43,11 +43,11 @@ export class SlidingWindowRateLimiter {
       perIp: options.perIp || { windowMs: 900000, maxRequests: 100 }, // 15 min, 100 req
       perUser: options.perUser || { windowMs: 60000, maxRequests: 30 }, // 1 min, 30 req
       perEndpoint: options.perEndpoint || {
-        '/auth/login': { windowMs: 60000, maxRequests: 5 }, // 5 per minute
-        '/auth/register': { windowMs: 3600000, maxRequests: 3 }, // 3 per hour
-        '/auth/forgot-password': { windowMs: 3600000, maxRequests: 3 }, // 3 per hour
+        "/auth/login": { windowMs: 60000, maxRequests: 5 }, // 5 per minute
+        "/auth/register": { windowMs: 3600000, maxRequests: 3 }, // 3 per hour
+        "/auth/forgot-password": { windowMs: 3600000, maxRequests: 3 }, // 3 per hour
       },
-      keyGenerator: options.keyGenerator || ((req: any) => req.ip || 'unknown'),
+      keyGenerator: options.keyGenerator || ((req: any) => req.ip || "unknown"),
       skipSuccessfulRequests: options.skipSuccessfulRequests || false,
       skipFailedRequests: options.skipFailedRequests || false,
     };
@@ -61,7 +61,10 @@ export class SlidingWindowRateLimiter {
    * @param config Rate limit configuration
    * @returns Rate limit info with remaining requests
    */
-  private checkLimit(key: string, config: RateLimitConfig): RateLimitInfo & { allowed: boolean } {
+  private checkLimit(
+    key: string,
+    config: RateLimitConfig,
+  ): RateLimitInfo & { allowed: boolean } {
     const now = Date.now();
     const record = this.store.get(key);
 
@@ -74,7 +77,10 @@ export class SlidingWindowRateLimiter {
     }
 
     const remaining = Math.max(0, limit - timestamps.length);
-    const resetAt = timestamps.length > 0 ? timestamps[0] + config.windowMs : now + config.windowMs;
+    const resetAt =
+      timestamps.length > 0
+        ? timestamps[0] + config.windowMs
+        : now + config.windowMs;
 
     if (timestamps.length >= limit) {
       const retryAfter = Math.ceil((resetAt - now) / 1000);
@@ -107,11 +113,7 @@ export class SlidingWindowRateLimiter {
    * @param context Request context (IP, user ID, endpoint)
    * @returns Limit info or error if rate limited
    */
-  check(context: {
-    ip: string;
-    userId?: string;
-    endpoint?: string;
-  }): {
+  check(context: { ip: string; userId?: string; endpoint?: string }): {
     allowed: boolean;
     limits: {
       perIp?: RateLimitInfo;
@@ -144,12 +146,17 @@ export class SlidingWindowRateLimiter {
     let endpointLimit = null;
     if (context.endpoint && this.config.perEndpoint[context.endpoint]) {
       const endpointKey = `endpoint:${context.endpoint}:${context.ip}`;
-      endpointLimit = this.checkLimit(endpointKey, this.config.perEndpoint[context.endpoint]);
+      endpointLimit = this.checkLimit(
+        endpointKey,
+        this.config.perEndpoint[context.endpoint],
+      );
       limits.perEndpoint = endpointLimit;
     }
 
     // Determine which limit is the most restrictive
-    const allLimits = [ipLimit, userLimit, endpointLimit].filter((l) => l !== null);
+    const allLimits = [ipLimit, userLimit, endpointLimit].filter(
+      (l) => l !== null,
+    );
     const mostRestrictive = allLimits.reduce((prev, curr) => {
       if (prev.remaining <= curr.remaining) return prev;
       return curr;
@@ -179,9 +186,14 @@ export class SlidingWindowRateLimiter {
       };
     }
 
-    const timestamps = record.timestamps.filter((ts) => now - ts < config.windowMs);
+    const timestamps = record.timestamps.filter(
+      (ts) => now - ts < config.windowMs,
+    );
     const remaining = Math.max(0, config.maxRequests - timestamps.length);
-    const resetAt = timestamps.length > 0 ? timestamps[0] + config.windowMs : now + config.windowMs;
+    const resetAt =
+      timestamps.length > 0
+        ? timestamps[0] + config.windowMs
+        : now + config.windowMs;
 
     return {
       limit: config.maxRequests,
@@ -211,7 +223,7 @@ export class SlidingWindowRateLimiter {
     const maxWindow = Math.max(
       this.config.perIp.windowMs,
       this.config.perUser.windowMs,
-      ...Object.values(this.config.perEndpoint).map((c) => c.windowMs)
+      ...Object.values(this.config.perEndpoint).map((c) => c.windowMs),
     );
 
     // Clean up every hour
@@ -256,7 +268,7 @@ export function createRateLimiter(options?: RateLimitOptions) {
       };
     }
 
-    const ip = req.ip || req.connection.remoteAddress || 'unknown';
+    const ip = req.ip || req.connection.remoteAddress || "unknown";
     const userId = req.user?.id;
     const endpoint = req.path;
 
@@ -265,19 +277,19 @@ export function createRateLimiter(options?: RateLimitOptions) {
     // Set rate limit headers
     const primary = result.primary;
     if (primary) {
-      res.setHeader('X-RateLimit-Limit', primary.limit);
-      res.setHeader('X-RateLimit-Remaining', primary.remaining);
-      res.setHeader('X-RateLimit-Reset', Math.ceil(primary.resetAt / 1000));
+      res.setHeader("X-RateLimit-Limit", primary.limit);
+      res.setHeader("X-RateLimit-Remaining", primary.remaining);
+      res.setHeader("X-RateLimit-Reset", Math.ceil(primary.resetAt / 1000));
 
       if (!result.allowed && primary.retryAfter) {
-        res.setHeader('Retry-After', primary.retryAfter);
+        res.setHeader("Retry-After", primary.retryAfter);
       }
     }
 
     if (!result.allowed) {
       return res.status(429).json({
-        error: 'Too Many Requests',
-        message: 'Rate limit exceeded. Please try again later.',
+        error: "Too Many Requests",
+        message: "Rate limit exceeded. Please try again later.",
         retryAfter: primary?.retryAfter || 60,
       });
     }
@@ -291,7 +303,7 @@ export function createRateLimiter(options?: RateLimitOptions) {
  */
 export function createEndpointRateLimiter(
   endpoint: string,
-  config: RateLimitConfig
+  config: RateLimitConfig,
 ) {
   return createRateLimiter({
     perEndpoint: {
@@ -306,7 +318,9 @@ let instance: SlidingWindowRateLimiter | null = null;
 /**
  * Get or create rate limiter instance
  */
-export function getRateLimiter(options?: RateLimitOptions): SlidingWindowRateLimiter {
+export function getRateLimiter(
+  options?: RateLimitOptions,
+): SlidingWindowRateLimiter {
   if (!instance) {
     instance = new SlidingWindowRateLimiter(options);
   }

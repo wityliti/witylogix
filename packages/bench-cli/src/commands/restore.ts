@@ -1,21 +1,32 @@
-import type { Command } from 'commander';
-import pc from 'picocolors';
+import type { Command } from "commander";
+import pc from "picocolors";
 import {
   buildContext,
   restore as restoreOps,
   BenchApiRequestError,
   NoConfigError,
-} from '@witylogix/bench-core';
+} from "@witylogix/bench-core";
 
 export function registerRestoreCommand(program: Command): void {
   program
-    .command('restore <archive>')
-    .description('Restore the installation from a backup archive')
-    .option('--yes', 'skip confirmation when target DB is non-empty', false)
-    .option('--skip-blobs', 'do not restore blobs even if present', false)
-    .option('--force-version', 'allow cross-major-version restore (dangerous)', false)
-    .option('--cross-install', 'allow restore into a differently-named installation', false)
-    .option('--target-storage <url>', 'upload blobs to a different bucket (T15+)')
+    .command("restore <archive>")
+    .description("Restore the installation from a backup archive")
+    .option("--yes", "skip confirmation when target DB is non-empty", false)
+    .option("--skip-blobs", "do not restore blobs even if present", false)
+    .option(
+      "--force-version",
+      "allow cross-major-version restore (dangerous)",
+      false,
+    )
+    .option(
+      "--cross-install",
+      "allow restore into a differently-named installation",
+      false,
+    )
+    .option(
+      "--target-storage <url>",
+      "upload blobs to a different bucket (T15+)",
+    )
     .action(
       async (
         archive: string,

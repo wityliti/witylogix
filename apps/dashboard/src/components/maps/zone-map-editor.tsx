@@ -1,30 +1,30 @@
-'use client';
+"use client";
 
+import { useCallback, useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { type ZoneMapEditorProps, type MapZone, type ColorPreset, type ZoneOverlapResult } from './types';
-import { useGoogleMaps } from './google-maps-provider';
+  type ZoneMapEditorProps,
+  type MapZone,
+  type ColorPreset,
+  type ZoneOverlapResult,
+} from "./types";
+import { useGoogleMaps } from "./google-maps-provider";
 
 // Color presets
 const COLOR_PRESETS: ColorPreset[] = [
-  { name: 'Red', value: '#dc2626', hex: '#dc2626' },
-  { name: 'Blue', value: '#2563eb', hex: '#2563eb' },
-  { name: 'Green', value: '#16a34a', hex: '#16a34a' },
-  { name: 'Yellow', value: '#eab308', hex: '#eab308' },
-  { name: 'Purple', value: '#9333ea', hex: '#9333ea' },
-  { name: 'Pink', value: '#ec4899', hex: '#ec4899' },
-  { name: 'Orange', value: '#ea580c', hex: '#ea580c' },
-  { name: 'Teal', value: '#0d9488', hex: '#0d9488' },
-  { name: 'Indigo', value: '#4f46e5', hex: '#4f46e5' },
-  { name: 'Cyan', value: '#06b6d4', hex: '#06b6d4' },
-  { name: 'Lime', value: '#84cc16', hex: '#84cc16' },
-  { name: 'Slate', value: '#64748b', hex: '#64748b' },
+  { name: "Red", value: "#dc2626", hex: "#dc2626" },
+  { name: "Blue", value: "#2563eb", hex: "#2563eb" },
+  { name: "Green", value: "#16a34a", hex: "#16a34a" },
+  { name: "Yellow", value: "#eab308", hex: "#eab308" },
+  { name: "Purple", value: "#9333ea", hex: "#9333ea" },
+  { name: "Pink", value: "#ec4899", hex: "#ec4899" },
+  { name: "Orange", value: "#ea580c", hex: "#ea580c" },
+  { name: "Teal", value: "#0d9488", hex: "#0d9488" },
+  { name: "Indigo", value: "#4f46e5", hex: "#4f46e5" },
+  { name: "Cyan", value: "#06b6d4", hex: "#06b6d4" },
+  { name: "Lime", value: "#84cc16", hex: "#84cc16" },
+  { name: "Slate", value: "#64748b", hex: "#64748b" },
 ];
 
 /**
@@ -45,7 +45,9 @@ export function ZoneMapEditor({
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
   const [drawingManager, setDrawingManager] = useState<any | null>(null);
-  const [selectedColor, setSelectedColor] = useState<string>(COLOR_PRESETS[0].value);
+  const [selectedColor, setSelectedColor] = useState<string>(
+    COLOR_PRESETS[0].value,
+  );
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [editingZoneId, setEditingZoneId] = useState<string | null>(null);
   const [zoneOverlaps, setZoneOverlaps] = useState<ZoneOverlapResult[]>([]);
@@ -63,9 +65,9 @@ export function ZoneMapEditor({
       zoom: defaultZoom,
       center: defaultCenter,
       styles: [
-        { elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
-        { elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] },
-        { elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
+        { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+        { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+        { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
       ],
     });
 
@@ -78,7 +80,7 @@ export function ZoneMapEditor({
         drawingControl: true,
         drawingControlOptions: {
           position: google.maps.ControlPosition.TOP_CENTER,
-          drawingModes: ['polygon', 'rectangle'],
+          drawingModes: ["polygon", "rectangle"],
         },
         polygonOptions: {
           fillColor: selectedColor,
@@ -106,13 +108,21 @@ export function ZoneMapEditor({
       setDrawingManager(manager);
 
       // Handle shape completion
-      google.maps.event.addListener(manager, 'polygoncomplete', (arg?: unknown) => {
-        handlePolygonComplete(arg as google.maps.Polygon);
-      });
+      google.maps.event.addListener(
+        manager,
+        "polygoncomplete",
+        (arg?: unknown) => {
+          handlePolygonComplete(arg as google.maps.Polygon);
+        },
+      );
 
-      google.maps.event.addListener(manager, 'rectanglecomplete', (arg?: unknown) => {
-        handleRectangleComplete(arg as google.maps.Rectangle);
-      });
+      google.maps.event.addListener(
+        manager,
+        "rectanglecomplete",
+        (arg?: unknown) => {
+          handleRectangleComplete(arg as google.maps.Rectangle);
+        },
+      );
     }
 
     // Draw existing zones
@@ -127,32 +137,35 @@ export function ZoneMapEditor({
   }, [isLoaded, google, defaultCenter, defaultZoom, readOnly]);
 
   // Draw a zone on the map
-  const drawZone = useCallback((map: google.maps.Map, zone: MapZone) => {
-    if (polygonsRef.current.has(zone.id)) {
-      return; // Already drawn
-    }
-    if (!google) return;
+  const drawZone = useCallback(
+    (map: google.maps.Map, zone: MapZone) => {
+      if (polygonsRef.current.has(zone.id)) {
+        return; // Already drawn
+      }
+      if (!google) return;
 
-    const polygon = new google.maps.Polygon({
-      paths: zone.vertices,
-      fillColor: zone.color,
-      strokeColor: zone.color,
-      fillOpacity: 0.35,
-      strokeOpacity: 0.8,
-      strokeWeight: 2,
-      clickable: true,
-      editable: !readOnly,
-      draggable: !readOnly,
-      map,
-    });
+      const polygon = new google.maps.Polygon({
+        paths: zone.vertices,
+        fillColor: zone.color,
+        strokeColor: zone.color,
+        fillOpacity: 0.35,
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        clickable: true,
+        editable: !readOnly,
+        draggable: !readOnly,
+        map,
+      });
 
-    polygon.addListener('click', () => {
-      setSelectedZoneId(zone.id);
-      onZoneSelect?.(zone.id);
-    });
+      polygon.addListener("click", () => {
+        setSelectedZoneId(zone.id);
+        onZoneSelect?.(zone.id);
+      });
 
-    polygonsRef.current.set(zone.id, polygon);
-  }, [readOnly, onZoneSelect]);
+      polygonsRef.current.set(zone.id, polygon);
+    },
+    [readOnly, onZoneSelect],
+  );
 
   // Handle polygon drawing completion
   const handlePolygonComplete = (polygon: google.maps.Polygon) => {
@@ -223,7 +236,9 @@ export function ZoneMapEditor({
 
   // Update zone
   const updateZone = (zoneId: string, updates: Partial<MapZone>) => {
-    const newZones = zones.map((z) => (z.id === zoneId ? { ...z, ...updates } : z));
+    const newZones = zones.map((z) =>
+      z.id === zoneId ? { ...z, ...updates } : z,
+    );
     setUndoStack([...undoStack, zones]);
     setRedoStack([]);
     onZonesChange(newZones);
@@ -278,7 +293,7 @@ export function ZoneMapEditor({
   const zonesOverlap = (zone1: MapZone, zone2: MapZone): boolean => {
     if (!google?.maps) return false;
     const gmaps = google.maps;
-    if (!('geometry' in gmaps)) return false;
+    if (!("geometry" in gmaps)) return false;
 
     const poly1 = new gmaps.Polygon({ paths: zone1.vertices });
     const poly2 = new gmaps.Polygon({ paths: zone2.vertices });
@@ -308,7 +323,7 @@ export function ZoneMapEditor({
       const data = JSON.parse(geojson);
       const newZones: MapZone[] = [];
 
-      if (data.type === 'FeatureCollection' && Array.isArray(data.features)) {
+      if (data.type === "FeatureCollection" && Array.isArray(data.features)) {
         data.features.forEach((feature: any, index: number) => {
           const coordinates = feature.geometry?.coordinates?.[0] || [];
           const vertices = coordinates.map((coord: [number, number]) => ({
@@ -318,8 +333,11 @@ export function ZoneMapEditor({
 
           newZones.push({
             id: `zone-${Date.now()}-${index}`,
-            name: feature.properties?.name || `Zone ${zones.length + index + 1}`,
-            color: feature.properties?.color || COLOR_PRESETS[index % COLOR_PRESETS.length].value,
+            name:
+              feature.properties?.name || `Zone ${zones.length + index + 1}`,
+            color:
+              feature.properties?.color ||
+              COLOR_PRESETS[index % COLOR_PRESETS.length].value,
             vertices,
             rate: feature.properties?.rate,
             metadata: feature.properties,
@@ -338,14 +356,14 @@ export function ZoneMapEditor({
         }
       });
     } catch (error) {
-      console.error('Error importing GeoJSON:', error);
+      console.error("Error importing GeoJSON:", error);
     }
   };
 
   // Export zones as GeoJSON
   const exportAsGeoJSON = () => {
     const features = zones.map((zone) => ({
-      type: 'Feature',
+      type: "Feature",
       properties: {
         id: zone.id,
         name: zone.name,
@@ -354,13 +372,13 @@ export function ZoneMapEditor({
         ...zone.metadata,
       },
       geometry: {
-        type: 'Polygon',
+        type: "Polygon",
         coordinates: [zone.vertices.map((v) => [v.lng, v.lat])],
       },
     }));
 
     const geojson = {
-      type: 'FeatureCollection',
+      type: "FeatureCollection",
       features,
     };
 
@@ -405,13 +423,13 @@ export function ZoneMapEditor({
   const selectedZone = zones.find((z) => z.id === selectedZoneId);
 
   return (
-    <div className={cn('flex gap-4 h-screen bg-wl-bg-surface', className)}>
+    <div className={cn("flex gap-4 h-screen bg-wl-bg-surface", className)}>
       {/* Map */}
       <div className="flex-1 rounded-lg overflow-hidden shadow-lg">
         <div
           ref={mapRef}
           className="w-full h-full"
-          style={{ minHeight: '400px' }}
+          style={{ minHeight: "400px" }}
         />
       </div>
 
@@ -420,9 +438,11 @@ export function ZoneMapEditor({
         <div className="w-80 flex flex-col gap-4 p-4 bg-wl-bg-overlay rounded-lg shadow-lg overflow-y-auto">
           {/* Header */}
           <div>
-            <h3 className="text-lg font-semibold text-wl-text-primary mb-2">Zone Editor</h3>
+            <h3 className="text-lg font-semibold text-wl-text-primary mb-2">
+              Zone Editor
+            </h3>
             <p className="text-xs text-wl-text-secondary">
-              {zones.length} zone{zones.length !== 1 ? 's' : ''} created
+              {zones.length} zone{zones.length !== 1 ? "s" : ""} created
             </p>
           </div>
 
@@ -470,10 +490,10 @@ export function ZoneMapEditor({
                     }
                   }}
                   className={cn(
-                    'w-full aspect-square rounded-lg border-2 transition-transform',
+                    "w-full aspect-square rounded-lg border-2 transition-transform",
                     selectedColor === color.value
-                      ? 'border-wl-primary-500 scale-105'
-                      : 'border-transparent'
+                      ? "border-wl-primary-500 scale-105"
+                      : "border-transparent",
                   )}
                   style={{ backgroundColor: color.value }}
                   title={color.name}
@@ -501,10 +521,10 @@ export function ZoneMapEditor({
                       onZoneSelect?.(zone.id);
                     }}
                     className={cn(
-                      'p-3 rounded-lg cursor-pointer transition-all',
+                      "p-3 rounded-lg cursor-pointer transition-all",
                       selectedZoneId === zone.id
-                        ? 'bg-wl-primary-500/20 border border-wl-primary-500'
-                        : 'bg-wl-bg-surface border border-wl-border-default hover:border-wl-border-strong'
+                        ? "bg-wl-primary-500/20 border border-wl-primary-500"
+                        : "bg-wl-bg-surface border border-wl-border-default hover:border-wl-border-strong",
                     )}
                   >
                     <div className="flex items-start gap-3">
@@ -516,10 +536,12 @@ export function ZoneMapEditor({
                         <input
                           type="text"
                           value={zone.name}
-                          onChange={(e) => updateZone(zone.id, { name: e.target.value })}
+                          onChange={(e) =>
+                            updateZone(zone.id, { name: e.target.value })
+                          }
                           className={cn(
-                            'w-full bg-transparent text-sm font-medium text-wl-text-primary',
-                            'focus:outline-none focus:ring-2 focus:ring-wl-primary-500 rounded px-1'
+                            "w-full bg-transparent text-sm font-medium text-wl-text-primary",
+                            "focus:outline-none focus:ring-2 focus:ring-wl-primary-500 rounded px-1",
                           )}
                           onClick={(e) => e.stopPropagation()}
                         />
@@ -560,7 +582,9 @@ export function ZoneMapEditor({
           {/* Overlap Warnings */}
           {zoneOverlaps.length > 0 && (
             <div className="border border-wl-warning-500/30 rounded-lg p-3 bg-wl-warning-bg">
-              <p className="text-xs font-semibold text-wl-warning-400 mb-2">Overlapping Zones</p>
+              <p className="text-xs font-semibold text-wl-warning-400 mb-2">
+                Overlapping Zones
+              </p>
               <ul className="text-xs text-wl-warning-400 space-y-1">
                 {zoneOverlaps.map((overlap) => (
                   <li key={`${overlap.zone1Id}-${overlap.zone2Id}`}>
@@ -579,11 +603,11 @@ export function ZoneMapEditor({
               variant="secondary"
               onClick={() => {
                 const geojson = exportAsGeoJSON();
-                const blob = new Blob([geojson], { type: 'application/json' });
+                const blob = new Blob([geojson], { type: "application/json" });
                 const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
+                const a = document.createElement("a");
                 a.href = url;
-                a.download = 'zones.geojson';
+                a.download = "zones.geojson";
                 a.click();
               }}
               className="flex-1"
@@ -594,9 +618,9 @@ export function ZoneMapEditor({
               size="sm"
               variant="secondary"
               onClick={() => {
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = '.geojson,.json';
+                const input = document.createElement("input");
+                input.type = "file";
+                input.accept = ".geojson,.json";
                 input.onchange = (e: any) => {
                   const file = e.target.files?.[0];
                   if (file) {

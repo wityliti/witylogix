@@ -35,6 +35,7 @@ src/
 **OfflineQueue Class** - Manages API request queuing when offline with localStorage-based persistence.
 
 #### Key Features:
+
 - **Queue Storage**: Persists operations to localStorage using JSON serialization
 - **Operation Types**: POST, PUT, PATCH, DELETE with automatic retry
 - **Conflict Resolution**: Last-write-wins strategy with server timestamp comparison
@@ -43,6 +44,7 @@ src/
 - **Retry Logic**: Configurable max retries (default: 3) with exponential backoff
 
 #### Key Methods:
+
 ```typescript
 enqueue(operation): string
   // Add operation to queue, returns operation ID
@@ -73,38 +75,40 @@ destroy(): void
 ```
 
 #### Data Structure:
+
 ```typescript
 interface QueuedOperation {
-  id: string;                                // Unique operation ID
-  type: 'POST' | 'PUT' | 'PATCH' | 'DELETE'; // HTTP method
-  endpoint: string;                          // API endpoint
-  method: string;                            // Action method name
-  body: Record<string, any>;                 // Request payload
-  createdAt: number;                         // Timestamp
-  retryCount: number;                        // Number of retry attempts
-  status: 'pending' | 'completed' | 'failed'; // Current status
-  lastError?: string;                        // Error message if failed
-  serverTimestamp?: number;                  // Server response timestamp
+  id: string; // Unique operation ID
+  type: "POST" | "PUT" | "PATCH" | "DELETE"; // HTTP method
+  endpoint: string; // API endpoint
+  method: string; // Action method name
+  body: Record<string, any>; // Request payload
+  createdAt: number; // Timestamp
+  retryCount: number; // Number of retry attempts
+  status: "pending" | "completed" | "failed"; // Current status
+  lastError?: string; // Error message if failed
+  serverTimestamp?: number; // Server response timestamp
 }
 
 interface QueueStatus {
-  pending: number;        // Count of pending operations
-  failed: number;         // Count of failed operations
-  total: number;          // Total operations in queue
-  lastSyncAt?: number;    // Timestamp of last successful sync
+  pending: number; // Count of pending operations
+  failed: number; // Count of failed operations
+  total: number; // Total operations in queue
+  lastSyncAt?: number; // Timestamp of last successful sync
 }
 ```
 
 #### Usage Example:
+
 ```typescript
-import { offlineQueue } from '../lib/offline-queue';
+import { offlineQueue } from "../lib/offline-queue";
 
 // Enqueue an operation
 const opId = offlineQueue.enqueue({
-  type: 'POST',
-  endpoint: '/api/deliveries',
-  method: 'recordDelivery',
-  body: { shipmentId: '123', status: 'completed' },
+  type: "POST",
+  endpoint: "/api/deliveries",
+  method: "recordDelivery",
+  body: { shipmentId: "123", status: "completed" },
 });
 
 // Subscribe to changes
@@ -127,6 +131,7 @@ unsubscribe();
 **PushNotificationHandler Class** - Manages push notifications with routing, local display, and deep linking.
 
 #### Notification Types:
+
 - `NEW_ASSIGNMENT` - New route/shipment assignment
 - `ROUTE_UPDATE` - Route changes or updated stops
 - `DELIVERY_REMINDER` - Reminder to complete delivery
@@ -135,6 +140,7 @@ unsubscribe();
 - `EMERGENCY` - High-priority emergency alert
 
 #### Key Features:
+
 - **FCM Integration**: Request permission, get FCM token (web-compatible)
 - **Local Notifications**: Display native notifications with badges
 - **Deep Linking**: Route notifications to relevant app screens
@@ -143,6 +149,7 @@ unsubscribe();
 - **Event Broadcasting**: Dispatch custom events for UI updates
 
 #### Key Methods:
+
 ```typescript
 registerForPush(): Promise<string | null>
   // Request notification permission and return FCM token
@@ -183,52 +190,55 @@ subscribe(listener): () => void
 ```
 
 #### Data Structures:
+
 ```typescript
 interface PushPayload {
-  type: NotificationType;           // Notification category
-  title: string;                    // Notification title
-  body: string;                     // Notification body
-  data: Record<string, any>;        // Additional data
-  timestamp: number;                // Timestamp
-  notificationId?: string;          // Optional notification ID
+  type: NotificationType; // Notification category
+  title: string; // Notification title
+  body: string; // Notification body
+  data: Record<string, any>; // Additional data
+  timestamp: number; // Timestamp
+  notificationId?: string; // Optional notification ID
 }
 
 interface LocalNotificationHistory {
-  id: string;                       // Unique ID
-  payload: PushPayload;             // Full payload
-  displayedAt: number;              // Display timestamp
-  actionTaken?: string;             // Action user took
+  id: string; // Unique ID
+  payload: PushPayload; // Full payload
+  displayedAt: number; // Display timestamp
+  actionTaken?: string; // Action user took
 }
 ```
 
 #### Deep Link Mapping:
-| Notification Type | Route |
-|---|---|
-| NEW_ASSIGNMENT | `/routes/{routeId}` |
-| ROUTE_UPDATE | `/routes/{routeId}` |
+
+| Notification Type | Route                    |
+| ----------------- | ------------------------ |
+| NEW_ASSIGNMENT    | `/routes/{routeId}`      |
+| ROUTE_UPDATE      | `/routes/{routeId}`      |
 | DELIVERY_REMINDER | `/delivery/{shipmentId}` |
-| SCHEDULE_CHANGE | `/schedule` |
-| MESSAGE | `/messages/{messageId}` |
-| EMERGENCY | `/emergency` |
+| SCHEDULE_CHANGE   | `/schedule`              |
+| MESSAGE           | `/messages/{messageId}`  |
+| EMERGENCY         | `/emergency`             |
 
 #### Usage Example:
+
 ```typescript
-import { pushHandler, PushPayload } from '../lib/push-handler';
+import { pushHandler, PushPayload } from "../lib/push-handler";
 
 // Register for push notifications
 const fcmToken = await pushHandler.registerForPush();
 
 // Subscribe to incoming notifications
 const unsubscribe = pushHandler.subscribe((payload) => {
-  console.log('Received notification:', payload.type);
+  console.log("Received notification:", payload.type);
 });
 
 // Simulate incoming notification (for testing)
 const payload: PushPayload = {
-  type: 'NEW_ASSIGNMENT',
-  title: 'New Delivery Route',
-  body: 'Route R123 assigned with 5 stops',
-  data: { routeId: 'R123', stopCount: 5 },
+  type: "NEW_ASSIGNMENT",
+  title: "New Delivery Route",
+  body: "Route R123 assigned with 5 stops",
+  data: { routeId: "R123", stopCount: 5 },
   timestamp: Date.now(),
 };
 window.PushNotificationHandler?.handleIncomingPush(payload);
@@ -248,6 +258,7 @@ pushHandler.updateBadgeCount(5);
 **LocationService Class** - GPS tracking with geofencing, distance calculation, and batch upload.
 
 #### Key Features:
+
 - **Continuous Tracking**: Watch geolocation with configurable intervals
 - **High Accuracy**: High accuracy mode with 10-second timeout
 - **Haversine Formula**: Accurate distance calculation in kilometers
@@ -257,6 +268,7 @@ pushHandler.updateBadgeCount(5);
 - **Statistics**: Track distance, speed, battery usage estimates
 
 #### Key Methods:
+
 ```typescript
 startTracking(intervalMs?: number): Promise<void>
   // Start GPS tracking (default: 10s interval)
@@ -305,37 +317,39 @@ destroy(): void
 ```
 
 #### Data Structures:
+
 ```typescript
 interface LocationCoordinate {
-  latitude: number;       // Latitude in decimal degrees
-  longitude: number;      // Longitude in decimal degrees
-  accuracy: number;       // Accuracy radius in meters
-  altitude?: number;      // Altitude in meters (optional)
-  speed?: number;         // Speed in m/s (optional)
-  heading?: number;       // Heading in degrees (optional)
-  timestamp: number;      // Timestamp when captured
+  latitude: number; // Latitude in decimal degrees
+  longitude: number; // Longitude in decimal degrees
+  accuracy: number; // Accuracy radius in meters
+  altitude?: number; // Altitude in meters (optional)
+  speed?: number; // Speed in m/s (optional)
+  heading?: number; // Heading in degrees (optional)
+  timestamp: number; // Timestamp when captured
 }
 
 interface GeofenceArea {
-  id: string;             // Geofence ID
-  name: string;           // Zone name
-  latitude: number;       // Center latitude
-  longitude: number;      // Center longitude
-  radiusMeters: number;   // Radius in meters
+  id: string; // Geofence ID
+  name: string; // Zone name
+  latitude: number; // Center latitude
+  longitude: number; // Center longitude
+  radiusMeters: number; // Radius in meters
 }
 
 interface TrackingStats {
-  distanceTraveledKm: number;     // Total distance in km
-  locationsRecorded: number;      // Count of location points
-  batteryUsagePercent: number;    // Estimated battery drain
+  distanceTraveledKm: number; // Total distance in km
+  locationsRecorded: number; // Count of location points
+  batteryUsagePercent: number; // Estimated battery drain
   trackingDurationMinutes: number; // How long tracking has run
-  averageSpeedKmh: number;        // Average speed
+  averageSpeedKmh: number; // Average speed
 }
 ```
 
 #### Usage Example:
+
 ```typescript
-import { locationService } from '../lib/location-service';
+import { locationService } from "../lib/location-service";
 
 // Start tracking
 await locationService.startTracking(15000); // 15s interval
@@ -351,21 +365,23 @@ const unsubscribe = locationService.subscribe((location) => {
 
 // Check geofence
 const deliveryZone = {
-  id: 'zone-1',
-  name: 'Downtown',
+  id: "zone-1",
+  name: "Downtown",
   latitude: 40.7128,
-  longitude: -74.0060,
+  longitude: -74.006,
   radiusMeters: 500,
 };
 const inZone = locationService.isInGeofence(
   position!.latitude,
   position!.longitude,
-  deliveryZone
+  deliveryZone,
 );
 
 // Get stats
 const stats = locationService.getTrackingStats();
-console.log(`Distance: ${stats.distanceTraveledKm}km, Speed: ${stats.averageSpeedKmh}km/h`);
+console.log(
+  `Distance: ${stats.distanceTraveledKm}km, Speed: ${stats.averageSpeedKmh}km/h`,
+);
 
 // Sync offline locations
 await locationService.handleOfflineLocations();
@@ -382,18 +398,20 @@ unsubscribe();
 **useOfflineSync React Hook** - Provides offline queue state management for components.
 
 #### Hook State:
+
 ```typescript
 interface OfflineSyncState {
-  isOnline: boolean;              // Current connection status
-  pendingCount: number;           // Operations awaiting sync
-  failedCount: number;            // Failed operations
-  totalQueueCount: number;        // Total in queue
-  syncInProgress: boolean;        // Sync operation in progress
-  lastSyncAt?: number;            // Last successful sync timestamp
+  isOnline: boolean; // Current connection status
+  pendingCount: number; // Operations awaiting sync
+  failedCount: number; // Failed operations
+  totalQueueCount: number; // Total in queue
+  syncInProgress: boolean; // Sync operation in progress
+  lastSyncAt?: number; // Last successful sync timestamp
 }
 ```
 
 #### Hook Returns:
+
 ```typescript
 {
   // State
@@ -412,6 +430,7 @@ interface OfflineSyncState {
 ```
 
 #### Features:
+
 - **Auto-subscription**: Subscribes to OfflineQueue changes
 - **Event Listeners**: Responds to window online/offline events
 - **Auto-sync**: Automatically syncs when connection restored
@@ -419,6 +438,7 @@ interface OfflineSyncState {
 - **Cleanup**: Proper unsubscribe on unmount
 
 #### Usage Example:
+
 ```typescript
 import { useOfflineSync } from '../hooks/useOfflineSync';
 
@@ -453,6 +473,7 @@ function MyComponent() {
 #### Props: None (uses `useOfflineSync` hook internally)
 
 #### Features:
+
 - **Status Bar**: Fixed top bar showing online/offline status
 - **Queue Count**: Displays pending operations count
 - **Sync Button**: "Sync Now" button when online with pending ops
@@ -461,12 +482,14 @@ function MyComponent() {
 - **Auto-hide**: Hides when online with no pending operations
 
 #### Styling:
+
 - Fixed position at top of screen (z-index: 1000)
 - Responsive design with flexbox
 - Inline CSS with animations
 - Touch-friendly button sizing
 
 #### Usage Example:
+
 ```typescript
 import OfflineIndicator from '../components/OfflineIndicator';
 
@@ -481,15 +504,27 @@ function App() {
 ```
 
 #### CSS Animations:
+
 ```css
 @keyframes slideDown {
-  from { transform: translateY(-100%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 ```
 
@@ -500,16 +535,18 @@ function App() {
 **DeliveryProofCapture Component** - Photo, signature, and notes capture for proof of delivery.
 
 #### Props:
+
 ```typescript
 interface DeliveryProofCaptureProps {
-  shipmentId: string;                    // Shipment ID
-  recipientName?: string;                // Initial recipient name
-  onSubmitSuccess?: (proofId: string) => void;  // Success callback
-  onSubmitError?: (error: Error) => void;       // Error callback
+  shipmentId: string; // Shipment ID
+  recipientName?: string; // Initial recipient name
+  onSubmitSuccess?: (proofId: string) => void; // Success callback
+  onSubmitError?: (error: Error) => void; // Error callback
 }
 ```
 
 #### Features:
+
 - **Camera Integration**: Photo capture using HTML5 File API
 - **Signature Pad**: Canvas-based touch drawing signature
 - **Recipient Name**: Text input for recipient
@@ -521,20 +558,22 @@ interface DeliveryProofCaptureProps {
 - **Preview**: Shows captured photo in-place
 
 #### Captured Data:
+
 ```typescript
 interface ProofData {
-  shipmentId: string;           // Shipment ID
-  recipientName: string;        // Recipient name
-  notes: string;                // Delivery notes
-  photoBase64?: string;         // Base64 encoded photo
-  signatureBase64?: string;     // Base64 encoded signature
-  latitude?: number;            // GPS latitude
-  longitude?: number;           // GPS longitude
-  timestamp: number;            // Submission timestamp
+  shipmentId: string; // Shipment ID
+  recipientName: string; // Recipient name
+  notes: string; // Delivery notes
+  photoBase64?: string; // Base64 encoded photo
+  signatureBase64?: string; // Base64 encoded signature
+  latitude?: number; // GPS latitude
+  longitude?: number; // GPS longitude
+  timestamp: number; // Submission timestamp
 }
 ```
 
 #### Usage Example:
+
 ```typescript
 import DeliveryProofCapture from '../components/DeliveryProofCapture';
 
@@ -555,6 +594,7 @@ function DeliveryScreen() {
 ```
 
 #### Form Sections:
+
 1. **Recipient Name** - Required text input
 2. **Photo Proof** - Camera capture with preview
 3. **Signature** - Canvas drawing pad with save/clear
@@ -569,31 +609,33 @@ function DeliveryScreen() {
 **RouteNavigator Component** - Turn-by-turn navigation with stop management.
 
 #### Props:
+
 ```typescript
 interface RouteNavigatorProps {
-  stops: DeliveryStop[];                          // List of delivery stops
-  currentStopId?: string;                         // Currently selected stop
-  onStopSelect?: (stopId: string) => void;        // Stop click handler
-  onStopStatusChange?: (stopId: string, status: DeliveryStop['status']) => void;
-  onNavigate?: (stop: DeliveryStop) => void;      // Navigate button handler
+  stops: DeliveryStop[]; // List of delivery stops
+  currentStopId?: string; // Currently selected stop
+  onStopSelect?: (stopId: string) => void; // Stop click handler
+  onStopStatusChange?: (stopId: string, status: DeliveryStop["status"]) => void;
+  onNavigate?: (stop: DeliveryStop) => void; // Navigate button handler
   onReorder?: (reorderedStops: DeliveryStop[]) => void; // Drag reorder
 }
 
 interface DeliveryStop {
-  id: string;                    // Unique stop ID
-  order: number;                 // Order in route (1-based)
-  address: string;               // Delivery address
-  customerName: string;          // Customer name
-  timeWindowStart: string;       // Time window start (HH:MM)
-  timeWindowEnd: string;         // Time window end (HH:MM)
-  status: 'pending' | 'in-progress' | 'completed' | 'failed' | 'skipped';
-  notes?: string;                // Delivery notes
-  latitude?: number;             // GPS latitude
-  longitude?: number;            // GPS longitude
+  id: string; // Unique stop ID
+  order: number; // Order in route (1-based)
+  address: string; // Delivery address
+  customerName: string; // Customer name
+  timeWindowStart: string; // Time window start (HH:MM)
+  timeWindowEnd: string; // Time window end (HH:MM)
+  status: "pending" | "in-progress" | "completed" | "failed" | "skipped";
+  notes?: string; // Delivery notes
+  latitude?: number; // GPS latitude
+  longitude?: number; // GPS longitude
 }
 ```
 
 #### Features:
+
 - **Stop List**: Shows all stops with order, address, customer name
 - **Progress Bar**: Visual progress (completed/total)
 - **ETA Calculation**: Auto-calculated ETA for each stop
@@ -605,15 +647,17 @@ interface DeliveryStop {
 - **Inline Notes**: Displays delivery notes if present
 
 #### Status Colors:
-| Status | Color | Icon |
-|---|---|---|
-| pending | Orange (#FFC107) | ◯ |
-| in-progress | Blue (#2196F3) | ⟳ |
-| completed | Green (#4CAF50) | ✓ |
-| failed | Red (#f44336) | ✕ |
-| skipped | Gray (#9E9E9E) | ⊘ |
+
+| Status      | Color            | Icon |
+| ----------- | ---------------- | ---- |
+| pending     | Orange (#FFC107) | ◯    |
+| in-progress | Blue (#2196F3)   | ⟳    |
+| completed   | Green (#4CAF50)  | ✓    |
+| failed      | Red (#f44336)    | ✕    |
+| skipped     | Gray (#9E9E9E)   | ⊘    |
 
 #### Usage Example:
+
 ```typescript
 import RouteNavigator, { DeliveryStop } from '../components/RouteNavigator';
 
@@ -652,6 +696,7 @@ function RouteScreen() {
 ```
 
 #### Computed Values:
+
 - **Progress Percentage**: `(completedCount / totalCount) * 100`
 - **ETA**: `(index + 1) * 15 minutes from current time`
 - **Remaining**: `totalCount - completedCount`
@@ -693,23 +738,23 @@ function App() {
 
 ```typescript
 // services/api.ts
-import { offlineQueue } from '../lib/offline-queue';
+import { offlineQueue } from "../lib/offline-queue";
 
 export async function submitDeliveryProof(data: ProofData) {
   if (!navigator.onLine) {
     // Queue for later
     const id = offlineQueue.enqueue({
-      type: 'POST',
-      endpoint: '/api/delivery-proofs',
-      method: 'POST',
+      type: "POST",
+      endpoint: "/api/delivery-proofs",
+      method: "POST",
       body: data,
     });
     return { id, queued: true };
   }
 
   // Make request directly
-  const response = await fetch('/api/delivery-proofs', {
-    method: 'POST',
+  const response = await fetch("/api/delivery-proofs", {
+    method: "POST",
     body: JSON.stringify(data),
   });
   return response.json();
@@ -720,13 +765,13 @@ export async function submitDeliveryProof(data: ProofData) {
 
 ```typescript
 // During app startup
-import { locationService } from './lib/location-service';
+import { locationService } from "./lib/location-service";
 
 useEffect(() => {
   locationService.startTracking(15000); // 15 second intervals
 
   // Sync locations when back online
-  window.addEventListener('online', () => {
+  window.addEventListener("online", () => {
     locationService.handleOfflineLocations();
   });
 
@@ -740,18 +785,18 @@ useEffect(() => {
 
 ```typescript
 // app.tsx
-import { pushHandler } from './lib/push-handler';
+import { pushHandler } from "./lib/push-handler";
 
 useEffect(() => {
   // Register for notifications
   pushHandler.registerForPush().then((token) => {
-    console.log('FCM Token:', token);
+    console.log("FCM Token:", token);
     // Send token to server
   });
 
   // Listen for notifications
   const unsubscribe = pushHandler.subscribe((payload) => {
-    console.log('Notification received:', payload);
+    console.log("Notification received:", payload);
   });
 
   return () => unsubscribe();
@@ -781,18 +826,21 @@ function StatusComponent() {
 ## Error Handling
 
 ### Offline Queue Errors
+
 - Failed operations stored with error message in `lastError` field
 - Automatic retry up to 3 times (configurable)
 - Manual retry via `retryFailed()` method
 - Failed operations can be removed manually
 
 ### Location Errors
+
 - Graceful fallback if geolocation unavailable
 - Timeout handling (10 seconds)
 - Error logging without throwing
 - Returns `null` on failure
 
 ### Push Notification Errors
+
 - Permission denied handling
 - Notification API availability check
 - Safe error logging
@@ -805,17 +853,17 @@ function StatusComponent() {
 
 ```typescript
 // Simulate going offline
-window.dispatchEvent(new Event('offline'));
+window.dispatchEvent(new Event("offline"));
 
 // Check queue status
 const status = offlineQueue.getQueueStatus();
 expect(status.pending).toBeGreaterThan(0);
 
 // Go back online
-window.dispatchEvent(new Event('online'));
+window.dispatchEvent(new Event("online"));
 
 // Verify sync
-await new Promise(resolve => setTimeout(resolve, 1000));
+await new Promise((resolve) => setTimeout(resolve, 1000));
 const newStatus = offlineQueue.getQueueStatus();
 expect(newStatus.pending).toBe(0);
 ```
@@ -825,10 +873,10 @@ expect(newStatus.pending).toBe(0);
 ```typescript
 // Simulate incoming notification
 const payload: PushPayload = {
-  type: 'NEW_ASSIGNMENT',
-  title: 'Test',
-  body: 'Test notification',
-  data: { routeId: 'test-123' },
+  type: "NEW_ASSIGNMENT",
+  title: "Test",
+  body: "Test notification",
+  data: { routeId: "test-123" },
   timestamp: Date.now(),
 };
 
@@ -853,14 +901,14 @@ expect(history.length).toBeGreaterThan(0);
 
 ## Browser Compatibility
 
-| Feature | Chrome | Safari | Firefox | Edge |
-|---|---|---|---|---|
-| localStorage | ✓ | ✓ | ✓ | ✓ |
-| Geolocation | ✓ | ✓ | ✓ | ✓ |
-| Notifications API | ✓ | ✓ | ✓ | ✓ |
-| Canvas (Signature) | ✓ | ✓ | ✓ | ✓ |
-| File API | ✓ | ✓ | ✓ | ✓ |
-| Service Worker | ✓ | ✓ | ✓ | ✓ |
+| Feature            | Chrome | Safari | Firefox | Edge |
+| ------------------ | ------ | ------ | ------- | ---- |
+| localStorage       | ✓      | ✓      | ✓       | ✓    |
+| Geolocation        | ✓      | ✓      | ✓       | ✓    |
+| Notifications API  | ✓      | ✓      | ✓       | ✓    |
+| Canvas (Signature) | ✓      | ✓      | ✓       | ✓    |
+| File API           | ✓      | ✓      | ✓       | ✓    |
+| Service Worker     | ✓      | ✓      | ✓       | ✓    |
 
 ---
 
@@ -890,6 +938,7 @@ expect(history.length).toBeGreaterThan(0);
 ## Support & Maintenance
 
 All files include:
+
 - Full TypeScript types
 - Comprehensive JSDoc comments
 - Error handling and logging

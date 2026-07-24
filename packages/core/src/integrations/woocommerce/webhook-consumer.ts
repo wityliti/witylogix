@@ -56,10 +56,7 @@ export class WebhookConsumer {
         .update(payload)
         .digest("base64");
 
-      const isValid = this.constantTimeCompare(
-        signatureStr,
-        expectedSignature,
-      );
+      const isValid = this.constantTimeCompare(signatureStr, expectedSignature);
 
       if (!isValid) {
         return {
@@ -114,7 +111,10 @@ export class WebhookConsumer {
   /**
    * Register webhook event handler
    */
-  registerHandler(topic: string, handler: (payload: WCWebhookPayload) => Promise<void>): void {
+  registerHandler(
+    topic: string,
+    handler: (payload: WCWebhookPayload) => Promise<void>,
+  ): void {
     this.handlers.set(topic, {
       topic,
       handle: handler,

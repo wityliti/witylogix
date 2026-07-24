@@ -24,9 +24,8 @@ interface PaymentQueryParams {
   limit?: number;
 }
 
-
 export default async function paymentRoutes(
-  fastify: FastifyInstance
+  fastify: FastifyInstance,
 ): Promise<void> {
   fastify.addHook("preHandler", requireAuth);
   fastify.addHook("preHandler", tenantContext);
@@ -92,31 +91,34 @@ export default async function paymentRoutes(
   });
 
   // PATCH /gateways/:id/default — Set a payment method as default gateway
-  fastify.patch("/gateways/:id/default", async (request: any, reply: FastifyReply) => {
-    const { id } = request.params as { id: string };
-    const shopId = request.shopId;
+  fastify.patch(
+    "/gateways/:id/default",
+    async (request: any, reply: FastifyReply) => {
+      const { id } = request.params as { id: string };
+      const shopId = request.shopId;
 
-    const existing = await request.tenantDb.paymentMethod.findFirst({
-      where: { id, shopId },
-    });
-    if (!existing) {
-      return reply.code(404).send({ error: "Payment method not found" });
-    }
+      const existing = await request.tenantDb.paymentMethod.findFirst({
+        where: { id, shopId },
+      });
+      if (!existing) {
+        return reply.code(404).send({ error: "Payment method not found" });
+      }
 
-    // Unset all defaults, set the new one
-    await request.tenantDb.$transaction([
-      request.tenantDb.paymentMethod.updateMany({
-        where: { shopId },
-        data: { isDefault: false },
-      }),
-      request.tenantDb.paymentMethod.update({
-        where: { id },
-        data: { isDefault: true },
-      }),
-    ]);
+      // Unset all defaults, set the new one
+      await request.tenantDb.$transaction([
+        request.tenantDb.paymentMethod.updateMany({
+          where: { shopId },
+          data: { isDefault: false },
+        }),
+        request.tenantDb.paymentMethod.update({
+          where: { id },
+          data: { isDefault: true },
+        }),
+      ]);
 
-    return reply.send({ data: { id, isDefault: true } });
-  });
+      return reply.send({ data: { id, isDefault: true } });
+    },
+  );
 
   // DELETE /gateways/:id — Remove a payment method / gateway
   fastify.delete("/gateways/:id", async (request: any, reply: FastifyReply) => {
@@ -196,7 +198,9 @@ export default async function paymentRoutes(
             take: limit ?? 25,
             orderBy: { createdAt: "desc" },
             include: {
-              paymentMethod: { select: { type: true, displayName: true, lastDigits: true } },
+              paymentMethod: {
+                select: { type: true, displayName: true, lastDigits: true },
+              },
             },
           }),
           request.tenantDb.paymentTransaction.count({ where }),
@@ -223,7 +227,8 @@ export default async function paymentRoutes(
             id: p.id,
             invoiceNumber: p.orderId
               ? `ORD-${p.orderId.slice(0, 8).toUpperCase()}`
-              : p.providerTxnId?.slice(0, 12) ?? p.id.slice(0, 8).toUpperCase(),
+              : (p.providerTxnId?.slice(0, 12) ??
+                p.id.slice(0, 8).toUpperCase()),
             customerName:
               p.paymentMethod?.displayName ??
               (p.providerName ? `${p.providerName} payment` : "Direct payment"),
@@ -257,7 +262,7 @@ export default async function paymentRoutes(
         }
         throw error;
       }
-    }
+    },
   );
 
   // GET /:id — Get single payment with related info
@@ -296,7 +301,7 @@ export default async function paymentRoutes(
         }
         throw error;
       }
-    }
+    },
   );
 
   // POST / — Record a payment
@@ -326,7 +331,7 @@ export default async function paymentRoutes(
 
           if (!shipment) {
             throw new NotFoundError(
-              `Shipment ${shipmentId} not found for this shop`
+              `Shipment ${shipmentId} not found for this shop`,
             );
           }
         }
@@ -370,7 +375,7 @@ export default async function paymentRoutes(
         }
         throw error;
       }
-    }
+    },
   );
 
   // PATCH /:id/status — Update payment status
@@ -407,13 +412,13 @@ export default async function paymentRoutes(
 
         if (!validTransitions[currentPayment.status]?.includes(status)) {
           throw new ConflictError(
-            `Cannot transition from ${currentPayment.status} to ${status}`
+            `Cannot transition from ${currentPayment.status} to ${status}`,
           );
         }
 
         // Update payment
-        const updatedPayment =
-          await request.tenantDb.paymentTransaction.update({
+        const updatedPayment = await request.tenantDb.paymentTransaction.update(
+          {
             where: { id },
             data: {
               status,
@@ -428,7 +433,8 @@ export default async function paymentRoutes(
                 select: { id: true, name: true },
               },
             },
-          });
+          },
+        );
 
         return reply.code(200).send({
           success: true,
@@ -455,7 +461,7 @@ export default async function paymentRoutes(
         }
         throw error;
       }
-    }
+    },
   );
 
   // GET /summary — Revenue summary
@@ -488,7 +494,7 @@ export default async function paymentRoutes(
             _sum: {
               amount: true,
             },
-          }
+          },
         );
 
         // Get by status
@@ -516,14 +522,13 @@ export default async function paymentRoutes(
         });
 
         // Get daily totals
-        const allPayments =
-          await request.tenantDb.paymentTransaction.findMany({
-            where,
-            select: {
-              amount: true,
-              createdAt: true,
-            },
-          });
+        const allPayments = await request.tenantDb.paymentTransaction.findMany({
+          where,
+          select: {
+            amount: true,
+            createdAt: true,
+          },
+        });
 
         const dailyTotals: Record<string, number> = {};
         allPayments.forEach((p: any) => {
@@ -562,7 +567,7 @@ export default async function paymentRoutes(
         }
         throw error;
       }
-    }
+    },
   );
 
   // POST /:id/refund — Initiate refund
@@ -587,7 +592,7 @@ export default async function paymentRoutes(
 
         if (originalPayment.status !== "COMPLETED") {
           throw new ConflictError(
-            `Cannot refund a ${originalPayment.status} payment`
+            `Cannot refund a ${originalPayment.status} payment`,
           );
         }
 
@@ -641,7 +646,7 @@ export default async function paymentRoutes(
         }
         throw error;
       }
-    }
+    },
   );
 
   // ─── Gateway Management ──────────────────────────────────────
@@ -649,27 +654,28 @@ export default async function paymentRoutes(
   // No hardcoded defaults — if nothing is configured, returns empty array.
 
   // GET /gateways — List configured payment gateways
-  fastify.get(
-    "/gateways",
-    async (request: any, reply: FastifyReply) => {
-      const shop = await request.tenantDb.shop.findUnique({
-        where: { id: request.shopId },
-        select: { settings: true },
-      });
+  fastify.get("/gateways", async (request: any, reply: FastifyReply) => {
+    const shop = await request.tenantDb.shop.findUnique({
+      where: { id: request.shopId },
+      select: { settings: true },
+    });
 
-      const settings: Record<string, unknown> =
-        shop?.settings && typeof shop.settings === "object" && !Array.isArray(shop.settings)
-          ? (shop.settings as Record<string, unknown>)
-          : {};
+    const settings: Record<string, unknown> =
+      shop?.settings &&
+      typeof shop.settings === "object" &&
+      !Array.isArray(shop.settings)
+        ? (shop.settings as Record<string, unknown>)
+        : {};
 
-      const gateways = Array.isArray(settings.paymentGateways) ? settings.paymentGateways : [];
+    const gateways = Array.isArray(settings.paymentGateways)
+      ? settings.paymentGateways
+      : [];
 
-      return reply.code(200).send({
-        success: true,
-        data: gateways,
-      });
-    },
-  );
+    return reply.code(200).send({
+      success: true,
+      data: gateways,
+    });
+  });
 
   // PATCH /gateways/:id/default — Set a gateway as the default
   fastify.patch(
@@ -683,7 +689,9 @@ export default async function paymentRoutes(
       });
 
       const settings: Record<string, unknown> =
-        shop?.settings && typeof shop.settings === "object" && !Array.isArray(shop.settings)
+        shop?.settings &&
+        typeof shop.settings === "object" &&
+        !Array.isArray(shop.settings)
           ? (shop.settings as Record<string, unknown>)
           : {};
 
@@ -693,7 +701,9 @@ export default async function paymentRoutes(
 
       const idx = gateways.findIndex((g) => g.id === id);
       if (idx === -1) {
-        return reply.code(404).send({ success: false, error: `Gateway ${id} not found` });
+        return reply
+          .code(404)
+          .send({ success: false, error: `Gateway ${id} not found` });
       }
 
       const updated = gateways.map((g) => ({ ...g, isDefault: g.id === id }));
@@ -716,220 +726,250 @@ export default async function paymentRoutes(
   );
 
   // DELETE /gateways/:id — Remove a gateway from configuration
-  fastify.delete(
-    "/gateways/:id",
-    async (request: any, reply: FastifyReply) => {
-      const { id } = request.params as { id: string };
+  fastify.delete("/gateways/:id", async (request: any, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
 
+    const shop = await request.tenantDb.shop.findUnique({
+      where: { id: request.shopId },
+      select: { settings: true },
+    });
+
+    const settings: Record<string, unknown> =
+      shop?.settings &&
+      typeof shop.settings === "object" &&
+      !Array.isArray(shop.settings)
+        ? (shop.settings as Record<string, unknown>)
+        : {};
+
+    const gateways: any[] = Array.isArray(settings.paymentGateways)
+      ? settings.paymentGateways
+      : [];
+
+    const idx = gateways.findIndex((g) => g.id === id);
+    if (idx === -1) {
+      return reply
+        .code(404)
+        .send({ success: false, error: `Gateway ${id} not found` });
+    }
+
+    const remaining = gateways.filter((g) => g.id !== id);
+
+    await request.tenantDb.shop.update({
+      where: { id: request.shopId },
+      data: {
+        settings: {
+          ...settings,
+          paymentGateways: remaining,
+        },
+      },
+    });
+
+    return reply.code(200).send({ success: true, data: { deleted: true } });
+  });
+
+  // GET /reconciliation — Reconciliation view: match payments against invoices
+  fastify.get("/reconciliation", async (request: any, reply: FastifyReply) => {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+    const [payments, invoices] = await Promise.all([
+      request.tenantDb.payment.findMany({
+        where: {
+          shopId: request.shopId,
+          createdAt: { gte: thirtyDaysAgo },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 100,
+        select: {
+          id: true,
+          createdAt: true,
+          amount: true,
+          status: true,
+          method: true,
+          reference: true,
+        },
+      }),
+      (request.tenantDb as any).invoice?.findMany
+        ? (request.tenantDb as any).invoice.findMany({
+            where: {
+              tenantId: request.tenantId,
+              issuedAt: { gte: thirtyDaysAgo },
+            },
+            orderBy: { issuedAt: "desc" },
+            take: 100,
+            select: {
+              id: true,
+              issuedAt: true,
+              total: true,
+              status: true,
+              invoiceNumber: true,
+            },
+          })
+        : Promise.resolve([]),
+    ]);
+
+    // Simple matching: mark payments as matched if amount appears in an invoice
+    const invoiceAmounts = new Set(
+      invoices.map((inv: any) => String(Math.round(parseFloat(inv.total)))),
+    );
+
+    const bankTransactions = payments.map((p: any) => {
+      const amtStr = String(Math.round(parseFloat(p.amount)));
+      const matched = invoiceAmounts.has(amtStr);
+      return {
+        id: p.id,
+        date: p.createdAt,
+        description: `${p.method} payment${p.reference ? ` (${p.reference})` : ""}`,
+        amount: parseFloat(p.amount),
+        status: matched ? "matched" : "unmatched",
+        confidence: matched ? 0.9 : 0,
+      };
+    });
+
+    const paymentAmounts = new Set(
+      payments.map((p: any) => String(Math.round(parseFloat(p.amount)))),
+    );
+    const internalRecords = invoices.map((inv: any) => {
+      const amtStr = String(Math.round(parseFloat(inv.total)));
+      const matched = paymentAmounts.has(amtStr);
+      return {
+        id: inv.id,
+        date: inv.issuedAt,
+        description: inv.invoiceNumber || `Invoice ${inv.id.slice(0, 8)}`,
+        amount: parseFloat(inv.total),
+        status: matched ? "matched" : "unmatched",
+      };
+    });
+
+    const unmatchedCount = bankTransactions.filter(
+      (t: any) => t.status === "unmatched",
+    ).length;
+    const discrepancyTotal = bankTransactions
+      .filter((t: any) => t.status === "unmatched")
+      .reduce((sum: number, t: any) => sum + t.amount, 0);
+
+    return reply.send({
+      data: {
+        bankTransactions,
+        internalRecords,
+        unmatchedCount,
+        discrepancyTotal,
+      },
+    });
+  });
+
+  // GET /gateways — List configured payment gateways
+  fastify.get(
+    "/gateways",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const stripeOk = !!(
+        process.env.STRIPE_SECRET_KEY || process.env.STRIPE_PUBLISHABLE_KEY
+      );
+      const paypalOk = !!(
+        process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET
+      );
+      const squareOk = !!process.env.SQUARE_ACCESS_TOKEN;
+
+      // Fetch shop to determine default gateway from settings
       const shop = await request.tenantDb.shop.findUnique({
         where: { id: request.shopId },
         select: { settings: true },
       });
+      const shopSettings = (shop?.settings ?? {}) as Record<string, unknown>;
+      const defaultGateway =
+        (shopSettings.defaultPaymentGateway as string) ?? "stripe";
 
-      const settings: Record<string, unknown> =
-        shop?.settings && typeof shop.settings === "object" && !Array.isArray(shop.settings)
-          ? (shop.settings as Record<string, unknown>)
-          : {};
+      const gateways = [
+        {
+          id: "stripe",
+          name: "Stripe",
+          code: "stripe" as const,
+          status: stripeOk ? "connected" : "disconnected",
+          isDefault: defaultGateway === "stripe",
+          isProduction: process.env.NODE_ENV === "production",
+          icon: "💳",
+          supportedMethods: [
+            "card",
+            "apple_pay",
+            "google_pay",
+            "bank_transfer",
+          ],
+          transactionFeePercent: 2.9,
+          fixedFeeInCents: 30,
+          healthScore: stripeOk ? 100 : 0,
+        },
+        {
+          id: "paypal",
+          name: "PayPal",
+          code: "paypal" as const,
+          status: paypalOk ? "connected" : "disconnected",
+          isDefault: defaultGateway === "paypal",
+          isProduction: process.env.NODE_ENV === "production",
+          icon: "🅿️",
+          supportedMethods: ["paypal", "card"],
+          transactionFeePercent: 2.9,
+          fixedFeeInCents: 30,
+          healthScore: paypalOk ? 100 : 0,
+        },
+        {
+          id: "square",
+          name: "Square",
+          code: "square" as const,
+          status: squareOk ? "connected" : "disconnected",
+          isDefault: defaultGateway === "square",
+          isProduction: process.env.NODE_ENV === "production",
+          icon: "◻️",
+          supportedMethods: ["card", "apple_pay", "google_pay"],
+          transactionFeePercent: 2.6,
+          fixedFeeInCents: 0,
+          healthScore: squareOk ? 100 : 0,
+        },
+        {
+          id: "cod",
+          name: "Cash on Delivery",
+          code: "cod" as const,
+          status: "connected",
+          isDefault: defaultGateway === "cod",
+          isProduction: true,
+          icon: "💰",
+          supportedMethods: ["cash"],
+          transactionFeePercent: 0,
+          fixedFeeInCents: 0,
+          healthScore: 100,
+        },
+      ];
 
-      const gateways: any[] = Array.isArray(settings.paymentGateways)
-        ? settings.paymentGateways
-        : [];
+      return reply.send({
+        data: gateways,
+        total: gateways.length,
+      });
+    },
+  );
 
-      const idx = gateways.findIndex((g) => g.id === id);
-      if (idx === -1) {
-        return reply.code(404).send({ success: false, error: `Gateway ${id} not found` });
-      }
-
-      const remaining = gateways.filter((g) => g.id !== id);
+  // PATCH /gateways/:id/default — Set default gateway
+  fastify.patch(
+    "/gateways/:id/default",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
+      const { id } = request.params as { id: string };
 
       await request.tenantDb.shop.update({
         where: { id: request.shopId },
         data: {
           settings: {
-            ...settings,
-            paymentGateways: remaining,
+            ...((
+              await request.tenantDb.shop.findUnique({
+                where: { id: request.shopId },
+                select: { settings: true },
+              })
+            )?.settings as object),
+            defaultPaymentGateway: id,
           },
         },
       });
 
-      return reply.code(200).send({ success: true, data: { deleted: true } });
+      return reply.send({ success: true, defaultGateway: id });
     },
   );
-
-  // GET /reconciliation — Reconciliation view: match payments against invoices
-  fastify.get(
-    "/reconciliation",
-    async (request: any, reply: FastifyReply) => {
-      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-
-      const [payments, invoices] = await Promise.all([
-        request.tenantDb.payment.findMany({
-          where: {
-            shopId: request.shopId,
-            createdAt: { gte: thirtyDaysAgo },
-          },
-          orderBy: { createdAt: "desc" },
-          take: 100,
-          select: {
-            id: true,
-            createdAt: true,
-            amount: true,
-            status: true,
-            method: true,
-            reference: true,
-          },
-        }),
-        (request.tenantDb as any).invoice?.findMany
-          ? (request.tenantDb as any).invoice.findMany({
-              where: {
-                tenantId: request.tenantId,
-                issuedAt: { gte: thirtyDaysAgo },
-              },
-              orderBy: { issuedAt: "desc" },
-              take: 100,
-              select: {
-                id: true,
-                issuedAt: true,
-                total: true,
-                status: true,
-                invoiceNumber: true,
-              },
-            })
-          : Promise.resolve([]),
-      ]);
-
-      // Simple matching: mark payments as matched if amount appears in an invoice
-      const invoiceAmounts = new Set(invoices.map((inv: any) => String(Math.round(parseFloat(inv.total)))));
-
-      const bankTransactions = payments.map((p: any) => {
-        const amtStr = String(Math.round(parseFloat(p.amount)));
-        const matched = invoiceAmounts.has(amtStr);
-        return {
-          id: p.id,
-          date: p.createdAt,
-          description: `${p.method} payment${p.reference ? ` (${p.reference})` : ""}`,
-          amount: parseFloat(p.amount),
-          status: matched ? "matched" : "unmatched",
-          confidence: matched ? 0.9 : 0,
-        };
-      });
-
-      const paymentAmounts = new Set(payments.map((p: any) => String(Math.round(parseFloat(p.amount)))));
-      const internalRecords = invoices.map((inv: any) => {
-        const amtStr = String(Math.round(parseFloat(inv.total)));
-        const matched = paymentAmounts.has(amtStr);
-        return {
-          id: inv.id,
-          date: inv.issuedAt,
-          description: inv.invoiceNumber || `Invoice ${inv.id.slice(0, 8)}`,
-          amount: parseFloat(inv.total),
-          status: matched ? "matched" : "unmatched",
-        };
-      });
-
-      const unmatchedCount = bankTransactions.filter((t: any) => t.status === "unmatched").length;
-      const discrepancyTotal = bankTransactions
-        .filter((t: any) => t.status === "unmatched")
-        .reduce((sum: number, t: any) => sum + t.amount, 0);
-
-      return reply.send({
-        data: {
-          bankTransactions,
-          internalRecords,
-          unmatchedCount,
-          discrepancyTotal,
-        },
-      });
-    },
-  );
-
-  // GET /gateways — List configured payment gateways
-  fastify.get("/gateways", async (request: FastifyRequest, reply: FastifyReply) => {
-    const stripeOk = !!(process.env.STRIPE_SECRET_KEY || process.env.STRIPE_PUBLISHABLE_KEY);
-    const paypalOk = !!(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET);
-    const squareOk = !!(process.env.SQUARE_ACCESS_TOKEN);
-
-    // Fetch shop to determine default gateway from settings
-    const shop = await request.tenantDb.shop.findUnique({
-      where: { id: request.shopId },
-      select: { settings: true },
-    });
-    const shopSettings = (shop?.settings ?? {}) as Record<string, unknown>;
-    const defaultGateway = (shopSettings.defaultPaymentGateway as string) ?? "stripe";
-
-    const gateways = [
-      {
-        id: "stripe",
-        name: "Stripe",
-        code: "stripe" as const,
-        status: stripeOk ? "connected" : "disconnected",
-        isDefault: defaultGateway === "stripe",
-        isProduction: process.env.NODE_ENV === "production",
-        icon: "💳",
-        supportedMethods: ["card", "apple_pay", "google_pay", "bank_transfer"],
-        transactionFeePercent: 2.9,
-        fixedFeeInCents: 30,
-        healthScore: stripeOk ? 100 : 0,
-      },
-      {
-        id: "paypal",
-        name: "PayPal",
-        code: "paypal" as const,
-        status: paypalOk ? "connected" : "disconnected",
-        isDefault: defaultGateway === "paypal",
-        isProduction: process.env.NODE_ENV === "production",
-        icon: "🅿️",
-        supportedMethods: ["paypal", "card"],
-        transactionFeePercent: 2.9,
-        fixedFeeInCents: 30,
-        healthScore: paypalOk ? 100 : 0,
-      },
-      {
-        id: "square",
-        name: "Square",
-        code: "square" as const,
-        status: squareOk ? "connected" : "disconnected",
-        isDefault: defaultGateway === "square",
-        isProduction: process.env.NODE_ENV === "production",
-        icon: "◻️",
-        supportedMethods: ["card", "apple_pay", "google_pay"],
-        transactionFeePercent: 2.6,
-        fixedFeeInCents: 0,
-        healthScore: squareOk ? 100 : 0,
-      },
-      {
-        id: "cod",
-        name: "Cash on Delivery",
-        code: "cod" as const,
-        status: "connected",
-        isDefault: defaultGateway === "cod",
-        isProduction: true,
-        icon: "💰",
-        supportedMethods: ["cash"],
-        transactionFeePercent: 0,
-        fixedFeeInCents: 0,
-        healthScore: 100,
-      },
-    ];
-
-    return reply.send({
-      data: gateways,
-      total: gateways.length,
-    });
-  });
-
-  // PATCH /gateways/:id/default — Set default gateway
-  fastify.patch("/gateways/:id/default", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
-    const { id } = request.params as { id: string };
-
-    await request.tenantDb.shop.update({
-      where: { id: request.shopId },
-      data: { settings: { ...(await request.tenantDb.shop.findUnique({ where: { id: request.shopId }, select: { settings: true } }))?.settings as object, defaultPaymentGateway: id } },
-    });
-
-    return reply.send({ success: true, defaultGateway: id });
-  });
 }
 
 function getGatewayIcon(type: string): string {

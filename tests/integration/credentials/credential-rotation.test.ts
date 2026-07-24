@@ -24,11 +24,7 @@ interface RotationSchedule {
 
 interface RotationEvent {
   timestamp: Date;
-  type:
-    | "scheduled"
-    | "manual"
-    | "emergency"
-    | "rollback";
+  type: "scheduled" | "manual" | "emergency" | "rollback";
   oldCredentialId: string;
   newCredentialId: string;
   trafficShiftPercentage: number;
@@ -53,16 +49,14 @@ class CredentialRotationSystem {
 
   createCredential(
     type: "current" | "next" | "previous",
-    expirationDays: number = 30
+    expirationDays: number = 30,
   ): Credential {
     const credential: Credential = {
       id: `cred-${Date.now()}`,
       type,
       value: "sk_live_" + this.generateRandomValue(),
       createdAt: new Date(),
-      expiresAt: new Date(
-        Date.now() + expirationDays * 24 * 60 * 60 * 1000
-      ),
+      expiresAt: new Date(Date.now() + expirationDays * 24 * 60 * 60 * 1000),
       status: "active",
     };
 
@@ -75,9 +69,7 @@ class CredentialRotationSystem {
       "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let result = "";
     for (let i = 0; i < 32; i++) {
-      result += chars.charAt(
-        Math.floor(Math.random() * chars.length)
-      );
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return result;
   }
@@ -90,7 +82,9 @@ class CredentialRotationSystem {
     };
   }
 
-  rotateCredentials(reason: "scheduled" | "manual" | "emergency" = "scheduled"): boolean {
+  rotateCredentials(
+    reason: "scheduled" | "manual" | "emergency" = "scheduled",
+  ): boolean {
     try {
       const oldId = this.currentCredential?.id || "none";
 
@@ -149,7 +143,7 @@ class CredentialRotationSystem {
 
     this.rotationSchedule.lastRotation = new Date();
     this.rotationSchedule.nextRotation = new Date(
-      Date.now() + this.rotationSchedule.interval
+      Date.now() + this.rotationSchedule.interval,
     );
 
     return true;
@@ -211,10 +205,7 @@ class CredentialRotationSystem {
   }
 
   hasActiveDualCredential(): boolean {
-    return (
-      this.currentCredential !== null &&
-      this.nextCredential !== null
-    );
+    return this.currentCredential !== null && this.nextCredential !== null;
   }
 }
 
@@ -241,9 +232,10 @@ describe("Credential Rotation", () => {
 
       const schedule = system.getRotationSchedule();
 
-      expect(
-        schedule.nextRotation.getTime() - Date.now()
-      ).toBeCloseTo(3600000, -3);
+      expect(schedule.nextRotation.getTime() - Date.now()).toBeCloseTo(
+        3600000,
+        -3,
+      );
     });
 
     it("should update last rotation timestamp", () => {
@@ -315,12 +307,8 @@ describe("Credential Rotation", () => {
       const curr = system.getCurrentCredential();
       const next = system.getNextCredential();
 
-      expect(curr && system.verifyCredential(curr.id)).toBe(
-        true
-      );
-      expect(next && system.verifyCredential(next.id)).toBe(
-        true
-      );
+      expect(curr && system.verifyCredential(curr.id)).toBe(true);
+      expect(next && system.verifyCredential(next.id)).toBe(true);
     });
   });
 
@@ -484,9 +472,7 @@ describe("Credential Rotation", () => {
       // Complete
       system.completeRotation();
 
-      expect(system.getCurrentCredential()?.id).not.toBe(
-        initialCred.id
-      );
+      expect(system.getCurrentCredential()?.id).not.toBe(initialCred.id);
       expect(system.hasActiveDualCredential()).toBe(false);
     });
   });

@@ -17,8 +17,8 @@ import type {
   SyncEntityType,
   PaginationParams,
   PaginatedResult,
-} from './types.js';
-import { AbstractERPAdapter } from './erp-adapter.js';
+} from "./types.js";
+import { AbstractERPAdapter } from "./erp-adapter.js";
 
 // ─── SAP-SPECIFIC TYPES ────────────────────────────────────────────────────
 
@@ -28,7 +28,7 @@ export interface SAPConfig {
   redirectUri: string;
   instanceUrl: string; // e.g., https://my.example.com:50000
   companyDatabase?: string; // Database ID
-  environment?: 'sandbox' | 'production';
+  environment?: "sandbox" | "production";
   timeout?: number;
   maxRetries?: number;
 }
@@ -66,11 +66,11 @@ export class SAPClient extends AbstractERPAdapter {
   private sapPassport?: string;
 
   constructor(connection: ERPConnection, config: SAPConfig) {
-    super('sap', connection);
+    super("sap", connection);
     this.config = {
       timeout: 30000,
       maxRetries: 3,
-      environment: 'production',
+      environment: "production",
       ...config,
     };
 
@@ -98,7 +98,7 @@ export class SAPClient extends AbstractERPAdapter {
       access_token: `sap_at_${Date.now()}`,
       refresh_token: `sap_rt_${Date.now()}`,
       expires_in: 3600,
-      token_type: 'Bearer',
+      token_type: "Bearer",
     };
 
     const accessToken = mockResponse.access_token;
@@ -117,7 +117,7 @@ export class SAPClient extends AbstractERPAdapter {
   async checkHealth(): Promise<boolean> {
     try {
       return await this.executeWithRateLimit(async () => {
-        const response = await this.oDataGet('/BusinessPartners?$top=1');
+        const response = await this.oDataGet("/BusinessPartners?$top=1");
         return Array.isArray(response.value);
       });
     } catch {
@@ -134,7 +134,7 @@ export class SAPClient extends AbstractERPAdapter {
     return this.executeWithRateLimit(async () => {
       const sapPayload = this.mapCustomerToSAP(customer);
 
-      const response = await this.oDataPost('/BusinessPartners', sapPayload);
+      const response = await this.oDataPost("/BusinessPartners", sapPayload);
 
       return {
         ...customer,
@@ -149,7 +149,9 @@ export class SAPClient extends AbstractERPAdapter {
    */
   async getCustomer(customerId: string): Promise<ERPCustomer> {
     return this.executeWithRateLimit(async () => {
-      const response = await this.oDataGet(`/BusinessPartners('${customerId}')`);
+      const response = await this.oDataGet(
+        `/BusinessPartners('${customerId}')`,
+      );
       return this.mapCustomerFromSAP(response);
     });
   }
@@ -157,7 +159,10 @@ export class SAPClient extends AbstractERPAdapter {
   /**
    * Update customer
    */
-  async updateCustomer(customerId: string, customer: Partial<ERPCustomer>): Promise<ERPCustomer> {
+  async updateCustomer(
+    customerId: string,
+    customer: Partial<ERPCustomer>,
+  ): Promise<ERPCustomer> {
     return this.executeWithRateLimit(async () => {
       const sapPayload = this.mapCustomerToSAP(customer as ERPCustomer);
       await this.oDataPatch(`/BusinessPartners('${customerId}')`, sapPayload);
@@ -171,7 +176,7 @@ export class SAPClient extends AbstractERPAdapter {
   async createVendor(vendor: ERPVendor): Promise<ERPVendor> {
     return this.executeWithRateLimit(async () => {
       const sapPayload = this.mapVendorToSAP(vendor);
-      const response = await this.oDataPost('/BusinessPartners', sapPayload);
+      const response = await this.oDataPost("/BusinessPartners", sapPayload);
 
       return {
         ...vendor,
@@ -201,14 +206,14 @@ export class SAPClient extends AbstractERPAdapter {
     return this.executeWithRateLimit(async () => {
       const skip = pagination?.skip || 0;
       const limit = pagination?.limit || 100;
-      const filterStr = filter ? `?$filter=${encodeURIComponent(filter)}` : '';
+      const filterStr = filter ? `?$filter=${encodeURIComponent(filter)}` : "";
       const url = `/BusinessPartners${filterStr}&$skip=${skip}&$top=${limit}`;
 
       const response = await this.oDataGet(url);
 
       return {
         items: response.value.map((bp: any) => this.mapCustomerFromSAP(bp)),
-        total: response['odata.count'] || response.value.length,
+        total: response["odata.count"] || response.value.length,
         hasMore: response.value.length === limit,
         nextOffset: skip + limit,
       };
@@ -223,7 +228,7 @@ export class SAPClient extends AbstractERPAdapter {
   async createOrder(order: ERPOrder): Promise<ERPOrder> {
     return this.executeWithRateLimit(async () => {
       const sapPayload = this.mapOrderToSAP(order);
-      const response = await this.oDataPost('/Orders', sapPayload);
+      const response = await this.oDataPost("/Orders", sapPayload);
 
       return {
         ...order,
@@ -247,7 +252,10 @@ export class SAPClient extends AbstractERPAdapter {
   /**
    * Update order
    */
-  async updateOrder(orderId: string, order: Partial<ERPOrder>): Promise<ERPOrder> {
+  async updateOrder(
+    orderId: string,
+    order: Partial<ERPOrder>,
+  ): Promise<ERPOrder> {
     return this.executeWithRateLimit(async () => {
       const sapPayload = this.mapOrderToSAP(order as ERPOrder);
       await this.oDataPatch(`/Orders(${orderId})`, sapPayload);
@@ -261,7 +269,7 @@ export class SAPClient extends AbstractERPAdapter {
   async closeOrder(orderId: string): Promise<void> {
     return this.executeWithRateLimit(async () => {
       const order = await this.getOrder(orderId);
-      await this.updateOrder(orderId, { status: 'completed' });
+      await this.updateOrder(orderId, { status: "completed" });
     });
   }
 
@@ -270,7 +278,7 @@ export class SAPClient extends AbstractERPAdapter {
    */
   async cancelOrder(orderId: string): Promise<void> {
     return this.executeWithRateLimit(async () => {
-      await this.updateOrder(orderId, { status: 'cancelled' });
+      await this.updateOrder(orderId, { status: "cancelled" });
     });
   }
 
@@ -281,7 +289,8 @@ export class SAPClient extends AbstractERPAdapter {
    */
   async createInvoice(invoice: ERPInvoice): Promise<ERPInvoice> {
     return this.executeWithRateLimit(async () => {
-      const endpoint = invoice.invoiceType === 'purchase' ? '/PurchaseInvoices' : '/Invoices';
+      const endpoint =
+        invoice.invoiceType === "purchase" ? "/PurchaseInvoices" : "/Invoices";
       const sapPayload = this.mapInvoiceToSAP(invoice);
 
       const response = await this.oDataPost(endpoint, sapPayload);
@@ -298,9 +307,12 @@ export class SAPClient extends AbstractERPAdapter {
   /**
    * Get invoice by ID
    */
-  async getInvoice(invoiceId: string, isPurchase: boolean = false): Promise<ERPInvoice> {
+  async getInvoice(
+    invoiceId: string,
+    isPurchase: boolean = false,
+  ): Promise<ERPInvoice> {
     return this.executeWithRateLimit(async () => {
-      const endpoint = isPurchase ? '/PurchaseInvoices' : '/Invoices';
+      const endpoint = isPurchase ? "/PurchaseInvoices" : "/Invoices";
       const response = await this.oDataGet(`${endpoint}(${invoiceId})`);
       return this.mapInvoiceFromSAP(response);
     });
@@ -313,7 +325,9 @@ export class SAPClient extends AbstractERPAdapter {
     return this.executeWithRateLimit(async () => {
       // SAP: Invoices are automatically posted when created with PostingType='Document'
       // For manual posting, call an update with Status='Posted'
-      await this.oDataPatch(`/Invoices(${invoiceId})`, { DocumentStatus: 'bost_Open' });
+      await this.oDataPatch(`/Invoices(${invoiceId})`, {
+        DocumentStatus: "bost_Open",
+      });
     });
   }
 
@@ -324,17 +338,17 @@ export class SAPClient extends AbstractERPAdapter {
     return this.executeWithRateLimit(async () => {
       const sapPayload = this.mapInvoiceToSAP({
         ...invoice,
-        invoiceType: 'credit_memo',
-        status: 'draft',
+        invoiceType: "credit_memo",
+        status: "draft",
       });
 
-      const response = await this.oDataPost('/CreditNotes', sapPayload);
+      const response = await this.oDataPost("/CreditNotes", sapPayload);
 
       return {
         ...invoice,
         id: response.DocEntry,
         externalId: response.DocEntry,
-        invoiceType: 'credit_memo',
+        invoiceType: "credit_memo",
       };
     });
   }
@@ -347,7 +361,7 @@ export class SAPClient extends AbstractERPAdapter {
   async createItem(product: ERPProduct): Promise<ERPProduct> {
     return this.executeWithRateLimit(async () => {
       const sapPayload = this.mapProductToSAP(product);
-      const response = await this.oDataPost('/Items', sapPayload);
+      const response = await this.oDataPost("/Items", sapPayload);
 
       return {
         ...product,
@@ -370,7 +384,10 @@ export class SAPClient extends AbstractERPAdapter {
   /**
    * Update item
    */
-  async updateItem(itemCode: string, product: Partial<ERPProduct>): Promise<ERPProduct> {
+  async updateItem(
+    itemCode: string,
+    product: Partial<ERPProduct>,
+  ): Promise<ERPProduct> {
     return this.executeWithRateLimit(async () => {
       const sapPayload = this.mapProductToSAP(product as ERPProduct);
       await this.oDataPatch(`/Items('${itemCode}')`, sapPayload);
@@ -381,7 +398,9 @@ export class SAPClient extends AbstractERPAdapter {
   /**
    * Query items
    */
-  async queryItems(pagination?: PaginationParams): Promise<PaginatedResult<ERPProduct>> {
+  async queryItems(
+    pagination?: PaginationParams,
+  ): Promise<PaginatedResult<ERPProduct>> {
     return this.executeWithRateLimit(async () => {
       const skip = pagination?.skip || 0;
       const limit = pagination?.limit || 100;
@@ -391,7 +410,7 @@ export class SAPClient extends AbstractERPAdapter {
 
       return {
         items: response.value.map((item: any) => this.mapProductFromSAP(item)),
-        total: response['odata.count'] || response.value.length,
+        total: response["odata.count"] || response.value.length,
         hasMore: response.value.length === limit,
         nextOffset: skip + limit,
       };
@@ -420,7 +439,12 @@ export class SAPClient extends AbstractERPAdapter {
   /**
    * Stock transfer
    */
-  async stockTransfer(fromWarehouse: string, toWarehouse: string, itemCode: string, quantity: number): Promise<void> {
+  async stockTransfer(
+    fromWarehouse: string,
+    toWarehouse: string,
+    itemCode: string,
+    quantity: number,
+  ): Promise<void> {
     return this.executeWithRateLimit(async () => {
       const payload = {
         FromWarehouse: fromWarehouse,
@@ -433,17 +457,20 @@ export class SAPClient extends AbstractERPAdapter {
         ],
       };
 
-      await this.oDataPost('/StockTransfers', payload);
+      await this.oDataPost("/StockTransfers", payload);
     });
   }
 
   /**
    * Goods receipt (Inbound)
    */
-  async goodsReceipt(purchaseOrderId: string, items: Array<{ itemCode: string; quantity: number }>): Promise<void> {
+  async goodsReceipt(
+    purchaseOrderId: string,
+    items: Array<{ itemCode: string; quantity: number }>,
+  ): Promise<void> {
     return this.executeWithRateLimit(async () => {
       const payload = {
-        BaseDocumentType: 'dDocument_PurchaseOrder',
+        BaseDocumentType: "dDocument_PurchaseOrder",
         BaseDocumentEntry: purchaseOrderId,
         DocumentLines: items.map((item) => ({
           ItemCode: item.itemCode,
@@ -451,17 +478,20 @@ export class SAPClient extends AbstractERPAdapter {
         })),
       };
 
-      await this.oDataPost('/GoodsReceiptPOs', payload);
+      await this.oDataPost("/GoodsReceiptPOs", payload);
     });
   }
 
   /**
    * Goods issue (Outbound)
    */
-  async goodsIssue(salesOrderId: string, items: Array<{ itemCode: string; quantity: number }>): Promise<void> {
+  async goodsIssue(
+    salesOrderId: string,
+    items: Array<{ itemCode: string; quantity: number }>,
+  ): Promise<void> {
     return this.executeWithRateLimit(async () => {
       const payload = {
-        BaseDocumentType: 'dDocument_SalesOrder',
+        BaseDocumentType: "dDocument_SalesOrder",
         BaseDocumentEntry: salesOrderId,
         DocumentLines: items.map((item) => ({
           ItemCode: item.itemCode,
@@ -469,7 +499,7 @@ export class SAPClient extends AbstractERPAdapter {
         })),
       };
 
-      await this.oDataPost('/DeliveryNotes', payload);
+      await this.oDataPost("/DeliveryNotes", payload);
     });
   }
 
@@ -481,7 +511,7 @@ export class SAPClient extends AbstractERPAdapter {
   async postJournalEntry(entry: ERPJournalEntry): Promise<ERPJournalEntry> {
     return this.executeWithRateLimit(async () => {
       const sapPayload = this.mapJournalEntryToSAP(entry);
-      const response = await this.oDataPost('/JournalEntries', sapPayload);
+      const response = await this.oDataPost("/JournalEntries", sapPayload);
 
       return {
         ...entry,
@@ -499,10 +529,10 @@ export class SAPClient extends AbstractERPAdapter {
       const entry = await this.oDataGet(`/JournalEntries('${entryId}')`);
       const reversalPayload = this.mapJournalEntryToSAP({
         ...entry,
-        status: 'reversed',
+        status: "reversed",
       });
 
-      await this.oDataPost('/JournalEntries', reversalPayload);
+      await this.oDataPost("/JournalEntries", reversalPayload);
     });
   }
 
@@ -511,11 +541,13 @@ export class SAPClient extends AbstractERPAdapter {
   /**
    * Execute batch requests via $batch endpoint
    */
-  async executeBatchRequests(requests: Array<SAPBatchRequest>): Promise<SAPBatchResponse[]> {
+  async executeBatchRequests(
+    requests: Array<SAPBatchRequest>,
+  ): Promise<SAPBatchResponse[]> {
     return this.executeWithRateLimit(async () => {
       const batchBody = this.buildBatchRequestBody(requests);
-      const response = await this.oDataPost('/$batch', batchBody, {
-        'Content-Type': 'multipart/mixed',
+      const response = await this.oDataPost("/$batch", batchBody, {
+        "Content-Type": "multipart/mixed",
       });
 
       return this.parseBatchResponse(response);
@@ -527,22 +559,29 @@ export class SAPClient extends AbstractERPAdapter {
   /**
    * OData GET request
    */
-  protected async oDataGet(path: string, headers?: Record<string, string>): Promise<any> {
+  protected async oDataGet(
+    path: string,
+    headers?: Record<string, string>,
+  ): Promise<any> {
     const url = `${this.oDataBaseUrl}${path}`;
     const accessToken = await this.getAccessToken();
 
     const response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...headers,
       },
       signal: AbortSignal.timeout(this.config.timeout!),
     });
 
     if (!response.ok) {
-      throw this.createError(`OData GET failed: ${response.statusText}`, 'ODATA_ERROR', response.status >= 500);
+      throw this.createError(
+        `OData GET failed: ${response.statusText}`,
+        "ODATA_ERROR",
+        response.status >= 500,
+      );
     }
 
     return response.json();
@@ -551,15 +590,19 @@ export class SAPClient extends AbstractERPAdapter {
   /**
    * OData POST request
    */
-  protected async oDataPost(path: string, body: any, headers?: Record<string, string>): Promise<any> {
+  protected async oDataPost(
+    path: string,
+    body: any,
+    headers?: Record<string, string>,
+  ): Promise<any> {
     const url = `${this.oDataBaseUrl}${path}`;
     const accessToken = await this.getAccessToken();
 
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...headers,
       },
       body: JSON.stringify(body),
@@ -567,7 +610,11 @@ export class SAPClient extends AbstractERPAdapter {
     });
 
     if (!response.ok) {
-      throw this.createError(`OData POST failed: ${response.statusText}`, 'ODATA_ERROR', response.status >= 500);
+      throw this.createError(
+        `OData POST failed: ${response.statusText}`,
+        "ODATA_ERROR",
+        response.status >= 500,
+      );
     }
 
     return response.json();
@@ -576,15 +623,19 @@ export class SAPClient extends AbstractERPAdapter {
   /**
    * OData PATCH request
    */
-  protected async oDataPatch(path: string, body: any, headers?: Record<string, string>): Promise<any> {
+  protected async oDataPatch(
+    path: string,
+    body: any,
+    headers?: Record<string, string>,
+  ): Promise<any> {
     const url = `${this.oDataBaseUrl}${path}`;
     const accessToken = await this.getAccessToken();
 
     const response = await fetch(url, {
-      method: 'PATCH',
+      method: "PATCH",
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...headers,
       },
       body: JSON.stringify(body),
@@ -592,7 +643,11 @@ export class SAPClient extends AbstractERPAdapter {
     });
 
     if (!response.ok) {
-      throw this.createError(`OData PATCH failed: ${response.statusText}`, 'ODATA_ERROR', response.status >= 500);
+      throw this.createError(
+        `OData PATCH failed: ${response.statusText}`,
+        "ODATA_ERROR",
+        response.status >= 500,
+      );
     }
 
     return response.json();
@@ -609,7 +664,7 @@ export class SAPClient extends AbstractERPAdapter {
     return {
       CardCode: customer.code,
       CardName: customer.name,
-      CardType: 'cCustomer',
+      CardType: "cCustomer",
       Email: customer.email,
       Phone1: customer.phone,
       Website: customer.website,
@@ -617,7 +672,7 @@ export class SAPClient extends AbstractERPAdapter {
       CreditLimit: customer.creditLimit,
       Currency: customer.currency,
       BPAddresses: customer.addresses?.map((addr) => ({
-        AddressType: addr.type === 'billing' ? 'bo_BillTo' : 'bo_ShipTo',
+        AddressType: addr.type === "billing" ? "bo_BillTo" : "bo_ShipTo",
         Street: addr.line1,
         StreetNo: addr.line2,
         City: addr.city,
@@ -643,7 +698,7 @@ export class SAPClient extends AbstractERPAdapter {
       taxId: bp.TaxIdNum,
       creditLimit: bp.CreditLimit,
       currency: bp.Currency,
-      status: bp.Frozen ? 'inactive' : 'active',
+      status: bp.Frozen ? "inactive" : "active",
     };
   }
 
@@ -658,8 +713,10 @@ export class SAPClient extends AbstractERPAdapter {
   private mapOrderToSAP(order: ERPOrder): Record<string, any> {
     const result: Record<string, any> = {};
     if (order.customerId) result.CardCode = order.customerId;
-    if (order.orderDate) result.DocDate = order.orderDate.toISOString().split('T')[0];
-    if (order.dueDate) result.DueDate = order.dueDate.toISOString().split('T')[0];
+    if (order.orderDate)
+      result.DocDate = order.orderDate.toISOString().split("T")[0];
+    if (order.dueDate)
+      result.DueDate = order.dueDate.toISOString().split("T")[0];
     if (order.status) result.DocumentStatus = order.status;
     if (order.lineItems) {
       result.DocumentLines = order.lineItems.map((item) => ({
@@ -682,7 +739,7 @@ export class SAPClient extends AbstractERPAdapter {
       customerId: order.CardCode,
       orderDate: new Date(order.DocDate),
       dueDate: order.DueDate ? new Date(order.DueDate) : undefined,
-      status: 'completed' as any,
+      status: "completed" as any,
       lineItems: order.DocumentLines || [],
       total: order.DocTotal,
     };
@@ -691,8 +748,10 @@ export class SAPClient extends AbstractERPAdapter {
   private mapInvoiceToSAP(invoice: ERPInvoice): Record<string, any> {
     const result: Record<string, any> = {};
     if (invoice.customerId) result.CardCode = invoice.customerId;
-    if (invoice.invoiceDate) result.DocDate = invoice.invoiceDate.toISOString().split('T')[0];
-    if (invoice.dueDate) result.DueDate = invoice.dueDate.toISOString().split('T')[0];
+    if (invoice.invoiceDate)
+      result.DocDate = invoice.invoiceDate.toISOString().split("T")[0];
+    if (invoice.dueDate)
+      result.DueDate = invoice.dueDate.toISOString().split("T")[0];
     if (invoice.status) result.DocumentStatus = invoice.status;
     if (invoice.lineItems) {
       result.DocumentLines = invoice.lineItems.map((item) => ({
@@ -715,7 +774,7 @@ export class SAPClient extends AbstractERPAdapter {
       customerId: invoice.CardCode,
       invoiceDate: new Date(invoice.DocDate),
       dueDate: new Date(invoice.DueDate),
-      status: 'posted' as any,
+      status: "posted" as any,
       lineItems: invoice.DocumentLines || [],
       total: invoice.DocTotal,
     };
@@ -746,7 +805,7 @@ export class SAPClient extends AbstractERPAdapter {
       unit: item.SalesUnit,
       unitPrice: item.SalesPrice,
       cost: item.StandardPrice,
-      status: 'active' as any,
+      status: "active" as any,
     };
   }
 

@@ -37,10 +37,7 @@ export class UrlShortener {
    * Generate a short code
    */
   private generateCode(length: number = 8): string {
-    return crypto
-      .randomBytes(length)
-      .toString("hex")
-      .substring(0, length);
+    return crypto.randomBytes(length).toString("hex").substring(0, length);
   }
 
   /**
@@ -105,7 +102,8 @@ export class UrlShortener {
         code,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       throw new Error(`URL shortening failed: ${errorMessage}`);
     }
   }
@@ -156,7 +154,9 @@ export class UrlShortener {
    * List all shortened URLs
    */
   listUrls(): ShortenedUrl[] {
-    return Array.from(urlStore.values()).filter((r) => r.expiresAt > new Date());
+    return Array.from(urlStore.values()).filter(
+      (r) => r.expiresAt > new Date(),
+    );
   }
 
   /**
@@ -198,7 +198,8 @@ export class UrlShortener {
       try {
         return this.shortenUrl(url);
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         return {
           originalUrl: url,
           shortUrl: "",

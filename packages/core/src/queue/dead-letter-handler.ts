@@ -1,12 +1,12 @@
-import { Queue, Job } from 'bullmq';
-import { Redis } from 'ioredis';
+import { Queue, Job } from "bullmq";
+import { Redis } from "ioredis";
 
 export type FailureCategory =
-  | 'timeout'
-  | 'validation'
-  | 'external_api'
-  | 'database'
-  | 'unknown';
+  | "timeout"
+  | "validation"
+  | "external_api"
+  | "database"
+  | "unknown";
 
 export interface DLQItem {
   jobId: string;
@@ -22,7 +22,7 @@ export interface DLQItem {
 }
 
 export interface DLQAlert {
-  level: 'warning' | 'critical';
+  level: "warning" | "critical";
   count: number;
   threshold: number;
   timestamp: Date;
@@ -30,8 +30,8 @@ export interface DLQAlert {
 
 export class DeadLetterQueue {
   private redis: Redis;
-  private dlqKey = 'bull:dlq:items';
-  private dlqAlertKey = 'bull:dlq:alerts';
+  private dlqKey = "bull:dlq:items";
+  private dlqAlertKey = "bull:dlq:alerts";
   private dlqCleanupCheckInterval = 24 * 60 * 60 * 1000; // 24 hours
   private lastCleanupCheck = 0;
 
@@ -55,7 +55,7 @@ export class DeadLetterQueue {
         return category as FailureCategory;
       }
     }
-    return 'unknown';
+    return "unknown";
   }
 
   /**
@@ -64,12 +64,12 @@ export class DeadLetterQueue {
   async addToDeadLetter(
     queue: Queue,
     job: Job,
-    failedReason: string
+    failedReason: string,
   ): Promise<void> {
     const category = this.categorizeFailure(failedReason);
 
     const dlqItem: DLQItem = {
-      jobId: job.id || '',
+      jobId: job.id || "",
       jobName: job.name,
       queue: queue.name,
       data: job.data,
@@ -83,11 +83,7 @@ export class DeadLetterQueue {
 
     // Store in Redis hash
     const itemKey = `${dlqItem.queue}:${dlqItem.jobId}`;
-    await this.redis.hset(
-      this.dlqKey,
-      itemKey,
-      JSON.stringify(dlqItem)
-    );
+    await this.redis.hset(this.dlqKey, itemKey, JSON.stringify(dlqItem));
 
     // Check thresholds for alerts
     await this.checkDLQThresholds();
@@ -113,7 +109,10 @@ export class DeadLetterQueue {
   /**
    * Get specific DLQ item
    */
-  async getDeadLetter(jobId: string, queueName: string): Promise<DLQItem | null> {
+  async getDeadLetter(
+    jobId: string,
+    queueName: string,
+  ): Promise<DLQItem | null> {
     const itemKey = `${queueName}:${jobId}`;
     const itemJson = await this.redis.hget(this.dlqKey, itemKey);
 
@@ -124,10 +123,7 @@ export class DeadLetterQueue {
   /**
    * Retry a dead letter job
    */
-  async retryDeadLetter(
-    queue: Queue,
-    jobId: string
-  ): Promise<boolean> {
+  async retryDeadLetter(queue: Queue, jobId: string): Promise<boolean> {
     const dlqItem = await this.getDeadLetter(jobId, queue.name);
     if (!dlqItem) return false;
 
@@ -136,7 +132,7 @@ export class DeadLetterQueue {
       await queue.add(dlqItem.jobName, dlqItem.data, {
         attempts: 3,
         backoff: {
-          type: 'exponential',
+          type: "exponential",
           delay: 2000,
         },
       });
@@ -200,14 +196,14 @@ export class DeadLetterQueue {
 
     if (count > 50) {
       alerts.push({
-        level: 'critical',
+        level: "critical",
         count,
         threshold: 50,
         timestamp: new Date(),
       });
     } else if (count > 10) {
       alerts.push({
-        level: 'warning',
+        level: "warning",
         count,
         threshold: 10,
         timestamp: new Date(),
@@ -216,10 +212,7 @@ export class DeadLetterQueue {
 
     if (alerts.length > 0) {
       for (const alert of alerts) {
-        await this.redis.rpush(
-          this.dlqAlertKey,
-          JSON.stringify(alert)
-        );
+        await this.redis.rpush(this.dlqAlertKey, JSON.stringify(alert));
       }
 
       // Keep last 100 alerts
@@ -231,19 +224,17 @@ export class DeadLetterQueue {
    * Get DLQ alerts
    */
   async getDLQAlerts(limit: number = 10): Promise<DLQAlert[]> {
-    const alertsJson = await this.redis.lrange(
-      this.dlqAlertKey,
-      -limit,
-      -1
-    );
+    const alertsJson = await this.redis.lrange(this.dlqAlertKey, -limit, -1);
 
-    return alertsJson.map(json => JSON.parse(json) as DLQAlert);
+    return alertsJson.map((json) => JSON.parse(json) as DLQAlert);
   }
 
   /**
    * Get failure categorization stats
    */
-  async getFailureStats(queueName?: string): Promise<Record<FailureCategory, number>> {
+  async getFailureStats(
+    queueName?: string,
+  ): Promise<Record<FailureCategory, number>> {
     const items = await this.listDeadLetters(queueName);
     const stats: Record<FailureCategory, number> = {
       timeout: 0,

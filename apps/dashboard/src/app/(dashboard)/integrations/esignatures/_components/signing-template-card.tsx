@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Plus, Settings } from 'lucide-react';
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Plus, Settings } from "lucide-react";
 
 interface SigningTemplate {
   id: string;
@@ -25,7 +25,9 @@ export function SigningTemplateCard({ template }: SigningTemplateCardProps) {
       <CardContent className="pt-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <h3 className="text-base font-semibold text-white">{template.name}</h3>
+            <h3 className="text-base font-semibold text-white">
+              {template.name}
+            </h3>
             <p className="text-xs text-gray-500 mt-1">
               {template.provider} • Created {template.created}
             </p>
@@ -38,27 +40,50 @@ export function SigningTemplateCard({ template }: SigningTemplateCardProps) {
 
         <div className="grid grid-cols-3 gap-4 mb-6 pb-6 border-b border-wl-border-default">
           <div>
-            <p className="text-xs font-medium text-gray-500 uppercase">Fields</p>
-            <p className="text-lg font-bold text-white mt-1">{template.fields}</p>
+            <p className="text-xs font-medium text-gray-500 uppercase">
+              Fields
+            </p>
+            <p className="text-lg font-bold text-white mt-1">
+              {template.fields}
+            </p>
           </div>
           <div>
-            <p className="text-xs font-medium text-gray-500 uppercase">Signers</p>
-            <p className="text-lg font-bold text-white mt-1">{template.signers}</p>
+            <p className="text-xs font-medium text-gray-500 uppercase">
+              Signers
+            </p>
+            <p className="text-lg font-bold text-white mt-1">
+              {template.signers}
+            </p>
           </div>
           <div>
-            <p className="text-xs font-medium text-gray-500 uppercase">Status</p>
-            <Badge variant="success" className="mt-1 bg-green-500/20 text-green-400">
+            <p className="text-xs font-medium text-gray-500 uppercase">
+              Status
+            </p>
+            <Badge
+              variant="success"
+              className="mt-1 bg-green-500/20 text-green-400"
+            >
               Active
             </Badge>
           </div>
         </div>
 
         <div className="flex gap-2">
-          <Button variant="primary" size="sm" className="flex-1 bg-blue-500 hover:bg-blue-500/90">
-            <Plus className="w-4 h-4 mr-2" />Use Template
+          <Button
+            variant="primary"
+            size="sm"
+            className="flex-1 bg-blue-500 hover:bg-blue-500/90"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Use Template
           </Button>
-          <Button variant="secondary" size="sm" className="flex-1 bg-wl-bg-surface hover:bg-wl-bg-elevated">
-            <Settings className="w-4 h-4 mr-2" />Edit
+          <Button
+            variant="secondary"
+            size="sm"
+            className="flex-1 bg-wl-bg-surface hover:bg-wl-bg-elevated"
+          >
+            <Settings className="w-4 h-4 mr-2" />
+            Edit
           </Button>
         </div>
       </CardContent>

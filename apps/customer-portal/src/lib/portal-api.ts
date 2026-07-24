@@ -153,54 +153,58 @@ export interface ApiProofOfDelivery {
 // ─── API route constants ──────────────────────────────────────
 
 export const ROUTES = {
-  ORDERS: '/api/v4/orders',
+  ORDERS: "/api/v4/orders",
   ORDER: (id: string) => `/api/v4/orders/${id}`,
   ORDER_TIMELINE: (id: string) => `/api/v4/orders/${id}/timeline`,
   TRACKING_BY_TOKEN: (token: string) => `/api/v4/tracking/token/${token}`,
-  TRACKING_PREFS: (token: string) => `/api/v4/tracking/token/${token}/preferences`,
+  TRACKING_PREFS: (token: string) =>
+    `/api/v4/tracking/token/${token}/preferences`,
   TRACKING_SLOTS: (token: string) => `/api/v4/tracking/token/${token}/slots`,
-  SUPPORT_TICKETS: '/api/v4/support/tickets',
+  SUPPORT_TICKETS: "/api/v4/support/tickets",
   SUPPORT_TICKET: (id: string) => `/api/v4/support/tickets/${id}`,
   SUPPORT_TICKET_MSG: (id: string) => `/api/v4/support/tickets/${id}/messages`,
-  AUTH_ME: '/api/v4/auth/me',
-  TIME_SLOTS: '/api/v4/time-slots',
+  AUTH_ME: "/api/v4/auth/me",
+  TIME_SLOTS: "/api/v4/time-slots",
   POD: (orderId: string) => `/api/v4/pod/${orderId}`,
 } as const;
 
 // ─── Status display helpers ───────────────────────────────────
 
 const STATUS_LABELS: Record<string, string> = {
-  PENDING: 'Pending',
-  ACCEPTED: 'Confirmed',
-  ASSIGNED: 'Driver Assigned',
-  PICKED_UP: 'Picked Up',
-  OUT_FOR_DELIVERY: 'Out for Delivery',
-  ARRIVED: 'Driver Arrived',
-  DELIVERED: 'Delivered',
-  FAILED: 'Failed',
-  RETURNED: 'Returned',
-  CANCELLED: 'Cancelled',
+  PENDING: "Pending",
+  ACCEPTED: "Confirmed",
+  ASSIGNED: "Driver Assigned",
+  PICKED_UP: "Picked Up",
+  OUT_FOR_DELIVERY: "Out for Delivery",
+  ARRIVED: "Driver Arrived",
+  DELIVERED: "Delivered",
+  FAILED: "Failed",
+  RETURNED: "Returned",
+  CANCELLED: "Cancelled",
 };
 
 export function getStatusLabel(status: string): string {
   return STATUS_LABELS[status] ?? status;
 }
 
-const STATUS_VARIANT: Record<string, 'active' | 'complete' | 'warn' | 'error' | 'default'> = {
-  PENDING: 'default',
-  ACCEPTED: 'active',
-  ASSIGNED: 'active',
-  PICKED_UP: 'active',
-  OUT_FOR_DELIVERY: 'active',
-  ARRIVED: 'active',
-  DELIVERED: 'complete',
-  FAILED: 'error',
-  RETURNED: 'warn',
-  CANCELLED: 'error',
+const STATUS_VARIANT: Record<
+  string,
+  "active" | "complete" | "warn" | "error" | "default"
+> = {
+  PENDING: "default",
+  ACCEPTED: "active",
+  ASSIGNED: "active",
+  PICKED_UP: "active",
+  OUT_FOR_DELIVERY: "active",
+  ARRIVED: "active",
+  DELIVERED: "complete",
+  FAILED: "error",
+  RETURNED: "warn",
+  CANCELLED: "error",
 };
 
 export function getStatusVariant(
   status: string,
-): 'active' | 'complete' | 'warn' | 'error' | 'default' {
-  return STATUS_VARIANT[status] ?? 'default';
+): "active" | "complete" | "warn" | "error" | "default" {
+  return STATUS_VARIANT[status] ?? "default";
 }

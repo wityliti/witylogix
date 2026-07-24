@@ -28,7 +28,7 @@ export function signPayload(payload: string, secret: string): string {
 export function verifySignature(
   payload: string,
   signature: string,
-  secret: string
+  secret: string,
 ): boolean {
   const expectedSignature = signPayload(payload, secret);
   return constantTimeCompare(signature, expectedSignature);

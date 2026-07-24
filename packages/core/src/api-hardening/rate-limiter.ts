@@ -19,7 +19,7 @@ type FastifyInstance = any;
 type FastifyRequest = any;
 type FastifyReply = any;
 
-import { RateLimitError } from './error-handler.js';
+import { RateLimitError } from "./error-handler.js";
 
 /**
  * Token bucket for rate limiting
@@ -93,7 +93,7 @@ class TokenBucketStore {
     key: string,
     maxRequests: number,
     windowMs: number,
-    tokensToConsume: number = 1
+    tokensToConsume: number = 1,
   ): {
     allowed: boolean;
     remaining: number;
@@ -161,12 +161,12 @@ const store = new TokenBucketStore();
  * Default key generator: shopId + IP address
  */
 function defaultKeyGenerator(request: FastifyRequest): string {
-  const shopId = (request as any).shopId || 'unknown';
+  const shopId = (request as any).shopId || "unknown";
   const ip =
-    request.headers['x-forwarded-for'] ||
-    request.headers['cf-connecting-ip'] ||
+    request.headers["x-forwarded-for"] ||
+    request.headers["cf-connecting-ip"] ||
     request.ip ||
-    'unknown';
+    "unknown";
   const ipStr = Array.isArray(ip) ? ip[0] : ip;
   return `${shopId}:${ipStr}`;
 }
@@ -185,12 +185,9 @@ export function createRateLimiter(config: RateLimitConfig) {
     const result = store.consume(key, maxRequests, windowMs);
 
     // Set rate limit headers
-    reply.header('X-RateLimit-Limit', maxRequests.toString());
-    reply.header('X-RateLimit-Remaining', result.remaining.toString());
-    reply.header(
-      'X-RateLimit-Reset',
-      new Date(result.resetTime).toISOString()
-    );
+    reply.header("X-RateLimit-Limit", maxRequests.toString());
+    reply.header("X-RateLimit-Remaining", result.remaining.toString());
+    reply.header("X-RateLimit-Reset", new Date(result.resetTime).toISOString());
 
     if (!result.allowed) {
       throw new RateLimitError(
@@ -199,7 +196,7 @@ export function createRateLimiter(config: RateLimitConfig) {
           limit: maxRequests,
           window: windowMs,
           resetTime: result.resetTime,
-        }
+        },
       );
     }
   };
@@ -210,11 +207,11 @@ export function createRateLimiter(config: RateLimitConfig) {
  */
 export async function rateLimitPlugin(
   fastify: FastifyInstance,
-  options: RateLimiterPluginOptions = {}
+  options: RateLimiterPluginOptions = {},
 ) {
   const globalWindowMs = options.windowMs || 60000;
   const globalMaxRequests = options.maxRequests || 100;
-  const keyPrefix = options.keyPrefix || 'rl';
+  const keyPrefix = options.keyPrefix || "rl";
 
   const tierLimits: TierBasedLimits = {
     FREE: 50,
@@ -227,25 +224,27 @@ export async function rateLimitPlugin(
   /**
    * Get rate limit for a shop tier
    */
-  function getLimitForTier(tier: string = 'FREE'): number {
+  function getLimitForTier(tier: string = "FREE"): number {
     return tierLimits[tier as keyof TierBasedLimits] || globalMaxRequests;
   }
 
   /**
    * Default rate limit handler
    */
-  fastify.addHook('preHandler', async (request: any, reply: any) => {
+  fastify.addHook("preHandler", async (request: any, reply: any) => {
     // Check for per-route rate limit config
     const routeConfig = (request as any).routeOptions?.config || {};
-    const rateLimitConfig = routeConfig.rateLimit as RateLimitConfig | undefined;
+    const rateLimitConfig = routeConfig.rateLimit as
+      | RateLimitConfig
+      | undefined;
 
     // Skip rate limiting for certain paths
-    if (request.url.startsWith('/health') || request.url.startsWith('/docs')) {
+    if (request.url.startsWith("/health") || request.url.startsWith("/docs")) {
       return;
     }
 
     // Get tier from request context (should be set by auth middleware)
-    const shopTier = (request as any).shopTier || 'FREE';
+    const shopTier = (request as any).shopTier || "FREE";
     const tierLimit = getLimitForTier(shopTier);
 
     const windowMs = rateLimitConfig?.windowMs || globalWindowMs;
@@ -257,12 +256,9 @@ export async function rateLimitPlugin(
     const result = store.consume(key, maxRequests, windowMs);
 
     // Set rate limit headers
-    reply.header('X-RateLimit-Limit', maxRequests.toString());
-    reply.header('X-RateLimit-Remaining', Math.max(0, result.remaining));
-    reply.header(
-      'X-RateLimit-Reset',
-      new Date(result.resetTime).toISOString()
-    );
+    reply.header("X-RateLimit-Limit", maxRequests.toString());
+    reply.header("X-RateLimit-Remaining", Math.max(0, result.remaining));
+    reply.header("X-RateLimit-Reset", new Date(result.resetTime).toISOString());
 
     if (!result.allowed) {
       throw new RateLimitError(
@@ -271,7 +267,7 @@ export async function rateLimitPlugin(
           limit: maxRequests,
           window: windowMs,
           retryAfter: Math.ceil((result.resetTime - Date.now()) / 1000),
-        }
+        },
       );
     }
   });
@@ -279,7 +275,7 @@ export async function rateLimitPlugin(
   /**
    * Expose store for testing
    */
-  fastify.decorate('rateLimitStore', store);
+  fastify.decorate("rateLimitStore", store);
 }
 
 /**

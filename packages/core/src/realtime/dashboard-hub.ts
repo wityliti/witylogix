@@ -58,10 +58,7 @@ export class DashboardHub {
   private eventBuffer = new Map<RoomId, EventEnvelope[]>();
 
   /** Rate limiter: connectionId -> { events: number, resetAt: number } */
-  private rateLimiter = new Map<
-    string,
-    { events: number; resetAt: number }
-  >();
+  private rateLimiter = new Map<string, { events: number; resetAt: number }>();
 
   constructor(config: DashboardHubConfig) {
     this.config = config;
@@ -85,7 +82,7 @@ export class DashboardHub {
 
     this.broadcaster = new EventBroadcaster(
       this.eventBus,
-      this.emitToClients.bind(this)
+      this.emitToClients.bind(this),
     );
 
     this.setupMiddleware();
@@ -128,7 +125,10 @@ export class DashboardHub {
   private setupMiddleware(): void {
     // Authentication middleware
     this.io.use((socket: unknown, next: (err?: Error) => void) => {
-      const typedSocket = socket as { handshake: { auth: { token?: string } }; data: Record<string, unknown> };
+      const typedSocket = socket as {
+        handshake: { auth: { token?: string } };
+        data: Record<string, unknown>;
+      };
       const token = typedSocket.handshake.auth.token;
       if (!token) {
         return next(new Error("Missing authentication token"));
@@ -151,11 +151,11 @@ export class DashboardHub {
       this.handleConnection(socket);
 
       socket.on("subscribe", (roomId: RoomId, filter?: EventFilter) =>
-        this.handleSubscribe(socket, roomId, filter)
+        this.handleSubscribe(socket, roomId, filter),
       );
 
       socket.on("unsubscribe", (roomId: RoomId) =>
-        this.handleUnsubscribe(socket, roomId)
+        this.handleUnsubscribe(socket, roomId),
       );
 
       socket.on("heartbeat", () => this.handleHeartbeat(socket));
@@ -201,7 +201,7 @@ export class DashboardHub {
       this.connectionManager.registerConnection(
         connection,
         orgId,
-        planTier as any
+        planTier as any,
       );
 
       socket.data.connectionId = socket.id;
@@ -211,9 +211,7 @@ export class DashboardHub {
       socket.join(`org:${orgId}`);
       this.connectionManager.subscribeToRoom(socket.id, `org:${orgId}`);
 
-      console.log(
-        `[DashboardHub] User ${userId} connected to org:${orgId}`
-      );
+      console.log(`[DashboardHub] User ${userId} connected to org:${orgId}`);
     } catch (error) {
       console.error("[DashboardHub] Connection failed:", error);
       socket.disconnect(true);
@@ -226,7 +224,7 @@ export class DashboardHub {
   private async handleSubscribe(
     socket: Socket,
     roomId: RoomId,
-    filter?: EventFilter
+    filter?: EventFilter,
   ): Promise<void> {
     const connectionId = socket.data.connectionId;
     const orgId = socket.data.orgId;
@@ -325,13 +323,10 @@ export class DashboardHub {
   /**
    * Emit event to all clients in rooms.
    */
-  async emitToClients(
-    roomId: string,
-    event: EventEnvelope
-  ): Promise<void> {
+  async emitToClients(roomId: string, event: EventEnvelope): Promise<void> {
     // Apply rate limiting
     const connections = this.connectionManager.getConnectionsInRoom(
-      roomId as RoomId
+      roomId as RoomId,
     );
 
     const validConnections: string[] = [];
@@ -405,7 +400,7 @@ export class DashboardHub {
    */
   private applyFilter(
     events: EventEnvelope[],
-    filter?: EventFilter
+    filter?: EventFilter,
   ): EventEnvelope[] {
     if (!filter) return events;
 
@@ -413,10 +408,7 @@ export class DashboardHub {
       const data = e.data;
 
       // Filter by event types
-      if (
-        filter.eventTypes &&
-        !filter.eventTypes.includes(data.event)
-      ) {
+      if (filter.eventTypes && !filter.eventTypes.includes(data.event)) {
         return false;
       }
 
@@ -451,9 +443,7 @@ let hubInstance: DashboardHub | null = null;
 /**
  * Get or create the dashboard hub instance.
  */
-export function getDashboardHub(
-  config?: DashboardHubConfig
-): DashboardHub {
+export function getDashboardHub(config?: DashboardHubConfig): DashboardHub {
   if (!hubInstance && config) {
     hubInstance = new DashboardHub(config);
   }

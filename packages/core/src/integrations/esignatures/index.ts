@@ -26,7 +26,11 @@ export type {
   ComplianceEvent,
 } from "./types.js";
 
-export type { EnvelopeStatus, FieldType, ProviderSelectionStrategy } from "./types.js";
+export type {
+  EnvelopeStatus,
+  FieldType,
+  ProviderSelectionStrategy,
+} from "./types.js";
 
 // ─── Adapters ───────────────────────────────────────────────────────
 

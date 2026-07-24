@@ -49,7 +49,7 @@ export const createOrderRecordStep: WorkflowStep<
 
   async invoke(
     input: CreateOrderRecordInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<CreateOrderRecordOutput>> {
     const logger = context.logger;
     logger?.info("Creating order record", {
@@ -58,7 +58,7 @@ export const createOrderRecordStep: WorkflowStep<
     });
 
     try {
-      const prisma = (context.prisma as any);
+      const prisma = context.prisma as any;
 
       // Check for duplicate
       const existingOrder = await prisma.order.findUnique({
@@ -107,8 +107,12 @@ export const createOrderRecordStep: WorkflowStep<
           },
           deliveryDate: input.deliveryDate,
           timeSlotId: input.timeSlotId,
-          totalPrice: input.totalPrice ? parseFloat(input.totalPrice.toString()) : null,
-          totalWeight: input.totalWeight ? parseFloat(input.totalWeight.toString()) : null,
+          totalPrice: input.totalPrice
+            ? parseFloat(input.totalPrice.toString())
+            : null,
+          totalWeight: input.totalWeight
+            ? parseFloat(input.totalWeight.toString())
+            : null,
           itemCount: input.itemCount,
           lineItems: input.lineItems || [],
           trackingToken,
@@ -150,7 +154,7 @@ export const createOrderRecordStep: WorkflowStep<
 
   async compensate(
     input: CreateOrderRecordInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<void> {
     const logger = context.logger;
     logger?.info("Compensating order creation", {
@@ -158,7 +162,7 @@ export const createOrderRecordStep: WorkflowStep<
     });
 
     try {
-      const prisma = (context.prisma as any);
+      const prisma = context.prisma as any;
 
       // Find and soft-delete the order
       const order = await prisma.order.findUnique({
@@ -175,7 +179,8 @@ export const createOrderRecordStep: WorkflowStep<
           where: { id: order.id },
           data: {
             status: "CANCELLED",
-            notes: (order.notes || "") + "\n[CANCELLED via workflow compensation]",
+            notes:
+              (order.notes || "") + "\n[CANCELLED via workflow compensation]",
           },
         });
 

@@ -19,10 +19,10 @@ export {
   RoleNotFoundError,
   RoleImmutableError,
   InvalidPermissionError,
-} from './types';
+} from "./types";
 
 // Policy Engine
-export { PolicyEngine, policyEngine } from './policy-engine';
+export { PolicyEngine, policyEngine } from "./policy-engine";
 
 // Role Manager
-export { RoleManager, createRoleManager } from './role-manager';
+export { RoleManager, createRoleManager } from "./role-manager";

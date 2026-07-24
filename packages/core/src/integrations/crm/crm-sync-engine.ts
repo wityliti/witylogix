@@ -12,13 +12,13 @@ import type {
   CRMFieldMapping,
   CRMSyncLog,
   ICRMAdapter,
-} from './types.js';
+} from "./types.js";
 
 // ─── SYNC CONFIGURATION ────────────────────────────────────────────
 
 export interface SyncableEntity {
   id: string;
-  type: 'contact' | 'account' | 'opportunity' | 'delivery' | 'customer';
+  type: "contact" | "account" | "opportunity" | "delivery" | "customer";
   data: Record<string, unknown>;
   externalId?: string;
   lastModifiedAt?: Date;
@@ -30,7 +30,7 @@ export interface DeliveryData {
   customerName: string;
   customerEmail?: string;
   customerPhone?: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'failed';
+  status: "pending" | "in_progress" | "completed" | "failed";
   completedAt?: Date;
   deliveryNotes?: string;
   signature?: string;
@@ -48,7 +48,7 @@ export interface WitylogixCustomer {
     zip?: string;
     country?: string;
   };
-  source: 'manual' | 'api' | 'crm';
+  source: "manual" | "api" | "crm";
   externalCrmId?: string;
   externalCrmProvider?: string;
   lastSyncedAt?: Date;
@@ -62,13 +62,13 @@ interface ConflictResolutionContext {
   crmValue: unknown;
   witylogixModifiedAt: Date;
   crmModifiedAt: Date;
-  precedence: 'crm_wins' | 'witylogix_wins' | 'manual';
+  precedence: "crm_wins" | "witylogix_wins" | "manual";
 }
 
 interface ConflictResolutionResult {
   field: string;
   selectedValue: unknown;
-  selectedSource: 'witylogix' | 'crm';
+  selectedSource: "witylogix" | "crm";
   requiresManualReview: boolean;
 }
 
@@ -102,27 +102,30 @@ export class CRMSyncEngine {
       // Create activity in CRM
       const activity: CRMActivity = {
         id: `activity_${delivery.id}`,
-        type: 'note',
+        type: "note",
         subject: `Delivery Completed: ${delivery.id}`,
         description: `
 Customer: ${delivery.customerName}
 Status: ${delivery.status}
 Completed: ${delivery.completedAt?.toISOString()}
-Notes: ${delivery.deliveryNotes || 'No additional notes'}
-${delivery.signature ? `Signature: Captured` : ''}
+Notes: ${delivery.deliveryNotes || "No additional notes"}
+${delivery.signature ? `Signature: Captured` : ""}
         `.trim(),
-        recordType: 'contact',
+        recordType: "contact",
         recordId: delivery.customerId,
         completedAt: delivery.completedAt,
         lastModifiedAt: new Date(),
       };
 
       // Sync to CRM
-      const results: Array<{ id: string; status: string; message: string }> = await this.adapter.syncActivities([activity]);
+      const results: Array<{ id: string; status: string; message: string }> =
+        await this.adapter.syncActivities([activity]);
 
-      const result: { id: string; status: string; message: string } | undefined = results[0];
+      const result:
+        | { id: string; status: string; message: string }
+        | undefined = results[0];
       if (!result) {
-        throw new Error('No result returned from sync');
+        throw new Error("No result returned from sync");
       }
 
       await this.logSync({
@@ -130,13 +133,13 @@ ${delivery.signature ? `Signature: Captured` : ''}
         tenantId: this.connection.tenantId,
         connectionId: this.connection.id,
         provider: this.connection.provider,
-        recordType: 'activity',
+        recordType: "activity",
         recordId: delivery.id,
         externalId: result.id,
-        syncType: 'create',
-        direction: 'to_crm',
-        status: result.status === 'synced' ? 'synced' : 'failed',
-        errorMessage: result.status === 'synced' ? undefined : result.message,
+        syncType: "create",
+        direction: "to_crm",
+        status: result.status === "synced" ? "synced" : "failed",
+        errorMessage: result.status === "synced" ? undefined : result.message,
         syncedAt: new Date(),
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -144,27 +147,28 @@ ${delivery.signature ? `Signature: Captured` : ''}
 
       return {
         id: delivery.id,
-        recordType: 'activity',
+        recordType: "activity",
         recordId: delivery.id,
         externalId: result.id,
         provider: this.connection.provider,
-        status: result.status === 'synced' ? 'synced' : 'failed',
+        status: result.status === "synced" ? "synced" : "failed",
         message: result.message,
         timestamp: new Date(),
       };
     } catch (error: unknown) {
-      const errorMessage: string = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage: string =
+        error instanceof Error ? error.message : "Unknown error";
 
       await this.logSync({
         id: `sync_${Date.now()}`,
         tenantId: this.connection.tenantId,
         connectionId: this.connection.id,
         provider: this.connection.provider,
-        recordType: 'activity',
+        recordType: "activity",
         recordId: delivery.id,
-        syncType: 'create',
-        direction: 'to_crm',
-        status: 'failed',
+        syncType: "create",
+        direction: "to_crm",
+        status: "failed",
         errorMessage,
         errorDetails: { error: String(error) },
         createdAt: new Date(),
@@ -173,10 +177,10 @@ ${delivery.signature ? `Signature: Captured` : ''}
 
       return {
         id: delivery.id,
-        recordType: 'activity',
+        recordType: "activity",
         recordId: delivery.id,
         provider: this.connection.provider,
-        status: 'failed',
+        status: "failed",
         message: errorMessage,
         timestamp: new Date(),
       };
@@ -186,9 +190,12 @@ ${delivery.signature ? `Signature: Captured` : ''}
   /**
    * Enrich Witylogix customer data from CRM contact
    */
-  async enrichCustomerFromCRM(crmContactId: string): Promise<WitylogixCustomer> {
+  async enrichCustomerFromCRM(
+    crmContactId: string,
+  ): Promise<WitylogixCustomer> {
     try {
-      const crmContact: CRMContact = await this.adapter.getContact(crmContactId);
+      const crmContact: CRMContact =
+        await this.adapter.getContact(crmContactId);
 
       return {
         id: `customer_${crmContactId}`,
@@ -196,13 +203,15 @@ ${delivery.signature ? `Signature: Captured` : ''}
         email: crmContact.email,
         phone: crmContact.phone || crmContact.mobile,
         address: crmContact.address,
-        source: 'crm',
+        source: "crm",
         externalCrmId: crmContactId,
         externalCrmProvider: this.connection.provider,
         lastSyncedAt: new Date(),
       };
     } catch (error: unknown) {
-      throw new Error(`Failed to enrich customer from CRM: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to enrich customer from CRM: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
@@ -214,8 +223,8 @@ ${delivery.signature ? `Signature: Captured` : ''}
       if (customer.externalCrmId) {
         // Update existing contact
         return await this.adapter.updateContact(customer.externalCrmId, {
-          firstName: customer.name.split(' ')[0] || '',
-          lastName: customer.name.split(' ').slice(1).join(' ') || '',
+          firstName: customer.name.split(" ")[0] || "",
+          lastName: customer.name.split(" ").slice(1).join(" ") || "",
           email: customer.email,
           phone: customer.phone,
           address: customer.address,
@@ -223,8 +232,8 @@ ${delivery.signature ? `Signature: Captured` : ''}
       } else {
         // Create new contact
         const newContact: CRMContact = await this.adapter.createContact({
-          firstName: customer.name.split(' ')[0] || '',
-          lastName: customer.name.split(' ').slice(1).join(' ') || '',
+          firstName: customer.name.split(" ")[0] || "",
+          lastName: customer.name.split(" ").slice(1).join(" ") || "",
           email: customer.email,
           phone: customer.phone,
           address: customer.address,
@@ -235,12 +244,12 @@ ${delivery.signature ? `Signature: Captured` : ''}
           tenantId: this.connection.tenantId,
           connectionId: this.connection.id,
           provider: this.connection.provider,
-          recordType: 'contact',
+          recordType: "contact",
           recordId: customer.id,
           externalId: newContact.id,
-          syncType: 'create',
-          direction: 'to_crm',
-          status: 'synced',
+          syncType: "create",
+          direction: "to_crm",
+          status: "synced",
           syncedAt: new Date(),
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -249,41 +258,47 @@ ${delivery.signature ? `Signature: Captured` : ''}
         return newContact;
       }
     } catch (error: unknown) {
-      throw new Error(`Failed to sync customer to CRM: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to sync customer to CRM: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
   /**
    * Resolve field-level conflicts between CRM and Witylogix data
    */
-  async resolveConflict(context: ConflictResolutionContext): Promise<ConflictResolutionResult> {
-    const precedence: string = this.connection.syncConfig?.conflictResolution || 'manual';
+  async resolveConflict(
+    context: ConflictResolutionContext,
+  ): Promise<ConflictResolutionResult> {
+    const precedence: string =
+      this.connection.syncConfig?.conflictResolution || "manual";
 
-    if (precedence === 'crm_wins') {
+    if (precedence === "crm_wins") {
       return {
         field: context.field,
         selectedValue: context.crmValue,
-        selectedSource: 'crm',
+        selectedSource: "crm",
         requiresManualReview: false,
       };
     }
 
-    if (precedence === 'witylogix_wins') {
+    if (precedence === "witylogix_wins") {
       return {
         field: context.field,
         selectedValue: context.witylogixValue,
-        selectedSource: 'witylogix',
+        selectedSource: "witylogix",
         requiresManualReview: false,
       };
     }
 
     // Manual resolution: use most recent value
-    const useWitylogix: boolean = context.witylogixModifiedAt.getTime() > context.crmModifiedAt.getTime();
+    const useWitylogix: boolean =
+      context.witylogixModifiedAt.getTime() > context.crmModifiedAt.getTime();
 
     return {
       field: context.field,
       selectedValue: useWitylogix ? context.witylogixValue : context.crmValue,
-      selectedSource: useWitylogix ? 'witylogix' : 'crm',
+      selectedSource: useWitylogix ? "witylogix" : "crm",
       requiresManualReview: true,
     };
   }
@@ -293,7 +308,7 @@ ${delivery.signature ? `Signature: Captured` : ''}
    */
   async performBidirectionalSync(
     witylogixRecords: SyncableEntity[],
-    crmRecordType: 'contact' | 'account' | 'opportunity',
+    crmRecordType: "contact" | "account" | "opportunity",
   ): Promise<CRMSyncResult[]> {
     const results: CRMSyncResult[] = [];
 
@@ -301,17 +316,21 @@ ${delivery.signature ? `Signature: Captured` : ''}
     let crmRecords: Array<{ id: string; data: Record<string, unknown> }> = [];
 
     try {
-      if (crmRecordType === 'contact') {
+      if (crmRecordType === "contact") {
         const contactsResult = await this.adapter.getContacts({
-          modifiedAfter: this.connection.lastSyncAt || new Date(Date.now() - 24 * 60 * 60 * 1000),
+          modifiedAfter:
+            this.connection.lastSyncAt ||
+            new Date(Date.now() - 24 * 60 * 60 * 1000),
         });
         crmRecords = contactsResult.data.map((contact: CRMContact) => ({
           id: contact.id,
           data: contact as unknown as Record<string, unknown>,
         }));
-      } else if (crmRecordType === 'account') {
+      } else if (crmRecordType === "account") {
         const accountsResult = await this.adapter.getAccounts({
-          modifiedAfter: this.connection.lastSyncAt || new Date(Date.now() - 24 * 60 * 60 * 1000),
+          modifiedAfter:
+            this.connection.lastSyncAt ||
+            new Date(Date.now() - 24 * 60 * 60 * 1000),
         });
         crmRecords = accountsResult.data.map((account) => ({
           id: account.id,
@@ -322,10 +341,10 @@ ${delivery.signature ? `Signature: Captured` : ''}
       results.push({
         id: `sync_${Date.now()}`,
         recordType: crmRecordType,
-        recordId: 'bulk',
+        recordId: "bulk",
         provider: this.connection.provider,
-        status: 'failed',
-        message: `Failed to fetch ${crmRecordType}s from CRM: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        status: "failed",
+        message: `Failed to fetch ${crmRecordType}s from CRM: ${error instanceof Error ? error.message : "Unknown error"}`,
         timestamp: new Date(),
       });
       return results;
@@ -334,29 +353,32 @@ ${delivery.signature ? `Signature: Captured` : ''}
     // Sync Witylogix records to CRM
     for (const record of witylogixRecords) {
       try {
-        if (record.type === 'contact' && crmRecordType === 'contact') {
-          const customer: WitylogixCustomer = record.data as unknown as WitylogixCustomer;
+        if (record.type === "contact" && crmRecordType === "contact") {
+          const customer: WitylogixCustomer =
+            record.data as unknown as WitylogixCustomer;
           const crmContact: CRMContact = await this.syncCustomerToCRM(customer);
 
           results.push({
             id: record.id,
-            recordType: 'contact',
+            recordType: "contact",
             recordId: record.id,
             externalId: crmContact.id,
             provider: this.connection.provider,
-            status: 'synced',
-            message: 'Contact synced to CRM',
+            status: "synced",
+            message: "Contact synced to CRM",
             timestamp: new Date(),
           });
         }
       } catch (error: unknown) {
         results.push({
           id: record.id,
-          recordType: (record.type === 'delivery' || record.type === 'customer' ? 'contact' : record.type) as import('./types.js').CRMRecordType,
+          recordType: (record.type === "delivery" || record.type === "customer"
+            ? "contact"
+            : record.type) as import("./types.js").CRMRecordType,
           recordId: record.id,
           provider: this.connection.provider,
-          status: 'failed',
-          message: error instanceof Error ? error.message : 'Unknown error',
+          status: "failed",
+          message: error instanceof Error ? error.message : "Unknown error",
           timestamp: new Date(),
         });
       }
@@ -372,16 +394,18 @@ ${delivery.signature ? `Signature: Captured` : ''}
    * Incremental sync using change tokens
    */
   async performIncrementalSync(
-    recordType: 'contact' | 'account' | 'opportunity',
+    recordType: "contact" | "account" | "opportunity",
   ): Promise<CRMSyncResult[]> {
     const results: CRMSyncResult[] = [];
-    const lastSyncToken: string | undefined = this.connection.syncConfig?.lastSyncToken;
+    const lastSyncToken: string | undefined =
+      this.connection.syncConfig?.lastSyncToken;
 
     // Determine modifiedAfter date
-    const modifiedAfter: Date = this.connection.lastSyncAt || new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const modifiedAfter: Date =
+      this.connection.lastSyncAt || new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     try {
-      if (recordType === 'contact') {
+      if (recordType === "contact") {
         const contactsResult = await this.adapter.getContacts({
           modifiedAfter,
         });
@@ -389,11 +413,11 @@ ${delivery.signature ? `Signature: Captured` : ''}
         for (const contact of contactsResult.data) {
           results.push({
             id: contact.id,
-            recordType: 'contact',
+            recordType: "contact",
             recordId: contact.id,
             provider: this.connection.provider,
-            status: 'synced',
-            message: 'Contact fetched from CRM',
+            status: "synced",
+            message: "Contact fetched from CRM",
             timestamp: new Date(),
           });
         }
@@ -402,10 +426,10 @@ ${delivery.signature ? `Signature: Captured` : ''}
       results.push({
         id: `sync_${Date.now()}`,
         recordType,
-        recordId: 'bulk',
+        recordId: "bulk",
         provider: this.connection.provider,
-        status: 'failed',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        status: "failed",
+        message: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date(),
       });
     }
@@ -416,11 +440,17 @@ ${delivery.signature ? `Signature: Captured` : ''}
   /**
    * Get sync audit trail
    */
-  getSyncLogs(filters?: { recordType?: string; status?: string; limit?: number }): CRMSyncLog[] {
+  getSyncLogs(filters?: {
+    recordType?: string;
+    status?: string;
+    limit?: number;
+  }): CRMSyncLog[] {
     let logs: CRMSyncLog[] = this.syncLogs;
 
     if (filters?.recordType) {
-      logs = logs.filter((log: CRMSyncLog) => log.recordType === filters.recordType);
+      logs = logs.filter(
+        (log: CRMSyncLog) => log.recordType === filters.recordType,
+      );
     }
     if (filters?.status) {
       logs = logs.filter((log: CRMSyncLog) => log.status === filters.status);
@@ -440,10 +470,10 @@ ${delivery.signature ? `Signature: Captured` : ''}
     lastSyncAt: Date | undefined;
   } {
     const successCount: number = this.syncLogs.filter(
-      (log: CRMSyncLog) => log.status === 'synced',
+      (log: CRMSyncLog) => log.status === "synced",
     ).length;
     const failureCount: number = this.syncLogs.filter(
-      (log: CRMSyncLog) => log.status === 'failed',
+      (log: CRMSyncLog) => log.status === "failed",
     ).length;
 
     return {
@@ -469,17 +499,20 @@ ${delivery.signature ? `Signature: Captured` : ''}
   /**
    * Validate field mapping
    */
-  validateFieldMapping(mapping: CRMFieldMapping): { valid: boolean; errors: string[] } {
+  validateFieldMapping(mapping: CRMFieldMapping): {
+    valid: boolean;
+    errors: string[];
+  } {
     const errors: string[] = [];
 
     if (!mapping.witylogixField) {
-      errors.push('Witylogix field is required');
+      errors.push("Witylogix field is required");
     }
     if (!mapping.crmField) {
-      errors.push('CRM field is required');
+      errors.push("CRM field is required");
     }
-    if (!['bidirectional', 'to_crm', 'from_crm'].includes(mapping.direction)) {
-      errors.push('Invalid sync direction');
+    if (!["bidirectional", "to_crm", "from_crm"].includes(mapping.direction)) {
+      errors.push("Invalid sync direction");
     }
 
     return {

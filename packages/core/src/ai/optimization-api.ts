@@ -72,7 +72,11 @@ export interface OptimizeRoutesRequest {
     costPerHour: number;
     rating?: number;
   }>;
-  mode?: "minimize_distance" | "minimize_time" | "minimize_cost" | "balance_workload";
+  mode?:
+    | "minimize_distance"
+    | "minimize_time"
+    | "minimize_cost"
+    | "balance_workload";
   depotLatitude?: number;
   depotLongitude?: number;
 }
@@ -242,7 +246,7 @@ function validateAssignmentRequest(req: DriverAssignmentRequest): string[] {
  * Optimize a set of stops across available vehicles
  */
 export async function handleOptimizeRoutes(
-  req: OptimizeRoutesRequest
+  req: OptimizeRoutesRequest,
 ): Promise<ApiResponse<OptimizationResult>> {
   const startTime = Date.now();
 
@@ -330,7 +334,7 @@ export async function handleOptimizeRoutes(
  * Predict ETA for a delivery route
  */
 export async function handlePredictETA(
-  req: ETARequest
+  req: ETARequest,
 ): Promise<ApiResponse<ETAPrediction>> {
   const startTime = Date.now();
 
@@ -362,7 +366,7 @@ export async function handlePredictETA(
       segment,
       req.vehicleType,
       req.weatherCondition,
-      new Date(req.departureTime)
+      new Date(req.departureTime),
     );
 
     return {
@@ -387,7 +391,7 @@ export async function handlePredictETA(
  * Get delivery zone heat map data
  */
 export async function handleGetZoneHeatmap(
-  req: DeliveryZoneRequest
+  req: DeliveryZoneRequest,
 ): Promise<ApiResponse<HeatMapData>> {
   const startTime = Date.now();
 
@@ -445,7 +449,7 @@ export async function handleGetZoneHeatmap(
  * Smart driver assignment
  */
 export async function handleAssignDrivers(
-  req: DriverAssignmentRequest
+  req: DriverAssignmentRequest,
 ): Promise<ApiResponse<BatchAssignmentResult>> {
   const startTime = Date.now();
 
@@ -533,7 +537,7 @@ export async function handleAssignDrivers(
  * Calculate estimated savings from optimization
  */
 export async function handleCalculateSavings(
-  req: OptimizeRoutesRequest
+  req: OptimizeRoutesRequest,
 ): Promise<
   ApiResponse<{
     totalDistanceSaved: number;

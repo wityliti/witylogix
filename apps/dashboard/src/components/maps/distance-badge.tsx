@@ -22,20 +22,25 @@ const DistanceBadge = forwardRef<HTMLSpanElement, DistanceBadgeProps>(
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const formatDistance = (value: number, u: "km" | "mi"): string => {
       if (u === "km") {
-        return value >= 1 ? `${value.toFixed(1)} km` : `${Math.round(value * 1000)} m`;
+        return value >= 1
+          ? `${value.toFixed(1)} km`
+          : `${Math.round(value * 1000)} m`;
       }
       return `${value.toFixed(1)} mi`;
     };
 
     const displayDistance = formatDistance(distance, unit);
-    const displayText = showAwaySuffix ? `${displayDistance} away` : displayDistance;
+    const displayText = showAwaySuffix
+      ? `${displayDistance} away`
+      : displayDistance;
 
     const variantClasses = {
-      default: "text-wl-text-secondary bg-wl-bg-overlay border border-wl-border-subtle",
+      default:
+        "text-wl-text-secondary bg-wl-bg-overlay border border-wl-border-subtle",
       subtle: "text-wl-text-tertiary bg-transparent border border-transparent",
     };
 
@@ -49,7 +54,7 @@ const DistanceBadge = forwardRef<HTMLSpanElement, DistanceBadgeProps>(
           "transition-all duration-base",
           compact && "px-2 py-0.5 text-xs",
           variantClasses[variant],
-          className
+          className,
         )}
         {...props}
       >
@@ -66,10 +71,12 @@ const DistanceBadge = forwardRef<HTMLSpanElement, DistanceBadgeProps>(
           <path d="M16 8l-2.828 2.828M10.828 13.172L8 16" />
         </svg>
         <span className={compact ? "hidden sm:inline" : ""}>{displayText}</span>
-        <span className={cn(compact && "inline sm:hidden")}>{displayDistance}</span>
+        <span className={cn(compact && "inline sm:hidden")}>
+          {displayDistance}
+        </span>
       </span>
     );
-  }
+  },
 );
 
 DistanceBadge.displayName = "DistanceBadge";

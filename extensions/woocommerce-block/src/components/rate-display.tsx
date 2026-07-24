@@ -3,7 +3,7 @@
  * Shows zone-based delivery rates for WooCommerce checkout
  */
 
-import type { ZoneRate } from '../api/witylogix-api';
+import type { ZoneRate } from "../api/witylogix-api";
 
 interface RateDisplayProps {
   rate?: ZoneRate;
@@ -52,7 +52,9 @@ export function RateDisplay({
   if (!rate) {
     return (
       <div className="witylogix-rate-display witylogix-rate-display--empty">
-        <p className="rate-empty-message">Enter shipping address to see rates</p>
+        <p className="rate-empty-message">
+          Enter shipping address to see rates
+        </p>
       </div>
     );
   }

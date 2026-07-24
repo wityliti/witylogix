@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useApiQuery, useApiMutation } from '@/hooks/use-api';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { Header } from '@/components/layout/header';
+import { useState } from "react";
+import { useApiQuery, useApiMutation } from "@/hooks/use-api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { Header } from "@/components/layout/header";
 import {
   Card,
   CardHeader,
@@ -12,17 +12,11 @@ import {
   CardContent,
   CardDescription,
   CardFooter,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
-import {
-  Save,
-  MapPin,
-  Globe,
-  Calendar,
-  Weight,
-} from 'lucide-react';
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { Save, MapPin, Globe, Calendar, Weight } from "lucide-react";
 
 interface UserPreferences {
   timezone: string;
@@ -67,17 +61,27 @@ const DATE_FORMATS = [
 ];
 
 export default function PreferencesPage() {
-  const { data: prefs, loading, error, refetch } = useApiQuery<UserPreferences>('/api/v4/settings/preferences');
-  const { execute: updatePrefs } = useApiMutation('PATCH', '/api/v4/settings/preferences');
+  const {
+    data: prefs,
+    loading,
+    error,
+    refetch,
+  } = useApiQuery<UserPreferences>("/api/v4/settings/preferences");
+  const { execute: updatePrefs } = useApiMutation(
+    "PATCH",
+    "/api/v4/settings/preferences",
+  );
 
-  const [preferences, setPreferences] = useState(prefs || {
-    timezone: 'America/New_York',
-    language: 'en',
-    dateFormat: 'MM/DD/YYYY',
-    distanceUnit: 'miles',
-    weightUnit: 'lbs',
-    dashboardView: 'grid',
-  });
+  const [preferences, setPreferences] = useState(
+    prefs || {
+      timezone: "America/New_York",
+      language: "en",
+      dateFormat: "MM/DD/YYYY",
+      distanceUnit: "miles",
+      weightUnit: "lbs",
+      dashboardView: "grid",
+    },
+  );
 
   const [isSaving, setIsSaving] = useState(false);
 
@@ -95,7 +99,7 @@ export default function PreferencesPage() {
       await updatePrefs(preferences);
       refetch();
     } catch (err) {
-      console.error('Failed to update preferences:', err);
+      console.error("Failed to update preferences:", err);
     } finally {
       setIsSaving(false);
     }
@@ -117,7 +121,9 @@ export default function PreferencesPage() {
                 <MapPin className="w-5 h-5" />
                 Location & Timezone
               </CardTitle>
-              <CardDescription className="text-gray-400">Set your timezone for accurate scheduling</CardDescription>
+              <CardDescription className="text-gray-400">
+                Set your timezone for accurate scheduling
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -126,7 +132,9 @@ export default function PreferencesPage() {
                 </label>
                 <select
                   value={preferences.timezone}
-                  onChange={(e) => setPreferences({ ...preferences, timezone: e.target.value })}
+                  onChange={(e) =>
+                    setPreferences({ ...preferences, timezone: e.target.value })
+                  }
                   className="w-full px-3 py-2 bg-wl-bg-root text-white border border-wl-border-default rounded-md text-sm"
                 >
                   {TIMEZONES.map((tz) => (
@@ -136,11 +144,7 @@ export default function PreferencesPage() {
                   ))}
                 </select>
               </div>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={detectTimezone}
-              >
+              <Button variant="secondary" size="sm" onClick={detectTimezone}>
                 Auto-Detect Timezone
               </Button>
             </CardContent>
@@ -153,7 +157,9 @@ export default function PreferencesPage() {
                 <Globe className="w-5 h-5" />
                 Language & Regional
               </CardTitle>
-              <CardDescription className="text-gray-400">Choose your preferred language and date format</CardDescription>
+              <CardDescription className="text-gray-400">
+                Choose your preferred language and date format
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -162,7 +168,9 @@ export default function PreferencesPage() {
                 </label>
                 <select
                   value={preferences.language}
-                  onChange={(e) => setPreferences({ ...preferences, language: e.target.value })}
+                  onChange={(e) =>
+                    setPreferences({ ...preferences, language: e.target.value })
+                  }
                   className="w-full px-3 py-2 bg-wl-bg-root text-white border border-wl-border-default rounded-md text-sm"
                 >
                   {LANGUAGES.map((lang) => (
@@ -179,7 +187,12 @@ export default function PreferencesPage() {
                 </label>
                 <select
                   value={preferences.dateFormat}
-                  onChange={(e) => setPreferences({ ...preferences, dateFormat: e.target.value })}
+                  onChange={(e) =>
+                    setPreferences({
+                      ...preferences,
+                      dateFormat: e.target.value,
+                    })
+                  }
                   className="w-full px-3 py-2 bg-wl-bg-root text-white border border-wl-border-default rounded-md text-sm"
                 >
                   {DATE_FORMATS.map((fmt) => (
@@ -199,7 +212,9 @@ export default function PreferencesPage() {
                 <Weight className="w-5 h-5" />
                 Units & Measurements
               </CardTitle>
-              <CardDescription className="text-gray-400">Set your preferred units for distance and weight</CardDescription>
+              <CardDescription className="text-gray-400">
+                Set your preferred units for distance and weight
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -211,13 +226,21 @@ export default function PreferencesPage() {
                     { value: "miles", label: "Miles (mi)" },
                     { value: "kilometers", label: "Kilometers (km)" },
                   ].map((option) => (
-                    <label key={option.value} className="flex items-center gap-2 cursor-pointer">
+                    <label
+                      key={option.value}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
                       <input
                         type="radio"
                         name="distance"
                         value={option.value}
                         checked={preferences.distanceUnit === option.value}
-                        onChange={(e) => setPreferences({ ...preferences, distanceUnit: e.target.value })}
+                        onChange={(e) =>
+                          setPreferences({
+                            ...preferences,
+                            distanceUnit: e.target.value,
+                          })
+                        }
                         className="w-4 h-4 cursor-pointer"
                       />
                       <span className="text-sm text-gray-400">
@@ -237,13 +260,21 @@ export default function PreferencesPage() {
                     { value: "lbs", label: "Pounds (lbs)" },
                     { value: "kg", label: "Kilograms (kg)" },
                   ].map((option) => (
-                    <label key={option.value} className="flex items-center gap-2 cursor-pointer">
+                    <label
+                      key={option.value}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
                       <input
                         type="radio"
                         name="weight"
                         value={option.value}
                         checked={preferences.weightUnit === option.value}
-                        onChange={(e) => setPreferences({ ...preferences, weightUnit: e.target.value })}
+                        onChange={(e) =>
+                          setPreferences({
+                            ...preferences,
+                            weightUnit: e.target.value,
+                          })
+                        }
                         className="w-4 h-4 cursor-pointer"
                       />
                       <span className="text-sm text-gray-400">
@@ -263,7 +294,9 @@ export default function PreferencesPage() {
                 <Calendar className="w-5 h-5" />
                 Dashboard Display
               </CardTitle>
-              <CardDescription className="text-gray-400">Customize your default dashboard view</CardDescription>
+              <CardDescription className="text-gray-400">
+                Customize your default dashboard view
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -283,7 +316,7 @@ export default function PreferencesPage() {
                         "p-3 border border-wl-border-default rounded-lg cursor-pointer transition-all",
                         preferences.dashboardView === option.value
                           ? "border-blue-500 bg-blue-500/10"
-                          : "hover:border-gray-400"
+                          : "hover:border-gray-400",
                       )}
                     >
                       <input
@@ -291,7 +324,12 @@ export default function PreferencesPage() {
                         name="dashboard"
                         value={option.value}
                         checked={preferences.dashboardView === option.value}
-                        onChange={(e) => setPreferences({ ...preferences, dashboardView: e.target.value })}
+                        onChange={(e) =>
+                          setPreferences({
+                            ...preferences,
+                            dashboardView: e.target.value,
+                          })
+                        }
                         className="w-4 h-4 cursor-pointer"
                       />
                       <span className="text-sm font-medium text-white ml-2">

@@ -24,7 +24,7 @@ cp .env.example .env
 
 ```typescript
 // Use validated environment variables
-import { env } from '@witylogix/core/config';
+import { env } from "@witylogix/core/config";
 
 const PORT = env.PORT; // 8000 (number)
 const dbUrl = env.DATABASE_URL; // postgresql://...
@@ -33,25 +33,25 @@ const dbUrl = env.DATABASE_URL; // postgresql://...
 ### 3. Access Nested Configuration
 
 ```typescript
-import { getConfig } from '@witylogix/core/config';
+import { getConfig } from "@witylogix/core/config";
 
 const config = getConfig();
 
 // Typed nested access
-const poolSize = config.get('database.poolSize'); // number
-const jwtSecret = config.get('jwt.secret'); // string
+const poolSize = config.get("database.poolSize"); // number
+const jwtSecret = config.get("jwt.secret"); // string
 ```
 
 ### 4. Enable/Disable Features
 
 ```typescript
-import { isFeatureEnabled, FeatureFlag } from '@witylogix/core/config';
+import { isFeatureEnabled, FeatureFlag } from "@witylogix/core/config";
 
 if (isFeatureEnabled(FeatureFlag.MFA_REQUIRED)) {
   // Enforce MFA for all users
 }
 
-if (isFeatureEnabled(FeatureFlag.WEBHOOK_V2, { tenantId: 'org-123' })) {
+if (isFeatureEnabled(FeatureFlag.WEBHOOK_V2, { tenantId: "org-123" })) {
   // Use v2 webhook format for this tenant
 }
 ```
@@ -59,15 +59,15 @@ if (isFeatureEnabled(FeatureFlag.WEBHOOK_V2, { tenantId: 'org-123' })) {
 ### 5. Manage Secrets
 
 ```typescript
-import { SecretsManager } from '@witylogix/core/config';
+import { SecretsManager } from "@witylogix/core/config";
 
-const secrets = new SecretsManager('environment');
+const secrets = new SecretsManager("environment");
 
 // Get a secret (with caching)
-const apiKey = await secrets.getSecret('STRIPE_SECRET_KEY');
+const apiKey = await secrets.getSecret("STRIPE_SECRET_KEY");
 
 // Rotate a secret (zero downtime)
-await secrets.rotateSecret('JWT_SECRET', newSecretValue);
+await secrets.rotateSecret("JWT_SECRET", newSecretValue);
 ```
 
 ## Module Details
@@ -83,6 +83,7 @@ Provides Zod-based validation with these features:
 - **Full type safety**: Exported `Env` type for TypeScript
 
 **Schema includes:**
+
 - Server: `PORT`, `NODE_ENV`, `LOG_LEVEL`
 - Database: `DATABASE_URL`, `DATABASE_POOL_SIZE`, `DATABASE_READ_REPLICA_URL`
 - Redis: `REDIS_URL`, `REDIS_PASSWORD`
@@ -111,13 +112,13 @@ Singleton configuration service providing:
 const config = getConfig();
 
 // Nested access
-config.get('database.url');
-config.get('jwt.secret');
-config.get('smtp.host');
+config.get("database.url");
+config.get("jwt.secret");
+config.get("smtp.host");
 
 // Feature flags
-config.isFeatureEnabled('MFA_REQUIRED');
-config.setFeatureFlag('WEBHOOK_V2', true);
+config.isFeatureEnabled("MFA_REQUIRED");
+config.setFeatureFlag("WEBHOOK_V2", true);
 
 // Debug (secrets redacted)
 console.log(config.getSnapshot());
@@ -134,28 +135,28 @@ Multi-provider secrets management with:
 
 ```typescript
 // Use environment variables
-const mgr = new SecretsManager('environment');
+const mgr = new SecretsManager("environment");
 
 // Or file-based (.env.vault format)
-const mgr = new SecretsManager('file', { filePath: '.env.vault' });
+const mgr = new SecretsManager("file", { filePath: ".env.vault" });
 
 // Or HashiCorp Vault
-const mgr = new SecretsManager('vault', {
-  vaultUrl: 'https://vault.example.com',
-  vaultToken: process.env.VAULT_TOKEN
+const mgr = new SecretsManager("vault", {
+  vaultUrl: "https://vault.example.com",
+  vaultToken: process.env.VAULT_TOKEN,
 });
 
 // Or AWS Secrets Manager
-const mgr = new SecretsManager('aws', { awsRegion: 'us-east-1' });
+const mgr = new SecretsManager("aws", { awsRegion: "us-east-1" });
 
 // Get secret (with caching)
-const secret = await mgr.getSecret('STRIPE_SECRET_KEY');
+const secret = await mgr.getSecret("STRIPE_SECRET_KEY");
 
 // Rotate secret
-await mgr.rotateSecret('JWT_SECRET', newValue);
+await mgr.rotateSecret("JWT_SECRET", newValue);
 
 // Invalidate cache
-mgr.invalidateCache('JWT_SECRET');
+mgr.invalidateCache("JWT_SECRET");
 ```
 
 ### feature-flags.ts
@@ -167,8 +168,8 @@ import {
   FeatureFlag,
   isFeatureEnabled,
   enableFeatureForTenant,
-  getEnabledFlagsForTenant
-} from '@witylogix/core/config';
+  getEnabledFlagsForTenant,
+} from "@witylogix/core/config";
 
 // Simple check
 if (isFeatureEnabled(FeatureFlag.MFA_REQUIRED)) {
@@ -176,27 +177,30 @@ if (isFeatureEnabled(FeatureFlag.MFA_REQUIRED)) {
 }
 
 // Context-aware (tenant/user)
-if (isFeatureEnabled(FeatureFlag.WEBHOOK_V2, { tenantId: 'org-123' })) {
+if (isFeatureEnabled(FeatureFlag.WEBHOOK_V2, { tenantId: "org-123" })) {
   // Use v2 webhooks for this tenant
 }
 
 // Percentage rollout (deterministic)
-if (isFeatureEnabled(FeatureFlag.WEBHOOK_V2, {
-  tenantId: 'org-123',
-  percentageRollout: 10  // Roll out to 10% of tenants
-})) {
+if (
+  isFeatureEnabled(FeatureFlag.WEBHOOK_V2, {
+    tenantId: "org-123",
+    percentageRollout: 10, // Roll out to 10% of tenants
+  })
+) {
   // Use v2 for selected 10%
 }
 
 // Tenant overrides
-enableFeatureForTenant(FeatureFlag.SSO_PROVIDERS, 'org-123');
-const enabledFlags = getEnabledFlagsForTenant('org-123');
+enableFeatureForTenant(FeatureFlag.SSO_PROVIDERS, "org-123");
+const enabledFlags = getEnabledFlagsForTenant("org-123");
 
 // Get all definitions (for admin UI)
 const definitions = getAllFlagDefinitions();
 ```
 
 **Available flags:**
+
 - `ONBOARDING_AI_DEFAULTS` — AI-assisted onboarding
 - `MFA_REQUIRED` — Enforce multi-factor auth
 - `WEBHOOK_V2` — New webhook payload structure
@@ -249,7 +253,10 @@ SENTRY_ENVIRONMENT="production"
 Before deploying to production, verify:
 
 ```typescript
-import { DeploymentChecker, formatDeploymentReport } from '@witylogix/core/config';
+import {
+  DeploymentChecker,
+  formatDeploymentReport,
+} from "@witylogix/core/config";
 
 const checker = new DeploymentChecker();
 const report = await checker.runAllChecks();
@@ -262,6 +269,7 @@ if (!report.canDeploy) {
 ```
 
 This checks:
+
 - ✓ Database connectivity
 - ✓ Redis availability
 - ✓ External service API keys
@@ -294,9 +302,9 @@ Set up alerts for configuration issues:
 
 ```typescript
 // Alert on validation errors
-process.on('uncaughtException', (error) => {
-  if (error.name === 'EnvironmentValidationError') {
-    sendAlert('Configuration validation failed', error.message);
+process.on("uncaughtException", (error) => {
+  if (error.name === "EnvironmentValidationError") {
+    sendAlert("Configuration validation failed", error.message);
     process.exit(1);
   }
 });
@@ -304,7 +312,7 @@ process.on('uncaughtException', (error) => {
 // Alert on external service failures
 const report = await checker.runAllChecks();
 if (report.failed > 0) {
-  sendAlert('Deployment checks failed', report.summary);
+  sendAlert("Deployment checks failed", report.summary);
 }
 ```
 
@@ -313,6 +321,7 @@ if (report.failed > 0) {
 ### "JWT_SECRET must be at least 32 characters"
 
 Generate a new secret:
+
 ```bash
 openssl rand -base64 32
 ```
@@ -320,6 +329,7 @@ openssl rand -base64 32
 ### "DATABASE_URL must be a valid URL"
 
 Check your connection string format:
+
 ```
 postgresql://user:password@host:5432/database?schema=public
 ```

@@ -73,7 +73,7 @@ export function FormRadio({
           selected
             ? "border-wl-primary-500 bg-wl-primary-500/10"
             : "border-wl-border-default bg-wl-bg-surface hover:border-wl-border-strong",
-          disabled && "opacity-50 cursor-not-allowed pointer-events-none"
+          disabled && "opacity-50 cursor-not-allowed pointer-events-none",
         )}
       >
         <input
@@ -95,7 +95,7 @@ export function FormRadio({
             "border-2 transition-colors duration-fast",
             selected
               ? "border-wl-primary-500 bg-wl-primary-500"
-              : "border-wl-border-default bg-wl-bg-surface"
+              : "border-wl-border-default bg-wl-bg-surface",
           )}
         >
           {selected && (
@@ -105,11 +105,18 @@ export function FormRadio({
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <p className={cn("text-sm font-medium", selected && "text-wl-primary-500")}>
+          <p
+            className={cn(
+              "text-sm font-medium",
+              selected && "text-wl-primary-500",
+            )}
+          >
             {option.label}
           </p>
           {option.description && (
-            <p className="text-xs text-wl-text-tertiary mt-0.5">{option.description}</p>
+            <p className="text-xs text-wl-text-tertiary mt-0.5">
+              {option.description}
+            </p>
           )}
         </div>
       </label>
@@ -138,10 +145,12 @@ export function FormRadio({
           selected
             ? "border-wl-primary-500 bg-wl-primary-500"
             : "border-wl-border-default bg-wl-bg-surface hover:border-wl-primary-400",
-          disabled && "opacity-50 cursor-not-allowed pointer-events-none"
+          disabled && "opacity-50 cursor-not-allowed pointer-events-none",
         )}
       >
-        {selected && <div className="w-2 h-2 rounded-full bg-wl-text-inverse" />}
+        {selected && (
+          <div className="w-2 h-2 rounded-full bg-wl-text-inverse" />
+        )}
       </div>
 
       {/* Label */}
@@ -149,7 +158,7 @@ export function FormRadio({
         className={cn(
           "text-sm font-medium",
           selected ? "text-wl-text-primary" : "text-wl-text-primary",
-          disabled && "opacity-50 cursor-not-allowed"
+          disabled && "opacity-50 cursor-not-allowed",
         )}
       >
         {option.label}
@@ -176,7 +185,7 @@ export function FormRadioGroup({
       className={cn(
         "flex gap-3",
         layout === "vertical" ? "flex-col" : "flex-row flex-wrap",
-        cardStyle && "flex-col"
+        cardStyle && "flex-col",
       )}
       role="radiogroup"
       aria-invalid={hasError}

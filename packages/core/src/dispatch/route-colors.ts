@@ -27,7 +27,7 @@ export const ROUTE_COLORS = [
   "#E17055", // Dark Orange
 ] as const;
 
-export type RouteColorIndex = typeof ROUTE_COLORS[number];
+export type RouteColorIndex = (typeof ROUTE_COLORS)[number];
 
 /**
  * Get a color from the palette by index
@@ -55,7 +55,7 @@ export function getColorIndexForIdentifier(identifier: string): number {
   let hash = 0;
   for (let i = 0; i < identifier.length; i++) {
     const char = identifier.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32-bit integer
   }
   return Math.abs(hash) % ROUTE_COLORS.length;
@@ -81,8 +81,8 @@ export function lightenColor(hexColor: string, percent: number): string {
   const num = parseInt(hexColor.replace("#", ""), 16);
   const amt = Math.round(2.55 * percent);
   const R = Math.min(255, (num >> 16) + amt);
-  const G = Math.min(255, (num >> 8 & 0x00FF) + amt);
-  const B = Math.min(255, (num & 0x0000FF) + amt);
+  const G = Math.min(255, ((num >> 8) & 0x00ff) + amt);
+  const B = Math.min(255, (num & 0x0000ff) + amt);
   return `#${(0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1)}`;
 }
 
@@ -96,8 +96,8 @@ export function darkenColor(hexColor: string, percent: number): string {
   const num = parseInt(hexColor.replace("#", ""), 16);
   const amt = Math.round(2.55 * percent);
   const R = Math.max(0, (num >> 16) - amt);
-  const G = Math.max(0, (num >> 8 & 0x00FF) - amt);
-  const B = Math.max(0, (num & 0x0000FF) - amt);
+  const G = Math.max(0, ((num >> 8) & 0x00ff) - amt);
+  const B = Math.max(0, (num & 0x0000ff) - amt);
   return `#${(0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1)}`;
 }
 
@@ -106,7 +106,11 @@ export function darkenColor(hexColor: string, percent: number): string {
  * @param hexColor Hex color code
  * @returns Object with r, g, b values (0-255)
  */
-export function hexToRgb(hexColor: string): { r: number; g: number; b: number } {
+export function hexToRgb(hexColor: string): {
+  r: number;
+  g: number;
+  b: number;
+} {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hexColor);
   if (!result) {
     return { r: 0, g: 0, b: 0 };

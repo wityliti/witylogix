@@ -33,7 +33,15 @@ interface FilterState {
   searchQuery?: string;
 }
 
-function StatCard({ label, value, color }: { label: string; value: string | number; color: "primary" | "info" | "success" | "warning" | "danger" }) {
+function StatCard({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: string | number;
+  color: "primary" | "info" | "success" | "warning" | "danger";
+}) {
   const colorMap = {
     primary: "bg-blue-500/12 text-blue-400",
     info: "bg-blue-500/12 text-blue-400",
@@ -44,24 +52,36 @@ function StatCard({ label, value, color }: { label: string; value: string | numb
 
   return (
     <Card className={cn("p-4", colorMap[color])}>
-      <p className="text-xs uppercase tracking-wide font-semibold opacity-75">{label}</p>
+      <p className="text-xs uppercase tracking-wide font-semibold opacity-75">
+        {label}
+      </p>
       <p className="text-2xl font-bold mt-2">{value}</p>
     </Card>
   );
 }
 
 export default function EventsPage() {
-  const { items: data, loading, error, refetch } = useApiList<ActivityLog>("/api/v4/activity-logs");
+  const {
+    items: data,
+    loading,
+    error,
+    refetch,
+  } = useApiList<ActivityLog>("/api/v4/activity-logs");
   const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
   const [filters, setFilters] = useState<FilterState>({});
 
-  if (loading && data.length === 0) return <TableSkeleton rows={10} columns={6} />;
+  if (loading && data.length === 0)
+    return <TableSkeleton rows={10} columns={6} />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const cutoff24h = Date.now() - 24 * 60 * 60 * 1000;
-  const last24hCount = data.filter((e) => new Date(e.timestamp).getTime() >= cutoff24h).length;
-  const errorCount = data.filter((e) =>
-    e.action?.toLowerCase().includes("fail") || e.action?.toLowerCase().includes("error")
+  const last24hCount = data.filter(
+    (e) => new Date(e.timestamp).getTime() >= cutoff24h,
+  ).length;
+  const errorCount = data.filter(
+    (e) =>
+      e.action?.toLowerCase().includes("fail") ||
+      e.action?.toLowerCase().includes("error"),
   ).length;
 
   const toggleEventSelection = (eventId: string) => {
@@ -102,8 +122,16 @@ export default function EventsPage() {
       <div className="grid grid-cols-4 gap-4">
         <StatCard label="Total Events" value={data.length} color="primary" />
         <StatCard label="Last 24h" value={last24hCount} color="info" />
-        <StatCard label="Event Types" value={new Set(data.map((e) => e.action)).size} color="success" />
-        <StatCard label="Errors" value={errorCount} color={errorCount > 0 ? "danger" : "success"} />
+        <StatCard
+          label="Event Types"
+          value={new Set(data.map((e) => e.action)).size}
+          color="success"
+        />
+        <StatCard
+          label="Errors"
+          value={errorCount}
+          color={errorCount > 0 ? "danger" : "success"}
+        />
       </div>
 
       {/* Filters and Controls */}
@@ -112,7 +140,12 @@ export default function EventsPage() {
           <div className="flex items-center justify-between">
             <CardTitle className="text-white">Filters & Search</CardTitle>
             {Object.keys(filters).length > 0 && (
-              <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs text-gray-400">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearFilters}
+                className="text-xs text-gray-400"
+              >
                 <X className="w-3 h-3 mr-1" />
                 Clear All
               </Button>
@@ -135,7 +168,7 @@ export default function EventsPage() {
                 "text-white text-sm",
                 "placeholder-gray-500",
                 "focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30",
-                "transition-colors duration-200"
+                "transition-colors duration-200",
               )}
             />
           </div>
@@ -143,22 +176,38 @@ export default function EventsPage() {
           {/* Filter Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wide">Event Type</label>
+              <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wide">
+                Event Type
+              </label>
               <select
                 value={filters.eventType || ""}
                 onChange={(e) => updateFilter("eventType", e.target.value)}
-                className={cn("w-full px-3 py-2 rounded-md", "bg-wl-bg-elevated border border-wl-border-default", "text-white text-sm", "focus:outline-none focus:border-blue-500", "transition-colors duration-200")}
+                className={cn(
+                  "w-full px-3 py-2 rounded-md",
+                  "bg-wl-bg-elevated border border-wl-border-default",
+                  "text-white text-sm",
+                  "focus:outline-none focus:border-blue-500",
+                  "transition-colors duration-200",
+                )}
               >
                 <option value="">All Types</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wide">Source</label>
+              <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wide">
+                Source
+              </label>
               <select
                 value={(filters.source as string) || ""}
                 onChange={(e) => updateFilter("source", e.target.value as any)}
-                className={cn("w-full px-3 py-2 rounded-md", "bg-wl-bg-elevated border border-wl-border-default", "text-white text-sm", "focus:outline-none focus:border-blue-500", "transition-colors duration-200")}
+                className={cn(
+                  "w-full px-3 py-2 rounded-md",
+                  "bg-wl-bg-elevated border border-wl-border-default",
+                  "text-white text-sm",
+                  "focus:outline-none focus:border-blue-500",
+                  "transition-colors duration-200",
+                )}
               >
                 <option value="">All Sources</option>
                 <option value="api">API</option>
@@ -167,23 +216,39 @@ export default function EventsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wide">Entity Type</label>
+              <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wide">
+                Entity Type
+              </label>
               <select
                 value={filters.entityType || ""}
                 onChange={(e) => updateFilter("entityType", e.target.value)}
-                className={cn("w-full px-3 py-2 rounded-md", "bg-wl-bg-elevated border border-wl-border-default", "text-white text-sm", "focus:outline-none focus:border-blue-500", "transition-colors duration-200")}
+                className={cn(
+                  "w-full px-3 py-2 rounded-md",
+                  "bg-wl-bg-elevated border border-wl-border-default",
+                  "text-white text-sm",
+                  "focus:outline-none focus:border-blue-500",
+                  "transition-colors duration-200",
+                )}
               >
                 <option value="">All Entities</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wide">Date From</label>
+              <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wide">
+                Date From
+              </label>
               <input
                 type="date"
                 value={filters.dateFrom || ""}
                 onChange={(e) => updateFilter("dateFrom", e.target.value)}
-                className={cn("w-full px-3 py-2 rounded-md", "bg-wl-bg-elevated border border-wl-border-default", "text-white text-sm", "focus:outline-none focus:border-blue-500", "transition-colors duration-200")}
+                className={cn(
+                  "w-full px-3 py-2 rounded-md",
+                  "bg-wl-bg-elevated border border-wl-border-default",
+                  "text-white text-sm",
+                  "focus:outline-none focus:border-blue-500",
+                  "transition-colors duration-200",
+                )}
               />
             </div>
           </div>
@@ -203,12 +268,20 @@ export default function EventsPage() {
               aria-label="Select all events"
             />
             <span className="text-xs text-gray-400">
-              {selectedEvents.size > 0 ? `${selectedEvents.size} selected` : "Select events"}
+              {selectedEvents.size > 0
+                ? `${selectedEvents.size} selected`
+                : "Select events"}
             </span>
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="secondary" size="sm" onClick={() => refetch()} disabled={loading} className="gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => refetch()}
+              disabled={loading}
+              className="gap-2"
+            >
               <RefreshCw className="w-3.5 h-3.5" />
               Refresh
             </Button>
@@ -219,7 +292,9 @@ export default function EventsPage() {
         {loading && data.length === 0 ? (
           <div className="grid grid-cols-1 gap-4 pt-8">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Card key={i} className="h-32 bg-wl-bg-surface animate-pulse">{null}</Card>
+              <Card key={i} className="h-32 bg-wl-bg-surface animate-pulse">
+                {null}
+              </Card>
             ))}
           </div>
         ) : data.length === 0 ? (
@@ -243,10 +318,17 @@ export default function EventsPage() {
                 <Card className="flex-1 p-4 bg-wl-bg-surface border-wl-border-default">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h4 className="text-sm font-semibold text-white mb-1">{event.action}</h4>
-                      <p className="text-xs text-gray-400 mb-2">{event.entityType} &bull; {new Date(event.timestamp).toLocaleTimeString()}</p>
+                      <h4 className="text-sm font-semibold text-white mb-1">
+                        {event.action}
+                      </h4>
+                      <p className="text-xs text-gray-400 mb-2">
+                        {event.entityType} &bull;{" "}
+                        {new Date(event.timestamp).toLocaleTimeString()}
+                      </p>
                     </div>
-                    <Badge variant="info" className="text-xs">{event.actorType}</Badge>
+                    <Badge variant="info" className="text-xs">
+                      {event.actorType}
+                    </Badge>
                   </div>
                 </Card>
               </div>

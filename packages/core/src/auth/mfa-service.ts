@@ -131,7 +131,9 @@ export class MfaService {
    * @param phoneNumber Phone number to send OTP to
    * @returns OTP code and expiry time
    */
-  async generateSmsOtp(phoneNumber: string): Promise<{ code: string; expiresAt: Date }> {
+  async generateSmsOtp(
+    phoneNumber: string,
+  ): Promise<{ code: string; expiresAt: Date }> {
     const code = this.generateRandomCode(6);
     const expiresAt = new Date(Date.now() + this.OTP_EXPIRY_MS);
 
@@ -151,7 +153,10 @@ export class MfaService {
   async verifySmsOtp(userId: string, code: string): Promise<boolean> {
     // Check rate limit
     if (this.isRateLimited(userId)) {
-      throw new RateLimitError(60, "Too many MFA attempts. Try again in 1 minute.");
+      throw new RateLimitError(
+        60,
+        "Too many MFA attempts. Try again in 1 minute.",
+      );
     }
 
     try {
@@ -171,7 +176,9 @@ export class MfaService {
    * @param email Email address to send OTP to
    * @returns OTP code and expiry time
    */
-  async generateEmailOtp(email: string): Promise<{ code: string; expiresAt: Date }> {
+  async generateEmailOtp(
+    email: string,
+  ): Promise<{ code: string; expiresAt: Date }> {
     const code = this.generateRandomCode(6);
     const expiresAt = new Date(Date.now() + this.OTP_EXPIRY_MS);
 
@@ -191,7 +198,10 @@ export class MfaService {
   async verifyEmailOtp(userId: string, code: string): Promise<boolean> {
     // Check rate limit
     if (this.isRateLimited(userId)) {
-      throw new RateLimitError(60, "Too many MFA attempts. Try again in 1 minute.");
+      throw new RateLimitError(
+        60,
+        "Too many MFA attempts. Try again in 1 minute.",
+      );
     }
 
     try {
@@ -233,7 +243,10 @@ export class MfaService {
     try {
       // Check rate limit
       if (this.isRateLimited(userId)) {
-        throw new RateLimitError(60, "Too many MFA attempts. Try again in 1 minute.");
+        throw new RateLimitError(
+          60,
+          "Too many MFA attempts. Try again in 1 minute.",
+        );
       }
 
       // TODO: Check against stored backup codes and mark as used
@@ -258,7 +271,11 @@ export class MfaService {
   /**
    * Generate QR code URI (otpauth://).
    */
-  private generateQrCodeUri(email: string, secret: string, userId: string): string {
+  private generateQrCodeUri(
+    email: string,
+    secret: string,
+    userId: string,
+  ): string {
     const params = new URLSearchParams({
       secret,
       issuer: this.totpIssuer,
@@ -353,7 +370,9 @@ export class MfaService {
     const now = Date.now();
 
     // Remove old attempts outside window
-    const recentAttempts = attempts.filter((t) => now - t < this.RATE_LIMIT_WINDOW_MS);
+    const recentAttempts = attempts.filter(
+      (t) => now - t < this.RATE_LIMIT_WINDOW_MS,
+    );
 
     return recentAttempts.length >= this.MAX_ATTEMPTS;
   }

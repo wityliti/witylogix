@@ -13,7 +13,7 @@
  * ~200 lines, 18+ tests
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 // ============================================================================
 // MOCK TYPES & INTERFACES
@@ -27,13 +27,13 @@ interface ClinicalPatient {
   dob: string;
   gender: string;
   registeredAt: Date;
-  status: 'active' | 'inactive' | 'deceased';
+  status: "active" | "inactive" | "deceased";
 }
 
 interface ClinicalEncounter {
   id: string;
   patientId: string;
-  status: 'planned' | 'arrived' | 'in-progress' | 'finished' | 'cancelled';
+  status: "planned" | "arrived" | "in-progress" | "finished" | "cancelled";
   type: string;
   startTime: Date;
   endTime?: Date;
@@ -50,7 +50,7 @@ interface Observation {
   code: string;
   value: string | number;
   unit: string;
-  status: 'preliminary' | 'final' | 'amended' | 'cancelled';
+  status: "preliminary" | "final" | "amended" | "cancelled";
   recordedAt: Date;
 }
 
@@ -59,7 +59,7 @@ interface Condition {
   patientId: string;
   code: string;
   description: string;
-  status: 'active' | 'inactive' | 'resolved';
+  status: "active" | "inactive" | "resolved";
   onsetDate: Date;
   recordedAt: Date;
   encounter?: string;
@@ -71,7 +71,7 @@ interface Medication {
   name: string;
   dosage: string;
   frequency: string;
-  status: 'active' | 'completed' | 'stopped' | 'discontinued';
+  status: "active" | "completed" | "stopped" | "discontinued";
   startDate: Date;
   endDate?: Date;
 }
@@ -101,18 +101,25 @@ class MockClinicalWorkflowService {
   private medications: Map<string, Medication> = new Map();
   private summaries: Map<string, DischargeSummary> = new Map();
 
-  async registerPatient(patientData: Omit<ClinicalPatient, 'id' | 'registeredAt' | 'status'>): Promise<ClinicalPatient> {
+  async registerPatient(
+    patientData: Omit<ClinicalPatient, "id" | "registeredAt" | "status">,
+  ): Promise<ClinicalPatient> {
     const patient: ClinicalPatient = {
       ...patientData,
       id: `pat_${Math.random().toString(36).substr(2, 9)}`,
       registeredAt: new Date(),
-      status: 'active',
+      status: "active",
     };
     this.patients.set(patient.id, patient);
     return patient;
   }
 
-  async createEncounter(data: Omit<ClinicalEncounter, 'id' | 'observations' | 'conditions' | 'medications'>): Promise<ClinicalEncounter> {
+  async createEncounter(
+    data: Omit<
+      ClinicalEncounter,
+      "id" | "observations" | "conditions" | "medications"
+    >,
+  ): Promise<ClinicalEncounter> {
     const encounter: ClinicalEncounter = {
       ...data,
       id: `enc_${Math.random().toString(36).substr(2, 9)}`,
@@ -124,7 +131,9 @@ class MockClinicalWorkflowService {
     return encounter;
   }
 
-  async recordObservation(data: Omit<Observation, 'id' | 'recordedAt'>): Promise<Observation> {
+  async recordObservation(
+    data: Omit<Observation, "id" | "recordedAt">,
+  ): Promise<Observation> {
     const obs: Observation = {
       ...data,
       id: `obs_${Math.random().toString(36).substr(2, 9)}`,
@@ -139,7 +148,9 @@ class MockClinicalWorkflowService {
     return obs;
   }
 
-  async addCondition(data: Omit<Condition, 'id' | 'recordedAt'>): Promise<Condition> {
+  async addCondition(
+    data: Omit<Condition, "id" | "recordedAt">,
+  ): Promise<Condition> {
     const cond: Condition = {
       ...data,
       id: `cond_${Math.random().toString(36).substr(2, 9)}`,
@@ -156,7 +167,7 @@ class MockClinicalWorkflowService {
     return cond;
   }
 
-  async prescribeMedication(data: Omit<Medication, 'id'>): Promise<Medication> {
+  async prescribeMedication(data: Omit<Medication, "id">): Promise<Medication> {
     const med: Medication = {
       ...data,
       id: `med_${Math.random().toString(36).substr(2, 9)}`,
@@ -170,36 +181,45 @@ class MockClinicalWorkflowService {
     return med;
   }
 
-  async updateEncounterStatus(encounterId: string, status: ClinicalEncounter['status']): Promise<ClinicalEncounter> {
+  async updateEncounterStatus(
+    encounterId: string,
+    status: ClinicalEncounter["status"],
+  ): Promise<ClinicalEncounter> {
     const enc = this.encounters.get(encounterId);
     if (!enc) throw new Error(`Encounter ${encounterId} not found`);
     enc.status = status;
-    if (status === 'finished') {
+    if (status === "finished") {
       enc.endTime = new Date();
     }
     return enc;
   }
 
-  async generateDischargeSummary(encounterId: string): Promise<DischargeSummary> {
+  async generateDischargeSummary(
+    encounterId: string,
+  ): Promise<DischargeSummary> {
     const enc = this.encounters.get(encounterId);
     if (!enc) throw new Error(`Encounter ${encounterId} not found`);
 
-    const conditions = enc.conditions.map(id => {
-      const c = this.conditions.get(id);
-      return c?.description || '';
-    }).filter(Boolean);
+    const conditions = enc.conditions
+      .map((id) => {
+        const c = this.conditions.get(id);
+        return c?.description || "";
+      })
+      .filter(Boolean);
 
-    const meds = enc.medications.map(id => {
-      const m = this.medications.get(id);
-      return m ? { name: m.name, dosage: m.dosage } : null;
-    }).filter(Boolean) as Array<{ name: string; dosage: string }>;
+    const meds = enc.medications
+      .map((id) => {
+        const m = this.medications.get(id);
+        return m ? { name: m.name, dosage: m.dosage } : null;
+      })
+      .filter(Boolean) as Array<{ name: string; dosage: string }>;
 
     const summary: DischargeSummary = {
       id: `summ_${Math.random().toString(36).substr(2, 9)}`,
       encounterId,
       patientId: enc.patientId,
       dischargeDate: new Date(),
-      primaryDiagnosis: conditions[0] || '',
+      primaryDiagnosis: conditions[0] || "",
       secondaryDiagnoses: conditions.slice(1),
       procedures: [],
       medications: meds,
@@ -224,11 +244,15 @@ class MockClinicalWorkflowService {
   }
 
   async getPatientEncounters(patientId: string): Promise<ClinicalEncounter[]> {
-    return Array.from(this.encounters.values()).filter(e => e.patientId === patientId);
+    return Array.from(this.encounters.values()).filter(
+      (e) => e.patientId === patientId,
+    );
   }
 
   async getPatientConditions(patientId: string): Promise<Condition[]> {
-    return Array.from(this.conditions.values()).filter(c => c.patientId === patientId);
+    return Array.from(this.conditions.values()).filter(
+      (c) => c.patientId === patientId,
+    );
   }
 }
 
@@ -236,7 +260,7 @@ class MockClinicalWorkflowService {
 // TEST SUITE
 // ============================================================================
 
-describe('Clinical Workflow', () => {
+describe("Clinical Workflow", () => {
   let service: MockClinicalWorkflowService;
 
   beforeEach(() => {
@@ -248,144 +272,147 @@ describe('Clinical Workflow', () => {
   });
 
   // Patient Registration
-  it('should register new patient', async () => {
+  it("should register new patient", async () => {
     const patient = await service.registerPatient({
-      mrn: 'MRN001',
-      firstName: 'John',
-      lastName: 'Doe',
-      dob: '1980-01-01',
-      gender: 'M',
+      mrn: "MRN001",
+      firstName: "John",
+      lastName: "Doe",
+      dob: "1980-01-01",
+      gender: "M",
     });
 
     expect(patient.id).toBeTruthy();
-    expect(patient.status).toBe('active');
+    expect(patient.status).toBe("active");
     expect(patient.registeredAt).toBeTruthy();
   });
 
-  it('should retrieve registered patient', async () => {
+  it("should retrieve registered patient", async () => {
     const created = await service.registerPatient({
-      mrn: 'MRN002',
-      firstName: 'Jane',
-      lastName: 'Smith',
-      dob: '1985-05-15',
-      gender: 'F',
+      mrn: "MRN002",
+      firstName: "Jane",
+      lastName: "Smith",
+      dob: "1985-05-15",
+      gender: "F",
     });
 
     const retrieved = await service.getPatient(created.id);
 
-    expect(retrieved.mrn).toBe('MRN002');
-    expect(retrieved.firstName).toBe('Jane');
+    expect(retrieved.mrn).toBe("MRN002");
+    expect(retrieved.firstName).toBe("Jane");
   });
 
   // Encounter Management
-  it('should create encounter for patient', async () => {
+  it("should create encounter for patient", async () => {
     const patient = await service.registerPatient({
-      mrn: 'MRN003',
-      firstName: 'Bob',
-      lastName: 'Johnson',
-      dob: '1990-03-10',
-      gender: 'M',
+      mrn: "MRN003",
+      firstName: "Bob",
+      lastName: "Johnson",
+      dob: "1990-03-10",
+      gender: "M",
     });
 
     const encounter = await service.createEncounter({
       patientId: patient.id,
-      status: 'planned',
-      type: 'office visit',
+      status: "planned",
+      type: "office visit",
       startTime: new Date(),
-      location: 'Room 101',
-      provider: 'Dr. Smith',
+      location: "Room 101",
+      provider: "Dr. Smith",
     });
 
     expect(encounter.patientId).toBe(patient.id);
-    expect(encounter.status).toBe('planned');
+    expect(encounter.status).toBe("planned");
   });
 
-  it('should transition encounter to in-progress', async () => {
+  it("should transition encounter to in-progress", async () => {
     const patient = await service.registerPatient({
-      mrn: 'MRN004',
-      firstName: 'Alice',
-      lastName: 'Brown',
-      dob: '1992-07-22',
-      gender: 'F',
+      mrn: "MRN004",
+      firstName: "Alice",
+      lastName: "Brown",
+      dob: "1992-07-22",
+      gender: "F",
     });
 
     const encounter = await service.createEncounter({
       patientId: patient.id,
-      status: 'planned',
-      type: 'office visit',
+      status: "planned",
+      type: "office visit",
       startTime: new Date(),
-      location: 'Room 102',
-      provider: 'Dr. Johnson',
+      location: "Room 102",
+      provider: "Dr. Johnson",
     });
 
-    const updated = await service.updateEncounterStatus(encounter.id, 'in-progress');
+    const updated = await service.updateEncounterStatus(
+      encounter.id,
+      "in-progress",
+    );
 
-    expect(updated.status).toBe('in-progress');
+    expect(updated.status).toBe("in-progress");
   });
 
   // Observations
-  it('should record observation during encounter', async () => {
+  it("should record observation during encounter", async () => {
     const patient = await service.registerPatient({
-      mrn: 'MRN005',
-      firstName: 'Charlie',
-      lastName: 'Davis',
-      dob: '1988-11-05',
-      gender: 'M',
+      mrn: "MRN005",
+      firstName: "Charlie",
+      lastName: "Davis",
+      dob: "1988-11-05",
+      gender: "M",
     });
 
     const encounter = await service.createEncounter({
       patientId: patient.id,
-      status: 'in-progress',
-      type: 'office visit',
+      status: "in-progress",
+      type: "office visit",
       startTime: new Date(),
-      location: 'Room 103',
-      provider: 'Dr. Lee',
+      location: "Room 103",
+      provider: "Dr. Lee",
     });
 
     const obs = await service.recordObservation({
       encounterId: encounter.id,
-      code: '9279-1',
+      code: "9279-1",
       value: 16,
-      unit: 'breaths/min',
-      status: 'final',
+      unit: "breaths/min",
+      status: "final",
     });
 
-    expect(obs.code).toBe('9279-1');
-    expect(obs.status).toBe('final');
+    expect(obs.code).toBe("9279-1");
+    expect(obs.status).toBe("final");
   });
 
-  it('should record multiple observations', async () => {
+  it("should record multiple observations", async () => {
     const patient = await service.registerPatient({
-      mrn: 'MRN006',
-      firstName: 'Diana',
-      lastName: 'Evans',
-      dob: '1995-09-12',
-      gender: 'F',
+      mrn: "MRN006",
+      firstName: "Diana",
+      lastName: "Evans",
+      dob: "1995-09-12",
+      gender: "F",
     });
 
     const encounter = await service.createEncounter({
       patientId: patient.id,
-      status: 'in-progress',
-      type: 'office visit',
+      status: "in-progress",
+      type: "office visit",
       startTime: new Date(),
-      location: 'Room 104',
-      provider: 'Dr. Martin',
+      location: "Room 104",
+      provider: "Dr. Martin",
     });
 
     await service.recordObservation({
       encounterId: encounter.id,
-      code: '8480-6',
+      code: "8480-6",
       value: 130,
-      unit: 'mmHg',
-      status: 'final',
+      unit: "mmHg",
+      status: "final",
     });
 
     await service.recordObservation({
       encounterId: encounter.id,
-      code: '8462-4',
+      code: "8462-4",
       value: 80,
-      unit: 'mmHg',
-      status: 'final',
+      unit: "mmHg",
+      status: "final",
     });
 
     const updated = await service.getEncounter(encounter.id);
@@ -394,50 +421,50 @@ describe('Clinical Workflow', () => {
   });
 
   // Conditions
-  it('should track patient condition', async () => {
+  it("should track patient condition", async () => {
     const patient = await service.registerPatient({
-      mrn: 'MRN007',
-      firstName: 'Edward',
-      lastName: 'Frank',
-      dob: '1970-04-20',
-      gender: 'M',
+      mrn: "MRN007",
+      firstName: "Edward",
+      lastName: "Frank",
+      dob: "1970-04-20",
+      gender: "M",
     });
 
     const condition = await service.addCondition({
       patientId: patient.id,
-      code: 'I10',
-      description: 'Essential hypertension',
-      status: 'active',
+      code: "I10",
+      description: "Essential hypertension",
+      status: "active",
       onsetDate: new Date(),
     });
 
-    expect(condition.code).toBe('I10');
-    expect(condition.status).toBe('active');
+    expect(condition.code).toBe("I10");
+    expect(condition.status).toBe("active");
   });
 
-  it('should associate condition with encounter', async () => {
+  it("should associate condition with encounter", async () => {
     const patient = await service.registerPatient({
-      mrn: 'MRN008',
-      firstName: 'Grace',
-      lastName: 'Garcia',
-      dob: '1998-06-30',
-      gender: 'F',
+      mrn: "MRN008",
+      firstName: "Grace",
+      lastName: "Garcia",
+      dob: "1998-06-30",
+      gender: "F",
     });
 
     const encounter = await service.createEncounter({
       patientId: patient.id,
-      status: 'in-progress',
-      type: 'office visit',
+      status: "in-progress",
+      type: "office visit",
       startTime: new Date(),
-      location: 'Room 105',
-      provider: 'Dr. Williams',
+      location: "Room 105",
+      provider: "Dr. Williams",
     });
 
     await service.addCondition({
       patientId: patient.id,
-      code: 'E11',
-      description: 'Type 2 diabetes',
-      status: 'active',
+      code: "E11",
+      description: "Type 2 diabetes",
+      status: "active",
       onsetDate: new Date(),
       encounter: encounter.id,
     });
@@ -447,28 +474,28 @@ describe('Clinical Workflow', () => {
     expect(updated.conditions).toHaveLength(1);
   });
 
-  it('should retrieve patient condition history', async () => {
+  it("should retrieve patient condition history", async () => {
     const patient = await service.registerPatient({
-      mrn: 'MRN009',
-      firstName: 'Henry',
-      lastName: 'Harrison',
-      dob: '1975-12-08',
-      gender: 'M',
+      mrn: "MRN009",
+      firstName: "Henry",
+      lastName: "Harrison",
+      dob: "1975-12-08",
+      gender: "M",
     });
 
     await service.addCondition({
       patientId: patient.id,
-      code: 'I10',
-      description: 'Hypertension',
-      status: 'active',
+      code: "I10",
+      description: "Hypertension",
+      status: "active",
       onsetDate: new Date(),
     });
 
     await service.addCondition({
       patientId: patient.id,
-      code: 'E11',
-      description: 'Type 2 diabetes',
-      status: 'active',
+      code: "E11",
+      description: "Type 2 diabetes",
+      status: "active",
       onsetDate: new Date(),
     });
 
@@ -478,70 +505,70 @@ describe('Clinical Workflow', () => {
   });
 
   // Medications
-  it('should prescribe medication', async () => {
+  it("should prescribe medication", async () => {
     const patient = await service.registerPatient({
-      mrn: 'MRN010',
-      firstName: 'Iris',
-      lastName: 'Iverson',
-      dob: '2000-02-14',
-      gender: 'F',
+      mrn: "MRN010",
+      firstName: "Iris",
+      lastName: "Iverson",
+      dob: "2000-02-14",
+      gender: "F",
     });
 
     const encounter = await service.createEncounter({
       patientId: patient.id,
-      status: 'in-progress',
-      type: 'office visit',
+      status: "in-progress",
+      type: "office visit",
       startTime: new Date(),
-      location: 'Room 106',
-      provider: 'Dr. Taylor',
+      location: "Room 106",
+      provider: "Dr. Taylor",
     });
 
     const med = await service.prescribeMedication({
       encounterId: encounter.id,
-      name: 'Lisinopril',
-      dosage: '10 mg',
-      frequency: 'once daily',
-      status: 'active',
+      name: "Lisinopril",
+      dosage: "10 mg",
+      frequency: "once daily",
+      status: "active",
       startDate: new Date(),
     });
 
-    expect(med.name).toBe('Lisinopril');
-    expect(med.status).toBe('active');
+    expect(med.name).toBe("Lisinopril");
+    expect(med.status).toBe("active");
   });
 
-  it('should manage multiple medications', async () => {
+  it("should manage multiple medications", async () => {
     const patient = await service.registerPatient({
-      mrn: 'MRN011',
-      firstName: 'Jack',
-      lastName: 'Jackson',
-      dob: '1982-08-25',
-      gender: 'M',
+      mrn: "MRN011",
+      firstName: "Jack",
+      lastName: "Jackson",
+      dob: "1982-08-25",
+      gender: "M",
     });
 
     const encounter = await service.createEncounter({
       patientId: patient.id,
-      status: 'in-progress',
-      type: 'office visit',
+      status: "in-progress",
+      type: "office visit",
       startTime: new Date(),
-      location: 'Room 107',
-      provider: 'Dr. Anderson',
+      location: "Room 107",
+      provider: "Dr. Anderson",
     });
 
     await service.prescribeMedication({
       encounterId: encounter.id,
-      name: 'Metformin',
-      dosage: '500 mg',
-      frequency: 'twice daily',
-      status: 'active',
+      name: "Metformin",
+      dosage: "500 mg",
+      frequency: "twice daily",
+      status: "active",
       startDate: new Date(),
     });
 
     await service.prescribeMedication({
       encounterId: encounter.id,
-      name: 'Atorvastatin',
-      dosage: '20 mg',
-      frequency: 'once daily',
-      status: 'active',
+      name: "Atorvastatin",
+      dosage: "20 mg",
+      frequency: "once daily",
+      status: "active",
       startDate: new Date(),
     });
 
@@ -551,63 +578,66 @@ describe('Clinical Workflow', () => {
   });
 
   // Discharge
-  it('should complete encounter and discharge patient', async () => {
+  it("should complete encounter and discharge patient", async () => {
     const patient = await service.registerPatient({
-      mrn: 'MRN012',
-      firstName: 'Karen',
-      lastName: 'Kennedy',
-      dob: '1993-10-30',
-      gender: 'F',
+      mrn: "MRN012",
+      firstName: "Karen",
+      lastName: "Kennedy",
+      dob: "1993-10-30",
+      gender: "F",
     });
 
     const encounter = await service.createEncounter({
       patientId: patient.id,
-      status: 'in-progress',
-      type: 'office visit',
+      status: "in-progress",
+      type: "office visit",
       startTime: new Date(),
-      location: 'Room 108',
-      provider: 'Dr. White',
+      location: "Room 108",
+      provider: "Dr. White",
     });
 
-    const finished = await service.updateEncounterStatus(encounter.id, 'finished');
+    const finished = await service.updateEncounterStatus(
+      encounter.id,
+      "finished",
+    );
 
-    expect(finished.status).toBe('finished');
+    expect(finished.status).toBe("finished");
     expect(finished.endTime).toBeTruthy();
   });
 
-  it('should generate discharge summary', async () => {
+  it("should generate discharge summary", async () => {
     const patient = await service.registerPatient({
-      mrn: 'MRN013',
-      firstName: 'Leon',
-      lastName: 'Lewis',
-      dob: '1987-01-17',
-      gender: 'M',
+      mrn: "MRN013",
+      firstName: "Leon",
+      lastName: "Lewis",
+      dob: "1987-01-17",
+      gender: "M",
     });
 
     const encounter = await service.createEncounter({
       patientId: patient.id,
-      status: 'in-progress',
-      type: 'hospital admission',
+      status: "in-progress",
+      type: "hospital admission",
       startTime: new Date(),
-      location: 'ICU',
-      provider: 'Dr. Green',
+      location: "ICU",
+      provider: "Dr. Green",
     });
 
     await service.addCondition({
       patientId: patient.id,
-      code: 'I50.9',
-      description: 'Unspecified heart failure',
-      status: 'active',
+      code: "I50.9",
+      description: "Unspecified heart failure",
+      status: "active",
       onsetDate: new Date(),
       encounter: encounter.id,
     });
 
     await service.prescribeMedication({
       encounterId: encounter.id,
-      name: 'Furosemide',
-      dosage: '40 mg',
-      frequency: 'once daily',
-      status: 'active',
+      name: "Furosemide",
+      dosage: "40 mg",
+      frequency: "once daily",
+      status: "active",
       startDate: new Date(),
     });
 
@@ -619,31 +649,31 @@ describe('Clinical Workflow', () => {
   });
 
   // Encounter History
-  it('should retrieve patient encounter history', async () => {
+  it("should retrieve patient encounter history", async () => {
     const patient = await service.registerPatient({
-      mrn: 'MRN014',
-      firstName: 'Maria',
-      lastName: 'Martinez',
-      dob: '1991-05-09',
-      gender: 'F',
+      mrn: "MRN014",
+      firstName: "Maria",
+      lastName: "Martinez",
+      dob: "1991-05-09",
+      gender: "F",
     });
 
     await service.createEncounter({
       patientId: patient.id,
-      status: 'finished',
-      type: 'office visit',
-      startTime: new Date('2024-01-01'),
-      location: 'Room 201',
-      provider: 'Dr. Lopez',
+      status: "finished",
+      type: "office visit",
+      startTime: new Date("2024-01-01"),
+      location: "Room 201",
+      provider: "Dr. Lopez",
     });
 
     await service.createEncounter({
       patientId: patient.id,
-      status: 'finished',
-      type: 'follow-up',
-      startTime: new Date('2024-02-01'),
-      location: 'Room 202',
-      provider: 'Dr. Rivera',
+      status: "finished",
+      type: "follow-up",
+      startTime: new Date("2024-02-01"),
+      location: "Room 202",
+      provider: "Dr. Rivera",
     });
 
     const encounters = await service.getPatientEncounters(patient.id);

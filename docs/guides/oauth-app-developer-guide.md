@@ -30,13 +30,13 @@ webhook owned by the app in one step.
 
 The endpoints live under `/api/v4/oauth`:
 
-| Endpoint | Purpose |
-|---|---|
-| `GET  /api/v4/oauth/authorize` | Validate params and redirect to the tenant consent screen |
-| `POST /api/v4/oauth/consent` | Dashboard posts the approved scopes and receives a one-time `code` |
-| `POST /api/v4/oauth/token` | Exchange `code` (or `refresh_token`) for an access token |
-| `POST /api/v4/oauth/revoke` | RFC 7009 token revocation |
-| `GET  /api/v4/oauth/scopes` | Public list of every scope the platform knows about |
+| Endpoint                       | Purpose                                                            |
+| ------------------------------ | ------------------------------------------------------------------ |
+| `GET  /api/v4/oauth/authorize` | Validate params and redirect to the tenant consent screen          |
+| `POST /api/v4/oauth/consent`   | Dashboard posts the approved scopes and receives a one-time `code` |
+| `POST /api/v4/oauth/token`     | Exchange `code` (or `refresh_token`) for an access token           |
+| `POST /api/v4/oauth/revoke`    | RFC 7009 token revocation                                          |
+| `GET  /api/v4/oauth/scopes`    | Public list of every scope the platform knows about                |
 
 Token responses look like this:
 
@@ -88,13 +88,13 @@ after this response is returned; there is no "show me the secret again"
 endpoint. If you lose it, call `POST /clients/:id/rotate-secret` to mint a
 new one (every active installation keeps working).
 
-| Client management endpoint | Use |
-|---|---|
-| `GET /api/v4/oauth/clients` | List clients you own |
-| `GET /api/v4/oauth/clients/:id` | Fetch client metadata |
-| `PATCH /api/v4/oauth/clients/:id` | Update name, logo, redirect URIs, or `allowedScopes` |
-| `DELETE /api/v4/oauth/clients/:id` | Suspend the client and revoke all active installations |
-| `POST /api/v4/oauth/clients/:id/rotate-secret` | Mint a new `clientSecret` |
+| Client management endpoint                     | Use                                                    |
+| ---------------------------------------------- | ------------------------------------------------------ |
+| `GET /api/v4/oauth/clients`                    | List clients you own                                   |
+| `GET /api/v4/oauth/clients/:id`                | Fetch client metadata                                  |
+| `PATCH /api/v4/oauth/clients/:id`              | Update name, logo, redirect URIs, or `allowedScopes`   |
+| `DELETE /api/v4/oauth/clients/:id`             | Suspend the client and revoke all active installations |
+| `POST /api/v4/oauth/clients/:id/rotate-secret` | Mint a new `clientSecret`                              |
 
 `PUBLIC` clients (SPA or mobile) skip the secret and rely on PKCE alone.
 `CONFIDENTIAL` clients (server-to-server) must present `client_secret` on
@@ -116,23 +116,23 @@ from its own `allowedScopes`; a tenant can grant any subset of those.
 
 ### Reading data
 
-| Scope | What it unlocks |
-|---|---|
-| `shipments:read` | Read shipments, status, and current activity-flow stage |
-| `orders:read` | Read orders, line items, fulfillment state |
-| `drivers:read` | Read driver profiles and availability |
-| `routes:read` | Read planned and active delivery routes |
-| `customers:read` | Read customer contact and address information |
-| `operations:read` | Read activity-flow configurations |
+| Scope             | What it unlocks                                         |
+| ----------------- | ------------------------------------------------------- |
+| `shipments:read`  | Read shipments, status, and current activity-flow stage |
+| `orders:read`     | Read orders, line items, fulfillment state              |
+| `drivers:read`    | Read driver profiles and availability                   |
+| `routes:read`     | Read planned and active delivery routes                 |
+| `customers:read`  | Read customer contact and address information           |
+| `operations:read` | Read activity-flow configurations                       |
 
 ### Writing data
 
-| Scope | What it unlocks |
-|---|---|
-| `shipments:write` | Create and update shipments |
-| `orders:write` | Create and update orders |
-| `drivers:write` | Create and update drivers |
-| `routes:write` | Create and update delivery routes |
+| Scope              | What it unlocks                                |
+| ------------------ | ---------------------------------------------- |
+| `shipments:write`  | Create and update shipments                    |
+| `orders:write`     | Create and update orders                       |
+| `drivers:write`    | Create and update drivers                      |
+| `routes:write`     | Create and update delivery routes              |
 | `operations:write` | Create and update activity-flow configurations |
 
 ### Operations state transitions
@@ -141,15 +141,15 @@ These are intentionally split from `:write` so a tenant can install a
 dispatch app that advances stages without letting it edit arbitrary entity
 fields.
 
-| Scope | What it unlocks |
-|---|---|
+| Scope                  | What it unlocks                                    |
+| ---------------------- | -------------------------------------------------- |
 | `shipments:transition` | `POST /api/v4/operations/shipments/:id/transition` |
-| `orders:transition` | `POST /api/v4/operations/orders/:id/transition` |
+| `orders:transition`    | `POST /api/v4/operations/orders/:id/transition`    |
 
 ### Platform
 
-| Scope | What it unlocks |
-|---|---|
+| Scope             | What it unlocks                                    |
+| ----------------- | -------------------------------------------------- |
 | `webhooks:manage` | Register, update, and remove webhook subscriptions |
 
 A flow definition may also set `requiredScope` on a specific transition in
@@ -164,10 +164,10 @@ scope list contains that value — this is how a tenant can allow an app to
 ### 4.1 Generate a PKCE pair
 
 ```ts
-import { createHash, randomBytes } from 'node:crypto'
+import { createHash, randomBytes } from "node:crypto";
 
-const verifier = randomBytes(32).toString('base64url')
-const challenge = createHash('sha256').update(verifier).digest('base64url')
+const verifier = randomBytes(32).toString("base64url");
+const challenge = createHash("sha256").update(verifier).digest("base64url");
 ```
 
 Store `verifier` in a server-side session keyed by `state`; you will need it
@@ -275,12 +275,12 @@ using the scheme described in [docs/api/webhooks.md](../api/webhooks.md).
 
 Useful events for Operations-aware apps:
 
-| Event | Fires when | Required scope |
-|---|---|---|
-| `shipment.stage_changed` | A shipment advances through its activity flow | `shipments:read` |
-| `order.stage_changed` | An order advances through its activity flow | `orders:read` |
-| `shipment.created`, `shipment.updated` | Standard CRUD lifecycle | `shipments:read` |
-| `order.created`, `order.updated` | Standard CRUD lifecycle | `orders:read` |
+| Event                                  | Fires when                                    | Required scope   |
+| -------------------------------------- | --------------------------------------------- | ---------------- |
+| `shipment.stage_changed`               | A shipment advances through its activity flow | `shipments:read` |
+| `order.stage_changed`                  | An order advances through its activity flow   | `orders:read`    |
+| `shipment.created`, `shipment.updated` | Standard CRUD lifecycle                       | `shipments:read` |
+| `order.created`, `order.updated`       | Standard CRUD lifecycle                       | `orders:read`    |
 
 The stage-change payload looks like:
 
@@ -324,7 +324,11 @@ Response:
     "currentStage": "out_for_delivery",
     "next": [
       { "to": "delivered", "label": "Delivered" },
-      { "to": "delivery_failed", "label": "Delivery failed", "requiredScope": "shipments:transition" }
+      {
+        "to": "delivery_failed",
+        "label": "Delivery failed",
+        "requiredScope": "shipments:transition"
+      }
     ]
   }
 }

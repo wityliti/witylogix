@@ -61,7 +61,7 @@ describe("NPlusOneDetector", () => {
           requestId,
           "SELECT * FROM users WHERE id = $1",
           [i],
-          10
+          10,
         );
       }
 
@@ -78,7 +78,7 @@ describe("NPlusOneDetector", () => {
           requestId,
           "SELECT * FROM users WHERE id = $1",
           [i],
-          10
+          10,
         );
       }
 
@@ -94,7 +94,7 @@ describe("NPlusOneDetector", () => {
           requestId,
           "SELECT * FROM orders WHERE user_id = $1",
           [i],
-          15
+          15,
         );
       }
 
@@ -110,13 +110,13 @@ describe("NPlusOneDetector", () => {
         requestId,
         "SELECT * FROM users WHERE id = $1",
         [123],
-        10
+        10,
       );
       detector.recordQuery(
         requestId,
         "SELECT * FROM users WHERE id = $1",
         [456],
-        10
+        10,
       );
 
       const report = detector.analyzePatterns(requestId);
@@ -132,7 +132,7 @@ describe("NPlusOneDetector", () => {
           requestId,
           "SELECT * FROM users WHERE id = $1",
           [i],
-          10
+          10,
         );
       }
 
@@ -141,7 +141,7 @@ describe("NPlusOneDetector", () => {
           requestId,
           "SELECT * FROM orders WHERE id = $1",
           [i],
-          10
+          10,
         );
       }
 
@@ -158,13 +158,19 @@ describe("NPlusOneDetector", () => {
           requestId,
           "SELECT * FROM users WHERE id = $1",
           [i],
-          10
+          10,
         );
       }
 
       const report = detector.analyzePatterns(requestId);
       expect(report.recommendations.length).toBeGreaterThan(0);
-      expect(report.recommendations.some((r) => r.toLowerCase().includes("eager loading") || r.toLowerCase().includes("optimizing"))).toBe(true);
+      expect(
+        report.recommendations.some(
+          (r) =>
+            r.toLowerCase().includes("eager loading") ||
+            r.toLowerCase().includes("optimizing"),
+        ),
+      ).toBe(true);
     });
 
     it("should provide table-specific recommendations", () => {
@@ -173,12 +179,14 @@ describe("NPlusOneDetector", () => {
           requestId,
           "SELECT * FROM shipments WHERE delivery_id = $1",
           [i],
-          10
+          10,
         );
       }
 
       const report = detector.analyzePatterns(requestId);
-      expect(report.recommendations.some((r) => r.includes("shipments"))).toBe(true);
+      expect(report.recommendations.some((r) => r.includes("shipments"))).toBe(
+        true,
+      );
     });
 
     it("should recommend batch loading for duplicate detection", () => {
@@ -187,7 +195,7 @@ describe("NPlusOneDetector", () => {
           requestId,
           "SELECT id, name FROM products WHERE id = $1",
           [100],
-          10
+          10,
         );
       }
 
@@ -200,12 +208,7 @@ describe("NPlusOneDetector", () => {
 
   describe("Statistics", () => {
     it("should provide query statistics", () => {
-      detector.recordQuery(
-        requestId,
-        "SELECT 1",
-        [],
-        5
-      );
+      detector.recordQuery(requestId, "SELECT 1", [], 5);
 
       const stats = detector.getStats();
       expect(stats.has(requestId)).toBe(true);
@@ -223,11 +226,21 @@ describe("NPlusOneDetector", () => {
       localDetector.startTracking(req2);
 
       for (let i = 0; i < 5; i++) {
-        localDetector.recordQuery(req1, "SELECT * FROM users WHERE id = $1", [i], 10);
+        localDetector.recordQuery(
+          req1,
+          "SELECT * FROM users WHERE id = $1",
+          [i],
+          10,
+        );
       }
 
       for (let i = 0; i < 3; i++) {
-        localDetector.recordQuery(req2, "SELECT * FROM orders WHERE id = $1", [i], 10);
+        localDetector.recordQuery(
+          req2,
+          "SELECT * FROM orders WHERE id = $1",
+          [i],
+          10,
+        );
       }
 
       const stats = localDetector.getStats();
@@ -243,12 +256,7 @@ describe("NPlusOneDetector", () => {
     });
 
     it("should handle reset properly", () => {
-      detector.recordQuery(
-        requestId,
-        "SELECT 1",
-        [],
-        5
-      );
+      detector.recordQuery(requestId, "SELECT 1", [], 5);
 
       detector.reset();
       const stats = detector.getStats();

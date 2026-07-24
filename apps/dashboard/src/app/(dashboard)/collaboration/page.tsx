@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-  useMemo,
-} from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,9 +20,9 @@ import {
 } from "@/components/collaboration/message-composer";
 import { MessageList } from "@/components/collaboration/message-list";
 import { ChannelSidebar } from "@/components/collaboration/channel-sidebar";
-import { useApiList } from '@/hooks/use-api';
-import { TableSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
+import { useApiList } from "@/hooks/use-api";
+import { TableSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 
 interface MentionSuggestion extends User {
   highlighted: boolean;
@@ -46,14 +40,19 @@ function TeamCollaborationPage() {
 
   const [showThreadPanel, setShowThreadPanel] = useState(false);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
-  const [mentionSuggestions, setMentionSuggestions] = useState<MentionSuggestion[]>([]);
+  const [mentionSuggestions, setMentionSuggestions] = useState<
+    MentionSuggestion[]
+  >([]);
   const [showMentionDropdown, setShowMentionDropdown] = useState(false);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState("");
   const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
   const [newChannelName, setNewChannelName] = useState("");
-  const [newChannelCategory, setNewChannelCategory] = useState<Channel["category"]>("general");
-  const [pendingDeleteMsgId, setPendingDeleteMsgId] = useState<string | null>(null);
+  const [newChannelCategory, setNewChannelCategory] =
+    useState<Channel["category"]>("general");
+  const [pendingDeleteMsgId, setPendingDeleteMsgId] = useState<string | null>(
+    null,
+  );
 
   const mentionInputRef = useRef<HTMLDivElement>(null);
 
@@ -64,7 +63,7 @@ function TeamCollaborationPage() {
         e.preventDefault();
         // Focus search input
         const searchInput = document.querySelector(
-          "input[placeholder*='Search']"
+          "input[placeholder*='Search']",
         ) as HTMLInputElement;
         searchInput?.focus();
       }
@@ -89,14 +88,14 @@ function TeamCollaborationPage() {
           results.map((user) => ({
             ...user,
             highlighted: false,
-          }))
+          })),
         );
         setShowMentionDropdown(results.length > 0);
       } catch (error) {
         console.error("Failed to search mentions:", error);
       }
     },
-    [collaboration]
+    [collaboration],
   );
 
   // Watch for mention query changes
@@ -108,10 +107,12 @@ function TeamCollaborationPage() {
     if (!collaboration.currentChannel) return;
 
     const messageInput = document.querySelector(
-      "textarea[placeholder*='Type a message']"
+      "textarea[placeholder*='Type a message']",
     ) as HTMLTextAreaElement;
     const content = messageInput?.value || "";
-    const attachments: NonNullable<Parameters<typeof collaboration.sendMessage>[1]> = [];
+    const attachments: NonNullable<
+      Parameters<typeof collaboration.sendMessage>[1]
+    > = [];
 
     if (!content.trim()) return;
 
@@ -135,7 +136,7 @@ function TeamCollaborationPage() {
         console.error("Failed to edit message:", error);
       }
     },
-    [collaboration]
+    [collaboration],
   );
 
   const handleDeleteMessage = useCallback(
@@ -151,7 +152,7 @@ function TeamCollaborationPage() {
         console.error("Failed to delete message:", error);
       }
     },
-    [collaboration, pendingDeleteMsgId]
+    [collaboration, pendingDeleteMsgId],
   );
 
   const handlePinMessage = useCallback(
@@ -162,7 +163,7 @@ function TeamCollaborationPage() {
         console.error("Failed to pin message:", error);
       }
     },
-    [collaboration]
+    [collaboration],
   );
 
   const handleReactToMessage = useCallback(
@@ -173,14 +174,17 @@ function TeamCollaborationPage() {
         console.error("Failed to react to message:", error);
       }
     },
-    [collaboration]
+    [collaboration],
   );
 
-  const handleOpenThread = useCallback((messageId: string) => {
-    collaboration.openThread(messageId);
-    setSelectedThreadId(messageId);
-    setShowThreadPanel(true);
-  }, [collaboration]);
+  const handleOpenThread = useCallback(
+    (messageId: string) => {
+      collaboration.openThread(messageId);
+      setSelectedThreadId(messageId);
+      setShowThreadPanel(true);
+    },
+    [collaboration],
+  );
 
   const handleCreateChannel = useCallback(async () => {
     if (!newChannelName.trim()) return;
@@ -268,7 +272,9 @@ function TeamCollaborationPage() {
             {/* Delete confirmation banner */}
             {pendingDeleteMsgId && (
               <div className="px-4 py-2 flex items-center justify-between gap-3 bg-red-900/20 border-t border-red-500/30">
-                <span className="text-xs text-red-400">Delete this message?</span>
+                <span className="text-xs text-red-400">
+                  Delete this message?
+                </span>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setPendingDeleteMsgId(null)}
@@ -289,18 +295,16 @@ function TeamCollaborationPage() {
             {/* Typing Indicators */}
             {collaboration.typingUsers.length > 0 && (
               <div className="px-4 py-2 text-xs text-gray-400 border-t border-wl-border-default">
-                {collaboration.typingUsers
-                  .map((u) => u.userName)
-                  .join(", ")} {collaboration.typingUsers.length === 1 ? "is" : "are"} typing...
+                {collaboration.typingUsers.map((u) => u.userName).join(", ")}{" "}
+                {collaboration.typingUsers.length === 1 ? "is" : "are"}{" "}
+                typing...
               </div>
             )}
 
             {/* Composer */}
             <ComposerRoot onSend={handleSendMessage}>
               <ComposerContainer>
-                <ComposerInput
-                  onTyping={collaboration.broadcastTyping}
-                />
+                <ComposerInput onTyping={collaboration.broadcastTyping} />
                 <ComposerToolbar />
                 <ComposerAttachments />
                 <div className="px-3 py-2 flex items-center justify-between">
@@ -367,7 +371,7 @@ function TeamCollaborationPage() {
           className={cn(
             "absolute bottom-64 left-64 z-50 bg-wl-bg-surface border border-wl-border-default",
             "rounded-lg shadow-lg max-h-48 overflow-y-auto",
-            "scrollbar-thin scrollbar-thumb-[#1e1e2e]"
+            "scrollbar-thin scrollbar-thumb-[#1e1e2e]",
           )}
         >
           {mentionSuggestions.map((user) => (
@@ -376,7 +380,7 @@ function TeamCollaborationPage() {
               onClick={() => {
                 // Insert mention into message
                 const textarea = document.querySelector(
-                  "textarea[placeholder*='Type a message']"
+                  "textarea[placeholder*='Type a message']",
                 ) as HTMLTextAreaElement;
                 if (textarea) {
                   const text = textarea.value;
@@ -392,7 +396,7 @@ function TeamCollaborationPage() {
                 "w-full text-left px-4 py-2 text-sm",
                 "hover:bg-wl-bg-elevated transition-colors",
                 "border-b border-wl-border-default last:border-b-0",
-                "text-white"
+                "text-white",
               )}
             >
               <div className="flex items-center gap-2">
@@ -464,9 +468,7 @@ function RightSidebar({
                 key={msg.id}
                 className="p-2 rounded bg-wl-bg-elevated border border-wl-border-default text-xs"
               >
-                <p className="font-medium text-gray-300">
-                  {msg.userName}
-                </p>
+                <p className="font-medium text-gray-300">{msg.userName}</p>
                 <p className="text-gray-400 truncate">{msg.content}</p>
               </div>
             ))}
@@ -523,13 +525,8 @@ function ThreadPanel({
     <div className="w-80 border-l border-wl-border-default bg-wl-bg-surface flex flex-col animate-slide-in">
       {/* Header */}
       <div className="px-4 py-4 border-b border-wl-border-default flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-white">
-          Thread
-        </h2>
-        <button
-          onClick={onClose}
-          className="text-gray-400 hover:text-white"
-        >
+        <h2 className="text-sm font-semibold text-white">Thread</h2>
+        <button onClick={onClose} className="text-gray-400 hover:text-white">
           ✕
         </button>
       </div>
@@ -558,7 +555,7 @@ function ThreadPanel({
             "bg-wl-bg-elevated border border-wl-border-default",
             "text-white placeholder-wl-text-tertiary",
             "focus-visible:outline-none focus-visible:ring-2",
-            "focus-visible:ring-wl-primary-500"
+            "focus-visible:ring-wl-primary-500",
           )}
           rows={2}
         />
@@ -618,7 +615,7 @@ function CreateChannelModal({
                 "bg-wl-bg-surface border border-wl-border-default",
                 "text-white placeholder-wl-text-tertiary",
                 "focus-visible:outline-none focus-visible:ring-2",
-                "focus-visible:ring-wl-primary-500"
+                "focus-visible:ring-wl-primary-500",
               )}
             />
           </div>
@@ -637,7 +634,7 @@ function CreateChannelModal({
                 "bg-wl-bg-surface border border-wl-border-default",
                 "text-white",
                 "focus-visible:outline-none focus-visible:ring-2",
-                "focus-visible:ring-wl-primary-500"
+                "focus-visible:ring-wl-primary-500",
               )}
             >
               <option value="general">General</option>

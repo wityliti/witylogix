@@ -108,7 +108,7 @@ export function ResponsiveSidebar({
               "bg-black/50 backdrop-blur-sm",
               "z-30",
               "transition-opacity duration-200",
-              overlayClassName
+              overlayClassName,
             )}
             onClick={handleBackdropClick}
             aria-hidden="true"
@@ -127,7 +127,7 @@ export function ResponsiveSidebar({
             "transition-transform duration-300 ease-default",
             "overflow-y-auto",
             open ? "translate-x-0" : "-translate-x-full",
-            className
+            className,
           )}
         >
           {children}
@@ -147,16 +147,11 @@ export function ResponsiveSidebar({
         "transition-all duration-300 ease-default",
         "overflow-hidden",
         open ? "w-60" : "w-0",
-        className
+        className,
       )}
     >
       <div
-        className={cn(
-          "w-60",
-          "h-full",
-          "overflow-y-auto",
-          contentClassName
-        )}
+        className={cn("w-60", "h-full", "overflow-y-auto", contentClassName)}
       >
         {children}
       </div>
@@ -192,14 +187,14 @@ export function SidebarToggle({
         "transition-colors duration-200",
         "text-wl-text-secondary hover:text-wl-text-primary",
         "hover:bg-wl-bg-elevated",
-        className
+        className,
       )}
     >
       <svg
         className={cn(
           "w-5 h-5",
           "transition-transform duration-300",
-          isOpen ? "rotate-0" : "rotate-180"
+          isOpen ? "rotate-0" : "rotate-180",
         )}
         fill="none"
         stroke="currentColor"

@@ -6,8 +6,8 @@
  * ~200 lines, 12+ tests
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { Page, Locator } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { Page, Locator } from "@playwright/test";
 
 // ─────────────────────────────────────────────────────────────────────────
 // PAGE OBJECT MODEL - CRM CONNECT PAGE
@@ -41,28 +41,34 @@ class CrmConnectPage {
     this.authorizeButton = page.locator('[data-testid="authorize-button"]');
     this.emailInput = page.locator('input[type="email"]').first();
     this.passwordInput = page.locator('input[type="password"]').first();
-    this.authorizeConfirmButton = page.locator('button:has-text("Authorize")').first();
+    this.authorizeConfirmButton = page
+      .locator('button:has-text("Authorize")')
+      .first();
     this.callbackMessage = page.locator('[data-testid="callback-message"]');
     this.syncConfigSection = page.locator('[data-testid="sync-config"]');
-    this.fieldMappingToggle = page.locator('[data-testid="field-mapping-toggle"]');
+    this.fieldMappingToggle = page.locator(
+      '[data-testid="field-mapping-toggle"]',
+    );
     this.testConnectionButton = page.locator('[data-testid="test-connection"]');
     this.connectionStatus = page.locator('[data-testid="connection-status"]');
     this.activateSyncButton = page.locator('[data-testid="activate-sync"]');
     this.syncActiveIndicator = page.locator('[data-testid="sync-active"]');
     this.disconnectButton = page.locator('[data-testid="disconnect-button"]');
-    this.disconnectConfirmButton = page.locator('[data-testid="disconnect-confirm"]');
+    this.disconnectConfirmButton = page.locator(
+      '[data-testid="disconnect-confirm"]',
+    );
     this.errorMessage = page.locator('[data-testid="error-message"]');
   }
 
   async navigate(): Promise<void> {
-    await this.page.goto('/integrations/crm/connect', {
-      waitUntil: 'networkidle',
+    await this.page.goto("/integrations/crm/connect", {
+      waitUntil: "networkidle",
     });
   }
 
-  async selectPlatform(platform: 'hubspot' | 'salesforce'): Promise<void> {
+  async selectPlatform(platform: "hubspot" | "salesforce"): Promise<void> {
     await this.platformSelect.click();
-    if (platform === 'hubspot') {
+    if (platform === "hubspot") {
       await this.huSpotOption.click();
     } else {
       await this.salesforceOption.click();
@@ -83,11 +89,11 @@ class CrmConnectPage {
   }
 
   async waitForCallback(): Promise<void> {
-    await this.callbackMessage.waitFor({ state: 'visible', timeout: 10000 });
+    await this.callbackMessage.waitFor({ state: "visible", timeout: 10000 });
   }
 
   async configureSync(): Promise<void> {
-    await this.syncConfigSection.waitFor({ state: 'visible', timeout: 5000 });
+    await this.syncConfigSection.waitFor({ state: "visible", timeout: 5000 });
     await this.fieldMappingToggle.click();
   }
 
@@ -95,16 +101,13 @@ class CrmConnectPage {
     await this.testConnectionButton.click();
   }
 
-  async waitForConnectionStatus(status: 'success' | 'failed'): Promise<void> {
-    const statusText = status === 'success' ? 'Connected' : 'Failed';
-    await this.connectionStatus.waitFor({ state: 'visible', timeout: 10000 });
-    await this.page.waitForFunction(
-      (text) => {
-        const el = document.querySelector('[data-testid="connection-status"]');
-        return el?.textContent?.includes(text);
-      },
-      statusText
-    );
+  async waitForConnectionStatus(status: "success" | "failed"): Promise<void> {
+    const statusText = status === "success" ? "Connected" : "Failed";
+    await this.connectionStatus.waitFor({ state: "visible", timeout: 10000 });
+    await this.page.waitForFunction((text) => {
+      const el = document.querySelector('[data-testid="connection-status"]');
+      return el?.textContent?.includes(text);
+    }, statusText);
   }
 
   async activateSync(): Promise<void> {
@@ -112,7 +115,7 @@ class CrmConnectPage {
   }
 
   async waitForSyncActive(): Promise<void> {
-    await this.syncActiveIndicator.waitFor({ state: 'visible', timeout: 5000 });
+    await this.syncActiveIndicator.waitFor({ state: "visible", timeout: 5000 });
   }
 
   async verifyConnected(): Promise<boolean> {
@@ -130,7 +133,7 @@ class CrmConnectPage {
   async verifyDisconnected(): Promise<boolean> {
     try {
       await this.syncActiveIndicator.waitFor({
-        state: 'hidden',
+        state: "hidden",
         timeout: 5000,
       });
       return true;
@@ -141,7 +144,7 @@ class CrmConnectPage {
 
   async getErrorMessage(): Promise<string | null> {
     try {
-      await this.errorMessage.waitFor({ state: 'visible', timeout: 5000 });
+      await this.errorMessage.waitFor({ state: "visible", timeout: 5000 });
       return await this.errorMessage.textContent();
     } catch {
       return null;
@@ -154,7 +157,7 @@ class CrmConnectPage {
 // ─────────────────────────────────────────────────────────────────────────
 
 class MockPage implements Partial<Page> {
-  private url = '';
+  private url = "";
   private context: Record<string, any> = {};
 
   async goto(url: string): Promise<void> {
@@ -182,7 +185,7 @@ class MockPage implements Partial<Page> {
 // E2E TESTS
 // ─────────────────────────────────────────────────────────────────────────
 
-describe('CRM OAuth Connection Flow', () => {
+describe("CRM OAuth Connection Flow", () => {
   let crmPage: CrmConnectPage;
   let mockPage: MockPage;
 
@@ -198,8 +201,8 @@ describe('CRM OAuth Connection Flow', () => {
   // HAPPY PATH: HUBSPOT OAUTH FLOW
   // ───────────────────────────────────────────────────────────────────────
 
-  describe('HubSpot OAuth Happy Path', () => {
-    it('should navigate to CRM connection page', async () => {
+  describe("HubSpot OAuth Happy Path", () => {
+    it("should navigate to CRM connection page", async () => {
       // In real test with Playwright:
       // crmPage = new CrmConnectPage(page);
       // await crmPage.navigate();
@@ -208,21 +211,21 @@ describe('CRM OAuth Connection Flow', () => {
       expect(true).toBe(true); // Placeholder for actual Playwright test
     });
 
-    it('should select HubSpot platform', async () => {
+    it("should select HubSpot platform", async () => {
       // await crmPage.selectPlatform('hubspot');
       // await expect(crmPage.authorizeButton).toBeVisible();
 
       expect(true).toBe(true);
     });
 
-    it('should redirect to HubSpot OAuth on authorize click', async () => {
+    it("should redirect to HubSpot OAuth on authorize click", async () => {
       // await crmPage.clickAuthorize();
       // await expect(page).toHaveURL(/hubspot\.com.*oauth/);
 
       expect(true).toBe(true);
     });
 
-    it('should enter credentials and authorize', async () => {
+    it("should enter credentials and authorize", async () => {
       // await crmPage.enterCredentials('user@example.com', 'password123');
       // await crmPage.clickAuthorizeConfirm();
       // await crmPage.waitForCallback();
@@ -230,7 +233,7 @@ describe('CRM OAuth Connection Flow', () => {
       expect(true).toBe(true);
     });
 
-    it('should configure field mappings after callback', async () => {
+    it("should configure field mappings after callback", async () => {
       // await crmPage.waitForCallback();
       // await crmPage.configureSync();
       // await expect(crmPage.fieldMappingToggle).toBeChecked();
@@ -238,7 +241,7 @@ describe('CRM OAuth Connection Flow', () => {
       expect(true).toBe(true);
     });
 
-    it('should test connection successfully', async () => {
+    it("should test connection successfully", async () => {
       // await crmPage.testConnection();
       // await crmPage.waitForConnectionStatus('success');
       // await expect(crmPage.connectionStatus).toContainText('Connected');
@@ -246,7 +249,7 @@ describe('CRM OAuth Connection Flow', () => {
       expect(true).toBe(true);
     });
 
-    it('should activate sync', async () => {
+    it("should activate sync", async () => {
       // await crmPage.activateSync();
       // await crmPage.waitForSyncActive();
       // const isConnected = await crmPage.verifyConnected();
@@ -255,7 +258,7 @@ describe('CRM OAuth Connection Flow', () => {
       expect(true).toBe(true);
     });
 
-    it('should display sync active indicator', async () => {
+    it("should display sync active indicator", async () => {
       // await expect(crmPage.syncActiveIndicator).toBeVisible();
       // await expect(crmPage.syncActiveIndicator).toContainText('Syncing');
 
@@ -267,8 +270,8 @@ describe('CRM OAuth Connection Flow', () => {
   // SALESFORCE OAUTH FLOW
   // ───────────────────────────────────────────────────────────────────────
 
-  describe('Salesforce OAuth Flow', () => {
-    it('should connect to Salesforce', async () => {
+  describe("Salesforce OAuth Flow", () => {
+    it("should connect to Salesforce", async () => {
       // await crmPage.selectPlatform('salesforce');
       // await crmPage.clickAuthorize();
       // await expect(page).toHaveURL(/salesforce\.com.*oauth/);
@@ -276,7 +279,7 @@ describe('CRM OAuth Connection Flow', () => {
       expect(true).toBe(true);
     });
 
-    it('should complete Salesforce OAuth flow', async () => {
+    it("should complete Salesforce OAuth flow", async () => {
       // await crmPage.enterCredentials('sf_user@example.com', 'sf_password');
       // await crmPage.clickAuthorizeConfirm();
       // await crmPage.waitForCallback();
@@ -291,8 +294,8 @@ describe('CRM OAuth Connection Flow', () => {
   // ERROR HANDLING
   // ───────────────────────────────────────────────────────────────────────
 
-  describe('OAuth Error Handling', () => {
-    it('should display error for invalid credentials', async () => {
+  describe("OAuth Error Handling", () => {
+    it("should display error for invalid credentials", async () => {
       // await crmPage.selectPlatform('hubspot');
       // await crmPage.clickAuthorize();
       // await crmPage.enterCredentials('invalid@example.com', 'wrongpassword');
@@ -303,7 +306,7 @@ describe('CRM OAuth Connection Flow', () => {
       expect(true).toBe(true);
     });
 
-    it('should handle expired token error', async () => {
+    it("should handle expired token error", async () => {
       // await crmPage.clickAuthorize();
       // Simulate expired token response
       // const error = await crmPage.getErrorMessage();
@@ -312,7 +315,7 @@ describe('CRM OAuth Connection Flow', () => {
       expect(true).toBe(true);
     });
 
-    it('should handle revoked access error', async () => {
+    it("should handle revoked access error", async () => {
       // await crmPage.clickAuthorize();
       // Simulate access revoked response
       // const error = await crmPage.getErrorMessage();
@@ -321,7 +324,7 @@ describe('CRM OAuth Connection Flow', () => {
       expect(true).toBe(true);
     });
 
-    it('should display network error gracefully', async () => {
+    it("should display network error gracefully", async () => {
       // Simulate network failure
       // const error = await crmPage.getErrorMessage();
       // expect(error).toContain('Connection failed');
@@ -334,8 +337,8 @@ describe('CRM OAuth Connection Flow', () => {
   // DISCONNECT FLOW
   // ───────────────────────────────────────────────────────────────────────
 
-  describe('Disconnect Flow', () => {
-    it('should initiate disconnect', async () => {
+  describe("Disconnect Flow", () => {
+    it("should initiate disconnect", async () => {
       // Assuming already connected
       // await crmPage.disconnect();
       // await expect(crmPage.disconnectConfirmButton).toBeVisible();
@@ -343,7 +346,7 @@ describe('CRM OAuth Connection Flow', () => {
       expect(true).toBe(true);
     });
 
-    it('should confirm disconnect', async () => {
+    it("should confirm disconnect", async () => {
       // await crmPage.confirmDisconnect();
       // const isDisconnected = await crmPage.verifyDisconnected();
       // expect(isDisconnected).toBe(true);
@@ -351,14 +354,14 @@ describe('CRM OAuth Connection Flow', () => {
       expect(true).toBe(true);
     });
 
-    it('should hide sync active indicator after disconnect', async () => {
+    it("should hide sync active indicator after disconnect", async () => {
       // await crmPage.confirmDisconnect();
       // await expect(crmPage.syncActiveIndicator).not.toBeVisible();
 
       expect(true).toBe(true);
     });
 
-    it('should allow reconnect after disconnect', async () => {
+    it("should allow reconnect after disconnect", async () => {
       // After disconnect, should be able to connect again
       // await crmPage.selectPlatform('hubspot');
       // await crmPage.clickAuthorize();

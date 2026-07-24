@@ -17,7 +17,10 @@ import { calculateAllSurcharges } from "./surcharges";
 /**
  * Convert weight to pounds (our base unit)
  */
-function convertWeightToLb(weight: number, unit: "g" | "kg" | "oz" | "lb"): number {
+function convertWeightToLb(
+  weight: number,
+  unit: "g" | "kg" | "oz" | "lb",
+): number {
   switch (unit) {
     case "lb":
       return weight;
@@ -85,8 +88,12 @@ function calculateBaseRate(
     case "weight_based":
       if (profile.weightRates && profile.weightRates.length > 0) {
         // Find the appropriate weight tier
-        const tier = profile.weightRates.find((t) => totalBillableWeight <= t.maxWeight);
-        baseRate = tier ? tier.rate : profile.weightRates[profile.weightRates.length - 1].rate;
+        const tier = profile.weightRates.find(
+          (t) => totalBillableWeight <= t.maxWeight,
+        );
+        baseRate = tier
+          ? tier.rate
+          : profile.weightRates[profile.weightRates.length - 1].rate;
       }
       break;
 
@@ -94,11 +101,15 @@ function calculateBaseRate(
       if (profile.distanceRates && profile.distanceRates.length > 0) {
         const distanceTier = profile.distanceRates.find((t) => t.zone === zone);
         if (distanceTier) {
-          baseRate = distanceTier.baseRate + distanceTier.weightRate * totalBillableWeight;
+          baseRate =
+            distanceTier.baseRate +
+            distanceTier.weightRate * totalBillableWeight;
         } else {
           // Fallback to highest zone
-          const fallback = profile.distanceRates[profile.distanceRates.length - 1];
-          baseRate = fallback.baseRate + fallback.weightRate * totalBillableWeight;
+          const fallback =
+            profile.distanceRates[profile.distanceRates.length - 1];
+          baseRate =
+            fallback.baseRate + fallback.weightRate * totalBillableWeight;
         }
       }
       break;
@@ -183,11 +194,16 @@ export function calculateRate(
   }
 
   // Calculate zone
-  const zone = getZone(request.origin.postalCode, request.destination.postalCode, request.destination.country);
+  const zone = getZone(
+    request.origin.postalCode,
+    request.destination.postalCode,
+    request.destination.country,
+  );
 
   // Calculate billable weight for each package
-  const billableWeights = request.packages.map((pkg) =>
-    calculateBillableWeight(pkg, profile.dimensionDivisor) * pkg.quantity,
+  const billableWeights = request.packages.map(
+    (pkg) =>
+      calculateBillableWeight(pkg, profile.dimensionDivisor) * pkg.quantity,
   );
   const totalBillableWeight = billableWeights.reduce((sum, w) => sum + w, 0);
 
@@ -220,7 +236,11 @@ export function calculateRate(
   );
 
   // Calculate discounts
-  const discounts = calculateVolumeDiscount(totalBillableWeight, request.packages, baseRate);
+  const discounts = calculateVolumeDiscount(
+    totalBillableWeight,
+    request.packages,
+    baseRate,
+  );
 
   // Calculate total
   const surchargeTotal = surcharges.reduce((sum, s) => sum + s.amount, 0);

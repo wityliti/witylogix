@@ -54,7 +54,7 @@ const CLOCK_SKEW = 5 * 60; // 5 minutes
 export async function generateSecret(
   orgId: string,
   endpoint: string,
-  algorithm: "HMAC_SHA256" | "HMAC_SHA512" = "HMAC_SHA256"
+  algorithm: "HMAC_SHA256" | "HMAC_SHA512" = "HMAC_SHA256",
 ): Promise<WebhookSecret> {
   // Generate cryptographically secure random bytes
   const randomSecret = randomBytes(SECRET_BYTES);
@@ -97,7 +97,7 @@ export async function generateSecret(
 export function signPayload(
   secretValue: string,
   payload: any,
-  algorithm: "HMAC_SHA256" | "HMAC_SHA512" = "HMAC_SHA256"
+  algorithm: "HMAC_SHA256" | "HMAC_SHA512" = "HMAC_SHA256",
 ): string {
   // Decode secret from base64
   const secretBuffer = Buffer.from(secretValue, "base64");
@@ -133,7 +133,7 @@ export function verifySignature(
   secretValue: string,
   payload: any,
   signature: string,
-  algorithm: "HMAC_SHA256" | "HMAC_SHA512" = "HMAC_SHA256"
+  algorithm: "HMAC_SHA256" | "HMAC_SHA512" = "HMAC_SHA256",
 ): boolean {
   // Calculate expected signature
   const expected = signPayload(secretValue, payload, algorithm);
@@ -163,7 +163,7 @@ export async function rotateSecret(secretId: string): Promise<WebhookSecret> {
   const newSecret = await generateSecret(
     oldSecret.orgId,
     oldSecret.endpoint,
-    oldSecret.algorithm
+    oldSecret.algorithm,
   );
 
   // Mark old secret with rotation time (keeps it valid for OVERLAP_PERIOD)
@@ -188,7 +188,7 @@ export async function rotateSecret(secretId: string): Promise<WebhookSecret> {
  */
 export async function getWebhookSecret(
   orgId: string,
-  endpoint: string
+  endpoint: string,
 ): Promise<WebhookSecret | null> {
   const secret = await prisma.webhookSecret.findUnique({
     where: { orgId_endpoint: { orgId, endpoint } },
@@ -218,9 +218,7 @@ export async function getWebhookSecret(
  * @param orgId - Organization ID
  * @returns Array of webhook secrets (without sensitive values)
  */
-export async function listWebhookSecrets(
-  orgId: string
-): Promise<
+export async function listWebhookSecrets(orgId: string): Promise<
   Array<{
     id: string;
     endpoint: string;
@@ -329,7 +327,7 @@ function constantTimeEquals(a: string, b: string): boolean {
 export function buildSignatureHeader(
   secretValue: string,
   payload: any,
-  algorithm: "HMAC_SHA256" | "HMAC_SHA512" = "HMAC_SHA256"
+  algorithm: "HMAC_SHA256" | "HMAC_SHA512" = "HMAC_SHA256",
 ): string {
   const signature = signPayload(secretValue, payload, algorithm);
   const timestamp = Math.floor(Date.now() / 1000);
@@ -346,9 +344,7 @@ export function buildSignatureHeader(
  * @param headerValue - Header value from request
  * @returns Parsed components or null if invalid
  */
-export function parseSignatureHeader(
-  headerValue: string
-): {
+export function parseSignatureHeader(headerValue: string): {
   algorithm: string;
   signature: string;
   timestamp: number;
@@ -391,7 +387,7 @@ export function verifyWithTimestamp(
   payload: any,
   signature: string,
   timestamp: number,
-  algorithm: "HMAC_SHA256" | "HMAC_SHA512" = "HMAC_SHA256"
+  algorithm: "HMAC_SHA256" | "HMAC_SHA512" = "HMAC_SHA256",
 ): boolean {
   // Check timestamp freshness (allow 5 minute clock skew)
   const now = Math.floor(Date.now() / 1000);

@@ -75,7 +75,11 @@ export class IndexAdvisor {
    * @param params - Query parameters
    * @param executionCount - Number of executions
    */
-  recordQuery(sql: string, params: any[] = [], executionCount: number = 1): void {
+  recordQuery(
+    sql: string,
+    params: any[] = [],
+    executionCount: number = 1,
+  ): void {
     const table = this.extractTable(sql);
     const whereColumns = this.extractWhereColumns(sql);
     const orderByColumns = this.extractOrderByColumns(sql);
@@ -155,7 +159,10 @@ export class IndexAdvisor {
    * @param table - Table name
    * @returns Columns recommended for simple indexes
    */
-  private analyzeFilterPatterns(records: QueryRecord[], table: string): string[] {
+  private analyzeFilterPatterns(
+    records: QueryRecord[],
+    table: string,
+  ): string[] {
     const columnFreq = new Map<string, number>();
 
     records.forEach((record) => {
@@ -170,7 +177,7 @@ export class IndexAdvisor {
       .filter(
         ([_col, count]) =>
           count >= this.minQueryCount &&
-          records.filter((r) => r.whereColumns.includes(_col)).length >= 2
+          records.filter((r) => r.whereColumns.includes(_col)).length >= 2,
       )
       .sort((a, b) => b[1] - a[1])
       .map(([col]) => col)
@@ -184,7 +191,10 @@ export class IndexAdvisor {
    * @param table - Table name
    * @returns Recommended composite column sets
    */
-  private analyzeCompositePatterns(records: QueryRecord[], table: string): string[][] {
+  private analyzeCompositePatterns(
+    records: QueryRecord[],
+    table: string,
+  ): string[][] {
     const composites: string[][] = [];
 
     records.forEach((record) => {
@@ -199,14 +209,15 @@ export class IndexAdvisor {
           (r) =>
             r.whereColumns.length > 0 &&
             r.orderByColumns.length > 0 &&
-            r.whereColumns.every((c) => composite.includes(c))
+            r.whereColumns.every((c) => composite.includes(c)),
         ).length;
 
         if (similar >= this.minQueryCount) {
           const key = composite.sort().join(",");
           if (
             !composites.some(
-              (c) => c.sort().join(",") === key && c.length === composite.length
+              (c) =>
+                c.sort().join(",") === key && c.length === composite.length,
             )
           ) {
             composites.push(composite);
@@ -225,7 +236,10 @@ export class IndexAdvisor {
    * @param table - Table name
    * @returns Columns for partial indexes
    */
-  private analyzePartialPatterns(records: QueryRecord[], table: string): string[][] {
+  private analyzePartialPatterns(
+    records: QueryRecord[],
+    table: string,
+  ): string[][] {
     const patterns: string[][] = [];
 
     // Look for repeated filter patterns on status/category columns
@@ -233,21 +247,22 @@ export class IndexAdvisor {
 
     records.forEach((record) => {
       const statusCols = record.whereColumns.filter((col) =>
-        statusColumns.some((sc) => col.toLowerCase().includes(sc))
+        statusColumns.some((sc) => col.toLowerCase().includes(sc)),
       );
 
       if (statusCols.length > 0 && record.whereColumns.length > 0) {
         // Candidate for partial index
         const composite = [...statusCols, ...record.whereColumns.slice(0, 1)];
         const occurrences = records.filter((r) =>
-          statusCols.every((sc) => r.whereColumns.includes(sc))
+          statusCols.every((sc) => r.whereColumns.includes(sc)),
         ).length;
 
         if (occurrences >= this.minQueryCount) {
           const key = composite.sort().join(",");
           if (
             !patterns.some(
-              (p) => p.sort().join(",") === key && p.length === composite.length
+              (p) =>
+                p.sort().join(",") === key && p.length === composite.length,
             )
           ) {
             patterns.push(composite);
@@ -268,7 +283,7 @@ export class IndexAdvisor {
    */
   private createSimpleIndexRecommendation(
     table: string,
-    column: string
+    column: string,
   ): IndexRecommendation | null {
     const stats = this.columnStats.get(`${table}.${column}`);
     if (!stats) return null;
@@ -276,7 +291,7 @@ export class IndexAdvisor {
     const sizeBytes = this.estimateIndexSize(
       table,
       [column],
-      stats.selectivity
+      stats.selectivity,
     );
     const impact = Math.min(100, stats.frequency * 10);
 
@@ -301,7 +316,7 @@ export class IndexAdvisor {
    */
   private createCompositeIndexRecommendation(
     table: string,
-    columns: string[]
+    columns: string[],
   ): IndexRecommendation | null {
     const sizeBytes = this.estimateIndexSize(table, columns, 0.5);
     const impact = Math.min(100, columns.length * 15);
@@ -330,10 +345,10 @@ export class IndexAdvisor {
    */
   private createPartialIndexRecommendation(
     table: string,
-    columns: string[]
+    columns: string[],
   ): IndexRecommendation | null {
     const sizeBytes = Math.round(
-      this.estimateIndexSize(table, columns, 0.3) * 0.6
+      this.estimateIndexSize(table, columns, 0.3) * 0.6,
     );
     const impact = Math.min(100, columns.length * 12);
 
@@ -363,7 +378,7 @@ export class IndexAdvisor {
   private estimateIndexSize(
     table: string,
     columns: string[],
-    selectivity: number
+    selectivity: number,
   ): number {
     // Rough estimate: 8 bytes per column + 8 bytes overhead + pointer
     const rowCount = this.estimatedRowsPerTable.get(table) || 10000;
@@ -380,7 +395,7 @@ export class IndexAdvisor {
    * @returns Ranked unique recommendations
    */
   private rankRecommendations(
-    recommendations: IndexRecommendation[]
+    recommendations: IndexRecommendation[],
   ): IndexRecommendation[] {
     // Deduplicate by name
     const unique = new Map<string, IndexRecommendation>();
@@ -393,7 +408,7 @@ export class IndexAdvisor {
 
     // Sort by impact
     return Array.from(unique.values()).sort(
-      (a, b) => b.estimatedImpactPercent - a.estimatedImpactPercent
+      (a, b) => b.estimatedImpactPercent - a.estimatedImpactPercent,
     );
   }
 
@@ -415,7 +430,9 @@ export class IndexAdvisor {
    * @returns Column names
    */
   private extractWhereColumns(sql: string): string[] {
-    const whereMatch = sql.match(/WHERE\s+(.+?)(?:ORDER BY|GROUP BY|LIMIT|$)/is);
+    const whereMatch = sql.match(
+      /WHERE\s+(.+?)(?:ORDER BY|GROUP BY|LIMIT|$)/is,
+    );
     if (!whereMatch) return [];
 
     const whereClause = whereMatch[1];
@@ -423,7 +440,9 @@ export class IndexAdvisor {
 
     if (!matches) return [];
 
-    return [...new Set(matches.map((m) => m.split(/[\s=<>!]/)[0].toLowerCase()))];
+    return [
+      ...new Set(matches.map((m) => m.split(/[\s=<>!]/)[0].toLowerCase())),
+    ];
   }
 
   /**
@@ -449,7 +468,11 @@ export class IndexAdvisor {
    * @param column - Column name
    * @param count - Execution count
    */
-  private updateColumnStats(table: string, column: string, count: number): void {
+  private updateColumnStats(
+    table: string,
+    column: string,
+    count: number,
+  ): void {
     const key = `${table}.${column}`;
     const stats = this.columnStats.get(key) || {
       column,
@@ -468,7 +491,7 @@ export class IndexAdvisor {
   private pruneOldRecords(): void {
     const now = Date.now();
     this.queryRecords = this.queryRecords.filter(
-      (r) => now - r.timestamp < this.windowMs
+      (r) => now - r.timestamp < this.windowMs,
     );
   }
 

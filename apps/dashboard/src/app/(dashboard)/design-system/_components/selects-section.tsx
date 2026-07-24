@@ -1,15 +1,13 @@
-'use client';
+"use client";
 
-import { Select } from '@/components/ui';
-import { PreviewSection } from './preview-section';
+import { Select } from "@/components/ui";
+import { PreviewSection } from "./preview-section";
 
 export function SelectsSection() {
   return (
     <div className="space-y-12">
       <div>
-        <h2 className="text-2xl font-bold text-white mb-2">
-          Select Dropdown
-        </h2>
+        <h2 className="text-2xl font-bold text-white mb-2">Select Dropdown</h2>
         <p className="text-gray-300 mb-8">
           Dropdown select component with label, error states, and size variants.
         </p>

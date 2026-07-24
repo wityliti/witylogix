@@ -83,10 +83,10 @@ export function DataTable<T extends { id?: string | number }>({
   onRowClick,
 }: DataTableProps<T>) {
   const [selectedRows, setSelectedRows] = useState<Set<string | number>>(
-    new Set()
+    new Set(),
   );
   const [visibleColumns, setVisibleColumns] = useState<Set<string>>(
-    new Set(initialColumns.map((col) => col.id))
+    new Set(initialColumns.map((col) => col.id)),
   );
   const [sortConfig, setSortConfig] = useState<{
     columnId: string;
@@ -104,14 +104,16 @@ export function DataTable<T extends { id?: string | number }>({
 
   const displayColumns = useMemo(
     () => initialColumns.filter((col) => visibleColumns.has(col.id)),
-    [initialColumns, visibleColumns]
+    [initialColumns, visibleColumns],
   );
 
   const sortedData = useMemo(() => {
     let sorted = [...data];
     if (sortConfig.direction && sortConfig.columnId) {
       sorted.sort((a, b) => {
-        const column = initialColumns.find((col) => col.id === sortConfig.columnId);
+        const column = initialColumns.find(
+          (col) => col.id === sortConfig.columnId,
+        );
         if (!column || !column.accessorKey) return 0;
 
         const aVal = a[column.accessorKey];
@@ -156,7 +158,7 @@ export function DataTable<T extends { id?: string | number }>({
       setSortConfig({ columnId, direction: newDirection });
       onSort?.(columnId, newDirection);
     },
-    [sortConfig, onSort]
+    [sortConfig, onSort],
   );
 
   const handleSelectAll = useCallback(
@@ -170,7 +172,7 @@ export function DataTable<T extends { id?: string | number }>({
       setSelectedRows(newSelected);
       onSelectionChange?.(Array.from(newSelected));
     },
-    [paginatedData, onSelectionChange]
+    [paginatedData, onSelectionChange],
   );
 
   const handleSelectRow = useCallback(
@@ -184,12 +186,12 @@ export function DataTable<T extends { id?: string | number }>({
       setSelectedRows(newSelected);
       onSelectionChange?.(Array.from(newSelected));
     },
-    [selectedRows, onSelectionChange]
+    [selectedRows, onSelectionChange],
   );
 
   const handleResizeStart = (
     columnId: string,
-    e: React.MouseEvent<HTMLDivElement>
+    e: React.MouseEvent<HTMLDivElement>,
   ) => {
     setResizingColumn(columnId);
     resizeStartX.current = e.clientX;
@@ -206,7 +208,7 @@ export function DataTable<T extends { id?: string | number }>({
         [resizingColumn]: newWidth,
       }));
     },
-    [resizingColumn]
+    [resizingColumn],
   );
 
   const handleResizeEnd = () => {
@@ -237,7 +239,12 @@ export function DataTable<T extends { id?: string | number }>({
 
   if (data.length === 0) {
     return (
-      <div className={cn("px-8 py-12 text-center text-wl-text-secondary", className)}>
+      <div
+        className={cn(
+          "px-8 py-12 text-center text-wl-text-secondary",
+          className,
+        )}
+      >
         <p>{emptyMessage}</p>
       </div>
     );
@@ -254,9 +261,7 @@ export function DataTable<T extends { id?: string | number }>({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() =>
-                onBulkAction?.("export", Array.from(selectedRows))
-              }
+              onClick={() => onBulkAction?.("export", Array.from(selectedRows))}
             >
               <Download className="w-4 h-4" />
               Export
@@ -301,9 +306,10 @@ export function DataTable<T extends { id?: string | number }>({
                       "px-4 py-3 text-xs font-semibold uppercase tracking-wider",
                       "text-wl-text-secondary transition-colors duration-fast ease-default",
                       "border-b border-wl-border-subtle",
-                      column.sortable && "cursor-pointer hover:text-wl-text-primary",
+                      column.sortable &&
+                        "cursor-pointer hover:text-wl-text-primary",
                       column.align === "center" && "text-center",
-                      column.align === "right" && "text-right"
+                      column.align === "right" && "text-right",
                     )}
                     style={{
                       width: columnWidths[column.id],
@@ -330,16 +336,20 @@ export function DataTable<T extends { id?: string | number }>({
                               )}
                           </div>
                         )}
-                        {column.resizable && idx !== displayColumns.length - 1 && (
-                          <div
-                            className={cn(
-                              "w-1 h-4 bg-wl-border-subtle rounded opacity-0 group-hover:opacity-100",
-                              "cursor-col-resize hover:bg-wl-primary-500 transition-colors",
-                              resizingColumn === column.id && "opacity-100 bg-wl-primary-500"
-                            )}
-                            onMouseDown={(e) => handleResizeStart(column.id, e)}
-                          />
-                        )}
+                        {column.resizable &&
+                          idx !== displayColumns.length - 1 && (
+                            <div
+                              className={cn(
+                                "w-1 h-4 bg-wl-border-subtle rounded opacity-0 group-hover:opacity-100",
+                                "cursor-col-resize hover:bg-wl-primary-500 transition-colors",
+                                resizingColumn === column.id &&
+                                  "opacity-100 bg-wl-primary-500",
+                              )}
+                              onMouseDown={(e) =>
+                                handleResizeStart(column.id, e)
+                              }
+                            />
+                          )}
                       </div>
                     </div>
                   </th>
@@ -361,7 +371,7 @@ export function DataTable<T extends { id?: string | number }>({
                       !isSelected && rowIdx % 2 === 1 && "bg-wl-bg-surface",
                       onRowClick && !isSelected && "hover:bg-white/[0.02]",
                       onRowClick && "cursor-pointer",
-                      rowClassName?.(row)
+                      rowClassName?.(row),
                     )}
                   >
                     {enableRowSelection && (
@@ -372,7 +382,7 @@ export function DataTable<T extends { id?: string | number }>({
                             rowId &&
                             handleSelectRow(
                               rowId,
-                              (e.target as HTMLInputElement).checked
+                              (e.target as HTMLInputElement).checked,
                             )
                           }
                           onClick={(e) => e.stopPropagation()}
@@ -395,13 +405,16 @@ export function DataTable<T extends { id?: string | number }>({
                           className={cn(
                             "px-4 py-3 text-sm text-wl-text-primary",
                             column.align === "center" && "text-center",
-                            column.align === "right" && "text-right"
+                            column.align === "right" && "text-right",
                           )}
                           style={{
                             width: columnWidths[column.id],
                           }}
                           onDoubleClick={() => {
-                            setEditingCell({ rowId: rowId!, columnId: column.id });
+                            setEditingCell({
+                              rowId: rowId!,
+                              columnId: column.id,
+                            });
                             setEditValue(String(value || ""));
                           }}
                         >

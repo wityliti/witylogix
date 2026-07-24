@@ -90,7 +90,7 @@ export class SearchAnalytics {
     userId: string,
     query: string,
     entityId: string,
-    entityType: string
+    entityType: string,
   ): Promise<void> {
     try {
       await (this.prisma as any).searchClickEvent.create({
@@ -113,7 +113,7 @@ export class SearchAnalytics {
    */
   async getReport(
     tenant: TenantContext,
-    options: { days?: number; limit?: number } = {}
+    options: { days?: number; limit?: number } = {},
   ): Promise<SearchAnalyticsReport> {
     const { days = 7, limit = 10 } = options;
 
@@ -136,7 +136,7 @@ export class SearchAnalytics {
     `,
       tenant.orgId,
       startDate,
-      endDate
+      endDate,
     );
 
     const row = stats[0];
@@ -159,7 +159,7 @@ export class SearchAnalytics {
       tenant.orgId,
       startDate,
       endDate,
-      limit
+      limit,
     );
 
     // Get slowest queries
@@ -179,7 +179,7 @@ export class SearchAnalytics {
       tenant.orgId,
       startDate,
       endDate,
-      limit
+      limit,
     );
 
     // Get searches by entity type
@@ -195,14 +195,15 @@ export class SearchAnalytics {
     `,
       tenant.orgId,
       startDate,
-      endDate
+      endDate,
     );
 
     return {
       period: { startDate, endDate },
       totalSearches,
       zeroResultQueries: zeroResults,
-      zeroResultRate: totalSearches > 0 ? (zeroResults / totalSearches) * 100 : 0,
+      zeroResultRate:
+        totalSearches > 0 ? (zeroResults / totalSearches) * 100 : 0,
       avgResultsPerQuery: parseFloat(row.avg_results) || 0,
       avgExecutionTimeMs: parseFloat(row.avg_execution_time) || 0,
       uniqueQueries: parseInt(row.unique_queries) || 0,
@@ -222,7 +223,7 @@ export class SearchAnalytics {
           acc[e.entity_type || "unknown"] = parseInt(e.count);
           return acc;
         },
-        {}
+        {},
       ),
     };
   }
@@ -232,7 +233,7 @@ export class SearchAnalytics {
    */
   async getZeroResultQueries(
     tenant: TenantContext,
-    options: { days?: number; limit?: number } = {}
+    options: { days?: number; limit?: number } = {},
   ): Promise<Array<{ query: string; count: number }>> {
     const { days = 7, limit = 20 } = options;
 
@@ -254,7 +255,7 @@ export class SearchAnalytics {
     `,
       tenant.orgId,
       startDate,
-      limit
+      limit,
     );
 
     return (results as any[]).map((r) => ({
@@ -269,7 +270,7 @@ export class SearchAnalytics {
   async getClickThroughRate(
     tenant: TenantContext,
     query: string,
-    days: number = 7
+    days: number = 7,
   ): Promise<{ impressions: number; clicks: number; rate: number }> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -284,7 +285,7 @@ export class SearchAnalytics {
     `,
       tenant.orgId,
       query,
-      startDate
+      startDate,
     );
 
     const row = results[0];
@@ -300,7 +301,7 @@ export class SearchAnalytics {
    */
   async getTrends(
     tenant: TenantContext,
-    options: { days?: number; bucketSize?: "hour" | "day" | "week" } = {}
+    options: { days?: number; bucketSize?: "hour" | "day" | "week" } = {},
   ): Promise<
     Array<{
       bucket: Date;
@@ -315,7 +316,11 @@ export class SearchAnalytics {
     startDate.setDate(startDate.getDate() - days);
 
     const bucketInterval =
-      bucketSize === "hour" ? "1 hour" : bucketSize === "week" ? "1 week" : "1 day";
+      bucketSize === "hour"
+        ? "1 hour"
+        : bucketSize === "week"
+          ? "1 week"
+          : "1 day";
 
     const results = await (this.prisma as any).$queryRawUnsafe(
       `
@@ -330,7 +335,7 @@ export class SearchAnalytics {
       ORDER BY bucket
     `,
       tenant.orgId,
-      startDate
+      startDate,
     );
 
     return (results as any[]).map((r) => ({

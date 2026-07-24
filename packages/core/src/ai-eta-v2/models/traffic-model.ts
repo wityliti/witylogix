@@ -12,11 +12,11 @@ import type {
   ModelPrediction,
   TrafficModelState,
   CalibrationResult,
-} from '../types.js';
+} from "../types.js";
 
 interface TrafficZoneProfile {
   zone_id: string;
-  zone_type: 'urban-core' | 'urban' | 'suburban' | 'rural' | 'highway';
+  zone_type: "urban-core" | "urban" | "suburban" | "rural" | "highway";
   hourly_factors: number[]; // 24 hours
   confidence: number[];
   sample_count: number;
@@ -24,7 +24,7 @@ interface TrafficZoneProfile {
 
 export class TrafficModel {
   private zoneProfiles: Map<string, TrafficZoneProfile>;
-  private conditionMultipliers: Record<'light' | 'moderate' | 'heavy', number>;
+  private conditionMultipliers: Record<"light" | "moderate" | "heavy", number>;
   private calibrationHistory: CalibrationResult[];
 
   constructor() {
@@ -46,7 +46,13 @@ export class TrafficModel {
    * Initialize with reasonable defaults for zone types
    */
   private initializeDefaultZones(): void {
-    const defaultZones = ['urban-core', 'urban', 'suburban', 'rural', 'highway'];
+    const defaultZones = [
+      "urban-core",
+      "urban",
+      "suburban",
+      "rural",
+      "highway",
+    ];
 
     for (const zone of defaultZones) {
       const profile: TrafficZoneProfile = {
@@ -61,7 +67,7 @@ export class TrafficModel {
       for (let hour = 0; hour < 24; hour++) {
         let factor = 1.0;
 
-        if (zone === 'urban-core') {
+        if (zone === "urban-core") {
           // High congestion at peak hours
           if ((hour >= 7 && hour <= 10) || (hour >= 16 && hour <= 19)) {
             factor = 1.7;
@@ -70,21 +76,21 @@ export class TrafficModel {
           } else {
             factor = 1.05;
           }
-        } else if (zone === 'urban') {
+        } else if (zone === "urban") {
           if ((hour >= 7 && hour <= 10) || (hour >= 16 && hour <= 19)) {
             factor = 1.5;
-          } else if ((hour >= 11 && hour <= 15)) {
+          } else if (hour >= 11 && hour <= 15) {
             factor = 1.15;
           } else {
             factor = 1.0;
           }
-        } else if (zone === 'suburban') {
+        } else if (zone === "suburban") {
           if ((hour >= 7 && hour <= 9) || (hour >= 17 && hour <= 19)) {
             factor = 1.25;
           } else {
             factor = 1.0;
           }
-        } else if (zone === 'highway') {
+        } else if (zone === "highway") {
           // Highways have less variation
           if ((hour >= 7 && hour <= 9) || (hour >= 16 && hour <= 18)) {
             factor = 1.15;
@@ -107,7 +113,7 @@ export class TrafficModel {
   /**
    * Determine zone type from coordinates (simplified)
    */
-  private determineZoneType(zoneType: FeatureVector['zone_type']): string {
+  private determineZoneType(zoneType: FeatureVector["zone_type"]): string {
     return zoneType;
   }
 
@@ -133,7 +139,10 @@ export class TrafficModel {
 
       // Calculate actual delay factor: actual_time / planned_time
       const plannedTime = delivery.planned_duration_minutes || 30;
-      const delayFactor = Math.max(0.8, Math.min(3.0, delivery.actual_duration_minutes / plannedTime));
+      const delayFactor = Math.max(
+        0.8,
+        Math.min(3.0, delivery.actual_duration_minutes / plannedTime),
+      );
 
       hourlyMap.get(hour)!.push(delayFactor);
     }
@@ -148,14 +157,21 @@ export class TrafficModel {
 
         if (delayFactors.length > 0) {
           // Compute mean delay factor
-          const meanDelay = delayFactors.reduce((a, b) => a + b, 0) / delayFactors.length;
+          const meanDelay =
+            delayFactors.reduce((a, b) => a + b, 0) / delayFactors.length;
 
           // Compute confidence from sample size
-          const confidence = Math.min(0.95, 0.3 + Math.log(delayFactors.length + 1) / 10);
+          const confidence = Math.min(
+            0.95,
+            0.3 + Math.log(delayFactors.length + 1) / 10,
+          );
 
           profile.hourly_factors[hour] = meanDelay;
           profile.confidence[hour] = confidence;
-          profile.sample_count = Math.max(profile.sample_count, delayFactors.length);
+          profile.sample_count = Math.max(
+            profile.sample_count,
+            delayFactors.length,
+          );
         }
       }
     }
@@ -198,11 +214,15 @@ export class TrafficModel {
     const errorMargin = predictedDuration * (1 - confidence) * 1.5;
 
     return {
-      modelName: 'traffic-aware',
+      modelName: "traffic-aware",
       predicted_duration_minutes: Math.round(predictedDuration * 10) / 10,
       confidence,
-      lower_bound_minutes: Math.max(5, Math.round((predictedDuration - errorMargin) * 10) / 10),
-      upper_bound_minutes: Math.round((predictedDuration + errorMargin) * 10) / 10,
+      lower_bound_minutes: Math.max(
+        5,
+        Math.round((predictedDuration - errorMargin) * 10) / 10,
+      ),
+      upper_bound_minutes:
+        Math.round((predictedDuration + errorMargin) * 10) / 10,
     };
   }
 
@@ -228,7 +248,9 @@ export class TrafficModel {
    * Restore state from serialization
    */
   setState(state: TrafficModelState): void {
-    for (const [zone, hourlyFactors] of Object.entries(state.zone_delay_factors)) {
+    for (const [zone, hourlyFactors] of Object.entries(
+      state.zone_delay_factors,
+    )) {
       const profile = this.zoneProfiles.get(zone);
       if (profile) {
         for (const [hourStr, factor] of Object.entries(hourlyFactors)) {
@@ -246,13 +268,17 @@ export class TrafficModel {
    * Update condition multipliers based on observed data
    */
   updateConditionMultipliers(
-    observations: Array<{ condition: 'light' | 'moderate' | 'heavy'; actualMultiplier: number }>,
+    observations: Array<{
+      condition: "light" | "moderate" | "heavy";
+      actualMultiplier: number;
+    }>,
   ): void {
-    const groupedByCondition: Record<'light' | 'moderate' | 'heavy', number[]> = {
-      light: [],
-      moderate: [],
-      heavy: [],
-    };
+    const groupedByCondition: Record<"light" | "moderate" | "heavy", number[]> =
+      {
+        light: [],
+        moderate: [],
+        heavy: [],
+      };
 
     for (const obs of observations) {
       groupedByCondition[obs.condition].push(obs.actualMultiplier);
@@ -260,7 +286,7 @@ export class TrafficModel {
 
     // Update multipliers with exponential moving average
     const alpha = 0.1; // Learning rate
-    for (const condition of ['light', 'moderate', 'heavy'] as const) {
+    for (const condition of ["light", "moderate", "heavy"] as const) {
       const values = groupedByCondition[condition];
       if (values.length > 0) {
         const mean = values.reduce((a, b) => a + b, 0) / values.length;
@@ -276,7 +302,7 @@ export class TrafficModel {
   calibrate(predictions: number[], actuals: number[]): CalibrationResult {
     if (predictions.length !== actuals.length || predictions.length === 0) {
       return {
-        model_name: 'traffic-aware',
+        model_name: "traffic-aware",
         bias_correction_factor: 1.0,
         scale_correction_factor: 1.0,
         confidence_calibration: {},
@@ -285,7 +311,8 @@ export class TrafficModel {
     }
 
     // Compute mean prediction and actual
-    const meanPred = predictions.reduce((a, b) => a + b, 0) / predictions.length;
+    const meanPred =
+      predictions.reduce((a, b) => a + b, 0) / predictions.length;
     const meanActual = actuals.reduce((a, b) => a + b, 0) / actuals.length;
 
     // Compute scale factor (regression slope)
@@ -303,7 +330,7 @@ export class TrafficModel {
     const biasFactor = meanActual / (meanPred || 1);
 
     const result: CalibrationResult = {
-      model_name: 'traffic-aware',
+      model_name: "traffic-aware",
       bias_correction_factor: biasFactor,
       scale_correction_factor: scaleFactor,
       confidence_calibration: {},

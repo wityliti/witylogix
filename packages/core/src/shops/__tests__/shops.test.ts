@@ -63,7 +63,9 @@ interface ShopSettings {
 class ShopService {
   constructor(private prisma: typeof mockPrismaClient) {}
 
-  async createShop(data: Omit<Shop, "id" | "createdAt" | "updatedAt">): Promise<Shop> {
+  async createShop(
+    data: Omit<Shop, "id" | "createdAt" | "updatedAt">,
+  ): Promise<Shop> {
     const existing = await this.prisma.shop.findUnique({
       where: { slug: data.slug },
     });
@@ -102,7 +104,11 @@ class ShopService {
     return this.prisma.shop.findUnique({ where: { slug } });
   }
 
-  async listShops(filters?: { active?: boolean; limit?: number; offset?: number }): Promise<Shop[]> {
+  async listShops(filters?: {
+    active?: boolean;
+    limit?: number;
+    offset?: number;
+  }): Promise<Shop[]> {
     const query: Record<string, unknown> = {};
 
     if (filters?.active !== undefined) {
@@ -148,17 +154,22 @@ class ShopService {
     }
 
     // Delete settings first
-    await this.prisma.shopSettings.delete({
-      where: { shopId: id },
-    }).catch(() => {
-      // Settings might not exist
-    });
+    await this.prisma.shopSettings
+      .delete({
+        where: { shopId: id },
+      })
+      .catch(() => {
+        // Settings might not exist
+      });
 
     await this.prisma.shop.delete({ where: { id } });
     return true;
   }
 
-  async updateShopSettings(shopId: string, updates: Partial<ShopSettings>): Promise<ShopSettings> {
+  async updateShopSettings(
+    shopId: string,
+    updates: Partial<ShopSettings>,
+  ): Promise<ShopSettings> {
     const shop = await this.getShop(shopId);
     if (!shop) {
       throw new Error(`Shop "${shopId}" not found`);
@@ -248,7 +259,7 @@ describe("Shop Service - CRUD Operations", () => {
       });
 
       await expect(shopService.createShop(shopData)).rejects.toThrow(
-        /already exists/
+        /already exists/,
       );
     });
 
@@ -319,7 +330,7 @@ describe("Shop Service - CRUD Operations", () => {
             currency: "USD",
             language: "en",
           }),
-        })
+        }),
       );
     });
   });
@@ -438,7 +449,7 @@ describe("Shop Service - CRUD Operations", () => {
       expect(mockPrismaClient.shop.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { active: true },
-        })
+        }),
       );
     });
 
@@ -463,7 +474,7 @@ describe("Shop Service - CRUD Operations", () => {
         expect.objectContaining({
           take: 10,
           skip: 5,
-        })
+        }),
       );
     });
 
@@ -476,7 +487,7 @@ describe("Shop Service - CRUD Operations", () => {
         expect.objectContaining({
           take: 50,
           skip: 0,
-        })
+        }),
       );
     });
   });
@@ -529,7 +540,7 @@ describe("Shop Service - CRUD Operations", () => {
         });
 
       await expect(
-        shopService.updateShop("shop_123", { slug: "new-slug" })
+        shopService.updateShop("shop_123", { slug: "new-slug" }),
       ).rejects.toThrow(/already exists/);
     });
 
@@ -537,7 +548,7 @@ describe("Shop Service - CRUD Operations", () => {
       mockPrismaClient.shop.findUnique.mockResolvedValue(null);
 
       await expect(
-        shopService.updateShop("unknown_id", { name: "New Name" })
+        shopService.updateShop("unknown_id", { name: "New Name" }),
       ).rejects.toThrow(/not found/);
     });
 
@@ -563,7 +574,7 @@ describe("Shop Service - CRUD Operations", () => {
           data: expect.objectContaining({
             updatedAt: expect.any(Date),
           }),
-        })
+        }),
       );
     });
   });
@@ -616,7 +627,7 @@ describe("Shop Service - CRUD Operations", () => {
       mockPrismaClient.shop.findUnique.mockResolvedValue(null);
 
       await expect(shopService.deleteShop("unknown_id")).rejects.toThrow(
-        /not found/
+        /not found/,
       );
     });
   });
@@ -694,7 +705,7 @@ describe("Shop Configuration Management", () => {
       mockPrismaClient.shop.findUnique.mockResolvedValue(null);
 
       await expect(
-        shopService.updateShopSettings("unknown_id", { currency: "EUR" })
+        shopService.updateShopSettings("unknown_id", { currency: "EUR" }),
       ).rejects.toThrow(/not found/);
     });
 
@@ -849,7 +860,7 @@ describe("Multi-Tenant Isolation", () => {
         slug: "shop-1",
         timezone: "UTC",
         active: true,
-      })
+      }),
     ).rejects.toThrow(/already exists/);
   });
 
@@ -1027,11 +1038,11 @@ describe("Shop Error Handling", () => {
 
   it("should handle database errors gracefully", async () => {
     mockPrismaClient.shop.findUnique.mockRejectedValue(
-      new Error("Database connection failed")
+      new Error("Database connection failed"),
     );
 
     await expect(shopService.getShop("shop_123")).rejects.toThrow(
-      "Database connection failed"
+      "Database connection failed",
     );
   });
 
@@ -1046,7 +1057,7 @@ describe("Shop Error Handling", () => {
     // These would be validated in a real implementation
     mockPrismaClient.shop.findUnique.mockResolvedValue(null);
     mockPrismaClient.shop.create.mockRejectedValue(
-      new Error("Validation failed")
+      new Error("Validation failed"),
     );
 
     await expect(shopService.createShop(shopData)).rejects.toThrow();

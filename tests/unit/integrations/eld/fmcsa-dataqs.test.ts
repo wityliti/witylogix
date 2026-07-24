@@ -31,7 +31,7 @@ describe("FMCSADataQsClient", () => {
         new Response(JSON.stringify({ dotNumber: "0" }), {
           status: 200,
           headers: { "content-type": "application/json" },
-        })
+        }),
       );
 
       await expect(client.initialize()).resolves.not.toThrow();
@@ -41,7 +41,7 @@ describe("FMCSADataQsClient", () => {
 
     it("should throw error when API key is missing", () => {
       expect(() => new FMCSADataQsClient("")).toThrow(
-        "FMCSA API key (WebKey) is required"
+        "FMCSA API key (WebKey) is required",
       );
     });
   });
@@ -67,8 +67,8 @@ describe("FMCSADataQsClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.lookupCarrierByDOT("1234567");
@@ -92,8 +92,8 @@ describe("FMCSADataQsClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.lookupCarrierByMC("123456");
@@ -123,8 +123,8 @@ describe("FMCSADataQsClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.searchCarriers("Test", 10);
@@ -168,8 +168,8 @@ describe("FMCSADataQsClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.getSMSBASICScores("1234567");
@@ -198,8 +198,8 @@ describe("FMCSADataQsClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result1 = await client.getSMSBASICScores("1234567");
@@ -240,8 +240,8 @@ describe("FMCSADataQsClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.getRoadsideInspections("1234567");
@@ -275,8 +275,8 @@ describe("FMCSADataQsClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.getCrashes("1234567");
@@ -318,8 +318,8 @@ describe("FMCSADataQsClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.getInsuranceStatus("1234567");
@@ -347,8 +347,8 @@ describe("FMCSADataQsClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.getOperatingAuthority("1234567");
@@ -379,8 +379,8 @@ describe("FMCSADataQsClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.getCensusData("1234567");
@@ -410,8 +410,8 @@ describe("FMCSADataQsClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.getOOSRates("1234567");
@@ -435,15 +435,15 @@ describe("FMCSADataQsClient", () => {
           {
             status: 200,
             headers: { "content-type": "application/json" },
-          }
-        )
+          },
+        ),
       );
 
       const result = await client.submitDataQsChallenge(
         "1234567",
         "totalDrivers",
         "Incorrect driver count in census data",
-        "https://example.com/doc.pdf"
+        "https://example.com/doc.pdf",
       );
 
       expect(result.status).toBe("Pending");
@@ -455,7 +455,8 @@ describe("FMCSADataQsClient", () => {
 
   describe("bulk operations", () => {
     it("should lookup multiple carriers", async () => {
-      const mockFetch = vi.spyOn(global, "fetch")
+      const mockFetch = vi
+        .spyOn(global, "fetch")
         .mockResolvedValueOnce(
           new Response(
             JSON.stringify({
@@ -465,8 +466,8 @@ describe("FMCSADataQsClient", () => {
             {
               status: 200,
               headers: { "content-type": "application/json" },
-            }
-          )
+            },
+          ),
         )
         .mockResolvedValueOnce(
           new Response(
@@ -477,8 +478,8 @@ describe("FMCSADataQsClient", () => {
             {
               status: 200,
               headers: { "content-type": "application/json" },
-            }
-          )
+            },
+          ),
         );
 
       const result = await client.bulkLookup(["1234567", "2345678"]);
@@ -493,7 +494,8 @@ describe("FMCSADataQsClient", () => {
 
   describe("comprehensive profile", () => {
     it("should retrieve complete carrier profile with all data", async () => {
-      const mockFetch = vi.spyOn(global, "fetch")
+      const mockFetch = vi
+        .spyOn(global, "fetch")
         .mockResolvedValueOnce(
           new Response(
             JSON.stringify({
@@ -503,8 +505,8 @@ describe("FMCSADataQsClient", () => {
             {
               status: 200,
               headers: { "content-type": "application/json" },
-            }
-          )
+            },
+          ),
         )
         .mockResolvedValueOnce(
           new Response(
@@ -515,20 +517,20 @@ describe("FMCSADataQsClient", () => {
             {
               status: 200,
               headers: { "content-type": "application/json" },
-            }
-          )
+            },
+          ),
         )
         .mockResolvedValueOnce(
           new Response(JSON.stringify({ inspections: [] }), {
             status: 200,
             headers: { "content-type": "application/json" },
-          })
+          }),
         )
         .mockResolvedValueOnce(
           new Response(JSON.stringify({ crashes: [] }), {
             status: 200,
             headers: { "content-type": "application/json" },
-          })
+          }),
         )
         .mockResolvedValueOnce(
           new Response(
@@ -536,8 +538,8 @@ describe("FMCSADataQsClient", () => {
             {
               status: 200,
               headers: { "content-type": "application/json" },
-            }
-          )
+            },
+          ),
         )
         .mockResolvedValueOnce(
           new Response(
@@ -548,8 +550,8 @@ describe("FMCSADataQsClient", () => {
             {
               status: 200,
               headers: { "content-type": "application/json" },
-            }
-          )
+            },
+          ),
         );
 
       const result = await client.getComprehensiveProfile("1234567");

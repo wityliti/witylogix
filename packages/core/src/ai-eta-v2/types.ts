@@ -9,18 +9,18 @@
  */
 export interface FeatureVector {
   distance_km: number;
-  zone_type: 'urban-core' | 'urban' | 'suburban' | 'rural' | 'highway';
+  zone_type: "urban-core" | "urban" | "suburban" | "rural" | "highway";
   hour: number; // 0-23
   day_of_week: number; // 0-6 (Sunday-Saturday)
   is_holiday: boolean;
   is_weekend: number; // 0 or 1
-  weather_condition: 'clear' | 'rain' | 'snow' | 'fog' | 'unknown';
+  weather_condition: "clear" | "rain" | "snow" | "fog" | "unknown";
   weather_intensity: number; // 0-1
-  traffic_condition: 'light' | 'moderate' | 'heavy' | 'unknown';
+  traffic_condition: "light" | "moderate" | "heavy" | "unknown";
   traffic_multiplier: number; // 1.0+
   historical_avg_minutes: number;
   driver_experience_score: number; // 0-1
-  vehicle_type: 'bike' | 'car' | 'van' | 'truck';
+  vehicle_type: "bike" | "car" | "van" | "truck";
   num_stops_remaining: number;
   temperature_celsius: number;
   wind_speed_kmh: number;
@@ -45,15 +45,15 @@ export interface ModelPrediction {
 export interface HistoricalDelivery {
   delivery_id: string;
   distance_km: number;
-  zone_type: 'urban-core' | 'urban' | 'suburban' | 'rural' | 'highway';
+  zone_type: "urban-core" | "urban" | "suburban" | "rural" | "highway";
   hour: number;
   day_of_week: number;
   is_holiday: boolean;
-  weather_condition: 'clear' | 'rain' | 'snow' | 'fog' | 'unknown';
+  weather_condition: "clear" | "rain" | "snow" | "fog" | "unknown";
   weather_intensity: number;
-  traffic_condition: 'light' | 'moderate' | 'heavy' | 'unknown';
+  traffic_condition: "light" | "moderate" | "heavy" | "unknown";
   driver_experience_score: number;
-  vehicle_type: 'bike' | 'car' | 'van' | 'truck';
+  vehicle_type: "bike" | "car" | "van" | "truck";
   num_stops: number;
   actual_duration_minutes: number;
   planned_duration_minutes?: number;
@@ -74,7 +74,7 @@ export interface ETAPrediction {
   p50_minutes: number;
   model_predictions: ModelPrediction[];
   dominant_model: string;
-  ensemble_method: 'weighted' | 'median' | 'hybrid';
+  ensemble_method: "weighted" | "median" | "hybrid";
   feature_vector: Partial<FeatureVector>;
   generated_at: Date;
 }
@@ -154,14 +154,17 @@ export interface ModelWeights {
  * Time-of-day model state
  */
 export interface TimeOfDayModelState {
-  hourly_profiles: Record<number, {
-    baseline_minutes: number;
-    std_dev: number;
-    weekday_multiplier: number;
-    weekend_multiplier: number;
-    holiday_multiplier: number;
-    sample_count: number;
-  }>;
+  hourly_profiles: Record<
+    number,
+    {
+      baseline_minutes: number;
+      std_dev: number;
+      weekday_multiplier: number;
+      weekend_multiplier: number;
+      holiday_multiplier: number;
+      sample_count: number;
+    }
+  >;
   season_factors: Record<string, number>;
 }
 

@@ -10,10 +10,10 @@
  * - Gateway health/availability
  */
 
-import type { PaymentGatewayConfig } from './types.js';
-import { PaymentGatewayBase } from './payment-gateway.js';
-import { PayPalGateway } from './paypal-adapter.js';
-import { SquareGateway } from './square-adapter.js';
+import type { PaymentGatewayConfig } from "./types.js";
+import { PaymentGatewayBase } from "./payment-gateway.js";
+import { PayPalGateway } from "./paypal-adapter.js";
+import { SquareGateway } from "./square-adapter.js";
 
 // ─── GATEWAY METADATA ──────────────────────────────────────────────────────
 
@@ -57,7 +57,7 @@ export interface RoutingDecision {
 export class MultiGatewayRouter {
   private gateways: Map<string, PaymentGatewayBase> = new Map();
   private gatewayMetadata: Map<string, GatewayMetadata> = new Map();
-  private preferredGateway: string = 'square'; // Default
+  private preferredGateway: string = "square"; // Default
 
   constructor(private logger: any = console) {}
 
@@ -73,7 +73,7 @@ export class MultiGatewayRouter {
     this.gateways.set(code, gateway);
     this.gatewayMetadata.set(code, metadata);
 
-    this.logger.log('info', `Registered payment gateway: ${code}`, {
+    this.logger.log("info", `Registered payment gateway: ${code}`, {
       priority: metadata.priority,
       supportedMethods: metadata.supportedMethods,
     });
@@ -98,7 +98,7 @@ export class MultiGatewayRouter {
     if (candidates.length === 0) {
       throw new Error(
         `No suitable payment gateway found for method=${params.method}, ` +
-        `currency=${params.currency}, amount=${params.amount}`,
+          `currency=${params.currency}, amount=${params.amount}`,
       );
     }
 
@@ -137,7 +137,9 @@ export class MultiGatewayRouter {
   /**
    * Find candidate gateways for payment
    */
-  private findCandidateGateways(params: GatewayRoutingParams): GatewayMetadata[] {
+  private findCandidateGateways(
+    params: GatewayRoutingParams,
+  ): GatewayMetadata[] {
     const candidates: GatewayMetadata[] = [];
 
     for (const [_code, metadata] of this.gatewayMetadata.entries()) {
@@ -156,7 +158,10 @@ export class MultiGatewayRouter {
       }
 
       // Check amount limits
-      if (params.amount < metadata.minAmount || params.amount > metadata.maxAmount) {
+      if (
+        params.amount < metadata.minAmount ||
+        params.amount > metadata.maxAmount
+      ) {
         continue;
       }
 
@@ -168,7 +173,7 @@ export class MultiGatewayRouter {
       // Check health score
       if (metadata.healthScore < 50) {
         // Gateway is unhealthy
-        this.logger.log('warn', `Gateway health is low: ${metadata.name}`, {
+        this.logger.log("warn", `Gateway health is low: ${metadata.name}`, {
           healthScore: metadata.healthScore,
         });
         continue;
@@ -187,7 +192,9 @@ export class MultiGatewayRouter {
     amount: number,
     gateway: GatewayMetadata,
   ): number {
-    const percentageFee = Math.round(amount * (gateway.transactionFeePercent / 100));
+    const percentageFee = Math.round(
+      amount * (gateway.transactionFeePercent / 100),
+    );
     return percentageFee + gateway.fixedFeeInCents;
   }
 
@@ -212,7 +219,7 @@ export class MultiGatewayRouter {
     if (secondaryFee !== null && primaryFee < secondaryFee) {
       parts.push(
         `lower fee: $${(primaryFee / 100).toFixed(2)} vs ` +
-        `$${(secondaryFee / 100).toFixed(2)}`,
+          `$${(secondaryFee / 100).toFixed(2)}`,
       );
     }
 
@@ -221,33 +228,26 @@ export class MultiGatewayRouter {
     }
 
     if (secondary) {
-      parts.push(
-        `fallback: ${secondary.name}`,
-      );
+      parts.push(`fallback: ${secondary.name}`);
     }
 
     if (tertiary) {
-      parts.push(
-        `tertiary: ${tertiary.name}`,
-      );
+      parts.push(`tertiary: ${tertiary.name}`);
     }
 
-    return parts.join(', ');
+    return parts.join(", ");
   }
 
   /**
    * Update gateway health score
    */
-  updateGatewayHealth(
-    gatewayCode: string,
-    healthScore: number,
-  ): void {
+  updateGatewayHealth(gatewayCode: string, healthScore: number): void {
     const metadata = this.gatewayMetadata.get(gatewayCode);
     if (metadata) {
       metadata.healthScore = Math.max(0, Math.min(100, healthScore));
       metadata.lastHealthCheckAt = new Date();
 
-      this.logger.log('info', `Updated gateway health: ${gatewayCode}`, {
+      this.logger.log("info", `Updated gateway health: ${gatewayCode}`, {
         healthScore: metadata.healthScore,
       });
     }
@@ -256,10 +256,7 @@ export class MultiGatewayRouter {
   /**
    * Record successful transaction
    */
-  recordTransaction(
-    gatewayCode: string,
-    amount: number,
-  ): void {
+  recordTransaction(gatewayCode: string, amount: number): void {
     const metadata = this.gatewayMetadata.get(gatewayCode);
     if (metadata) {
       metadata.monthlyVolume += amount;
@@ -275,16 +272,13 @@ export class MultiGatewayRouter {
   /**
    * Record failed transaction
    */
-  recordFailure(
-    gatewayCode: string,
-    reason?: string,
-  ): void {
+  recordFailure(gatewayCode: string, reason?: string): void {
     const metadata = this.gatewayMetadata.get(gatewayCode);
     if (metadata) {
       // Degrade health score on failure
       metadata.healthScore = Math.max(0, metadata.healthScore - 5);
 
-      this.logger.log('warn', `Gateway transaction failed: ${gatewayCode}`, {
+      this.logger.log("warn", `Gateway transaction failed: ${gatewayCode}`, {
         reason,
         healthScore: metadata.healthScore,
       });
@@ -316,7 +310,9 @@ export class MultiGatewayRouter {
    * Get all gateway metadata
    */
   getAllGatewayMetadata(): GatewayMetadata[] {
-    return Array.from(this.gatewayMetadata.values()).sort((a, b) => a.priority - b.priority);
+    return Array.from(this.gatewayMetadata.values()).sort(
+      (a, b) => a.priority - b.priority,
+    );
   }
 
   /**

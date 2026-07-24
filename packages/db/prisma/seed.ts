@@ -60,7 +60,9 @@ async function main() {
   const dispatchPwd = await hashPassword("Dispatch123!");
 
   const admin = await prisma.user.upsert({
-    where: { shopId_email: { shopId: shop.id, email: "admin@demo.witylogix.io" } },
+    where: {
+      shopId_email: { shopId: shop.id, email: "admin@demo.witylogix.io" },
+    },
     update: { password: adminPwd },
     create: {
       shopId: shop.id,
@@ -73,7 +75,9 @@ async function main() {
   });
 
   const manager = await prisma.user.upsert({
-    where: { shopId_email: { shopId: shop.id, email: "manager@demo.witylogix.io" } },
+    where: {
+      shopId_email: { shopId: shop.id, email: "manager@demo.witylogix.io" },
+    },
     update: { password: managerPwd },
     create: {
       shopId: shop.id,
@@ -86,7 +90,9 @@ async function main() {
   });
 
   const dispatcher = await prisma.user.upsert({
-    where: { shopId_email: { shopId: shop.id, email: "dispatch@demo.witylogix.io" } },
+    where: {
+      shopId_email: { shopId: shop.id, email: "dispatch@demo.witylogix.io" },
+    },
     update: { password: dispatchPwd },
     create: {
       shopId: shop.id,
@@ -97,7 +103,10 @@ async function main() {
       isActive: true,
     },
   });
-  console.log("✅ Users:", [admin, manager, dispatcher].map(u => u.email).join(", "));
+  console.log(
+    "✅ Users:",
+    [admin, manager, dispatcher].map((u) => u.email).join(", "),
+  );
 
   // ── 4. Org Members ──────────────────────────────────────
   for (const user of [admin, manager, dispatcher]) {
@@ -142,7 +151,7 @@ async function main() {
       province: "NY",
       postalCode: "11201",
       country: "US",
-      coordinates: { lat: 40.6860, lng: -73.9770 },
+      coordinates: { lat: 40.686, lng: -73.977 },
       isActive: true,
     },
   });
@@ -150,11 +159,36 @@ async function main() {
 
   // ── 6. Drivers ──────────────────────────────────────────
   const driverData = [
-    { name: "James Wilson", phone: "+15550201", vehicleType: "VAN" as const, plate: "NJ-DLV-101" },
-    { name: "Maria Garcia", phone: "+15550202", vehicleType: "VAN" as const, plate: "NJ-DLV-102" },
-    { name: "David Kim", phone: "+15550203", vehicleType: "TRUCK" as const, plate: "NJ-DLV-103" },
-    { name: "Lisa Thompson", phone: "+15550204", vehicleType: "MOTORCYCLE" as const, plate: "NJ-BKE-201" },
-    { name: "Robert Brown", phone: "+15550205", vehicleType: "VAN" as const, plate: "NJ-DLV-104" },
+    {
+      name: "James Wilson",
+      phone: "+15550201",
+      vehicleType: "VAN" as const,
+      plate: "NJ-DLV-101",
+    },
+    {
+      name: "Maria Garcia",
+      phone: "+15550202",
+      vehicleType: "VAN" as const,
+      plate: "NJ-DLV-102",
+    },
+    {
+      name: "David Kim",
+      phone: "+15550203",
+      vehicleType: "TRUCK" as const,
+      plate: "NJ-DLV-103",
+    },
+    {
+      name: "Lisa Thompson",
+      phone: "+15550204",
+      vehicleType: "MOTORCYCLE" as const,
+      plate: "NJ-BKE-201",
+    },
+    {
+      name: "Robert Brown",
+      phone: "+15550205",
+      vehicleType: "VAN" as const,
+      plate: "NJ-DLV-104",
+    },
   ];
 
   const driverPwd = await hashPassword("Driver123!");
@@ -174,7 +208,10 @@ async function main() {
         vehiclePlate: d.plate,
         status: "AVAILABLE",
         isActive: true,
-        currentLocation: { lat: 40.7128 + (Math.random() - 0.5) * 0.1, lng: -74.006 + (Math.random() - 0.5) * 0.1 },
+        currentLocation: {
+          lat: 40.7128 + (Math.random() - 0.5) * 0.1,
+          lng: -74.006 + (Math.random() - 0.5) * 0.1,
+        },
       },
     });
     drivers.push(driver);
@@ -183,20 +220,66 @@ async function main() {
 
   // ── 7. Customers ────────────────────────────────────────
   const customerData = [
-    { name: "John Smith", email: "john@acmecorp.com", phone: "+15551001", company: "Acme Corp" },
-    { name: "Emily Davis", email: "emily@techstart.io", phone: "+15551002", company: "TechStart" },
-    { name: "Chris Lee", email: "chris@greenfoods.com", phone: "+15551003", company: "Green Foods" },
-    { name: "Amanda White", email: "amanda@luxehome.com", phone: "+15551004", company: "Luxe Home" },
-    { name: "Kevin Patel", email: "kevin@quickship.co", phone: "+15551005", company: "QuickShip" },
-    { name: "Rachel Green", email: "rachel@urbanstyle.com", phone: "+15551006", company: "Urban Style" },
-    { name: "Tom Harris", email: "tom@megastore.com", phone: "+15551007", company: "MegaStore" },
-    { name: "Nina Sharma", email: "nina@freshbox.io", phone: "+15551008", company: "FreshBox" },
+    {
+      name: "John Smith",
+      email: "john@acmecorp.com",
+      phone: "+15551001",
+      company: "Acme Corp",
+    },
+    {
+      name: "Emily Davis",
+      email: "emily@techstart.io",
+      phone: "+15551002",
+      company: "TechStart",
+    },
+    {
+      name: "Chris Lee",
+      email: "chris@greenfoods.com",
+      phone: "+15551003",
+      company: "Green Foods",
+    },
+    {
+      name: "Amanda White",
+      email: "amanda@luxehome.com",
+      phone: "+15551004",
+      company: "Luxe Home",
+    },
+    {
+      name: "Kevin Patel",
+      email: "kevin@quickship.co",
+      phone: "+15551005",
+      company: "QuickShip",
+    },
+    {
+      name: "Rachel Green",
+      email: "rachel@urbanstyle.com",
+      phone: "+15551006",
+      company: "Urban Style",
+    },
+    {
+      name: "Tom Harris",
+      email: "tom@megastore.com",
+      phone: "+15551007",
+      company: "MegaStore",
+    },
+    {
+      name: "Nina Sharma",
+      email: "nina@freshbox.io",
+      phone: "+15551008",
+      company: "FreshBox",
+    },
   ];
 
   const customers = [];
   for (const c of customerData) {
     const customer = await prisma.customer.upsert({
-      where: { shopId_externalCustomerId_source: { shopId: shop.id, externalCustomerId: `ext-${c.email}`, source: "MANUAL" } },
+      where: {
+        shopId_externalCustomerId_source: {
+          shopId: shop.id,
+          externalCustomerId: `ext-${c.email}`,
+          source: "MANUAL",
+        },
+      },
       update: {},
       create: {
         shopId: shop.id,
@@ -208,15 +291,17 @@ async function main() {
         lastName: c.name.split(" ")[1],
         ordersCount: Math.floor(Math.random() * 20) + 1,
         totalSpent: parseFloat((100 + Math.random() * 5000).toFixed(2)),
-        addresses: JSON.stringify([{
-          line1: `${100 + Math.floor(Math.random() * 900)} ${["Broadway", "5th Ave", "Park Ave"][Math.floor(Math.random() * 3)]}`,
-          city: "New York",
-          province: "NY",
-          postalCode: "10001",
-          country: "US",
-          latitude: 40.7128 + (Math.random() - 0.5) * 0.08,
-          longitude: -74.006 + (Math.random() - 0.5) * 0.08,
-        }]),
+        addresses: JSON.stringify([
+          {
+            line1: `${100 + Math.floor(Math.random() * 900)} ${["Broadway", "5th Ave", "Park Ave"][Math.floor(Math.random() * 3)]}`,
+            city: "New York",
+            province: "NY",
+            postalCode: "10001",
+            country: "US",
+            latitude: 40.7128 + (Math.random() - 0.5) * 0.08,
+            longitude: -74.006 + (Math.random() - 0.5) * 0.08,
+          },
+        ]),
       },
     });
     customers.push(customer);
@@ -224,7 +309,15 @@ async function main() {
   console.log("✅ Customers:", customers.length, "created");
 
   // ── 8. Orders ───────────────────────────────────────────
-  const statuses = ["PENDING", "ACCEPTED", "ASSIGNED", "PICKED_UP", "OUT_FOR_DELIVERY", "DELIVERED", "DELIVERED"] as const;
+  const statuses = [
+    "PENDING",
+    "ACCEPTED",
+    "ASSIGNED",
+    "PICKED_UP",
+    "OUT_FOR_DELIVERY",
+    "DELIVERED",
+    "DELIVERED",
+  ] as const;
   const now = new Date();
   const orders = [];
 
@@ -237,7 +330,13 @@ async function main() {
     const extNum = `WTL-${String(1001 + i).padStart(5, "0")}`;
 
     const order = await prisma.order.upsert({
-      where: { shopId_externalOrderId_source: { shopId: shop.id, externalOrderId: extId, source: "MANUAL" } },
+      where: {
+        shopId_externalOrderId_source: {
+          shopId: shop.id,
+          externalOrderId: extId,
+          source: "MANUAL",
+        },
+      },
       update: {},
       create: {
         shopId: shop.id,
@@ -303,7 +402,7 @@ async function main() {
         organization: { connect: { id: org.id } },
         name: z.name,
         baseRate: z.baseRate,
-        perKmRate: 1.50,
+        perKmRate: 1.5,
         isActive: true,
       },
     });
@@ -311,7 +410,13 @@ async function main() {
   console.log("✅ Delivery zones:", zones.length, "created");
 
   // ── 11. Activity Logs ───────────────────────────────────
-  const actions = ["created", "status_changed", "assigned", "delivered", "updated"];
+  const actions = [
+    "created",
+    "status_changed",
+    "assigned",
+    "delivered",
+    "updated",
+  ];
   const entityTypes = ["order", "order", "driver", "shipment", "route"];
   for (let i = 0; i < 20; i++) {
     await prisma.activityLog.create({

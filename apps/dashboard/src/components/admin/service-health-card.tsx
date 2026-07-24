@@ -10,10 +10,7 @@ import type { ServiceHealthCardProps, ServiceStatus } from "./types";
  * Service health status card component
  * Displays service name, status badge, uptime %, response time, and mini sparkline
  */
-export function ServiceHealthCard({
-  data,
-  className,
-}: ServiceHealthCardProps) {
+export function ServiceHealthCard({ data, className }: ServiceHealthCardProps) {
   const statusColor: Record<ServiceStatus, "success" | "warning" | "danger"> = {
     healthy: "success",
     degraded: "warning",
@@ -53,7 +50,9 @@ export function ServiceHealthCard({
     const padding = 2;
 
     const points = sparklineData.points.map((point, index) => {
-      const x = padding + (index / (sparklineData.points.length - 1)) * (width - 2 * padding);
+      const x =
+        padding +
+        (index / (sparklineData.points.length - 1)) * (width - 2 * padding);
       const y = height - padding - point.normalized * (height - 2 * padding);
       return `${x},${y}`;
     });
@@ -74,18 +73,18 @@ export function ServiceHealthCard({
         return (
           <svg width="16" height="16" viewBox="0 0 16 16">
             <circle cx="8" cy="8" r="6" fill="currentColor" opacity="0.2" />
-            <path
-              d="M8 4 L12 12 L4 12 Z"
-              fill="currentColor"
-              opacity="0.7"
-            />
+            <path d="M8 4 L12 12 L4 12 Z" fill="currentColor" opacity="0.7" />
           </svg>
         );
       case "unhealthy":
         return (
           <svg width="16" height="16" viewBox="0 0 16 16">
             <circle cx="8" cy="8" r="6" fill="currentColor" opacity="0.2" />
-            <path d="M8 4 L8 12 M4 8 L12 8" stroke="currentColor" strokeWidth="2" />
+            <path
+              d="M8 4 L8 12 M4 8 L12 8"
+              stroke="currentColor"
+              strokeWidth="2"
+            />
           </svg>
         );
     }
@@ -112,7 +111,7 @@ export function ServiceHealthCard({
     <Card
       className={cn(
         "hover:border-wl-border-default transition-all duration-base",
-        className
+        className,
       )}
     >
       <CardHeader>
@@ -159,14 +158,17 @@ export function ServiceHealthCard({
             <p className="text-lg font-bold text-wl-text-primary mt-1">
               {Math.round(data.responseTimeMs)}ms
             </p>
-            {data.responseTimeHistory && data.responseTimeHistory.length > 0 && (
-              <p className="text-xs text-wl-text-tertiary mt-1">
-                avg {Math.round(
-                  data.responseTimeHistory.reduce((a, b) => a + b, 0) /
-                    data.responseTimeHistory.length
-                )}ms
-              </p>
-            )}
+            {data.responseTimeHistory &&
+              data.responseTimeHistory.length > 0 && (
+                <p className="text-xs text-wl-text-tertiary mt-1">
+                  avg{" "}
+                  {Math.round(
+                    data.responseTimeHistory.reduce((a, b) => a + b, 0) /
+                      data.responseTimeHistory.length,
+                  )}
+                  ms
+                </p>
+              )}
           </div>
         </div>
 
@@ -177,7 +179,12 @@ export function ServiceHealthCard({
               Response Time History
             </p>
             <div className="bg-wl-bg-surface rounded p-2 flex items-center justify-center">
-              <svg width="120" height="24" viewBox="0 0 120 20" className="w-full">
+              <svg
+                width="120"
+                height="24"
+                viewBox="0 0 120 20"
+                className="w-full"
+              >
                 {/* Grid lines */}
                 <line
                   x1="0"
@@ -204,12 +211,16 @@ export function ServiceHealthCard({
                   <circle
                     cx={
                       2 +
-                      ((sparklineData.points.length - 1) / sparklineData.points.length) * 116
+                      ((sparklineData.points.length - 1) /
+                        sparklineData.points.length) *
+                        116
                     }
                     cy={
                       20 -
                       2 -
-                      sparklineData.points[sparklineData.points.length - 1].normalized * 16
+                      sparklineData.points[sparklineData.points.length - 1]
+                        .normalized *
+                        16
                     }
                     r="1.5"
                     fill="var(--wl-primary-500)"

@@ -112,15 +112,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/auth/login",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "auth",
-                "login"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "auth", "login"]
             }
           }
         },
@@ -154,16 +147,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/auth/driver/login",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "auth",
-                "driver",
-                "login"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "auth", "driver", "login"]
             }
           }
         },
@@ -197,15 +182,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/auth/refresh",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "auth",
-                "refresh"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "auth", "refresh"]
             }
           }
         },
@@ -215,15 +193,8 @@
             "method": "POST",
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/auth/logout",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "auth",
-                "logout"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "auth", "logout"]
             }
           }
         },
@@ -233,16 +204,8 @@
             "method": "POST",
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/auth/mfa/setup",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "auth",
-                "mfa",
-                "setup"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "auth", "mfa", "setup"]
             }
           }
         },
@@ -262,16 +225,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/auth/mfa/verify",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "auth",
-                "mfa",
-                "verify"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "auth", "mfa", "verify"]
             }
           }
         },
@@ -291,16 +246,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/auth/password/reset",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "auth",
-                "password",
-                "reset"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "auth", "password", "reset"]
             }
           }
         }
@@ -330,14 +277,8 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/orders?page=1&limit=20",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "orders"
-              ],
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "orders"],
               "query": [
                 {
                   "key": "page",
@@ -357,15 +298,8 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/orders/{{orderId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "orders",
-                "{{orderId}}"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "orders", "{{orderId}}"]
             }
           }
         },
@@ -398,14 +332,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/orders",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "orders"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "orders"]
             }
           }
         },
@@ -425,9 +353,7 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/orders/{{orderId}}/status",
-              "host": [
-                "{{baseUrl}}"
-              ],
+              "host": ["{{baseUrl}}"],
               "path": [
                 "api",
                 "{{apiVersion}}",
@@ -454,9 +380,7 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/orders/{{orderId}}/assign",
-              "host": [
-                "{{baseUrl}}"
-              ],
+              "host": ["{{baseUrl}}"],
               "path": [
                 "api",
                 "{{apiVersion}}",
@@ -473,9 +397,7 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/orders/{{orderId}}/timeline",
-              "host": [
-                "{{baseUrl}}"
-              ],
+              "host": ["{{baseUrl}}"],
               "path": [
                 "api",
                 "{{apiVersion}}",
@@ -512,14 +434,8 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/drivers?page=1&limit=20",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "drivers"
-              ],
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "drivers"],
               "query": [
                 {
                   "key": "page",
@@ -539,15 +455,8 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/drivers/{{driverId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "drivers",
-                "{{driverId}}"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "drivers", "{{driverId}}"]
             }
           }
         },
@@ -580,14 +489,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/drivers",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "drivers"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "drivers"]
             }
           }
         },
@@ -607,15 +510,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/drivers/{{driverId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "drivers",
-                "{{driverId}}"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "drivers", "{{driverId}}"]
             }
           }
         },
@@ -635,9 +531,7 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/drivers/{{driverId}}/status",
-              "host": [
-                "{{baseUrl}}"
-              ],
+              "host": ["{{baseUrl}}"],
               "path": [
                 "api",
                 "{{apiVersion}}",
@@ -664,9 +558,7 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/drivers/{{driverId}}/location",
-              "host": [
-                "{{baseUrl}}"
-              ],
+              "host": ["{{baseUrl}}"],
               "path": [
                 "api",
                 "{{apiVersion}}",
@@ -703,14 +595,8 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/routes?page=1&limit=20",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "routes"
-              ],
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "routes"],
               "query": [
                 {
                   "key": "page",
@@ -730,15 +616,8 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/routes/{{routeId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "routes",
-                "{{routeId}}"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "routes", "{{routeId}}"]
             }
           }
         },
@@ -771,14 +650,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/routes",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "routes"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "routes"]
             }
           }
         },
@@ -788,9 +661,7 @@
             "method": "POST",
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/routes/{{routeId}}/optimize",
-              "host": [
-                "{{baseUrl}}"
-              ],
+              "host": ["{{baseUrl}}"],
               "path": [
                 "api",
                 "{{apiVersion}}",
@@ -812,14 +683,8 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/zones",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "zones"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "zones"]
             }
           }
         },
@@ -852,14 +717,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/zones",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "zones"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "zones"]
             }
           }
         }
@@ -874,14 +733,8 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/integrations",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "integrations"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "integrations"]
             }
           }
         },
@@ -914,14 +767,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/integrations",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "integrations"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "integrations"]
             }
           }
         },
@@ -931,9 +778,7 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/integrations/{{integrationId}}/health",
-              "host": [
-                "{{baseUrl}}"
-              ],
+              "host": ["{{baseUrl}}"],
               "path": [
                 "api",
                 "{{apiVersion}}",
@@ -955,14 +800,8 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/webhooks",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "webhooks"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "webhooks"]
             }
           }
         },
@@ -995,14 +834,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/webhooks",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "webhooks"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "webhooks"]
             }
           }
         },
@@ -1012,9 +845,7 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/webhooks/{{webhookId}}/deliveries",
-              "host": [
-                "{{baseUrl}}"
-              ],
+              "host": ["{{baseUrl}}"],
               "path": [
                 "api",
                 "{{apiVersion}}",
@@ -1036,15 +867,8 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/admin/users",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "admin",
-                "users"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "admin", "users"]
             }
           }
         },
@@ -1054,15 +878,8 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/admin/health",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "admin",
-                "health"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "admin", "health"]
             }
           }
         }
@@ -1077,14 +894,8 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/api-keys",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "api-keys"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "api-keys"]
             }
           }
         },
@@ -1104,14 +915,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/{{apiVersion}}/api-keys",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "{{apiVersion}}",
-                "api-keys"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "api-keys"]
             }
           }
         }
@@ -1129,12 +934,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/health",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "health"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
             }
           }
         },
@@ -1147,12 +948,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/ready",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "ready"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["ready"]
             }
           }
         }

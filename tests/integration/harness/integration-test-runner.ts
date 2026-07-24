@@ -4,8 +4,8 @@
  * ~250 lines
  */
 
-import { MockProviderServer, ProviderConfig } from './mock-provider-server';
-import { WebhookSimulator } from './webhook-simulator';
+import { MockProviderServer, ProviderConfig } from "./mock-provider-server";
+import { WebhookSimulator } from "./webhook-simulator";
 
 // ───────────────────────────────────────────────────────────────────────────
 // TYPES
@@ -48,7 +48,7 @@ class PortAllocator {
 
   allocate(): number {
     if (this.nextPort >= this.maxPort) {
-      throw new Error('Port pool exhausted');
+      throw new Error("Port pool exhausted");
     }
     return this.nextPort++;
   }
@@ -74,7 +74,7 @@ export class IntegrationTestRunner {
     this.config = {
       timeout: 30000,
       parallel: false,
-      junitOutputPath: '',
+      junitOutputPath: "",
       ...config,
     };
   }
@@ -83,31 +83,33 @@ export class IntegrationTestRunner {
    * Initialize all providers and their contexts
    */
   async setupProviders(): Promise<void> {
-    const setupPromises = Array.from(Object.entries(this.config.providers)).map(async ([name, config]) => {
-      const port = config.port || portAllocator.allocate();
-      const serverConfig: ProviderConfig = {
-        ...config,
-        port,
-      };
+    const setupPromises = Array.from(Object.entries(this.config.providers)).map(
+      async ([name, config]) => {
+        const port = config.port || portAllocator.allocate();
+        const serverConfig: ProviderConfig = {
+          ...config,
+          port,
+        };
 
-      const server = new MockProviderServer(serverConfig);
-      await server.start();
+        const server = new MockProviderServer(serverConfig);
+        await server.start();
 
-      const webhookSimulator = new WebhookSimulator();
+        const webhookSimulator = new WebhookSimulator();
 
-      const context: ProviderContext = {
-        server,
-        webhookSimulator,
-        baseUrl: server.getBaseUrl(),
-        credentials: {
-          apiKey: `sk_test_${Math.random().toString(36).substring(2, 18)}`,
-          clientId: `client_${Math.random().toString(36).substring(2, 12)}`,
-          clientSecret: `secret_${Math.random().toString(36).substring(2, 18)}`,
-        },
-      };
+        const context: ProviderContext = {
+          server,
+          webhookSimulator,
+          baseUrl: server.getBaseUrl(),
+          credentials: {
+            apiKey: `sk_test_${Math.random().toString(36).substring(2, 18)}`,
+            clientId: `client_${Math.random().toString(36).substring(2, 12)}`,
+            clientSecret: `secret_${Math.random().toString(36).substring(2, 18)}`,
+          },
+        };
 
-      this.providerContexts.set(name, context);
-    });
+        this.providerContexts.set(name, context);
+      },
+    );
 
     if (this.config.parallel) {
       await Promise.all(setupPromises);
@@ -122,7 +124,9 @@ export class IntegrationTestRunner {
    * Clean up all providers
    */
   async teardownProviders(): Promise<void> {
-    const teardownPromises = Array.from(this.providerContexts.values()).map((context) => context.server.stop());
+    const teardownPromises = Array.from(this.providerContexts.values()).map(
+      (context) => context.server.stop(),
+    );
 
     if (this.config.parallel) {
       await Promise.all(teardownPromises);
@@ -148,7 +152,7 @@ export class IntegrationTestRunner {
   async runTest<T>(
     name: string,
     provider: string,
-    testFn: (context: ProviderContext) => Promise<T>
+    testFn: (context: ProviderContext) => Promise<T>,
   ): Promise<TestResult> {
     const context = this.providerContexts.get(provider);
     if (!context) {
@@ -167,7 +171,11 @@ export class IntegrationTestRunner {
       await Promise.race([
         testFn(context),
         new Promise((_, reject) =>
-          setTimeout(() => reject(new Error(`Test timeout after ${this.config.timeout}ms`)), this.config.timeout)
+          setTimeout(
+            () =>
+              reject(new Error(`Test timeout after ${this.config.timeout}ms`)),
+            this.config.timeout,
+          ),
         ),
       ]);
 
@@ -202,12 +210,14 @@ export class IntegrationTestRunner {
     tests: Array<{
       name: string;
       fn: (context: ProviderContext) => Promise<void>;
-    }>
+    }>,
   ): Promise<TestResult[]> {
     const results: TestResult[] = [];
 
     if (this.config.parallel) {
-      const promises = tests.map((test) => this.runTest(test.name, providerName, test.fn));
+      const promises = tests.map((test) =>
+        this.runTest(test.name, providerName, test.fn),
+      );
       results.push(...(await Promise.all(promises)));
     } else {
       for (const test of tests) {
@@ -268,7 +278,7 @@ export class IntegrationTestRunner {
     }
 
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-    xml += '<testsuites>\n';
+    xml += "<testsuites>\n";
 
     for (const [provider, results] of suites) {
       const passed = results.filter((r) => r.passed).length;
@@ -282,10 +292,10 @@ export class IntegrationTestRunner {
         xml += `    <testcase name="${this.escapeXml(result.name)}" time="${(result.duration / 1000).toFixed(3)}"`;
 
         if (result.passed) {
-          xml += ' />\n';
+          xml += " />\n";
         } else {
           xml += `>\n`;
-          xml += `      <failure message="${this.escapeXml(result.error || 'Test failed')}" />\n`;
+          xml += `      <failure message="${this.escapeXml(result.error || "Test failed")}" />\n`;
           xml += `    </testcase>\n`;
         }
       }
@@ -293,7 +303,7 @@ export class IntegrationTestRunner {
       xml += `  </testsuite>\n`;
     }
 
-    xml += '</testsuites>\n';
+    xml += "</testsuites>\n";
     return xml;
   }
 
@@ -301,14 +311,14 @@ export class IntegrationTestRunner {
    * Print test summary
    */
   printSummary(): void {
-    console.log('\n=== Integration Test Results ===');
+    console.log("\n=== Integration Test Results ===");
     console.log(`Total: ${this.testResults.length}`);
     console.log(`Passed: ${this.getPassedCount()}`);
     console.log(`Failed: ${this.getFailedCount()}`);
     console.log(`Duration: ${(this.getTotalDuration() / 1000).toFixed(2)}s`);
 
     if (this.getFailedCount() > 0) {
-      console.log('\nFailed tests:');
+      console.log("\nFailed tests:");
       for (const result of this.testResults.filter((r) => !r.passed)) {
         console.log(`  - ${result.name} (${result.provider}): ${result.error}`);
       }
@@ -327,11 +337,11 @@ export class IntegrationTestRunner {
    */
   private escapeXml(str: string): string {
     return str
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&apos;');
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&apos;");
   }
 }
 
@@ -340,7 +350,7 @@ export class IntegrationTestRunner {
 // ───────────────────────────────────────────────────────────────────────────
 
 export async function createIntegrationTestEnvironment(
-  config: IntegrationTestConfig
+  config: IntegrationTestConfig,
 ): Promise<{
   runner: IntegrationTestRunner;
   cleanup: () => Promise<void>;

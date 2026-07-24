@@ -207,7 +207,8 @@ export class TrimbleELDClient extends ELDAdapter {
 
   constructor(config: ELDConfig) {
     super(config, 1); // 60 req/min = 1 req/sec
-    this.baseUrl = config.baseUrl || "https://api.trimblecloud.com/transportation/v2";
+    this.baseUrl =
+      config.baseUrl || "https://api.trimblecloud.com/transportation/v2";
     this.clientId = config.apiKey || "";
     this.clientSecret = config.apiSecret || "";
     this.webhookSecret = config.webhookSecret;
@@ -218,13 +219,18 @@ export class TrimbleELDClient extends ELDAdapter {
    */
   async initialize(): Promise<void> {
     if (!this.clientId || !this.clientSecret) {
-      throw new Error("Trimble OAuth2 credentials (clientId, clientSecret) are required");
+      throw new Error(
+        "Trimble OAuth2 credentials (clientId, clientSecret) are required",
+      );
     }
 
     try {
       await this.obtainAccessToken();
       await this.executeWithRetry(() =>
-        this.makeRequest<{ organization: { id: string } }>("GET", "/organization")
+        this.makeRequest<{ organization: { id: string } }>(
+          "GET",
+          "/organization",
+        ),
       );
       this.logEvent({
         type: "diagnostic-event",
@@ -241,7 +247,7 @@ export class TrimbleELDClient extends ELDAdapter {
   async getDriverLogs(
     driverId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<ELDDriverLog[]> {
     const response = await this.executeWithRetry(() =>
       this.makeRequest<{ records: TrimbleHosRecord[] }>(
@@ -252,8 +258,8 @@ export class TrimbleELDClient extends ELDAdapter {
           endTime: endDate.toISOString(),
           limit: 1000,
           offset: 0,
-        }
-      )
+        },
+      ),
     );
 
     return response.records.map((record, idx) => ({
@@ -265,7 +271,10 @@ export class TrimbleELDClient extends ELDAdapter {
       endTime: new Date(record.endTime),
       dutyStatus: this.mapDutyStatus(record.status),
       miles: record.miles,
-      hours: getHoursDifference(new Date(record.startTime), new Date(record.endTime)),
+      hours: getHoursDifference(
+        new Date(record.startTime),
+        new Date(record.endTime),
+      ),
       startLocation: record.location ? { ...record.location } : undefined,
       endLocation: record.location ? { ...record.location } : undefined,
       remarks: record.annotations?.join("; "),
@@ -281,7 +290,7 @@ export class TrimbleELDClient extends ELDAdapter {
    */
   async getDutyStatus(driverId: string): Promise<ELDDutyStatus> {
     const driver = await this.executeWithRetry(() =>
-      this.makeRequest<TrimbleDriver>("GET", `/drivers/${driverId}`)
+      this.makeRequest<TrimbleDriver>("GET", `/drivers/${driverId}`),
     );
 
     const currentStatus = driver.currentStatus || {
@@ -314,7 +323,7 @@ export class TrimbleELDClient extends ELDAdapter {
   async setDutyStatus(
     driverId: string,
     status: DutyStatus,
-    location?: { latitude: number; longitude: number }
+    location?: { latitude: number; longitude: number },
   ): Promise<ELDDutyStatus> {
     const payload = {
       status: this.mapDutyStatusReverse(status),
@@ -323,7 +332,12 @@ export class TrimbleELDClient extends ELDAdapter {
     };
 
     await this.executeWithRetry(() =>
-      this.makeRequest("POST", `/drivers/${driverId}/duty-status`, null, payload)
+      this.makeRequest(
+        "POST",
+        `/drivers/${driverId}/duty-status`,
+        null,
+        payload,
+      ),
     );
 
     this.logEvent({
@@ -338,7 +352,10 @@ export class TrimbleELDClient extends ELDAdapter {
   /**
    * Get HOS violations for driver.
    */
-  async getViolations(driverId: string, days: number = 30): Promise<ELDViolation[]> {
+  async getViolations(
+    driverId: string,
+    days: number = 30,
+  ): Promise<ELDViolation[]> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
@@ -350,8 +367,8 @@ export class TrimbleELDClient extends ELDAdapter {
           startDate: startDate.toISOString(),
           limit: 1000,
           offset: 0,
-        }
-      )
+        },
+      ),
     );
 
     return response.violations.map((v) => ({
@@ -379,7 +396,7 @@ export class TrimbleELDClient extends ELDAdapter {
    */
   async getVehicle(vehicleId: string): Promise<ELDVehicle> {
     const vehicle = await this.executeWithRetry(() =>
-      this.makeRequest<TrimbleVehicle>("GET", `/vehicles/${vehicleId}`)
+      this.makeRequest<TrimbleVehicle>("GET", `/vehicles/${vehicleId}`),
     );
 
     return {
@@ -392,7 +409,9 @@ export class TrimbleELDClient extends ELDAdapter {
       year: vehicle.year,
       group: undefined,
       odometerMiles: vehicle.odometer,
-      fuelType: (vehicle.fuelType as "diesel" | "gasoline" | "electric" | "hybrid") || undefined,
+      fuelType:
+        (vehicle.fuelType as "diesel" | "gasoline" | "electric" | "hybrid") ||
+        undefined,
       capacityLbs: vehicle.gvwr,
       currentLocation: vehicle.currentLocation
         ? {
@@ -406,7 +425,9 @@ export class TrimbleELDClient extends ELDAdapter {
       activeFaults: vehicle.diagnostics?.activeCodes || [],
       lastInspectionDate: undefined,
       nextInspectionDueDate: undefined,
-      maintenanceStatus: (vehicle.status === "maintenance" ? "pending" : "good") as any,
+      maintenanceStatus: (vehicle.status === "maintenance"
+        ? "pending"
+        : "good") as any,
       createdAt: new Date(vehicle.createdAt),
       updatedAt: new Date(vehicle.updatedAt),
     };
@@ -426,7 +447,7 @@ export class TrimbleELDClient extends ELDAdapter {
         this.makeRequest<{ vehicles: TrimbleVehicle[] }>("GET", "/vehicles", {
           limit,
           offset,
-        })
+        }),
       );
 
       for (const v of response.vehicles) {
@@ -459,8 +480,8 @@ export class TrimbleELDClient extends ELDAdapter {
         "POST",
         `/vehicles/${dvir.vehicleId}/dvir`,
         null,
-        payload
-      )
+        payload,
+      ),
     );
 
     this.logEvent({
@@ -501,8 +522,8 @@ export class TrimbleELDClient extends ELDAdapter {
           startDate: startDate.toISOString(),
           limit: 1000,
           offset: 0,
-        }
-      )
+        },
+      ),
     );
 
     return response.dvirs.map((d) => ({
@@ -529,7 +550,7 @@ export class TrimbleELDClient extends ELDAdapter {
     fileName: string,
     fileBuffer: Buffer,
     category: string,
-    expiryDate?: Date
+    expiryDate?: Date,
   ): Promise<TrimbleDocument> {
     const formData = new FormData();
     formData.append("file", new Blob([fileBuffer]), fileName);
@@ -542,8 +563,8 @@ export class TrimbleELDClient extends ELDAdapter {
       this.makeRequestWithForm<TrimbleDocument>(
         "POST",
         `/drivers/${driverId}/documents`,
-        formData
-      )
+        formData,
+      ),
     );
 
     return response;
@@ -554,7 +575,7 @@ export class TrimbleELDClient extends ELDAdapter {
    */
   async getDriverDQF(driverId: string): Promise<any> {
     return this.executeWithRetry(() =>
-      this.makeRequest<any>("GET", `/drivers/${driverId}/dqf`)
+      this.makeRequest<any>("GET", `/drivers/${driverId}/dqf`),
     );
   }
 
@@ -563,7 +584,7 @@ export class TrimbleELDClient extends ELDAdapter {
    */
   async getVehicleDiagnostics(vehicleId: string): Promise<any> {
     return this.executeWithRetry(() =>
-      this.makeRequest<any>("GET", `/vehicles/${vehicleId}/diagnostics`)
+      this.makeRequest<any>("GET", `/vehicles/${vehicleId}/diagnostics`),
     );
   }
 
@@ -576,8 +597,8 @@ export class TrimbleELDClient extends ELDAdapter {
         "POST",
         `/drivers/${driverId}/erods`,
         null,
-        {}
-      )
+        {},
+      ),
     );
     return response.fileUrl;
   }
@@ -585,7 +606,10 @@ export class TrimbleELDClient extends ELDAdapter {
   /**
    * Handle webhook event with signature verification.
    */
-  async handleWebhook(event: ELDWebhookEvent, signature?: string): Promise<void> {
+  async handleWebhook(
+    event: ELDWebhookEvent,
+    signature?: string,
+  ): Promise<void> {
     if (signature && this.webhookSecret) {
       const payload = JSON.stringify(event.payload);
       const hash = createHmac("sha256", this.webhookSecret)
@@ -633,7 +657,10 @@ export class TrimbleELDClient extends ELDAdapter {
   async healthCheck(): Promise<boolean> {
     try {
       await this.executeWithRetry(() =>
-        this.makeRequest<{ organization: { id: string } }>("GET", "/organization")
+        this.makeRequest<{ organization: { id: string } }>(
+          "GET",
+          "/organization",
+        ),
       );
       return true;
     } catch {
@@ -684,7 +711,7 @@ export class TrimbleELDClient extends ELDAdapter {
     method: string,
     path: string,
     params?: Record<string, unknown> | null,
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     await this.obtainAccessToken();
 
@@ -708,7 +735,9 @@ export class TrimbleELDClient extends ELDAdapter {
     });
 
     if (!response.ok) {
-      throw new Error(`Trimble API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Trimble API error: ${response.status} ${response.statusText}`,
+      );
     }
 
     return response.json() as Promise<T>;
@@ -720,7 +749,7 @@ export class TrimbleELDClient extends ELDAdapter {
   private async makeRequestWithForm<T>(
     method: string,
     path: string,
-    formData: FormData
+    formData: FormData,
   ): Promise<T> {
     await this.obtainAccessToken();
 
@@ -735,7 +764,9 @@ export class TrimbleELDClient extends ELDAdapter {
     });
 
     if (!response.ok) {
-      throw new Error(`Trimble API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Trimble API error: ${response.status} ${response.statusText}`,
+      );
     }
 
     return response.json() as Promise<T>;

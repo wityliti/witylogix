@@ -11,7 +11,13 @@
  */
 
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
-import { useLoaderData, useSearchParams, Link, Form, redirect } from "react-router";
+import {
+  useLoaderData,
+  useSearchParams,
+  Link,
+  Form,
+  redirect,
+} from "react-router";
 import { useState } from "react";
 import {
   Page,
@@ -28,7 +34,10 @@ import {
   TextField,
   FormLayout,
 } from "@shopify/polaris";
-import { createApiClientFromRequest, type PaginatedResponse } from "~/lib/api.server";
+import {
+  createApiClientFromRequest,
+  type PaginatedResponse,
+} from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 
 // ─── Types ─────────────────────────────────────────────────
@@ -62,10 +71,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const page = Number(url.searchParams.get("page") ?? "1");
   const limit = Number(url.searchParams.get("limit") ?? "50");
 
-  const response = await api.get<PaginatedResponse<TimeSlot>>("/api/v4/time-slots", {
-    page,
-    limit,
-  });
+  const response = await api.get<PaginatedResponse<TimeSlot>>(
+    "/api/v4/time-slots",
+    {
+      page,
+      limit,
+    },
+  );
 
   return { timeSlots: response.data, meta: response.meta };
 }
@@ -87,7 +99,7 @@ export async function action({ request }: ActionFunctionArgs) {
     };
     const result = await api.post<{ data: { id: string } }>(
       "/api/v4/time-slots",
-      timeSlot
+      timeSlot,
     );
     return redirect(`/time-slots/${result.data.id}`);
   }
@@ -156,10 +168,7 @@ export default function TimeSlotsList() {
   const rowMarkup = timeSlots.map((slot, index) => (
     <IndexTable.Row id={slot.id} key={slot.id} position={index}>
       <IndexTable.Cell>
-        <Link
-          to={`/time-slots/${slot.id}`}
-          style={{ textDecoration: "none" }}
-        >
+        <Link to={`/time-slots/${slot.id}`} style={{ textDecoration: "none" }}>
           <Text as="span" variant="bodyMd" fontWeight="semibold" tone="magic">
             {slot.label}
           </Text>
@@ -187,7 +196,12 @@ export default function TimeSlotsList() {
           <input type="hidden" name="isActive" value={String(slot.isActive)} />
           <button
             type="submit"
-            style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+            }}
           >
             <Badge tone={slot.isActive ? "success" : undefined}>
               {slot.isActive ? "Active" : "Inactive"}
@@ -218,7 +232,9 @@ export default function TimeSlotsList() {
                 onAction: () => setShowCreateModal(true),
               }}
             >
-              <p>Create delivery time slots to define available delivery windows.</p>
+              <p>
+                Create delivery time slots to define available delivery windows.
+              </p>
             </PolarisEmptyState>
           </Card>
         ) : (

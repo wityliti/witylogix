@@ -3,11 +3,13 @@
 ## 5-Minute Setup
 
 ### 1. Environment Variables
+
 ```bash
 cp .env.integration.example .env
 ```
 
 Add to `.env`:
+
 ```env
 GOOGLE_MAPS_API_KEY=your_key_here
 GOOGLE_OAUTH_CLIENT_ID=your_client_id.apps.googleusercontent.com
@@ -17,6 +19,7 @@ DASHBOARD_URL=http://localhost:3001
 ```
 
 ### 2. Database Schema (Optional - if using new models)
+
 ```bash
 # Add to packages/db/schema.prisma
 # See INTEGRATION_GUIDE.md for schema examples
@@ -25,6 +28,7 @@ npx prisma migrate dev --name add_integrations
 ```
 
 ### 3. Install Dependencies
+
 ```bash
 npm install
 ```
@@ -32,6 +36,7 @@ npm install
 Zod is already added to checkout-ui package.json
 
 ### 4. Start Development Server
+
 ```bash
 npm run dev
 ```
@@ -39,43 +44,47 @@ npm run dev
 ## Common Tasks
 
 ### Import and Use Google Maps
+
 ```typescript
-import { createGoogleMapsService } from '@witylogix/core/integrations/google';
+import { createGoogleMapsService } from "@witylogix/core/integrations/google";
 
 const mapsService = createGoogleMapsService(process.env.GOOGLE_MAPS_API_KEY);
 
-const result = await mapsService.geocodeAddress('123 Main St');
+const result = await mapsService.geocodeAddress("123 Main St");
 console.log(result); // { address, latitude, longitude, ... }
 ```
 
 ### Use Checkout API Client
+
 ```typescript
-import { WitylogixAPI } from '@witylogix/checkout-ui/api/witylogix-api';
+import { WitylogixAPI } from "@witylogix/checkout-ui/api/witylogix-api";
 
 const api = new WitylogixAPI(
-  'http://localhost:3000',
-  'api-key',
-  'myshop.myshopify.com'
+  "http://localhost:3000",
+  "api-key",
+  "myshop.myshopify.com",
 );
 
-const slots = await api.fetchSlots('2024-03-15');
-const rates = await api.fetchRates('12345');
-const reservation = await api.reserveSlot('slot-123', 'cart-456');
+const slots = await api.fetchSlots("2024-03-15");
+const rates = await api.fetchRates("12345");
+const reservation = await api.reserveSlot("slot-123", "cart-456");
 ```
 
 ### Set Up Calendar Integration
+
 ```typescript
-import { createGoogleCalendarService } from '@witylogix/core/integrations/google';
+import { createGoogleCalendarService } from "@witylogix/core/integrations/google";
 
 const calendarService = createGoogleCalendarService({
   clientId: process.env.GOOGLE_OAUTH_CLIENT_ID,
   clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
-  redirectUri: 'http://localhost:3000/api/integrations/google/calendar/callback',
-  scopes: ['https://www.googleapis.com/auth/calendar'],
+  redirectUri:
+    "http://localhost:3000/api/integrations/google/calendar/callback",
+  scopes: ["https://www.googleapis.com/auth/calendar"],
 });
 
 // Get authorization URL
-const authUrl = calendarService.getAuthorizationUrl('state-token');
+const authUrl = calendarService.getAuthorizationUrl("state-token");
 // Redirect user to authUrl...
 
 // After callback with code:
@@ -84,16 +93,17 @@ calendarService.setToken(token);
 
 // Create event
 const event = await calendarService.createOrderEvent({
-  orderId: 'order-123',
-  customerName: 'John Doe',
-  deliveryAddress: '123 Main St',
-  deliveryDate: '2024-03-15T10:00:00Z',
+  orderId: "order-123",
+  customerName: "John Doe",
+  deliveryAddress: "123 Main St",
+  deliveryDate: "2024-03-15T10:00:00Z",
 });
 ```
 
 ### Visualize Zones
+
 ```typescript
-import { createZoneVisualizerService } from '@witylogix/core/integrations/google';
+import { createZoneVisualizerService } from "@witylogix/core/integrations/google";
 
 const visualizer = createZoneVisualizerService();
 
@@ -110,7 +120,7 @@ const stats = visualizer.calculateZoneCoverage(zones);
 const mapUrl = visualizer.generateZoneMapUrl(
   zones,
   { latitude: 40.7128, longitude: -74.006 },
-  process.env.GOOGLE_MAPS_API_KEY
+  process.env.GOOGLE_MAPS_API_KEY,
 );
 ```
 
@@ -119,6 +129,7 @@ const mapUrl = visualizer.generateZoneMapUrl(
 All endpoints under `/api/integrations/`
 
 ### Shopify Checkout
+
 ```
 GET    /shopify/checkout/slots?date=YYYY-MM-DD&shop=domain
 POST   /shopify/checkout/reserve
@@ -129,6 +140,7 @@ POST   /shopify/checkout/webhook/order
 ```
 
 ### Google Integration
+
 ```
 GET    /google/geocode?address=...
 GET    /google/distance?origin=...&destination=...
@@ -155,19 +167,23 @@ npm run test -- --coverage
 ## File Locations
 
 **Core Services**: `/packages/core/src/integrations/google/`
+
 - `maps-service.ts` - Google Maps
 - `calendar-service.ts` - Google Calendar
 - `zone-visualizer.ts` - Zone visualization
 - `types.ts` - Type definitions
 
 **Checkout Client**: `/extensions/checkout-ui/src/api/`
+
 - `witylogix-api.ts` - Shopify checkout API
 
 **API Routes**: `/apps/api/src/routes/integrations/`
+
 - `shopify-checkout.ts` - Checkout endpoints
 - `google.ts` - Google integration endpoints
 
 **Documentation**:
+
 - `INTEGRATION_GUIDE.md` - Complete guide
 - `SPRINT_4.5_SUMMARY.md` - Sprint summary
 - `SPRINT_4.5_FILES.md` - File index
@@ -191,23 +207,27 @@ npm run test -- --coverage
 ## Troubleshooting
 
 ### Google Maps API errors
+
 - Check API key is valid
 - Verify APIs are enabled in Google Cloud Console
 - Ensure API key has proper restrictions
 
 ### Calendar auth failing
+
 - Verify redirect URI matches exactly
 - Check client ID and secret
 - Confirm calendar API is enabled
 - Clear browser cookies if needed
 
 ### Slots not loading
+
 - Verify shop is configured in database
 - Check API endpoints are running
 - Look for network errors in browser console
 - Check database has slot data
 
 ### Zone detection issues
+
 - Verify zone boundaries are properly formatted
 - Check coordinates are valid (lat: -90 to 90, lng: -180 to 180)
 - Test with simple rectangular zone first
@@ -241,6 +261,7 @@ npm run test -- --coverage
 ## Documentation
 
 For detailed information, see:
+
 - **Full Integration Guide**: `INTEGRATION_GUIDE.md`
 - **Sprint Summary**: `SPRINT_4.5_SUMMARY.md`
 - **File Index**: `SPRINT_4.5_FILES.md`
@@ -248,6 +269,7 @@ For detailed information, see:
 ## Support
 
 Check `INTEGRATION_GUIDE.md` for:
+
 - Complete API documentation
 - Detailed setup instructions
 - Usage examples

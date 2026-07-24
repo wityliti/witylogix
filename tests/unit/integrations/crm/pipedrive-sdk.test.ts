@@ -2,19 +2,19 @@
  * Pipedrive CRM SDK Client Tests
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   PipedriveCRMSDKClient,
   type PipedriveCRMConfig,
-} from '@witylogix/core/integrations/crm/pipedrive-sdk-client';
+} from "@witylogix/core/integrations/crm/pipedrive-sdk-client";
 
-describe('PipedriveCRMSDKClient', () => {
+describe("PipedriveCRMSDKClient", () => {
   let client: PipedriveCRMSDKClient;
   const mockConfig: PipedriveCRMConfig = {
-    clientId: 'test-client-id',
-    clientSecret: 'test-client-secret',
-    redirectUri: 'https://localhost:3000/callback',
-    apiToken: 'test-api-token',
+    clientId: "test-client-id",
+    clientSecret: "test-client-secret",
+    redirectUri: "https://localhost:3000/callback",
+    apiToken: "test-api-token",
   };
 
   beforeEach(() => {
@@ -22,47 +22,51 @@ describe('PipedriveCRMSDKClient', () => {
     vi.clearAllMocks();
   });
 
-  describe('Authentication', () => {
-    it('should generate OAuth2 authorization URL', () => {
-      const url = client.getAuthorizationUrl('test-state');
-      expect(url).toContain('https://oauth.pipedrive.com');
-      expect(url).toContain('test-client-id');
-      expect(url).toContain('test-state');
+  describe("Authentication", () => {
+    it("should generate OAuth2 authorization URL", () => {
+      const url = client.getAuthorizationUrl("test-state");
+      expect(url).toContain("https://oauth.pipedrive.com");
+      expect(url).toContain("test-client-id");
+      expect(url).toContain("test-state");
     });
 
-    it('should set API token', () => {
-      client.setApiToken('new-api-token');
+    it("should set API token", () => {
+      client.setApiToken("new-api-token");
       expect(client).toBeDefined();
     });
 
-    it('should set access token', () => {
-      const token = 'test-access-token';
+    it("should set access token", () => {
+      const token = "test-access-token";
       const expiresAt = new Date(Date.now() + 3600000);
       client.setAccessToken(token, expiresAt);
       expect(client).toBeDefined();
     });
 
-    it('should throw error when exchanging code without required config', async () => {
-      const clientWithoutSecret = new PipedriveCRMSDKClient({ apiToken: 'token' });
-      await expect(clientWithoutSecret.exchangeCodeForToken('code')).rejects.toThrow();
+    it("should throw error when exchanging code without required config", async () => {
+      const clientWithoutSecret = new PipedriveCRMSDKClient({
+        apiToken: "token",
+      });
+      await expect(
+        clientWithoutSecret.exchangeCodeForToken("code"),
+      ).rejects.toThrow();
     });
   });
 
-  describe('Persons Operations', () => {
+  describe("Persons Operations", () => {
     beforeEach(() => {
-      client.setApiToken('test-api-token');
+      client.setApiToken("test-api-token");
       global.fetch = vi.fn();
     });
 
-    it('should get persons list', async () => {
+    it("should get persons list", async () => {
       const mockResponse = {
         success: true,
         data: [
           {
             id: 1,
-            name: 'John Doe',
-            email: 'john@example.com',
-            phone: '+1234567890',
+            name: "John Doe",
+            email: "john@example.com",
+            phone: "+1234567890",
           },
         ],
       };
@@ -70,22 +74,22 @@ describe('PipedriveCRMSDKClient', () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
-        headers: new Map([['X-RateLimit-Remaining', '75']]),
+        headers: new Map([["X-RateLimit-Remaining", "75"]]),
       });
 
       const result = await client.getPersons({ limit: 100 });
 
       expect(result.persons).toHaveLength(1);
-      expect(result.persons[0].name).toBe('John Doe');
+      expect(result.persons[0].name).toBe("John Doe");
     });
 
-    it('should create person', async () => {
+    it("should create person", async () => {
       const mockResponse = {
         success: true,
         data: {
           id: 123,
-          name: 'Jane Smith',
-          email: 'jane@example.com',
+          name: "Jane Smith",
+          email: "jane@example.com",
         },
       };
 
@@ -96,15 +100,15 @@ describe('PipedriveCRMSDKClient', () => {
       });
 
       const person = await client.createPerson({
-        name: 'Jane Smith',
-        email: 'jane@example.com',
+        name: "Jane Smith",
+        email: "jane@example.com",
       });
 
       expect(person.id).toBe(123);
-      expect(person.name).toBe('Jane Smith');
+      expect(person.name).toBe("Jane Smith");
     });
 
-    it('should update person', async () => {
+    it("should update person", async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => ({}),
@@ -112,13 +116,13 @@ describe('PipedriveCRMSDKClient', () => {
       });
 
       await client.updatePerson(123, {
-        email: 'newemail@example.com',
+        email: "newemail@example.com",
       });
 
       expect(global.fetch).toHaveBeenCalled();
     });
 
-    it('should delete person', async () => {
+    it("should delete person", async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => ({}),
@@ -128,19 +132,19 @@ describe('PipedriveCRMSDKClient', () => {
       await client.deletePerson(123);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/persons/123'),
-        expect.objectContaining({ method: 'DELETE' })
+        expect.stringContaining("/persons/123"),
+        expect.objectContaining({ method: "DELETE" }),
       );
     });
 
-    it('should search persons', async () => {
+    it("should search persons", async () => {
       const mockResponse = {
         success: true,
         data: [
           {
             item: {
               id: 1,
-              name: 'John',
+              name: "John",
             },
           },
         ],
@@ -152,26 +156,26 @@ describe('PipedriveCRMSDKClient', () => {
         headers: new Map(),
       });
 
-      const results = await client.searchPersons('John');
+      const results = await client.searchPersons("John");
 
       expect(results).toHaveLength(1);
-      expect(results[0].name).toBe('John');
+      expect(results[0].name).toBe("John");
     });
   });
 
-  describe('Organizations Operations', () => {
+  describe("Organizations Operations", () => {
     beforeEach(() => {
-      client.setApiToken('test-api-token');
+      client.setApiToken("test-api-token");
       global.fetch = vi.fn();
     });
 
-    it('should get organizations', async () => {
+    it("should get organizations", async () => {
       const mockResponse = {
         success: true,
         data: [
           {
             id: 1,
-            name: 'Acme Corp',
+            name: "Acme Corp",
           },
         ],
       };
@@ -185,15 +189,15 @@ describe('PipedriveCRMSDKClient', () => {
       const result = await client.getOrganizations();
 
       expect(result.orgs).toHaveLength(1);
-      expect(result.orgs[0].name).toBe('Acme Corp');
+      expect(result.orgs[0].name).toBe("Acme Corp");
     });
 
-    it('should create organization', async () => {
+    it("should create organization", async () => {
       const mockResponse = {
         success: true,
         data: {
           id: 42,
-          name: 'Tech Startup',
+          name: "Tech Startup",
         },
       };
 
@@ -204,29 +208,29 @@ describe('PipedriveCRMSDKClient', () => {
       });
 
       const org = await client.createOrganization({
-        name: 'Tech Startup',
+        name: "Tech Startup",
       });
 
       expect(org.id).toBe(42);
-      expect(org.name).toBe('Tech Startup');
+      expect(org.name).toBe("Tech Startup");
     });
   });
 
-  describe('Deals Operations', () => {
+  describe("Deals Operations", () => {
     beforeEach(() => {
-      client.setApiToken('test-api-token');
+      client.setApiToken("test-api-token");
       global.fetch = vi.fn();
     });
 
-    it('should get deals', async () => {
+    it("should get deals", async () => {
       const mockResponse = {
         success: true,
         data: [
           {
             id: 1,
-            title: 'Big Deal',
+            title: "Big Deal",
             value: 50000,
-            currency: 'USD',
+            currency: "USD",
           },
         ],
       };
@@ -240,16 +244,16 @@ describe('PipedriveCRMSDKClient', () => {
       const result = await client.getDeals();
 
       expect(result.deals).toHaveLength(1);
-      expect(result.deals[0].title).toBe('Big Deal');
+      expect(result.deals[0].title).toBe("Big Deal");
       expect(result.deals[0].value).toBe(50000);
     });
 
-    it('should create deal', async () => {
+    it("should create deal", async () => {
       const mockResponse = {
         success: true,
         data: {
           id: 99,
-          title: 'New Deal',
+          title: "New Deal",
           value: 25000,
         },
       };
@@ -261,22 +265,22 @@ describe('PipedriveCRMSDKClient', () => {
       });
 
       const deal = await client.createDeal({
-        title: 'New Deal',
+        title: "New Deal",
         value: 25000,
       });
 
       expect(deal.id).toBe(99);
-      expect(deal.title).toBe('New Deal');
+      expect(deal.title).toBe("New Deal");
     });
 
-    it('should search deals', async () => {
+    it("should search deals", async () => {
       const mockResponse = {
         success: true,
         data: [
           {
             item: {
               id: 1,
-              title: 'Big Deal',
+              title: "Big Deal",
             },
           },
         ],
@@ -288,27 +292,27 @@ describe('PipedriveCRMSDKClient', () => {
         headers: new Map(),
       });
 
-      const results = await client.searchDeals('Big Deal');
+      const results = await client.searchDeals("Big Deal");
 
       expect(results).toHaveLength(1);
-      expect(results[0].title).toBe('Big Deal');
+      expect(results[0].title).toBe("Big Deal");
     });
   });
 
-  describe('Activities Operations', () => {
+  describe("Activities Operations", () => {
     beforeEach(() => {
-      client.setApiToken('test-api-token');
+      client.setApiToken("test-api-token");
       global.fetch = vi.fn();
     });
 
-    it('should get activities', async () => {
+    it("should get activities", async () => {
       const mockResponse = {
         success: true,
         data: [
           {
             id: 1,
-            type: 'call',
-            subject: 'Phone call',
+            type: "call",
+            subject: "Phone call",
           },
         ],
       };
@@ -322,16 +326,16 @@ describe('PipedriveCRMSDKClient', () => {
       const result = await client.getActivities();
 
       expect(result.activities).toHaveLength(1);
-      expect(result.activities[0].type).toBe('call');
+      expect(result.activities[0].type).toBe("call");
     });
 
-    it('should create activity', async () => {
+    it("should create activity", async () => {
       const mockResponse = {
         success: true,
         data: {
           id: 5,
-          type: 'email',
-          subject: 'Follow up',
+          type: "email",
+          subject: "Follow up",
         },
       };
 
@@ -342,28 +346,28 @@ describe('PipedriveCRMSDKClient', () => {
       });
 
       const activity = await client.createActivity({
-        type: 'email',
-        subject: 'Follow up',
+        type: "email",
+        subject: "Follow up",
       });
 
       expect(activity.id).toBe(5);
-      expect(activity.type).toBe('email');
+      expect(activity.type).toBe("email");
     });
   });
 
-  describe('Pipelines & Stages', () => {
+  describe("Pipelines & Stages", () => {
     beforeEach(() => {
-      client.setApiToken('test-api-token');
+      client.setApiToken("test-api-token");
       global.fetch = vi.fn();
     });
 
-    it('should get pipelines', async () => {
+    it("should get pipelines", async () => {
       const mockResponse = {
         success: true,
         data: [
           {
             id: 1,
-            name: 'Sales Pipeline',
+            name: "Sales Pipeline",
           },
         ],
       };
@@ -377,17 +381,17 @@ describe('PipedriveCRMSDKClient', () => {
       const result = await client.getPipelines();
 
       expect(result.pipelines).toHaveLength(1);
-      expect(result.pipelines[0].name).toBe('Sales Pipeline');
+      expect(result.pipelines[0].name).toBe("Sales Pipeline");
     });
 
-    it('should get pipeline stages', async () => {
+    it("should get pipeline stages", async () => {
       const mockResponse = {
         success: true,
         data: [
           {
             id: 1,
             pipeline_id: 1,
-            name: 'Negotiation',
+            name: "Negotiation",
           },
         ],
       };
@@ -401,24 +405,24 @@ describe('PipedriveCRMSDKClient', () => {
       const result = await client.getPipelineStages(1);
 
       expect(result.stages).toHaveLength(1);
-      expect(result.stages[0].name).toBe('Negotiation');
+      expect(result.stages[0].name).toBe("Negotiation");
     });
   });
 
-  describe('Products Operations', () => {
+  describe("Products Operations", () => {
     beforeEach(() => {
-      client.setApiToken('test-api-token');
+      client.setApiToken("test-api-token");
       global.fetch = vi.fn();
     });
 
-    it('should get products', async () => {
+    it("should get products", async () => {
       const mockResponse = {
         success: true,
         data: [
           {
             id: 1,
-            name: 'Enterprise Plan',
-            code: 'ENT-001',
+            name: "Enterprise Plan",
+            code: "ENT-001",
           },
         ],
       };
@@ -432,26 +436,27 @@ describe('PipedriveCRMSDKClient', () => {
       const result = await client.getProducts();
 
       expect(result.products).toHaveLength(1);
-      expect(result.products[0].name).toBe('Enterprise Plan');
+      expect(result.products[0].name).toBe("Enterprise Plan");
     });
   });
 
-  describe('Webhook Operations', () => {
+  describe("Webhook Operations", () => {
     beforeEach(() => {
-      client.setApiToken('test-api-token');
+      client.setApiToken("test-api-token");
       global.fetch = vi.fn();
     });
 
-    it('should verify webhook signature', () => {
-      const payload = 'test-payload';
-      const secret = 'test-secret';
-      const signature = 'b6f6e7b2e5e9a7e8e5e5e9e5b6f6e7b2e5e9a7e8e5e5e9e5b6f6e7b2e5e9a7';
+    it("should verify webhook signature", () => {
+      const payload = "test-payload";
+      const secret = "test-secret";
+      const signature =
+        "b6f6e7b2e5e9a7e8e5e5e9e5b6f6e7b2e5e9a7e8e5e5e9e5b6f6e7b2e5e9a7";
 
       const isValid = client.verifyWebhookSignature(signature, payload, secret);
       expect(isValid).toBeDefined();
     });
 
-    it('should create webhook', async () => {
+    it("should create webhook", async () => {
       const mockResponse = {
         success: true,
         data: {
@@ -466,15 +471,15 @@ describe('PipedriveCRMSDKClient', () => {
       });
 
       const result = await client.createWebhook(
-        'https://example.com/webhook',
-        'added',
-        'person'
+        "https://example.com/webhook",
+        "added",
+        "person",
       );
 
       expect(result.webhookId).toBe(123);
     });
 
-    it('should delete webhook', async () => {
+    it("should delete webhook", async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => ({}),
@@ -484,22 +489,22 @@ describe('PipedriveCRMSDKClient', () => {
       await client.deleteWebhook(123);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/webhooks/123'),
-        expect.objectContaining({ method: 'DELETE' })
+        expect.stringContaining("/webhooks/123"),
+        expect.objectContaining({ method: "DELETE" }),
       );
     });
   });
 
-  describe('Rate Limiting', () => {
+  describe("Rate Limiting", () => {
     beforeEach(() => {
-      client.setApiToken('test-api-token');
+      client.setApiToken("test-api-token");
     });
 
-    it('should track rate limit info', async () => {
+    it("should track rate limit info", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({ success: true, data: [] }),
-        headers: new Map([['X-RateLimit-Remaining', '70']]),
+        headers: new Map([["X-RateLimit-Remaining", "70"]]),
       });
 
       await client.getPersons();
@@ -510,23 +515,23 @@ describe('PipedriveCRMSDKClient', () => {
     });
   });
 
-  describe('Error Handling', () => {
+  describe("Error Handling", () => {
     beforeEach(() => {
-      client.setApiToken('test-api-token');
+      client.setApiToken("test-api-token");
       global.fetch = vi.fn();
     });
 
-    it('should throw error on API failure', async () => {
+    it("should throw error on API failure", async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: false,
         status: 401,
-        json: async () => ({ error: 'Unauthorized' }),
+        json: async () => ({ error: "Unauthorized" }),
       });
 
-      await expect(client.getPersons()).rejects.toThrow('Pipedrive API error');
+      await expect(client.getPersons()).rejects.toThrow("Pipedrive API error");
     });
 
-    it('should throw error when no authentication is set', async () => {
+    it("should throw error when no authentication is set", async () => {
       const unauthClient = new PipedriveCRMSDKClient({});
       await expect(unauthClient.getPersons()).rejects.toThrow();
     });

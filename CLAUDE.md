@@ -3,11 +3,13 @@
 ## Git Workflow (MANDATORY)
 
 ### Base Branch: `staging`
+
 - The `staging` branch is the ONLY base branch for all work
 - NEVER commit directly to `staging` or `main`
 - ALWAYS create a feature branch from `staging`
 
 ### Branch Naming
+
 ```
 feat/WIT-<id>-<short-description>    # New features
 fix/WIT-<id>-<short-description>     # Bug fixes
@@ -15,6 +17,7 @@ refactor/WIT-<id>-<short-description> # Refactoring
 ```
 
 ### Workflow
+
 1. Start work: `git checkout staging && git pull origin staging && git checkout -b feat/WIT-XX-description`
 2. Commit with conventional commits (feat:, fix:, refactor:, test:, docs:, chore:)
 3. Push: `git push origin feat/WIT-XX-description`
@@ -22,9 +25,11 @@ refactor/WIT-<id>-<short-description> # Refactoring
 5. Never force push, never push to staging or main directly
 
 ### Pre-Commit Checks
+
 Before committing, run: `pnpm lint && pnpm typecheck && pnpm test:run`
 
 ## Forbidden Actions
+
 - Do NOT commit to `main` or `staging` directly
 - Do NOT create branches from `main` — always branch from `staging`
 - Do NOT push to staging or main directly
@@ -36,6 +41,7 @@ Before committing, run: `pnpm lint && pnpm typecheck && pnpm test:run`
 - Do NOT run docker compose up — use Railway Postgres and Redis only
 
 ## Environment
+
 - Working dir: /root/Witylogix/witylogix-platform
 - Node: v22, pnpm workspace
 - Database: Railway Postgres (see .env for DATABASE_URL)
@@ -43,6 +49,7 @@ Before committing, run: `pnpm lint && pnpm typecheck && pnpm test:run`
 - API: port 8000, Dashboard: port 3003, Portal: port 3004, Docs: port 3005
 
 ## Build and Test
+
 ```bash
 pnpm install          # Install deps
 pnpm db:generate      # Generate Prisma client
@@ -54,6 +61,7 @@ pnpm typecheck        # Type check
 ```
 
 ## Project Structure
+
 - apps/api — Fastify API server
 - apps/dashboard — Next.js admin dashboard
 - apps/customer-portal — Next.js customer portal

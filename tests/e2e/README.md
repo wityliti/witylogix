@@ -132,6 +132,7 @@ Test specifications organized by feature. Located in `tests/e2e/specs/`:
 ## Test Coverage
 
 ### Authentication Flow (9 Tests)
+
 - Login with valid credentials
 - Login with invalid email
 - Login with invalid credentials
@@ -143,6 +144,7 @@ Test specifications organized by feature. Located in `tests/e2e/specs/`:
 - Remember me functionality
 
 ### Order Lifecycle (7 Tests)
+
 - Create order with all fields
 - Create order with minimal fields
 - Edit order details
@@ -153,6 +155,7 @@ Test specifications organized by feature. Located in `tests/e2e/specs/`:
 - Cancel order
 
 ### Driver Management (9 Tests)
+
 - View driver list
 - Filter by availability
 - Filter by unavailable status
@@ -164,6 +167,7 @@ Test specifications organized by feature. Located in `tests/e2e/specs/`:
 - Display performance metrics
 
 ### Order Tracking (7 Tests)
+
 - Navigate to tracking page
 - Search shipment by tracking ID
 - Display tracking timeline
@@ -175,6 +179,7 @@ Test specifications organized by feature. Located in `tests/e2e/specs/`:
 - Display proof of delivery
 
 ### Webhook Management (9 Tests)
+
 - Navigate to webhook page
 - Display webhook list
 - Create webhook endpoint
@@ -190,49 +195,56 @@ Test specifications organized by feature. Located in `tests/e2e/specs/`:
 ## Global Setup/Teardown
 
 ### Global Setup (`global-setup.ts`)
+
 1. Waits for API and Dashboard services to be ready
 2. Authenticates with admin credentials
 3. Saves authentication state for test reuse
 4. Seeds test data (optional)
 
 ### Global Teardown (`global-teardown.ts`)
+
 1. Cleans up test data (optional)
 
 ## Best Practices
 
 ### Test Isolation
+
 - Each test is independent and doesn't depend on other tests
 - Tests clean up after themselves
 - Database should be reset between test runs
 
 ### Explicit Waits
+
 ```typescript
-await page.waitForURL('/dashboard', { timeout: 10000 });
-await page.waitForLoadState('networkidle');
+await page.waitForURL("/dashboard", { timeout: 10000 });
+await page.waitForLoadState("networkidle");
 ```
 
 ### Use Page Objects
+
 Always use page objects instead of direct selectors:
 
 ```typescript
 // Good
 const loginPage = new LoginPage(page);
-await loginPage.login('email@test.com', 'password');
+await loginPage.login("email@test.com", "password");
 
 // Avoid
 await page.click('input[type="email"]');
 ```
 
 ### Meaningful Assertions
+
 ```typescript
 // Good
-await expect(page.locator('h1')).toContainText('Dashboard');
+await expect(page.locator("h1")).toContainText("Dashboard");
 
 // Avoid
-await expect(page.locator('h1')).toBeTruthy();
+await expect(page.locator("h1")).toBeTruthy();
 ```
 
 ### Error Messages
+
 ```typescript
 // Helpful for debugging
 await expect(loginPage.submitButton).toBeEnabled();
@@ -282,6 +294,7 @@ npx playwright test --video=on
 ## Troubleshooting
 
 ### Port Already in Use
+
 ```bash
 # Kill process on port 3002
 lsof -ti:3002 | xargs kill -9
@@ -291,16 +304,19 @@ lsof -ti:3001 | xargs kill -9
 ```
 
 ### Tests Timeout
+
 - Increase `timeout` in playwright.config.ts
 - Check if services are running and responsive
 - Verify network connectivity
 
 ### Authentication Fails
+
 - Verify `TEST_ADMIN_EMAIL` and `TEST_ADMIN_PASSWORD` are correct
 - Check if auth endpoint is responding
 - Clear `tests/e2e/auth.json` and re-run setup
 
 ### Flaky Tests
+
 - Add explicit waits instead of arbitrary delays
 - Use `waitForLoadState` for network idle
 - Verify element visibility before interaction
@@ -329,11 +345,11 @@ Edit `playwright.config.ts` and comment out unused projects.
 
 ```typescript
 // tests/e2e/specs/feature.spec.ts
-import { test, expect } from '../fixtures/auth.fixture';
-import { SomePage } from '../pages/some.page';
+import { test, expect } from "../fixtures/auth.fixture";
+import { SomePage } from "../pages/some.page";
 
-test.describe('Feature', () => {
-  test('should do something', async ({ adminPage }) => {
+test.describe("Feature", () => {
+  test("should do something", async ({ adminPage }) => {
     const page = new SomePage(adminPage);
     // Test code
   });
@@ -344,7 +360,7 @@ test.describe('Feature', () => {
 
 ```typescript
 // tests/e2e/pages/some.page.ts
-import { Page, Locator } from '@playwright/test';
+import { Page, Locator } from "@playwright/test";
 
 export class SomePage {
   readonly page: Page;
@@ -356,7 +372,7 @@ export class SomePage {
   }
 
   async navigate(): Promise<void> {
-    await this.page.goto('/some-route');
+    await this.page.goto("/some-route");
   }
 }
 ```

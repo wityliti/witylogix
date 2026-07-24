@@ -57,7 +57,13 @@ export function AdvancedTable() {
   const { preferences } = useTablePreferences("users-table", ["name", "email"]);
 
   const columns: ColumnDef<User>[] = [
-    { id: "name", header: "Name", accessorKey: "name", sortable: true, width: 150 },
+    {
+      id: "name",
+      header: "Name",
+      accessorKey: "name",
+      sortable: true,
+      width: 150,
+    },
     { id: "email", header: "Email", accessorKey: "email", sortable: true },
   ];
 
@@ -116,7 +122,7 @@ export function LargeList() {
       height={600}
       onLoadMore={async () => {
         const more = await fetchMore();
-        setItems(prev => [...prev, ...more]);
+        setItems((prev) => [...prev, ...more]);
       }}
     />
   );
@@ -143,14 +149,14 @@ exportSelectedRows(data, selectedIds, columns, "csv");
 
 ```tsx
 const {
-  preferences,          // Current preferences object
-  isLoaded,             // Whether loaded from storage
-  updateColumnOrder,    // Update column order
-  updateColumnWidths,   // Update column widths
+  preferences, // Current preferences object
+  isLoaded, // Whether loaded from storage
+  updateColumnOrder, // Update column order
+  updateColumnWidths, // Update column widths
   updateVisibleColumns, // Update visible columns
-  updateSortState,      // Update sort (columnId, direction)
-  updatePageSize,       // Update page size
-  resetToDefaults,      // Reset all to defaults
+  updateSortState, // Update sort (columnId, direction)
+  updatePageSize, // Update page size
+  resetToDefaults, // Reset all to defaults
 } = useTablePreferences("table-id", ["col1", "col2"]);
 ```
 
@@ -158,21 +164,22 @@ const {
 
 ```tsx
 interface ColumnDef<T> {
-  id: string;                                    // Unique column ID
-  header: string;                                // Column header text
-  accessorKey?: keyof T;                         // Data key to access
-  cell?: (value: any, row: T) => ReactNode;     // Custom cell renderer
-  width?: number;                                // Column width
-  align?: "left" | "center" | "right";          // Text alignment
-  sortable?: boolean;                            // Enable sorting
-  resizable?: boolean;                           // Enable resizing
-  visible?: boolean;                             // Initially visible
+  id: string; // Unique column ID
+  header: string; // Column header text
+  accessorKey?: keyof T; // Data key to access
+  cell?: (value: any, row: T) => ReactNode; // Custom cell renderer
+  width?: number; // Column width
+  align?: "left" | "center" | "right"; // Text alignment
+  sortable?: boolean; // Enable sorting
+  resizable?: boolean; // Enable resizing
+  visible?: boolean; // Initially visible
 }
 ```
 
 ## Common Patterns
 
 ### With Loading State
+
 ```tsx
 <DataTable
   columns={columns}
@@ -183,18 +190,18 @@ interface ColumnDef<T> {
 ```
 
 ### Custom Row Rendering
+
 ```tsx
 columns.push({
   id: "status",
   header: "Status",
   accessorKey: "status",
-  cell: (value) => (
-    <span className={`badge-${value}`}>{value}</span>
-  ),
+  cell: (value) => <span className={`badge-${value}`}>{value}</span>,
 });
 ```
 
 ### Row Click Handler
+
 ```tsx
 <DataTable
   columns={columns}
@@ -204,6 +211,7 @@ columns.push({
 ```
 
 ### Custom Bulk Actions
+
 ```tsx
 <DataTable
   columns={columns}
@@ -214,7 +222,10 @@ columns.push({
         deleteUsers(ids);
         break;
       case "export":
-        exportAsCSV(data.filter(d => ids.includes(d.id!)), columns);
+        exportAsCSV(
+          data.filter((d) => ids.includes(d.id!)),
+          columns,
+        );
         break;
       case "activate":
         activateUsers(ids);
@@ -243,6 +254,7 @@ All components use Tailwind CSS with `--wl-*` CSS variables for colors:
 ## API Reference
 
 ### DataTable Props
+
 - `columns: ColumnDef<T>[]`
 - `data: T[]`
 - `onSelectionChange?: (ids) => void`
@@ -256,6 +268,7 @@ All components use Tailwind CSS with `--wl-*` CSS variables for colors:
 - `enablePagination?: boolean` (default: true)
 
 ### VirtualList Props
+
 - `items: T[]`
 - `itemHeight: number | (index, item) => number`
 - `renderItem: (item, index) => ReactNode`
@@ -266,6 +279,7 @@ All components use Tailwind CSS with `--wl-*` CSS variables for colors:
 - `width?: string | number`
 
 ### DataTableToolbar Props
+
 - `columns: Column[]`
 - `visibleColumns: Set<string>`
 - `onVisibleColumnsChange?: (visible) => void`
@@ -290,12 +304,7 @@ import { render, screen } from "@testing-library/react";
 import { DataTable } from "@/components/ui";
 
 test("renders table", () => {
-  render(
-    <DataTable
-      columns={columns}
-      data={mockData}
-    />
-  );
+  render(<DataTable columns={columns} data={mockData} />);
   expect(screen.getByText("Name")).toBeInTheDocument();
 });
 ```
@@ -327,12 +336,14 @@ test("renders table", () => {
 ## Documentation
 
 For detailed documentation, see:
+
 - `/apps/dashboard/src/components/ui/DATA_TABLE_GUIDE.md`
 - `/SPRINT_7_1_SUMMARY.md`
 
 ## Support
 
 For questions or issues:
+
 1. Check the DATA_TABLE_GUIDE.md
 2. Review test examples
 3. Check component prop interfaces

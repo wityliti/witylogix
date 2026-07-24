@@ -6,7 +6,10 @@ interface MockRequest extends Partial<FastifyRequest> {
   body?: Record<string, unknown>;
   params?: Record<string, unknown>;
   jwt?: {
-    sign: (payload: Record<string, unknown>, options?: Record<string, unknown>) => string;
+    sign: (
+      payload: Record<string, unknown>,
+      options?: Record<string, unknown>,
+    ) => string;
   };
 }
 
@@ -127,7 +130,11 @@ describe("Billing Subscriptions Routes", () => {
     it("should list all subscriptions for a tenant", async () => {
       const tenant = generateTestTenant();
       const sub1 = generateTestSubscription();
-      const sub2 = { ...generateTestSubscription(), id: "sub-124", planId: "plan-standard" };
+      const sub2 = {
+        ...generateTestSubscription(),
+        id: "sub-124",
+        planId: "plan-standard",
+      };
 
       mockPrisma.tenant.findUnique.mockResolvedValue(tenant);
       mockPrisma.subscription.findMany.mockResolvedValue([sub1, sub2]);
@@ -253,7 +260,9 @@ describe("Billing Subscriptions Routes", () => {
 
       mockPrisma.tenant.findUnique.mockResolvedValue(tenant);
       mockPrisma.billingPlan.findUnique.mockResolvedValue(plan);
-      mockPrisma.subscription.create.mockResolvedValue(generateTestSubscription());
+      mockPrisma.subscription.create.mockResolvedValue(
+        generateTestSubscription(),
+      );
 
       mockRequest.body = {
         tenantId: tenant.id,
@@ -343,7 +352,11 @@ describe("Billing Subscriptions Routes", () => {
   describe("PUT /subscriptions/:id/upgrade (Upgrade plan)", () => {
     it("should upgrade to a higher tier plan", async () => {
       const currentSub = generateTestSubscription();
-      const newPlan = { ...generateTestBillingPlan(), id: "plan-enterprise", price: 299 };
+      const newPlan = {
+        ...generateTestBillingPlan(),
+        id: "plan-enterprise",
+        price: 299,
+      };
       const upgradedSub = {
         ...currentSub,
         planId: "plan-enterprise",
@@ -400,7 +413,11 @@ describe("Billing Subscriptions Routes", () => {
   describe("PUT /subscriptions/:id/downgrade (Downgrade plan)", () => {
     it("should downgrade to a lower tier plan", async () => {
       const currentSub = generateTestSubscription();
-      const newPlan = { ...generateTestBillingPlan(), id: "plan-starter", price: 29 };
+      const newPlan = {
+        ...generateTestBillingPlan(),
+        id: "plan-starter",
+        price: 29,
+      };
       const downgradedSub = {
         ...currentSub,
         planId: "plan-starter",

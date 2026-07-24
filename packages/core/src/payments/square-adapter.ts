@@ -16,8 +16,8 @@ import type {
   RefundRequest,
   PaymentGatewayConfig,
   PaymentWebhookPayload,
-} from './types.js';
-import { PaymentGatewayBase } from './payment-gateway.js';
+} from "./types.js";
+import { PaymentGatewayBase } from "./payment-gateway.js";
 
 // ─── SQUARE TYPES ──────────────────────────────────────────────────────────
 
@@ -103,25 +103,27 @@ interface SquareInvoice {
 // ─── SQUARE GATEWAY CLASS ──────────────────────────────────────────────────
 
 export class SquareGateway extends PaymentGatewayBase {
-  readonly name: string = 'Square';
-  readonly code: string = 'square';
+  readonly name: string = "Square";
+  readonly code: string = "square";
 
-  private baseUrl: string = 'https://connect.squareup.com';
+  private baseUrl: string = "https://connect.squareup.com";
   private accessToken: string;
   private locationId: string;
 
   constructor(config: PaymentGatewayConfig) {
     super(config);
 
-    this.accessToken = config.secretKey || process.env.SQUARE_ACCESS_TOKEN || '';
-    this.locationId = config.metadata?.locationId || process.env.SQUARE_LOCATION_ID || '';
+    this.accessToken =
+      config.secretKey || process.env.SQUARE_ACCESS_TOKEN || "";
+    this.locationId =
+      config.metadata?.locationId || process.env.SQUARE_LOCATION_ID || "";
 
     if (!this.accessToken) {
-      throw new Error('Square gateway requires accessToken');
+      throw new Error("Square gateway requires accessToken");
     }
 
     if (!this.locationId) {
-      throw new Error('Square gateway requires locationId');
+      throw new Error("Square gateway requires locationId");
     }
   }
 
@@ -139,19 +141,24 @@ export class SquareGateway extends PaymentGatewayBase {
     this.validateCurrency(currency);
 
     // For Square, we create an idempotency key that will be used during payment capture
-    const idempotencyKey = this.generateIdempotencyKey(shopId, customerId, amount, Date.now());
+    const idempotencyKey = this.generateIdempotencyKey(
+      shopId,
+      customerId,
+      amount,
+      Date.now(),
+    );
 
     return {
       id: `intent-${idempotencyKey}`,
       shopId,
       amount,
       currency: currency.toUpperCase(),
-      status: 'pending',
-      methodType: 'card',
+      status: "pending",
+      methodType: "card",
       idempotencyKey,
-      providerName: 'square',
+      providerName: "square",
       providerIntentId: idempotencyKey,
-      description: metadata?.description || 'Square payment',
+      description: metadata?.description || "Square payment",
       metadata: {
         ...metadata,
         squareIdempotencyKey: idempotencyKey,
@@ -170,8 +177,8 @@ export class SquareGateway extends PaymentGatewayBase {
     // This is typically obtained from web/mobile payments UI
     // For this implementation, we expect sourceId in metadata
     throw new Error(
-      'Square capturePayment requires sourceId from payment method. ' +
-      'Use captureWithSourceId() instead.',
+      "Square capturePayment requires sourceId from payment method. " +
+        "Use captureWithSourceId() instead.",
     );
   }
 
@@ -195,20 +202,17 @@ export class SquareGateway extends PaymentGatewayBase {
       receipt_url_requested: true,
     };
 
-    const response = await globalThis.fetch(
-      `${this.baseUrl}/v2/payments`,
-      {
-        method: 'POST',
-        headers: {
-          ...this.buildAuthHeaders(),
-          'Authorization': `Bearer ${this.accessToken}`,
-        },
-        body: JSON.stringify(paymentRequest),
+    const response = await globalThis.fetch(`${this.baseUrl}/v2/payments`, {
+      method: "POST",
+      headers: {
+        ...this.buildAuthHeaders(),
+        Authorization: `Bearer ${this.accessToken}`,
       },
-    );
+      body: JSON.stringify(paymentRequest),
+    });
 
     if (!response.ok) {
-      const error = await response.json() as any;
+      const error = (await response.json()) as any;
       throw new Error(
         `Square payment failed: ${error.errors?.[0]?.detail || JSON.stringify(error)}`,
       );
@@ -219,13 +223,13 @@ export class SquareGateway extends PaymentGatewayBase {
 
     return {
       id: this.generateTransactionId(),
-      shopId: '', // Set by processor
+      shopId: "", // Set by processor
       amount: payment.amount_money.amount,
       currency: payment.amount_money.currency,
-      status: 'completed',
-      type: 'charge',
+      status: "completed",
+      type: "charge",
       methodType: this.normalizePaymentMethod(payment.source_type),
-      providerName: 'square',
+      providerName: "square",
       providerTransactionId: payment.id,
       metadata: {
         squarePaymentId: payment.id,
@@ -252,29 +256,26 @@ export class SquareGateway extends PaymentGatewayBase {
       amount_money: amount
         ? {
             amount,
-            currency: 'USD', // Default to USD, should be passed in
+            currency: "USD", // Default to USD, should be passed in
           }
         : undefined,
       reason,
     };
 
-    const response = await globalThis.fetch(
-      `${this.baseUrl}/v2/refunds`,
-      {
-        method: 'POST',
-        headers: {
-          ...this.buildAuthHeaders(),
-          'Authorization': `Bearer ${this.accessToken}`,
-        },
-        body: JSON.stringify({
-          payment_id: transactionId,
-          ...refundRequest,
-        }),
+    const response = await globalThis.fetch(`${this.baseUrl}/v2/refunds`, {
+      method: "POST",
+      headers: {
+        ...this.buildAuthHeaders(),
+        Authorization: `Bearer ${this.accessToken}`,
       },
-    );
+      body: JSON.stringify({
+        payment_id: transactionId,
+        ...refundRequest,
+      }),
+    });
 
     if (!response.ok) {
-      const error = await response.json() as any;
+      const error = (await response.json()) as any;
       throw new Error(
         `Square refund failed: ${error.errors?.[0]?.detail || JSON.stringify(error)}`,
       );
@@ -285,11 +286,11 @@ export class SquareGateway extends PaymentGatewayBase {
 
     return {
       id: this.generateTransactionId(),
-      shopId: '', // Set by processor
+      shopId: "", // Set by processor
       transactionId,
       amount: refund.amount_money.amount,
-      reason: (reason as any) || 'customer_request',
-      status: 'completed',
+      reason: (reason as any) || "customer_request",
+      status: "completed",
       providerRefundId: refund.id,
       metadata: {
         squareRefundId: refund.id,
@@ -307,16 +308,16 @@ export class SquareGateway extends PaymentGatewayBase {
     const response = await globalThis.fetch(
       `${this.baseUrl}/v2/payments/${providerTransactionId}`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
           ...this.buildAuthHeaders(),
-          'Authorization': `Bearer ${this.accessToken}`,
+          Authorization: `Bearer ${this.accessToken}`,
         },
       },
     );
 
     if (!response.ok) {
-      const error = await response.json() as any;
+      const error = (await response.json()) as any;
       throw new Error(
         `Square get payment failed: ${error.errors?.[0]?.detail || JSON.stringify(error)}`,
       );
@@ -326,22 +327,22 @@ export class SquareGateway extends PaymentGatewayBase {
     const payment = result.payment;
 
     const statusMap: Record<string, any> = {
-      'COMPLETED': 'completed',
-      'APPROVED': 'authorized',
-      'PENDING': 'pending',
-      'CANCELED': 'cancelled',
-      'FAILED': 'failed',
+      COMPLETED: "completed",
+      APPROVED: "authorized",
+      PENDING: "pending",
+      CANCELED: "cancelled",
+      FAILED: "failed",
     };
 
     return {
       id: providerTransactionId,
-      shopId: '',
+      shopId: "",
       amount: payment.amount_money.amount,
       currency: payment.amount_money.currency,
-      status: statusMap[payment.status] || 'pending',
-      type: 'charge',
+      status: statusMap[payment.status] || "pending",
+      type: "charge",
       methodType: this.normalizePaymentMethod(payment.source_type),
-      providerName: 'square',
+      providerName: "square",
       providerTransactionId: payment.id,
       metadata: {
         squarePaymentId: payment.id,
@@ -359,26 +360,27 @@ export class SquareGateway extends PaymentGatewayBase {
     payload: any,
     signature: string,
   ): Promise<boolean> {
-    const webhookSignatureKey = this.config.webhookSecret ||
-                                process.env.SQUARE_WEBHOOK_SIGNATURE_KEY || '';
+    const webhookSignatureKey =
+      this.config.webhookSecret ||
+      process.env.SQUARE_WEBHOOK_SIGNATURE_KEY ||
+      "";
 
     if (!webhookSignatureKey) {
-      throw new Error('Square webhook signature key not configured');
+      throw new Error("Square webhook signature key not configured");
     }
 
     try {
-      const crypto = require('crypto');
+      const crypto = require("crypto");
 
       // Square sends: request URL + request body
       // We'll construct a simple verification string
-      const payloadString = typeof payload === 'string'
-        ? payload
-        : JSON.stringify(payload);
+      const payloadString =
+        typeof payload === "string" ? payload : JSON.stringify(payload);
 
       const computedSignature = crypto
-        .createHmac('sha256', webhookSignatureKey)
+        .createHmac("sha256", webhookSignatureKey)
         .update(payloadString)
-        .digest('base64');
+        .digest("base64");
 
       return signature === computedSignature;
     } catch (error) {
@@ -390,31 +392,31 @@ export class SquareGateway extends PaymentGatewayBase {
    * Parse Square webhook payload
    */
   async parseWebhookPayload(payload: any): Promise<PaymentWebhookPayload> {
-    const eventType = payload.type || '';
+    const eventType = payload.type || "";
     const data = payload.data?.object || {};
 
-    let webhookType: PaymentWebhookPayload['type'] = 'payment.authorized';
+    let webhookType: PaymentWebhookPayload["type"] = "payment.authorized";
 
-    if (eventType.includes('payment.created')) {
-      webhookType = 'payment.authorized';
-    } else if (eventType.includes('payment.updated')) {
-      webhookType = 'payment.captured';
-    } else if (eventType.includes('refund.created')) {
-      webhookType = 'refund.completed';
-    } else if (eventType.includes('payment.failed')) {
-      webhookType = 'payment.failed';
+    if (eventType.includes("payment.created")) {
+      webhookType = "payment.authorized";
+    } else if (eventType.includes("payment.updated")) {
+      webhookType = "payment.captured";
+    } else if (eventType.includes("refund.created")) {
+      webhookType = "refund.completed";
+    } else if (eventType.includes("payment.failed")) {
+      webhookType = "payment.failed";
     }
 
     return {
       type: webhookType,
-      provider: 'square',
+      provider: "square",
       providerEventId: payload.id,
       timestamp: new Date(payload.created_at || Date.now()),
       data: {
         transactionId: data.id,
         amount: data.amount_money?.amount || 0,
-        currency: data.amount_money?.currency || 'USD',
-        status: 'completed',
+        currency: data.amount_money?.currency || "USD",
+        status: "completed",
         providerTransactionId: data.id,
         metadata: {
           squareEventType: eventType,
@@ -448,9 +450,9 @@ export class SquareGateway extends PaymentGatewayBase {
         },
         payment_requests: [
           {
-            request_type: 'BALANCE',
-            request_method: 'EMAIL',
-            due_date: dueDate.toISOString().split('T')[0],
+            request_type: "BALANCE",
+            request_method: "EMAIL",
+            due_date: dueDate.toISOString().split("T")[0],
             computed_amount_money: {
               amount,
               currency: currency.toUpperCase(),
@@ -460,20 +462,17 @@ export class SquareGateway extends PaymentGatewayBase {
       },
     };
 
-    const response = await globalThis.fetch(
-      `${this.baseUrl}/v2/invoices`,
-      {
-        method: 'POST',
-        headers: {
-          ...this.buildAuthHeaders(),
-          'Authorization': `Bearer ${this.accessToken}`,
-        },
-        body: JSON.stringify(invoiceRequest),
+    const response = await globalThis.fetch(`${this.baseUrl}/v2/invoices`, {
+      method: "POST",
+      headers: {
+        ...this.buildAuthHeaders(),
+        Authorization: `Bearer ${this.accessToken}`,
       },
-    );
+      body: JSON.stringify(invoiceRequest),
+    });
 
     if (!response.ok) {
-      const error = await response.json() as any;
+      const error = (await response.json()) as any;
       throw new Error(
         `Square create invoice failed: ${error.errors?.[0]?.detail || JSON.stringify(error)}`,
       );

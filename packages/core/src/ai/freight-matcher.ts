@@ -18,7 +18,13 @@
  * - Real-time matching updates as capacity changes
  */
 
-import type { FreightLoad, Lane, CarrierContract, RateSheet, CarrierMetrics } from '../freight/freight-types.js';
+import type {
+  FreightLoad,
+  Lane,
+  CarrierContract,
+  RateSheet,
+  CarrierMetrics,
+} from "../freight/freight-types.js";
 
 // ─── TYPES ──────────────────────────────────────────────────────────────
 
@@ -27,9 +33,9 @@ export interface Carrier {
   name: string;
   dotNumber: string;
   mcNumber?: string;
-  safetyRating: 'satisfactory' | 'conditional' | 'unsatisfactory';
-  insuranceStatus: 'active' | 'expired' | 'lapsed';
-  operatingAuthority: 'active' | 'inactive';
+  safetyRating: "satisfactory" | "conditional" | "unsatisfactory";
+  insuranceStatus: "active" | "expired" | "lapsed";
+  operatingAuthority: "active" | "inactive";
   metrics: CarrierMetrics;
   availableTrucks: number;
   totalFleetSize: number;
@@ -77,7 +83,7 @@ export interface CarrierMatch {
   recommendedRate: number;
   estimatedDeliveryDays: number;
   rationale: string;
-  fallbackTier: 'primary' | 'secondary' | 'spot' | 'emergency';
+  fallbackTier: "primary" | "secondary" | "spot" | "emergency";
   riskFlags: string[];
 }
 
@@ -107,7 +113,7 @@ export interface MatchingResult {
   recommendations: CarrierMatch[];
   alternativeBundles?: BundleOpportunity[];
   backhaulOpportunities?: BackhaulMatch[];
-  matchQuality: 'excellent' | 'good' | 'fair' | 'poor';
+  matchQuality: "excellent" | "good" | "fair" | "poor";
   notes: string;
 }
 
@@ -122,11 +128,17 @@ export class FreightMatcher {
    * Match a freight load to optimal carriers
    */
   async matchLoad(criteria: MatchCriteria): Promise<MatchingResult> {
-    const { load, lane, carrierPool, preferredCarrierId, maxResults = 5 } = criteria;
+    const {
+      load,
+      lane,
+      carrierPool,
+      preferredCarrierId,
+      maxResults = 5,
+    } = criteria;
 
     // Validate load and lane
     if (!load || !lane) {
-      throw new Error('Invalid load or lane');
+      throw new Error("Invalid load or lane");
     }
 
     // Score all carriers
@@ -145,15 +157,18 @@ export class FreightMatcher {
         totalScore: 0,
         scores: {
           laneFit: this.scoreLaneFit(carrier, lane),
-          rateCompetitiveness: this.scoreRateCompetitiveness(carrier, criteria.marketBenchmark),
+          rateCompetitiveness: this.scoreRateCompetitiveness(
+            carrier,
+            criteria.marketBenchmark,
+          ),
           capacityAvailability: this.scoreCapacityAvailability(carrier, load),
           reliability: this.scoreReliability(carrier),
           compliance: complianceScore,
         },
         recommendedRate: 0,
         estimatedDeliveryDays: 0,
-        rationale: '',
-        fallbackTier: 'primary',
+        rationale: "",
+        fallbackTier: "primary",
         riskFlags: [],
       };
 
@@ -164,14 +179,18 @@ export class FreightMatcher {
       match.fallbackTier = this.determineFallbackTier(
         carrier,
         preferredCarrierId,
-        match.totalScore
+        match.totalScore,
       );
 
       // Identify risk flags
       match.riskFlags = this.identifyRiskFlags(carrier, match.scores);
 
       // Set recommended rate and delivery estimate
-      match.recommendedRate = this.calculateRecommendedRate(carrier, lane, criteria.marketBenchmark);
+      match.recommendedRate = this.calculateRecommendedRate(
+        carrier,
+        lane,
+        criteria.marketBenchmark,
+      );
       match.estimatedDeliveryDays = this.estimateDeliveryDays(lane, carrier);
 
       // Generate rationale
@@ -195,17 +214,25 @@ export class FreightMatcher {
     // Find bundle opportunities if requested
     let alternativeBundles: BundleOpportunity[] | undefined;
     if (criteria.considerBackhauls) {
-      alternativeBundles = await this.findBundleOpportunities(load, recommendations);
+      alternativeBundles = await this.findBundleOpportunities(
+        load,
+        recommendations,
+      );
     }
 
     // Find backhaul opportunities if requested
     let backhaulOpportunities: BackhaulMatch[] | undefined;
     if (criteria.deadheadOptimization) {
-      backhaulOpportunities = await this.findBackhaulMatches(load, recommendations);
+      backhaulOpportunities = await this.findBackhaulMatches(
+        load,
+        recommendations,
+      );
     }
 
     // Determine overall match quality
-    const matchQuality = this.determineMatchQuality(recommendations[0]?.totalScore ?? 0);
+    const matchQuality = this.determineMatchQuality(
+      recommendations[0]?.totalScore ?? 0,
+    );
 
     const result: MatchingResult = {
       loadId: load.id,
@@ -230,13 +257,13 @@ export class FreightMatcher {
     if (!history || history.totalLoads === 0) {
       // No history - neutral score
       return {
-        name: 'Lane Fit',
+        name: "Lane Fit",
         score: 50,
         weight: 0.3,
         details: {
-          value: 'No history',
-          benchmark: 'Expected: 70+',
-          explanation: 'Carrier has no recorded shipments on this lane',
+          value: "No history",
+          benchmark: "Expected: 70+",
+          explanation: "Carrier has no recorded shipments on this lane",
         },
       };
     }
@@ -253,12 +280,12 @@ export class FreightMatcher {
     const score = onTimeScore * 0.6 + volumeScore * 0.25 + recencyScore * 0.15;
 
     return {
-      name: 'Lane Fit',
+      name: "Lane Fit",
       score: Math.round(score),
       weight: 0.3,
       details: {
         value: `${history.totalLoads} loads, ${onTimeScore}% on-time`,
-        benchmark: '70+ with 80% on-time',
+        benchmark: "70+ with 80% on-time",
         explanation: `Carrier has completed ${history.totalLoads} shipments on this lane with ${onTimeScore}% on-time delivery rate`,
       },
     };
@@ -268,7 +295,10 @@ export class FreightMatcher {
    * Rate competitiveness scoring (25% weight)
    * Compare carrier rate vs market benchmark
    */
-  private scoreRateCompetitiveness(carrier: Carrier, benchmark: number): CriterionScore {
+  private scoreRateCompetitiveness(
+    carrier: Carrier,
+    benchmark: number,
+  ): CriterionScore {
     const carrierRate = carrier.averageRatePerMile;
     const variance = ((carrierRate - benchmark) / benchmark) * 100;
 
@@ -280,13 +310,13 @@ export class FreightMatcher {
     score = Math.max(0, score);
 
     return {
-      name: 'Rate Competitiveness',
+      name: "Rate Competitiveness",
       score: Math.round(score),
       weight: 0.25,
       details: {
-        value: `$${carrierRate.toFixed(2)}/mile (${variance > 0 ? '+' : ''}${variance.toFixed(1)}%)`,
+        value: `$${carrierRate.toFixed(2)}/mile (${variance > 0 ? "+" : ""}${variance.toFixed(1)}%)`,
         benchmark: `$${benchmark.toFixed(2)}/mile`,
-        explanation: `Carrier rate is ${Math.abs(variance).toFixed(1)}% ${variance > 0 ? 'above' : 'below'} market benchmark`,
+        explanation: `Carrier rate is ${Math.abs(variance).toFixed(1)}% ${variance > 0 ? "above" : "below"} market benchmark`,
       },
     };
   }
@@ -295,9 +325,15 @@ export class FreightMatcher {
    * Capacity availability scoring (20% weight)
    * Current truck availability and commitment level
    */
-  private scoreCapacityAvailability(carrier: Carrier, load: FreightLoad): CriterionScore {
-    const utilizationRate = (carrier.totalFleetSize - carrier.availableTrucks) / carrier.totalFleetSize;
-    const availabilityPercent = (carrier.availableTrucks / carrier.totalFleetSize) * 100;
+  private scoreCapacityAvailability(
+    carrier: Carrier,
+    load: FreightLoad,
+  ): CriterionScore {
+    const utilizationRate =
+      (carrier.totalFleetSize - carrier.availableTrucks) /
+      carrier.totalFleetSize;
+    const availabilityPercent =
+      (carrier.availableTrucks / carrier.totalFleetSize) * 100;
 
     // Score based on:
     // - Available trucks (higher is better, but some utilization is normal)
@@ -318,12 +354,12 @@ export class FreightMatcher {
     const score = capacityScore * 0.7 + equipmentScore * 0.3;
 
     return {
-      name: 'Capacity Availability',
+      name: "Capacity Availability",
       score: Math.round(score),
       weight: 0.2,
       details: {
         value: `${carrier.availableTrucks}/${carrier.totalFleetSize} trucks, ${availabilityPercent.toFixed(1)}% available`,
-        benchmark: '25-75% utilization',
+        benchmark: "25-75% utilization",
         explanation: `Carrier has ${carrier.availableTrucks} available trucks out of ${carrier.totalFleetSize} total`,
       },
     };
@@ -345,15 +381,16 @@ export class FreightMatcher {
     const tenderScore = metrics.tenderAcceptanceRate ?? 85;
     const claimsScore = Math.max(0, 100 - (metrics.claimsRatio ?? 0) * 500); // Scale claims ratio
 
-    const score = onTimeScore * 0.6 + tenderScore * 0.25 + Math.max(0, claimsScore) * 0.15;
+    const score =
+      onTimeScore * 0.6 + tenderScore * 0.25 + Math.max(0, claimsScore) * 0.15;
 
     return {
-      name: 'Reliability',
+      name: "Reliability",
       score: Math.round(Math.min(100, score)),
       weight: 0.15,
       details: {
         value: `${onTimeScore.toFixed(1)}% on-time, ${tenderScore.toFixed(1)}% tender acceptance`,
-        benchmark: '85%+ on-time, 90%+ tender acceptance',
+        benchmark: "85%+ on-time, 90%+ tender acceptance",
         explanation: `Carrier demonstrates ${onTimeScore.toFixed(1)}% on-time delivery and accepts ${tenderScore.toFixed(1)}% of tenders`,
       },
     };
@@ -368,34 +405,37 @@ export class FreightMatcher {
     let issues: string[] = [];
 
     // Safety rating
-    if (carrier.safetyRating === 'unsatisfactory') {
+    if (carrier.safetyRating === "unsatisfactory") {
       score -= 50;
-      issues.push('Unsatisfactory safety rating');
-    } else if (carrier.safetyRating === 'conditional') {
+      issues.push("Unsatisfactory safety rating");
+    } else if (carrier.safetyRating === "conditional") {
       score -= 20;
-      issues.push('Conditional safety rating');
+      issues.push("Conditional safety rating");
     }
 
     // Insurance status
-    if (carrier.insuranceStatus !== 'active') {
+    if (carrier.insuranceStatus !== "active") {
       score -= 40;
       issues.push(`Insurance ${carrier.insuranceStatus}`);
     }
 
     // Operating authority
-    if (carrier.operatingAuthority !== 'active') {
+    if (carrier.operatingAuthority !== "active") {
       score -= 30;
-      issues.push('Operating authority inactive');
+      issues.push("Operating authority inactive");
     }
 
     return {
-      name: 'Compliance',
+      name: "Compliance",
       score: Math.max(0, score),
       weight: 0.1,
       details: {
         value: `${carrier.safetyRating} safety, ${carrier.insuranceStatus} insurance`,
-        benchmark: 'Satisfactory safety, active insurance',
-        explanation: issues.length > 0 ? issues.join('; ') : 'All compliance requirements met',
+        benchmark: "Satisfactory safety, active insurance",
+        explanation:
+          issues.length > 0
+            ? issues.join("; ")
+            : "All compliance requirements met",
       },
     };
   }
@@ -403,7 +443,7 @@ export class FreightMatcher {
   /**
    * Calculate weighted score across all criteria
    */
-  private calculateWeightedScore(scores: CarrierMatch['scores']): number {
+  private calculateWeightedScore(scores: CarrierMatch["scores"]): number {
     return (
       scores.laneFit.score * scores.laneFit.weight +
       scores.rateCompetitiveness.score * scores.rateCompetitiveness.weight +
@@ -420,43 +460,50 @@ export class FreightMatcher {
   private determineFallbackTier(
     carrier: Carrier,
     preferredCarrierId: string | undefined,
-    score: number
-  ): 'primary' | 'secondary' | 'spot' | 'emergency' {
+    score: number,
+  ): "primary" | "secondary" | "spot" | "emergency" {
     if (carrier.id === preferredCarrierId) {
-      return 'primary';
+      return "primary";
     }
 
     if (score >= 80) {
-      return 'primary';
+      return "primary";
     } else if (score >= 65) {
-      return 'secondary';
+      return "secondary";
     } else if (score >= 50) {
-      return 'spot';
+      return "spot";
     } else {
-      return 'emergency';
+      return "emergency";
     }
   }
 
   /**
    * Identify risk flags for carrier
    */
-  private identifyRiskFlags(carrier: Carrier, scores: CarrierMatch['scores']): string[] {
+  private identifyRiskFlags(
+    carrier: Carrier,
+    scores: CarrierMatch["scores"],
+  ): string[] {
     const flags: string[] = [];
 
     if (scores.compliance.score < 50) {
-      flags.push('Compliance concerns');
+      flags.push("Compliance concerns");
     }
     if (scores.reliability.score < 60) {
-      flags.push('Reliability issues');
+      flags.push("Reliability issues");
     }
     if (scores.capacityAvailability.score < 50) {
-      flags.push('Limited capacity');
+      flags.push("Limited capacity");
     }
     if (scores.laneFit.score < 50) {
-      flags.push('Limited lane experience');
+      flags.push("Limited lane experience");
     }
-    if (carrier.lastUsedDate && new Date().getTime() - carrier.lastUsedDate.getTime() > 90 * 24 * 60 * 60 * 1000) {
-      flags.push('Inactive carrier (90+ days)');
+    if (
+      carrier.lastUsedDate &&
+      new Date().getTime() - carrier.lastUsedDate.getTime() >
+        90 * 24 * 60 * 60 * 1000
+    ) {
+      flags.push("Inactive carrier (90+ days)");
     }
 
     return flags;
@@ -465,7 +512,11 @@ export class FreightMatcher {
   /**
    * Calculate recommended rate for load
    */
-  private calculateRecommendedRate(carrier: Carrier, lane: Lane, benchmark: number): number {
+  private calculateRecommendedRate(
+    carrier: Carrier,
+    lane: Lane,
+    benchmark: number,
+  ): number {
     // Base rate on carrier's average
     let rate = carrier.averageRatePerMile;
 
@@ -493,16 +544,21 @@ export class FreightMatcher {
    * Generate explanation for carrier match
    */
   private generateRationale(match: CarrierMatch, carrier: Carrier): string {
-    const topCriterion = Object.entries(match.scores)
-      .sort(([, a], [, b]) => b.score - a.score)[0];
+    const topCriterion = Object.entries(match.scores).sort(
+      ([, a], [, b]) => b.score - a.score,
+    )[0];
 
     const strengths: string[] = [];
-    if (match.scores.laneFit.score >= 75) strengths.push('strong lane experience');
-    if (match.scores.rateCompetitiveness.score >= 75) strengths.push('competitive rates');
-    if (match.scores.capacityAvailability.score >= 75) strengths.push('available capacity');
-    if (match.scores.reliability.score >= 75) strengths.push('reliable service');
+    if (match.scores.laneFit.score >= 75)
+      strengths.push("strong lane experience");
+    if (match.scores.rateCompetitiveness.score >= 75)
+      strengths.push("competitive rates");
+    if (match.scores.capacityAvailability.score >= 75)
+      strengths.push("available capacity");
+    if (match.scores.reliability.score >= 75)
+      strengths.push("reliable service");
 
-    return `${carrier.name} is recommended based on ${strengths.join(', ') || 'overall fit'}. ${topCriterion ? `Best strength: ${topCriterion[0]}` : ''}`;
+    return `${carrier.name} is recommended based on ${strengths.join(", ") || "overall fit"}. ${topCriterion ? `Best strength: ${topCriterion[0]}` : ""}`;
   }
 
   /**
@@ -510,7 +566,7 @@ export class FreightMatcher {
    */
   private async findBundleOpportunities(
     load: FreightLoad,
-    topMatches: CarrierMatch[]
+    topMatches: CarrierMatch[],
   ): Promise<BundleOpportunity[]> {
     // Placeholder for bundling logic
     // In real implementation, would query for compatible loads
@@ -522,7 +578,7 @@ export class FreightMatcher {
    */
   private async findBackhaulMatches(
     load: FreightLoad,
-    topMatches: CarrierMatch[]
+    topMatches: CarrierMatch[],
   ): Promise<BackhaulMatch[]> {
     // Placeholder for backhaul matching
     // In real implementation, would find return loads
@@ -532,22 +588,27 @@ export class FreightMatcher {
   /**
    * Determine overall match quality
    */
-  private determineMatchQuality(topScore: number): 'excellent' | 'good' | 'fair' | 'poor' {
-    if (topScore >= 85) return 'excellent';
-    if (topScore >= 70) return 'good';
-    if (topScore >= 55) return 'fair';
-    return 'poor';
+  private determineMatchQuality(
+    topScore: number,
+  ): "excellent" | "good" | "fair" | "poor" {
+    if (topScore >= 85) return "excellent";
+    if (topScore >= 70) return "good";
+    if (topScore >= 55) return "fair";
+    return "poor";
   }
 
   /**
    * Generate notes about the matching result
    */
-  private generateResultNotes(recommendations: CarrierMatch[], quality: string): string {
+  private generateResultNotes(
+    recommendations: CarrierMatch[],
+    quality: string,
+  ): string {
     if (recommendations.length === 0) {
-      return 'No suitable carriers found. Consider expanding search criteria.';
+      return "No suitable carriers found. Consider expanding search criteria.";
     }
 
-    if (quality === 'poor') {
+    if (quality === "poor") {
       return `${recommendations[0]?.carrierName} is available but has significant limitations. Consider alternative options.`;
     }
 
@@ -557,7 +618,10 @@ export class FreightMatcher {
   /**
    * Helper: Get or initialize carrier lane history
    */
-  private getCarrierLaneHistory(carrierId: string, laneId: string): CarrierLaneHistory | null {
+  private getCarrierLaneHistory(
+    carrierId: string,
+    laneId: string,
+  ): CarrierLaneHistory | null {
     const key = `${carrierId}-${laneId}`;
     if (this.historyCache.has(key)) {
       return this.historyCache.get(key) ?? null;
@@ -571,7 +635,9 @@ export class FreightMatcher {
    */
   private calculateRecencyScore(lastShipmentDate?: Date): number {
     if (!lastShipmentDate) return 50;
-    const daysSinceLastShipment = (new Date().getTime() - lastShipmentDate.getTime()) / (1000 * 60 * 60 * 24);
+    const daysSinceLastShipment =
+      (new Date().getTime() - lastShipmentDate.getTime()) /
+      (1000 * 60 * 60 * 24);
     if (daysSinceLastShipment < 7) return 100;
     if (daysSinceLastShipment < 30) return 80;
     if (daysSinceLastShipment < 90) return 60;

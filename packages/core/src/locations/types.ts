@@ -1,6 +1,6 @@
 /**
  * Locations Module Types
- * 
+ *
  * Defines core types for location management, geo-fencing, and warehouse operations.
  * Pure TypeScript interfaces with no external dependencies.
  */
@@ -16,7 +16,7 @@ export interface Coordinates {
 /**
  * Location type enum
  */
-export type LocationType = 'warehouse' | 'store' | 'pickup_point' | 'hub';
+export type LocationType = "warehouse" | "store" | "pickup_point" | "hub";
 
 /**
  * Operating hours for a location (days of week)
@@ -52,7 +52,7 @@ export interface WarehouseCapacity {
 /**
  * Geo-fence type definition
  */
-export type GeoFenceType = 'circle' | 'polygon';
+export type GeoFenceType = "circle" | "polygon";
 
 /**
  * Geo-fence definition for location boundaries

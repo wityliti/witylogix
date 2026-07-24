@@ -1,10 +1,17 @@
-'use client';
+"use client";
 
 export interface Integration {
   name: string;
   description: string;
   logo: string;
-  category: 'e-commerce' | 'payments' | 'communications' | 'infrastructure' | 'maps' | 'automation' | 'monitoring';
+  category:
+    | "e-commerce"
+    | "payments"
+    | "communications"
+    | "infrastructure"
+    | "maps"
+    | "automation"
+    | "monitoring";
   docsUrl?: string;
   comingSoon?: boolean;
 }
@@ -12,189 +19,213 @@ export interface Integration {
 export const integrations: Integration[] = [
   // E-Commerce
   {
-    name: 'Shopify',
-    description: 'Sync orders, manage fulfillment, and automate delivery tracking for your Shopify store.',
-    logo: '/logos/shopify.svg',
-    category: 'e-commerce',
-    docsUrl: '/docs/guides/shopify-integration',
+    name: "Shopify",
+    description:
+      "Sync orders, manage fulfillment, and automate delivery tracking for your Shopify store.",
+    logo: "/logos/shopify.svg",
+    category: "e-commerce",
+    docsUrl: "/docs/guides/shopify-integration",
   },
   {
-    name: 'WooCommerce',
-    description: 'WordPress-native integration for order sync, shipping labels, and live tracking widgets.',
-    logo: '/logos/woocommerce.svg',
-    category: 'e-commerce',
-    docsUrl: '/docs/guides/woocommerce-integration',
+    name: "WooCommerce",
+    description:
+      "WordPress-native integration for order sync, shipping labels, and live tracking widgets.",
+    logo: "/logos/woocommerce.svg",
+    category: "e-commerce",
+    docsUrl: "/docs/guides/woocommerce-integration",
   },
   {
-    name: 'Magento',
-    description: 'Adobe Commerce integration with bulk order processing and multi-warehouse support.',
-    logo: '/logos/magento.png',
-    category: 'e-commerce',
-    docsUrl: '/docs/guides/magento-integration',
+    name: "Magento",
+    description:
+      "Adobe Commerce integration with bulk order processing and multi-warehouse support.",
+    logo: "/logos/magento.png",
+    category: "e-commerce",
+    docsUrl: "/docs/guides/magento-integration",
   },
   {
-    name: 'BigCommerce',
-    description: 'Headless commerce integration with order routing and multi-storefront delivery.',
-    logo: '/logos/bigcommerce.svg',
-    category: 'e-commerce',
+    name: "BigCommerce",
+    description:
+      "Headless commerce integration with order routing and multi-storefront delivery.",
+    logo: "/logos/bigcommerce.svg",
+    category: "e-commerce",
     comingSoon: true,
   },
   // Payments
   {
-    name: 'Stripe',
-    description: 'Collect delivery fees, handle COD payments, and manage driver payouts seamlessly.',
-    logo: '/logos/stripe.svg',
-    category: 'payments',
+    name: "Stripe",
+    description:
+      "Collect delivery fees, handle COD payments, and manage driver payouts seamlessly.",
+    logo: "/logos/stripe.svg",
+    category: "payments",
   },
   {
-    name: 'Razorpay',
-    description: 'Accept payments in India with UPI, cards, and net banking for delivery charges.',
-    logo: '/logos/razorpay.svg',
-    category: 'payments',
+    name: "Razorpay",
+    description:
+      "Accept payments in India with UPI, cards, and net banking for delivery charges.",
+    logo: "/logos/razorpay.svg",
+    category: "payments",
   },
   {
-    name: 'PayPal',
-    description: 'Global payment processing for delivery charges, tips, and merchant payouts.',
-    logo: '/logos/paypal.svg',
-    category: 'payments',
+    name: "PayPal",
+    description:
+      "Global payment processing for delivery charges, tips, and merchant payouts.",
+    logo: "/logos/paypal.svg",
+    category: "payments",
     comingSoon: true,
   },
   // Communications
   {
-    name: 'Twilio',
-    description: 'Send SMS and WhatsApp delivery notifications with real-time tracking links.',
-    logo: '/logos/twilio.svg',
-    category: 'communications',
+    name: "Twilio",
+    description:
+      "Send SMS and WhatsApp delivery notifications with real-time tracking links.",
+    logo: "/logos/twilio.svg",
+    category: "communications",
   },
   {
-    name: 'SendGrid',
-    description: 'Transactional emails for order confirmations, delivery updates, and proof-of-delivery.',
-    logo: '/logos/sendgrid.svg',
-    category: 'communications',
+    name: "SendGrid",
+    description:
+      "Transactional emails for order confirmations, delivery updates, and proof-of-delivery.",
+    logo: "/logos/sendgrid.svg",
+    category: "communications",
   },
   {
-    name: 'Slack',
-    description: 'Get instant delivery alerts, failed attempt notifications, and daily summary reports.',
-    logo: '/logos/slack.svg',
-    category: 'communications',
+    name: "Slack",
+    description:
+      "Get instant delivery alerts, failed attempt notifications, and daily summary reports.",
+    logo: "/logos/slack.svg",
+    category: "communications",
   },
   {
-    name: 'WhatsApp',
-    description: 'Direct WhatsApp Business messaging for delivery updates and customer communication.',
-    logo: '/logos/whatsapp.svg',
-    category: 'communications',
+    name: "WhatsApp",
+    description:
+      "Direct WhatsApp Business messaging for delivery updates and customer communication.",
+    logo: "/logos/whatsapp.svg",
+    category: "communications",
     comingSoon: true,
   },
   // Maps
   {
-    name: 'Google Maps',
-    description: 'Geocoding, route optimization, distance matrix, and live driver tracking on maps.',
-    logo: '/logos/google-maps.svg',
-    category: 'maps',
+    name: "Google Maps",
+    description:
+      "Geocoding, route optimization, distance matrix, and live driver tracking on maps.",
+    logo: "/logos/google-maps.svg",
+    category: "maps",
   },
   {
-    name: 'Mapbox',
-    description: 'Custom map styles, turn-by-turn navigation, and isochrone-based delivery zones.',
-    logo: '/logos/mapbox.svg',
-    category: 'maps',
+    name: "Mapbox",
+    description:
+      "Custom map styles, turn-by-turn navigation, and isochrone-based delivery zones.",
+    logo: "/logos/mapbox.svg",
+    category: "maps",
   },
   // Automation
   {
-    name: 'Zapier',
-    description: 'Connect Witylogix to 5000+ apps with no-code automation workflows.',
-    logo: '/logos/zapier.svg',
-    category: 'automation',
+    name: "Zapier",
+    description:
+      "Connect Witylogix to 5000+ apps with no-code automation workflows.",
+    logo: "/logos/zapier.svg",
+    category: "automation",
     comingSoon: true,
   },
   {
-    name: 'HubSpot',
-    description: 'Sync delivery data with CRM, trigger workflows on shipment events.',
-    logo: '/logos/hubspot.svg',
-    category: 'automation',
+    name: "HubSpot",
+    description:
+      "Sync delivery data with CRM, trigger workflows on shipment events.",
+    logo: "/logos/hubspot.svg",
+    category: "automation",
     comingSoon: true,
   },
   {
-    name: 'Salesforce',
-    description: 'Enterprise CRM integration for delivery lifecycle tracking and field service.',
-    logo: '/logos/salesforce.svg',
-    category: 'automation',
+    name: "Salesforce",
+    description:
+      "Enterprise CRM integration for delivery lifecycle tracking and field service.",
+    logo: "/logos/salesforce.svg",
+    category: "automation",
     comingSoon: true,
   },
   {
-    name: 'Segment',
-    description: 'Customer data platform integration for delivery analytics and event tracking.',
-    logo: '/logos/segment.svg',
-    category: 'automation',
+    name: "Segment",
+    description:
+      "Customer data platform integration for delivery analytics and event tracking.",
+    logo: "/logos/segment.svg",
+    category: "automation",
     comingSoon: true,
   },
   // Infrastructure
   {
-    name: 'PostgreSQL',
-    description: 'Primary data store with PostGIS for geospatial queries and delivery zone calculations.',
-    logo: '/logos/postgresql.svg',
-    category: 'infrastructure',
+    name: "PostgreSQL",
+    description:
+      "Primary data store with PostGIS for geospatial queries and delivery zone calculations.",
+    logo: "/logos/postgresql.svg",
+    category: "infrastructure",
   },
   {
-    name: 'Redis',
-    description: 'Real-time caching, pub/sub for live tracking, and rate limiting for API endpoints.',
-    logo: '/logos/redis.svg',
-    category: 'infrastructure',
+    name: "Redis",
+    description:
+      "Real-time caching, pub/sub for live tracking, and rate limiting for API endpoints.",
+    logo: "/logos/redis.svg",
+    category: "infrastructure",
   },
   {
-    name: 'Docker',
-    description: 'Containerized deployment with pre-built images for all Witylogix services.',
-    logo: '/logos/docker.svg',
-    category: 'infrastructure',
+    name: "Docker",
+    description:
+      "Containerized deployment with pre-built images for all Witylogix services.",
+    logo: "/logos/docker.svg",
+    category: "infrastructure",
   },
   {
-    name: 'Kubernetes',
-    description: 'Production-grade orchestration with Helm charts for auto-scaling delivery infra.',
-    logo: '/logos/kubernetes.svg',
-    category: 'infrastructure',
+    name: "Kubernetes",
+    description:
+      "Production-grade orchestration with Helm charts for auto-scaling delivery infra.",
+    logo: "/logos/kubernetes.svg",
+    category: "infrastructure",
     comingSoon: true,
   },
   {
-    name: 'AWS',
-    description: 'Native AWS integrations: SQS queues, S3 storage, Lambda webhooks, and CloudWatch.',
-    logo: '/logos/aws.svg',
-    category: 'infrastructure',
+    name: "AWS",
+    description:
+      "Native AWS integrations: SQS queues, S3 storage, Lambda webhooks, and CloudWatch.",
+    logo: "/logos/aws.svg",
+    category: "infrastructure",
     comingSoon: true,
   },
   {
-    name: 'Firebase',
-    description: 'Push notifications, real-time database sync, and driver app authentication.',
-    logo: '/logos/firebase.svg',
-    category: 'infrastructure',
+    name: "Firebase",
+    description:
+      "Push notifications, real-time database sync, and driver app authentication.",
+    logo: "/logos/firebase.svg",
+    category: "infrastructure",
     comingSoon: true,
   },
   // Monitoring
   {
-    name: 'Sentry',
-    description: 'Error tracking and performance monitoring across all Witylogix services.',
-    logo: '/logos/sentry.svg',
-    category: 'monitoring',
+    name: "Sentry",
+    description:
+      "Error tracking and performance monitoring across all Witylogix services.",
+    logo: "/logos/sentry.svg",
+    category: "monitoring",
     comingSoon: true,
   },
 ];
 
 const categoryLabels: Record<string, string> = {
-  'e-commerce': 'E-Commerce Platforms',
-  payments: 'Payments',
-  communications: 'Communications',
-  maps: 'Maps & Navigation',
-  automation: 'Automation & CRM',
-  infrastructure: 'Infrastructure',
-  monitoring: 'Monitoring',
+  "e-commerce": "E-Commerce Platforms",
+  payments: "Payments",
+  communications: "Communications",
+  maps: "Maps & Navigation",
+  automation: "Automation & CRM",
+  infrastructure: "Infrastructure",
+  monitoring: "Monitoring",
 };
 
 const categoryColors: Record<string, string> = {
-  'e-commerce': 'var(--teal)',
-  payments: '#635BFF',
-  communications: '#F22F46',
-  maps: '#4285F4',
-  automation: '#FF4A00',
-  infrastructure: '#2496ED',
-  monitoring: '#362D59',
+  "e-commerce": "var(--teal)",
+  payments: "#635BFF",
+  communications: "#F22F46",
+  maps: "#4285F4",
+  automation: "#FF4A00",
+  infrastructure: "#2496ED",
+  monitoring: "#362D59",
 };
 
 function LogoImage({ src, alt }: { src: string; alt: string }) {
@@ -220,7 +251,7 @@ export function IntegrationsGrid({ compact = false }: { compact?: boolean }) {
         {activeIntegrations.slice(0, 6).map((integration) => (
           <a
             key={integration.name}
-            href={integration.docsUrl || '#'}
+            href={integration.docsUrl || "#"}
             className="group flex flex-col items-center gap-3 rounded-xl border border-[var(--forge-border)] bg-[var(--forge-surface)] p-5 transition-all hover:border-[var(--teal)] hover:shadow-[0_0_0_1px_rgba(42,157,143,0.1),0_8px_30px_rgba(42,157,143,0.08)] hover:-translate-y-1"
           >
             <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-white p-2">
@@ -255,11 +286,15 @@ export function IntegrationsGrid({ compact = false }: { compact?: boolean }) {
               {items.map((integration) => (
                 <a
                   key={integration.name}
-                  href={integration.comingSoon ? undefined : (integration.docsUrl || '#')}
+                  href={
+                    integration.comingSoon
+                      ? undefined
+                      : integration.docsUrl || "#"
+                  }
                   className={`group relative flex items-start gap-4 rounded-xl border border-[var(--forge-border)] bg-[var(--forge-surface)] p-5 transition-all ${
                     integration.comingSoon
-                      ? 'opacity-60 cursor-default'
-                      : 'hover:border-[var(--teal)] hover:shadow-[0_0_0_1px_rgba(42,157,143,0.1),0_8px_30px_rgba(42,157,143,0.08)] hover:-translate-y-1'
+                      ? "opacity-60 cursor-default"
+                      : "hover:border-[var(--teal)] hover:shadow-[0_0_0_1px_rgba(42,157,143,0.1),0_8px_30px_rgba(42,157,143,0.08)] hover:-translate-y-1"
                   }`}
                 >
                   {integration.comingSoon && (

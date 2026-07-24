@@ -6,7 +6,7 @@
 export interface CRMConnection {
   id: string;
   platform: string;
-  status: 'connected' | 'disconnected' | 'error' | 'pending';
+  status: "connected" | "disconnected" | "error" | "pending";
   name: string;
   createdAt: string;
   updatedAt: string;

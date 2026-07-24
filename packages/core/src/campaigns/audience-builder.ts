@@ -4,19 +4,19 @@
  * Supports flexible filtering on customer attributes, tags, and order history
  */
 
-import { AudienceFilter, SegmentRule } from './types.js';
+import { AudienceFilter, SegmentRule } from "./types.js";
 
 /**
  * Supported filter fields for audience segmentation
  */
 export type FilterField =
-  | 'customer.tags'
-  | 'customer.city'
-  | 'customer.totalOrders'
-  | 'customer.lastOrderDate'
-  | 'customer.totalSpent'
-  | 'order.status'
-  | 'order.zone';
+  | "customer.tags"
+  | "customer.city"
+  | "customer.totalOrders"
+  | "customer.lastOrderDate"
+  | "customer.totalSpent"
+  | "order.status"
+  | "order.zone";
 
 /**
  * Query result with parameter bindings
@@ -50,7 +50,7 @@ export interface RecipientResult {
 export class AudienceBuilderError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'AudienceBuilderError';
+    this.name = "AudienceBuilderError";
   }
 }
 
@@ -65,7 +65,7 @@ export class AudienceBuilder {
    */
   buildQuery(tenantId: string, filters?: AudienceFilter[]): QueryResult {
     if (!tenantId) {
-      throw new AudienceBuilderError('tenantId is required');
+      throw new AudienceBuilderError("tenantId is required");
     }
 
     const params: (string | number | boolean | null)[] = [tenantId];
@@ -77,7 +77,9 @@ export class AudienceBuilder {
     }
 
     const whereClause =
-      whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+      whereConditions.length > 0
+        ? `WHERE ${whereConditions.join(" AND ")}`
+        : "";
 
     const query = `
       SELECT DISTINCT c.id as "customerId", c.email, c.phone, c.name
@@ -95,7 +97,7 @@ export class AudienceBuilder {
    */
   buildCountQuery(tenantId: string, filters?: AudienceFilter[]): QueryResult {
     if (!tenantId) {
-      throw new AudienceBuilderError('tenantId is required');
+      throw new AudienceBuilderError("tenantId is required");
     }
 
     const params: (string | number | boolean | null)[] = [tenantId];
@@ -107,7 +109,9 @@ export class AudienceBuilder {
     }
 
     const whereClause =
-      whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+      whereConditions.length > 0
+        ? `WHERE ${whereConditions.join(" AND ")}`
+        : "";
 
     const query = `
       SELECT COUNT(DISTINCT c.id) as count
@@ -125,18 +129,18 @@ export class AudienceBuilder {
   buildPaginatedQuery(
     tenantId: string,
     filters: AudienceFilter[] | undefined,
-    pagination: PaginationInput
+    pagination: PaginationInput,
   ): QueryResult {
     if (!tenantId) {
-      throw new AudienceBuilderError('tenantId is required');
+      throw new AudienceBuilderError("tenantId is required");
     }
 
     if (pagination.limit <= 0 || pagination.limit > 10000) {
-      throw new AudienceBuilderError('limit must be between 1 and 10000');
+      throw new AudienceBuilderError("limit must be between 1 and 10000");
     }
 
     if (pagination.offset < 0) {
-      throw new AudienceBuilderError('offset must be non-negative');
+      throw new AudienceBuilderError("offset must be non-negative");
     }
 
     const params: (string | number | boolean | null)[] = [tenantId];
@@ -153,7 +157,9 @@ export class AudienceBuilder {
     params.push(pagination.offset, pagination.limit);
 
     const whereClause =
-      whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+      whereConditions.length > 0
+        ? `WHERE ${whereConditions.join(" AND ")}`
+        : "";
 
     const query = `
       SELECT DISTINCT c.id as "customerId", c.email, c.phone, c.name
@@ -173,13 +179,13 @@ export class AudienceBuilder {
    */
   private buildFilterConditions(
     filters: AudienceFilter[],
-    params: (string | number | boolean | null)[]
+    params: (string | number | boolean | null)[],
   ): string {
     const conditions = filters.map((filter) => {
       return this.buildSingleFilterCondition(filter, params);
     });
 
-    return conditions.join(' AND ');
+    return conditions.join(" AND ");
   }
 
   /**
@@ -187,43 +193,45 @@ export class AudienceBuilder {
    */
   private buildSingleFilterCondition(
     filter: AudienceFilter,
-    params: (string | number | boolean | null)[]
+    params: (string | number | boolean | null)[],
   ): string {
-    const operator = filter.operator || 'equals';
+    const operator = filter.operator || "equals";
     const paramIndex = params.length + 1;
 
     // Parse field path (e.g., "customer.tags" -> ["customer", "tags"])
-    const parts = filter.type.split('.');
+    const parts = filter.type.split(".");
     if (parts.length === 0) {
       throw new AudienceBuilderError(`Invalid filter type: ${filter.type}`);
     }
 
     switch (filter.type) {
-      case 'location':
+      case "location":
         params.push(filter.value);
         return `c.city = $${paramIndex}`;
 
-      case 'status':
+      case "status":
         params.push(filter.value);
         return `c.status = $${paramIndex}`;
 
-      case 'tag':
+      case "tag":
         params.push(filter.value);
         return `c.tags @> $${paramIndex}::jsonb`;
 
-      case 'subscription_status':
+      case "subscription_status":
         params.push(filter.value);
         return `c.subscription_status = $${paramIndex}`;
 
-      case 'engagement':
+      case "engagement":
         return this.buildEngagementFilter(filter, params);
 
-      case 'custom_field':
+      case "custom_field":
         params.push(filter.value);
         return `c.metadata @> jsonb_build_object('custom_field', $${paramIndex})`;
 
       default:
-        throw new AudienceBuilderError(`Unsupported filter type: ${filter.type}`);
+        throw new AudienceBuilderError(
+          `Unsupported filter type: ${filter.type}`,
+        );
     }
   }
 
@@ -232,21 +240,21 @@ export class AudienceBuilder {
    */
   private buildEngagementFilter(
     filter: AudienceFilter,
-    params: (string | number | boolean | null)[]
+    params: (string | number | boolean | null)[],
   ): string {
     // engagement filters might check last order date, total orders, etc.
     const value = filter.value.toLowerCase();
 
-    if (value === 'high') {
+    if (value === "high") {
       return `c.total_orders >= 5`;
-    } else if (value === 'medium') {
+    } else if (value === "medium") {
       return `c.total_orders >= 2 AND c.total_orders < 5`;
-    } else if (value === 'low') {
+    } else if (value === "low") {
       return `c.total_orders = 1`;
-    } else if (value === 'inactive') {
+    } else if (value === "inactive") {
       // Last order more than 90 days ago
       return `c.last_order_date < NOW() - INTERVAL '90 days'`;
-    } else if (value === 'active') {
+    } else if (value === "active") {
       // Last order within 30 days
       return `c.last_order_date >= NOW() - INTERVAL '30 days'`;
     }
@@ -259,46 +267,43 @@ export class AudienceBuilder {
    */
   private validateSegmentRule(rule: SegmentRule): void {
     if (!rule.field) {
-      throw new AudienceBuilderError('Segment rule field is required');
+      throw new AudienceBuilderError("Segment rule field is required");
     }
 
     const validOperators = [
-      'equals',
-      'contains',
-      'gt',
-      'lt',
-      'gte',
-      'lte',
-      'in',
-      'between',
-      'startsWith',
-      'endsWith',
+      "equals",
+      "contains",
+      "gt",
+      "lt",
+      "gte",
+      "lte",
+      "in",
+      "between",
+      "startsWith",
+      "endsWith",
     ];
 
     if (!validOperators.includes(rule.operator)) {
       throw new AudienceBuilderError(
-        `Invalid operator: ${rule.operator}. Must be one of: ${validOperators.join(', ')}`
+        `Invalid operator: ${rule.operator}. Must be one of: ${validOperators.join(", ")}`,
       );
     }
 
     if (!rule.value) {
-      throw new AudienceBuilderError('Segment rule value is required');
+      throw new AudienceBuilderError("Segment rule value is required");
     }
   }
 
   /**
    * Build query from segment rules (more flexible filtering)
    */
-  buildSegmentQuery(
-    tenantId: string,
-    rules: SegmentRule[]
-  ): QueryResult {
+  buildSegmentQuery(tenantId: string, rules: SegmentRule[]): QueryResult {
     if (!tenantId) {
-      throw new AudienceBuilderError('tenantId is required');
+      throw new AudienceBuilderError("tenantId is required");
     }
 
     if (!rules || rules.length === 0) {
-      throw new AudienceBuilderError('At least one segment rule is required');
+      throw new AudienceBuilderError("At least one segment rule is required");
     }
 
     // Validate all rules
@@ -309,7 +314,7 @@ export class AudienceBuilder {
       return this.buildSegmentCondition(rule, params);
     });
 
-    const logic = rules[0]?.logic || 'AND';
+    const logic = rules[0]?.logic || "AND";
     const whereClause = conditions.join(` ${logic} `);
 
     const query = `
@@ -328,41 +333,41 @@ export class AudienceBuilder {
    */
   private buildSegmentCondition(
     rule: SegmentRule,
-    params: (string | number | boolean | null)[]
+    params: (string | number | boolean | null)[],
   ): string {
     const paramIndex = params.length + 1;
     const operator = rule.operator;
     const field = this.mapFieldToColumn(rule.field);
 
     switch (operator) {
-      case 'equals':
+      case "equals":
         params.push(rule.value);
         return `${field} = $${paramIndex}`;
 
-      case 'contains':
+      case "contains":
         params.push(`%${rule.value}%`);
         return `${field} ILIKE $${paramIndex}`;
 
-      case 'gt':
+      case "gt":
         params.push(rule.value);
         return `${field} > $${paramIndex}`;
 
-      case 'lt':
+      case "lt":
         params.push(rule.value);
         return `${field} < $${paramIndex}`;
 
-      case 'gte':
+      case "gte":
         params.push(rule.value);
         return `${field} >= $${paramIndex}`;
 
-      case 'lte':
+      case "lte":
         params.push(rule.value);
         return `${field} <= $${paramIndex}`;
 
-      case 'in':
+      case "in":
         if (!Array.isArray(rule.value)) {
           throw new AudienceBuilderError(
-            'Value for "in" operator must be an array'
+            'Value for "in" operator must be an array',
           );
         }
         const placeholders = rule.value
@@ -370,26 +375,23 @@ export class AudienceBuilder {
             params.push(v);
             return `$${params.length}`;
           })
-          .join(', ');
+          .join(", ");
         return `${field} IN (${placeholders})`;
 
-      case 'between':
-        if (
-          !Array.isArray(rule.value) ||
-          rule.value.length !== 2
-        ) {
+      case "between":
+        if (!Array.isArray(rule.value) || rule.value.length !== 2) {
           throw new AudienceBuilderError(
-            'Value for "between" operator must be a 2-element array [min, max]'
+            'Value for "between" operator must be a 2-element array [min, max]',
           );
         }
         params.push(rule.value[0], rule.value[1]);
         return `${field} BETWEEN $${params.length - 1} AND $${params.length}`;
 
-      case 'startsWith':
+      case "startsWith":
         params.push(`${rule.value}%`);
         return `${field} ILIKE $${paramIndex}`;
 
-      case 'endsWith':
+      case "endsWith":
         params.push(`%${rule.value}`);
         return `${field} ILIKE $${paramIndex}`;
 
@@ -403,13 +405,15 @@ export class AudienceBuilder {
    */
   private mapFieldToColumn(field: string): string {
     const mapping: Record<string, string> = {
-      'customer.tags': 'c.tags',
-      'customer.city': 'c.city',
-      'customer.totalOrders': 'c.total_orders',
-      'customer.lastOrderDate': 'c.last_order_date',
-      'customer.totalSpent': 'c.total_spent',
-      'order.status': '(SELECT status FROM orders WHERE customer_id = c.id ORDER BY created_at DESC LIMIT 1)',
-      'order.zone': '(SELECT zone_id FROM orders WHERE customer_id = c.id ORDER BY created_at DESC LIMIT 1)',
+      "customer.tags": "c.tags",
+      "customer.city": "c.city",
+      "customer.totalOrders": "c.total_orders",
+      "customer.lastOrderDate": "c.last_order_date",
+      "customer.totalSpent": "c.total_spent",
+      "order.status":
+        "(SELECT status FROM orders WHERE customer_id = c.id ORDER BY created_at DESC LIMIT 1)",
+      "order.zone":
+        "(SELECT zone_id FROM orders WHERE customer_id = c.id ORDER BY created_at DESC LIMIT 1)",
     };
 
     if (mapping[field]) {

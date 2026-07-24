@@ -135,7 +135,8 @@ describe("PartnerPerformance", () => {
         endDate: new Date(),
       };
 
-      const lowConfidenceScore = performance.calculatePerformanceScore(excellentMetrics);
+      const lowConfidenceScore =
+        performance.calculatePerformanceScore(excellentMetrics);
       expect(lowConfidenceScore.confidence).toBeLessThan(0.2);
 
       excellentMetrics.totalDeliveries = 500;
@@ -143,7 +144,8 @@ describe("PartnerPerformance", () => {
       excellentMetrics.ratingsCount = 250;
       excellentMetrics.ratingsSum = 1200;
 
-      const highConfidenceScore = performance.calculatePerformanceScore(excellentMetrics);
+      const highConfidenceScore =
+        performance.calculatePerformanceScore(excellentMetrics);
       expect(highConfidenceScore.confidence).toBeGreaterThan(0.9);
     });
   });
@@ -242,7 +244,11 @@ describe("PartnerPerformance", () => {
       const trend = performance.getPerformanceTrend(metrics7d);
 
       expect(trend.insights.length).toBeGreaterThan(1);
-      expect(trend.insights.some((i) => i.includes("On-time delivery") || i.includes("Damage"))).toBe(true);
+      expect(
+        trend.insights.some(
+          (i) => i.includes("On-time delivery") || i.includes("Damage"),
+        ),
+      ).toBe(true);
     });
   });
 
@@ -301,7 +307,10 @@ describe("PartnerPerformance", () => {
         }),
       ];
 
-      const benchmark = performance.benchmarkAgainstPeers(partnerScore, peerScores);
+      const benchmark = performance.benchmarkAgainstPeers(
+        partnerScore,
+        peerScores,
+      );
 
       expect(benchmark.rank).toBe(2);
       expect(benchmark.percentile).toBeGreaterThan(0);
@@ -382,7 +391,11 @@ describe("PartnerPerformance", () => {
         endDate: new Date(),
       };
 
-      const report = performance.generatePerformanceReport("partner-123", "Test Courier", metrics7d);
+      const report = performance.generatePerformanceReport(
+        "partner-123",
+        "Test Courier",
+        metrics7d,
+      );
 
       expect(report.partnerId).toBe("partner-123");
       expect(report.partnerName).toBe("Test Courier");
@@ -419,7 +432,12 @@ describe("PartnerPerformance", () => {
         onTimeDeliveries: 85,
       };
 
-      const report = performance.generatePerformanceReport("partner-123", "Test Courier", metrics7d, metrics30d);
+      const report = performance.generatePerformanceReport(
+        "partner-123",
+        "Test Courier",
+        metrics7d,
+        metrics30d,
+      );
 
       expect(report.trend.period7d).toBeDefined();
       expect(report.trend.period30d).toBeDefined();

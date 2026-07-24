@@ -17,7 +17,7 @@ import type {
   AccuracyMetrics,
   TimeInterval,
   Coordinates,
-} from './types.js';
+} from "./types.js";
 
 /**
  * Model instance with metadata
@@ -53,10 +53,10 @@ export class ModelEnsemble {
    * Default weights
    */
   private readonly DEFAULT_WEIGHTS = {
-    'TimeOfDayModel': 0.25,
-    'DistanceModel': 0.3,
-    'HistoricalModel': 0.25,
-    'TrafficModel': 0.2,
+    TimeOfDayModel: 0.25,
+    DistanceModel: 0.3,
+    HistoricalModel: 0.25,
+    TrafficModel: 0.2,
   };
 
   /**
@@ -71,7 +71,10 @@ export class ModelEnsemble {
     this.models.set(name, {
       name,
       predict: predictor,
-      weight: weight ?? this.DEFAULT_WEIGHTS[name as keyof typeof this.DEFAULT_WEIGHTS] ?? 0.25,
+      weight:
+        weight ??
+        this.DEFAULT_WEIGHTS[name as keyof typeof this.DEFAULT_WEIGHTS] ??
+        0.25,
       enabled,
     });
   }
@@ -141,10 +144,7 @@ export class ModelEnsemble {
       .filter((m) => m.weight > 0);
 
     // Normalize weights
-    const totalWeight = weightedModels.reduce(
-      (sum, m) => sum + m.weight,
-      0,
-    );
+    const totalWeight = weightedModels.reduce((sum, m) => sum + m.weight, 0);
     const normalizedModels = weightedModels.map((m) => ({
       ...m,
       weight: m.weight / totalWeight,
@@ -171,7 +171,7 @@ export class ModelEnsemble {
 
     for (const pred of validPredictions) {
       const metrics = this.accuracyMetrics.get(pred.modelName);
-      const accuracy = metrics ? 1 - (metrics.meanAbsoluteError / 60) : 0.5;
+      const accuracy = metrics ? 1 - metrics.meanAbsoluteError / 60 : 0.5;
 
       if (accuracy > bestAccuracy) {
         bestAccuracy = accuracy;
@@ -185,9 +185,9 @@ export class ModelEnsemble {
       departureTime,
       prediction: combinedInterval,
       confidence: Math.max(0, Math.min(1, avgConfidence)),
-      modelUsed: 'Ensemble',
+      modelUsed: "Ensemble",
       modelsConsidered: validPredictions.map((p) => p.modelName),
-      trafficCondition: 'unknown',
+      trafficCondition: "unknown",
     };
   }
 
@@ -204,24 +204,24 @@ export class ModelEnsemble {
     const points: Array<{
       time: number;
       weight: number;
-      type: 'low' | 'expected' | 'high';
+      type: "low" | "expected" | "high";
     }> = [];
 
     weightedIntervals.forEach(({ interval, weight }) => {
       points.push({
         time: interval.low.getTime(),
         weight: weight * 0.25, // Lower weight for low
-        type: 'low',
+        type: "low",
       });
       points.push({
         time: interval.expected.getTime(),
         weight: weight * 0.5, // Higher weight for expected
-        type: 'expected',
+        type: "expected",
       });
       points.push({
         time: interval.high.getTime(),
         weight: weight * 0.25, // Lower weight for high
-        type: 'high',
+        type: "high",
       });
     });
 
@@ -281,19 +281,16 @@ export class ModelEnsemble {
         high: new Date(expected.getTime() + stdDev * 1.96),
       },
       confidence: 0.3,
-      modelUsed: 'Fallback',
+      modelUsed: "Fallback",
       modelsConsidered: [],
-      trafficCondition: 'unknown',
+      trafficCondition: "unknown",
     };
   }
 
   /**
    * Update model accuracy based on actual delivery
    */
-  recordActualDelivery(
-    prediction: ETAPrediction,
-    actualTime: Date,
-  ): void {
+  recordActualDelivery(prediction: ETAPrediction, actualTime: Date): void {
     // Record in history
     this.predictionHistory.push({ prediction, actualTime });
 
@@ -399,8 +396,7 @@ export class ModelEnsemble {
     const accuracies = Array.from(this.accuracyMetrics.values());
     const avgAccuracy =
       accuracies.length > 0
-        ? accuracies.reduce((sum, m) => sum + m.accuracy, 0) /
-          accuracies.length
+        ? accuracies.reduce((sum, m) => sum + m.accuracy, 0) / accuracies.length
         : 0;
 
     return {

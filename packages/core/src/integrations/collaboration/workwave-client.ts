@@ -70,21 +70,21 @@ export class WorkWaveClient {
   constructor(api_key: string, sandbox_mode: boolean = false) {
     this.api_key = api_key;
     this.base_url = sandbox_mode
-      ? 'https://sandbox.workwaveapi.com/v2'
-      : 'https://api.workwaveapi.com/v2';
+      ? "https://sandbox.workwaveapi.com/v2"
+      : "https://api.workwaveapi.com/v2";
   }
 
   private getHeaders(): Record<string, string> {
     return {
-      'Authorization': `Bearer ${this.api_key}`,
-      'Content-Type': 'application/json',
+      Authorization: `Bearer ${this.api_key}`,
+      "Content-Type": "application/json",
     };
   }
 
   async createOrder(order: Partial<WorkWaveOrder>): Promise<WorkWaveOrder> {
     try {
       const response = await fetch(`${this.base_url}/orders`, {
-        method: 'POST',
+        method: "POST",
         headers: this.getHeaders(),
         body: JSON.stringify(order),
       });
@@ -95,14 +95,16 @@ export class WorkWaveClient {
 
       return (await response.json()) as WorkWaveOrder;
     } catch (error) {
-      throw new Error(`Failed to create WorkWave order: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to create WorkWave order: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   async getOrder(order_id: string): Promise<WorkWaveOrder | null> {
     try {
       const response = await fetch(`${this.base_url}/orders/${order_id}`, {
-        method: 'GET',
+        method: "GET",
         headers: this.getHeaders(),
       });
 
@@ -116,14 +118,19 @@ export class WorkWaveClient {
 
       return (await response.json()) as WorkWaveOrder;
     } catch (error) {
-      throw new Error(`Failed to get WorkWave order: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get WorkWave order: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
-  async updateOrder(order_id: string, updates: Partial<WorkWaveOrder>): Promise<WorkWaveOrder> {
+  async updateOrder(
+    order_id: string,
+    updates: Partial<WorkWaveOrder>,
+  ): Promise<WorkWaveOrder> {
     try {
       const response = await fetch(`${this.base_url}/orders/${order_id}`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: this.getHeaders(),
         body: JSON.stringify(updates),
       });
@@ -134,7 +141,9 @@ export class WorkWaveClient {
 
       return (await response.json()) as WorkWaveOrder;
     } catch (error) {
-      throw new Error(`Failed to update WorkWave order: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to update WorkWave order: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -146,17 +155,18 @@ export class WorkWaveClient {
   }): Promise<WorkWaveOrder[]> {
     try {
       const query_params = new URLSearchParams();
-      if (filters?.status) query_params.append('status', filters.status);
-      if (filters?.date) query_params.append('date', filters.date);
-      if (filters?.limit) query_params.append('limit', String(filters.limit));
-      if (filters?.offset) query_params.append('offset', String(filters.offset));
+      if (filters?.status) query_params.append("status", filters.status);
+      if (filters?.date) query_params.append("date", filters.date);
+      if (filters?.limit) query_params.append("limit", String(filters.limit));
+      if (filters?.offset)
+        query_params.append("offset", String(filters.offset));
 
       const response = await fetch(
         `${this.base_url}/orders?${query_params.toString()}`,
         {
-          method: 'GET',
+          method: "GET",
           headers: this.getHeaders(),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -166,14 +176,16 @@ export class WorkWaveClient {
       const data = (await response.json()) as { orders: WorkWaveOrder[] };
       return data.orders;
     } catch (error) {
-      throw new Error(`Failed to list WorkWave orders: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to list WorkWave orders: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   async createRoute(route: Partial<WorkWaveRoute>): Promise<WorkWaveRoute> {
     try {
       const response = await fetch(`${this.base_url}/routes`, {
-        method: 'POST',
+        method: "POST",
         headers: this.getHeaders(),
         body: JSON.stringify(route),
       });
@@ -184,14 +196,16 @@ export class WorkWaveClient {
 
       return (await response.json()) as WorkWaveRoute;
     } catch (error) {
-      throw new Error(`Failed to create WorkWave route: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to create WorkWave route: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   async getRoute(route_id: string): Promise<WorkWaveRoute | null> {
     try {
       const response = await fetch(`${this.base_url}/routes/${route_id}`, {
-        method: 'GET',
+        method: "GET",
         headers: this.getHeaders(),
       });
 
@@ -205,7 +219,9 @@ export class WorkWaveClient {
 
       return (await response.json()) as WorkWaveRoute;
     } catch (error) {
-      throw new Error(`Failed to get WorkWave route: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get WorkWave route: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -215,14 +231,17 @@ export class WorkWaveClient {
       consider_service_time?: boolean;
       consider_time_windows?: boolean;
       consider_capacity?: boolean;
-    }
+    },
   ): Promise<WorkWaveRoute> {
     try {
-      const response = await fetch(`${this.base_url}/routes/${route_id}/optimize`, {
-        method: 'POST',
-        headers: this.getHeaders(),
-        body: JSON.stringify(options || {}),
-      });
+      const response = await fetch(
+        `${this.base_url}/routes/${route_id}/optimize`,
+        {
+          method: "POST",
+          headers: this.getHeaders(),
+          body: JSON.stringify(options || {}),
+        },
+      );
 
       if (!response.ok) {
         throw new Error(`WorkWave API error: ${response.statusText}`);
@@ -230,14 +249,18 @@ export class WorkWaveClient {
 
       return (await response.json()) as WorkWaveRoute;
     } catch (error) {
-      throw new Error(`Failed to optimize WorkWave route: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to optimize WorkWave route: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
-  async createVehicle(vehicle: Partial<WorkWaveVehicle>): Promise<WorkWaveVehicle> {
+  async createVehicle(
+    vehicle: Partial<WorkWaveVehicle>,
+  ): Promise<WorkWaveVehicle> {
     try {
       const response = await fetch(`${this.base_url}/vehicles`, {
-        method: 'POST',
+        method: "POST",
         headers: this.getHeaders(),
         body: JSON.stringify(vehicle),
       });
@@ -248,14 +271,16 @@ export class WorkWaveClient {
 
       return (await response.json()) as WorkWaveVehicle;
     } catch (error) {
-      throw new Error(`Failed to create WorkWave vehicle: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to create WorkWave vehicle: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   async getVehicle(vehicle_id: string): Promise<WorkWaveVehicle | null> {
     try {
       const response = await fetch(`${this.base_url}/vehicles/${vehicle_id}`, {
-        method: 'GET',
+        method: "GET",
         headers: this.getHeaders(),
       });
 
@@ -269,14 +294,16 @@ export class WorkWaveClient {
 
       return (await response.json()) as WorkWaveVehicle;
     } catch (error) {
-      throw new Error(`Failed to get WorkWave vehicle: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get WorkWave vehicle: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   async listVehicles(): Promise<WorkWaveVehicle[]> {
     try {
       const response = await fetch(`${this.base_url}/vehicles`, {
-        method: 'GET',
+        method: "GET",
         headers: this.getHeaders(),
       });
 
@@ -287,14 +314,16 @@ export class WorkWaveClient {
       const data = (await response.json()) as { vehicles: WorkWaveVehicle[] };
       return data.vehicles;
     } catch (error) {
-      throw new Error(`Failed to list WorkWave vehicles: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to list WorkWave vehicles: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   async createDriver(driver: Partial<WorkWaveDriver>): Promise<WorkWaveDriver> {
     try {
       const response = await fetch(`${this.base_url}/drivers`, {
-        method: 'POST',
+        method: "POST",
         headers: this.getHeaders(),
         body: JSON.stringify(driver),
       });
@@ -305,14 +334,16 @@ export class WorkWaveClient {
 
       return (await response.json()) as WorkWaveDriver;
     } catch (error) {
-      throw new Error(`Failed to create WorkWave driver: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to create WorkWave driver: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   async getDriver(driver_id: string): Promise<WorkWaveDriver | null> {
     try {
       const response = await fetch(`${this.base_url}/drivers/${driver_id}`, {
-        method: 'GET',
+        method: "GET",
         headers: this.getHeaders(),
       });
 
@@ -326,21 +357,23 @@ export class WorkWaveClient {
 
       return (await response.json()) as WorkWaveDriver;
     } catch (error) {
-      throw new Error(`Failed to get WorkWave driver: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get WorkWave driver: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   async listDrivers(filters?: { status?: string }): Promise<WorkWaveDriver[]> {
     try {
       const query_params = new URLSearchParams();
-      if (filters?.status) query_params.append('status', filters.status);
+      if (filters?.status) query_params.append("status", filters.status);
 
       const response = await fetch(
         `${this.base_url}/drivers?${query_params.toString()}`,
         {
-          method: 'GET',
+          method: "GET",
           headers: this.getHeaders(),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -350,16 +383,21 @@ export class WorkWaveClient {
       const data = (await response.json()) as { drivers: WorkWaveDriver[] };
       return data.drivers;
     } catch (error) {
-      throw new Error(`Failed to list WorkWave drivers: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to list WorkWave drivers: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   async trackDriverGPS(driver_id: string): Promise<WorkWaveGPSTracking | null> {
     try {
-      const response = await fetch(`${this.base_url}/drivers/${driver_id}/tracking`, {
-        method: 'GET',
-        headers: this.getHeaders(),
-      });
+      const response = await fetch(
+        `${this.base_url}/drivers/${driver_id}/tracking`,
+        {
+          method: "GET",
+          headers: this.getHeaders(),
+        },
+      );
 
       if (response.status === 404) {
         return null;
@@ -371,7 +409,9 @@ export class WorkWaveClient {
 
       return (await response.json()) as WorkWaveGPSTracking;
     } catch (error) {
-      throw new Error(`Failed to get WorkWave GPS tracking: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get WorkWave GPS tracking: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -380,45 +420,60 @@ export class WorkWaveClient {
       const response = await fetch(
         `${this.base_url}/drivers/${tracking.driver_id}/tracking`,
         {
-          method: 'POST',
+          method: "POST",
           headers: this.getHeaders(),
           body: JSON.stringify(tracking),
-        }
+        },
       );
 
       return response.ok;
     } catch (error) {
-      throw new Error(`Failed to update WorkWave GPS tracking: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to update WorkWave GPS tracking: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
-  async assignOrderToRoute(route_id: string, order_id: string): Promise<boolean> {
+  async assignOrderToRoute(
+    route_id: string,
+    order_id: string,
+  ): Promise<boolean> {
     try {
-      const response = await fetch(`${this.base_url}/routes/${route_id}/orders`, {
-        method: 'POST',
-        headers: this.getHeaders(),
-        body: JSON.stringify({ order_id }),
-      });
+      const response = await fetch(
+        `${this.base_url}/routes/${route_id}/orders`,
+        {
+          method: "POST",
+          headers: this.getHeaders(),
+          body: JSON.stringify({ order_id }),
+        },
+      );
 
       return response.ok;
     } catch (error) {
-      throw new Error(`Failed to assign order to WorkWave route: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to assign order to WorkWave route: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
-  async removeOrderFromRoute(route_id: string, order_id: string): Promise<boolean> {
+  async removeOrderFromRoute(
+    route_id: string,
+    order_id: string,
+  ): Promise<boolean> {
     try {
       const response = await fetch(
         `${this.base_url}/routes/${route_id}/orders/${order_id}`,
         {
-          method: 'DELETE',
+          method: "DELETE",
           headers: this.getHeaders(),
-        }
+        },
       );
 
       return response.ok;
     } catch (error) {
-      throw new Error(`Failed to remove order from WorkWave route: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to remove order from WorkWave route: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -429,10 +484,13 @@ export class WorkWaveClient {
     service_duration_minutes: number;
   } | null> {
     try {
-      const response = await fetch(`${this.base_url}/orders/${order_id}/service-window`, {
-        method: 'GET',
-        headers: this.getHeaders(),
-      });
+      const response = await fetch(
+        `${this.base_url}/orders/${order_id}/service-window`,
+        {
+          method: "GET",
+          headers: this.getHeaders(),
+        },
+      );
 
       if (response.status === 404) {
         return null;
@@ -449,24 +507,31 @@ export class WorkWaveClient {
         service_duration_minutes: number;
       };
     } catch (error) {
-      throw new Error(`Failed to get WorkWave service time window: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get WorkWave service time window: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   async updateServiceTime(
     order_id: string,
-    service_duration_minutes: number
+    service_duration_minutes: number,
   ): Promise<boolean> {
     try {
-      const response = await fetch(`${this.base_url}/orders/${order_id}/service-duration`, {
-        method: 'PATCH',
-        headers: this.getHeaders(),
-        body: JSON.stringify({ service_duration_minutes }),
-      });
+      const response = await fetch(
+        `${this.base_url}/orders/${order_id}/service-duration`,
+        {
+          method: "PATCH",
+          headers: this.getHeaders(),
+          body: JSON.stringify({ service_duration_minutes }),
+        },
+      );
 
       return response.ok;
     } catch (error) {
-      throw new Error(`Failed to update WorkWave service time: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to update WorkWave service time: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -480,10 +545,13 @@ export class WorkWaveClient {
     stops_remaining: number;
   }> {
     try {
-      const response = await fetch(`${this.base_url}/routes/${route_id}/stats`, {
-        method: 'GET',
-        headers: this.getHeaders(),
-      });
+      const response = await fetch(
+        `${this.base_url}/routes/${route_id}/stats`,
+        {
+          method: "GET",
+          headers: this.getHeaders(),
+        },
+      );
 
       if (!response.ok) {
         throw new Error(`WorkWave API error: ${response.statusText}`);
@@ -499,7 +567,9 @@ export class WorkWaveClient {
         stops_remaining: number;
       };
     } catch (error) {
-      throw new Error(`Failed to get WorkWave route stats: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get WorkWave route stats: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 }

@@ -13,7 +13,7 @@
  * Pipeline is configurable - steps can be enabled/disabled.
  */
 
-import type { Coordinates } from '../ai-eta/types.js';
+import type { Coordinates } from "../ai-eta/types.js";
 
 /**
  * Pipeline step definition
@@ -40,14 +40,20 @@ export interface ETAPipelineConfig {
 /**
  * Weather condition
  */
-export type WeatherCondition = 'clear' | 'rain' | 'snow' | 'fog' | 'extreme_heat' | 'wind';
+export type WeatherCondition =
+  | "clear"
+  | "rain"
+  | "snow"
+  | "fog"
+  | "extreme_heat"
+  | "wind";
 
 /**
  * Weather input
  */
 export interface WeatherInput {
   condition: WeatherCondition;
-  severity?: 'light' | 'moderate' | 'heavy'; // for rain, snow
+  severity?: "light" | "moderate" | "heavy"; // for rain, snow
   temperature?: number; // celsius
   windSpeed?: number; // km/h
 }
@@ -88,7 +94,8 @@ export class ETAPipeline {
       enableTrafficAdjustment: config?.enableTrafficAdjustment ?? true,
       enableWeatherAdjustment: config?.enableWeatherAdjustment ?? true,
       enableTimeOfDayCorrection: config?.enableTimeOfDayCorrection ?? true,
-      enableZoneSpecificCorrection: config?.enableZoneSpecificCorrection ?? true,
+      enableZoneSpecificCorrection:
+        config?.enableZoneSpecificCorrection ?? true,
       minConfidence: config?.minConfidence ?? 0.5,
       logAdjustments: config?.logAdjustments ?? true,
     };
@@ -117,7 +124,7 @@ export class ETAPipeline {
     const factor = adjustedDuration / baseDurationMin;
 
     return {
-      step: 'traffic',
+      step: "traffic",
       factor,
       delayMinutes: trafficDelayMin,
       reasoning: `Traffic delay of ${trafficDelayMin.toFixed(1)} minutes applied`,
@@ -134,35 +141,39 @@ export class ETAPipeline {
     let factor = 1.0;
     let delayMinutes = 0;
 
-    if (weather.condition === 'clear') {
+    if (weather.condition === "clear") {
       factor = 1.0;
-    } else if (weather.condition === 'rain') {
-      const severity = weather.severity || 'moderate';
+    } else if (weather.condition === "rain") {
+      const severity = weather.severity || "moderate";
       const severityMap = { light: 1.15, moderate: 1.2, heavy: 1.25 };
       factor = severityMap[severity] || 1.2;
-    } else if (weather.condition === 'snow') {
-      const severity = weather.severity || 'moderate';
+    } else if (weather.condition === "snow") {
+      const severity = weather.severity || "moderate";
       const severityMap = { light: 1.3, moderate: 1.4, heavy: 1.5 };
       factor = severityMap[severity] || 1.4;
-    } else if (weather.condition === 'fog') {
-      const severity = weather.severity || 'moderate';
+    } else if (weather.condition === "fog") {
+      const severity = weather.severity || "moderate";
       const severityMap = { light: 1.1, moderate: 1.15, heavy: 1.2 };
       factor = severityMap[severity] || 1.15;
-    } else if (weather.condition === 'extreme_heat') {
+    } else if (weather.condition === "extreme_heat") {
       factor = 1.05; // Slight slowdown due to heat
-    } else if (weather.condition === 'wind') {
-      const severity = weather.severity || 'moderate';
-      const severityMap: Record<string, number> = { light: 1.05, moderate: 1.1, heavy: 1.15 };
+    } else if (weather.condition === "wind") {
+      const severity = weather.severity || "moderate";
+      const severityMap: Record<string, number> = {
+        light: 1.05,
+        moderate: 1.1,
+        heavy: 1.15,
+      };
       factor = severityMap[severity] || 1.1;
     }
 
     delayMinutes = baseDurationMin * (factor - 1.0);
 
     return {
-      step: 'weather',
+      step: "weather",
       factor,
       delayMinutes,
-      reasoning: `${weather.condition} (${weather.severity || 'moderate'}) increases duration by ${((factor - 1.0) * 100).toFixed(1)}%`,
+      reasoning: `${weather.condition} (${weather.severity || "moderate"}) increases duration by ${((factor - 1.0) * 100).toFixed(1)}%`,
     };
   }
 
@@ -180,33 +191,38 @@ export class ETAPipeline {
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
     let factor = 1.0;
-    let reasoning = '';
+    let reasoning = "";
 
     // Peak hours: 7-9 AM, 5-7 PM
     if ((hour >= 7 && hour < 9) || (hour >= 17 && hour < 19)) {
       factor = isWeekend ? 1.15 : 1.35;
-      reasoning = `${isWeekend ? 'Weekend' : 'Weekday'} peak hours`;
+      reasoning = `${isWeekend ? "Weekend" : "Weekday"} peak hours`;
     }
     // Shoulder hours: 6-7 AM, 9-10 AM, 4-5 PM, 7-8 PM
-    else if ((hour >= 6 && hour < 7) || (hour >= 9 && hour < 10) || (hour >= 16 && hour < 17) || (hour >= 19 && hour < 20)) {
+    else if (
+      (hour >= 6 && hour < 7) ||
+      (hour >= 9 && hour < 10) ||
+      (hour >= 16 && hour < 17) ||
+      (hour >= 19 && hour < 20)
+    ) {
       factor = isWeekend ? 1.1 : 1.25;
-      reasoning = `${isWeekend ? 'Weekend' : 'Weekday'} shoulder hours`;
+      reasoning = `${isWeekend ? "Weekend" : "Weekday"} shoulder hours`;
     }
     // Night hours: 10 PM - 5 AM
     else if (hour >= 22 || hour < 5) {
       factor = 0.8;
-      reasoning = 'Night-time, minimal traffic';
+      reasoning = "Night-time, minimal traffic";
     }
     // Midday
     else {
       factor = isWeekend ? 1.0 : 1.1;
-      reasoning = `${isWeekend ? 'Weekend' : 'Weekday'} off-peak hours`;
+      reasoning = `${isWeekend ? "Weekend" : "Weekday"} off-peak hours`;
     }
 
     const delayMinutes = baseDurationMin * (factor - 1.0);
 
     return {
-      step: 'time_of_day',
+      step: "time_of_day",
       factor,
       delayMinutes,
       reasoning,
@@ -220,7 +236,7 @@ export class ETAPipeline {
    */
   private applyZoneSpecificCorrection(
     baseDurationMin: number,
-    zoneType: 'urban' | 'suburban' | 'rural' | 'highway',
+    zoneType: "urban" | "suburban" | "rural" | "highway",
   ): AdjustmentFactor {
     const zoneFactors: Record<string, number> = {
       urban: 1.2, // Variable traffic in cities
@@ -233,7 +249,7 @@ export class ETAPipeline {
     const delayMinutes = baseDurationMin * (factor - 1.0);
 
     return {
-      step: 'zone_specific',
+      step: "zone_specific",
       factor,
       delayMinutes,
       reasoning: `${zoneType} zone adjustment`,
@@ -256,7 +272,7 @@ export class ETAPipeline {
       confidence: number;
     };
     weather?: WeatherInput;
-    zoneType?: 'urban' | 'suburban' | 'rural' | 'highway';
+    zoneType?: "urban" | "suburban" | "rural" | "highway";
     confidence?: number;
   }): ETAPipelineResult {
     const adjustments: AdjustmentFactor[] = [];
@@ -264,9 +280,14 @@ export class ETAPipeline {
 
     // Step 1: Traffic adjustment
     if (this.config.enableTrafficAdjustment && request.traffic) {
-      const trafficAdj = this.applyTrafficAdjustment(currentDuration, request.traffic.delayMin);
+      const trafficAdj = this.applyTrafficAdjustment(
+        currentDuration,
+        request.traffic.delayMin,
+      );
       if (this.config.logAdjustments) {
-        console.log(`[ETA Pipeline] ${trafficAdj.step}: ${trafficAdj.reasoning}`);
+        console.log(
+          `[ETA Pipeline] ${trafficAdj.step}: ${trafficAdj.reasoning}`,
+        );
       }
       adjustments.push(trafficAdj);
       currentDuration *= trafficAdj.factor;
@@ -274,9 +295,14 @@ export class ETAPipeline {
 
     // Step 2: Weather adjustment
     if (this.config.enableWeatherAdjustment && request.weather) {
-      const weatherAdj = this.applyWeatherAdjustment(currentDuration, request.weather);
+      const weatherAdj = this.applyWeatherAdjustment(
+        currentDuration,
+        request.weather,
+      );
       if (this.config.logAdjustments) {
-        console.log(`[ETA Pipeline] ${weatherAdj.step}: ${weatherAdj.reasoning}`);
+        console.log(
+          `[ETA Pipeline] ${weatherAdj.step}: ${weatherAdj.reasoning}`,
+        );
       }
       adjustments.push(weatherAdj);
       currentDuration *= weatherAdj.factor;
@@ -284,7 +310,10 @@ export class ETAPipeline {
 
     // Step 3: Time-of-day correction
     if (this.config.enableTimeOfDayCorrection) {
-      const timeAdj = this.applyTimeOfDayCorrection(currentDuration, request.departureTime);
+      const timeAdj = this.applyTimeOfDayCorrection(
+        currentDuration,
+        request.departureTime,
+      );
       if (this.config.logAdjustments) {
         console.log(`[ETA Pipeline] ${timeAdj.step}: ${timeAdj.reasoning}`);
       }
@@ -294,7 +323,10 @@ export class ETAPipeline {
 
     // Step 4: Zone-specific correction
     if (this.config.enableZoneSpecificCorrection && request.zoneType) {
-      const zoneAdj = this.applyZoneSpecificCorrection(currentDuration, request.zoneType);
+      const zoneAdj = this.applyZoneSpecificCorrection(
+        currentDuration,
+        request.zoneType,
+      );
       if (this.config.logAdjustments) {
         console.log(`[ETA Pipeline] ${zoneAdj.step}: ${zoneAdj.reasoning}`);
       }
@@ -317,7 +349,9 @@ export class ETAPipeline {
     const upperBound = currentDuration + 1.28 * stdDev;
 
     // Step 6: Calculate final ETA
-    const eta = new Date(request.departureTime.getTime() + currentDuration * 60 * 1000);
+    const eta = new Date(
+      request.departureTime.getTime() + currentDuration * 60 * 1000,
+    );
 
     if (this.config.logAdjustments) {
       console.log(
@@ -359,10 +393,10 @@ export class ETAPipeline {
    */
   enableStep(stepName: string): void {
     const stepMap: Record<string, keyof typeof this.config> = {
-      traffic: 'enableTrafficAdjustment',
-      weather: 'enableWeatherAdjustment',
-      time_of_day: 'enableTimeOfDayCorrection',
-      zone_specific: 'enableZoneSpecificCorrection',
+      traffic: "enableTrafficAdjustment",
+      weather: "enableWeatherAdjustment",
+      time_of_day: "enableTimeOfDayCorrection",
+      zone_specific: "enableZoneSpecificCorrection",
     };
 
     const configKey = stepMap[stepName];
@@ -376,10 +410,10 @@ export class ETAPipeline {
    */
   disableStep(stepName: string): void {
     const stepMap: Record<string, keyof typeof this.config> = {
-      traffic: 'enableTrafficAdjustment',
-      weather: 'enableWeatherAdjustment',
-      time_of_day: 'enableTimeOfDayCorrection',
-      zone_specific: 'enableZoneSpecificCorrection',
+      traffic: "enableTrafficAdjustment",
+      weather: "enableWeatherAdjustment",
+      time_of_day: "enableTimeOfDayCorrection",
+      zone_specific: "enableZoneSpecificCorrection",
     };
 
     const configKey = stepMap[stepName];

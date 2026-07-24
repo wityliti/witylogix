@@ -321,9 +321,7 @@ export class InMemoryStreamAdapter implements StreamAdapter {
    * @param streamKey Stream key
    * @returns Stream metadata
    */
-  async getStreamInfo(
-    streamKey: string,
-  ): Promise<{
+  async getStreamInfo(streamKey: string): Promise<{
     length: number;
     firstId?: string;
     lastId?: string;

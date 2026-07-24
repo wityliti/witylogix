@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { getLeaflet, getMapById } from './wl-map';
+import { useEffect, useRef } from "react";
+import { getLeaflet, getMapById } from "./wl-map";
 
 export interface LocationMarker {
   id: string;
   name: string;
-  type: 'WAREHOUSE' | 'STORE' | 'HUB' | 'DEPOT' | 'PICKUP_POINT';
-  status: 'ACTIVE' | 'INACTIVE' | 'MAINTENANCE';
+  type: "WAREHOUSE" | "STORE" | "HUB" | "DEPOT" | "PICKUP_POINT";
+  status: "ACTIVE" | "INACTIVE" | "MAINTENANCE";
   addressLine1: string;
   city: string;
   province: string;
@@ -28,25 +28,25 @@ interface LocationMarkerLayerProps {
 }
 
 const TYPE_COLOR: Record<string, string> = {
-  WAREHOUSE: '#60a5fa',      // blue
-  STORE: '#34d399',          // emerald
-  HUB: '#a78bfa',            // purple
-  DEPOT: '#fbbf24',          // amber
-  PICKUP_POINT: '#2dd4bf',   // teal
+  WAREHOUSE: "#60a5fa", // blue
+  STORE: "#34d399", // emerald
+  HUB: "#a78bfa", // purple
+  DEPOT: "#fbbf24", // amber
+  PICKUP_POINT: "#2dd4bf", // teal
 };
 
 const TYPE_LABEL: Record<string, string> = {
-  WAREHOUSE: 'Warehouse',
-  STORE: 'Store',
-  HUB: 'Hub',
-  DEPOT: 'Depot',
-  PICKUP_POINT: 'Pickup Point',
+  WAREHOUSE: "Warehouse",
+  STORE: "Store",
+  HUB: "Hub",
+  DEPOT: "Depot",
+  PICKUP_POINT: "Pickup Point",
 };
 
 const STATUS_RING: Record<string, string> = {
-  ACTIVE: '#10b981',
-  MAINTENANCE: '#f59e0b',
-  INACTIVE: '#ef4444',
+  ACTIVE: "#10b981",
+  MAINTENANCE: "#f59e0b",
+  INACTIVE: "#ef4444",
 };
 
 export function LocationMarkerLayer({
@@ -74,15 +74,15 @@ export function LocationMarkerLayer({
       const bounds: [number, number][] = [];
 
       locations.forEach((loc) => {
-        const fillColor = TYPE_COLOR[loc.type] ?? '#94a3b8';
-        const ringColor = STATUS_RING[loc.status] ?? '#6b7280';
+        const fillColor = TYPE_COLOR[loc.type] ?? "#94a3b8";
+        const ringColor = STATUS_RING[loc.status] ?? "#6b7280";
         const isSelected = loc.id === selectedId;
         const radius = isSelected ? 13 : 9;
 
         const marker = L.circleMarker([loc.latitude, loc.longitude], {
           radius,
           fillColor,
-          color: isSelected ? '#fff' : ringColor,
+          color: isSelected ? "#fff" : ringColor,
           weight: isSelected ? 3 : 2,
           opacity: 0.95,
           fillOpacity: 0.82,
@@ -91,7 +91,7 @@ export function LocationMarkerLayer({
         marker.bindPopup(`
           <div style="font-family:ui-sans-serif,system-ui;min-width:180px">
             <div style="font-weight:700;font-size:13px;color:#f1f5f9;margin-bottom:4px">
-              ${loc.name}${loc.isDefault ? ' ★' : ''}
+              ${loc.name}${loc.isDefault ? " ★" : ""}
             </div>
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
               <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${fillColor}"></span>
@@ -119,7 +119,7 @@ export function LocationMarkerLayer({
         `);
 
         if (onLocationClick) {
-          marker.on('click', () => onLocationClick(loc.id));
+          marker.on("click", () => onLocationClick(loc.id));
         }
 
         marker.addTo(map);
@@ -132,7 +132,10 @@ export function LocationMarkerLayer({
           if (bounds.length === 1) {
             map.setView(bounds[0], 12);
           } else {
-            map.fitBounds(bounds as L.LatLngBoundsExpression, { padding: [48, 48], maxZoom: 14 });
+            map.fitBounds(bounds as L.LatLngBoundsExpression, {
+              padding: [48, 48],
+              maxZoom: 14,
+            });
           }
         } catch {
           // ignore fit-bounds errors
@@ -154,11 +157,12 @@ export function LocationMarkerLayer({
       getLeaflet().then(() => {
         const map = getMapById(mapId);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (map) (layersRef.current as any[]).forEach((l) => map.removeLayer(l));
+        if (map)
+          (layersRef.current as any[]).forEach((l) => map.removeLayer(l));
         layersRef.current = [];
       });
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapId, locations, selectedId]);
 
   return null;

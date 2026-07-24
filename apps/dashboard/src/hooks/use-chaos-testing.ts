@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
 /**
  * Chaos testing hooks — back-ended by /api/v4/chaos/*.
  * Uses api.get/post/delete (auth-aware); on error: empty state + error prop.
  */
 
-import { useState, useCallback, useEffect } from 'react';
-import { api } from '@/lib/api';
+import { useState, useCallback, useEffect } from "react";
+import { api } from "@/lib/api";
 
 export interface ChaosScenario {
   id: string;
   name: string;
   provider: string;
-  faultType: 'latency' | 'error' | 'timeout' | 'partial_failure';
-  severity: 'low' | 'medium' | 'high';
+  faultType: "latency" | "error" | "timeout" | "partial_failure";
+  severity: "low" | "medium" | "high";
   duration: number;
   targetEndpoints?: string[];
   createdAt: Date;
@@ -22,7 +22,7 @@ export interface ChaosScenario {
 export interface ChaosExecution {
   id: string;
   scenarioId: string;
-  status: 'running' | 'completed' | 'failed' | 'stopped';
+  status: "running" | "completed" | "failed" | "stopped";
   progress: number;
   startTime?: Date;
   endTime?: Date;
@@ -44,7 +44,7 @@ export interface ChaosResult {
   id: string;
   scenarioId: string;
   executionId?: string;
-  status: 'passed' | 'failed' | 'partial';
+  status: "passed" | "failed" | "partial";
   duration: number;
   findings: string[];
   metricsBeforeDuring?: {
@@ -58,7 +58,7 @@ export interface ChaosResult {
 export interface RecurringSchedule {
   id: string;
   scenarioId: string;
-  frequency: 'daily' | 'weekly' | 'monthly';
+  frequency: "daily" | "weekly" | "monthly";
   time: string;
   enabled: boolean;
 }
@@ -74,12 +74,17 @@ export function useChaosScenarios() {
     setIsLoading(true);
     setError(undefined);
     try {
-      const res = await api.get<{ data: ChaosScenario[] }>('/api/v4/chaos/scenarios');
+      const res = await api.get<{ data: ChaosScenario[] }>(
+        "/api/v4/chaos/scenarios",
+      );
       setScenarios(
-        (res.data ?? []).map((s) => ({ ...s, createdAt: new Date(s.createdAt as unknown as string) })),
+        (res.data ?? []).map((s) => ({
+          ...s,
+          createdAt: new Date(s.createdAt as unknown as string),
+        })),
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load scenarios');
+      setError(err instanceof Error ? err.message : "Failed to load scenarios");
       setScenarios([]);
     } finally {
       setIsLoading(false);
@@ -87,9 +92,17 @@ export function useChaosScenarios() {
   }, []);
 
   const createScenario = useCallback(
-    async (scenario: Omit<ChaosScenario, 'id' | 'createdAt'>): Promise<ChaosScenario> => {
-      const res = await api.post<{ data: ChaosScenario }>('/api/v4/chaos/scenarios', scenario);
-      const created = { ...res.data, createdAt: new Date(res.data.createdAt as unknown as string) };
+    async (
+      scenario: Omit<ChaosScenario, "id" | "createdAt">,
+    ): Promise<ChaosScenario> => {
+      const res = await api.post<{ data: ChaosScenario }>(
+        "/api/v4/chaos/scenarios",
+        scenario,
+      );
+      const created = {
+        ...res.data,
+        createdAt: new Date(res.data.createdAt as unknown as string),
+      };
       setScenarios((prev) => [...prev, created]);
       return created;
     },
@@ -101,18 +114,29 @@ export function useChaosScenarios() {
     setScenarios((prev) => prev.filter((s) => s.id !== id));
   }, []);
 
-  const executeScenario = useCallback(async (scenarioId: string): Promise<ChaosExecution> => {
-    const res = await api.post<{ data: ChaosExecution }>(
-      `/api/v4/chaos/scenarios/${scenarioId}/execute`,
-    );
-    return res.data;
-  }, []);
+  const executeScenario = useCallback(
+    async (scenarioId: string): Promise<ChaosExecution> => {
+      const res = await api.post<{ data: ChaosExecution }>(
+        `/api/v4/chaos/scenarios/${scenarioId}/execute`,
+      );
+      return res.data;
+    },
+    [],
+  );
 
   useEffect(() => {
     fetchScenarios();
   }, [fetchScenarios]);
 
-  return { scenarios, isLoading, error, fetchScenarios, createScenario, deleteScenario, executeScenario };
+  return {
+    scenarios,
+    isLoading,
+    error,
+    fetchScenarios,
+    createScenario,
+    deleteScenario,
+    executeScenario,
+  };
 }
 
 // ── Single execution (polled every 2s while running) ─────────
@@ -129,14 +153,16 @@ export function useChaosExecution(executionId: string) {
     const poll = async () => {
       setIsLoading(true);
       try {
-        const res = await api.get<{ data: ChaosExecution }>(`/api/v4/chaos/executions/${executionId}`);
+        const res = await api.get<{ data: ChaosExecution }>(
+          `/api/v4/chaos/executions/${executionId}`,
+        );
         if (alive) setExecution(res.data);
       } catch {
         // execution not found yet — keep polling
       } finally {
         if (alive) setIsLoading(false);
       }
-      if (alive && execution?.status === 'running') {
+      if (alive && execution?.status === "running") {
         timer = setTimeout(poll, 2_000);
       }
     };
@@ -162,12 +188,17 @@ export function useChaosHistory() {
     setIsLoading(true);
     setError(undefined);
     try {
-      const res = await api.get<{ data: ChaosResult[] }>('/api/v4/chaos/history');
+      const res = await api.get<{ data: ChaosResult[] }>(
+        "/api/v4/chaos/history",
+      );
       setResults(
-        (res.data ?? []).map((r) => ({ ...r, createdAt: new Date(r.createdAt as unknown as string) })),
+        (res.data ?? []).map((r) => ({
+          ...r,
+          createdAt: new Date(r.createdAt as unknown as string),
+        })),
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load history');
+      setError(err instanceof Error ? err.message : "Failed to load history");
       setResults([]);
     } finally {
       setIsLoading(false);

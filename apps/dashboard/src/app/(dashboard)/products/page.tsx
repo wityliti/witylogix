@@ -7,10 +7,10 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useApiList } from '@/hooks/use-api';
-import { api } from '@/lib/api';
-import { TableSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
+import { useApiList } from "@/hooks/use-api";
+import { api } from "@/lib/api";
+import { TableSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 
 /* ═══════════════════════════════════════════════════════════
    items PAGE — Product cache & sync management
@@ -30,8 +30,6 @@ interface Product {
   createdAt: string;
 }
 
-
-
 const formatDateTime = (isoStr: string): string => {
   const date = new Date(isoStr);
   const now = new Date();
@@ -47,15 +45,22 @@ const formatDateTime = (isoStr: string): string => {
 };
 
 export default function ProductsPage() {
-  const { items, loading, error, refetch, pagination } = useApiList<Product>('/api/v4/products');
+  const { items, loading, error, refetch, pagination } =
+    useApiList<Product>("/api/v4/products");
 
   if (loading) return <TableSkeleton rows={10} columns={6} />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
 
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState<"title" | "type" | "lastSyncAt">("title");
-  const [selectedFilters, setSelectedFilters] = useState<Set<string>>(new Set());
-  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
+  const [sortBy, setSortBy] = useState<"title" | "type" | "lastSyncAt">(
+    "title",
+  );
+  const [selectedFilters, setSelectedFilters] = useState<Set<string>>(
+    new Set(),
+  );
+  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
+    new Set(),
+  );
   const [currentPage, setCurrentPage] = useState(1);
   const [syncInfo, setSyncInfo] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
@@ -70,7 +75,9 @@ export default function ProductsPage() {
     const today = new Date();
     return syncDate.toLocaleDateString() === today.toLocaleDateString();
   }).length;
-  const missingWeight = items.filter((p) => p.weight === null && p.requiresShipping).length;
+  const missingWeight = items.filter(
+    (p) => p.weight === null && p.requiresShipping,
+  ).length;
   const missingType = items.filter((p) => !p.productType).length;
 
   // Filter and sort
@@ -87,17 +94,26 @@ export default function ProductsPage() {
         }
       }
 
-      if (selectedFilters.has("requiresShipping") && !p.requiresShipping) return false;
-      if (selectedFilters.has("missingWeight") && p.weight !== null) return false;
+      if (selectedFilters.has("requiresShipping") && !p.requiresShipping)
+        return false;
+      if (selectedFilters.has("missingWeight") && p.weight !== null)
+        return false;
 
       for (const filter of selectedFilters) {
-        if (filter !== "requiresShipping" && filter !== "missingWeight" && filter !== p.vendor) {
+        if (
+          filter !== "requiresShipping" &&
+          filter !== "missingWeight" &&
+          filter !== p.vendor
+        ) {
           continue;
         }
         if (filter === p.vendor) return true;
       }
 
-      if (selectedFilters.has("requiresShipping") || selectedFilters.has("missingWeight")) {
+      if (
+        selectedFilters.has("requiresShipping") ||
+        selectedFilters.has("missingWeight")
+      ) {
         return true;
       }
 
@@ -110,7 +126,9 @@ export default function ProductsPage() {
         case "type":
           return a.productType.localeCompare(b.productType);
         case "lastSyncAt":
-          return new Date(b.lastSyncAt).getTime() - new Date(a.lastSyncAt).getTime();
+          return (
+            new Date(b.lastSyncAt).getTime() - new Date(a.lastSyncAt).getTime()
+          );
         default:
           return a.title.localeCompare(b.title);
       }
@@ -119,7 +137,10 @@ export default function ProductsPage() {
     return result;
   }, [search, sortBy, selectedFilters]);
 
-  const paginatedItems = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const paginatedItems = filtered.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
   const totalPages = Math.ceil(filtered.length / pageSize);
 
   const toggleFilter = (filter: string) => {
@@ -202,7 +223,9 @@ export default function ProductsPage() {
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              className={cn("w-full p-2 px-4 bg-wl-bg-elevated border border-wl-border-default rounded-md text-white text-sm font-sans outline-none")}
+              className={cn(
+                "w-full p-2 px-4 bg-wl-bg-elevated border border-wl-border-default rounded-md text-white text-sm font-sans outline-none",
+              )}
             />
           </div>
 
@@ -212,7 +235,9 @@ export default function ProductsPage() {
               setSortBy(e.target.value as typeof sortBy);
               setCurrentPage(1);
             }}
-            className={cn("p-1 px-3 bg-wl-bg-elevated border border-wl-border-default rounded-md text-white text-sm font-sans cursor-pointer outline-none")}
+            className={cn(
+              "p-1 px-3 bg-wl-bg-elevated border border-wl-border-default rounded-md text-white text-sm font-sans cursor-pointer outline-none",
+            )}
           >
             <option value="title">Sort by Title</option>
             <option value="type">Sort by Type</option>
@@ -222,9 +247,7 @@ export default function ProductsPage() {
 
         {/* Filter Chips */}
         <div className="flex gap-2 mb-5 flex-wrap items-center">
-          <span className="text-xs font-semibold text-gray-400">
-            Filters:
-          </span>
+          <span className="text-xs font-semibold text-gray-400">Filters:</span>
 
           <button
             onClick={() => toggleFilter("requiresShipping")}
@@ -232,7 +255,7 @@ export default function ProductsPage() {
               "p-1 px-3 rounded-full border text-xs font-semibold cursor-pointer font-sans",
               selectedFilters.has("requiresShipping")
                 ? "bg-blue-500 text-white border-blue-500"
-                : "bg-transparent text-gray-400 border-wl-border-default"
+                : "bg-transparent text-gray-400 border-wl-border-default",
             )}
           >
             Requires Shipping
@@ -244,7 +267,7 @@ export default function ProductsPage() {
               "p-1 px-3 rounded-full border text-xs font-semibold cursor-pointer font-sans",
               selectedFilters.has("missingWeight")
                 ? "bg-amber-500 text-white border-amber-500"
-                : "bg-transparent text-gray-400 border-wl-border-default"
+                : "bg-transparent text-gray-400 border-wl-border-default",
             )}
           >
             Missing Weight
@@ -258,7 +281,7 @@ export default function ProductsPage() {
                 "p-1 px-3 rounded-full border text-xs font-semibold cursor-pointer font-sans",
                 selectedFilters.has(vendor)
                   ? "bg-cyan-500 text-white border-cyan-500"
-                  : "bg-transparent text-gray-400 border-wl-border-default"
+                  : "bg-transparent text-gray-400 border-wl-border-default",
               )}
             >
               {vendor}
@@ -271,7 +294,9 @@ export default function ProductsPage() {
                 setSelectedFilters(new Set());
                 setCurrentPage(1);
               }}
-              className={cn("p-1 px-3 rounded-full border border-wl-border-default text-xs font-semibold cursor-pointer font-sans bg-transparent text-gray-500")}
+              className={cn(
+                "p-1 px-3 rounded-full border border-wl-border-default text-xs font-semibold cursor-pointer font-sans bg-transparent text-gray-500",
+              )}
             >
               Clear all
             </button>
@@ -280,27 +305,50 @@ export default function ProductsPage() {
 
         {/* Sync info banner */}
         {syncInfo && (
-          <div className={cn("mb-4 p-3 rounded-md bg-blue-500/10 border border-blue-500/30 flex items-center justify-between")}>
+          <div
+            className={cn(
+              "mb-4 p-3 rounded-md bg-blue-500/10 border border-blue-500/30 flex items-center justify-between",
+            )}
+          >
             <span className="text-blue-300 text-sm">{syncInfo}</span>
-            <button onClick={() => setSyncInfo(null)} className="text-blue-400 hover:text-blue-200 text-xs ml-4">✕</button>
+            <button
+              onClick={() => setSyncInfo(null)}
+              className="text-blue-400 hover:text-blue-200 text-xs ml-4"
+            >
+              ✕
+            </button>
           </div>
         )}
 
         {/* Bulk Actions Bar */}
         {selectedProducts.size > 0 && (
-          <Card className={cn("mb-5 p-4 border", deleteConfirm ? "bg-red-900/30 border-red-600" : "bg-blue-500 border-blue-600")}>
+          <Card
+            className={cn(
+              "mb-5 p-4 border",
+              deleteConfirm
+                ? "bg-red-900/30 border-red-600"
+                : "bg-blue-500 border-blue-600",
+            )}
+          >
             {deleteConfirm ? (
               <div className="flex gap-4 items-center justify-between">
                 <div className="text-white text-sm font-semibold">
-                  Delete {selectedProducts.size} product{selectedProducts.size !== 1 ? "s" : ""}? This cannot be undone.
+                  Delete {selectedProducts.size} product
+                  {selectedProducts.size !== 1 ? "s" : ""}? This cannot be
+                  undone.
                 </div>
                 <div className="flex gap-2 items-center">
-                  {deleteError && <span className="text-red-300 text-xs">{deleteError}</span>}
+                  {deleteError && (
+                    <span className="text-red-300 text-xs">{deleteError}</span>
+                  )}
                   <Button
                     variant="secondary"
                     size="sm"
                     disabled={deleteLoading}
-                    onClick={() => { setDeleteConfirm(false); setDeleteError(null); }}
+                    onClick={() => {
+                      setDeleteConfirm(false);
+                      setDeleteError(null);
+                    }}
                   >
                     Cancel
                   </Button>
@@ -314,14 +362,16 @@ export default function ProductsPage() {
                       try {
                         await Promise.all(
                           Array.from(selectedProducts).map((id) =>
-                            api.delete(`/api/v4/products/${id}`)
-                          )
+                            api.delete(`/api/v4/products/${id}`),
+                          ),
                         );
                         setSelectedProducts(new Set());
                         setDeleteConfirm(false);
                         refetch();
                       } catch {
-                        setDeleteError("Failed to delete some products. Please try again.");
+                        setDeleteError(
+                          "Failed to delete some products. Please try again.",
+                        );
                       } finally {
                         setDeleteLoading(false);
                       }
@@ -334,14 +384,17 @@ export default function ProductsPage() {
             ) : (
               <div className="flex gap-4 items-center justify-between">
                 <div className="text-white text-sm font-semibold">
-                  {selectedProducts.size} product{selectedProducts.size !== 1 ? "s" : ""} selected
+                  {selectedProducts.size} product
+                  {selectedProducts.size !== 1 ? "s" : ""} selected
                 </div>
                 <div className="flex gap-2">
                   <Button
                     variant="secondary"
                     size="sm"
                     onClick={() => {
-                      setSyncInfo("Product sync is triggered from Shopify. Visit your Shopify admin to force a product sync.");
+                      setSyncInfo(
+                        "Product sync is triggered from Shopify. Visit your Shopify admin to force a product sync.",
+                      );
                       setSelectedProducts(new Set());
                     }}
                   >
@@ -361,15 +414,30 @@ export default function ProductsPage() {
         )}
 
         {/* Products Table */}
-        <Card className={cn("overflow-hidden p-0 bg-wl-bg-surface border border-wl-border-default")}>
+        <Card
+          className={cn(
+            "overflow-hidden p-0 bg-wl-bg-surface border border-wl-border-default",
+          )}
+        >
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className={cn("border-b border-wl-border-default bg-wl-bg-elevated")}>
-                  <th className={cn("p-3 px-4 text-center font-semibold text-gray-400 w-10")}>
+                <tr
+                  className={cn(
+                    "border-b border-wl-border-default bg-wl-bg-elevated",
+                  )}
+                >
+                  <th
+                    className={cn(
+                      "p-3 px-4 text-center font-semibold text-gray-400 w-10",
+                    )}
+                  >
                     <input
                       type="checkbox"
-                      checked={selectedProducts.size === paginatedItems.length && paginatedItems.length > 0}
+                      checked={
+                        selectedProducts.size === paginatedItems.length &&
+                        paginatedItems.length > 0
+                      }
                       onChange={() => {
                         if (selectedProducts.size === paginatedItems.length) {
                           setSelectedProducts(new Set());
@@ -382,14 +450,62 @@ export default function ProductsPage() {
                       className="cursor-pointer"
                     />
                   </th>
-                  <th className={cn("p-3 px-4 text-left font-semibold text-gray-400")}>Title</th>
-                  <th className={cn("p-3 px-4 text-left font-semibold text-gray-400")}>Type</th>
-                  <th className={cn("p-3 px-4 text-left font-semibold text-gray-400")}>Vendor</th>
-                  <th className={cn("p-3 px-4 text-center font-semibold text-gray-400")}>Weight</th>
-                  <th className={cn("p-3 px-4 text-center font-semibold text-gray-400")}>Shipping</th>
-                  <th className={cn("p-3 px-4 text-center font-semibold text-gray-400")}>Inventory</th>
-                  <th className={cn("p-3 px-4 text-left font-semibold text-gray-400")}>Last Sync</th>
-                  <th className={cn("p-3 px-4 text-left font-semibold text-gray-400")}>Shopify ID</th>
+                  <th
+                    className={cn(
+                      "p-3 px-4 text-left font-semibold text-gray-400",
+                    )}
+                  >
+                    Title
+                  </th>
+                  <th
+                    className={cn(
+                      "p-3 px-4 text-left font-semibold text-gray-400",
+                    )}
+                  >
+                    Type
+                  </th>
+                  <th
+                    className={cn(
+                      "p-3 px-4 text-left font-semibold text-gray-400",
+                    )}
+                  >
+                    Vendor
+                  </th>
+                  <th
+                    className={cn(
+                      "p-3 px-4 text-center font-semibold text-gray-400",
+                    )}
+                  >
+                    Weight
+                  </th>
+                  <th
+                    className={cn(
+                      "p-3 px-4 text-center font-semibold text-gray-400",
+                    )}
+                  >
+                    Shipping
+                  </th>
+                  <th
+                    className={cn(
+                      "p-3 px-4 text-center font-semibold text-gray-400",
+                    )}
+                  >
+                    Inventory
+                  </th>
+                  <th
+                    className={cn(
+                      "p-3 px-4 text-left font-semibold text-gray-400",
+                    )}
+                  >
+                    Last Sync
+                  </th>
+                  <th
+                    className={cn(
+                      "p-3 px-4 text-left font-semibold text-gray-400",
+                    )}
+                  >
+                    Shopify ID
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -398,7 +514,7 @@ export default function ProductsPage() {
                     key={product.id}
                     className={cn(
                       "border-b border-wl-border-default transition-colors duration-fast",
-                      idx % 2 === 0 ? "bg-transparent" : "bg-wl-bg-elevated"
+                      idx % 2 === 0 ? "bg-transparent" : "bg-wl-bg-elevated",
                     )}
                   >
                     <td className="p-3 px-4 text-center">
@@ -419,16 +535,28 @@ export default function ProductsPage() {
                       {product.vendor}
                     </td>
                     <td className={cn("p-3 px-4 text-center text-gray-300")}>
-                      {product.weight ? `${product.weight} ${product.weightUnit}` : (
-                        <span className="text-red-400 font-semibold">Missing</span>
+                      {product.weight ? (
+                        `${product.weight} ${product.weightUnit}`
+                      ) : (
+                        <span className="text-red-400 font-semibold">
+                          Missing
+                        </span>
                       )}
                     </td>
                     <td className={cn("p-3 px-4 text-center")}>
-                      <Badge variant={product.requiresShipping ? "primary" : "default"}>
+                      <Badge
+                        variant={
+                          product.requiresShipping ? "primary" : "default"
+                        }
+                      >
                         {product.requiresShipping ? "Yes" : "No"}
                       </Badge>
                     </td>
-                    <td className={cn("p-3 px-4 text-center text-white font-semibold")}>
+                    <td
+                      className={cn(
+                        "p-3 px-4 text-center text-white font-semibold",
+                      )}
+                    >
                       {product.inventoryQty}
                     </td>
                     <td className={cn("p-3 px-4 text-gray-500 text-xs")}>
@@ -444,9 +572,16 @@ export default function ProductsPage() {
           </div>
 
           {/* Pagination */}
-          <div className={cn("flex items-center justify-between p-4 border-t border-wl-border-default bg-wl-bg-elevated text-sm text-gray-400")}>
+          <div
+            className={cn(
+              "flex items-center justify-between p-4 border-t border-wl-border-default bg-wl-bg-elevated text-sm text-gray-400",
+            )}
+          >
             <div>
-              Showing {paginatedItems.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to {Math.min(currentPage * pageSize, filtered.length)} of {filtered.length}
+              Showing{" "}
+              {paginatedItems.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}{" "}
+              to {Math.min(currentPage * pageSize, filtered.length)} of{" "}
+              {filtered.length}
             </div>
             <div className="flex gap-2">
               <Button
@@ -458,12 +593,16 @@ export default function ProductsPage() {
                 Previous
               </Button>
               <div className="flex items-center gap-2">
-                <span>Page {currentPage} of {totalPages}</span>
+                <span>
+                  Page {currentPage} of {totalPages}
+                </span>
               </div>
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                onClick={() =>
+                  setCurrentPage(Math.min(totalPages, currentPage + 1))
+                }
                 disabled={currentPage === totalPages}
               >
                 Next

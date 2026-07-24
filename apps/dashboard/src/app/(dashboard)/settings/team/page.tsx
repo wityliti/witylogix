@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useApiList, useApiMutation } from '@/hooks/use-api';
-import { useToast } from '@/components/ui/toast';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { Header } from '@/components/layout/header';
+import { useState } from "react";
+import { useApiList, useApiMutation } from "@/hooks/use-api";
+import { useToast } from "@/components/ui/toast";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { Header } from "@/components/layout/header";
 import {
   Card,
   CardHeader,
@@ -13,26 +13,18 @@ import {
   CardContent,
   CardDescription,
   CardFooter,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import {
-  Plus,
-  Mail,
-  Trash2,
-  Clock,
-  AlertCircle,
-  Send,
-  X,
-} from 'lucide-react';
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { Plus, Mail, Trash2, Clock, AlertCircle, Send, X } from "lucide-react";
 
 interface TeamMember {
   id: string;
   name: string;
   email: string;
-  role: 'owner' | 'admin' | 'member' | 'viewer';
+  role: "owner" | "admin" | "member" | "viewer";
   avatar: string;
   lastActive: string;
   joinedAt: string;
@@ -41,25 +33,46 @@ interface TeamMember {
 interface PendingInvitation {
   id: string;
   email: string;
-  role: 'admin' | 'member' | 'viewer';
+  role: "admin" | "member" | "viewer";
   invitedAt: string;
 }
 
 export default function TeamPage() {
-  const { items: apiMembers, loading, error, refetch } = useApiList<TeamMember>('/api/v4/users');
-  const { items: apiInvitations } = useApiList<PendingInvitation>('/api/v4/invitations');
+  const {
+    items: apiMembers,
+    loading,
+    error,
+    refetch,
+  } = useApiList<TeamMember>("/api/v4/users");
+  const { items: apiInvitations } = useApiList<PendingInvitation>(
+    "/api/v4/invitations",
+  );
   const [members, setMembers] = useState<TeamMember[]>(apiMembers);
-  const [invitations, setInvitations] = useState<PendingInvitation[]>(apiInvitations);
-  const { execute: removeMember } = useApiMutation('DELETE', '/api/v4/users/:id');
-  const { execute: inviteMember } = useApiMutation('POST', '/api/v4/invitations');
-  const { execute: resendInvite } = useApiMutation('POST', '/api/v4/invitations/:id/resend');
+  const [invitations, setInvitations] =
+    useState<PendingInvitation[]>(apiInvitations);
+  const { execute: removeMember } = useApiMutation(
+    "DELETE",
+    "/api/v4/users/:id",
+  );
+  const { execute: inviteMember } = useApiMutation(
+    "POST",
+    "/api/v4/invitations",
+  );
+  const { execute: resendInvite } = useApiMutation(
+    "POST",
+    "/api/v4/invitations/:id/resend",
+  );
   const { addToast } = useToast();
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState<"admin" | "member" | "viewer">("member");
+  const [inviteRole, setInviteRole] = useState<"admin" | "member" | "viewer">(
+    "member",
+  );
   const [removeConfirmId, setRemoveConfirmId] = useState<string | null>(null);
   const [changeRoleId, setChangeRoleId] = useState<string | null>(null);
-  const [newRole, setNewRole] = useState<"admin" | "member" | "viewer">("member");
+  const [newRole, setNewRole] = useState<"admin" | "member" | "viewer">(
+    "member",
+  );
 
   const ROLE_BADGES = {
     owner: { variant: "primary" as const, label: "Owner" },
@@ -93,9 +106,7 @@ export default function TeamPage() {
 
   const changeRole = (id: string, role: "admin" | "member" | "viewer") => {
     setMembers((prev) =>
-      prev.map((member) =>
-        member.id === id ? { ...member, role } : member
-      )
+      prev.map((member) => (member.id === id ? { ...member, role } : member)),
     );
     setChangeRoleId(null);
   };
@@ -103,9 +114,17 @@ export default function TeamPage() {
   const resendInvitation = async (id: string) => {
     try {
       await resendInvite({ params: { id } });
-      addToast({ type: 'success', title: 'Invitation resent', message: 'The invitation email has been resent.' });
+      addToast({
+        type: "success",
+        title: "Invitation resent",
+        message: "The invitation email has been resent.",
+      });
     } catch {
-      addToast({ type: 'error', title: 'Failed to resend', message: 'Could not resend the invitation. Please try again.' });
+      addToast({
+        type: "error",
+        title: "Failed to resend",
+        message: "Could not resend the invitation. Please try again.",
+      });
     }
   };
 
@@ -155,7 +174,9 @@ export default function TeamPage() {
                   </label>
                   <select
                     value={inviteRole}
-                    onChange={(e) => setInviteRole(e.target.value as typeof inviteRole)}
+                    onChange={(e) =>
+                      setInviteRole(e.target.value as typeof inviteRole)
+                    }
                     className="w-full px-3 py-2 bg-wl-bg-elevated text-white border border-wl-border-default rounded-md text-sm"
                   >
                     <option value="viewer">Viewer - Read-only access</option>
@@ -191,7 +212,9 @@ export default function TeamPage() {
           <Card className="border border-wl-border-default bg-wl-bg-surface">
             <CardHeader>
               <CardTitle>Team Members ({members.length})</CardTitle>
-              <CardDescription>Manage your team and their permissions</CardDescription>
+              <CardDescription>
+                Manage your team and their permissions
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -220,7 +243,9 @@ export default function TeamPage() {
                         {changeRoleId === member.id ? (
                           <select
                             value={newRole}
-                            onChange={(e) => setNewRole(e.target.value as typeof newRole)}
+                            onChange={(e) =>
+                              setNewRole(e.target.value as typeof newRole)
+                            }
                             className="px-2 py-1 bg-wl-bg-elevated text-white border border-wl-border-default rounded text-sm"
                           >
                             <option value="viewer">Viewer</option>
@@ -256,7 +281,8 @@ export default function TeamPage() {
                               variant="secondary"
                               onClick={() => {
                                 setChangeRoleId(member.id);
-                                if (member.role !== 'owner') setNewRole(member.role);
+                                if (member.role !== "owner")
+                                  setNewRole(member.role);
                               }}
                             >
                               Change Role
@@ -314,7 +340,9 @@ export default function TeamPage() {
           {invitations.length > 0 && (
             <Card className="border border-wl-border-default bg-wl-bg-surface">
               <CardHeader>
-                <CardTitle>Pending Invitations ({invitations.length})</CardTitle>
+                <CardTitle>
+                  Pending Invitations ({invitations.length})
+                </CardTitle>
                 <CardDescription>Awaiting acceptance</CardDescription>
               </CardHeader>
               <CardContent>
@@ -373,10 +401,20 @@ export default function TeamPage() {
                     Role Permissions
                   </p>
                   <ul className="text-xs text-gray-400 space-y-1">
-                    <li><strong>Owner:</strong> Full access, can manage team and billing</li>
-                    <li><strong>Admin:</strong> Full access to all features and settings</li>
-                    <li><strong>Member:</strong> Can create and edit content</li>
-                    <li><strong>Viewer:</strong> Read-only access to view content</li>
+                    <li>
+                      <strong>Owner:</strong> Full access, can manage team and
+                      billing
+                    </li>
+                    <li>
+                      <strong>Admin:</strong> Full access to all features and
+                      settings
+                    </li>
+                    <li>
+                      <strong>Member:</strong> Can create and edit content
+                    </li>
+                    <li>
+                      <strong>Viewer:</strong> Read-only access to view content
+                    </li>
                   </ul>
                 </div>
               </div>

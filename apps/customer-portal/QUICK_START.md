@@ -47,27 +47,27 @@ src/
 
 ## Key Pages
 
-| Route | Component | Purpose |
-|-------|-----------|---------|
-| `/` | `page.tsx` | Dashboard with stats & overview |
-| `/orders` | `orders/page.tsx` | Order list with filters |
-| `/orders/[id]` | `orders/[id]/page.tsx` | Order details & timeline |
-| `/orders/[id]/reschedule` | `reschedule/page.tsx` | Reschedule delivery flow |
-| `/orders/[id]/rate` | `rate/page.tsx` | Rate delivery |
-| `/track` | `track/page.tsx` | Real-time tracking |
-| `/preferences` | `preferences/page.tsx` | Delivery preferences |
-| `/support` | `support/page.tsx` | FAQ & support |
+| Route                     | Component              | Purpose                         |
+| ------------------------- | ---------------------- | ------------------------------- |
+| `/`                       | `page.tsx`             | Dashboard with stats & overview |
+| `/orders`                 | `orders/page.tsx`      | Order list with filters         |
+| `/orders/[id]`            | `orders/[id]/page.tsx` | Order details & timeline        |
+| `/orders/[id]/reschedule` | `reschedule/page.tsx`  | Reschedule delivery flow        |
+| `/orders/[id]/rate`       | `rate/page.tsx`        | Rate delivery                   |
+| `/track`                  | `track/page.tsx`       | Real-time tracking              |
+| `/preferences`            | `preferences/page.tsx` | Delivery preferences            |
+| `/support`                | `support/page.tsx`     | FAQ & support                   |
 
 ## Key Components
 
 ```typescript
 // Shared Components
-import { Header } from '@/components/header';
-import { SidebarNav } from '@/components/sidebar-nav';
-import { DeliveryTimeline } from '@/components/delivery-timeline';
-import { OrderCard } from '@/components/order-card';
-import { MiniMap } from '@/components/mini-map';
-import { RatingStars } from '@/components/rating-stars';
+import { Header } from "@/components/header";
+import { SidebarNav } from "@/components/sidebar-nav";
+import { DeliveryTimeline } from "@/components/delivery-timeline";
+import { OrderCard } from "@/components/order-card";
+import { MiniMap } from "@/components/mini-map";
+import { RatingStars } from "@/components/rating-stars";
 ```
 
 ## Styling
@@ -75,15 +75,17 @@ import { RatingStars } from '@/components/rating-stars';
 ### Using Tailwind Classes
 
 ```tsx
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
-<div className={cn(
-  'bg-wl-bg-surface border border-wl-border-subtle rounded-lg',
-  'p-4 sm:p-6',
-  'hover:shadow-md transition-shadow duration-fast'
-)}>
+<div
+  className={cn(
+    "bg-wl-bg-surface border border-wl-border-subtle rounded-lg",
+    "p-4 sm:p-6",
+    "hover:shadow-md transition-shadow duration-fast",
+  )}
+>
   Content
-</div>
+</div>;
 ```
 
 ### CSS Variables Available
@@ -123,7 +125,7 @@ Mock data is included in page files for demonstration. Replace with API calls:
 const orders = mockOrders;
 
 // After: Using API
-const response = await fetch('/api/orders');
+const response = await fetch("/api/orders");
 const orders = await response.json();
 ```
 
@@ -138,7 +140,7 @@ import type {
   LiveTracking,
   CustomerPreferences,
   RatingStars,
-} from '@/types';
+} from "@/types";
 ```
 
 ## Common Patterns
@@ -164,15 +166,17 @@ const handleSave = async () => {
 ### Conditional Rendering
 
 ```tsx
-{filteredOrders.length > 0 ? (
-  <div className="grid gap-4">
-    {filteredOrders.map(order => (
-      <OrderCard key={order.id} order={order} />
-    ))}
-  </div>
-) : (
-  <div>No orders found</div>
-)}
+{
+  filteredOrders.length > 0 ? (
+    <div className="grid gap-4">
+      {filteredOrders.map((order) => (
+        <OrderCard key={order.id} order={order} />
+      ))}
+    </div>
+  ) : (
+    <div>No orders found</div>
+  );
+}
 ```
 
 ### Navigation Links
@@ -191,6 +195,7 @@ import Link from 'next/link';
 ## Responsive Design
 
 Breakpoints:
+
 - `sm`: 640px (small devices)
 - `lg`: 1024px (large devices)
 
@@ -198,7 +203,7 @@ Example:
 
 ```tsx
 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-  {items.map(item => (
+  {items.map((item) => (
     <Card key={item.id} item={item} />
   ))}
 </div>
@@ -207,6 +212,7 @@ Example:
 ## Accessibility Tips
 
 Always include:
+
 - ARIA labels: `aria-label="Description"`
 - Form labels: `<label htmlFor="inputId">`
 - Focus states: `:focus-visible`
@@ -218,9 +224,7 @@ The portal automatically inherits dark theme from CSS variables.
 To toggle theme (when implemented):
 
 ```tsx
-<button onClick={() => toggleTheme()}>
-  Toggle Dark Mode
-</button>
+<button onClick={() => toggleTheme()}>Toggle Dark Mode</button>
 ```
 
 ## Performance
@@ -241,17 +245,20 @@ To toggle theme (when implemented):
 ## Troubleshooting
 
 ### Port Already in Use
+
 ```bash
 # Use different port
 pnpm dev -- --port 3005
 ```
 
 ### TypeScript Errors
+
 ```bash
 pnpm typecheck
 ```
 
 ### Build Issues
+
 ```bash
 # Clean and rebuild
 rm -rf .next
@@ -261,6 +268,7 @@ pnpm build
 ## Environment Variables
 
 Create `.env.local`:
+
 ```
 NEXT_PUBLIC_API_URL=http://localhost:8000
 NEXT_PUBLIC_APP_NAME=Witylogix Customer Portal
@@ -269,18 +277,21 @@ NEXT_PUBLIC_APP_NAME=Witylogix Customer Portal
 ## Deployment
 
 ### Vercel (Recommended)
+
 ```bash
 npm install -g vercel
 vercel
 ```
 
 ### Docker
+
 ```bash
 docker build -t witylogix-customer-portal .
 docker run -p 3004:3004 witylogix-customer-portal
 ```
 
 ### Manual
+
 ```bash
 pnpm build
 pnpm start
@@ -295,6 +306,7 @@ pnpm start
 ## Support
 
 For questions or issues, refer to:
+
 1. This quick start guide
 2. `IMPLEMENTATION_SUMMARY.md` for architecture
 3. Component source files for implementation details

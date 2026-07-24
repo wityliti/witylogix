@@ -235,7 +235,7 @@ export interface EventEnvelope<T extends DashboardEvent = DashboardEvent> {
  */
 export interface EventFilter {
   /** Only events with these types. */
-  eventTypes?: (DashboardEvent["event"])[];
+  eventTypes?: DashboardEvent["event"][];
   /** Only events for these shops. */
   shopIds?: string[];
   /** Only events for these drivers. */

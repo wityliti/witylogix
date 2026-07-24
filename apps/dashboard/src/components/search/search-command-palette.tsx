@@ -101,7 +101,7 @@ export function SearchCommandPalette(): React.ReactElement {
    * Handle result selection.
    */
   const handleSelectResult = useCallback(
-    (result: typeof search.results[0]) => {
+    (result: (typeof search.results)[0]) => {
       search.saveSearch(search.query);
       setIsOpen(false);
 
@@ -119,7 +119,7 @@ export function SearchCommandPalette(): React.ReactElement {
 
       window.location.href = `${basePath}/${result.id}`;
     },
-    [search]
+    [search],
   );
 
   if (!isOpen) {
@@ -129,7 +129,12 @@ export function SearchCommandPalette(): React.ReactElement {
         className="flex items-center gap-2 rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-gray-400 hover:border-gray-600 hover:bg-gray-800"
         title="Press Cmd+K"
       >
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg
+          className="h-4 w-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -166,7 +171,9 @@ export function SearchCommandPalette(): React.ReactElement {
             </div>
           )}
           {search.error && (
-            <div className="mt-2 text-sm text-red-400">{search.error.message}</div>
+            <div className="mt-2 text-sm text-red-400">
+              {search.error.message}
+            </div>
           )}
         </div>
 
@@ -190,7 +197,7 @@ export function SearchCommandPalette(): React.ReactElement {
                       "w-full rounded-lg px-4 py-2 text-left text-sm transition-colors",
                       search.selectedIndex === index
                         ? "bg-blue-600 text-white"
-                        : "text-gray-300 hover:bg-gray-800"
+                        : "text-gray-300 hover:bg-gray-800",
                     )}
                   >
                     {action.label}
@@ -219,14 +226,17 @@ export function SearchCommandPalette(): React.ReactElement {
                   <button
                     key={index}
                     onClick={() => {
-                      search.selectSuggestion({ title: recent, type: "recent" });
+                      search.selectSuggestion({
+                        title: recent,
+                        type: "recent",
+                      });
                       search.search(recent);
                     }}
                     className={cn(
                       "w-full rounded-lg px-4 py-2 text-left text-sm transition-colors",
                       search.selectedIndex === index
                         ? "bg-blue-600 text-white"
-                        : "text-gray-400 hover:bg-gray-800"
+                        : "text-gray-400 hover:bg-gray-800",
                     )}
                   >
                     <svg
@@ -274,7 +284,7 @@ export function SearchCommandPalette(): React.ReactElement {
                           "w-full rounded-lg px-4 py-2 text-left transition-colors",
                           search.selectedIndex === index
                             ? "bg-blue-600 text-white"
-                            : "hover:bg-gray-800"
+                            : "hover:bg-gray-800",
                         )}
                       >
                         <div className="flex items-center justify-between">
@@ -297,7 +307,7 @@ export function SearchCommandPalette(): React.ReactElement {
                                   ? "bg-green-900 text-green-300"
                                   : entity === "deliveries"
                                     ? "bg-purple-900 text-purple-300"
-                                    : "bg-gray-700 text-gray-300"
+                                    : "bg-gray-700 text-gray-300",
                             )}
                           >
                             {entity}
@@ -312,27 +322,31 @@ export function SearchCommandPalette(): React.ReactElement {
           )}
 
           {/* No Results */}
-          {search.query && Object.keys(groupedResults).length === 0 && !search.isLoading && (
-            <div className="flex items-center justify-center py-12">
-              <div className="text-center">
-                <svg
-                  className="mx-auto h-12 w-12 text-gray-600"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-                <p className="mt-2 text-sm text-gray-400">No results found</p>
-                <p className="text-xs text-gray-500">Try a different search term</p>
+          {search.query &&
+            Object.keys(groupedResults).length === 0 &&
+            !search.isLoading && (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <svg
+                    className="mx-auto h-12 w-12 text-gray-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                  <p className="mt-2 text-sm text-gray-400">No results found</p>
+                  <p className="text-xs text-gray-500">
+                    Try a different search term
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
 
         {/* Footer */}
@@ -342,25 +356,26 @@ export function SearchCommandPalette(): React.ReactElement {
               <div>
                 <kbd className="rounded border border-gray-700 bg-gray-800 px-2 py-1">
                   ↑↓
-                </kbd>
-                {" "}to navigate
+                </kbd>{" "}
+                to navigate
               </div>
               <div>
                 <kbd className="rounded border border-gray-700 bg-gray-800 px-2 py-1">
                   ↵
-                </kbd>
-                {" "}to select
+                </kbd>{" "}
+                to select
               </div>
               <div>
                 <kbd className="rounded border border-gray-700 bg-gray-800 px-2 py-1">
                   esc
-                </kbd>
-                {" "}to close
+                </kbd>{" "}
+                to close
               </div>
             </div>
             {search.results.length > 0 && (
               <div className="text-gray-600">
-                {search.results.length} result{search.results.length !== 1 ? "s" : ""}
+                {search.results.length} result
+                {search.results.length !== 1 ? "s" : ""}
               </div>
             )}
           </div>

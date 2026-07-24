@@ -2,7 +2,11 @@ import { ReactNode } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-export default function DesignSystemLayout({ children }: { children: ReactNode }) {
+export default function DesignSystemLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const navItems = [
     { href: "/design-system", label: "Components" },
     { href: "/design-system/tokens", label: "Tokens" },
@@ -26,7 +30,7 @@ export default function DesignSystemLayout({ children }: { children: ReactNode }
                   className={cn(
                     "px-3 py-2 text-sm font-medium rounded-md transition-colors",
                     "hover:bg-wl-bg-elevated",
-                    "text-wl-text-secondary hover:text-wl-text-primary"
+                    "text-wl-text-secondary hover:text-wl-text-primary",
                   )}
                 >
                   {item.label}

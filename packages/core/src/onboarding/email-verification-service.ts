@@ -11,7 +11,12 @@
  * OTP codes are stored in-memory with optional Redis persistence.
  */
 
-import { OnboardingError, OnboardingErrorCodes, GenerateOTPResult, VerifyOTPResult } from "./types";
+import {
+  OnboardingError,
+  OnboardingErrorCodes,
+  GenerateOTPResult,
+  VerifyOTPResult,
+} from "./types";
 
 /**
  * OTP storage structure.
@@ -67,7 +72,9 @@ export class EmailVerificationService {
 
     if (rateLimit && rateLimit.resetAt > new Date()) {
       if (rateLimit.count >= this.MAX_RESENDS_PER_10MIN) {
-        const resetTime = Math.ceil((rateLimit.resetAt.getTime() - Date.now()) / 1000);
+        const resetTime = Math.ceil(
+          (rateLimit.resetAt.getTime() - Date.now()) / 1000,
+        );
         throw new OnboardingError(
           OnboardingErrorCodes.OTP_RESEND_RATE_LIMITED,
           `Too many OTP requests. Try again in ${resetTime} seconds`,
@@ -88,7 +95,9 @@ export class EmailVerificationService {
     const code = this.generateRandomCode();
 
     // Store OTP with expiry
-    const expiresAt = new Date(Date.now() + this.OTP_EXPIRY_MINUTES * 60 * 1000);
+    const expiresAt = new Date(
+      Date.now() + this.OTP_EXPIRY_MINUTES * 60 * 1000,
+    );
     this.otpStore.set(email, {
       code,
       email,
@@ -262,7 +271,9 @@ export class EmailVerificationService {
     const record = this.otpStore.get(email);
     if (!record) return 0;
 
-    const remaining = Math.ceil((record.expiresAt.getTime() - Date.now()) / 1000);
+    const remaining = Math.ceil(
+      (record.expiresAt.getTime() - Date.now()) / 1000,
+    );
     return Math.max(0, remaining);
   }
 

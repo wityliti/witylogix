@@ -94,13 +94,19 @@ export class SandboxMode {
   /**
    * Capture an event in sandbox mode
    */
-  captureEvent(integrationId: string, event: WebhookEvent): SandboxEvent | null {
+  captureEvent(
+    integrationId: string,
+    event: WebhookEvent,
+  ): SandboxEvent | null {
     if (!this.isSandboxEnabled(integrationId)) {
       return null;
     }
 
     const config = this.sandboxConfigs.get(integrationId);
-    if (!config || (config.eventLimit && config.capturedEvents >= config.eventLimit)) {
+    if (
+      !config ||
+      (config.eventLimit && config.capturedEvents >= config.eventLimit)
+    ) {
       return null;
     }
 
@@ -122,7 +128,10 @@ export class SandboxMode {
   /**
    * Get captured events for an integration
    */
-  getCapturedEvents(integrationId: string, limit: number = 100): SandboxEvent[] {
+  getCapturedEvents(
+    integrationId: string,
+    limit: number = 100,
+  ): SandboxEvent[] {
     const events = this.capturedEvents.get(integrationId) || [];
     return events.slice(0, limit);
   }
@@ -210,7 +219,7 @@ export class SandboxMode {
    */
   filterEventsByType(
     integrationId: string,
-    eventType: WebhookEventType
+    eventType: WebhookEventType,
   ): SandboxEvent[] {
     const events = this.capturedEvents.get(integrationId) || [];
     return events.filter((e) => e.type === eventType);
@@ -250,7 +259,8 @@ export class SandboxMode {
       totalEvents: events.length,
       eventsByType,
       captureRate: `${captureRate}%`,
-      oldestEvent: events.length > 0 ? events[events.length - 1].sandboxedAt : undefined,
+      oldestEvent:
+        events.length > 0 ? events[events.length - 1].sandboxedAt : undefined,
       newestEvent: events.length > 0 ? events[0].sandboxedAt : undefined,
     };
   }

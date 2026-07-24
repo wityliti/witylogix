@@ -35,20 +35,20 @@ export type {
   MetricComparison,
   FederatedDashboardResult,
   AggregationLevel,
-} from './types.js';
+} from "./types.js";
 
 // ─── ADAPTER EXPORTS ────────────────────────────────────────────────────
 
-export { AnalyticsAdapter } from './analytics-adapter.js';
+export { AnalyticsAdapter } from "./analytics-adapter.js";
 
 // ─── CLIENT EXPORTS ─────────────────────────────────────────────────────
 
-export { TableauClient } from './tableau-client.js';
-export { PowerBIClient } from './powerbi-client.js';
-export { LookerClient } from './looker-client.js';
-export { QlikClient } from './qlik-client.js';
-export { GoogleAnalyticsClient } from './google-analytics-client.js';
+export { TableauClient } from "./tableau-client.js";
+export { PowerBIClient } from "./powerbi-client.js";
+export { LookerClient } from "./looker-client.js";
+export { QlikClient } from "./qlik-client.js";
+export { GoogleAnalyticsClient } from "./google-analytics-client.js";
 
 // ─── AGGREGATOR EXPORTS ──────────────────────────────────────────────────
 
-export { AnalyticsAggregator } from './analytics-aggregator.js';
+export { AnalyticsAggregator } from "./analytics-aggregator.js";

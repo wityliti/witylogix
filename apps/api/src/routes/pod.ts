@@ -12,11 +12,11 @@
  *   GET    /api/pod/:deliveryId/verify         Verify POD
  */
 
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { z } from 'zod';
-import multipart from '@fastify/multipart';
-import { requireAuth } from '../middleware/auth.js';
-import { tenantContext } from '../middleware/tenant.js';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import { z } from "zod";
+import multipart from "@fastify/multipart";
+import { requireAuth } from "../middleware/auth.js";
+import { tenantContext } from "../middleware/tenant.js";
 
 // ─── VALIDATION SCHEMAS ─────────────────────────────────────────
 
@@ -50,7 +50,7 @@ const confirmationSchema = z.object({
 // ─── CONSTANTS ──────────────────────────────────────────────────
 
 const MAX_PHOTO_SIZE = 5 * 1024 * 1024; // 5MB
-const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png'];
+const ALLOWED_PHOTO_TYPES = ["image/jpeg", "image/png"];
 
 // ─── ROUTE PLUGIN ───────────────────────────────────────────────
 
@@ -63,13 +63,13 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
   });
 
   // All routes require auth and tenant context
-  fastify.addHook('preHandler', requireAuth);
-  fastify.addHook('preHandler', tenantContext);
+  fastify.addHook("preHandler", requireAuth);
+  fastify.addHook("preHandler", tenantContext);
 
   // ─── PHOTO POD ───────────────────────────────────────────────
 
   fastify.post<{ Params: { deliveryId: string } }>(
-    '/photo/:deliveryId',
+    "/photo/:deliveryId",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { deliveryId } = deliveryIdSchema.parse(request.params);
@@ -80,7 +80,7 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
         if (!data) {
           return reply.code(400).send({
             success: false,
-            error: 'No file uploaded',
+            error: "No file uploaded",
           });
         }
 
@@ -88,12 +88,15 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
         if (!ALLOWED_PHOTO_TYPES.includes(data.mimetype)) {
           return reply.code(400).send({
             success: false,
-            error: `Invalid file type: ${data.mimetype}. Allowed: ${ALLOWED_PHOTO_TYPES.join(', ')}`,
+            error: `Invalid file type: ${data.mimetype}. Allowed: ${ALLOWED_PHOTO_TYPES.join(", ")}`,
           });
         }
 
         // Check file size
-        if (data.file.readableLength && data.file.readableLength > MAX_PHOTO_SIZE) {
+        if (
+          data.file.readableLength &&
+          data.file.readableLength > MAX_PHOTO_SIZE
+        ) {
           return reply.code(413).send({
             success: false,
             error: `File exceeds maximum size of ${MAX_PHOTO_SIZE / 1024 / 1024}MB`,
@@ -117,10 +120,10 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
           data: {
             id: `pod-${deliveryId}-${Date.now()}`,
             deliveryId,
-            method: 'photo',
+            method: "photo",
             imageUrl: `/uploads/deliveries/${deliveryId}/photos/${Date.now()}.jpg`,
             thumbnailUrl: `/uploads/deliveries/${deliveryId}/photos/${Date.now()}-thumb.jpg`,
-            status: 'verified',
+            status: "verified",
             capturedAt: new Date().toISOString(),
           },
         };
@@ -130,16 +133,16 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: 'Failed to upload photo POD',
+          error: "Failed to upload photo POD",
         });
       }
-    }
+    },
   );
 
   // ─── SIGNATURE POD ───────────────────────────────────────────
 
   fastify.post<{ Params: { deliveryId: string } }>(
-    '/signature/:deliveryId',
+    "/signature/:deliveryId",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { deliveryId } = deliveryIdSchema.parse(request.params);
@@ -157,10 +160,10 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
           data: {
             id: `pod-sig-${deliveryId}-${Date.now()}`,
             deliveryId,
-            method: 'signature',
+            method: "signature",
             signerName: payload.signerName,
             signatureUrl: `/uploads/deliveries/${deliveryId}/signatures/${Date.now()}.png`,
-            status: 'verified',
+            status: "verified",
             signedAt: new Date().toISOString(),
           },
         };
@@ -170,17 +173,17 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: 'Failed to capture signature POD',
+          error: "Failed to capture signature POD",
           details: error instanceof Error ? error.message : undefined,
         });
       }
-    }
+    },
   );
 
   // ─── QR CODE POD ────────────────────────────────────────────
 
   fastify.post<{ Params: { deliveryId: string } }>(
-    '/qr/:deliveryId',
+    "/qr/:deliveryId",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { deliveryId } = deliveryIdSchema.parse(request.params);
@@ -198,13 +201,14 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
           data: {
             id: `pod-qr-${deliveryId}-${Date.now()}`,
             deliveryId,
-            method: 'qr_scan',
+            method: "qr_scan",
             scannedData: payload.scannedData,
             verification: {
-              valid: payload.scannedData === (payload.expectedData || deliveryId),
+              valid:
+                payload.scannedData === (payload.expectedData || deliveryId),
               matchPercentage: 100,
             },
-            status: 'verified',
+            status: "verified",
             scannedAt: new Date().toISOString(),
           },
         };
@@ -214,17 +218,17 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: 'Failed to capture QR code POD',
+          error: "Failed to capture QR code POD",
           details: error instanceof Error ? error.message : undefined,
         });
       }
-    }
+    },
   );
 
   // ─── BARCODE POD ────────────────────────────────────────────
 
   fastify.post<{ Params: { deliveryId: string } }>(
-    '/barcode/:deliveryId',
+    "/barcode/:deliveryId",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { deliveryId } = deliveryIdSchema.parse(request.params);
@@ -242,13 +246,15 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
           data: {
             id: `pod-barcode-${deliveryId}-${Date.now()}`,
             deliveryId,
-            method: 'barcode',
+            method: "barcode",
             scannedBarcode: payload.scannedBarcode,
             barcodeFormat: payload.format,
             verification: {
-              valid: payload.scannedBarcode === (payload.expectedBarcode || deliveryId),
+              valid:
+                payload.scannedBarcode ===
+                (payload.expectedBarcode || deliveryId),
             },
-            status: 'verified',
+            status: "verified",
             scannedAt: new Date().toISOString(),
           },
         };
@@ -258,17 +264,17 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: 'Failed to capture barcode POD',
+          error: "Failed to capture barcode POD",
           details: error instanceof Error ? error.message : undefined,
         });
       }
-    }
+    },
   );
 
   // ─── MANUAL CONFIRMATION ────────────────────────────────────
 
   fastify.post<{ Params: { deliveryId: string } }>(
-    '/confirm/:deliveryId',
+    "/confirm/:deliveryId",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { deliveryId } = deliveryIdSchema.parse(request.params);
@@ -286,10 +292,10 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
           data: {
             id: `pod-manual-${deliveryId}-${Date.now()}`,
             deliveryId,
-            method: 'manual_confirm',
+            method: "manual_confirm",
             confirmedBy: payload.confirmedBy,
             notes: payload.notes,
-            status: 'verified',
+            status: "verified",
             confirmedAt: new Date().toISOString(),
           },
         };
@@ -299,17 +305,17 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: 'Failed to record manual confirmation',
+          error: "Failed to record manual confirmation",
           details: error instanceof Error ? error.message : undefined,
         });
       }
-    }
+    },
   );
 
   // ─── GET POD RECORD(S) ──────────────────────────────────────
 
   fastify.get<{ Params: { deliveryId: string } }>(
-    '/:deliveryId',
+    "/:deliveryId",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { deliveryId } = deliveryIdSchema.parse(request.params);
@@ -329,16 +335,16 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: 'Failed to retrieve POD records',
+          error: "Failed to retrieve POD records",
         });
       }
-    }
+    },
   );
 
   // ─── GET DELIVERY TIMELINE ──────────────────────────────────
 
   fastify.get<{ Params: { deliveryId: string } }>(
-    '/:deliveryId/timeline',
+    "/:deliveryId/timeline",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { deliveryId } = deliveryIdSchema.parse(request.params);
@@ -358,16 +364,16 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: 'Failed to retrieve delivery timeline',
+          error: "Failed to retrieve delivery timeline",
         });
       }
-    }
+    },
   );
 
   // ─── VERIFY POD ─────────────────────────────────────────────
 
   fastify.get<{ Params: { deliveryId: string } }>(
-    '/:deliveryId/verify',
+    "/:deliveryId/verify",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { deliveryId } = deliveryIdSchema.parse(request.params);
@@ -378,7 +384,7 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
 
         const verification = {
           isVerified: true,
-          method: 'photo',
+          method: "photo",
           verifiedAt: new Date().toISOString(),
           issues: [],
         };
@@ -391,10 +397,10 @@ async function podRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error(error);
         return reply.code(500).send({
           success: false,
-          error: 'Failed to verify POD',
+          error: "Failed to verify POD",
         });
       }
-    }
+    },
   );
 }
 

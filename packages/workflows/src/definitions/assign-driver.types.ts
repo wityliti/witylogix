@@ -91,7 +91,11 @@ export interface AssignDriverOutput {
   code?: string;
 
   /** Why assignment failed (if applicable) */
-  reason?: "NO_DRIVERS_AVAILABLE" | "ALL_DECLINED" | "TIMEOUT" | "VALIDATION_FAILED";
+  reason?:
+    | "NO_DRIVERS_AVAILABLE"
+    | "ALL_DECLINED"
+    | "TIMEOUT"
+    | "VALIDATION_FAILED";
 
   /** Number of drivers evaluated */
   driversEvaluated?: number;

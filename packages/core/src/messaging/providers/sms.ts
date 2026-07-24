@@ -4,7 +4,12 @@
  * Handles GSM character encoding and SMS segmentation.
  */
 
-import type { Message, MessageTemplate, SendResult, DeliveryStatus } from '../types.js';
+import type {
+  Message,
+  MessageTemplate,
+  SendResult,
+  DeliveryStatus,
+} from "../types.js";
 import {
   MessageChannel,
   DeliveryStatus as DeliveryStatusEnum,
@@ -12,15 +17,17 @@ import {
   AuthenticationError,
   ConfigurationError,
   RateLimitError,
-} from '../types.js';
-import { MessageProvider } from './base.js';
+} from "../types.js";
+import { MessageProvider } from "./base.js";
 
 /**
  * Type stubs for Twilio-like client.
  */
 interface SmsClient {
   messages: {
-    create(options: SmsOptions): Promise<{ sid: string; error_code?: string; error_message?: string }>;
+    create(
+      options: SmsOptions,
+    ): Promise<{ sid: string; error_code?: string; error_message?: string }>;
   };
 }
 
@@ -34,7 +41,7 @@ interface SmsOptions {
  * SMS provider implementation using Twilio-like interface.
  */
 export class SmsProvider extends MessageProvider {
-  readonly providerId = 'sms_twilio';
+  readonly providerId = "sms_twilio";
 
   private client?: SmsClient;
 
@@ -50,7 +57,7 @@ export class SmsProvider extends MessageProvider {
     if (!config.accountSid || !config.authToken || !config.fromNumber) {
       throw new ConfigurationError(
         MessageChannel.SMS,
-        'Missing SMS configuration: accountSid, authToken, or fromNumber',
+        "Missing SMS configuration: accountSid, authToken, or fromNumber",
       );
     }
 
@@ -74,9 +81,9 @@ export class SmsProvider extends MessageProvider {
           // Mock implementation
           if (!options.to || !options.body) {
             return {
-              sid: '',
-              error_code: '400',
-              error_message: 'Missing required fields',
+              sid: "",
+              error_code: "400",
+              error_message: "Missing required fields",
             };
           }
 
@@ -93,7 +100,10 @@ export class SmsProvider extends MessageProvider {
    */
   async send(message: Message): Promise<SendResult> {
     if (!this.client) {
-      throw new ConfigurationError(MessageChannel.SMS, 'SMS client not initialized');
+      throw new ConfigurationError(
+        MessageChannel.SMS,
+        "SMS client not initialized",
+      );
     }
 
     // Validate recipient (E.164 format)
@@ -101,7 +111,7 @@ export class SmsProvider extends MessageProvider {
       throw new InvalidRecipientError(
         MessageChannel.SMS,
         message.to,
-        'Phone number must be in E.164 format (+[country][number])',
+        "Phone number must be in E.164 format (+[country][number])",
       );
     }
 
@@ -110,7 +120,7 @@ export class SmsProvider extends MessageProvider {
       throw new InvalidRecipientError(
         MessageChannel.SMS,
         message.to,
-        'Message body is required',
+        "Message body is required",
       );
     }
 
@@ -121,7 +131,7 @@ export class SmsProvider extends MessageProvider {
       throw new InvalidRecipientError(
         MessageChannel.SMS,
         message.to,
-        'Message too long (max 10 segments, 1600 characters)',
+        "Message too long (max 10 segments, 1600 characters)",
       );
     }
 
@@ -133,15 +143,18 @@ export class SmsProvider extends MessageProvider {
       });
 
       if (result.error_code) {
-        if (result.error_code === '429' || result.error_code === '20429') {
-          throw new RateLimitError(MessageChannel.SMS, 'SMS rate limit exceeded');
+        if (result.error_code === "429" || result.error_code === "20429") {
+          throw new RateLimitError(
+            MessageChannel.SMS,
+            "SMS rate limit exceeded",
+          );
         }
 
-        if (result.error_code === '401' || result.error_code === '20003') {
+        if (result.error_code === "401" || result.error_code === "20003") {
           throw new AuthenticationError(
             MessageChannel.SMS,
-            'twilio',
-            'Invalid Twilio credentials',
+            "twilio",
+            "Invalid Twilio credentials",
           );
         }
 
@@ -159,11 +172,15 @@ export class SmsProvider extends MessageProvider {
         cost: calculateSmsCost(segmentCount),
       };
     } catch (error) {
-      if (error instanceof RateLimitError || error instanceof AuthenticationError) {
+      if (
+        error instanceof RateLimitError ||
+        error instanceof AuthenticationError
+      ) {
         throw error;
       }
 
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       throw new Error(`SMS send failed: ${errorMessage}`);
     }
   }
@@ -214,7 +231,9 @@ export class SmsProvider extends MessageProvider {
    * Test SMS connection.
    */
   async testConnection(): Promise<boolean> {
-    return Boolean(this.client && this.config.accountSid && this.config.authToken);
+    return Boolean(
+      this.client && this.config.accountSid && this.config.authToken,
+    );
   }
 }
 
@@ -236,15 +255,25 @@ export function validatePhoneE164(phone: string): boolean {
 interface SmsLengthResult {
   segmentCount: number;
   totalCharacters: number;
-  encoding: 'gsm7' | 'utf16';
+  encoding: "gsm7" | "utf16";
 }
 
 export function calculateSmsLength(text: string): SmsLengthResult {
-  const gsmExtendedChars = new Set<string>(['[', ']', '{', '}', '\\', '|', '^', '~', '€']);
+  const gsmExtendedChars = new Set<string>([
+    "[",
+    "]",
+    "{",
+    "}",
+    "\\",
+    "|",
+    "^",
+    "~",
+    "€",
+  ]);
   const gsmSingleChars = new Set<string>(
-    '@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞ{}\\[~]|^€ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ¡¿§¶ß¢¤¥ª«º»àáâãäåæçñòóôõöÙÚûüý '.split(
-        '',
-      ),
+    "@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞ{}\\[~]|^€ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ¡¿§¶ß¢¤¥ª«º»àáâãäåæçñòóôõöÙÚûüý ".split(
+      "",
+    ),
   );
 
   let isGsm = true;
@@ -264,7 +293,7 @@ export function calculateSmsLength(text: string): SmsLengthResult {
     return {
       segmentCount: Math.ceil(text.length / 70),
       totalCharacters: text.length,
-      encoding: 'utf16',
+      encoding: "utf16",
     };
   }
 
@@ -272,7 +301,7 @@ export function calculateSmsLength(text: string): SmsLengthResult {
   return {
     segmentCount: Math.ceil(charCount / 160),
     totalCharacters: charCount,
-    encoding: 'gsm7',
+    encoding: "gsm7",
   };
 }
 

@@ -1,12 +1,12 @@
-import type { SQLiteDatabase } from 'expo-sqlite';
-import { CREATE_MIGRATIONS_TABLE, MIGRATIONS } from './schema';
+import type { SQLiteDatabase } from "expo-sqlite";
+import { CREATE_MIGRATIONS_TABLE, MIGRATIONS } from "./schema";
 
 /**
  * Returns the set of migration names that have already been applied.
  */
 async function getAppliedMigrations(db: SQLiteDatabase): Promise<Set<string>> {
   const rows = await db.getAllAsync<{ name: string }>(
-    'SELECT name FROM _migrations ORDER BY id ASC',
+    "SELECT name FROM _migrations ORDER BY id ASC",
   );
   return new Set(rows.map((r) => r.name));
 }
@@ -30,7 +30,7 @@ export async function runMigrations(db: SQLiteDatabase): Promise<void> {
     for (const migration of pending) {
       await db.execAsync(migration.sql);
       await db.runAsync(
-        'INSERT INTO _migrations (name, run_at) VALUES (?, ?)',
+        "INSERT INTO _migrations (name, run_at) VALUES (?, ?)",
         [migration.name, new Date().toISOString()],
       );
     }
@@ -41,10 +41,12 @@ export async function runMigrations(db: SQLiteDatabase): Promise<void> {
  * Returns the list of applied migration names in order.
  * Useful for diagnostics and tests.
  */
-export async function listAppliedMigrations(db: SQLiteDatabase): Promise<string[]> {
+export async function listAppliedMigrations(
+  db: SQLiteDatabase,
+): Promise<string[]> {
   await db.execAsync(CREATE_MIGRATIONS_TABLE);
   const rows = await db.getAllAsync<{ name: string }>(
-    'SELECT name FROM _migrations ORDER BY id ASC',
+    "SELECT name FROM _migrations ORDER BY id ASC",
   );
   return rows.map((r) => r.name);
 }

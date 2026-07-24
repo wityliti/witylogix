@@ -50,7 +50,8 @@ export function ApiUsageChart({
     });
 
     // Calculate average line
-    const avgRequests = data.reduce((sum, d) => sum + d.requests, 0) / data.length;
+    const avgRequests =
+      data.reduce((sum, d) => sum + d.requests, 0) / data.length;
     const avgY = height - padding - (avgRequests / maxRequests) * innerHeight;
 
     return {
@@ -99,13 +100,22 @@ export function ApiUsageChart({
   const formatTime = (date: Date): string => {
     switch (timeRange) {
       case "1h":
-        return date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+        return date.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
       case "6h":
       case "24h":
-        return date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+        return date.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
       case "7d":
       case "30d":
-        return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        return date.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        });
       default:
         return date.toLocaleString();
     }
@@ -117,8 +127,12 @@ export function ApiUsageChart({
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-base font-semibold text-wl-text-primary">{getTimeLabel()}</h3>
-            <p className="text-sm text-wl-text-secondary mt-1">Request and error metrics</p>
+            <h3 className="text-base font-semibold text-wl-text-primary">
+              {getTimeLabel()}
+            </h3>
+            <p className="text-sm text-wl-text-secondary mt-1">
+              Request and error metrics
+            </p>
           </div>
 
           {/* Time range selector */}
@@ -131,7 +145,7 @@ export function ApiUsageChart({
                   "px-3 py-1 rounded text-xs font-medium transition-colors",
                   timeRange === range
                     ? "bg-wl-primary-500 text-white"
-                    : "bg-wl-surface-hover text-wl-text-secondary hover:bg-wl-border-subtle"
+                    : "bg-wl-surface-hover text-wl-text-secondary hover:bg-wl-border-subtle",
                 )}
               >
                 {range}
@@ -185,7 +199,8 @@ export function ApiUsageChart({
           >
             {/* Grid lines - vertical */}
             {chartData.requestPoints.map((point, idx) => {
-              if (idx % Math.max(1, Math.floor(data.length / 5)) !== 0) return null;
+              if (idx % Math.max(1, Math.floor(data.length / 5)) !== 0)
+                return null;
               return (
                 <line
                   key={`grid-v-${idx}`}
@@ -202,7 +217,10 @@ export function ApiUsageChart({
 
             {/* Grid lines - horizontal */}
             {[0, 0.25, 0.5, 0.75, 1].map((ratio, idx) => {
-              const y = chartData.height - chartData.padding - ratio * chartData.innerHeight;
+              const y =
+                chartData.height -
+                chartData.padding -
+                ratio * chartData.innerHeight;
               return (
                 <line
                   key={`grid-h-${idx}`}
@@ -234,7 +252,9 @@ export function ApiUsageChart({
               <path
                 d={`M ${chartData.padding} ${chartData.height - chartData.padding} L ${chartData.requestPoints
                   .map((p) => `${p.x} ${p.y}`)
-                  .join(" L ")} L ${chartData.width - chartData.padding} ${chartData.height - chartData.padding} Z`}
+                  .join(
+                    " L ",
+                  )} L ${chartData.width - chartData.padding} ${chartData.height - chartData.padding} Z`}
                 fill="var(--wl-primary-400)"
                 fillOpacity="0.1"
               />
@@ -243,7 +263,9 @@ export function ApiUsageChart({
             {/* Request line */}
             {chartData.requestPoints.length > 1 && (
               <polyline
-                points={chartData.requestPoints.map((p) => `${p.x},${p.y}`).join(" ")}
+                points={chartData.requestPoints
+                  .map((p) => `${p.x},${p.y}`)
+                  .join(" ")}
                 fill="none"
                 stroke="var(--wl-primary-500)"
                 strokeWidth="2"
@@ -253,7 +275,9 @@ export function ApiUsageChart({
             {/* Error line */}
             {chartData.errorPoints.length > 1 && (
               <polyline
-                points={chartData.errorPoints.map((p) => `${p.x},${p.y}`).join(" ")}
+                points={chartData.errorPoints
+                  .map((p) => `${p.x},${p.y}`)
+                  .join(" ")}
                 fill="none"
                 stroke="var(--wl-danger-500)"
                 strokeWidth="2"
@@ -328,15 +352,21 @@ export function ApiUsageChart({
             <div
               className={cn(
                 "absolute -top-24 -translate-x-1/2 bg-wl-text-primary text-white rounded-lg p-3 text-sm shadow-lg whitespace-nowrap pointer-events-none z-10",
-                "dark:bg-wl-text-primary"
+                "dark:bg-wl-text-primary",
               )}
               style={{
-                left: `calc(${(hoveredIndex / (data.length - 1 || 1)) * 100}% + ${chartData.padding / chartData.width * 100}%)`,
+                left: `calc(${(hoveredIndex / (data.length - 1 || 1)) * 100}% + ${(chartData.padding / chartData.width) * 100}%)`,
               }}
             >
-              <div className="font-semibold">{formatTime(tooltipData.data.timestamp)}</div>
-              <div className="text-xs text-white/90">Requests: {tooltipData.requests.value}</div>
-              <div className="text-xs text-white/90">Errors: {tooltipData.errors.value}</div>
+              <div className="font-semibold">
+                {formatTime(tooltipData.data.timestamp)}
+              </div>
+              <div className="text-xs text-white/90">
+                Requests: {tooltipData.requests.value}
+              </div>
+              <div className="text-xs text-white/90">
+                Errors: {tooltipData.errors.value}
+              </div>
             </div>
           )}
         </div>
@@ -344,25 +374,35 @@ export function ApiUsageChart({
         {/* Stats */}
         <div className="grid grid-cols-4 gap-4">
           <div className="p-3 rounded bg-wl-surface-hover">
-            <div className="text-xs text-wl-text-secondary mb-1">Total Requests</div>
+            <div className="text-xs text-wl-text-secondary mb-1">
+              Total Requests
+            </div>
             <div className="text-lg font-semibold text-wl-text-primary">
               {data.reduce((sum, d) => sum + d.requests, 0).toLocaleString()}
             </div>
           </div>
           <div className="p-3 rounded bg-wl-surface-hover">
-            <div className="text-xs text-wl-text-secondary mb-1">Total Errors</div>
+            <div className="text-xs text-wl-text-secondary mb-1">
+              Total Errors
+            </div>
             <div className="text-lg font-semibold text-wl-danger-600">
               {data.reduce((sum, d) => sum + d.errors, 0).toLocaleString()}
             </div>
           </div>
           <div className="p-3 rounded bg-wl-surface-hover">
-            <div className="text-xs text-wl-text-secondary mb-1">Avg Requests/Period</div>
+            <div className="text-xs text-wl-text-secondary mb-1">
+              Avg Requests/Period
+            </div>
             <div className="text-lg font-semibold text-wl-text-primary">
-              {Math.round(data.reduce((sum, d) => sum + d.requests, 0) / data.length)}
+              {Math.round(
+                data.reduce((sum, d) => sum + d.requests, 0) / data.length,
+              )}
             </div>
           </div>
           <div className="p-3 rounded bg-wl-surface-hover">
-            <div className="text-xs text-wl-text-secondary mb-1">Error Rate</div>
+            <div className="text-xs text-wl-text-secondary mb-1">
+              Error Rate
+            </div>
             <div className="text-lg font-semibold text-wl-warning-600">
               {(
                 (data.reduce((sum, d) => sum + d.errors, 0) /

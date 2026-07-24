@@ -87,7 +87,10 @@ const DealCard = memo(
             <span className="text-sm font-semibold text-wl-success-400">
               {formatCurrency(deal.value)}
             </span>
-            <Badge variant={probabilityConfig(deal.probability).color as any} dot>
+            <Badge
+              variant={probabilityConfig(deal.probability).color as any}
+              dot
+            >
               {deal.probability}%
             </Badge>
           </div>
@@ -116,7 +119,7 @@ const DealCard = memo(
         </div>
       </div>
     );
-  }
+  },
 );
 
 DealCard.displayName = "DealCard";
@@ -161,7 +164,7 @@ const PipelineColumn = memo(
           "border-2 transition-all duration-fast",
           dragOver
             ? "border-wl-primary-500 bg-wl-primary-500/5"
-            : "border-wl-border-subtle bg-wl-bg-overlay"
+            : "border-wl-border-subtle bg-wl-bg-overlay",
         )}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -176,7 +179,9 @@ const PipelineColumn = memo(
             className="w-full text-left px-3 py-2 rounded-md hover:bg-wl-bg-elevated transition-colors"
             aria-label={`View stage: ${stage.name}`}
           >
-            <h3 className="text-sm font-semibold text-wl-text-primary">{stage.name}</h3>
+            <h3 className="text-sm font-semibold text-wl-text-primary">
+              {stage.name}
+            </h3>
           </button>
 
           {/* Stage Stats */}
@@ -213,7 +218,7 @@ const PipelineColumn = memo(
         </div>
       </div>
     );
-  }
+  },
 );
 
 PipelineColumn.displayName = "PipelineColumn";
@@ -269,7 +274,7 @@ export const DealPipeline = memo(function DealPipeline({
       onDealMove?.(dealId, currentStageId, toStageId);
       setDraggedDealId(null);
     },
-    [stages, onDealMove]
+    [stages, onDealMove],
   );
 
   const stageMetrics = useMemo(() => {
@@ -287,14 +292,16 @@ export const DealPipeline = memo(function DealPipeline({
 
   const pipelineTotal = useMemo(
     () => stageMetrics.reduce((sum, metric) => sum + metric.totalValue, 0),
-    [stageMetrics]
+    [stageMetrics],
   );
 
   return (
     <div className="space-y-4">
       {/* Pipeline Header */}
       <div className="flex items-center justify-between px-1">
-        <h2 className="text-lg font-semibold text-wl-text-primary">Sales Pipeline</h2>
+        <h2 className="text-lg font-semibold text-wl-text-primary">
+          Sales Pipeline
+        </h2>
         <div className="text-right">
           <p className="text-sm text-wl-text-secondary">Total Pipeline Value</p>
           <p className="text-2xl font-bold text-wl-success-400">
@@ -328,7 +335,10 @@ export const DealPipeline = memo(function DealPipeline({
             {stages.map((stage, idx) => {
               const conversionRate =
                 idx > 0 && stages[idx - 1].deals.length > 0
-                  ? ((stage.deals.length / stages[idx - 1].deals.length) * 100).toFixed(1)
+                  ? (
+                      (stage.deals.length / stages[idx - 1].deals.length) *
+                      100
+                    ).toFixed(1)
                   : "-";
 
               return (

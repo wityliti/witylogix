@@ -69,8 +69,11 @@ export const RouteTimeline = ({
   compact = false,
   className,
 }: RouteTimelineProps) => {
-  const [expandedLocal, setExpandedLocal] = useState<string | null>(expandedStopId || null);
-  const expandedId = expandedStopId !== undefined ? expandedStopId : expandedLocal;
+  const [expandedLocal, setExpandedLocal] = useState<string | null>(
+    expandedStopId || null,
+  );
+  const expandedId =
+    expandedStopId !== undefined ? expandedStopId : expandedLocal;
 
   const handleToggleExpand = (stopId: string) => {
     const newId = expandedId === stopId ? null : stopId;
@@ -82,7 +85,10 @@ export const RouteTimeline = ({
     if (!stop.timeWindow || !stop.eta) return false;
     const eta = new Date(stop.eta);
     const windowEnd = new Date(stop.timeWindow.end);
-    return eta > windowEnd && (stop.status === "pending" || stop.status === "arrived");
+    return (
+      eta > windowEnd &&
+      (stop.status === "pending" || stop.status === "arrived")
+    );
   };
 
   return (
@@ -102,7 +108,7 @@ export const RouteTimeline = ({
               className={cn(
                 "flex gap-4",
                 "group transition-all duration-200",
-                !compact && "pb-2"
+                !compact && "pb-2",
               )}
             >
               {/* Left Side: Timeline Marker */}
@@ -113,7 +119,7 @@ export const RouteTimeline = ({
                     className={cn(
                       "absolute -left-8 top-1.5 w-5 h-5 rounded-full",
                       "bg-wl-primary-500 animate-pulse border-2 border-wl-bg-elevated",
-                      "shadow-lg"
+                      "shadow-lg",
                     )}
                     aria-label="Current position"
                   />
@@ -128,15 +134,23 @@ export const RouteTimeline = ({
                     "border-2",
                     "transition-all duration-200",
                     status.color,
-                    isCurrentStop && "ring-2 ring-wl-primary-500 ring-offset-2"
+                    isCurrentStop && "ring-2 ring-wl-primary-500 ring-offset-2",
                   )}
                 >
                   {stop.status === "completed" ? (
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <svg
+                      className="w-4 h-4"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
                       <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                     </svg>
                   ) : stop.status === "skipped" ? (
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <svg
+                      className="w-4 h-4"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
                       <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
                     </svg>
                   ) : (
@@ -150,7 +164,7 @@ export const RouteTimeline = ({
                     className={cn(
                       "w-0.5 flex-1 my-2",
                       status.lineColor,
-                      stop.status === "completed" ? "bg-solid" : "bg-dashed"
+                      stop.status === "completed" ? "bg-solid" : "bg-dashed",
                     )}
                     style={{
                       backgroundImage:
@@ -177,7 +191,7 @@ export const RouteTimeline = ({
                     "w-full text-left",
                     "hover:bg-wl-bg-overlay/50 rounded px-2 py-1.5",
                     "transition-colors duration-200",
-                    !compact && "cursor-pointer"
+                    !compact && "cursor-pointer",
                   )}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -188,15 +202,22 @@ export const RouteTimeline = ({
 
                       {stop.timeWindow && stop.eta && !compact && (
                         <p className="text-xs text-wl-text-tertiary mt-1">
-                          Time Window: {new Date(stop.timeWindow.start).toLocaleTimeString("en-US", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}{" "}
+                          Time Window:{" "}
+                          {new Date(stop.timeWindow.start).toLocaleTimeString(
+                            "en-US",
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            },
+                          )}{" "}
                           -{" "}
-                          {new Date(stop.timeWindow.end).toLocaleTimeString("en-US", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                          {new Date(stop.timeWindow.end).toLocaleTimeString(
+                            "en-US",
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            },
+                          )}
                         </p>
                       )}
                     </div>
@@ -225,13 +246,13 @@ export const RouteTimeline = ({
                           }}
                           className={cn(
                             "p-0.5 text-wl-text-tertiary",
-                            "hover:text-wl-text-primary transition-colors"
+                            "hover:text-wl-text-primary transition-colors",
                           )}
                         >
                           <svg
                             className={cn(
                               "w-4 h-4 transition-transform",
-                              isExpanded && "rotate-180"
+                              isExpanded && "rotate-180",
                             )}
                             fill="none"
                             stroke="currentColor"
@@ -256,7 +277,9 @@ export const RouteTimeline = ({
                     {stop.contactName && (
                       <div className="text-xs">
                         <span className="text-wl-text-tertiary">Contact:</span>
-                        <p className="text-wl-text-secondary font-medium">{stop.contactName}</p>
+                        <p className="text-wl-text-secondary font-medium">
+                          {stop.contactName}
+                        </p>
                       </div>
                     )}
 
@@ -276,7 +299,9 @@ export const RouteTimeline = ({
 
                     {stop.instructions && (
                       <div className="text-xs">
-                        <span className="text-wl-text-tertiary">Instructions:</span>
+                        <span className="text-wl-text-tertiary">
+                          Instructions:
+                        </span>
                         <p className="text-wl-text-secondary mt-1 leading-relaxed">
                           {stop.instructions}
                         </p>
@@ -286,7 +311,9 @@ export const RouteTimeline = ({
                     {stop.notes && (
                       <div className="text-xs">
                         <span className="text-wl-text-tertiary">Notes:</span>
-                        <p className="text-wl-text-secondary mt-1 leading-relaxed">{stop.notes}</p>
+                        <p className="text-wl-text-secondary mt-1 leading-relaxed">
+                          {stop.notes}
+                        </p>
                       </div>
                     )}
                   </div>

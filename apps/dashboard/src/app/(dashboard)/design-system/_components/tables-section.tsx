@@ -1,14 +1,12 @@
-'use client';
+"use client";
 
-import { Badge, Card } from '@/components/ui';
+import { Badge, Card } from "@/components/ui";
 
 export function TablesSection() {
   return (
     <div className="space-y-12">
       <div>
-        <h2 className="text-2xl font-bold text-white mb-2">
-          Tables
-        </h2>
+        <h2 className="text-2xl font-bold text-white mb-2">Tables</h2>
         <p className="text-gray-300 mb-8">
           Responsive table component for displaying structured data.
         </p>
@@ -56,12 +54,8 @@ export function TablesSection() {
                   key={idx}
                   className="border-b border-[#1e1e2e] hover:bg-[#12121a] transition-colors"
                 >
-                  <td className="px-4 py-3 text-gray-300">
-                    {row.id}
-                  </td>
-                  <td className="px-4 py-3 text-white">
-                    {row.name}
-                  </td>
+                  <td className="px-4 py-3 text-gray-300">{row.id}</td>
+                  <td className="px-4 py-3 text-white">{row.name}</td>
                   <td className="px-4 py-3">
                     <Badge
                       variant={
@@ -75,9 +69,7 @@ export function TablesSection() {
                       {row.status}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 text-gray-300">
-                    {row.date}
-                  </td>
+                  <td className="px-4 py-3 text-gray-300">{row.date}</td>
                 </tr>
               ))}
             </tbody>

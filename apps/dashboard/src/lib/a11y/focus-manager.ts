@@ -3,25 +3,27 @@
  * Provides keyboard and programmatic focus control for accessible components
  */
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect } from "react";
 
 /**
  * Query all focusable elements within a container
  */
-export function getFocusableElements(container: HTMLElement | null): HTMLElement[] {
+export function getFocusableElements(
+  container: HTMLElement | null,
+): HTMLElement[] {
   if (!container) return [];
 
   const focusableSelectors = [
-    'button:not([disabled])',
-    'a[href]',
-    'input:not([disabled])',
-    'select:not([disabled])',
-    'textarea:not([disabled])',
+    "button:not([disabled])",
+    "a[href]",
+    "input:not([disabled])",
+    "select:not([disabled])",
+    "textarea:not([disabled])",
     '[tabindex]:not([tabindex="-1"])',
   ];
 
   return Array.from(
-    container.querySelectorAll<HTMLElement>(focusableSelectors.join(','))
+    container.querySelectorAll<HTMLElement>(focusableSelectors.join(",")),
   ).filter((el) => isVisible(el));
 }
 
@@ -31,7 +33,7 @@ export function getFocusableElements(container: HTMLElement | null): HTMLElement
 function isVisible(element: HTMLElement): boolean {
   return !!(
     element.offsetParent !== null ||
-    getComputedStyle(element).display !== 'none'
+    getComputedStyle(element).display !== "none"
   );
 }
 
@@ -42,11 +44,11 @@ export function isFocusable(element: HTMLElement): boolean {
   if (!isVisible(element)) return false;
 
   const tagName = element.tagName.toLowerCase();
-  const tabIndex = element.getAttribute('tabindex');
+  const tabIndex = element.getAttribute("tabindex");
 
   // Elements that are naturally focusable
-  if (['button', 'a', 'input', 'select', 'textarea'].includes(tagName)) {
-    return !element.hasAttribute('disabled');
+  if (["button", "a", "input", "select", "textarea"].includes(tagName)) {
+    return !element.hasAttribute("disabled");
   }
 
   // Elements with explicit tabindex > -1
@@ -78,8 +80,8 @@ export function focusLast(container: HTMLElement | null): void {
  * Move focus forward or backward through focusable elements
  */
 export function moveFocus(
-  direction: 'forward' | 'backward',
-  container: HTMLElement | null = document.body
+  direction: "forward" | "backward",
+  container: HTMLElement | null = document.body,
 ): void {
   const focusables = getFocusableElements(container);
   const currentElement = document.activeElement as HTMLElement | null;
@@ -89,10 +91,10 @@ export function moveFocus(
 
   let nextIndex: number;
   if (currentIndex === -1) {
-    nextIndex = direction === 'forward' ? 0 : focusables.length - 1;
+    nextIndex = direction === "forward" ? 0 : focusables.length - 1;
   } else {
     nextIndex =
-      direction === 'forward'
+      direction === "forward"
         ? (currentIndex + 1) % focusables.length
         : (currentIndex - 1 + focusables.length) % focusables.length;
   }
@@ -107,7 +109,7 @@ export function trapFocus(container: HTMLElement | null): (() => void) | null {
   if (!container) return null;
 
   const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key !== 'Tab') return;
+    if (e.key !== "Tab") return;
 
     const focusables = getFocusableElements(container);
     if (focusables.length === 0) {
@@ -134,8 +136,8 @@ export function trapFocus(container: HTMLElement | null): (() => void) | null {
     }
   };
 
-  container.addEventListener('keydown', handleKeyDown);
-  return () => container.removeEventListener('keydown', handleKeyDown);
+  container.addEventListener("keydown", handleKeyDown);
+  return () => container.removeEventListener("keydown", handleKeyDown);
 }
 
 /**
@@ -152,7 +154,7 @@ export function restoreFocus(previousElement: HTMLElement | null): void {
  */
 export function useFocusTrap(
   containerRef: React.RefObject<HTMLElement>,
-  options: { initialFocus?: 'first' | 'last' } = {}
+  options: { initialFocus?: "first" | "last" } = {},
 ): void {
   useEffect(() => {
     const container = containerRef.current;
@@ -162,7 +164,7 @@ export function useFocusTrap(
     const previousElement = document.activeElement as HTMLElement;
 
     // Focus initial element
-    if (options.initialFocus === 'last') {
+    if (options.initialFocus === "last") {
       focusLast(container);
     } else {
       focusFirst(container);

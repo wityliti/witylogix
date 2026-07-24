@@ -16,26 +16,25 @@ export function MapLegend() {
   const [isOpen, setIsOpen] = useState(true);
 
   return (
-    <div className={cn(
-      "bg-wl-bg-elevated border border-wl-border-default",
-      "rounded-lg shadow-lg overflow-hidden",
-      "max-w-xs"
-    )}>
+    <div
+      className={cn(
+        "bg-wl-bg-elevated border border-wl-border-default",
+        "rounded-lg shadow-lg overflow-hidden",
+        "max-w-xs",
+      )}
+    >
       {/* Header */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "w-full px-4 py-3 flex items-center justify-between",
           "text-sm font-semibold text-wl-text-primary",
-          "hover:bg-wl-bg-overlay transition-colors"
+          "hover:bg-wl-bg-overlay transition-colors",
         )}
       >
         <span>Legend</span>
         <ChevronDown
-          className={cn(
-            "w-4 h-4 transition-transform",
-            isOpen && "rotate-180"
-          )}
+          className={cn("w-4 h-4 transition-transform", isOpen && "rotate-180")}
         />
       </button>
 
@@ -97,9 +96,13 @@ export function MapLegend() {
             </h4>
             <div className="space-y-1.5 text-xs">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-0.5 bg-wl-info-400" style={{
-                  backgroundImage: "repeating-linear-gradient(90deg, currentColor 0, currentColor 2px, transparent 2px, transparent 6px)"
-                }} />
+                <div
+                  className="w-6 h-0.5 bg-wl-info-400"
+                  style={{
+                    backgroundImage:
+                      "repeating-linear-gradient(90deg, currentColor 0, currentColor 2px, transparent 2px, transparent 6px)",
+                  }}
+                />
                 <span className="text-wl-text-secondary">Planned</span>
               </div>
               <div className="flex items-center gap-2">

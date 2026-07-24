@@ -85,7 +85,13 @@ export interface ShopifyOrderPayload {
 export interface ShopifyFulfillmentPayload {
   id: string;
   order_id: string;
-  status: "pending" | "confirmed" | "in_transit" | "out_for_delivery" | "delivered" | "failure";
+  status:
+    | "pending"
+    | "confirmed"
+    | "in_transit"
+    | "out_for_delivery"
+    | "delivered"
+    | "failure";
   tracking_info?: {
     number: string;
     company: string;
@@ -168,18 +174,28 @@ export class ShopifyWorkflowBridge {
       const body = typeof payload === "string" ? JSON.parse(payload) : payload;
 
       // Detect webhook type from headers
-      const webhookTopic = headers["x-shopify-topic"] || headers["X-Shopify-Topic"] || "";
+      const webhookTopic =
+        headers["x-shopify-topic"] || headers["X-Shopify-Topic"] || "";
 
       // Route to appropriate handler
-      if (webhookTopic.includes("orders/create") || webhookTopic.includes("orders/updated")) {
+      if (
+        webhookTopic.includes("orders/create") ||
+        webhookTopic.includes("orders/updated")
+      ) {
         return this.handleOrderEvent(body as ShopifyOrderPayload, webhookTopic);
       }
 
       if (webhookTopic.includes("fulfillments")) {
-        return this.handleFulfillmentEvent(body as ShopifyFulfillmentPayload, webhookTopic);
+        return this.handleFulfillmentEvent(
+          body as ShopifyFulfillmentPayload,
+          webhookTopic,
+        );
       }
 
-      return { success: false, error: `Unknown webhook topic: ${webhookTopic}` };
+      return {
+        success: false,
+        error: `Unknown webhook topic: ${webhookTopic}`,
+      };
     } catch (error) {
       this.logger.error(`Error processing Shopify webhook: ${error}`);
       return {
@@ -192,7 +208,10 @@ export class ShopifyWorkflowBridge {
   /**
    * Handle Shopify order event
    */
-  private handleOrderEvent(payload: ShopifyOrderPayload, topic: string): WebhookProcessResult {
+  private handleOrderEvent(
+    payload: ShopifyOrderPayload,
+    topic: string,
+  ): WebhookProcessResult {
     try {
       // Validate payload
       const validation = this.validateOrderPayload(payload);
@@ -226,7 +245,10 @@ export class ShopifyWorkflowBridge {
   /**
    * Handle Shopify fulfillment event
    */
-  private handleFulfillmentEvent(payload: ShopifyFulfillmentPayload, topic: string): WebhookProcessResult {
+  private handleFulfillmentEvent(
+    payload: ShopifyFulfillmentPayload,
+    topic: string,
+  ): WebhookProcessResult {
     try {
       // Validate payload
       const validation = this.validateFulfillmentPayload(payload);
@@ -258,7 +280,10 @@ export class ShopifyWorkflowBridge {
   /**
    * Transform Shopify order to trigger context
    */
-  private transformOrderToContext(payload: ShopifyOrderPayload, eventType: TriggerEventType): Partial<TriggerContext> {
+  private transformOrderToContext(
+    payload: ShopifyOrderPayload,
+    eventType: TriggerEventType,
+  ): Partial<TriggerContext> {
     const customer = payload.customer;
     const shippingAddress = payload.shipping_address;
     const items = payload.line_items.map((item) => ({
@@ -270,7 +295,9 @@ export class ShopifyWorkflowBridge {
       price: parseFloat(item.price),
     }));
 
-    const totalWeight = payload.total_weight ? parseFloat(payload.total_weight.toString()) : 0;
+    const totalWeight = payload.total_weight
+      ? parseFloat(payload.total_weight.toString())
+      : 0;
 
     return {
       eventType,
@@ -280,7 +307,9 @@ export class ShopifyWorkflowBridge {
         orderId: String(payload.id),
         externalOrderId: String(payload.id),
         externalOrderNumber: String(payload.order_number),
-        customerName: customer ? `${customer.first_name} ${customer.last_name}`.trim() : "",
+        customerName: customer
+          ? `${customer.first_name} ${customer.last_name}`.trim()
+          : "",
         customerEmail: customer?.email || payload.email || "",
         customerPhone: customer?.phone || "",
         pickupLocationId: "", // Will be filled by workflow
@@ -294,7 +323,9 @@ export class ShopifyWorkflowBridge {
         totalPrice: parseFloat(payload.total_price),
         totalWeight,
         notes: payload.note,
-        tags: payload.tags ? payload.tags.split(",").map((t) => t.trim()) : undefined,
+        tags: payload.tags
+          ? payload.tags.split(",").map((t) => t.trim())
+          : undefined,
         metadata: {
           shopifyOrderId: payload.id,
           shopifyOrderNumber: payload.order_number,
@@ -313,7 +344,9 @@ export class ShopifyWorkflowBridge {
   /**
    * Transform Shopify fulfillment to trigger context
    */
-  private transformFulfillmentToContext(payload: ShopifyFulfillmentPayload): Partial<TriggerContext> {
+  private transformFulfillmentToContext(
+    payload: ShopifyFulfillmentPayload,
+  ): Partial<TriggerContext> {
     // Map Shopify status to internal status
     const statusMap: Record<string, string> = {
       pending: "PENDING",
@@ -359,13 +392,18 @@ export class ShopifyWorkflowBridge {
   /**
    * Validate Shopify order payload
    */
-  private validateOrderPayload(payload: ShopifyOrderPayload): { valid: boolean; error?: string } {
+  private validateOrderPayload(payload: ShopifyOrderPayload): {
+    valid: boolean;
+    error?: string;
+  } {
     if (!payload.id) return { valid: false, error: "Missing order ID" };
-    if (!payload.order_number) return { valid: false, error: "Missing order number" };
+    if (!payload.order_number)
+      return { valid: false, error: "Missing order number" };
     if (!Array.isArray(payload.line_items) || payload.line_items.length === 0) {
       return { valid: false, error: "Missing line items" };
     }
-    if (!payload.total_price) return { valid: false, error: "Missing total price" };
+    if (!payload.total_price)
+      return { valid: false, error: "Missing total price" };
 
     return { valid: true };
   }
@@ -373,10 +411,14 @@ export class ShopifyWorkflowBridge {
   /**
    * Validate Shopify fulfillment payload
    */
-  private validateFulfillmentPayload(payload: ShopifyFulfillmentPayload): { valid: boolean; error?: string } {
+  private validateFulfillmentPayload(payload: ShopifyFulfillmentPayload): {
+    valid: boolean;
+    error?: string;
+  } {
     if (!payload.id) return { valid: false, error: "Missing fulfillment ID" };
     if (!payload.order_id) return { valid: false, error: "Missing order ID" };
-    if (!payload.status) return { valid: false, error: "Missing fulfillment status" };
+    if (!payload.status)
+      return { valid: false, error: "Missing fulfillment status" };
 
     return { valid: true };
   }
@@ -385,14 +427,21 @@ export class ShopifyWorkflowBridge {
    * Verify HMAC signature of webhook
    * Shopify signs webhooks with HMAC-SHA256
    */
-  private verifyWebhookSignature(payload: any, headers: Record<string, string>): boolean {
+  private verifyWebhookSignature(
+    payload: any,
+    headers: Record<string, string>,
+  ): boolean {
     if (!this.apiSecret) return false;
 
-    const hmac = headers["x-shopify-hmac-sha256"] || headers["X-Shopify-Hmac-SHA256"] || "";
+    const hmac =
+      headers["x-shopify-hmac-sha256"] ||
+      headers["X-Shopify-Hmac-SHA256"] ||
+      "";
     if (!hmac) return false;
 
     // Get raw body (webhook should be passed as raw string)
-    const rawBody = typeof payload === "string" ? payload : JSON.stringify(payload);
+    const rawBody =
+      typeof payload === "string" ? payload : JSON.stringify(payload);
 
     // Compute HMAC
     const computed = createHmac("sha256", this.apiSecret)

@@ -57,7 +57,12 @@ export interface SLAViolation {
   slaConfigId: string;
   deliveryId?: string;
   partnerId: string;
-  violationType: "late_pickup" | "late_delivery" | "damage" | "cancellation" | "rating";
+  violationType:
+    | "late_pickup"
+    | "late_delivery"
+    | "damage"
+    | "cancellation"
+    | "rating";
   violationDetails: {
     expectedTime?: Date;
     actualTime?: Date;
@@ -116,7 +121,7 @@ export interface SLAReport {
  */
 export async function defineSLA(
   partnerId: string,
-  config: Omit<SLAConfig, "id" | "createdAt" | "updatedAt">
+  config: Omit<SLAConfig, "id" | "createdAt" | "updatedAt">,
 ): Promise<SLAConfig> {
   // In a real system, this would store in a partner_sla_configs table
   const slaConfig: SLAConfig = {
@@ -143,7 +148,7 @@ export async function defineSLA(
  */
 export async function updateSLA(
   slaConfigId: string,
-  updates: Partial<Omit<SLAConfig, "id" | "partnerId" | "createdAt">>
+  updates: Partial<Omit<SLAConfig, "id" | "partnerId" | "createdAt">>,
 ): Promise<SLAConfig> {
   // Get current config
   const config = await getSLAConfig(slaConfigId);
@@ -182,13 +187,19 @@ function validateSLAConfig(config: SLAConfig): void {
   if (config.deliveryTimeMinutes <= 0) {
     throw new Error("deliveryTimeMinutes must be positive");
   }
-  if (config.damageThresholdPercent < 0 || config.damageThresholdPercent > 100) {
+  if (
+    config.damageThresholdPercent < 0 ||
+    config.damageThresholdPercent > 100
+  ) {
     throw new Error("damageThresholdPercent must be between 0 and 100");
   }
   if (config.minCustomerRating < 1 || config.minCustomerRating > 5) {
     throw new Error("minCustomerRating must be between 1 and 5");
   }
-  if (config.escalationThresholdPercent < 0 || config.escalationThresholdPercent > 100) {
+  if (
+    config.escalationThresholdPercent < 0 ||
+    config.escalationThresholdPercent > 100
+  ) {
     throw new Error("escalationThresholdPercent must be between 0 and 100");
   }
 }
@@ -202,7 +213,7 @@ function validateSLAConfig(config: SLAConfig): void {
 export async function trackSLACompliance(
   deliveryId: string,
   partnerId: string,
-  slaConfigId: string
+  slaConfigId: string,
 ): Promise<{
   compliant: boolean;
   violations: SLAViolation[];
@@ -224,24 +235,15 @@ export async function trackSLACompliance(
 
   // Check pickup time SLA
   // (This would check against actual pickup timestamp from courier)
-  const violationsCheckPickup = checkPickupTimeSLA(
-    delivery,
-    slaConfig
-  );
+  const violationsCheckPickup = checkPickupTimeSLA(delivery, slaConfig);
   violations.push(...violationsCheckPickup);
 
   // Check delivery time SLA
-  const violationsCheckDelivery = checkDeliveryTimeSLA(
-    delivery,
-    slaConfig
-  );
+  const violationsCheckDelivery = checkDeliveryTimeSLA(delivery, slaConfig);
   violations.push(...violationsCheckDelivery);
 
   // Check damage SLA
-  const violationsCheckDamage = checkDamageSLA(
-    delivery,
-    slaConfig
-  );
+  const violationsCheckDamage = checkDamageSLA(delivery, slaConfig);
   if (violationsCheckDamage) {
     violations.push(violationsCheckDamage);
   }
@@ -256,7 +258,7 @@ export async function trackSLACompliance(
   // Check if escalation is needed
   if (!compliant) {
     const needsEscalation = violations.some(
-      (v) => v.severity === "high" || v.severity === "critical"
+      (v) => v.severity === "high" || v.severity === "critical",
     );
     if (needsEscalation) {
       await escalateViolations(violations, slaConfig);
@@ -271,7 +273,7 @@ export async function trackSLACompliance(
  */
 function checkPickupTimeSLA(
   delivery: any,
-  slaConfig: SLAConfig
+  slaConfig: SLAConfig,
 ): SLAViolation[] {
   const violations: SLAViolation[] = [];
 
@@ -286,7 +288,7 @@ function checkPickupTimeSLA(
  */
 function checkDeliveryTimeSLA(
   delivery: any,
-  slaConfig: SLAConfig
+  slaConfig: SLAConfig,
 ): SLAViolation[] {
   const violations: SLAViolation[] = [];
 
@@ -294,17 +296,21 @@ function checkDeliveryTimeSLA(
     return violations;
   }
 
-  const quote = typeof delivery.quote === "string" ? JSON.parse(delivery.quote) : delivery.quote;
-  const estimatedMinutes = quote.estimatedMinutes || slaConfig.deliveryTimeMinutes;
+  const quote =
+    typeof delivery.quote === "string"
+      ? JSON.parse(delivery.quote)
+      : delivery.quote;
+  const estimatedMinutes =
+    quote.estimatedMinutes || slaConfig.deliveryTimeMinutes;
   const expectedDeliveryTime = new Date(
-    new Date(delivery.createdAt).getTime() + estimatedMinutes * 60000
+    new Date(delivery.createdAt).getTime() + estimatedMinutes * 60000,
   );
 
   const actualDeliveryTime = new Date(delivery.deliveredAt);
 
   if (actualDeliveryTime > expectedDeliveryTime) {
     const lateMinutes = Math.round(
-      (actualDeliveryTime.getTime() - expectedDeliveryTime.getTime()) / 60000
+      (actualDeliveryTime.getTime() - expectedDeliveryTime.getTime()) / 60000,
     );
 
     let severity: "low" | "medium" | "high" | "critical" = "low";
@@ -338,10 +344,13 @@ function checkDeliveryTimeSLA(
  */
 function checkDamageSLA(
   delivery: any,
-  slaConfig: SLAConfig
+  slaConfig: SLAConfig,
 ): SLAViolation | null {
   // Check if delivery metadata indicates damage
-  const metadata = typeof delivery.metadata === "string" ? JSON.parse(delivery.metadata) : delivery.metadata;
+  const metadata =
+    typeof delivery.metadata === "string"
+      ? JSON.parse(delivery.metadata)
+      : delivery.metadata;
 
   if (metadata?.damaged) {
     return {
@@ -369,7 +378,9 @@ function checkDamageSLA(
  */
 async function storeViolation(violation: SLAViolation): Promise<void> {
   // Would insert into sla_violations table
-  console.log(`[SLA] Violation recorded for delivery ${violation.deliveryId}: ${violation.violationType}`);
+  console.log(
+    `[SLA] Violation recorded for delivery ${violation.deliveryId}: ${violation.violationType}`,
+  );
 }
 
 // ─── SLA REPORTING ──────────────────────────────────────────────────────
@@ -380,7 +391,7 @@ async function storeViolation(violation: SLAViolation): Promise<void> {
 export async function getSLAReport(
   partnerId: string,
   period: "7d" | "30d" | "60d" | "90d" = "30d",
-  slaConfigId?: string
+  slaConfigId?: string,
 ): Promise<SLAReport> {
   const days = parsePeriod(period);
   const since = new Date();
@@ -399,21 +410,21 @@ export async function getSLAReport(
     deliveries,
     partnerId,
     period,
-    slaConfigId
+    slaConfigId,
   );
 
   // Get violations
   const violations = await getViolationsForPeriod(
     partnerId,
     since,
-    slaConfigId
+    slaConfigId,
   );
 
   // Weekly breakdown
   const weeklyBreakdown = calculateWeeklyBreakdown(
     deliveries,
     partnerId,
-    slaConfigId
+    slaConfigId,
   );
 
   // Generate summary
@@ -438,7 +449,7 @@ function calculateComplianceMetrics(
   deliveries: any[],
   partnerId: string,
   period: string,
-  slaConfigId?: string
+  slaConfigId?: string,
 ): SLAComplianceMetrics {
   let onTimeDeliveries = 0;
   let damageCount = 0;
@@ -446,11 +457,18 @@ function calculateComplianceMetrics(
   let ratings: number[] = [];
 
   for (const delivery of deliveries) {
-    if (delivery.status === "DELIVERED" && delivery.quote && delivery.deliveredAt) {
-      const quote = typeof delivery.quote === "string" ? JSON.parse(delivery.quote) : delivery.quote;
+    if (
+      delivery.status === "DELIVERED" &&
+      delivery.quote &&
+      delivery.deliveredAt
+    ) {
+      const quote =
+        typeof delivery.quote === "string"
+          ? JSON.parse(delivery.quote)
+          : delivery.quote;
       const estimatedMinutes = quote.estimatedMinutes || 0;
       const expectedTime = new Date(
-        new Date(delivery.createdAt).getTime() + estimatedMinutes * 60000
+        new Date(delivery.createdAt).getTime() + estimatedMinutes * 60000,
       );
       if (new Date(delivery.deliveredAt) <= expectedTime) {
         onTimeDeliveries++;
@@ -461,7 +479,10 @@ function calculateComplianceMetrics(
       cancellationCount++;
     }
 
-    const metadata = typeof delivery.metadata === "string" ? JSON.parse(delivery.metadata) : delivery.metadata;
+    const metadata =
+      typeof delivery.metadata === "string"
+        ? JSON.parse(delivery.metadata)
+        : delivery.metadata;
     if (metadata?.damaged) {
       damageCount++;
     }
@@ -471,12 +492,17 @@ function calculateComplianceMetrics(
     }
   }
 
-  const averageRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b) / ratings.length : 5;
-  const overallCompliance = deliveries.length > 0
-    ? (onTimeDeliveries / deliveries.length) * 100
-    : 100;
+  const averageRating =
+    ratings.length > 0 ? ratings.reduce((a, b) => a + b) / ratings.length : 5;
+  const overallCompliance =
+    deliveries.length > 0 ? (onTimeDeliveries / deliveries.length) * 100 : 100;
 
-  const riskLevel = overallCompliance >= 90 ? "green" : overallCompliance >= 75 ? "yellow" : "red";
+  const riskLevel =
+    overallCompliance >= 90
+      ? "green"
+      : overallCompliance >= 75
+        ? "yellow"
+        : "red";
 
   return {
     partnerId,
@@ -499,7 +525,7 @@ function calculateComplianceMetrics(
 async function getViolationsForPeriod(
   partnerId: string,
   since: Date,
-  slaConfigId?: string
+  slaConfigId?: string,
 ): Promise<SLAViolation[]> {
   // Would query from sla_violations table
   return [];
@@ -511,7 +537,7 @@ async function getViolationsForPeriod(
 function calculateWeeklyBreakdown(
   deliveries: any[],
   partnerId: string,
-  slaConfigId?: string
+  slaConfigId?: string,
 ): Record<string, SLAComplianceMetrics> {
   const breakdown: Record<string, SLAComplianceMetrics> = {};
 
@@ -533,7 +559,7 @@ function calculateWeeklyBreakdown(
       weekDeliveries,
       partnerId,
       "7d",
-      slaConfigId
+      slaConfigId,
     );
   }
 
@@ -545,14 +571,16 @@ function calculateWeeklyBreakdown(
  */
 function generateSummary(
   metrics: SLAComplianceMetrics,
-  violations: SLAViolation[]
+  violations: SLAViolation[],
 ): SLAReport["summary"] {
   const mainIssues: string[] = [];
   const recommendations: string[] = [];
 
   if (metrics.overallCompliancePercent < 75) {
     mainIssues.push("Critical: On-time delivery rate below 75%");
-    recommendations.push("Escalate to partner management for urgent improvement plan");
+    recommendations.push(
+      "Escalate to partner management for urgent improvement plan",
+    );
   } else if (metrics.overallCompliancePercent < 90) {
     mainIssues.push("Moderate: On-time delivery rate below 90%");
     recommendations.push("Schedule partnership review meeting");
@@ -582,11 +610,11 @@ function generateSummary(
  */
 async function escalateViolations(
   violations: SLAViolation[],
-  slaConfig: SLAConfig
+  slaConfig: SLAConfig,
 ): Promise<void> {
   for (const violation of violations) {
     console.log(
-      `[SLA] Escalating violation (${violation.severity}): ${violation.message}`
+      `[SLA] Escalating violation (${violation.severity}): ${violation.message}`,
     );
 
     // Update violation as escalated
@@ -598,7 +626,7 @@ async function escalateViolations(
       await sendEscalationNotification(
         channel,
         slaConfig.escalationContacts,
-        violation
+        violation,
       );
     }
   }
@@ -610,11 +638,13 @@ async function escalateViolations(
 async function sendEscalationNotification(
   channel: "email" | "slack" | "sms",
   contacts: string[],
-  violation: SLAViolation
+  violation: SLAViolation,
 ): Promise<void> {
   const message = `[${violation.severity.toUpperCase()}] SLA Violation: ${violation.message}`;
 
-  console.log(`[SLA] Escalation via ${channel}: ${message} to ${contacts.join(", ")}`);
+  console.log(
+    `[SLA] Escalation via ${channel}: ${message} to ${contacts.join(", ")}`,
+  );
 
   // Would integrate with notification service
   // - Email: sendEmail()
@@ -648,7 +678,7 @@ function getWeekStart(date: Date): Date {
 export async function getSLATrend(
   partnerId: string,
   slaConfigId: string,
-  weeks: number = 12
+  weeks: number = 12,
 ): Promise<Array<{ week: string; compliance: number }>> {
   const trend: Array<{ week: string; compliance: number }> = [];
 
@@ -667,7 +697,12 @@ export async function getSLATrend(
       },
     });
 
-    const metrics = calculateComplianceMetrics(deliveries, partnerId, "7d", slaConfigId);
+    const metrics = calculateComplianceMetrics(
+      deliveries,
+      partnerId,
+      "7d",
+      slaConfigId,
+    );
 
     trend.push({
       week: weekStart.toISOString().split("T")[0],

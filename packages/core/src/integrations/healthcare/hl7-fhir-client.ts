@@ -70,7 +70,9 @@ export class HL7FHIRClient extends HealthcareAdapter {
     try {
       await this.getCapabilityStatement();
     } catch (error) {
-      throw new Error(`Failed to validate FHIR configuration: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to validate FHIR configuration: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -85,7 +87,7 @@ export class HL7FHIRClient extends HealthcareAdapter {
       query?: Record<string, string | string[] | number>;
       headers?: Record<string, string>;
       format?: "json" | "xml";
-    }
+    },
   ): Promise<unknown> {
     await this.applyRateLimit();
 
@@ -101,14 +103,22 @@ export class HL7FHIRClient extends HealthcareAdapter {
     }
 
     const headers: Record<string, string> = {
-      "Content-Type": options.format === "xml" ? "application/fhir+xml" : "application/fhir+json",
-      Accept: options.format === "xml" ? "application/fhir+xml" : "application/fhir+json",
+      "Content-Type":
+        options.format === "xml"
+          ? "application/fhir+xml"
+          : "application/fhir+json",
+      Accept:
+        options.format === "xml"
+          ? "application/fhir+xml"
+          : "application/fhir+json",
       ...options.headers,
     };
 
     // Add authentication header
     if (this.authType === "basic" && this.username && this.password) {
-      const credentials = Buffer.from(`${this.username}:${this.password}`).toString("base64");
+      const credentials = Buffer.from(
+        `${this.username}:${this.password}`,
+      ).toString("base64");
       headers.Authorization = `Basic ${credentials}`;
     } else if (this.authType === "bearer" && this.accessToken) {
       headers.Authorization = `Bearer ${this.accessToken}`;
@@ -144,7 +154,7 @@ export class HL7FHIRClient extends HealthcareAdapter {
         }
 
         return response.json();
-      })
+      }),
     );
   }
 
@@ -156,44 +166,78 @@ export class HL7FHIRClient extends HealthcareAdapter {
       return this.capabilityStatement;
     }
 
-    this.capabilityStatement = (await this.request("GET", "/metadata", {})) as any;
+    this.capabilityStatement = (await this.request(
+      "GET",
+      "/metadata",
+      {},
+    )) as any;
     return this.capabilityStatement;
   }
 
   // ─── FHIR CRUD Operations ───────────────────────────────────────────────
 
-  async create<T extends FHIRResource>(resourceType: string, resource: Omit<T, "id">): Promise<T> {
-    const result = (await this.request("POST", `/${resourceType}`, { body: resource })) as T;
-    await this.auditOperation("CREATE", resourceType, result.id || "unknown", undefined, { resourceType });
+  async create<T extends FHIRResource>(
+    resourceType: string,
+    resource: Omit<T, "id">,
+  ): Promise<T> {
+    const result = (await this.request("POST", `/${resourceType}`, {
+      body: resource,
+    })) as T;
+    await this.auditOperation(
+      "CREATE",
+      resourceType,
+      result.id || "unknown",
+      undefined,
+      { resourceType },
+    );
     return result;
   }
 
-  async read<T extends FHIRResource>(resourceType: string, id: string): Promise<T> {
-    const result = (await this.request("GET", `/${resourceType}/${id}`, {})) as T;
-    await this.auditOperation("READ", resourceType, id, undefined, { resourceType });
+  async read<T extends FHIRResource>(
+    resourceType: string,
+    id: string,
+  ): Promise<T> {
+    const result = (await this.request(
+      "GET",
+      `/${resourceType}/${id}`,
+      {},
+    )) as T;
+    await this.auditOperation("READ", resourceType, id, undefined, {
+      resourceType,
+    });
     return result;
   }
 
-  async update<T extends FHIRResource>(resourceType: string, id: string, resource: Partial<T>): Promise<T> {
+  async update<T extends FHIRResource>(
+    resourceType: string,
+    id: string,
+    resource: Partial<T>,
+  ): Promise<T> {
     const fullResource = {
       resourceType,
       id,
       ...resource,
     };
 
-    const result = (await this.request("PUT", `/${resourceType}/${id}`, { body: fullResource })) as T;
-    await this.auditOperation("UPDATE", resourceType, id, undefined, { resourceType });
+    const result = (await this.request("PUT", `/${resourceType}/${id}`, {
+      body: fullResource,
+    })) as T;
+    await this.auditOperation("UPDATE", resourceType, id, undefined, {
+      resourceType,
+    });
     return result;
   }
 
   async delete(resourceType: string, id: string): Promise<void> {
     await this.request("DELETE", `/${resourceType}/${id}`, {});
-    await this.auditOperation("DELETE", resourceType, id, undefined, { resourceType });
+    await this.auditOperation("DELETE", resourceType, id, undefined, {
+      resourceType,
+    });
   }
 
   async search<T extends FHIRResource>(
     resourceType: string,
-    params: FHIRSearchParams
+    params: FHIRSearchParams,
   ): Promise<FHIRSearchResult<T>> {
     const query: Record<string, string | string[] | number> = {};
 
@@ -217,8 +261,12 @@ export class HL7FHIRClient extends HealthcareAdapter {
       query._include = includes.length === 1 ? includes[0]! : includes;
     }
 
-    const result = (await this.request("GET", `/${resourceType}`, { query })) as FHIRSearchResult<T>;
-    await this.auditOperation("QUERY", resourceType, "", undefined, { filters: params.filters });
+    const result = (await this.request("GET", `/${resourceType}`, {
+      query,
+    })) as FHIRSearchResult<T>;
+    await this.auditOperation("QUERY", resourceType, "", undefined, {
+      filters: params.filters,
+    });
     return result;
   }
 
@@ -227,7 +275,9 @@ export class HL7FHIRClient extends HealthcareAdapter {
   /**
    * Execute batch bundle.
    */
-  async executeBatch(entries: Array<{ method: string; url: string; resource?: unknown }>): Promise<any> {
+  async executeBatch(
+    entries: Array<{ method: string; url: string; resource?: unknown }>,
+  ): Promise<any> {
     const bundle = {
       resourceType: "Bundle",
       type: "batch",
@@ -246,7 +296,9 @@ export class HL7FHIRClient extends HealthcareAdapter {
   /**
    * Execute transaction bundle.
    */
-  async executeTransaction(entries: Array<{ method: string; url: string; resource?: unknown }>): Promise<any> {
+  async executeTransaction(
+    entries: Array<{ method: string; url: string; resource?: unknown }>,
+  ): Promise<any> {
     const bundle = {
       resourceType: "Bundle",
       type: "transaction",
@@ -271,7 +323,7 @@ export class HL7FHIRClient extends HealthcareAdapter {
     resourceType: string,
     criteria: string,
     webhookUrl: string,
-    events?: string[]
+    events?: string[],
   ): Promise<any> {
     const resource = {
       resourceType: "Subscription",
@@ -302,7 +354,9 @@ export class HL7FHIRClient extends HealthcareAdapter {
    * Cancel subscription.
    */
   async cancelSubscription(subscriptionId: string): Promise<void> {
-    await this.update<any>("Subscription", subscriptionId, { status: "off" } as any);
+    await this.update<any>("Subscription", subscriptionId, {
+      status: "off",
+    } as any);
   }
 
   // ─── Terminology Service ────────────────────────────────────────────────
@@ -324,7 +378,11 @@ export class HL7FHIRClient extends HealthcareAdapter {
   /**
    * Validate a code against a value set.
    */
-  async validateCode(valueSetUrl: string, code: string, system?: string): Promise<boolean> {
+  async validateCode(
+    valueSetUrl: string,
+    code: string,
+    system?: string,
+  ): Promise<boolean> {
     try {
       const query: Record<string, string> = {
         url: valueSetUrl,
@@ -335,8 +393,13 @@ export class HL7FHIRClient extends HealthcareAdapter {
         query.system = system;
       }
 
-      const result = (await this.request("GET", "/ValueSet/$validate-code", { query })) as any;
-      return result.parameter?.find((p: any) => p.name === "result")?.valueBoolean ?? false;
+      const result = (await this.request("GET", "/ValueSet/$validate-code", {
+        query,
+      })) as any;
+      return (
+        result.parameter?.find((p: any) => p.name === "result")?.valueBoolean ??
+        false
+      );
     } catch {
       return false;
     }
@@ -348,16 +411,20 @@ export class HL7FHIRClient extends HealthcareAdapter {
   async translateCode(
     sourceSystem: CodeSystem,
     sourceCode: string,
-    targetSystem: CodeSystem
+    targetSystem: CodeSystem,
   ): Promise<string | null> {
-    const mapping = await this.getTerminologyMapping(sourceSystem, sourceCode, targetSystem);
+    const mapping = await this.getTerminologyMapping(
+      sourceSystem,
+      sourceCode,
+      targetSystem,
+    );
     return mapping?.targetCode ?? null;
   }
 
   async getTerminologyMapping(
     sourceSystem: CodeSystem,
     sourceCode: string,
-    targetSystem: CodeSystem
+    targetSystem: CodeSystem,
   ): Promise<TerminologyMapping | null> {
     try {
       const result = (await this.request("GET", "/ConceptMap/$translate", {
@@ -369,7 +436,9 @@ export class HL7FHIRClient extends HealthcareAdapter {
       })) as any;
 
       if (result.parameter) {
-        const codeParam = result.parameter.find((p: any) => p.name === "result");
+        const codeParam = result.parameter.find(
+          (p: any) => p.name === "result",
+        );
         if (codeParam?.valueCode) {
           return {
             sourceSystem,
@@ -387,7 +456,9 @@ export class HL7FHIRClient extends HealthcareAdapter {
     }
   }
 
-  async createTerminologyMapping(mapping: Omit<TerminologyMapping, "createdAt">): Promise<TerminologyMapping> {
+  async createTerminologyMapping(
+    mapping: Omit<TerminologyMapping, "createdAt">,
+  ): Promise<TerminologyMapping> {
     return {
       ...mapping,
       createdAt: new Date().toISOString(),
@@ -408,7 +479,10 @@ export class HL7FHIRClient extends HealthcareAdapter {
     }
 
     if (params.outputFormat) {
-      query._outputFormat = params.outputFormat === "ndjson" ? "application/fhir+ndjson" : "text/csv";
+      query._outputFormat =
+        params.outputFormat === "ndjson"
+          ? "application/fhir+ndjson"
+          : "text/csv";
     }
 
     const response = (await this.request("GET", "/$export", { query })) as any;
@@ -423,7 +497,11 @@ export class HL7FHIRClient extends HealthcareAdapter {
   }
 
   async getBulkExportStatus(exportId: string): Promise<BulkExportResult> {
-    const response = (await this.request("GET", `/$export/${exportId}`, {})) as any;
+    const response = (await this.request(
+      "GET",
+      `/$export/${exportId}`,
+      {},
+    )) as any;
 
     return {
       transactionTime: response.transactionTime,
@@ -440,7 +518,10 @@ export class HL7FHIRClient extends HealthcareAdapter {
 
   // ─── Document Operations ───────────────────────────────────────────────
 
-  async getDocuments(patientId: string, params?: FHIRSearchParams): Promise<ClinicalDocument[]> {
+  async getDocuments(
+    patientId: string,
+    params?: FHIRSearchParams,
+  ): Promise<ClinicalDocument[]> {
     const result = await this.search<any>("DocumentReference", {
       ...params,
       filters: {
@@ -455,13 +536,18 @@ export class HL7FHIRClient extends HealthcareAdapter {
       patientId,
       title: entry.resource.description || "Document",
       content: "",
-      contentType: entry.resource.content?.[0]?.attachment?.contentType || "application/pdf",
+      contentType:
+        entry.resource.content?.[0]?.attachment?.contentType ||
+        "application/pdf",
       createdAt: entry.resource.date,
       metadata: entry.resource,
     }));
   }
 
-  async getDocument(documentId: string, format: "pdf" | "xml" | "json" = "pdf"): Promise<ClinicalDocument> {
+  async getDocument(
+    documentId: string,
+    format: "pdf" | "xml" | "json" = "pdf",
+  ): Promise<ClinicalDocument> {
     const doc = await this.read<any>("DocumentReference", documentId);
 
     return {
@@ -489,14 +575,19 @@ export class HL7FHIRClient extends HealthcareAdapter {
     return result.entry.map((entry) => ({
       id: entry.resource.id,
       patientId,
-      consentType: entry.resource.category?.[0]?.coding?.[0]?.code === "OPTIN" ? "OPT_IN" : "OPT_OUT",
+      consentType:
+        entry.resource.category?.[0]?.coding?.[0]?.code === "OPTIN"
+          ? "OPT_IN"
+          : "OPT_OUT",
       purpose: "TREATMENT",
       validFrom: entry.resource.dateTime,
       createdAt: entry.resource.dateTime,
     }));
   }
 
-  async createConsent(consent: Omit<ConsentRecord, "id" | "createdAt">): Promise<ConsentRecord> {
+  async createConsent(
+    consent: Omit<ConsentRecord, "id" | "createdAt">,
+  ): Promise<ConsentRecord> {
     const resource = {
       resourceType: "Consent",
       status: "active",
@@ -524,12 +615,17 @@ export class HL7FHIRClient extends HealthcareAdapter {
       dateTime: consent.validFrom,
     };
 
-    const result = await this.create<FHIRResource>("Consent", resource as Omit<FHIRResource, "id">);
+    const result = await this.create<FHIRResource>(
+      "Consent",
+      resource as Omit<FHIRResource, "id">,
+    );
     return result as unknown as ConsentRecord;
   }
 
   async revokeConsent(consentId: string): Promise<ConsentRecord> {
-    const updated = await this.update<any>("Consent", consentId, { status: "inactive" } as any);
+    const updated = await this.update<any>("Consent", consentId, {
+      status: "inactive",
+    } as any);
     return {
       id: updated.id || consentId,
       patientId: updated.patient?.reference?.split("/")[1] || "",
@@ -543,7 +639,9 @@ export class HL7FHIRClient extends HealthcareAdapter {
 
   // ─── PHI Audit Logging (HIPAA) ──────────────────────────────────────────
 
-  async logAuditEntry(entry: Omit<AuditEntry, "id" | "timestamp">): Promise<AuditEntry> {
+  async logAuditEntry(
+    entry: Omit<AuditEntry, "id" | "timestamp">,
+  ): Promise<AuditEntry> {
     const auditEvent: AuditEntry = {
       id: `audit-${Date.now()}`,
       timestamp: new Date().toISOString(),
@@ -557,7 +655,11 @@ export class HL7FHIRClient extends HealthcareAdapter {
     return auditEvent;
   }
 
-  async getAuditLogs(patientId: string, startDate?: string, endDate?: string): Promise<AuditEntry[]> {
+  async getAuditLogs(
+    patientId: string,
+    startDate?: string,
+    endDate?: string,
+  ): Promise<AuditEntry[]> {
     return [];
   }
 
@@ -590,7 +692,8 @@ export class HL7FHIRClient extends HealthcareAdapter {
   generateSMARTLaunchUrl(params: SMARTLaunchParams): string {
     const capabilityStatement = this.capabilityStatement;
     const authorizeEndpoint =
-      capabilityStatement?.rest?.[0]?.security?.extension?.[0]?.valueUri || `${this.baseUrl}/authorize`;
+      capabilityStatement?.rest?.[0]?.security?.extension?.[0]?.valueUri ||
+      `${this.baseUrl}/authorize`;
 
     const url = new URL(authorizeEndpoint);
     url.searchParams.set("response_type", "code");
@@ -606,8 +709,17 @@ export class HL7FHIRClient extends HealthcareAdapter {
     return url.toString();
   }
 
-  async exchangeAuthorizationCode(code: string, codeVerifier?: string): Promise<{ accessToken: string; expiresIn: number; context?: SMARTContext }> {
-    throw new Error("OAuth token exchange not implemented for generic FHIR client");
+  async exchangeAuthorizationCode(
+    code: string,
+    codeVerifier?: string,
+  ): Promise<{
+    accessToken: string;
+    expiresIn: number;
+    context?: SMARTContext;
+  }> {
+    throw new Error(
+      "OAuth token exchange not implemented for generic FHIR client",
+    );
   }
 
   async getSMARTContext(accessToken: string): Promise<SMARTContext> {

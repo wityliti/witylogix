@@ -60,13 +60,21 @@ export abstract class AuthProviderBase implements BaseAuthProvider {
   abstract readonly capabilities: AuthProviderCapabilities;
   abstract readonly config: AuthProviderConfig;
 
-  abstract authenticate(request: AuthenticationRequest): Promise<AuthResult | AuthorizationUrl>;
+  abstract authenticate(
+    request: AuthenticationRequest,
+  ): Promise<AuthResult | AuthorizationUrl>;
   abstract handleCallback(callbackData: CallbackData): Promise<AuthResult>;
   abstract validateToken(accessToken: string): Promise<Record<string, unknown>>;
   abstract refreshSession(refreshToken: string): Promise<AuthResult>;
-  abstract revokeSession(accessToken: string, refreshToken?: string): Promise<void>;
+  abstract revokeSession(
+    accessToken: string,
+    refreshToken?: string,
+  ): Promise<void>;
   abstract getUserInfo(accessToken: string): Promise<UserInfo>;
-  abstract getAuthorizationUrl(redirectUri: string, state: string): Promise<AuthorizationUrl>;
+  abstract getAuthorizationUrl(
+    redirectUri: string,
+    state: string,
+  ): Promise<AuthorizationUrl>;
   abstract validateConfiguration(): Promise<void>;
   abstract getHealthStatus(): Promise<ProviderHealthStatus>;
 
@@ -200,7 +208,10 @@ export abstract class AuthProviderBase implements BaseAuthProvider {
    * @param clockSkewSeconds Allow clock skew in seconds (default: 30)
    * @returns true if token is expired
    */
-  protected isJWTExpired(token: string, clockSkewSeconds: number = 30): boolean {
+  protected isJWTExpired(
+    token: string,
+    clockSkewSeconds: number = 30,
+  ): boolean {
     try {
       const claims = this.decodeJWT(token) as Record<string, any>;
       const now = Math.floor(Date.now() / 1000);
@@ -223,7 +234,10 @@ export abstract class AuthProviderBase implements BaseAuthProvider {
    * @param params Query parameters
    * @returns Full URL with encoded parameters
    */
-  protected buildAuthorizationUrl(baseUrl: string, params: Record<string, string>): string {
+  protected buildAuthorizationUrl(
+    baseUrl: string,
+    params: Record<string, string>,
+  ): string {
     const url = new URL(baseUrl);
     Object.entries(params).forEach(([key, value]) => {
       url.searchParams.set(key, value);
@@ -240,7 +254,8 @@ export abstract class AuthProviderBase implements BaseAuthProvider {
    * @returns Random state token
    */
   protected generateStateToken(length: number = 32): string {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const chars =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let state = "";
     for (let i = 0; i < length; i++) {
       state += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -257,7 +272,9 @@ export abstract class AuthProviderBase implements BaseAuthProvider {
    */
   protected generatePKCEPair(): { verifier: string; challenge: string } {
     // Generate random 32-byte verifier
-    const verifier = Buffer.from(Array.from({ length: 32 }, () => Math.floor(Math.random() * 256)))
+    const verifier = Buffer.from(
+      Array.from({ length: 32 }, () => Math.floor(Math.random() * 256)),
+    )
       .toString("base64url")
       .replace(/[=]+$/, "");
 
@@ -279,7 +296,10 @@ export abstract class AuthProviderBase implements BaseAuthProvider {
    * @param operation Operation that failed (for logging)
    * @throws AuthProviderError
    */
-  protected handleProviderError(error: any, operation: string = "operation"): never {
+  protected handleProviderError(
+    error: any,
+    operation: string = "operation",
+  ): never {
     let message = `Provider ${operation} failed`;
     let retryable = false;
 
@@ -372,7 +392,10 @@ export function parseProviderError(
   provider: AuthProviderType,
   errorResponse: any,
 ): AuthProviderError {
-  const message = errorResponse?.message || errorResponse?.error_description || "Unknown error";
+  const message =
+    errorResponse?.message ||
+    errorResponse?.error_description ||
+    "Unknown error";
   const code = errorResponse?.error || "PROVIDER_ERROR";
 
   // Map common error codes
@@ -416,7 +439,10 @@ export function parseProviderError(
  * @param localInfo Cached user info from database
  * @returns Merged user info
  */
-export function mergeUserInfo(providerInfo: UserInfo, localInfo?: UserInfo): UserInfo {
+export function mergeUserInfo(
+  providerInfo: UserInfo,
+  localInfo?: UserInfo,
+): UserInfo {
   return {
     externalUserId: providerInfo.externalUserId,
     email: providerInfo.email,

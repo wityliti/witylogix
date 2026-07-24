@@ -24,7 +24,7 @@ const formatValue = (
   value: number,
   format: FormatType,
   decimals: number = 2,
-  currencyCode: string = "USD"
+  currencyCode: string = "USD",
 ): string => {
   switch (format) {
     case "integer":
@@ -97,7 +97,8 @@ export const AnimatedCounter = ({
       const progress = Math.min(elapsed / duration, 1);
       const easeProgress = easeOutQuad(progress);
 
-      const newValue = startValueRef.current + (value - startValueRef.current) * easeProgress;
+      const newValue =
+        startValueRef.current + (value - startValueRef.current) * easeProgress;
       setDisplayValue(newValue);
 
       if (progress < 1) {

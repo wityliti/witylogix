@@ -1,6 +1,12 @@
-'use client';
+"use client";
 
-import { useApiList, useApiQuery, ApiFilters, UseApiListResult, UseApiQueryResult } from './use-api';
+import {
+  useApiList,
+  useApiQuery,
+  ApiFilters,
+  UseApiListResult,
+  UseApiQueryResult,
+} from "./use-api";
 
 // Types
 export interface FreightLoad {
@@ -79,30 +85,44 @@ export interface LaneAnalytics {
   carriers: string[];
 }
 
-export function useFreightLoads(filters?: ApiFilters): UseApiListResult<FreightLoad> {
-  return useApiList<FreightLoad>('/api/v4/freight/loads', filters);
+export function useFreightLoads(
+  filters?: ApiFilters,
+): UseApiListResult<FreightLoad> {
+  return useApiList<FreightLoad>("/api/v4/freight/loads", filters);
 }
 
-export function useFreightLoadDetail(id: string | null): UseApiQueryResult<FreightLoad> {
+export function useFreightLoadDetail(
+  id: string | null,
+): UseApiQueryResult<FreightLoad> {
   return useApiQuery<FreightLoad>(id ? `/api/v4/freight/loads/${id}` : null);
 }
 
-export function useFreightRates(filters?: ApiFilters): UseApiListResult<FreightRate> {
-  return useApiList<FreightRate>('/api/v4/freight/rates', filters);
+export function useFreightRates(
+  filters?: ApiFilters,
+): UseApiListResult<FreightRate> {
+  return useApiList<FreightRate>("/api/v4/freight/rates", filters);
 }
 
-export function useLaneAnalytics(filters?: ApiFilters): UseApiListResult<LaneAnalytics> {
-  return useApiList<LaneAnalytics>('/api/v4/freight/lane-analytics', filters);
+export function useLaneAnalytics(
+  filters?: ApiFilters,
+): UseApiListResult<LaneAnalytics> {
+  return useApiList<LaneAnalytics>("/api/v4/freight/lane-analytics", filters);
 }
 
-export function useCarrierScorecard(filters?: ApiFilters): UseApiListResult<Carrier> {
-  return useApiList<Carrier>('/api/v4/freight/carriers', filters);
+export function useCarrierScorecard(
+  filters?: ApiFilters,
+): UseApiListResult<Carrier> {
+  return useApiList<Carrier>("/api/v4/freight/carriers", filters);
 }
 
-export function useCarrierDetail(id: string | null): UseApiQueryResult<Carrier> {
+export function useCarrierDetail(
+  id: string | null,
+): UseApiQueryResult<Carrier> {
   return useApiQuery<Carrier>(id ? `/api/v4/freight/carriers/${id}` : null);
 }
 
-export function useFreightAudit(filters?: ApiFilters): UseApiListResult<FreightAudit> {
-  return useApiList<FreightAudit>('/api/v4/freight/audits', filters);
+export function useFreightAudit(
+  filters?: ApiFilters,
+): UseApiListResult<FreightAudit> {
+  return useApiList<FreightAudit>("/api/v4/freight/audits", filters);
 }

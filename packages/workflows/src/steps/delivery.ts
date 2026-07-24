@@ -38,7 +38,7 @@ export const verifyProofOfDeliveryStep: WorkflowStep<
 
   async invoke(
     input: VerifyProofOfDeliveryInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<VerifyProofOfDeliveryOutput>> {
     const logger = context.logger;
     logger?.info("Verifying proof of delivery", {
@@ -85,7 +85,10 @@ export const verifyProofOfDeliveryStep: WorkflowStep<
       }
 
       // ─── Location Validation ──────────────────────────────────────
-      if (!Number.isFinite(input.deliveryLat) || !Number.isFinite(input.deliveryLng)) {
+      if (
+        !Number.isFinite(input.deliveryLat) ||
+        !Number.isFinite(input.deliveryLng)
+      ) {
         return {
           success: false,
           error: "Invalid delivery coordinates",
@@ -94,7 +97,10 @@ export const verifyProofOfDeliveryStep: WorkflowStep<
       }
 
       // Check if delivery location makes sense (basic sanity check)
-      if (Math.abs(input.deliveryLat) > 90 || Math.abs(input.deliveryLng) > 180) {
+      if (
+        Math.abs(input.deliveryLat) > 90 ||
+        Math.abs(input.deliveryLng) > 180
+      ) {
         return {
           success: false,
           error: "Delivery coordinates out of range",
@@ -174,7 +180,7 @@ export const updateDeliveryStatusStep: WorkflowStep<
 
   async invoke(
     input: UpdateDeliveryStatusInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<UpdateDeliveryStatusOutput>> {
     const logger = context.logger;
     logger?.info("Updating delivery status", {
@@ -183,7 +189,7 @@ export const updateDeliveryStatusStep: WorkflowStep<
     });
 
     try {
-      const prisma = (context.prisma as any);
+      const prisma = context.prisma as any;
 
       // ─── Update Order Status ───────────────────────────────────────
       const order = await prisma.order.findUnique({
@@ -234,9 +240,7 @@ export const updateDeliveryStatusStep: WorkflowStep<
           status: input.newStatus,
           actualDelivery:
             input.newStatus === "DELIVERED" ? new Date() : undefined,
-          notes:
-            (order.notes || "") +
-            (input.notes ? `\n${input.notes}` : ""),
+          notes: (order.notes || "") + (input.notes ? `\n${input.notes}` : ""),
         },
       });
 
@@ -324,7 +328,7 @@ export const updateDeliveryStatusStep: WorkflowStep<
 
   async compensate(
     input: UpdateDeliveryStatusInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<void> {
     const logger = context.logger;
     logger?.info("Compensating status update", {
@@ -333,7 +337,7 @@ export const updateDeliveryStatusStep: WorkflowStep<
     });
 
     try {
-      const prisma = (context.prisma as any);
+      const prisma = context.prisma as any;
 
       // Get previous status (simple approach: revert to one step back)
       const statusReversions: Record<string, string> = {

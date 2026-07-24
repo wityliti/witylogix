@@ -84,13 +84,15 @@ const createPosOrderSchema = z.object({
   subtotal: z.number().nonnegative(),
   tax: z.number().nonnegative().default(0),
   fees: z.number().nonnegative().default(0),
-  deliveryAddress: z.object({
-    street: z.string().optional(),
-    city: z.string().optional(),
-    state: z.string().optional(),
-    zipCode: z.string().optional(),
-    country: z.string().optional(),
-  }).optional(),
+  deliveryAddress: z
+    .object({
+      street: z.string().optional(),
+      city: z.string().optional(),
+      state: z.string().optional(),
+      zipCode: z.string().optional(),
+      country: z.string().optional(),
+    })
+    .optional(),
   orderType: z.enum(["PICKUP", "DELIVERY", "DINE_IN"]).default("PICKUP"),
   prepTime: z.number().int().nonnegative().optional(), // minutes
   notes: z.string().optional(),
@@ -119,72 +121,78 @@ async function posRoutes(fastify: FastifyInstance): Promise<void> {
 
   // ── GET /configs (List configurations) ──────────────────────────
 
-  fastify.get("/configs", async (request: FastifyRequest, reply: FastifyReply) => {
-    const configs = await (request.tenantDb as any).posConfig.findMany({
-      where: { shopId: request.shopId },
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        name: true,
-        posSystem: true,
-        enabled: true,
-        locationId: true,
-        syncOrders: true,
-        syncInventory: true,
-        createdAt: true,
-        updatedAt: true,
-        _count: {
-          select: { orders: true },
+  fastify.get(
+    "/configs",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const configs = await (request.tenantDb as any).posConfig.findMany({
+        where: { shopId: request.shopId },
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          name: true,
+          posSystem: true,
+          enabled: true,
+          locationId: true,
+          syncOrders: true,
+          syncInventory: true,
+          createdAt: true,
+          updatedAt: true,
+          _count: {
+            select: { orders: true },
+          },
         },
-      },
-    });
+      });
 
-    return {
-      data: configs,
-      total: configs.length,
-    };
-  });
+      return {
+        data: configs,
+        total: configs.length,
+      };
+    },
+  );
 
   // ── POST /configs (Create configuration) ────────────────────────
 
-  fastify.post("/configs", async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
+  fastify.post(
+    "/configs",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      await requireRole("SUPER_ADMIN", "ADMIN")(request, reply);
 
-    const body = createPosConfigSchema.parse(request.body);
+      const body = createPosConfigSchema.parse(request.body);
 
-    // Check if config with same name exists
-    const existing = await (request.tenantDb as any).posConfig.findFirst({
-      where: {
-        shopId: request.shopId,
-        name: body.name,
-      },
-    });
+      // Check if config with same name exists
+      const existing = await (request.tenantDb as any).posConfig.findFirst({
+        where: {
+          shopId: request.shopId,
+          name: body.name,
+        },
+      });
 
-    if (existing) {
-      throw new ConflictError(
-        `POS configuration with name '${body.name}' already exists`,
+      if (existing) {
+        throw new ConflictError(
+          `POS configuration with name '${body.name}' already exists`,
+        );
+      }
+
+      const config = await (request.tenantDb as any).posConfig.create({
+        data: {
+          shopId: request.shopId,
+          ...body,
+        },
+      });
+
+      fastify.log.info(
+        {
+          shopId: request.shopId,
+          configId: config.id,
+          posSystem: body.posSystem,
+        },
+        "POS configuration created",
       );
-    }
 
-    const config = await (request.tenantDb as any).posConfig.create({
-      data: {
-        shopId: request.shopId,
-        ...body,
-      },
-    });
-
-    fastify.log.info(
-      {
-        shopId: request.shopId,
-        configId: config.id,
-        posSystem: body.posSystem,
-      },
-      "POS configuration created",
-    );
-
-    reply.status(201);
-    return { data: config };
-  });
+      reply.status(201);
+      return { data: config };
+    },
+  );
 
   // ── PUT /configs/:id (Update configuration) ────────────────────
 
@@ -268,126 +276,140 @@ async function posRoutes(fastify: FastifyInstance): Promise<void> {
 
   // ── GET /orders (List POS orders) ───────────────────────────────
 
-  fastify.get("/orders", async (request: FastifyRequest, reply: FastifyReply) => {
-    const query = listPosOrdersQuery.parse(request.query);
-    const { page, limit, status, posConfigId, startDate, endDate } = query;
+  fastify.get(
+    "/orders",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const query = listPosOrdersQuery.parse(request.query);
+      const { page, limit, status, posConfigId, startDate, endDate } = query;
 
-    const where: any = {
-      posConfig: { shopId: request.shopId },
-    };
+      const where: any = {
+        posConfig: { shopId: request.shopId },
+      };
 
-    if (status) where.status = status;
-    if (posConfigId) where.posConfigId = posConfigId;
-    if (startDate) {
-      where.createdAt = { gte: new Date(startDate) };
-    }
-    if (endDate) {
-      where.createdAt = where.createdAt || {};
-      (where.createdAt as any).lte = new Date(endDate);
-    }
+      if (status) where.status = status;
+      if (posConfigId) where.posConfigId = posConfigId;
+      if (startDate) {
+        where.createdAt = { gte: new Date(startDate) };
+      }
+      if (endDate) {
+        where.createdAt = where.createdAt || {};
+        (where.createdAt as any).lte = new Date(endDate);
+      }
 
-    const [orders, total] = await Promise.all([
-      (request.tenantDb as any).posOrder.findMany({
-        where,
-        orderBy: { createdAt: "desc" },
-        skip: (page - 1) * limit,
-        take: limit,
-        include: {
-          posConfig: { select: { id: true, name: true, posSystem: true } },
+      const [orders, total] = await Promise.all([
+        (request.tenantDb as any).posOrder.findMany({
+          where,
+          orderBy: { createdAt: "desc" },
+          skip: (page - 1) * limit,
+          take: limit,
+          include: {
+            posConfig: { select: { id: true, name: true, posSystem: true } },
+          },
+        }),
+        (request.tenantDb as any).posOrder.count({ where }),
+      ]);
+
+      return {
+        data: orders,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
         },
-      }),
-      (request.tenantDb as any).posOrder.count({ where }),
-    ]);
-
-    return {
-      data: orders,
-      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
-    };
-  });
+      };
+    },
+  );
 
   // ── POST /orders (Create POS order) ─────────────────────────────
 
-  fastify.post("/orders", async (request: FastifyRequest, reply: FastifyReply) => {
-    const body = createPosOrderSchema.parse(request.body);
-    const { posConfigId, posOrderId, items, ...orderData } = body;
+  fastify.post(
+    "/orders",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const body = createPosOrderSchema.parse(request.body);
+      const { posConfigId, posOrderId, items, ...orderData } = body;
 
-    const config = await (request.tenantDb as any).posConfig.findUnique({
-      where: { id: posConfigId },
-    });
+      const config = await (request.tenantDb as any).posConfig.findUnique({
+        where: { id: posConfigId },
+      });
 
-    if (!config) {
-      throw new NotFoundError("POS configuration", posConfigId);
-    }
+      if (!config) {
+        throw new NotFoundError("POS configuration", posConfigId);
+      }
 
-    if (config.shopId !== request.shopId) {
-      throw new ForbiddenError(
-        "Cannot create order for POS config from another shop",
-      );
-    }
+      if (config.shopId !== request.shopId) {
+        throw new ForbiddenError(
+          "Cannot create order for POS config from another shop",
+        );
+      }
 
-    // Check if order already exists
-    const existing = await (request.tenantDb as any).posOrder.findFirst({
-      where: {
-        posConfigId,
-        posOrderId,
-      },
-    });
-
-    if (existing) {
-      throw new ConflictError(
-        `POS order with ID '${posOrderId}' already exists`,
-      );
-    }
-
-    const order = await (request.tenantDb as any).posOrder.create({
-      data: {
-        posConfigId,
-        posOrderId,
-        status: "PENDING",
-        ...orderData,
-        items: {
-          create: items,
+      // Check if order already exists
+      const existing = await (request.tenantDb as any).posOrder.findFirst({
+        where: {
+          posConfigId,
+          posOrderId,
         },
-      },
-      include: { items: true },
-    });
+      });
 
-    fastify.log.info(
-      {
-        shopId: request.shopId,
-        orderId: order.id,
-        posOrderId,
-      },
-      "POS order created",
-    );
+      if (existing) {
+        throw new ConflictError(
+          `POS order with ID '${posOrderId}' already exists`,
+        );
+      }
 
-    reply.status(201);
-    return { data: order };
-  });
+      const order = await (request.tenantDb as any).posOrder.create({
+        data: {
+          posConfigId,
+          posOrderId,
+          status: "PENDING",
+          ...orderData,
+          items: {
+            create: items,
+          },
+        },
+        include: { items: true },
+      });
+
+      fastify.log.info(
+        {
+          shopId: request.shopId,
+          orderId: order.id,
+          posOrderId,
+        },
+        "POS order created",
+      );
+
+      reply.status(201);
+      return { data: order };
+    },
+  );
 
   // ── GET /orders/:id (Get POS order detail) ──────────────────────
 
-  fastify.get("/orders/:id", async (request: FastifyRequest, reply: FastifyReply) => {
-    const { id } = request.params as { id: string };
+  fastify.get(
+    "/orders/:id",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { id } = request.params as { id: string };
 
-    const order = await (request.tenantDb as any).posOrder.findUnique({
-      where: { id },
-      include: {
-        posConfig: { select: { id: true, name: true, posSystem: true } },
-        items: true,
-      },
-    });
+      const order = await (request.tenantDb as any).posOrder.findUnique({
+        where: { id },
+        include: {
+          posConfig: { select: { id: true, name: true, posSystem: true } },
+          items: true,
+        },
+      });
 
-    if (!order) {
-      throw new NotFoundError("POS order", id);
-    }
+      if (!order) {
+        throw new NotFoundError("POS order", id);
+      }
 
-    if (order.posConfig.shopId !== request.shopId) {
-      throw new ForbiddenError("Cannot access POS order from another shop");
-    }
+      if (order.posConfig.shopId !== request.shopId) {
+        throw new ForbiddenError("Cannot access POS order from another shop");
+      }
 
-    return { data: order };
-  });
+      return { data: order };
+    },
+  );
 
   // ── PUT /orders/:id/status (Update order status) ─────────────────
 
@@ -409,9 +431,7 @@ async function posRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       if (order.posConfig.shopId !== request.shopId) {
-        throw new ForbiddenError(
-          "Cannot update POS order from another shop",
-        );
+        throw new ForbiddenError("Cannot update POS order from another shop");
       }
 
       // Validate status transition
@@ -474,21 +494,15 @@ async function posRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       if (order.posConfig.shopId !== request.shopId) {
-        throw new ForbiddenError(
-          "Cannot cancel POS order from another shop",
-        );
+        throw new ForbiddenError("Cannot cancel POS order from another shop");
       }
 
       if (order.status === "COMPLETED") {
-        throw new ValidationError(
-          "Cannot cancel a completed order",
-        );
+        throw new ValidationError("Cannot cancel a completed order");
       }
 
       if (order.status === "CANCELLED") {
-        throw new ValidationError(
-          "Order is already cancelled",
-        );
+        throw new ValidationError("Order is already cancelled");
       }
 
       const cancelled = await (request.tenantDb as any).posOrder.update({
@@ -515,164 +529,180 @@ async function posRoutes(fastify: FastifyInstance): Promise<void> {
 
   // ── GET /overview (POS overview for dashboard) ──────────────────────
 
-  fastify.get("/overview", async (request: FastifyRequest, reply: FastifyReply) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  fastify.get(
+    "/overview",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-    const [todayOrders, todayRevenue, paymentBreakdown] = await Promise.all([
-      (request.tenantDb as any).posOrder.count({
-        where: {
-          posConfig: { shopId: request.shopId },
-          status: "COMPLETED",
-          createdAt: { gte: today },
+      const [todayOrders, todayRevenue, paymentBreakdown] = await Promise.all([
+        (request.tenantDb as any).posOrder.count({
+          where: {
+            posConfig: { shopId: request.shopId },
+            status: "COMPLETED",
+            createdAt: { gte: today },
+          },
+        }),
+        (request.tenantDb as any).posOrder.aggregate({
+          where: {
+            posConfig: { shopId: request.shopId },
+            status: "COMPLETED",
+            createdAt: { gte: today },
+          },
+          _sum: { totalAmount: true },
+        }),
+        // Payment method breakdown from order metadata (best-effort)
+        (request.tenantDb as any).posOrder.findMany({
+          where: {
+            posConfig: { shopId: request.shopId },
+            status: "COMPLETED",
+            createdAt: { gte: today },
+          },
+          select: { totalAmount: true, metadata: true },
+        }),
+      ]);
+
+      const todaysSales = Number(todayRevenue._sum.totalAmount || 0);
+      const transactionCount = todayOrders;
+      const avgTicket =
+        transactionCount > 0 ? todaysSales / transactionCount : 0;
+
+      // Approximate payment breakdown from metadata if available
+      const breakdown = { cash: 0, card: 0, mobile: 0, other: 0 };
+      for (const order of paymentBreakdown) {
+        const method = (order.metadata as any)?.paymentMethod || "other";
+        const amount = Number(order.totalAmount);
+        if (method === "cash") breakdown.cash += amount;
+        else if (method === "card") breakdown.card += amount;
+        else if (method === "mobile") breakdown.mobile += amount;
+        else breakdown.other += amount;
+      }
+
+      return {
+        data: {
+          todaysSales,
+          transactionCount,
+          avgTicket,
+          paymentBreakdown: breakdown,
         },
-      }),
-      (request.tenantDb as any).posOrder.aggregate({
-        where: {
-          posConfig: { shopId: request.shopId },
-          status: "COMPLETED",
-          createdAt: { gte: today },
-        },
-        _sum: { totalAmount: true },
-      }),
-      // Payment method breakdown from order metadata (best-effort)
-      (request.tenantDb as any).posOrder.findMany({
-        where: {
-          posConfig: { shopId: request.shopId },
-          status: "COMPLETED",
-          createdAt: { gte: today },
-        },
-        select: { totalAmount: true, metadata: true },
-      }),
-    ]);
-
-    const todaysSales = Number(todayRevenue._sum.totalAmount || 0);
-    const transactionCount = todayOrders;
-    const avgTicket = transactionCount > 0 ? todaysSales / transactionCount : 0;
-
-    // Approximate payment breakdown from metadata if available
-    const breakdown = { cash: 0, card: 0, mobile: 0, other: 0 };
-    for (const order of paymentBreakdown) {
-      const method = (order.metadata as any)?.paymentMethod || 'other';
-      const amount = Number(order.totalAmount);
-      if (method === 'cash') breakdown.cash += amount;
-      else if (method === 'card') breakdown.card += amount;
-      else if (method === 'mobile') breakdown.mobile += amount;
-      else breakdown.other += amount;
-    }
-
-    return {
-      data: {
-        todaysSales,
-        transactionCount,
-        avgTicket,
-        paymentBreakdown: breakdown,
-      },
-    };
-  });
+      };
+    },
+  );
 
   // ── GET /terminals (POS configs as terminals) ────────────────────────
 
-  fastify.get("/terminals", async (request: FastifyRequest, reply: FastifyReply) => {
-    const configs = await (request.tenantDb as any).posConfig.findMany({
-      where: { shopId: request.shopId },
-      include: {
-        _count: { select: { orders: true } },
-      },
-    });
+  fastify.get(
+    "/terminals",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const configs = await (request.tenantDb as any).posConfig.findMany({
+        where: { shopId: request.shopId },
+        include: {
+          _count: { select: { orders: true } },
+        },
+      });
 
-    const terminals = configs.map((cfg: any) => ({
-      id: cfg.id,
-      name: cfg.name,
-      location: cfg.posSystem,
-      status: cfg.enabled ? "online" : "offline",
-      lastActivity: cfg.updatedAt,
-      totalTransactions: cfg._count.orders,
-      totalSales: 0,
-    }));
+      const terminals = configs.map((cfg: any) => ({
+        id: cfg.id,
+        name: cfg.name,
+        location: cfg.posSystem,
+        status: cfg.enabled ? "online" : "offline",
+        lastActivity: cfg.updatedAt,
+        totalTransactions: cfg._count.orders,
+        totalSales: 0,
+      }));
 
-    return { data: terminals };
-  });
+      return { data: terminals };
+    },
+  );
 
   // ── GET /transactions (POS orders as transactions) ───────────────────
 
-  fastify.get("/transactions", async (request: FastifyRequest, reply: FastifyReply) => {
-    const query = request.query as {
-      page?: string;
-      limit?: string;
-      status?: string;
-      search?: string;
-    };
-    const page = parseInt(query.page || "1");
-    const limit = Math.min(parseInt(query.limit || "25"), 100);
-    const skip = (page - 1) * limit;
+  fastify.get(
+    "/transactions",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const query = request.query as {
+        page?: string;
+        limit?: string;
+        status?: string;
+        search?: string;
+      };
+      const page = parseInt(query.page || "1");
+      const limit = Math.min(parseInt(query.limit || "25"), 100);
+      const skip = (page - 1) * limit;
 
-    const where: any = {
-      posConfig: { shopId: request.shopId },
-    };
-    if (query.status && query.status !== "all") {
-      where.status = query.status.toUpperCase();
-    }
-    if (query.search) {
-      where.OR = [
-        { customerName: { contains: query.search, mode: "insensitive" } },
-        { posOrderId: { contains: query.search, mode: "insensitive" } },
-      ];
-    }
+      const where: any = {
+        posConfig: { shopId: request.shopId },
+      };
+      if (query.status && query.status !== "all") {
+        where.status = query.status.toUpperCase();
+      }
+      if (query.search) {
+        where.OR = [
+          { customerName: { contains: query.search, mode: "insensitive" } },
+          { posOrderId: { contains: query.search, mode: "insensitive" } },
+        ];
+      }
 
-    const [orders, total] = await Promise.all([
-      (request.tenantDb as any).posOrder.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: "desc" },
-        include: { posConfig: true },
-      }),
-      (request.tenantDb as any).posOrder.count({ where }),
-    ]);
+      const [orders, total] = await Promise.all([
+        (request.tenantDb as any).posOrder.findMany({
+          where,
+          skip,
+          take: limit,
+          orderBy: { createdAt: "desc" },
+          include: { posConfig: true },
+        }),
+        (request.tenantDb as any).posOrder.count({ where }),
+      ]);
 
-    const statusMap: Record<string, string> = {
-      COMPLETED: "completed",
-      PENDING: "pending",
-      CONFIRMED: "pending",
-      PREPARING: "pending",
-      READY: "pending",
-      PICKED_UP: "completed",
-      CANCELLED: "cancelled",
-    };
+      const statusMap: Record<string, string> = {
+        COMPLETED: "completed",
+        PENDING: "pending",
+        CONFIRMED: "pending",
+        PREPARING: "pending",
+        READY: "pending",
+        PICKED_UP: "completed",
+        CANCELLED: "cancelled",
+      };
 
-    const transactions = orders.map((order: any) => ({
-      id: order.id,
-      transactionId: order.posOrderId,
-      terminalId: order.posConfigId,
-      terminalName: order.posConfig?.name || "Unknown Terminal",
-      timestamp: order.createdAt,
-      status: statusMap[order.status] || "pending",
-      paymentMethod: (order.metadata as any)?.paymentMethod || "other",
-      amount: Number(order.totalAmount),
-      tax: Number(order.tax),
-      discount: 0,
-      subtotal: Number(order.subtotal),
-      items: (order.items as any[])?.map((item: any, i: number) => ({
-        id: `${order.id}-item-${i}`,
-        name: item.name,
-        sku: item.sku || "",
-        quantity: item.quantity,
-        unitPrice: item.price,
-        totalPrice: item.price * item.quantity,
-        category: "",
-      })) || [],
-      customerName: order.customerName,
-      customerEmail: order.customerEmail,
-      receiptNumber: order.posOrderId,
-      notes: order.notes,
-    }));
+      const transactions = orders.map((order: any) => ({
+        id: order.id,
+        transactionId: order.posOrderId,
+        terminalId: order.posConfigId,
+        terminalName: order.posConfig?.name || "Unknown Terminal",
+        timestamp: order.createdAt,
+        status: statusMap[order.status] || "pending",
+        paymentMethod: (order.metadata as any)?.paymentMethod || "other",
+        amount: Number(order.totalAmount),
+        tax: Number(order.tax),
+        discount: 0,
+        subtotal: Number(order.subtotal),
+        items:
+          (order.items as any[])?.map((item: any, i: number) => ({
+            id: `${order.id}-item-${i}`,
+            name: item.name,
+            sku: item.sku || "",
+            quantity: item.quantity,
+            unitPrice: item.price,
+            totalPrice: item.price * item.quantity,
+            category: "",
+          })) || [],
+        customerName: order.customerName,
+        customerEmail: order.customerEmail,
+        receiptNumber: order.posOrderId,
+        notes: order.notes,
+      }));
 
-    return {
-      data: transactions,
-      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
-    };
-  });
+      return {
+        data: transactions,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+    },
+  );
 
   // ── POST /transactions/:id/refund ────────────────────────────────────
 
@@ -703,90 +733,111 @@ async function posRoutes(fastify: FastifyInstance): Promise<void> {
 
   // ── GET /sales-trends ────────────────────────────────────────────────
 
-  fastify.get("/sales-trends", async (request: FastifyRequest, reply: FastifyReply) => {
-    const days = 7;
-    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  fastify.get(
+    "/sales-trends",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const days = 7;
+      const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-    const orders = await (request.tenantDb as any).posOrder.findMany({
-      where: {
-        posConfig: { shopId: request.shopId },
-        status: "COMPLETED",
-        createdAt: { gte: since },
-      },
-      select: { createdAt: true, totalAmount: true },
-      orderBy: { createdAt: "asc" },
-    });
+      const orders = await (request.tenantDb as any).posOrder.findMany({
+        where: {
+          posConfig: { shopId: request.shopId },
+          status: "COMPLETED",
+          createdAt: { gte: since },
+        },
+        select: { createdAt: true, totalAmount: true },
+        orderBy: { createdAt: "asc" },
+      });
 
-    // Aggregate by day
-    const byDay: Record<string, { amount: number; count: number }> = {};
-    for (const o of orders) {
-      const day = new Date(o.createdAt).toISOString().split("T")[0];
-      if (!byDay[day]) byDay[day] = { amount: 0, count: 0 };
-      byDay[day].amount += Number(o.totalAmount);
-      byDay[day].count += 1;
-    }
+      // Aggregate by day
+      const byDay: Record<string, { amount: number; count: number }> = {};
+      for (const o of orders) {
+        const day = new Date(o.createdAt).toISOString().split("T")[0];
+        if (!byDay[day]) byDay[day] = { amount: 0, count: 0 };
+        byDay[day].amount += Number(o.totalAmount);
+        byDay[day].count += 1;
+      }
 
-    const trends = Object.entries(byDay).map(([date, v]) => ({
-      date,
-      daily: v.amount,
-      weekly: v.amount,
-      monthly: v.amount,
-      transactions: v.count,
-    }));
+      const trends = Object.entries(byDay).map(([date, v]) => ({
+        date,
+        daily: v.amount,
+        weekly: v.amount,
+        monthly: v.amount,
+        transactions: v.count,
+      }));
 
-    return { data: trends };
-  });
+      return { data: trends };
+    },
+  );
 
   // ── GET /top-items ───────────────────────────────────────────────────
 
-  fastify.get("/top-items", async (request: FastifyRequest, reply: FastifyReply) => {
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  fastify.get(
+    "/top-items",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-    const orders = await (request.tenantDb as any).posOrder.findMany({
-      where: {
-        posConfig: { shopId: request.shopId },
-        status: "COMPLETED",
-        createdAt: { gte: thirtyDaysAgo },
-      },
-      select: { items: true },
-    });
+      const orders = await (request.tenantDb as any).posOrder.findMany({
+        where: {
+          posConfig: { shopId: request.shopId },
+          status: "COMPLETED",
+          createdAt: { gte: thirtyDaysAgo },
+        },
+        select: { items: true },
+      });
 
-    // Aggregate item sales from JSON items field
-    const itemMap: Record<string, { name: string; sku: string; units: number; revenue: number }> = {};
-    for (const order of orders) {
-      const items = (order.items as any[]) || [];
-      for (const item of items) {
-        const key = item.sku || item.name;
-        if (!itemMap[key]) {
-          itemMap[key] = { name: item.name, sku: item.sku || "", units: 0, revenue: 0 };
+      // Aggregate item sales from JSON items field
+      const itemMap: Record<
+        string,
+        { name: string; sku: string; units: number; revenue: number }
+      > = {};
+      for (const order of orders) {
+        const items = (order.items as any[]) || [];
+        for (const item of items) {
+          const key = item.sku || item.name;
+          if (!itemMap[key]) {
+            itemMap[key] = {
+              name: item.name,
+              sku: item.sku || "",
+              units: 0,
+              revenue: 0,
+            };
+          }
+          itemMap[key].units += item.quantity;
+          itemMap[key].revenue += item.price * item.quantity;
         }
-        itemMap[key].units += item.quantity;
-        itemMap[key].revenue += item.price * item.quantity;
       }
-    }
 
-    const topItems = Object.entries(itemMap)
-      .map(([key, v], i) => ({
-        id: key,
-        name: v.name,
-        sku: v.sku,
-        unitsSold: v.units,
-        revenue: v.revenue,
-        category: "",
-      }))
-      .sort((a, b) => b.revenue - a.revenue)
-      .slice(0, 20);
+      const topItems = Object.entries(itemMap)
+        .map(([key, v], i) => ({
+          id: key,
+          name: v.name,
+          sku: v.sku,
+          unitsSold: v.units,
+          revenue: v.revenue,
+          category: "",
+        }))
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 20);
 
-    return { data: topItems };
-  });
+      return { data: topItems };
+    },
+  );
 
   // ── GET /stats (POS statistics) ─────────────────────────────────
 
-  fastify.get("/stats", async (request: FastifyRequest, reply: FastifyReply) => {
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  fastify.get(
+    "/stats",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-    const [totalOrders, completedOrders, cancelledOrders, revenue, ordersByStatus] =
-      await Promise.all([
+      const [
+        totalOrders,
+        completedOrders,
+        cancelledOrders,
+        revenue,
+        ordersByStatus,
+      ] = await Promise.all([
         (request.tenantDb as any).posOrder.count({
           where: {
             posConfig: { shopId: request.shopId },
@@ -827,29 +878,25 @@ async function posRoutes(fastify: FastifyInstance): Promise<void> {
         }),
       ]);
 
-    const successRate =
-      totalOrders > 0
-        ? Math.round((completedOrders / totalOrders) * 100)
-        : 0;
+      const successRate =
+        totalOrders > 0 ? Math.round((completedOrders / totalOrders) * 100) : 0;
 
-    return {
-      data: {
-        period: "30days",
-        totalOrders,
-        completedOrders,
-        cancelledOrders,
-        totalRevenue: revenue._sum.totalAmount || 0,
-        successRate,
-        ordersByStatus: ordersByStatus.reduce(
-          (acc: any, item: any) => {
+      return {
+        data: {
+          period: "30days",
+          totalOrders,
+          completedOrders,
+          cancelledOrders,
+          totalRevenue: revenue._sum.totalAmount || 0,
+          successRate,
+          ordersByStatus: ordersByStatus.reduce((acc: any, item: any) => {
             acc[item.status] = item._count;
             return acc;
-          },
-          {},
-        ),
-      },
-    };
-  });
+          }, {}),
+        },
+      };
+    },
+  );
 }
 
 export default posRoutes;

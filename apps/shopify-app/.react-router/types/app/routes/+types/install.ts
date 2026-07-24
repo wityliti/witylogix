@@ -2,22 +2,28 @@
 
 import type { GetInfo, GetAnnotations } from "react-router/internal";
 
-type Module = typeof import("../install.js")
+type Module = typeof import("../install.js");
 
 type Info = GetInfo<{
-  file: "routes/install.tsx",
-  module: Module
-}>
+  file: "routes/install.tsx";
+  module: Module;
+}>;
 
-type Matches = [{
-  id: "root";
-  module: typeof import("../../root.js");
-}, {
-  id: "routes/install";
-  module: typeof import("../install.js");
-}];
+type Matches = [
+  {
+    id: "root";
+    module: typeof import("../../root.js");
+  },
+  {
+    id: "routes/install";
+    module: typeof import("../install.js");
+  },
+];
 
-type Annotations = GetAnnotations<Info & { module: Module, matches: Matches }, false>;
+type Annotations = GetAnnotations<
+  Info & { module: Module; matches: Matches },
+  false
+>;
 
 export namespace Route {
   // links
@@ -37,7 +43,8 @@ export namespace Route {
   export type MiddlewareFunction = Annotations["MiddlewareFunction"];
 
   // clientMiddleware
-  export type ClientMiddlewareFunction = Annotations["ClientMiddlewareFunction"];
+  export type ClientMiddlewareFunction =
+    Annotations["ClientMiddlewareFunction"];
 
   // loader
   export type LoaderArgs = Annotations["LoaderArgs"];

@@ -6,8 +6,8 @@
  * SKILLS: api-design, security-review
  */
 
-import { createHmac } from 'node:crypto';
-import { z } from 'zod';
+import { createHmac } from "node:crypto";
+import { z } from "zod";
 
 // ─── TYPES ────────────────────────────────────────────────────────────
 
@@ -53,7 +53,7 @@ export interface PipedriveDeal {
   orgId?: number;
   stageId?: number;
   pipelineId?: number;
-  status?: 'open' | 'won' | 'lost' | 'deleted';
+  status?: "open" | "won" | "lost" | "deleted";
   lostReason?: string;
   addTime?: string;
   updateTime?: string;
@@ -62,7 +62,7 @@ export interface PipedriveDeal {
 
 export interface PipedriveActivity {
   id: number;
-  type: 'call' | 'email' | 'meeting' | 'task' | 'deadline' | 'note';
+  type: "call" | "email" | "meeting" | "task" | "deadline" | "note";
   subject?: string;
   due?: string;
   dueTime?: string;
@@ -147,7 +147,7 @@ const PipedrivePersonResponseSchema = z.object({
         name: z.string(),
         email: z.string().optional(),
         phone: z.string().optional(),
-      })
+      }),
     ),
     z.object({
       id: z.number(),
@@ -177,7 +177,7 @@ export class PipedriveCRMSDKClient {
   private accessToken: string | null = null;
   private tokenExpiresAt: Date | null = null;
   private apiToken: string | null = null;
-  private baseUrl = 'https://api.pipedrive.com/v1';
+  private baseUrl = "https://api.pipedrive.com/v1";
   private rateLimitRemaining = 80;
   private rateLimitResetAt = new Date();
 
@@ -193,7 +193,7 @@ export class PipedriveCRMSDKClient {
    */
   getAuthorizationUrl(state?: string): string {
     if (!this.config.clientId || !this.config.redirectUri) {
-      throw new Error('clientId and redirectUri required for OAuth2');
+      throw new Error("clientId and redirectUri required for OAuth2");
     }
 
     const params = new URLSearchParams({
@@ -212,15 +212,21 @@ export class PipedriveCRMSDKClient {
     accessToken: string;
     expiresIn?: number;
   }> {
-    if (!this.config.clientId || !this.config.clientSecret || !this.config.redirectUri) {
-      throw new Error('clientId, clientSecret, and redirectUri required for token exchange');
+    if (
+      !this.config.clientId ||
+      !this.config.clientSecret ||
+      !this.config.redirectUri
+    ) {
+      throw new Error(
+        "clientId, clientSecret, and redirectUri required for token exchange",
+      );
     }
 
-    const response = await fetch('https://oauth.pipedrive.com/oauth/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    const response = await fetch("https://oauth.pipedrive.com/oauth/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
-        grant_type: 'authorization_code',
+        grant_type: "authorization_code",
         client_id: this.config.clientId,
         client_secret: this.config.clientSecret,
         redirect_uri: this.config.redirectUri,
@@ -229,7 +235,9 @@ export class PipedriveCRMSDKClient {
     });
 
     if (!response.ok) {
-      throw new Error(`Pipedrive token exchange failed: ${response.statusText}`);
+      throw new Error(
+        `Pipedrive token exchange failed: ${response.statusText}`,
+      );
     }
 
     const data = await response.json();
@@ -266,11 +274,15 @@ export class PipedriveCRMSDKClient {
    */
   private async ensureValidToken(): Promise<void> {
     if (!this.accessToken && !this.apiToken) {
-      throw new Error('Access token or API token not set. Authenticate first.');
+      throw new Error("Access token or API token not set. Authenticate first.");
     }
 
-    if (this.tokenExpiresAt && new Date() > this.tokenExpiresAt && this.accessToken) {
-      throw new Error('Token expired and no refresh token available');
+    if (
+      this.tokenExpiresAt &&
+      new Date() > this.tokenExpiresAt &&
+      this.accessToken
+    ) {
+      throw new Error("Token expired and no refresh token available");
     }
   }
 
@@ -280,7 +292,7 @@ export class PipedriveCRMSDKClient {
   private async makeRequest<T>(
     method: string,
     endpoint: string,
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     await this.ensureValidToken();
 
@@ -288,13 +300,13 @@ export class PipedriveCRMSDKClient {
 
     // Add authentication
     if (this.accessToken) {
-      url.searchParams.set('access_token', this.accessToken);
+      url.searchParams.set("access_token", this.accessToken);
     } else if (this.apiToken) {
-      url.searchParams.set('api_token', this.apiToken);
+      url.searchParams.set("api_token", this.apiToken);
     }
 
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
 
     const options: RequestInit = { method, headers };
@@ -305,8 +317,8 @@ export class PipedriveCRMSDKClient {
     const response = await fetch(url.toString(), options);
 
     // Track rate limits
-    const remaining = response.headers.get('X-RateLimit-Remaining');
-    const reset = response.headers.get('X-RateLimit-Reset');
+    const remaining = response.headers.get("X-RateLimit-Remaining");
+    const reset = response.headers.get("X-RateLimit-Reset");
     if (remaining) {
       this.rateLimitRemaining = parseInt(remaining, 10);
     }
@@ -316,7 +328,9 @@ export class PipedriveCRMSDKClient {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(`Pipedrive API error: ${response.status} ${JSON.stringify(errorData)}`);
+      throw new Error(
+        `Pipedrive API error: ${response.status} ${JSON.stringify(errorData)}`,
+      );
     }
 
     return response.json() as Promise<T>;
@@ -342,19 +356,23 @@ export class PipedriveCRMSDKClient {
     limit?: number;
     start?: number;
     sort?: string;
-  }): Promise<{ persons: PipedrivePerson[]; additionalData?: Record<string, unknown> }> {
-    const endpoint = `/persons?limit=${filters?.limit || 500}&start=${filters?.start || 0}${filters?.sort ? `&sort=${filters.sort}` : ''}`;
+  }): Promise<{
+    persons: PipedrivePerson[];
+    additionalData?: Record<string, unknown>;
+  }> {
+    const endpoint = `/persons?limit=${filters?.limit || 500}&start=${filters?.start || 0}${filters?.sort ? `&sort=${filters.sort}` : ""}`;
 
     const response = await this.makeRequest<{
       success: boolean;
       data: Array<Record<string, unknown>>;
       additional_data?: Record<string, unknown>;
-    }>('GET', endpoint);
+    }>("GET", endpoint);
 
     return {
-      persons: (Array.isArray(response.data) ? response.data : [response.data]).map((p) =>
-        this.transformPipedrivePerson(p)
-      ),
+      persons: (Array.isArray(response.data)
+        ? response.data
+        : [response.data]
+      ).map((p) => this.transformPipedrivePerson(p)),
       additionalData: response.additional_data,
     };
   }
@@ -366,7 +384,7 @@ export class PipedriveCRMSDKClient {
     const response = await this.makeRequest<{
       success: boolean;
       data: Record<string, unknown>;
-    }>('GET', `/persons/${id}`);
+    }>("GET", `/persons/${id}`);
 
     return this.transformPipedrivePerson(response.data);
   }
@@ -374,11 +392,13 @@ export class PipedriveCRMSDKClient {
   /**
    * Create person
    */
-  async createPerson(person: Omit<PipedrivePerson, 'id'>): Promise<PipedrivePerson> {
+  async createPerson(
+    person: Omit<PipedrivePerson, "id">,
+  ): Promise<PipedrivePerson> {
     const response = await this.makeRequest<{
       success: boolean;
       data: Record<string, unknown> & { id: number };
-    }>('POST', '/persons', this.transformToPipedriveRecord(person));
+    }>("POST", "/persons", this.transformToPipedriveRecord(person));
 
     return this.transformPipedrivePerson(response.data);
   }
@@ -386,30 +406,40 @@ export class PipedriveCRMSDKClient {
   /**
    * Update person
    */
-  async updatePerson(id: number, updates: Partial<PipedrivePerson>): Promise<void> {
-    await this.makeRequest('PUT', `/persons/${id}`, this.transformToPipedriveRecord(updates));
+  async updatePerson(
+    id: number,
+    updates: Partial<PipedrivePerson>,
+  ): Promise<void> {
+    await this.makeRequest(
+      "PUT",
+      `/persons/${id}`,
+      this.transformToPipedriveRecord(updates),
+    );
   }
 
   /**
    * Delete person
    */
   async deletePerson(id: number): Promise<void> {
-    await this.makeRequest('DELETE', `/persons/${id}`, null);
+    await this.makeRequest("DELETE", `/persons/${id}`, null);
   }
 
   /**
    * Search persons
    */
-  async searchPersons(term: string, fields?: string[]): Promise<PipedrivePerson[]> {
-    const endpoint = `/persons/search?term=${encodeURIComponent(term)}${fields ? `&fields=${fields.join(',')}` : ''}`;
+  async searchPersons(
+    term: string,
+    fields?: string[],
+  ): Promise<PipedrivePerson[]> {
+    const endpoint = `/persons/search?term=${encodeURIComponent(term)}${fields ? `&fields=${fields.join(",")}` : ""}`;
 
     const response = await this.makeRequest<{
       success: boolean;
       data: Array<{ item: Record<string, unknown> }>;
-    }>('GET', endpoint);
+    }>("GET", endpoint);
 
     return (response.data || []).map((result) =>
-      this.transformPipedrivePerson(result.item as Record<string, unknown>)
+      this.transformPipedrivePerson(result.item as Record<string, unknown>),
     );
   }
 
@@ -427,12 +457,13 @@ export class PipedriveCRMSDKClient {
     const response = await this.makeRequest<{
       success: boolean;
       data: Array<Record<string, unknown>>;
-    }>('GET', endpoint);
+    }>("GET", endpoint);
 
     return {
-      orgs: (Array.isArray(response.data) ? response.data : [response.data]).map((o) =>
-        this.transformPipedriveOrganization(o)
-      ),
+      orgs: (Array.isArray(response.data)
+        ? response.data
+        : [response.data]
+      ).map((o) => this.transformPipedriveOrganization(o)),
     };
   }
 
@@ -443,7 +474,7 @@ export class PipedriveCRMSDKClient {
     const response = await this.makeRequest<{
       success: boolean;
       data: Record<string, unknown>;
-    }>('GET', `/organizations/${id}`);
+    }>("GET", `/organizations/${id}`);
 
     return this.transformPipedriveOrganization(response.data);
   }
@@ -451,11 +482,13 @@ export class PipedriveCRMSDKClient {
   /**
    * Create organization
    */
-  async createOrganization(org: Omit<PipedriveOrganization, 'id'>): Promise<PipedriveOrganization> {
+  async createOrganization(
+    org: Omit<PipedriveOrganization, "id">,
+  ): Promise<PipedriveOrganization> {
     const response = await this.makeRequest<{
       success: boolean;
       data: Record<string, unknown> & { id: number };
-    }>('POST', '/organizations', this.transformToPipedriveRecord(org));
+    }>("POST", "/organizations", this.transformToPipedriveRecord(org));
 
     return this.transformPipedriveOrganization(response.data);
   }
@@ -465,16 +498,20 @@ export class PipedriveCRMSDKClient {
    */
   async updateOrganization(
     id: number,
-    updates: Partial<PipedriveOrganization>
+    updates: Partial<PipedriveOrganization>,
   ): Promise<void> {
-    await this.makeRequest('PUT', `/organizations/${id}`, this.transformToPipedriveRecord(updates));
+    await this.makeRequest(
+      "PUT",
+      `/organizations/${id}`,
+      this.transformToPipedriveRecord(updates),
+    );
   }
 
   /**
    * Delete organization
    */
   async deleteOrganization(id: number): Promise<void> {
-    await this.makeRequest('DELETE', `/organizations/${id}`, null);
+    await this.makeRequest("DELETE", `/organizations/${id}`, null);
   }
 
   // ─── DEALS OPERATIONS ──────────────────────────────────────────────
@@ -487,17 +524,18 @@ export class PipedriveCRMSDKClient {
     start?: number;
     status?: string;
   }): Promise<{ deals: PipedriveDeal[] }> {
-    const endpoint = `/deals?limit=${filters?.limit || 500}&start=${filters?.start || 0}${filters?.status ? `&status=${filters.status}` : ''}`;
+    const endpoint = `/deals?limit=${filters?.limit || 500}&start=${filters?.start || 0}${filters?.status ? `&status=${filters.status}` : ""}`;
 
     const response = await this.makeRequest<{
       success: boolean;
       data: Array<Record<string, unknown>>;
-    }>('GET', endpoint);
+    }>("GET", endpoint);
 
     return {
-      deals: (Array.isArray(response.data) ? response.data : [response.data]).map((d) =>
-        this.transformPipedriveDeal(d)
-      ),
+      deals: (Array.isArray(response.data)
+        ? response.data
+        : [response.data]
+      ).map((d) => this.transformPipedriveDeal(d)),
     };
   }
 
@@ -508,7 +546,7 @@ export class PipedriveCRMSDKClient {
     const response = await this.makeRequest<{
       success: boolean;
       data: Record<string, unknown>;
-    }>('GET', `/deals/${id}`);
+    }>("GET", `/deals/${id}`);
 
     return this.transformPipedriveDeal(response.data);
   }
@@ -516,11 +554,11 @@ export class PipedriveCRMSDKClient {
   /**
    * Create deal
    */
-  async createDeal(deal: Omit<PipedriveDeal, 'id'>): Promise<PipedriveDeal> {
+  async createDeal(deal: Omit<PipedriveDeal, "id">): Promise<PipedriveDeal> {
     const response = await this.makeRequest<{
       success: boolean;
       data: Record<string, unknown> & { id: number };
-    }>('POST', '/deals', this.transformToPipedriveRecord(deal));
+    }>("POST", "/deals", this.transformToPipedriveRecord(deal));
 
     return this.transformPipedriveDeal(response.data);
   }
@@ -529,14 +567,18 @@ export class PipedriveCRMSDKClient {
    * Update deal
    */
   async updateDeal(id: number, updates: Partial<PipedriveDeal>): Promise<void> {
-    await this.makeRequest('PUT', `/deals/${id}`, this.transformToPipedriveRecord(updates));
+    await this.makeRequest(
+      "PUT",
+      `/deals/${id}`,
+      this.transformToPipedriveRecord(updates),
+    );
   }
 
   /**
    * Delete deal
    */
   async deleteDeal(id: number): Promise<void> {
-    await this.makeRequest('DELETE', `/deals/${id}`, null);
+    await this.makeRequest("DELETE", `/deals/${id}`, null);
   }
 
   /**
@@ -546,10 +588,10 @@ export class PipedriveCRMSDKClient {
     const response = await this.makeRequest<{
       success: boolean;
       data: Array<{ item: Record<string, unknown> }>;
-    }>('GET', `/deals/search?term=${encodeURIComponent(term)}`);
+    }>("GET", `/deals/search?term=${encodeURIComponent(term)}`);
 
     return (response.data || []).map((result) =>
-      this.transformPipedriveDeal(result.item as Record<string, unknown>)
+      this.transformPipedriveDeal(result.item as Record<string, unknown>),
     );
   }
 
@@ -567,23 +609,26 @@ export class PipedriveCRMSDKClient {
     const response = await this.makeRequest<{
       success: boolean;
       data: Array<Record<string, unknown>>;
-    }>('GET', endpoint);
+    }>("GET", endpoint);
 
     return {
-      activities: (Array.isArray(response.data) ? response.data : [response.data]).map((a) =>
-        this.transformPipedriveActivity(a)
-      ),
+      activities: (Array.isArray(response.data)
+        ? response.data
+        : [response.data]
+      ).map((a) => this.transformPipedriveActivity(a)),
     };
   }
 
   /**
    * Create activity
    */
-  async createActivity(activity: Omit<PipedriveActivity, 'id'>): Promise<PipedriveActivity> {
+  async createActivity(
+    activity: Omit<PipedriveActivity, "id">,
+  ): Promise<PipedriveActivity> {
     const response = await this.makeRequest<{
       success: boolean;
       data: Record<string, unknown> & { id: number };
-    }>('POST', '/activities', this.transformToPipedriveRecord(activity));
+    }>("POST", "/activities", this.transformToPipedriveRecord(activity));
 
     return this.transformPipedriveActivity(response.data);
   }
@@ -591,15 +636,22 @@ export class PipedriveCRMSDKClient {
   /**
    * Update activity
    */
-  async updateActivity(id: number, updates: Partial<PipedriveActivity>): Promise<void> {
-    await this.makeRequest('PUT', `/activities/${id}`, this.transformToPipedriveRecord(updates));
+  async updateActivity(
+    id: number,
+    updates: Partial<PipedriveActivity>,
+  ): Promise<void> {
+    await this.makeRequest(
+      "PUT",
+      `/activities/${id}`,
+      this.transformToPipedriveRecord(updates),
+    );
   }
 
   /**
    * Delete activity
    */
   async deleteActivity(id: number): Promise<void> {
-    await this.makeRequest('DELETE', `/activities/${id}`, null);
+    await this.makeRequest("DELETE", `/activities/${id}`, null);
   }
 
   // ─── PIPELINES & STAGES ───────────────────────────────────────────
@@ -611,28 +663,32 @@ export class PipedriveCRMSDKClient {
     const response = await this.makeRequest<{
       success: boolean;
       data: Array<Record<string, unknown>>;
-    }>('GET', '/pipelines');
+    }>("GET", "/pipelines");
 
     return {
-      pipelines: (Array.isArray(response.data) ? response.data : [response.data]).map((p) =>
-        this.transformPipedrivePipeline(p)
-      ),
+      pipelines: (Array.isArray(response.data)
+        ? response.data
+        : [response.data]
+      ).map((p) => this.transformPipedrivePipeline(p)),
     };
   }
 
   /**
    * Get stages for pipeline
    */
-  async getPipelineStages(pipelineId: number): Promise<{ stages: PipedriveStage[] }> {
+  async getPipelineStages(
+    pipelineId: number,
+  ): Promise<{ stages: PipedriveStage[] }> {
     const response = await this.makeRequest<{
       success: boolean;
       data: Array<Record<string, unknown>>;
-    }>('GET', `/pipelines/${pipelineId}/stages`);
+    }>("GET", `/pipelines/${pipelineId}/stages`);
 
     return {
-      stages: (Array.isArray(response.data) ? response.data : [response.data]).map((s) =>
-        this.transformPipedriveStage(s)
-      ),
+      stages: (Array.isArray(response.data)
+        ? response.data
+        : [response.data]
+      ).map((s) => this.transformPipedriveStage(s)),
     };
   }
 
@@ -650,23 +706,26 @@ export class PipedriveCRMSDKClient {
     const response = await this.makeRequest<{
       success: boolean;
       data: Array<Record<string, unknown>>;
-    }>('GET', endpoint);
+    }>("GET", endpoint);
 
     return {
-      products: (Array.isArray(response.data) ? response.data : [response.data]).map((p) =>
-        this.transformPipedriveProduct(p)
-      ),
+      products: (Array.isArray(response.data)
+        ? response.data
+        : [response.data]
+      ).map((p) => this.transformPipedriveProduct(p)),
     };
   }
 
   /**
    * Create product
    */
-  async createProduct(product: Omit<PipedriveProduct, 'id'>): Promise<PipedriveProduct> {
+  async createProduct(
+    product: Omit<PipedriveProduct, "id">,
+  ): Promise<PipedriveProduct> {
     const response = await this.makeRequest<{
       success: boolean;
       data: Record<string, unknown> & { id: number };
-    }>('POST', '/products', this.transformToPipedriveRecord(product));
+    }>("POST", "/products", this.transformToPipedriveRecord(product));
 
     return this.transformPipedriveProduct(response.data);
   }
@@ -679,12 +738,12 @@ export class PipedriveCRMSDKClient {
   async createWebhook(
     subscriptionUrl: string,
     eventAction: string,
-    eventObject: string
+    eventObject: string,
   ): Promise<{ webhookId: number }> {
     const response = await this.makeRequest<{
       success: boolean;
       data: Record<string, unknown> & { id: number };
-    }>('POST', '/webhooks', {
+    }>("POST", "/webhooks", {
       subscription_url: subscriptionUrl,
       event_action: eventAction,
       event_object: eventObject,
@@ -697,25 +756,31 @@ export class PipedriveCRMSDKClient {
    * Delete webhook
    */
   async deleteWebhook(webhookId: number): Promise<void> {
-    await this.makeRequest('DELETE', `/webhooks/${webhookId}`, null);
+    await this.makeRequest("DELETE", `/webhooks/${webhookId}`, null);
   }
 
   /**
    * Verify webhook signature using app secret
    */
-  verifyWebhookSignature(signature: string, payload: string, secret: string): boolean {
-    const hmac = createHmac('sha256', secret);
+  verifyWebhookSignature(
+    signature: string,
+    payload: string,
+    secret: string,
+  ): boolean {
+    const hmac = createHmac("sha256", secret);
     hmac.update(payload);
-    const computed = hmac.digest('hex');
+    const computed = hmac.digest("hex");
     return computed === signature;
   }
 
   // ─── HELPERS ──────────────────────────────────────────────────────
 
-  private transformPipedrivePerson(record: Record<string, unknown>): PipedrivePerson {
+  private transformPipedrivePerson(
+    record: Record<string, unknown>,
+  ): PipedrivePerson {
     return {
       id: Number(record.id || 0),
-      name: String(record.name || ''),
+      name: String(record.name || ""),
       email: record.email ? String(record.email) : undefined,
       phone: record.phone ? String(record.phone) : undefined,
       orgId: record.org_id ? Number(record.org_id) : undefined,
@@ -725,23 +790,29 @@ export class PipedriveCRMSDKClient {
     };
   }
 
-  private transformPipedriveOrganization(record: Record<string, unknown>): PipedriveOrganization {
+  private transformPipedriveOrganization(
+    record: Record<string, unknown>,
+  ): PipedriveOrganization {
     return {
       id: Number(record.id || 0),
-      name: String(record.name || ''),
+      name: String(record.name || ""),
       activeFlag: record.active_flag ? Boolean(record.active_flag) : undefined,
       address: record.address ? String(record.address) : undefined,
       ccEmail: record.cc_email ? String(record.cc_email) : undefined,
-      ownerUserId: record.owner_user_id ? Number(record.owner_user_id) : undefined,
+      ownerUserId: record.owner_user_id
+        ? Number(record.owner_user_id)
+        : undefined,
       addTime: record.add_time ? String(record.add_time) : undefined,
       updateTime: record.update_time ? String(record.update_time) : undefined,
     };
   }
 
-  private transformPipedriveDeal(record: Record<string, unknown>): PipedriveDeal {
+  private transformPipedriveDeal(
+    record: Record<string, unknown>,
+  ): PipedriveDeal {
     return {
       id: Number(record.id || 0),
-      title: String(record.title || ''),
+      title: String(record.title || ""),
       value: record.value ? Number(record.value) : undefined,
       currency: record.currency ? String(record.currency) : undefined,
       userId: record.user_id ? Number(record.user_id) : undefined,
@@ -749,17 +820,20 @@ export class PipedriveCRMSDKClient {
       orgId: record.org_id ? Number(record.org_id) : undefined,
       stageId: record.stage_id ? Number(record.stage_id) : undefined,
       pipelineId: record.pipeline_id ? Number(record.pipeline_id) : undefined,
-      status: (record.status as 'open' | 'won' | 'lost' | 'deleted') || undefined,
+      status:
+        (record.status as "open" | "won" | "lost" | "deleted") || undefined,
       lostReason: record.lost_reason ? String(record.lost_reason) : undefined,
       addTime: record.add_time ? String(record.add_time) : undefined,
       updateTime: record.update_time ? String(record.update_time) : undefined,
     };
   }
 
-  private transformPipedriveActivity(record: Record<string, unknown>): PipedriveActivity {
+  private transformPipedriveActivity(
+    record: Record<string, unknown>,
+  ): PipedriveActivity {
     return {
       id: Number(record.id || 0),
-      type: (record.type as PipedriveActivity['type']) || 'task',
+      type: (record.type as PipedriveActivity["type"]) || "task",
       subject: record.subject ? String(record.subject) : undefined,
       due: record.due ? String(record.due) : undefined,
       dueTime: record.due_time ? String(record.due_time) : undefined,
@@ -773,29 +847,35 @@ export class PipedriveCRMSDKClient {
     };
   }
 
-  private transformPipedrivePipeline(record: Record<string, unknown>): PipedrivePipeline {
+  private transformPipedrivePipeline(
+    record: Record<string, unknown>,
+  ): PipedrivePipeline {
     return {
       id: Number(record.id || 0),
-      name: String(record.name || ''),
+      name: String(record.name || ""),
       orderNr: record.order_nr ? Number(record.order_nr) : undefined,
       activeFlag: record.active_flag ? Boolean(record.active_flag) : undefined,
     };
   }
 
-  private transformPipedriveStage(record: Record<string, unknown>): PipedriveStage {
+  private transformPipedriveStage(
+    record: Record<string, unknown>,
+  ): PipedriveStage {
     return {
       id: Number(record.id || 0),
       pipelineId: Number(record.pipeline_id || 0),
-      name: String(record.name || ''),
+      name: String(record.name || ""),
       orderNr: record.order_nr ? Number(record.order_nr) : undefined,
       activeFlag: record.active_flag ? Boolean(record.active_flag) : undefined,
     };
   }
 
-  private transformPipedriveProduct(record: Record<string, unknown>): PipedriveProduct {
+  private transformPipedriveProduct(
+    record: Record<string, unknown>,
+  ): PipedriveProduct {
     return {
       id: Number(record.id || 0),
-      name: String(record.name || ''),
+      name: String(record.name || ""),
       code: record.code ? String(record.code) : undefined,
       unit: record.unit ? String(record.unit) : undefined,
       tax: record.tax ? Number(record.tax) : undefined,
@@ -806,7 +886,7 @@ export class PipedriveCRMSDKClient {
   }
 
   private transformToPipedriveRecord(data: unknown): Record<string, unknown> {
-    if (typeof data !== 'object' || data === null) {
+    if (typeof data !== "object" || data === null) {
       return {};
     }
 
@@ -815,24 +895,24 @@ export class PipedriveCRMSDKClient {
 
     // Map camelCase to Pipedrive API naming conventions
     for (const [key, value] of Object.entries(record)) {
-      if (key === 'id') continue;
+      if (key === "id") continue;
 
       const pipedriveKey =
         {
-          orgId: 'org_id',
-          activeFlag: 'active_flag',
-          addTime: 'add_time',
-          updateTime: 'update_time',
-          ccEmail: 'cc_email',
-          ownerUserId: 'owner_user_id',
-          personId: 'person_id',
-          stageId: 'stage_id',
-          pipelineId: 'pipeline_id',
-          lostReason: 'lost_reason',
-          dueTime: 'due_time',
-          dealId: 'deal_id',
-          userId: 'user_id',
-          orderNr: 'order_nr',
+          orgId: "org_id",
+          activeFlag: "active_flag",
+          addTime: "add_time",
+          updateTime: "update_time",
+          ccEmail: "cc_email",
+          ownerUserId: "owner_user_id",
+          personId: "person_id",
+          stageId: "stage_id",
+          pipelineId: "pipeline_id",
+          lostReason: "lost_reason",
+          dueTime: "due_time",
+          dealId: "deal_id",
+          userId: "user_id",
+          orderNr: "order_nr",
           customFields: undefined,
         }[key] || key;
 

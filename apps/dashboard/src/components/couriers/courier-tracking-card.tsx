@@ -2,7 +2,13 @@
 
 import { useEffect, useState, forwardRef, HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
-import { Badge, Button, Avatar, AvatarImage, AvatarFallback } from "@/components/ui";
+import {
+  Badge,
+  Button,
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from "@/components/ui";
 import type { CourierTracking } from "../invoicing/types";
 
 interface CourierTrackingCardProps extends HTMLAttributes<HTMLDivElement> {
@@ -25,8 +31,22 @@ function formatETA(minutes: number): string {
   return `${hours}h ${Math.round(mins)}m`;
 }
 
-export const CourierTrackingCard = forwardRef<HTMLDivElement, CourierTrackingCardProps>(
-  ({ courier, onContact, onTrackingClick, expandedView = false, showStats = false, className, ...props }, ref) => {
+export const CourierTrackingCard = forwardRef<
+  HTMLDivElement,
+  CourierTrackingCardProps
+>(
+  (
+    {
+      courier,
+      onContact,
+      onTrackingClick,
+      expandedView = false,
+      showStats = false,
+      className,
+      ...props
+    },
+    ref,
+  ) => {
     const [etaMinutes, setEtaMinutes] = useState(courier.etaMinutes);
     const [isExpanded, setIsExpanded] = useState(expandedView);
 
@@ -91,18 +111,27 @@ export const CourierTrackingCard = forwardRef<HTMLDivElement, CourierTrackingCar
           "bg-wl-bg-surface border border-wl-border-subtle rounded-lg",
           "transition-all duration-fast",
           isExpanded ? "p-4 space-y-4" : "p-4 space-y-3",
-          className
+          className,
         )}
         {...props}
       >
         {/* Header with courier info */}
-        <div className="flex items-start justify-between gap-3 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setIsExpanded(!isExpanded)}>
+        <div
+          className="flex items-start justify-between gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
           <div className="flex items-center gap-3 flex-1 min-w-0">
             {/* Avatar */}
             <Avatar className="w-10 h-10 flex-shrink-0">
-              <AvatarImage src={courier.courierAvatar} alt={courier.courierName} />
+              <AvatarImage
+                src={courier.courierAvatar}
+                alt={courier.courierName}
+              />
               <AvatarFallback>
-                {courier.courierName.split(" ").map((n) => n[0]).join("")}
+                {courier.courierName
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")}
               </AvatarFallback>
             </Avatar>
 
@@ -129,7 +158,9 @@ export const CourierTrackingCard = forwardRef<HTMLDivElement, CourierTrackingCar
 
         {/* ETA section */}
         <div className="bg-wl-primary-500/10 border border-wl-primary-500/20 rounded-lg px-3 py-2">
-          <p className="text-xs text-wl-text-secondary mb-1">Estimated Arrival</p>
+          <p className="text-xs text-wl-text-secondary mb-1">
+            Estimated Arrival
+          </p>
           <div className="flex items-center justify-between">
             <p className="text-2xl font-bold text-wl-primary-400">
               {formatETA(etaMinutes)}
@@ -161,14 +192,20 @@ export const CourierTrackingCard = forwardRef<HTMLDivElement, CourierTrackingCar
           <div className="flex gap-3">
             <div className="flex flex-col items-center gap-2 flex-shrink-0">
               <div className="w-6 h-6 rounded-full bg-wl-primary-500 flex items-center justify-center">
-                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-3 h-3 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" />
                 </svg>
               </div>
               <div className="w-0.5 h-8 bg-wl-border-subtle" />
             </div>
             <div className="pb-2">
-              <p className="text-xs font-medium text-wl-text-secondary">Pickup</p>
+              <p className="text-xs font-medium text-wl-text-secondary">
+                Pickup
+              </p>
               <p className="text-sm text-wl-text-primary truncate">
                 {courier.currentPickup}
               </p>
@@ -179,13 +216,19 @@ export const CourierTrackingCard = forwardRef<HTMLDivElement, CourierTrackingCar
           <div className="flex gap-3">
             <div className="flex flex-col items-center gap-2 flex-shrink-0">
               <div className="w-6 h-6 rounded-full bg-wl-success-500 flex items-center justify-center">
-                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-3 h-3 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                 </svg>
               </div>
             </div>
             <div>
-              <p className="text-xs font-medium text-wl-text-secondary">Delivery</p>
+              <p className="text-xs font-medium text-wl-text-secondary">
+                Delivery
+              </p>
               <p className="text-sm text-wl-text-primary truncate">
                 {courier.currentDropoff}
               </p>
@@ -232,12 +275,18 @@ export const CourierTrackingCard = forwardRef<HTMLDivElement, CourierTrackingCar
                 </p>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="bg-wl-bg-overlay rounded px-2 py-1.5">
-                    <p className="text-xs text-wl-text-secondary">On-Time Rate</p>
-                    <p className="text-sm font-semibold text-wl-text-primary">94%</p>
+                    <p className="text-xs text-wl-text-secondary">
+                      On-Time Rate
+                    </p>
+                    <p className="text-sm font-semibold text-wl-text-primary">
+                      94%
+                    </p>
                   </div>
                   <div className="bg-wl-bg-overlay rounded px-2 py-1.5">
                     <p className="text-xs text-wl-text-secondary">Avg Speed</p>
-                    <p className="text-sm font-semibold text-wl-text-primary">42 km/h</p>
+                    <p className="text-sm font-semibold text-wl-text-primary">
+                      42 km/h
+                    </p>
                   </div>
                 </div>
               </div>
@@ -254,7 +303,12 @@ export const CourierTrackingCard = forwardRef<HTMLDivElement, CourierTrackingCar
               className="flex-1"
               onClick={() => onContact(courier.id)}
             >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg
+                className="w-3.5 h-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -278,12 +332,14 @@ export const CourierTrackingCard = forwardRef<HTMLDivElement, CourierTrackingCar
         {/* Active indicator */}
         {!courier.isActive && (
           <div className="bg-wl-neutral-500/10 border border-wl-neutral-500/20 rounded px-2 py-1.5 mt-2">
-            <p className="text-xs text-wl-neutral-400 text-center">Courier offline</p>
+            <p className="text-xs text-wl-neutral-400 text-center">
+              Courier offline
+            </p>
           </div>
         )}
       </div>
     );
-  }
+  },
 );
 
 CourierTrackingCard.displayName = "CourierTrackingCard";

@@ -16,11 +16,11 @@
  * - Rate limiting: 10 msg/sec per channel, 200 concurrent connections (free)
  */
 
-import { createHmac } from 'crypto';
+import { createHmac } from "crypto";
 
 // ─── Types ───────────────────────────────────────────────────────
 
-export type PusherChannelType = 'public' | 'private' | 'presence' | 'encrypted';
+export type PusherChannelType = "public" | "private" | "presence" | "encrypted";
 
 export interface PusherEvent {
   channel: string;
@@ -110,7 +110,10 @@ export class PusherSDKClient {
   private readonly baseUrl: string;
   private readonly webhookSecret?: string;
   private readonly timeout: number;
-  private readonly rateLimit: { eventsPerSecond: number; maxConcurrent: number };
+  private readonly rateLimit: {
+    eventsPerSecond: number;
+    maxConcurrent: number;
+  };
   private readonly enableClientEvents: boolean;
   private readonly encryptionMasterKey?: string;
   private requestQueue: Promise<unknown>[] = [];
@@ -118,19 +121,19 @@ export class PusherSDKClient {
 
   constructor(config: PusherSDKConfig) {
     if (!config.appId) {
-      throw new Error('Pusher appId is required');
+      throw new Error("Pusher appId is required");
     }
     if (!config.key) {
-      throw new Error('Pusher key is required');
+      throw new Error("Pusher key is required");
     }
     if (!config.secret) {
-      throw new Error('Pusher secret is required');
+      throw new Error("Pusher secret is required");
     }
 
     this.appId = config.appId;
     this.key = config.key;
     this.secret = config.secret;
-    this.cluster = config.cluster || 'mt1';
+    this.cluster = config.cluster || "mt1";
     this.baseUrl = config.baseUrl || `https://api-${this.cluster}.pusher.com`;
     this.webhookSecret = config.webhookSecret;
     this.timeout = config.timeout || 30000;
@@ -145,15 +148,19 @@ export class PusherSDKClient {
   /**
    * Trigger event on a single channel.
    */
-  async trigger(channel: string, event: string, data: Record<string, unknown> | string): Promise<void> {
+  async trigger(
+    channel: string,
+    event: string,
+    data: Record<string, unknown> | string,
+  ): Promise<void> {
     return this.withRateLimit(channel, async () => {
       const payload: Record<string, unknown> = {
         name: event,
         channels: [channel],
-        data: typeof data === 'string' ? data : JSON.stringify(data),
+        data: typeof data === "string" ? data : JSON.stringify(data),
       };
 
-      await this.makeRequest('POST', '/events', payload);
+      await this.makeRequest("POST", "/events", payload);
     });
   }
 
@@ -163,48 +170,48 @@ export class PusherSDKClient {
   async triggerMultiple(
     channels: string[],
     event: string,
-    data: Record<string, unknown> | string
+    data: Record<string, unknown> | string,
   ): Promise<void> {
     if (channels.length === 0) {
-      throw new Error('At least one channel is required');
+      throw new Error("At least one channel is required");
     }
     if (channels.length > 100) {
-      throw new Error('Maximum 100 channels per request');
+      throw new Error("Maximum 100 channels per request");
     }
 
     return this.withRateLimit(channels[0], async () => {
       const payload: Record<string, unknown> = {
         name: event,
         channels,
-        data: typeof data === 'string' ? data : JSON.stringify(data),
+        data: typeof data === "string" ? data : JSON.stringify(data),
       };
 
-      await this.makeRequest('POST', '/events', payload);
+      await this.makeRequest("POST", "/events", payload);
     });
   }
 
   /**
    * Batch trigger events (up to 10 events).
    */
-  async triggerBatch(batch: PusherBatchEvent['batch']): Promise<void> {
+  async triggerBatch(batch: PusherBatchEvent["batch"]): Promise<void> {
     if (batch.length === 0) {
-      throw new Error('At least one event is required');
+      throw new Error("At least one event is required");
     }
     if (batch.length > 10) {
-      throw new Error('Maximum 10 events per batch');
+      throw new Error("Maximum 10 events per batch");
     }
 
     return this.withRateLimit(batch[0].channel, async () => {
       const events = batch.map((e) => ({
         name: e.event,
         channel: e.channel,
-        data: typeof e.data === 'string' ? e.data : JSON.stringify(e.data),
+        data: typeof e.data === "string" ? e.data : JSON.stringify(e.data),
         socket_id: e.socketId,
       }));
 
       const payload = { batch: events };
 
-      await this.makeRequest('POST', '/batch_events', payload);
+      await this.makeRequest("POST", "/batch_events", payload);
     });
   }
 
@@ -214,28 +221,30 @@ export class PusherSDKClient {
   generateChannelAuth(
     socketId: string,
     channel: string,
-    userInfo?: Record<string, unknown>
+    userInfo?: Record<string, unknown>,
   ): PusherClientAuthPayload {
     if (!channel) {
-      throw new Error('Channel name is required');
+      throw new Error("Channel name is required");
     }
 
     let channelData: string | undefined;
 
-    if (channel.startsWith('presence-') && userInfo) {
+    if (channel.startsWith("presence-") && userInfo) {
       channelData = JSON.stringify({
         user_id: userInfo.userId || userInfo.id,
         user_info: userInfo,
       });
     }
 
-    const stringToSign = `${socketId}:${channel}${channelData ? `:${channelData}` : ''}`;
+    const stringToSign = `${socketId}:${channel}${channelData ? `:${channelData}` : ""}`;
     const auth = this.generateSignature(stringToSign);
 
     return {
       auth: `${this.key}:${auth}`,
       ...(channelData && { channel_data: channelData }),
-      ...(this.encryptionMasterKey && { shared_secret: this.encryptionMasterKey }),
+      ...(this.encryptionMasterKey && {
+        shared_secret: this.encryptionMasterKey,
+      }),
     };
   }
 
@@ -248,27 +257,29 @@ export class PusherSDKClient {
     count?: number;
     info?: string;
   }): Promise<PusherChannelInfo[]> {
-    let path = '/channels';
+    let path = "/channels";
     const params = new URLSearchParams();
 
     if (filter?.prefix) {
-      params.append('filter_by_prefix', filter.prefix);
+      params.append("filter_by_prefix", filter.prefix);
     }
     if (filter?.occupied) {
-      params.append('filter_by_occupied', 'true');
+      params.append("filter_by_occupied", "true");
     }
     if (filter?.count) {
-      params.append('count', String(filter.count));
+      params.append("count", String(filter.count));
     }
     if (filter?.info) {
-      params.append('info', filter.info);
+      params.append("info", filter.info);
     }
 
     if (params.toString()) {
       path += `?${params.toString()}`;
     }
 
-    const response = (await this.makeRequest('GET', path)) as { channels: Record<string, PusherChannel> };
+    const response = (await this.makeRequest("GET", path)) as {
+      channels: Record<string, PusherChannel>;
+    };
 
     return Object.entries(response.channels || {}).map(([name, channel]) => ({
       name,
@@ -288,7 +299,10 @@ export class PusherSDKClient {
       path += `?info=${encodeURIComponent(info)}`;
     }
 
-    const response = (await this.makeRequest('GET', path)) as unknown as PusherChannel;
+    const response = (await this.makeRequest(
+      "GET",
+      path,
+    )) as unknown as PusherChannel;
 
     return {
       name: response.name,
@@ -303,7 +317,9 @@ export class PusherSDKClient {
    */
   async getPresenceMembers(channel: string): Promise<PusherPresenceMember[]> {
     const path = `/channels/${encodeURIComponent(channel)}/users`;
-    const response = (await this.makeRequest('GET', path)) as { users: Array<{ id: string; info?: Record<string, unknown> }> };
+    const response = (await this.makeRequest("GET", path)) as {
+      users: Array<{ id: string; info?: Record<string, unknown> }>;
+    };
 
     return response.users.map((user) => ({
       id: user.id,
@@ -314,7 +330,10 @@ export class PusherSDKClient {
   /**
    * Get a specific presence member.
    */
-  async getPresenceMember(channel: string, userId: string): Promise<PusherPresenceMember | null> {
+  async getPresenceMember(
+    channel: string,
+    userId: string,
+  ): Promise<PusherPresenceMember | null> {
     const members = await this.getPresenceMembers(channel);
     return members.find((m) => m.id === userId) || null;
   }
@@ -322,15 +341,18 @@ export class PusherSDKClient {
   /**
    * Verify webhook signature using HMAC-SHA256.
    */
-  verifyWebhookSignature(payload: PusherWebhookPayload, signature: string): boolean {
+  verifyWebhookSignature(
+    payload: PusherWebhookPayload,
+    signature: string,
+  ): boolean {
     if (!this.webhookSecret) {
       return false;
     }
 
     const data = JSON.stringify(payload);
-    const hmac = createHmac('sha256', this.webhookSecret);
+    const hmac = createHmac("sha256", this.webhookSecret);
     hmac.update(data);
-    const expectedSignature = hmac.digest('hex');
+    const expectedSignature = hmac.digest("hex");
 
     // Timing-safe comparison
     return this.timingSafeEqual(expectedSignature, signature);
@@ -379,7 +401,7 @@ export class PusherSDKClient {
   private async makeRequest(
     method: string,
     path: string,
-    body?: Record<string, unknown>
+    body?: Record<string, unknown>,
   ): Promise<Record<string, unknown>> {
     const url = new URL(path, this.baseUrl);
 
@@ -387,17 +409,21 @@ export class PusherSDKClient {
     const queryParams: Record<string, string> = {
       auth_key: this.key,
       auth_timestamp: Math.floor(Date.now() / 1000).toString(),
-      auth_version: '1.0',
+      auth_version: "1.0",
     };
 
     // Add body to request if present
     let bodyStr: string | undefined;
-    if (body && method !== 'GET') {
+    if (body && method !== "GET") {
       bodyStr = JSON.stringify(body);
     }
 
     // Generate auth signature
-    const stringToSign = [method, path, this.buildQueryString(queryParams, bodyStr)].join('\n');
+    const stringToSign = [
+      method,
+      path,
+      this.buildQueryString(queryParams, bodyStr),
+    ].join("\n");
     queryParams.auth_signature = this.generateSignature(stringToSign);
 
     // Add all query params to URL
@@ -406,8 +432,8 @@ export class PusherSDKClient {
     });
 
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      "Content-Type": "application/json",
+      Accept: "application/json",
     };
 
     const options: RequestInit = {
@@ -423,11 +449,13 @@ export class PusherSDKClient {
     const response = await fetch(url.toString(), options);
 
     if (!response.ok) {
-      throw new Error(`Pusher API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Pusher API error: ${response.status} ${response.statusText}`,
+      );
     }
 
-    const contentType = response.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
       return (await response.json()) as Record<string, unknown>;
     }
 
@@ -437,11 +465,14 @@ export class PusherSDKClient {
   /**
    * Build query string for authentication.
    */
-  private buildQueryString(params: Record<string, string>, body?: string): string {
+  private buildQueryString(
+    params: Record<string, string>,
+    body?: string,
+  ): string {
     const queryParts: string[] = [];
 
     Object.entries(params)
-      .filter(([key]) => key !== 'auth_signature')
+      .filter(([key]) => key !== "auth_signature")
       .sort(([a], [b]) => a.localeCompare(b))
       .forEach(([key, value]) => {
         queryParts.push(`${key}=${encodeURIComponent(value)}`);
@@ -451,22 +482,25 @@ export class PusherSDKClient {
       queryParts.push(`body=${encodeURIComponent(body)}`);
     }
 
-    return queryParts.join('&');
+    return queryParts.join("&");
   }
 
   /**
    * Generate HMAC-SHA256 signature.
    */
   private generateSignature(data: string): string {
-    const hmac = createHmac('sha256', this.secret);
+    const hmac = createHmac("sha256", this.secret);
     hmac.update(data);
-    return hmac.digest('hex');
+    return hmac.digest("hex");
   }
 
   /**
    * Apply rate limiting to events.
    */
-  private async withRateLimit<T>(channel: string, fn: () => Promise<T>): Promise<T> {
+  private async withRateLimit<T>(
+    channel: string,
+    fn: () => Promise<T>,
+  ): Promise<T> {
     // Wait for concurrent limit
     while (this.requestQueue.length >= this.rateLimit.maxConcurrent) {
       await Promise.race(this.requestQueue);
@@ -485,7 +519,10 @@ export class PusherSDKClient {
     }
 
     recentRequests.push(now);
-    this.rateLimitBucket.set(channel, recentRequests.slice(-this.rateLimit.eventsPerSecond));
+    this.rateLimitBucket.set(
+      channel,
+      recentRequests.slice(-this.rateLimit.eventsPerSecond),
+    );
 
     const promise = fn();
     this.requestQueue.push(promise);

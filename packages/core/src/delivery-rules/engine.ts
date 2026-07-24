@@ -13,7 +13,7 @@ import {
   ConditionOperator,
   EvaluationOptions,
   ActionParams,
-} from './types';
+} from "./types";
 
 /**
  * Rule Engine - Core evaluation logic
@@ -29,10 +29,10 @@ export class RuleEngine {
   evaluate(
     rules: DeliveryRuleData[],
     context: RuleEvaluationContext,
-    options: EvaluationOptions = {}
+    options: EvaluationOptions = {},
   ): RuleResult {
     const {
-      mode = 'highest-priority',
+      mode = "highest-priority",
       includeAllMatches = false,
       stopOnBlock = true,
     } = options;
@@ -52,27 +52,24 @@ export class RuleEngine {
       }
 
       // Check if all conditions match
-      const conditionsMatch = this.evaluateConditions(
-        rule.conditions,
-        context
-      );
+      const conditionsMatch = this.evaluateConditions(rule.conditions, context);
 
       if (conditionsMatch) {
         matchedRules.push(rule);
 
-        if (mode === 'first-match') {
+        if (mode === "first-match") {
           // Apply actions and return immediately
           result = this.applyActions(rule.actions, context, result, rule.id);
           return result;
         }
 
-        if (mode === 'highest-priority') {
+        if (mode === "highest-priority") {
           // Apply actions from highest priority rule only
           result = this.applyActions(rule.actions, context, result, rule.id);
           break;
         }
 
-        if (mode === 'all-match') {
+        if (mode === "all-match") {
           // Apply actions from all matching rules
           result = this.applyActions(rule.actions, context, result, rule.id);
 
@@ -95,7 +92,7 @@ export class RuleEngine {
    */
   evaluateConditions(
     conditions: DeliveryRuleCondition[],
-    context: RuleEvaluationContext
+    context: RuleEvaluationContext,
   ): boolean {
     // Empty conditions = always true
     if (!conditions || conditions.length === 0) {
@@ -104,7 +101,7 @@ export class RuleEngine {
 
     // All conditions must be true (AND logic)
     return conditions.every((condition) =>
-      this.evaluateCondition(condition, context)
+      this.evaluateCondition(condition, context),
     );
   }
 
@@ -116,7 +113,7 @@ export class RuleEngine {
    */
   evaluateCondition(
     condition: DeliveryRuleCondition,
-    context: RuleEvaluationContext
+    context: RuleEvaluationContext,
   ): boolean {
     const value = this.getContextValue(condition.field, context);
 
@@ -129,8 +126,11 @@ export class RuleEngine {
    * @param context Context object
    * @returns Value at path or undefined
    */
-  private getContextValue(path: string, context: RuleEvaluationContext): unknown {
-    const parts = path.split('.');
+  private getContextValue(
+    path: string,
+    context: RuleEvaluationContext,
+  ): unknown {
+    const parts = path.split(".");
     let current: unknown = context;
 
     for (const part of parts) {
@@ -153,38 +153,38 @@ export class RuleEngine {
   private compare(
     value: unknown,
     operator: ConditionOperator,
-    compareValue: unknown
+    compareValue: unknown,
   ): boolean {
     switch (operator) {
-      case 'eq':
+      case "eq":
         return value === compareValue;
 
-      case 'neq':
+      case "neq":
         return value !== compareValue;
 
-      case 'gt':
+      case "gt":
         return Number(value) > Number(compareValue);
 
-      case 'gte':
+      case "gte":
         return Number(value) >= Number(compareValue);
 
-      case 'lt':
+      case "lt":
         return Number(value) < Number(compareValue);
 
-      case 'lte':
+      case "lte":
         return Number(value) <= Number(compareValue);
 
-      case 'in':
+      case "in":
         return Array.isArray(compareValue)
           ? compareValue.includes(value)
           : false;
 
-      case 'notIn':
+      case "notIn":
         return Array.isArray(compareValue)
           ? !compareValue.includes(value)
           : true;
 
-      case 'between': {
+      case "between": {
         if (!Array.isArray(compareValue) || compareValue.length !== 2) {
           return false;
         }
@@ -193,13 +193,13 @@ export class RuleEngine {
         return num >= Number(min) && num <= Number(max);
       }
 
-      case 'contains':
+      case "contains":
         return String(value).includes(String(compareValue));
 
-      case 'startsWith':
+      case "startsWith":
         return String(value).startsWith(String(compareValue));
 
-      case 'endsWith':
+      case "endsWith":
         return String(value).endsWith(String(compareValue));
 
       default:
@@ -219,7 +219,7 @@ export class RuleEngine {
     actions: DeliveryRuleAction[],
     context: RuleEvaluationContext,
     currentResult: RuleResult,
-    ruleId: string
+    ruleId: string,
   ): RuleResult {
     if (!actions || actions.length === 0) {
       return currentResult;
@@ -235,7 +235,7 @@ export class RuleEngine {
 
     // Sort actions by priority
     const sortedActions = [...actions].sort(
-      (a, b) => (a.priority || 100) - (b.priority || 100)
+      (a, b) => (a.priority || 100) - (b.priority || 100),
     );
 
     for (const action of sortedActions) {
@@ -254,40 +254,40 @@ export class RuleEngine {
     const { type, params } = action;
 
     switch (type) {
-      case 'SET_RATE':
+      case "SET_RATE":
         if (params.rate !== undefined) {
           result.rate = params.rate;
         }
         break;
 
-      case 'BLOCK':
+      case "BLOCK":
         result.allowed = false;
-        result.message = params.reason || 'Delivery not available';
+        result.message = params.reason || "Delivery not available";
         break;
 
-      case 'APPLY_DISCOUNT':
+      case "APPLY_DISCOUNT":
         if (params.discount !== undefined) {
           result.discount = params.discount;
         }
         break;
 
-      case 'ADD_FEE':
+      case "ADD_FEE":
         if (params.fee !== undefined) {
           result.fee = (result.fee || 0) + params.fee;
         }
         break;
 
-      case 'SET_TIME_SLOT':
+      case "SET_TIME_SLOT":
         if (params.timeSlots) {
           result.timeSlots = params.timeSlots;
         }
         break;
 
-      case 'REQUIRE_SIGNATURE':
+      case "REQUIRE_SIGNATURE":
         result.requiresSignature = true;
         break;
 
-      case 'MARK_FRAGILE':
+      case "MARK_FRAGILE":
         result.isFragile = true;
         if (params.riskLevel) {
           result.riskLevel = params.riskLevel;
@@ -309,23 +309,23 @@ export class RuleEngine {
     const errors: string[] = [];
 
     if (!rule.id) {
-      errors.push('Rule must have an id');
+      errors.push("Rule must have an id");
     }
 
     if (!rule.shopId) {
-      errors.push('Rule must have a shopId');
+      errors.push("Rule must have a shopId");
     }
 
     if (!rule.name) {
-      errors.push('Rule must have a name');
+      errors.push("Rule must have a name");
     }
 
-    if (!rule.type || !['LOCAL', 'PICKUP', 'STANDARD'].includes(rule.type)) {
-      errors.push('Rule must have a valid type (LOCAL, PICKUP, STANDARD)');
+    if (!rule.type || !["LOCAL", "PICKUP", "STANDARD"].includes(rule.type)) {
+      errors.push("Rule must have a valid type (LOCAL, PICKUP, STANDARD)");
     }
 
     if (rule.priority < 0 || !Number.isInteger(rule.priority)) {
-      errors.push('Rule priority must be a non-negative integer');
+      errors.push("Rule priority must be a non-negative integer");
     }
 
     return errors;

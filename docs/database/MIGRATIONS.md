@@ -5,6 +5,7 @@
 Witylogix uses **Prisma** for schema management and **SQL migrations** for Row-Level Security (RLS) policies. Migrations are stored in `/packages/db/prisma/migrations/` and are version-controlled.
 
 **Current Migrations:**
+
 1. `00000000000000_init_rls` — Initial RLS policies (named slots)
 2. `20260316_auth_system` — Authentication tables, sessions, MFA
 3. `20260316_onboarding` — Onboarding flow and workspace setup
@@ -18,6 +19,7 @@ Witylogix uses **Prisma** for schema management and **SQL migrations** for Row-L
 Witylogix follows the **expand-contract pattern** to ensure zero-downtime deployments:
 
 ### Phase 1: Expand (Add/Prepare)
+
 - Add new columns with `nullable` or defaults
 - Add new tables
 - Add new indexes
@@ -25,11 +27,13 @@ Witylogix follows the **expand-contract pattern** to ensure zero-downtime deploy
 - **No breaking changes**
 
 ### Phase 2: Migrate (Backfill)
+
 - Populate new columns from old data
 - Transform data as needed
 - Run in background jobs
 
 ### Phase 3: Contract (Remove)
+
 - Remove old columns after data is safe
 - Remove old tables (if applicable)
 - Remove deprecation flags
@@ -52,6 +56,7 @@ ALTER TABLE orders DROP COLUMN status;
 ## Migration File Structure
 
 Each migration directory contains:
+
 - **`migration.sql`** — SQL statements to execute
 - **Named folders** — Grouped by feature (e.g., `00000000000000_init_rls/`)
 
@@ -112,6 +117,7 @@ pnpm prisma migrate dev --name add_new_feature_table
 ```
 
 Prisma will:
+
 1. Compare the schema to the database
 2. Generate SQL in `prisma/migrations/<timestamp>_<feature_name>/migration.sql`
 3. Apply the migration immediately (in dev)
@@ -187,6 +193,7 @@ Use **timestamp + description**:
 ```
 
 Avoid:
+
 - ❌ `new_table` (not descriptive)
 - ❌ `fix_bug` (unclear what was fixed)
 - ❌ `update_schema` (generic)
@@ -256,6 +263,7 @@ FROM orders WHERE shipments.order_id = orders.id;
 ### Automatic Rollback (Development)
 
 If a migration fails during `prisma migrate dev`, Prisma automatically:
+
 1. Rolls back the migration
 2. Deletes the migration directory
 3. Reverts the schema
@@ -313,6 +321,7 @@ pnpm prisma migrate status
 ```
 
 Output:
+
 ```
 Migrations to apply:
   20260320_add_new_feature_table
@@ -358,6 +367,7 @@ SELECT pg_cancel_backend(pid);
 ## Best Practices
 
 ### ✅ Do:
+
 - Write migrations incrementally (one concern per migration)
 - Test migrations in staging before production
 - Include data validation in migration SQL
@@ -370,6 +380,7 @@ SELECT pg_cancel_backend(pid);
 - Include rollback plan in migration comments
 
 ### ❌ Don't:
+
 - Write large migrations (>5 minutes runtime)
 - Add NOT NULL constraints to existing columns without backfill
 - Drop columns without soft-delete period (deprecation window)
@@ -551,6 +562,7 @@ Error: Could not execute migration: permission denied
 ```
 
 **Solution:**
+
 ```bash
 # Run with appropriate DB user
 psql -U postgres $DATABASE_URL < migration.sql
@@ -588,4 +600,3 @@ SELECT pg_cancel_backend(pid) FROM pg_stat_activity WHERE query LIKE '%ALTER TAB
 3. **Monitoring:** Dashboard for migration performance
 4. **Documentation:** Auto-generate from migration history
 5. **Versioning:** Semantic versioning for schema versions
-

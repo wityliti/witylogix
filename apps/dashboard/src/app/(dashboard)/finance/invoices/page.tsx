@@ -1,53 +1,61 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useApiList } from '@/hooks/use-api';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { Search, Download, Filter, Plus } from 'lucide-react';
+import { useState } from "react";
+import { useApiList } from "@/hooks/use-api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Search, Download, Filter, Plus } from "lucide-react";
 
 interface Invoice {
   id: string;
   invoiceNumber: string;
   customer: string;
   amount: number;
-  status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+  status: "draft" | "sent" | "paid" | "overdue" | "cancelled";
   dueDate: string;
   createdDate: string;
   items: Array<{ description: string; quantity: number; price: number }>;
 }
 
 export default function InvoicesPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
 
-  const { items: invoices, loading, error, setSearch } = useApiList<Invoice>(
-    '/api/v4/invoices'
-  );
+  const {
+    items: invoices,
+    loading,
+    error,
+    setSearch,
+  } = useApiList<Invoice>("/api/v4/invoices");
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState error={error} />;
 
   const filtered = invoices.filter((inv) => {
-    if (selectedStatus !== 'all' && inv.status !== selectedStatus) return false;
-    if (searchTerm && !inv.invoiceNumber.includes(searchTerm) && !inv.customer.includes(searchTerm)) return false;
+    if (selectedStatus !== "all" && inv.status !== selectedStatus) return false;
+    if (
+      searchTerm &&
+      !inv.invoiceNumber.includes(searchTerm) &&
+      !inv.customer.includes(searchTerm)
+    )
+      return false;
     return true;
   });
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
-      case 'paid':
-        return 'success';
-      case 'overdue':
-        return 'danger';
-      case 'sent':
-        return 'info';
+      case "paid":
+        return "success";
+      case "overdue":
+        return "danger";
+      case "sent":
+        return "info";
       default:
-        return 'default';
+        return "default";
     }
   };
 
@@ -58,7 +66,9 @@ export default function InvoicesPage() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold text-white">Invoices</h1>
-              <p className="text-sm text-gray-400 mt-1">Manage customer invoices</p>
+              <p className="text-sm text-gray-400 mt-1">
+                Manage customer invoices
+              </p>
             </div>
             <Button variant="primary" size="md">
               <Plus className="w-4 h-4" />
@@ -78,10 +88,10 @@ export default function InvoicesPage() {
                   setSearch(e.target.value);
                 }}
                 className={cn(
-                  'w-full pl-10 pr-4 py-2 rounded-md text-sm',
-                  'bg-wl-bg-elevated border border-wl-border-default',
-                  'text-white',
-                  'focus:outline-none focus:ring-2 focus:ring-blue-500'
+                  "w-full pl-10 pr-4 py-2 rounded-md text-sm",
+                  "bg-wl-bg-elevated border border-wl-border-default",
+                  "text-white",
+                  "focus:outline-none focus:ring-2 focus:ring-blue-500",
                 )}
               />
             </div>
@@ -89,10 +99,10 @@ export default function InvoicesPage() {
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
               className={cn(
-                'px-3 py-2 rounded-md text-sm font-medium',
-                'bg-wl-bg-elevated border border-wl-border-default',
-                'text-white',
-                'focus:outline-none focus:ring-2 focus:ring-blue-500'
+                "px-3 py-2 rounded-md text-sm font-medium",
+                "bg-wl-bg-elevated border border-wl-border-default",
+                "text-white",
+                "focus:outline-none focus:ring-2 focus:ring-blue-500",
               )}
             >
               <option value="all">All Statuses</option>
@@ -108,7 +118,11 @@ export default function InvoicesPage() {
       <div className="flex-1 overflow-auto p-6">
         <div className="space-y-4 max-w-7xl">
           {filtered.length === 0 ? (
-            <Card className={cn("p-12 bg-wl-bg-surface border border-wl-border-default text-center")}>
+            <Card
+              className={cn(
+                "p-12 bg-wl-bg-surface border border-wl-border-default text-center",
+              )}
+            >
               <p className="text-gray-400">No invoices found</p>
             </Card>
           ) : (
@@ -116,19 +130,38 @@ export default function InvoicesPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-wl-border-default">
-                    <th className="text-left px-4 py-3 font-semibold text-gray-400">Invoice #</th>
-                    <th className="text-left px-4 py-3 font-semibold text-gray-400">Customer</th>
-                    <th className="text-right px-4 py-3 font-semibold text-gray-400">Amount</th>
-                    <th className="text-left px-4 py-3 font-semibold text-gray-400">Due Date</th>
-                    <th className="text-center px-4 py-3 font-semibold text-gray-400">Status</th>
-                    <th className="text-right px-4 py-3 font-semibold text-gray-400">Actions</th>
+                    <th className="text-left px-4 py-3 font-semibold text-gray-400">
+                      Invoice #
+                    </th>
+                    <th className="text-left px-4 py-3 font-semibold text-gray-400">
+                      Customer
+                    </th>
+                    <th className="text-right px-4 py-3 font-semibold text-gray-400">
+                      Amount
+                    </th>
+                    <th className="text-left px-4 py-3 font-semibold text-gray-400">
+                      Due Date
+                    </th>
+                    <th className="text-center px-4 py-3 font-semibold text-gray-400">
+                      Status
+                    </th>
+                    <th className="text-right px-4 py-3 font-semibold text-gray-400">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map((inv) => (
-                    <tr key={inv.id} className="border-b border-wl-border-default hover:bg-wl-bg-elevated">
-                      <td className="px-4 py-3 font-medium text-white">{inv.invoiceNumber}</td>
-                      <td className="px-4 py-3 text-gray-300">{inv.customer}</td>
+                    <tr
+                      key={inv.id}
+                      className="border-b border-wl-border-default hover:bg-wl-bg-elevated"
+                    >
+                      <td className="px-4 py-3 font-medium text-white">
+                        {inv.invoiceNumber}
+                      </td>
+                      <td className="px-4 py-3 text-gray-300">
+                        {inv.customer}
+                      </td>
                       <td className="text-right px-4 py-3 font-medium text-white">
                         ${inv.amount.toLocaleString()}
                       </td>
@@ -136,7 +169,9 @@ export default function InvoicesPage() {
                         {new Date(inv.dueDate).toLocaleDateString()}
                       </td>
                       <td className="text-center px-4 py-3">
-                        <Badge variant={getStatusBadgeVariant(inv.status) as any}>
+                        <Badge
+                          variant={getStatusBadgeVariant(inv.status) as any}
+                        >
                           {inv.status}
                         </Badge>
                       </td>

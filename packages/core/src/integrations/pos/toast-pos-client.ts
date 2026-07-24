@@ -3,14 +3,25 @@
  * Implements Toast API v2 for orders, menus, labor, and operations
  */
 
-import { type POSLocation, type POSMenuItem, type POSOrder, type POSPayment, type POSWebhookEvent, type POSEmployee, type POSShift, type POSRevenueCenter, type MenuSyncOptions, type OrderFilters } from './types';
-import { POSAdapter } from './pos-adapter';
+import {
+  type POSLocation,
+  type POSMenuItem,
+  type POSOrder,
+  type POSPayment,
+  type POSWebhookEvent,
+  type POSEmployee,
+  type POSShift,
+  type POSRevenueCenter,
+  type MenuSyncOptions,
+  type OrderFilters,
+} from "./types";
+import { POSAdapter } from "./pos-adapter";
 
 /**
  * Toast API configuration
  */
 interface ToastConfig {
-  environment: 'sandbox' | 'production';
+  environment: "sandbox" | "production";
   clientId: string;
   clientSecret: string;
   accessToken?: string;
@@ -74,12 +85,12 @@ export class ToastPOSClient extends POSAdapter {
   private apiUrl: string;
 
   constructor(config: ToastConfig) {
-    super('toast');
+    super("toast");
     this.config = config;
     this.apiUrl =
-      config.environment === 'production'
-        ? 'https://api.toasttab.com'
-        : 'https://api.toasttest.com';
+      config.environment === "production"
+        ? "https://api.toasttab.com"
+        : "https://api.toasttest.com";
   }
 
   /**
@@ -87,23 +98,26 @@ export class ToastPOSClient extends POSAdapter {
    */
   async getLocation(locationId: string): Promise<POSLocation> {
     return this.executeWithRetries(async () => {
-      const response = await this.makeRequest(`/locations/${locationId}`, 'GET');
+      const response = await this.makeRequest(
+        `/locations/${locationId}`,
+        "GET",
+      );
 
       return {
         id: response.guid ?? locationId,
         externalId: response.guid ?? locationId,
-        providerId: 'toast',
-        name: response.name ?? '',
+        providerId: "toast",
+        name: response.name ?? "",
         address: {
-          street1: response.street ?? '',
-          city: response.city ?? '',
-          state: response.state ?? '',
-          postalCode: response.zip ?? '',
-          country: response.country ?? '',
+          street1: response.street ?? "",
+          city: response.city ?? "",
+          state: response.state ?? "",
+          postalCode: response.zip ?? "",
+          country: response.country ?? "",
         },
         phone: response.phone,
         email: response.email,
-        timezone: response.timezone ?? 'UTC',
+        timezone: response.timezone ?? "UTC",
         isActive: true,
         createdAt: new Date(response.created ?? Date.now()),
         updatedAt: new Date(response.modified ?? Date.now()),
@@ -116,12 +130,12 @@ export class ToastPOSClient extends POSAdapter {
    */
   async listLocations(): Promise<POSLocation[]> {
     return this.executeWithRetries(async () => {
-      const response = await this.makeRequest('/locations', 'GET');
+      const response = await this.makeRequest("/locations", "GET");
 
       return (response.records || []).map((loc: any) => ({
         id: loc.guid,
         externalId: loc.guid,
-        providerId: 'toast',
+        providerId: "toast",
         name: loc.name,
         address: {
           street1: loc.street,
@@ -132,7 +146,7 @@ export class ToastPOSClient extends POSAdapter {
         },
         phone: loc.phone,
         email: loc.email,
-        timezone: loc.timezone || 'UTC',
+        timezone: loc.timezone || "UTC",
         isActive: true,
         createdAt: new Date(loc.created || Date.now()),
         updatedAt: new Date(loc.modified || Date.now()),
@@ -143,7 +157,10 @@ export class ToastPOSClient extends POSAdapter {
   /**
    * Get menu items for location
    */
-  async getMenuItems(locationId: string, categoryId?: string): Promise<POSMenuItem[]> {
+  async getMenuItems(
+    locationId: string,
+    categoryId?: string,
+  ): Promise<POSMenuItem[]> {
     return this.executeWithRetries(async () => {
       // Check cache first
       const cached = this.getMenuFromCache(locationId);
@@ -155,30 +172,30 @@ export class ToastPOSClient extends POSAdapter {
         ? `/locations/${locationId}/menuItems?categoryGuid=${categoryId}`
         : `/locations/${locationId}/menuItems`;
 
-      const response = await this.makeRequest(path, 'GET');
+      const response = await this.makeRequest(path, "GET");
 
       const items = (response.records || []).map((item: any) => ({
         id: item.guid,
         externalId: item.guid,
-        providerId: 'toast',
+        providerId: "toast",
         locationId,
         categoryId: item.categoryGuid,
         name: item.name,
         description: item.description,
         price: item.price * 100, // Convert to cents
-        currency: 'USD',
+        currency: "USD",
         cost: item.cost ? item.cost * 100 : undefined,
         taxable: item.taxable,
         discountable: item.discountable,
         modifiers: (item.modifiers || []).map((mod: any) => ({
           id: mod.guid,
           externalId: mod.guid,
-          providerId: 'toast',
+          providerId: "toast",
           categoryId: item.categoryGuid,
           groupId: mod.groupGuid,
           name: mod.name,
           price: mod.price * 100,
-          currency: 'USD',
+          currency: "USD",
           isRequired: mod.required,
           isActive: !mod.deleted,
           displayOrder: mod.sortOrder || 0,
@@ -210,7 +227,7 @@ export class ToastPOSClient extends POSAdapter {
       // Get all categories
       const categoriesResponse = await this.makeRequest(
         `/locations/${locationId}/menuCategories`,
-        'GET'
+        "GET",
       );
 
       const categories = categoriesResponse.records || [];
@@ -220,7 +237,10 @@ export class ToastPOSClient extends POSAdapter {
 
       for (const category of categories) {
         const cat = category as Record<string, unknown>;
-        const items = await this.getMenuItems(locationId, cat.guid as string | undefined);
+        const items = await this.getMenuItems(
+          locationId,
+          cat.guid as string | undefined,
+        );
         allItems = allItems.concat(items);
       }
 
@@ -232,20 +252,22 @@ export class ToastPOSClient extends POSAdapter {
   /**
    * Create order
    */
-  async createOrder(locationId: string, order: Partial<POSOrder>): Promise<POSOrder> {
+  async createOrder(
+    locationId: string,
+    order: Partial<POSOrder>,
+  ): Promise<POSOrder> {
     // Validate order before retries — validation errors are not transient
     const validation = this.validateOrder(order);
     if (!validation.valid) {
-      throw new Error(`Invalid order: ${validation.errors.join(', ')}`);
+      throw new Error(`Invalid order: ${validation.errors.join(", ")}`);
     }
 
     return this.executeWithRetries(async () => {
-
       const totals = this.calculateOrderTotals(order);
 
       const payload = {
         locationGuid: locationId,
-        orderType: order.orderType === 'dine-in' ? 'DINE_IN' : 'TAKEOUT',
+        orderType: order.orderType === "dine-in" ? "DINE_IN" : "TAKEOUT",
         revenueCenter: order.metadata?.revenueCenterId,
         tab: {
           lineItems: order.lineItems?.map((li: any) => ({
@@ -258,7 +280,7 @@ export class ToastPOSClient extends POSAdapter {
             })),
           })),
           discounts: order.discounts?.map((d: any) => ({
-            type: d.type === 'percentage' ? 'PERCENTAGE' : 'FIXED_AMOUNT',
+            type: d.type === "percentage" ? "PERCENTAGE" : "FIXED_AMOUNT",
             amount: d.amount / 100,
             name: d.reason,
           })),
@@ -271,16 +293,17 @@ export class ToastPOSClient extends POSAdapter {
         notes: order.notes,
       };
 
-      const response = await this.makeRequest('/checks', 'POST', payload);
+      const response = await this.makeRequest("/checks", "POST", payload);
 
       return {
-        id: response.guid ?? '',
-        externalId: response.guid ?? '',
-        providerId: 'toast',
+        id: response.guid ?? "",
+        externalId: response.guid ?? "",
+        providerId: "toast",
         locationId,
-        orderNumber: response.checkNumber ?? '',
-        status: 'open' as const,
-        orderType: (order.orderType ?? 'takeout') as import('./types').OrderType,
+        orderNumber: response.checkNumber ?? "",
+        status: "open" as const,
+        orderType: (order.orderType ??
+          "takeout") as import("./types").OrderType,
         tableNumber: response.tableName,
         partySize: order.partySize,
         lineItems: order.lineItems || [],
@@ -300,50 +323,69 @@ export class ToastPOSClient extends POSAdapter {
    */
   async getOrder(locationId: string, orderId: string): Promise<POSOrder> {
     return this.executeWithRetries(async () => {
-      const response = await this.makeRequest(`/checks/${orderId}`, 'GET');
+      const response = await this.makeRequest(`/checks/${orderId}`, "GET");
 
       const tab = response.tab;
-      const tabLineItems = (tab?.lineItems ?? []) as Array<Record<string, unknown>>;
-      const tabDiscountsRaw = (tab?.discounts ?? []) as Array<Record<string, unknown>>;
+      const tabLineItems = (tab?.lineItems ?? []) as Array<
+        Record<string, unknown>
+      >;
+      const tabDiscountsRaw = (tab?.discounts ?? []) as Array<
+        Record<string, unknown>
+      >;
       const tabDiscounts = tabDiscountsRaw.map((d, i) => ({
         id: (d.guid as string) ?? `discount-${i}`,
-        type: (d.type as string ?? 'fixed') as 'fixed' | 'percentage',
+        type: ((d.type as string) ?? "fixed") as "fixed" | "percentage",
         amount: (d.amount as number) ?? 0,
         reason: d.name as string | undefined,
       }));
-      const tabTax = typeof tab?.tax === 'number' ? tab.tax * 100 : 0;
+      const tabTax = typeof tab?.tax === "number" ? tab.tax * 100 : 0;
       const totals = this.calculateOrderTotals({
         lineItems: tabLineItems.map((li) => ({
           quantity: li.quantity as number,
           price: (li.unitPrice as number) * 100,
         })),
-        discounts: tabDiscounts.map(d => ({ type: d.type, amount: d.amount })),
+        discounts: tabDiscounts.map((d) => ({
+          type: d.type,
+          amount: d.amount,
+        })),
         tax: tabTax,
       });
 
       return {
         id: response.guid ?? orderId,
         externalId: response.guid ?? orderId,
-        providerId: 'toast',
+        providerId: "toast",
         locationId,
-        orderNumber: response.checkNumber ?? '',
-        status: (response.voided ? 'voided' : 'completed') as import('./types').OrderStatus,
-        orderType: (response.orderType === 'DINE_IN' ? 'dine-in' : 'takeout') as import('./types').OrderType,
+        orderNumber: response.checkNumber ?? "",
+        status: (response.voided
+          ? "voided"
+          : "completed") as import("./types").OrderStatus,
+        orderType: (response.orderType === "DINE_IN"
+          ? "dine-in"
+          : "takeout") as import("./types").OrderType,
         tableNumber: response.tableName,
         partySize: response.partySize,
-        lineItems: ((response.tab?.lineItems ?? []) as unknown[]).map((li: unknown) => {
-          const item = li as Record<string, unknown>;
-          return {
-            id: item.guid as string,
-            menuItemId: item.itemGuid as string,
-            quantity: item.quantity as number,
-            price: (item.unitPrice as number) * 100,
-            subtotal: ((item.unitPrice as number) * (item.quantity as number)) * 100,
-            modifiers: ((item.modifiers ?? []) as unknown[]).map((m: unknown) => ({ modifierId: (m as Record<string, unknown>).guid as string, price: 0 })),
-          };
-        }),
-        discounts: tabDiscounts as import('./types').POSDiscount[],
-        payments: (response.payments as import('./types').POSPayment[]) ?? [],
+        lineItems: ((response.tab?.lineItems ?? []) as unknown[]).map(
+          (li: unknown) => {
+            const item = li as Record<string, unknown>;
+            return {
+              id: item.guid as string,
+              menuItemId: item.itemGuid as string,
+              quantity: item.quantity as number,
+              price: (item.unitPrice as number) * 100,
+              subtotal:
+                (item.unitPrice as number) * (item.quantity as number) * 100,
+              modifiers: ((item.modifiers ?? []) as unknown[]).map(
+                (m: unknown) => ({
+                  modifierId: (m as Record<string, unknown>).guid as string,
+                  price: 0,
+                }),
+              ),
+            };
+          },
+        ),
+        discounts: tabDiscounts as import("./types").POSDiscount[],
+        payments: (response.payments as import("./types").POSPayment[]) ?? [],
         subtotal: totals.subtotal,
         tax: totals.tax,
         total: totals.total,
@@ -357,20 +399,26 @@ export class ToastPOSClient extends POSAdapter {
   /**
    * List orders
    */
-  async listOrders(locationId: string, filters?: OrderFilters): Promise<POSOrder[]> {
+  async listOrders(
+    locationId: string,
+    filters?: OrderFilters,
+  ): Promise<POSOrder[]> {
     return this.executeWithRetries(async () => {
       const params = new URLSearchParams({
         locationGuid: locationId,
       });
 
       if (filters?.startDate) {
-        params.append('startDate', filters.startDate.toISOString());
+        params.append("startDate", filters.startDate.toISOString());
       }
       if (filters?.endDate) {
-        params.append('endDate', filters.endDate.toISOString());
+        params.append("endDate", filters.endDate.toISOString());
       }
 
-      const response = await this.makeRequest(`/checks?${params.toString()}`, 'GET');
+      const response = await this.makeRequest(
+        `/checks?${params.toString()}`,
+        "GET",
+      );
 
       return (response.records || []).map((check: any) => {
         const totals = this.calculateOrderTotals({
@@ -382,11 +430,11 @@ export class ToastPOSClient extends POSAdapter {
         return {
           id: check.guid,
           externalId: check.guid,
-          providerId: 'toast',
+          providerId: "toast",
           locationId,
           orderNumber: check.checkNumber,
-          status: check.voided ? 'voided' : 'completed',
-          orderType: check.orderType === 'DINE_IN' ? 'dine-in' : 'takeout',
+          status: check.voided ? "voided" : "completed",
+          orderType: check.orderType === "DINE_IN" ? "dine-in" : "takeout",
           tableNumber: check.tableName,
           lineItems: check.tab?.lineItems || [],
           discounts: check.tab?.discounts || [],
@@ -407,7 +455,7 @@ export class ToastPOSClient extends POSAdapter {
   async updateOrder(
     locationId: string,
     orderId: string,
-    updates: Partial<POSOrder>
+    updates: Partial<POSOrder>,
   ): Promise<POSOrder> {
     return this.executeWithRetries(async () => {
       const currentOrder = await this.getOrder(locationId, orderId);
@@ -419,7 +467,11 @@ export class ToastPOSClient extends POSAdapter {
         tableName: merged.tableNumber,
       };
 
-      const response = await this.makeRequest(`/checks/${orderId}`, 'PUT', payload);
+      const response = await this.makeRequest(
+        `/checks/${orderId}`,
+        "PUT",
+        payload,
+      );
 
       return this.getOrder(locationId, orderId);
     });
@@ -431,23 +483,28 @@ export class ToastPOSClient extends POSAdapter {
   async addPayment(
     locationId: string,
     orderId: string,
-    payment: Partial<POSPayment>
+    payment: Partial<POSPayment>,
   ): Promise<POSPayment> {
     return this.executeWithRetries(async () => {
       const payload = {
         checkGuid: orderId,
-        type: payment.method?.toUpperCase() || 'CASH',
+        type: payment.method?.toUpperCase() || "CASH",
         amount: (payment.amount || 0) / 100, // Convert to dollars
         tip: (payment.tip || 0) / 100,
       };
 
-      const response = await this.makeRequest(`/checks/${orderId}/payments`, 'POST', payload);
+      const response = await this.makeRequest(
+        `/checks/${orderId}/payments`,
+        "POST",
+        payload,
+      );
 
       return {
-        id: response.guid ?? '',
-        method: (payment.method ?? 'cash') as import('./types').POSPaymentMethod,
+        id: response.guid ?? "",
+        method: (payment.method ??
+          "cash") as import("./types").POSPaymentMethod,
         amount: payment.amount ?? 0,
-        currency: 'USD',
+        currency: "USD",
         tip: payment.tip,
         createdAt: new Date(response.created ?? Date.now()),
       };
@@ -457,13 +514,17 @@ export class ToastPOSClient extends POSAdapter {
   /**
    * Void order
    */
-  async voidOrder(locationId: string, orderId: string, reason?: string): Promise<POSOrder> {
+  async voidOrder(
+    locationId: string,
+    orderId: string,
+    reason?: string,
+  ): Promise<POSOrder> {
     return this.executeWithRetries(async () => {
       const payload = {
-        voidReason: reason || 'USER_INITIATED',
+        voidReason: reason || "USER_INITIATED",
       };
 
-      await this.makeRequest(`/checks/${orderId}/void`, 'POST', payload);
+      await this.makeRequest(`/checks/${orderId}/void`, "POST", payload);
 
       return this.getOrder(locationId, orderId);
     });
@@ -474,18 +535,23 @@ export class ToastPOSClient extends POSAdapter {
    */
   async sendToKitchen(locationId: string, orderId: string): Promise<void> {
     return this.executeWithRetries(async () => {
-      await this.makeRequest(`/checks/${orderId}/send`, 'POST', {});
+      await this.makeRequest(`/checks/${orderId}/send`, "POST", {});
     });
   }
 
   /**
    * Get kitchen display status
    */
-  async getKitchenDisplayStatus(locationId: string, orderId: string): Promise<import('./types').KitchenOrderStatus> {
+  async getKitchenDisplayStatus(
+    locationId: string,
+    orderId: string,
+  ): Promise<import("./types").KitchenOrderStatus> {
     return this.executeWithRetries(async () => {
-      const response = await this.makeRequest(`/checks/${orderId}/kds`, 'GET');
-      const status = response.status as import('./types').KitchenOrderStatus | undefined;
-      return status ?? 'received';
+      const response = await this.makeRequest(`/checks/${orderId}/kds`, "GET");
+      const status = response.status as
+        | import("./types").KitchenOrderStatus
+        | undefined;
+      return status ?? "received";
     });
   }
 
@@ -494,12 +560,15 @@ export class ToastPOSClient extends POSAdapter {
    */
   async listEmployees(locationId: string): Promise<POSEmployee[]> {
     return this.executeWithRetries(async () => {
-      const response = await this.makeRequest(`/locations/${locationId}/employees`, 'GET');
+      const response = await this.makeRequest(
+        `/locations/${locationId}/employees`,
+        "GET",
+      );
 
       return (response.records || []).map((emp: any) => ({
         id: emp.guid,
         externalId: emp.guid,
-        providerId: 'toast',
+        providerId: "toast",
         locationId,
         firstName: emp.firstName,
         lastName: emp.lastName,
@@ -516,7 +585,10 @@ export class ToastPOSClient extends POSAdapter {
   /**
    * Create shift
    */
-  async createShift(locationId: string, shift: Partial<any>): Promise<POSShift> {
+  async createShift(
+    locationId: string,
+    shift: Partial<any>,
+  ): Promise<POSShift> {
     return this.executeWithRetries(async () => {
       const payload = {
         employeeGuid: shift.employeeId,
@@ -524,16 +596,16 @@ export class ToastPOSClient extends POSAdapter {
         locationGuid: locationId,
       };
 
-      const response = await this.makeRequest('/shifts', 'POST', payload);
+      const response = await this.makeRequest("/shifts", "POST", payload);
 
       return {
-        id: response.guid ?? '',
-        externalId: response.guid ?? '',
-        providerId: 'toast',
+        id: response.guid ?? "",
+        externalId: response.guid ?? "",
+        providerId: "toast",
         locationId,
-        employeeId: shift.employeeId ?? '',
+        employeeId: shift.employeeId ?? "",
         startTime: new Date(shift.startTime ?? Date.now()),
-        status: 'open' as const,
+        status: "open" as const,
         createdAt: new Date(response.created ?? Date.now()),
         updatedAt: new Date(response.modified ?? Date.now()),
       };
@@ -549,17 +621,21 @@ export class ToastPOSClient extends POSAdapter {
         endTime: new Date().toISOString(),
       };
 
-      const response = await this.makeRequest(`/shifts/${shiftId}/end`, 'POST', payload);
+      const response = await this.makeRequest(
+        `/shifts/${shiftId}/end`,
+        "POST",
+        payload,
+      );
 
       return {
         id: response.guid ?? shiftId,
         externalId: response.guid ?? shiftId,
-        providerId: 'toast',
+        providerId: "toast",
         locationId,
-        employeeId: response.employeeGuid ?? '',
+        employeeId: response.employeeGuid ?? "",
         startTime: new Date(response.startTime ?? Date.now()),
         endTime: new Date(response.endTime ?? Date.now()),
-        status: 'closed' as const,
+        status: "closed" as const,
         createdAt: new Date(response.created ?? Date.now()),
         updatedAt: new Date(response.modified ?? Date.now()),
       };
@@ -569,20 +645,23 @@ export class ToastPOSClient extends POSAdapter {
   /**
    * Get revenue center
    */
-  async getRevenueCenter(locationId: string, revenueCenterId: string): Promise<POSRevenueCenter> {
+  async getRevenueCenter(
+    locationId: string,
+    revenueCenterId: string,
+  ): Promise<POSRevenueCenter> {
     return this.executeWithRetries(async () => {
       const response = await this.makeRequest(
         `/locations/${locationId}/revenueCenters/${revenueCenterId}`,
-        'GET'
+        "GET",
       );
 
       return {
         id: response.guid ?? revenueCenterId,
         externalId: response.guid ?? revenueCenterId,
-        providerId: 'toast',
+        providerId: "toast",
         locationId,
-        name: response.name ?? '',
-        type: 'dining_room' as const,
+        name: response.name ?? "",
+        type: "dining_room" as const,
         isActive: !response.deleted,
         createdAt: new Date(response.created ?? Date.now()),
         updatedAt: new Date(response.modified ?? Date.now()),
@@ -595,15 +674,18 @@ export class ToastPOSClient extends POSAdapter {
    */
   async listRevenueCenters(locationId: string): Promise<POSRevenueCenter[]> {
     return this.executeWithRetries(async () => {
-      const response = await this.makeRequest(`/locations/${locationId}/revenueCenters`, 'GET');
+      const response = await this.makeRequest(
+        `/locations/${locationId}/revenueCenters`,
+        "GET",
+      );
 
       return (response.records || []).map((rc: any) => ({
         id: rc.guid,
         externalId: rc.guid,
-        providerId: 'toast',
+        providerId: "toast",
         locationId,
         name: rc.name,
-        type: 'dining_room',
+        type: "dining_room",
         isActive: !rc.deleted,
         createdAt: new Date(rc.created || Date.now()),
         updatedAt: new Date(rc.modified || Date.now()),
@@ -615,7 +697,11 @@ export class ToastPOSClient extends POSAdapter {
    * Verify webhook signature
    */
   verifyWebhookSignature(payload: string, signature: string): boolean {
-    return this.verifyHmacSignature(payload, signature, this.config.clientSecret);
+    return this.verifyHmacSignature(
+      payload,
+      signature,
+      this.config.clientSecret,
+    );
   }
 
   /**
@@ -623,30 +709,30 @@ export class ToastPOSClient extends POSAdapter {
    */
   parseWebhookPayload(payload: Record<string, any>): POSWebhookEvent | null {
     const eventTypeMap: Record<string, string> = {
-      'check.created': 'order',
-      'check.updated': 'order',
-      'check.closed': 'order',
-      'check.voided': 'order',
-      'payment.created': 'payment',
-      'payment.processed': 'payment',
-      'employee.created': 'employee',
-      'employee.updated': 'employee',
-      'shift.started': 'shift',
-      'shift.ended': 'shift',
-      'menu.updated': 'menu',
-      'inventory.updated': 'inventory',
+      "check.created": "order",
+      "check.updated": "order",
+      "check.closed": "order",
+      "check.voided": "order",
+      "payment.created": "payment",
+      "payment.processed": "payment",
+      "employee.created": "employee",
+      "employee.updated": "employee",
+      "shift.started": "shift",
+      "shift.ended": "shift",
+      "menu.updated": "menu",
+      "inventory.updated": "inventory",
     };
 
-    const eventType = payload.eventType || 'unknown';
-    const resourceType = eventTypeMap[eventType] || 'order';
+    const eventType = payload.eventType || "unknown";
+    const resourceType = eventTypeMap[eventType] || "order";
 
     return {
       id: payload.id || `toast-${Date.now()}`,
-      providerId: 'toast',
-      provider: 'toast',
-      eventType: eventType.split('.')[1] || eventType,
+      providerId: "toast",
+      provider: "toast",
+      eventType: eventType.split(".")[1] || eventType,
       resourceType: resourceType as any,
-      resourceId: payload.entityId || payload.resourceId || '',
+      resourceId: payload.entityId || payload.resourceId || "",
       data: payload,
       timestamp: new Date(payload.timestamp || Date.now()),
       verified: true,
@@ -659,14 +745,14 @@ export class ToastPOSClient extends POSAdapter {
    */
   private async makeRequest(
     path: string,
-    method: string = 'GET',
-    body?: Record<string, any>
+    method: string = "GET",
+    body?: Record<string, any>,
   ): Promise<ToastResponse> {
     try {
       const headers: Record<string, string> = {
-        'Authorization': `Bearer ${this.config.accessToken}`,
-        'Content-Type': 'application/json',
-        'User-Agent': 'Witylogix-POS-Gateway/1.0',
+        Authorization: `Bearer ${this.config.accessToken}`,
+        "Content-Type": "application/json",
+        "User-Agent": "Witylogix-POS-Gateway/1.0",
       };
 
       const options: any = {
@@ -679,12 +765,12 @@ export class ToastPOSClient extends POSAdapter {
       }
 
       const response = await fetch(`${this.apiUrl}${path}`, options);
-      const data = await response.json() as ToastResponse;
+      const data = (await response.json()) as ToastResponse;
 
       if (!response.ok && response.status >= 400) {
-        const statusCategory = response.status < 500 ? '4xx' : '5xx';
+        const statusCategory = response.status < 500 ? "4xx" : "5xx";
         throw new Error(
-          `Toast API error (${statusCategory} ${response.status}): ${data.errors?.[0]?.message || response.statusText}`
+          `Toast API error (${statusCategory} ${response.status}): ${data.errors?.[0]?.message || response.statusText}`,
         );
       }
 

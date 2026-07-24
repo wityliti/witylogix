@@ -6,7 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { HosViolation } from "@/hooks/use-eld";
-import { AlertTriangle, CheckCircle, ChevronDown, Filter, Clock } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle,
+  ChevronDown,
+  Filter,
+  Clock,
+} from "lucide-react";
 
 /* ═══════════════════════════════════════════════════════════
    VIOLATION TIMELINE — Vertical timeline of HOS violations
@@ -98,7 +104,9 @@ export function ViolationTimeline({
               All
             </Button>
             <Button
-              variant={filterType === "HOURS_EXCEEDED" ? "primary" : "secondary"}
+              variant={
+                filterType === "HOURS_EXCEEDED" ? "primary" : "secondary"
+              }
               size="sm"
               onClick={() => handleFilterChange("HOURS_EXCEEDED")}
               className="h-7 text-xs"
@@ -142,12 +150,15 @@ export function ViolationTimeline({
                 {/* Timeline entry */}
                 <button
                   onClick={() =>
-                    setExpandedId(expandedId === violation.id ? null : violation.id)
+                    setExpandedId(
+                      expandedId === violation.id ? null : violation.id,
+                    )
                   }
                   className={cn(
                     "w-full text-left p-3 rounded-lg border transition-all",
                     "hover:bg-[var(--wl-bg-secondary)] border-[var(--wl-border)]",
-                    expandedId === violation.id && "bg-[var(--wl-bg-secondary)] border-wl-primary-500/30"
+                    expandedId === violation.id &&
+                      "bg-[var(--wl-bg-secondary)] border-wl-primary-500/30",
                   )}
                 >
                   <div className="flex items-start gap-3">
@@ -176,7 +187,8 @@ export function ViolationTimeline({
                       </div>
 
                       <p className="text-xs text-wl-text-secondary mt-1">
-                        {violation.driverName} • {new Date(violation.timestamp).toLocaleDateString()}{" "}
+                        {violation.driverName} •{" "}
+                        {new Date(violation.timestamp).toLocaleDateString()}{" "}
                         {new Date(violation.timestamp).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -199,7 +211,7 @@ export function ViolationTimeline({
                     <ChevronDown
                       className={cn(
                         "w-4 h-4 text-wl-text-secondary flex-shrink-0 transition-transform",
-                        expandedId === violation.id && "rotate-180"
+                        expandedId === violation.id && "rotate-180",
                       )}
                     />
                   </div>
@@ -212,7 +224,9 @@ export function ViolationTimeline({
                       <p className="text-xs uppercase tracking-wide font-semibold text-wl-text-secondary mb-1">
                         Description
                       </p>
-                      <p className="text-sm text-wl-text-primary">{violation.description}</p>
+                      <p className="text-sm text-wl-text-primary">
+                        {violation.description}
+                      </p>
                     </div>
 
                     <div>
@@ -230,11 +244,15 @@ export function ViolationTimeline({
                           Resolved
                         </p>
                         <p className="text-sm text-wl-success-400">
-                          {new Date(violation.resolvedAt).toLocaleDateString()} at{" "}
-                          {new Date(violation.resolvedAt).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                          {new Date(violation.resolvedAt).toLocaleDateString()}{" "}
+                          at{" "}
+                          {new Date(violation.resolvedAt).toLocaleTimeString(
+                            [],
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            },
+                          )}
                         </p>
                       </div>
                     )}
