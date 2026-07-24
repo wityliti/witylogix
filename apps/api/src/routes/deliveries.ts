@@ -489,11 +489,9 @@ async function deliveriesRoutes(fastify: FastifyInstance): Promise<void> {
         return reply.status(404).send({ error: "Delivery not found" });
 
       if (["DELIVERED", "FAILED"].includes(delivery.status)) {
-        return reply
-          .status(422)
-          .send({
-            error: "Cannot modify preferences for a completed delivery",
-          });
+        return reply.status(422).send({
+          error: "Cannot modify preferences for a completed delivery",
+        });
       }
 
       const quote = delivery.quote as { estimatedMinutes?: number } | null;
