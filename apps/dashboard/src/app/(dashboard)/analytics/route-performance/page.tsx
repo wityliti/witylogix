@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { BarChart2, Map as MapIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useApiQuery } from "@/hooks/use-api";
 import { Header } from "@/components/layout/header";
