@@ -41,9 +41,9 @@ interface APIKey {
 
 export default function APIKeysPage() {
   const { addToast } = useToast();
-  const { items: apiKeys, loading, error, refetch } = useApiList<APIKey>('/api/v4/api-keys');
-  const { execute: deleteKey } = useApiMutation('DELETE', '/api/v4/api-keys/:id');
-  const { execute: createKey } = useApiMutation('POST', '/api/v4/api-keys');
+  const { items: apiKeys, loading, error, refetch } = useApiList<APIKey>('/api/v4/settings/api-keys');
+  const { execute: deleteKey } = useApiMutation('DELETE', '/api/v4/settings/api-keys/:id');
+  const { execute: createKey } = useApiMutation('POST', '/api/v4/settings/api-keys');
 
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
