@@ -14,7 +14,7 @@
  * Documentation: https://developer.here.com/
  */
 
-import { MapsAdapter } from './maps-adapter.js';
+import { MapsAdapter } from "./maps-adapter.js";
 import type {
   GeocodingRequest,
   GeocodingResponse,
@@ -30,7 +30,7 @@ import type {
   MapTileRequest,
   MapsAdapterConfig,
   Coordinate,
-} from './types.js';
+} from "./types.js";
 
 interface HEREGeocodingResult {
   title: string;
@@ -150,20 +150,20 @@ interface HEREPlaceDetail extends HEREPlaceResult {
  * HERE Maps API Client
  */
 export class HEREMapsClient extends MapsAdapter {
-  private discoverUrl = 'https://discover.search.hereapi.com/v1';
-  private browseUrl = 'https://browse.search.hereapi.com/v1';
-  private tileUrl = 'https://2.vector.maps.hereapi.com/v2/vectortiles';
+  private discoverUrl = "https://discover.search.hereapi.com/v1";
+  private browseUrl = "https://browse.search.hereapi.com/v1";
+  private tileUrl = "https://2.vector.maps.hereapi.com/v2/vectortiles";
 
   constructor(config: MapsAdapterConfig) {
     super(config);
-    this.baseUrl = config.baseUrl || 'https://geocode.search.hereapi.com/v1';
+    this.baseUrl = config.baseUrl || "https://geocode.search.hereapi.com/v1";
   }
 
   /**
    * Geocode an address to coordinates
    */
   async geocode(request: GeocodingRequest): Promise<GeocodingResponse> {
-    const cacheKey = this.getCacheKey('geocode', request);
+    const cacheKey = this.getCacheKey("geocode", request);
     const cached = this.getCachedResponse<GeocodingResponse>(cacheKey);
     if (cached) {
       return cached;
@@ -181,11 +181,11 @@ export class HEREMapsClient extends MapsAdapter {
       });
 
       if (request.country_code) {
-        params.append('in', `countryCode:${request.country_code}`);
+        params.append("in", `countryCode:${request.country_code}`);
       }
 
       if (request.language) {
-        params.append('lang', request.language);
+        params.append("lang", request.language);
       }
 
       const response = await this.circuitBreaker.call(async () => {
@@ -193,9 +193,9 @@ export class HEREMapsClient extends MapsAdapter {
         const id = setTimeout(() => controller.abort(), this.timeout);
         try {
           return await fetch(`${this.baseUrl}/geocode?${params.toString()}`, {
-            method: 'GET',
+            method: "GET",
             signal: controller.signal,
-            headers: { 'Accept': 'application/json' },
+            headers: { Accept: "application/json" },
           });
         } finally {
           clearTimeout(id);
@@ -206,7 +206,7 @@ export class HEREMapsClient extends MapsAdapter {
         throw new Error(`HERE Geocoding API error: ${response.statusText}`);
       }
 
-      const data = await response.json() as {
+      const data = (await response.json()) as {
         items?: HEREGeocodingResult[];
       };
 
@@ -233,7 +233,7 @@ export class HEREMapsClient extends MapsAdapter {
 
       const response_obj: GeocodingResponse = {
         results,
-        status: results.length > 0 ? 'OK' : 'ZERO_RESULTS',
+        status: results.length > 0 ? "OK" : "ZERO_RESULTS",
       };
 
       this.setCachedResponse(cacheKey, response_obj);
@@ -246,8 +246,8 @@ export class HEREMapsClient extends MapsAdapter {
       this.totalResponseTime += Date.now() - startTime;
       return {
         results: [],
-        status: 'ERROR',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        status: "ERROR",
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
@@ -255,8 +255,10 @@ export class HEREMapsClient extends MapsAdapter {
   /**
    * Reverse geocode coordinates to address
    */
-  async reverseGeocode(request: ReverseGeocodeRequest): Promise<ReverseGeocodeResponse> {
-    const cacheKey = this.getCacheKey('revgeocode', request);
+  async reverseGeocode(
+    request: ReverseGeocodeRequest,
+  ): Promise<ReverseGeocodeResponse> {
+    const cacheKey = this.getCacheKey("revgeocode", request);
     const cached = this.getCachedResponse<ReverseGeocodeResponse>(cacheKey);
     if (cached) {
       return cached;
@@ -275,28 +277,33 @@ export class HEREMapsClient extends MapsAdapter {
       });
 
       if (request.language) {
-        params.append('lang', request.language);
+        params.append("lang", request.language);
       }
 
       const response = await this.circuitBreaker.call(async () => {
         const controller = new AbortController();
         const id = setTimeout(() => controller.abort(), this.timeout);
         try {
-          return await fetch(`${this.baseUrl}/revgeocode?${params.toString()}`, {
-            method: 'GET',
-            signal: controller.signal,
-            headers: { 'Accept': 'application/json' },
-          });
+          return await fetch(
+            `${this.baseUrl}/revgeocode?${params.toString()}`,
+            {
+              method: "GET",
+              signal: controller.signal,
+              headers: { Accept: "application/json" },
+            },
+          );
         } finally {
           clearTimeout(id);
         }
       });
 
       if (!response.ok) {
-        throw new Error(`HERE Reverse Geocoding API error: ${response.statusText}`);
+        throw new Error(
+          `HERE Reverse Geocoding API error: ${response.statusText}`,
+        );
       }
 
-      const data = await response.json() as {
+      const data = (await response.json()) as {
         items?: HEREGeocodingResult[];
       };
 
@@ -317,7 +324,7 @@ export class HEREMapsClient extends MapsAdapter {
 
       const response_obj: ReverseGeocodeResponse = {
         results,
-        status: results.length > 0 ? 'OK' : 'NOT_FOUND',
+        status: results.length > 0 ? "OK" : "NOT_FOUND",
       };
 
       this.setCachedResponse(cacheKey, response_obj);
@@ -330,8 +337,8 @@ export class HEREMapsClient extends MapsAdapter {
       this.totalResponseTime += Date.now() - startTime;
       return {
         results: [],
-        status: 'ERROR',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        status: "ERROR",
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
@@ -340,7 +347,7 @@ export class HEREMapsClient extends MapsAdapter {
    * Autosuggest with area filtering
    */
   async autosuggest(request: AutosuggestRequest): Promise<AutosuggestResponse> {
-    const cacheKey = this.getCacheKey('autosuggest', request);
+    const cacheKey = this.getCacheKey("autosuggest", request);
     const cached = this.getCachedResponse<AutosuggestResponse>(cacheKey);
     if (cached) {
       return cached;
@@ -359,35 +366,38 @@ export class HEREMapsClient extends MapsAdapter {
 
       if (request.location) {
         const loc = this.normalizeCoordinate(request.location);
-        params.append('at', `${loc.lat},${loc.lng}`);
+        params.append("at", `${loc.lat},${loc.lng}`);
       }
 
       if (request.radius_m) {
-        params.append('r', String(request.radius_m));
+        params.append("r", String(request.radius_m));
       }
 
       if (request.bounds) {
         const bbox = `${request.bounds.sw.lat},${request.bounds.sw.lng},${request.bounds.ne.lat},${request.bounds.ne.lng}`;
-        params.append('in', `bbox:${bbox}`);
+        params.append("in", `bbox:${bbox}`);
       }
 
       if (request.country_code) {
-        params.append('in', `countryCode:${request.country_code}`);
+        params.append("in", `countryCode:${request.country_code}`);
       }
 
       if (request.language) {
-        params.append('lang', request.language);
+        params.append("lang", request.language);
       }
 
       const response = await this.circuitBreaker.call(async () => {
         const controller = new AbortController();
         const id = setTimeout(() => controller.abort(), this.timeout);
         try {
-          return await fetch(`${this.baseUrl}/autosuggest?${params.toString()}`, {
-            method: 'GET',
-            signal: controller.signal,
-            headers: { 'Accept': 'application/json' },
-          });
+          return await fetch(
+            `${this.baseUrl}/autosuggest?${params.toString()}`,
+            {
+              method: "GET",
+              signal: controller.signal,
+              headers: { Accept: "application/json" },
+            },
+          );
         } finally {
           clearTimeout(id);
         }
@@ -397,7 +407,7 @@ export class HEREMapsClient extends MapsAdapter {
         throw new Error(`HERE Autosuggest API error: ${response.statusText}`);
       }
 
-      const data = await response.json() as {
+      const data = (await response.json()) as {
         items?: HEREAutosuggestResult[];
       };
 
@@ -408,12 +418,12 @@ export class HEREMapsClient extends MapsAdapter {
         address: item.address?.label,
         location: item.position,
         distance_m: item.distance,
-        type: item.resultType === 'place' ? 'place' : 'address',
+        type: item.resultType === "place" ? "place" : "address",
       }));
 
       const response_obj: AutosuggestResponse = {
         results,
-        status: results.length > 0 ? 'OK' : 'NOT_FOUND',
+        status: results.length > 0 ? "OK" : "NOT_FOUND",
       };
 
       this.setCachedResponse(cacheKey, response_obj);
@@ -426,8 +436,8 @@ export class HEREMapsClient extends MapsAdapter {
       this.totalResponseTime += Date.now() - startTime;
       return {
         results: [],
-        status: 'ERROR',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        status: "ERROR",
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
@@ -436,7 +446,7 @@ export class HEREMapsClient extends MapsAdapter {
    * Place search (discover)
    */
   async placeSearch(request: PlaceSearchRequest): Promise<PlaceSearchResponse> {
-    const cacheKey = this.getCacheKey('placeSearch', request);
+    const cacheKey = this.getCacheKey("placeSearch", request);
     const cached = this.getCachedResponse<PlaceSearchResponse>(cacheKey);
     if (cached) {
       return cached;
@@ -455,26 +465,29 @@ export class HEREMapsClient extends MapsAdapter {
 
       if (request.location) {
         const loc = this.normalizeCoordinate(request.location);
-        params.append('at', `${loc.lat},${loc.lng}`);
+        params.append("at", `${loc.lat},${loc.lng}`);
       }
 
       if (request.radius_m) {
-        params.append('r', String(request.radius_m));
+        params.append("r", String(request.radius_m));
       }
 
       if (request.language) {
-        params.append('lang', request.language);
+        params.append("lang", request.language);
       }
 
       const response = await this.circuitBreaker.call(async () => {
         const controller = new AbortController();
         const id = setTimeout(() => controller.abort(), this.timeout);
         try {
-          return await fetch(`${this.discoverUrl}/discover?${params.toString()}`, {
-            method: 'GET',
-            signal: controller.signal,
-            headers: { 'Accept': 'application/json' },
-          });
+          return await fetch(
+            `${this.discoverUrl}/discover?${params.toString()}`,
+            {
+              method: "GET",
+              signal: controller.signal,
+              headers: { Accept: "application/json" },
+            },
+          );
         } finally {
           clearTimeout(id);
         }
@@ -484,7 +497,7 @@ export class HEREMapsClient extends MapsAdapter {
         throw new Error(`HERE Discover API error: ${response.statusText}`);
       }
 
-      const data = await response.json() as {
+      const data = (await response.json()) as {
         items?: HEREPlaceResult[];
       };
 
@@ -507,7 +520,7 @@ export class HEREMapsClient extends MapsAdapter {
 
       const response_obj: PlaceSearchResponse = {
         results,
-        status: results.length > 0 ? 'OK' : 'NOT_FOUND',
+        status: results.length > 0 ? "OK" : "NOT_FOUND",
       };
 
       this.setCachedResponse(cacheKey, response_obj);
@@ -520,8 +533,8 @@ export class HEREMapsClient extends MapsAdapter {
       this.totalResponseTime += Date.now() - startTime;
       return {
         results: [],
-        status: 'ERROR',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        status: "ERROR",
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
@@ -530,7 +543,7 @@ export class HEREMapsClient extends MapsAdapter {
    * Get place detail by ID
    */
   async getPlaceDetail(placeId: string): Promise<PlaceDetail> {
-    const cacheKey = this.getCacheKey('placeDetail', { placeId });
+    const cacheKey = this.getCacheKey("placeDetail", { placeId });
     const cached = this.getCachedResponse<PlaceDetail>(cacheKey);
     if (cached) {
       return cached;
@@ -549,11 +562,14 @@ export class HEREMapsClient extends MapsAdapter {
         const controller = new AbortController();
         const id = setTimeout(() => controller.abort(), this.timeout);
         try {
-          return await fetch(`${this.discoverUrl}/discover?at=${placeId}&${params.toString()}`, {
-            method: 'GET',
-            signal: controller.signal,
-            headers: { 'Accept': 'application/json' },
-          });
+          return await fetch(
+            `${this.discoverUrl}/discover?at=${placeId}&${params.toString()}`,
+            {
+              method: "GET",
+              signal: controller.signal,
+              headers: { Accept: "application/json" },
+            },
+          );
         } finally {
           clearTimeout(id);
         }
@@ -563,12 +579,12 @@ export class HEREMapsClient extends MapsAdapter {
         throw new Error(`HERE Place Detail API error: ${response.statusText}`);
       }
 
-      const data = await response.json() as {
+      const data = (await response.json()) as {
         items?: HEREPlaceDetail[];
       };
 
       if (!data.items || data.items.length === 0) {
-        throw new Error('Place not found');
+        throw new Error("Place not found");
       }
 
       const item = data.items[0];
@@ -600,10 +616,10 @@ export class HEREMapsClient extends MapsAdapter {
    * Get map tile URL
    */
   getTileUrl(request: MapTileRequest): string {
-    const format = request.format === 'pbf' ? 'vector' : 'raster';
-    const tileFormat = request.format || 'png';
-    const style = request.style || 'normal';
-    const size = request.size || '256';
+    const format = request.format === "pbf" ? "vector" : "raster";
+    const tileFormat = request.format || "png";
+    const style = request.style || "normal";
+    const size = request.size || "256";
 
     return `${this.tileUrl}/tile/${format}/${style}/tile_${request.zoom}_${request.x}_${request.y}_${size}.${tileFormat}?apiKey=${this.apiKey}`;
   }

@@ -1,22 +1,26 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import {
-  UserPlus,
-  Truck,
-  Upload,
-  ArrowRight,
-  Check,
-  X,
-} from "lucide-react";
+import { UserPlus, Truck, Upload, ArrowRight, Check, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { OnboardingData } from "../types";
 
 interface DataImportProps {
   data: OnboardingData;
-  onAddDriver: (driver: { name: string; phone: string; email: string; vehicleType: string }) => void;
-  onAddVehicle: (vehicle: { make: string; model: string; year: string; plate: string; type: string }) => void;
+  onAddDriver: (driver: {
+    name: string;
+    phone: string;
+    email: string;
+    vehicleType: string;
+  }) => void;
+  onAddVehicle: (vehicle: {
+    make: string;
+    model: string;
+    year: string;
+    plate: string;
+    type: string;
+  }) => void;
   onImportVehicles: (csvContent: string) => void;
   onSkip: () => void;
 }
@@ -172,7 +176,10 @@ export function DataImport({
 
       {/* Progress */}
       <div className="flex items-center gap-2 text-xs text-wl-text-tertiary">
-        <div className="h-1 bg-wl-primary-500 rounded-full flex-1" style={{ width: "88%" }} />
+        <div
+          className="h-1 bg-wl-primary-500 rounded-full flex-1"
+          style={{ width: "88%" }}
+        />
         <span>88%</span>
       </div>
 
@@ -188,7 +195,7 @@ export function DataImport({
             "flex flex-col gap-4",
             expandedCard === "driver"
               ? "border-wl-primary-500 bg-wl-bg-surface/80 shadow-lg"
-              : "border-wl-border-default hover:border-wl-border-strong bg-wl-bg-surface/50 hover:bg-wl-bg-surface/70"
+              : "border-wl-border-default hover:border-wl-border-strong bg-wl-bg-surface/50 hover:bg-wl-bg-surface/70",
           )}
         >
           <div className="flex items-start justify-between">
@@ -196,7 +203,7 @@ export function DataImport({
               <div
                 className={cn(
                   "w-10 h-10 rounded-lg flex items-center justify-center",
-                  "bg-gradient-to-br from-wl-primary-500 to-wl-primary-600"
+                  "bg-gradient-to-br from-wl-primary-500 to-wl-primary-600",
                 )}
               >
                 <UserPlus className="w-5 h-5 text-wl-text-inverse" />
@@ -232,7 +239,7 @@ export function DataImport({
                   "w-full px-3 py-2 rounded-md text-xs",
                   "bg-wl-bg-overlay border border-wl-border-default",
                   "text-wl-text-primary placeholder-wl-text-tertiary",
-                  "focus:outline-none focus:border-wl-primary-400"
+                  "focus:outline-none focus:border-wl-primary-400",
                 )}
               />
               <input
@@ -246,7 +253,7 @@ export function DataImport({
                   "w-full px-3 py-2 rounded-md text-xs",
                   "bg-wl-bg-overlay border border-wl-border-default",
                   "text-wl-text-primary placeholder-wl-text-tertiary",
-                  "focus:outline-none focus:border-wl-primary-400"
+                  "focus:outline-none focus:border-wl-primary-400",
                 )}
               />
               <input
@@ -260,7 +267,7 @@ export function DataImport({
                   "w-full px-3 py-2 rounded-md text-xs",
                   "bg-wl-bg-overlay border border-wl-border-default",
                   "text-wl-text-primary placeholder-wl-text-tertiary",
-                  "focus:outline-none focus:border-wl-primary-400"
+                  "focus:outline-none focus:border-wl-primary-400",
                 )}
               />
               <select
@@ -272,7 +279,7 @@ export function DataImport({
                   "w-full px-3 py-2 rounded-md text-xs",
                   "bg-wl-bg-overlay border border-wl-border-default",
                   "text-wl-text-primary",
-                  "focus:outline-none focus:border-wl-primary-400"
+                  "focus:outline-none focus:border-wl-primary-400",
                 )}
               >
                 <option value="bike">Bike</option>
@@ -285,7 +292,9 @@ export function DataImport({
                 onClick={handleAddDriver}
                 variant="primary"
                 size="sm"
-                disabled={!driverForm.name || !driverForm.phone || !driverForm.email}
+                disabled={
+                  !driverForm.name || !driverForm.phone || !driverForm.email
+                }
                 className="w-full"
               >
                 Add Driver
@@ -304,7 +313,7 @@ export function DataImport({
             "flex flex-col gap-4",
             expandedCard === "vehicle"
               ? "border-wl-info-500 bg-wl-bg-surface/80 shadow-lg"
-              : "border-wl-border-default hover:border-wl-border-strong bg-wl-bg-surface/50 hover:bg-wl-bg-surface/70"
+              : "border-wl-border-default hover:border-wl-border-strong bg-wl-bg-surface/50 hover:bg-wl-bg-surface/70",
           )}
         >
           <div className="flex items-start justify-between">
@@ -312,7 +321,7 @@ export function DataImport({
               <div
                 className={cn(
                   "w-10 h-10 rounded-lg flex items-center justify-center",
-                  "bg-gradient-to-br from-wl-info-500 to-wl-info-600"
+                  "bg-gradient-to-br from-wl-info-500 to-wl-info-600",
                 )}
               >
                 <Truck className="w-5 h-5 text-wl-text-inverse" />
@@ -349,7 +358,7 @@ export function DataImport({
                     "w-full px-3 py-2 rounded-md text-xs",
                     "bg-wl-bg-overlay border border-wl-border-default",
                     "text-wl-text-primary placeholder-wl-text-tertiary",
-                    "focus:outline-none focus:border-wl-primary-400"
+                    "focus:outline-none focus:border-wl-primary-400",
                   )}
                 />
                 <input
@@ -363,7 +372,7 @@ export function DataImport({
                     "w-full px-3 py-2 rounded-md text-xs",
                     "bg-wl-bg-overlay border border-wl-border-default",
                     "text-wl-text-primary placeholder-wl-text-tertiary",
-                    "focus:outline-none focus:border-wl-primary-400"
+                    "focus:outline-none focus:border-wl-primary-400",
                   )}
                 />
               </div>
@@ -378,7 +387,7 @@ export function DataImport({
                   "w-full px-3 py-2 rounded-md text-xs",
                   "bg-wl-bg-overlay border border-wl-border-default",
                   "text-wl-text-primary placeholder-wl-text-tertiary",
-                  "focus:outline-none focus:border-wl-primary-400"
+                  "focus:outline-none focus:border-wl-primary-400",
                 )}
               />
               <select
@@ -390,7 +399,7 @@ export function DataImport({
                   "w-full px-3 py-2 rounded-md text-xs",
                   "bg-wl-bg-overlay border border-wl-border-default",
                   "text-wl-text-primary",
-                  "focus:outline-none focus:border-wl-primary-400"
+                  "focus:outline-none focus:border-wl-primary-400",
                 )}
               >
                 <option value="bike">Bike</option>
@@ -403,7 +412,9 @@ export function DataImport({
                 onClick={handleAddVehicle}
                 variant="primary"
                 size="sm"
-                disabled={!vehicleForm.make || !vehicleForm.model || !vehicleForm.plate}
+                disabled={
+                  !vehicleForm.make || !vehicleForm.model || !vehicleForm.plate
+                }
                 className="w-full"
               >
                 Add Vehicle
@@ -422,7 +433,7 @@ export function DataImport({
             "flex flex-col gap-4",
             expandedCard === "import"
               ? "border-wl-success-500 bg-wl-bg-surface/80 shadow-lg"
-              : "border-wl-border-default hover:border-wl-border-strong bg-wl-bg-surface/50 hover:bg-wl-bg-surface/70"
+              : "border-wl-border-default hover:border-wl-border-strong bg-wl-bg-surface/50 hover:bg-wl-bg-surface/70",
           )}
         >
           <div className="flex items-start justify-between">
@@ -430,7 +441,7 @@ export function DataImport({
               <div
                 className={cn(
                   "w-10 h-10 rounded-lg flex items-center justify-center",
-                  "bg-gradient-to-br from-wl-success-500 to-wl-success-600"
+                  "bg-gradient-to-br from-wl-success-500 to-wl-success-600",
                 )}
               >
                 <Upload className="w-5 h-5 text-wl-text-inverse" />
@@ -466,7 +477,7 @@ export function DataImport({
                   "bg-wl-bg-overlay/50",
                   "border-wl-border-subtle hover:border-wl-primary-400",
                   "flex flex-col items-center justify-center gap-2",
-                  "transition-all duration-200 cursor-pointer"
+                  "transition-all duration-200 cursor-pointer",
                 )}
               >
                 <Upload className="w-5 h-5 text-wl-text-tertiary" />
@@ -499,14 +510,14 @@ export function DataImport({
             "relative p-5 rounded-lg border-2 transition-all duration-300",
             "flex flex-col gap-4",
             "border-wl-border-subtle bg-wl-bg-surface/30 hover:bg-wl-bg-surface/50",
-            "opacity-60 hover:opacity-100"
+            "opacity-60 hover:opacity-100",
           )}
         >
           <div className="flex items-start gap-3">
             <div
               className={cn(
                 "w-10 h-10 rounded-lg flex items-center justify-center",
-                "bg-gradient-to-br from-wl-neutral-600 to-wl-neutral-700"
+                "bg-gradient-to-br from-wl-neutral-600 to-wl-neutral-700",
               )}
             >
               <ArrowRight className="w-5 h-5 text-wl-text-inverse" />

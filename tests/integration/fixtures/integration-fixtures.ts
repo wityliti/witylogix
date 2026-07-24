@@ -574,7 +574,7 @@ export const mockHEREGeocodeResponse = {
       distance: 0,
       mapView: {
         west: -71.0694,
-        south: 42.3500,
+        south: 42.35,
         east: -71.0484,
         north: 42.3702,
       },
@@ -811,7 +811,9 @@ export function generateBulkCustomers(
     name: `Customer ${i + 1}`,
     email: `customer${i + 1}@example.com`,
     phone: `+1-555-${String(i).padStart(4, "0")}`,
-    city: ["Boston", "New York", "Chicago", "Seattle"][Math.floor(Math.random() * 4)],
+    city: ["Boston", "New York", "Chicago", "Seattle"][
+      Math.floor(Math.random() * 4)
+    ],
     status: ["active", "inactive", "suspended"][Math.floor(Math.random() * 3)],
   }));
 }

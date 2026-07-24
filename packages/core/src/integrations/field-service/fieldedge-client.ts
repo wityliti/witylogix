@@ -4,7 +4,7 @@
  * OAuth2 authentication
  */
 
-import { AbstractFieldServiceAdapter } from './field-service-adapter.js';
+import { AbstractFieldServiceAdapter } from "./field-service-adapter.js";
 import type {
   Job,
   JobStatus,
@@ -19,20 +19,22 @@ import type {
   PaginationParams,
   PaginatedResult,
   FieldServiceBatchResult,
-} from './types.js';
+} from "./types.js";
 
 /** Map FieldEdge WorkOrderStatus to the normalized JobStatus. */
-function workOrderStatusToJobStatus(status: WorkOrderStatus | undefined): JobStatus | undefined {
+function workOrderStatusToJobStatus(
+  status: WorkOrderStatus | undefined,
+): JobStatus | undefined {
   if (status === undefined) return undefined;
   const map: Record<WorkOrderStatus, JobStatus> = {
-    open: 'scheduled',
-    assigned: 'scheduled',
-    in_progress: 'in_progress',
-    completed: 'completed',
-    closed: 'completed',
-    cancelled: 'cancelled',
+    open: "scheduled",
+    assigned: "scheduled",
+    in_progress: "in_progress",
+    completed: "completed",
+    closed: "completed",
+    cancelled: "cancelled",
   };
-  return map[status] ?? 'scheduled';
+  return map[status] ?? "scheduled";
 }
 
 interface FieldEdgeWorkOrderData {
@@ -136,17 +138,17 @@ interface FieldEdgeCustomerData {
  */
 export class FieldEdgeClient extends AbstractFieldServiceAdapter {
   private accessToken?: string;
-  private apiUrl: string = 'https://api.fieldedge.com/v1';
+  private apiUrl: string = "https://api.fieldedge.com/v1";
 
   /**
    * Initialize FieldEdge client
    */
   constructor(connection: FieldServiceConnection) {
-    super('fieldedge', connection);
+    super("fieldedge", connection);
 
     const { accessToken } = connection.credentials;
     if (!accessToken) {
-      throw new Error('Missing FieldEdge credentials: accessToken');
+      throw new Error("Missing FieldEdge credentials: accessToken");
     }
 
     this.accessToken = accessToken;
@@ -157,7 +159,7 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
    */
   async healthCheck(): Promise<boolean> {
     try {
-      await this.request('GET', '/work-orders?limit=1');
+      await this.request("GET", "/work-orders?limit=1");
       return true;
     } catch {
       return false;
@@ -173,8 +175,8 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
     body?: unknown,
   ): Promise<any> {
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${this.accessToken}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${this.accessToken}`,
       ...this.connection.config.customHeaders,
     };
 
@@ -188,7 +190,7 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
     if (!response.ok) {
       throw this.createOperationError(
         `FieldEdge API error: ${response.statusText}`,
-        'API_ERROR',
+        "API_ERROR",
         response.status,
         response.status >= 500 || response.status === 429,
       );
@@ -207,7 +209,7 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
       const workOrder = await this.createWorkOrder({
         workOrderNumber: job.jobNumber,
         jobId: job.customerId,
-        status: 'open' as WorkOrderStatus,
+        status: "open" as WorkOrderStatus,
         description: job.title,
         priority: job.priority,
         scheduledStart: job.scheduledStart,
@@ -221,10 +223,10 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
         customerId: workOrder.jobId,
         title: workOrder.description,
         description: workOrder.description,
-        status: workOrderStatusToJobStatus(workOrder.status) ?? 'scheduled',
+        status: workOrderStatusToJobStatus(workOrder.status) ?? "scheduled",
         priority: workOrder.priority,
         scheduledStart: workOrder.scheduledStart,
-        location: { address: '', city: '', postalCode: '', country: '' },
+        location: { address: "", city: "", postalCode: "", country: "" },
         createdAt: workOrder.createdAt,
       };
     });
@@ -243,10 +245,10 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
         customerId: workOrder.jobId,
         title: workOrder.description,
         description: workOrder.description,
-        status: workOrderStatusToJobStatus(workOrder.status) ?? 'scheduled',
+        status: workOrderStatusToJobStatus(workOrder.status) ?? "scheduled",
         priority: workOrder.priority,
         scheduledStart: workOrder.scheduledStart,
-        location: { address: '', city: '', postalCode: '', country: '' },
+        location: { address: "", city: "", postalCode: "", country: "" },
         createdAt: workOrder.createdAt,
       };
     });
@@ -258,7 +260,7 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
   async updateJob(jobId: string, updates: Partial<Job>): Promise<Job> {
     return this.executeWithRetry(async () => {
       const workOrder = await this.updateWorkOrder(jobId, {
-        status: 'in_progress' as WorkOrderStatus,
+        status: "in_progress" as WorkOrderStatus,
         description: updates.title,
         priority: updates.priority,
       });
@@ -270,9 +272,9 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
         customerId: workOrder.jobId,
         title: workOrder.description,
         description: workOrder.description,
-        status: workOrderStatusToJobStatus(workOrder.status) ?? 'in_progress',
+        status: workOrderStatusToJobStatus(workOrder.status) ?? "in_progress",
         priority: workOrder.priority,
-        location: { address: '', city: '', postalCode: '', country: '' },
+        location: { address: "", city: "", postalCode: "", country: "" },
         createdAt: workOrder.createdAt,
       };
     });
@@ -302,10 +304,10 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
           customerId: wo.jobId,
           title: wo.description,
           description: wo.description,
-          status: workOrderStatusToJobStatus(wo.status) ?? 'scheduled',
+          status: workOrderStatusToJobStatus(wo.status) ?? "scheduled",
           priority: wo.priority,
           scheduledStart: wo.scheduledStart,
-          location: { address: '', city: '', postalCode: '', country: '' },
+          location: { address: "", city: "", postalCode: "", country: "" },
           createdAt: wo.createdAt,
         })),
       };
@@ -330,7 +332,7 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
         notes: workOrder.notes,
       };
 
-      const response = await this.request('POST', '/work-orders', data);
+      const response = await this.request("POST", "/work-orders", data);
       return this.mapWorkOrderFromProvider(response);
     });
   }
@@ -340,7 +342,7 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
    */
   async getWorkOrder(workOrderId: string): Promise<WorkOrder> {
     return this.executeWithRetry(async () => {
-      const response = await this.request('GET', `/work-orders/${workOrderId}`);
+      const response = await this.request("GET", `/work-orders/${workOrderId}`);
       return this.mapWorkOrderFromProvider(response);
     });
   }
@@ -348,14 +350,21 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
   /**
    * Update work order
    */
-  async updateWorkOrder(workOrderId: string, updates: Partial<WorkOrder>): Promise<WorkOrder> {
+  async updateWorkOrder(
+    workOrderId: string,
+    updates: Partial<WorkOrder>,
+  ): Promise<WorkOrder> {
     return this.executeWithRetry(async () => {
       const data: Record<string, unknown> = {};
       if (updates.status) data.status = updates.status;
       if (updates.description) data.description = updates.description;
       if (updates.priority) data.priority = updates.priority;
 
-      const response = await this.request('PATCH', `/work-orders/${workOrderId}`, data);
+      const response = await this.request(
+        "PATCH",
+        `/work-orders/${workOrderId}`,
+        data,
+      );
       return this.mapWorkOrderFromProvider(response);
     });
   }
@@ -365,21 +374,23 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
    */
   async deleteWorkOrder(workOrderId: string): Promise<void> {
     return this.executeWithRetry(async () => {
-      await this.request('DELETE', `/work-orders/${workOrderId}`);
+      await this.request("DELETE", `/work-orders/${workOrderId}`);
     });
   }
 
   /**
    * List work orders
    */
-  async listWorkOrders(params?: PaginationParams): Promise<PaginatedResult<WorkOrder>> {
+  async listWorkOrders(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<WorkOrder>> {
     return this.executeWithRetry(async () => {
       const queryParams = new URLSearchParams({
-        limit: ((params?.limit) || 50).toString(),
-        offset: ((params?.offset) || 0).toString(),
+        limit: (params?.limit || 50).toString(),
+        offset: (params?.offset || 0).toString(),
       });
 
-      const response = await this.request('GET', `/work-orders?${queryParams}`);
+      const response = await this.request("GET", `/work-orders?${queryParams}`);
       const items = (response.data || []).map((item: FieldEdgeWorkOrderData) =>
         this.mapWorkOrderFromProvider(item),
       );
@@ -400,7 +411,10 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
    */
   async getTechnician(technicianId: string): Promise<Technician> {
     return this.executeWithRetry(async () => {
-      const response = await this.request('GET', `/technicians/${technicianId}`);
+      const response = await this.request(
+        "GET",
+        `/technicians/${technicianId}`,
+      );
       return this.mapTechnicianFromProvider(response);
     });
   }
@@ -408,14 +422,16 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
   /**
    * List technicians
    */
-  async listTechnicians(params?: PaginationParams): Promise<PaginatedResult<Technician>> {
+  async listTechnicians(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<Technician>> {
     return this.executeWithRetry(async () => {
       const queryParams = new URLSearchParams({
-        limit: ((params?.limit) || 50).toString(),
-        offset: ((params?.offset) || 0).toString(),
+        limit: (params?.limit || 50).toString(),
+        offset: (params?.offset || 0).toString(),
       });
 
-      const response = await this.request('GET', `/technicians?${queryParams}`);
+      const response = await this.request("GET", `/technicians?${queryParams}`);
       const items = (response.data || []).map((item: FieldEdgeTechnicianData) =>
         this.mapTechnicianFromProvider(item),
       );
@@ -432,10 +448,17 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
   /**
    * Update technician availability
    */
-  async updateTechnicianAvailability(technicianId: string, status: string): Promise<Technician> {
+  async updateTechnicianAvailability(
+    technicianId: string,
+    status: string,
+  ): Promise<Technician> {
     return this.executeWithRetry(async () => {
       const data = { status };
-      const response = await this.request('PATCH', `/technicians/${technicianId}`, data);
+      const response = await this.request(
+        "PATCH",
+        `/technicians/${technicianId}`,
+        data,
+      );
       return this.mapTechnicianFromProvider(response);
     });
   }
@@ -445,7 +468,10 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
    */
   async getTechnicianLocation(technicianId: string): Promise<any> {
     return this.executeWithRetry(async () => {
-      const response = await this.request('GET', `/technicians/${technicianId}/location`);
+      const response = await this.request(
+        "GET",
+        `/technicians/${technicianId}/location`,
+      );
       return {
         latitude: response.latitude,
         longitude: response.longitude,
@@ -464,12 +490,12 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
     return this.executeWithRetry(async () => {
       const data = {
         technicianId: schedule.technician,
-        startDate: schedule.dateStart.toISOString().split('T')[0],
-        endDate: schedule.dateEnd.toISOString().split('T')[0],
+        startDate: schedule.dateStart.toISOString().split("T")[0],
+        endDate: schedule.dateEnd.toISOString().split("T")[0],
         type: schedule.type,
       };
 
-      const response = await this.request('POST', '/schedules', data);
+      const response = await this.request("POST", "/schedules", data);
       return response;
     });
   }
@@ -485,11 +511,14 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
     return this.executeWithRetry(async () => {
       const queryParams = new URLSearchParams({
         technicianId,
-        startDate: startDate.toISOString().split('T')[0],
-        endDate: endDate.toISOString().split('T')[0],
+        startDate: startDate.toISOString().split("T")[0],
+        endDate: endDate.toISOString().split("T")[0],
       });
 
-      const response = await this.request('GET', `/availability?${queryParams}`);
+      const response = await this.request(
+        "GET",
+        `/availability?${queryParams}`,
+      );
       return (response.slots || []).map((slot: any) => ({
         start: new Date(slot.startTime),
         end: new Date(slot.endTime),
@@ -500,10 +529,21 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
   /**
    * Schedule job for technician
    */
-  async scheduleJob(jobId: string, technicianId: string, start: Date): Promise<Job> {
+  async scheduleJob(
+    jobId: string,
+    technicianId: string,
+    start: Date,
+  ): Promise<Job> {
     return this.executeWithRetry(async () => {
-      const data = { assignedTo: technicianId, scheduledStart: start.toISOString() };
-      const response = await this.request('PATCH', `/work-orders/${jobId}`, data);
+      const data = {
+        assignedTo: technicianId,
+        scheduledStart: start.toISOString(),
+      };
+      const response = await this.request(
+        "PATCH",
+        `/work-orders/${jobId}`,
+        data,
+      );
       return this.getJob(response.id);
     });
   }
@@ -515,7 +555,7 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
    */
   async getEquipment(equipmentId: string): Promise<Equipment> {
     return this.executeWithRetry(async () => {
-      const response = await this.request('GET', `/equipment/${equipmentId}`);
+      const response = await this.request("GET", `/equipment/${equipmentId}`);
       return this.mapEquipmentFromProvider(response);
     });
   }
@@ -523,14 +563,16 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
   /**
    * List equipment
    */
-  async listEquipment(params?: PaginationParams): Promise<PaginatedResult<Equipment>> {
+  async listEquipment(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<Equipment>> {
     return this.executeWithRetry(async () => {
       const queryParams = new URLSearchParams({
-        limit: ((params?.limit) || 50).toString(),
-        offset: ((params?.offset) || 0).toString(),
+        limit: (params?.limit || 50).toString(),
+        offset: (params?.offset || 0).toString(),
       });
 
-      const response = await this.request('GET', `/equipment?${queryParams}`);
+      const response = await this.request("GET", `/equipment?${queryParams}`);
       const items = (response.data || []).map((item: FieldEdgeEquipmentData) =>
         this.mapEquipmentFromProvider(item),
       );
@@ -549,7 +591,10 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
    */
   async getEquipmentServiceHistory(equipmentId: string): Promise<any[]> {
     return this.executeWithRetry(async () => {
-      const response = await this.request('GET', `/equipment/${equipmentId}/service-history`);
+      const response = await this.request(
+        "GET",
+        `/equipment/${equipmentId}/service-history`,
+      );
       return response.history || [];
     });
   }
@@ -573,10 +618,10 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
         state: customer.primaryAddress.state,
         zipCode: customer.primaryAddress.postalCode,
         country: customer.primaryAddress.country,
-        status: customer.status || 'active',
+        status: customer.status || "active",
       };
 
-      const response = await this.request('POST', '/customers', data);
+      const response = await this.request("POST", "/customers", data);
       return this.mapCustomerFromProvider(response);
     });
   }
@@ -586,7 +631,7 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
    */
   async getCustomer(customerId: string): Promise<CustomerRecord> {
     return this.executeWithRetry(async () => {
-      const response = await this.request('GET', `/customers/${customerId}`);
+      const response = await this.request("GET", `/customers/${customerId}`);
       return this.mapCustomerFromProvider(response);
     });
   }
@@ -594,14 +639,21 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
   /**
    * Update customer
    */
-  async updateCustomer(customerId: string, updates: Partial<CustomerRecord>): Promise<CustomerRecord> {
+  async updateCustomer(
+    customerId: string,
+    updates: Partial<CustomerRecord>,
+  ): Promise<CustomerRecord> {
     return this.executeWithRetry(async () => {
       const data: Record<string, unknown> = {};
       if (updates.email) data.email = updates.email;
       if (updates.phone) data.phone = updates.phone;
       if (updates.mobile) data.mobile = updates.mobile;
 
-      const response = await this.request('PATCH', `/customers/${customerId}`, data);
+      const response = await this.request(
+        "PATCH",
+        `/customers/${customerId}`,
+        data,
+      );
       return this.mapCustomerFromProvider(response);
     });
   }
@@ -609,14 +661,16 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
   /**
    * List customers
    */
-  async listCustomers(params?: PaginationParams): Promise<PaginatedResult<CustomerRecord>> {
+  async listCustomers(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<CustomerRecord>> {
     return this.executeWithRetry(async () => {
       const queryParams = new URLSearchParams({
-        limit: ((params?.limit) || 50).toString(),
-        offset: ((params?.offset) || 0).toString(),
+        limit: (params?.limit || 50).toString(),
+        offset: (params?.offset || 0).toString(),
       });
 
-      const response = await this.request('GET', `/customers?${queryParams}`);
+      const response = await this.request("GET", `/customers?${queryParams}`);
       const items = (response.data || []).map((item: FieldEdgeCustomerData) =>
         this.mapCustomerFromProvider(item),
       );
@@ -636,14 +690,24 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
    * Create estimate (not available in FieldEdge)
    */
   async createEstimate(): Promise<any> {
-    throw this.createOperationError('Estimates not supported in FieldEdge', 'NOT_SUPPORTED', 400, false);
+    throw this.createOperationError(
+      "Estimates not supported in FieldEdge",
+      "NOT_SUPPORTED",
+      400,
+      false,
+    );
   }
 
   /**
    * Get estimate (not available in FieldEdge)
    */
   async getEstimate(): Promise<any> {
-    throw this.createOperationError('Estimates not supported in FieldEdge', 'NOT_SUPPORTED', 400, false);
+    throw this.createOperationError(
+      "Estimates not supported in FieldEdge",
+      "NOT_SUPPORTED",
+      400,
+      false,
+    );
   }
 
   /**
@@ -661,7 +725,7 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
         notes: invoice.notes,
       };
 
-      const response = await this.request('POST', '/invoices', data);
+      const response = await this.request("POST", "/invoices", data);
       return this.mapInvoiceFromProvider(response);
     });
   }
@@ -671,7 +735,7 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
    */
   async getInvoice(invoiceId: string): Promise<Invoice> {
     return this.executeWithRetry(async () => {
-      const response = await this.request('GET', `/invoices/${invoiceId}`);
+      const response = await this.request("GET", `/invoices/${invoiceId}`);
       return this.mapInvoiceFromProvider(response);
     });
   }
@@ -679,14 +743,16 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
   /**
    * List invoices
    */
-  async listInvoices(params?: PaginationParams): Promise<PaginatedResult<Invoice>> {
+  async listInvoices(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<Invoice>> {
     return this.executeWithRetry(async () => {
       const queryParams = new URLSearchParams({
-        limit: ((params?.limit) || 50).toString(),
-        offset: ((params?.offset) || 0).toString(),
+        limit: (params?.limit || 50).toString(),
+        offset: (params?.offset || 0).toString(),
       });
 
-      const response = await this.request('GET', `/invoices?${queryParams}`);
+      const response = await this.request("GET", `/invoices?${queryParams}`);
       const items = (response.data || []).map((item: FieldEdgeInvoiceData) =>
         this.mapInvoiceFromProvider(item),
       );
@@ -703,10 +769,18 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
   /**
    * Record invoice payment
    */
-  async recordPayment(invoiceId: string, amount: number, method: string): Promise<Invoice> {
+  async recordPayment(
+    invoiceId: string,
+    amount: number,
+    method: string,
+  ): Promise<Invoice> {
     return this.executeWithRetry(async () => {
-      const data = { amount, paymentMethod: method, paymentDate: new Date().toISOString() };
-      await this.request('POST', `/invoices/${invoiceId}/payments`, data);
+      const data = {
+        amount,
+        paymentMethod: method,
+        paymentDate: new Date().toISOString(),
+      };
+      await this.request("POST", `/invoices/${invoiceId}/payments`, data);
       return this.getInvoice(invoiceId);
     });
   }
@@ -716,20 +790,22 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
   /**
    * Create dispatch assignment
    */
-  async createDispatchAssignment(assignment: DispatchAssignment): Promise<DispatchAssignment> {
+  async createDispatchAssignment(
+    assignment: DispatchAssignment,
+  ): Promise<DispatchAssignment> {
     return this.executeWithRetry(async () => {
       const data = {
         workOrderId: assignment.jobId,
         technicianId: assignment.technicianId,
       };
 
-      const response = await this.request('POST', '/dispatch', data);
+      const response = await this.request("POST", "/dispatch", data);
       return {
         id: response.id,
         externalId: response.id,
         jobId: response.workOrderId,
         technicianId: response.technicianId,
-        status: 'assigned',
+        status: "assigned",
         assignedAt: new Date(),
         priority: assignment.priority,
       };
@@ -739,9 +815,11 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
   /**
    * Get dispatch assignment
    */
-  async getDispatchAssignment(assignmentId: string): Promise<DispatchAssignment> {
+  async getDispatchAssignment(
+    assignmentId: string,
+  ): Promise<DispatchAssignment> {
     return this.executeWithRetry(async () => {
-      const response = await this.request('GET', `/dispatch/${assignmentId}`);
+      const response = await this.request("GET", `/dispatch/${assignmentId}`);
       return {
         id: response.id,
         externalId: response.id,
@@ -749,7 +827,7 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
         technicianId: response.technicianId,
         status: response.status,
         assignedAt: new Date(response.assignedDate),
-        priority: 'high',
+        priority: "high",
       };
     });
   }
@@ -765,7 +843,11 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
       const data: Record<string, unknown> = {};
       if (updates.status) data.status = updates.status;
 
-      const response = await this.request('PATCH', `/dispatch/${assignmentId}`, data);
+      const response = await this.request(
+        "PATCH",
+        `/dispatch/${assignmentId}`,
+        data,
+      );
       return this.getDispatchAssignment(response.id);
     });
   }
@@ -775,7 +857,7 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
    */
   async cancelDispatchAssignment(assignmentId: string): Promise<void> {
     return this.executeWithRetry(async () => {
-      await this.request('DELETE', `/dispatch/${assignmentId}`);
+      await this.request("DELETE", `/dispatch/${assignmentId}`);
     });
   }
 
@@ -799,19 +881,19 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
     };
 
     results.forEach((result, index) => {
-      if (result.status === 'fulfilled') {
+      if (result.status === "fulfilled") {
         batchResult.successful++;
         batchResult.results.push({
-          recordId: jobs[index]!.id || '',
+          recordId: jobs[index]!.id || "",
           externalId: result.value.externalId,
-          status: 'success',
+          status: "success",
           data: result.value,
         });
       } else {
         batchResult.failed++;
         batchResult.results.push({
-          recordId: jobs[index]!.id || '',
-          status: 'failed',
+          recordId: jobs[index]!.id || "",
+          status: "failed",
           error: (result.reason as any).message,
         });
       }
@@ -840,19 +922,19 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
     };
 
     results.forEach((result, index) => {
-      if (result.status === 'fulfilled') {
+      if (result.status === "fulfilled") {
         batchResult.successful++;
         batchResult.results.push({
           recordId: updates[index]!.jobId,
           externalId: result.value.externalId,
-          status: 'success',
+          status: "success",
           data: result.value,
         });
       } else {
         batchResult.failed++;
         batchResult.results.push({
           recordId: updates[index]!.jobId,
-          status: 'failed',
+          status: "failed",
           error: (result.reason as any).message,
         });
       }
@@ -872,11 +954,13 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
       externalId: data.id,
       workOrderNumber: data.workOrderNumber,
       jobId: data.customerId,
-      status: (data.status.toLowerCase() as any) || 'open',
+      status: (data.status.toLowerCase() as any) || "open",
       description: data.description,
-      priority: (data.priority.toLowerCase() as any) || 'medium',
+      priority: (data.priority.toLowerCase() as any) || "medium",
       assignedTechnician: data.assignedTo,
-      scheduledStart: data.scheduledStart ? new Date(data.scheduledStart) : undefined,
+      scheduledStart: data.scheduledStart
+        ? new Date(data.scheduledStart)
+        : undefined,
       scheduledEnd: data.scheduledEnd ? new Date(data.scheduledEnd) : undefined,
       actualStart: data.actualStart ? new Date(data.actualStart) : undefined,
       actualEnd: data.actualEnd ? new Date(data.actualEnd) : undefined,
@@ -900,15 +984,16 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
       email: data.email,
       phone: data.phone,
       mobile: data.mobile,
-      status: (data.status.toLowerCase() as any) || 'available',
+      status: (data.status.toLowerCase() as any) || "available",
       skills: data.skills || [],
-      currentLocation: data.currentLocationLatitude && data.currentLocationLongitude
-        ? {
-            latitude: data.currentLocationLatitude,
-            longitude: data.currentLocationLongitude,
-            timestamp: new Date(),
-          }
-        : undefined,
+      currentLocation:
+        data.currentLocationLatitude && data.currentLocationLongitude
+          ? {
+              latitude: data.currentLocationLatitude,
+              longitude: data.currentLocationLongitude,
+              timestamp: new Date(),
+            }
+          : undefined,
       currentJobId: data.currentWorkOrderId,
     };
   }
@@ -926,12 +1011,18 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
       manufacturer: data.manufacturer,
       model: data.model,
       serialNumber: data.serialNumber,
-      status: (data.status.toLowerCase() as any) || 'active',
+      status: (data.status.toLowerCase() as any) || "active",
       owner: data.owner,
       purchaseDate: data.purchaseDate ? new Date(data.purchaseDate) : undefined,
-      warrantyExpiration: data.warrantyExpiration ? new Date(data.warrantyExpiration) : undefined,
-      lastServiceDate: data.lastServiceDate ? new Date(data.lastServiceDate) : undefined,
-      nextServiceDate: data.nextServiceDate ? new Date(data.nextServiceDate) : undefined,
+      warrantyExpiration: data.warrantyExpiration
+        ? new Date(data.warrantyExpiration)
+        : undefined,
+      lastServiceDate: data.lastServiceDate
+        ? new Date(data.lastServiceDate)
+        : undefined,
+      nextServiceDate: data.nextServiceDate
+        ? new Date(data.nextServiceDate)
+        : undefined,
       hoursUsed: data.hoursUsed,
       cost: data.cost,
     };
@@ -957,8 +1048,8 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
         postalCode: data.zipCode,
         country: data.country,
       },
-      type: 'both',
-      status: (data.status.toLowerCase() as any) || 'active',
+      type: "both",
+      status: (data.status.toLowerCase() as any) || "active",
     };
   }
 
@@ -973,14 +1064,17 @@ export class FieldEdgeClient extends AbstractFieldServiceAdapter {
       customerId: data.customerId,
       customerName: data.customerName,
       jobIds: data.workOrderIds,
-      status: (data.status.toLowerCase() as any) || 'draft',
+      status: (data.status.toLowerCase() as any) || "draft",
       invoiceDate: new Date(data.invoiceDate),
       dueDate: new Date(data.dueDate),
-      lineItems: (data.lineItems || []).map((item) => ({ ...item, total: item.quantity * item.unitPrice })),
+      lineItems: (data.lineItems || []).map((item) => ({
+        ...item,
+        total: item.quantity * item.unitPrice,
+      })),
       subtotal: data.total * 0.9,
       total: data.total,
       amountPaid: data.amountPaid,
-      amountDue: (data.total - (data.amountPaid || 0)),
+      amountDue: data.total - (data.amountPaid || 0),
       notes: data.notes,
       createdAt: new Date(data.createdDate),
       updatedAt: new Date(data.modifiedDate),

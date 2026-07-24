@@ -25,7 +25,10 @@ interface CheckboxOption {
   disabled?: boolean;
 }
 
-export interface FormCheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type"> {
+export interface FormCheckboxProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "type"
+> {
   /** Checkbox label */
   label?: string;
   /** Indeterminate state (renders minus icon) */
@@ -69,9 +72,10 @@ export const FormCheckbox = forwardRef<HTMLInputElement, FormCheckboxProps>(
       id,
       ...props
     },
-    ref
+    ref,
   ) => {
-    const checkboxId = id || `checkbox-${Math.random().toString(36).substr(2, 9)}`;
+    const checkboxId =
+      id || `checkbox-${Math.random().toString(36).substr(2, 9)}`;
 
     return (
       <div className={cn("flex items-center gap-3", className)}>
@@ -102,14 +106,20 @@ export const FormCheckbox = forwardRef<HTMLInputElement, FormCheckboxProps>(
                 ? "border-wl-primary-500 bg-wl-primary-500"
                 : "border-wl-border-default bg-wl-bg-surface",
             "hover:border-wl-primary-400",
-            disabled && "opacity-50 cursor-not-allowed pointer-events-none"
+            disabled && "opacity-50 cursor-not-allowed pointer-events-none",
           )}
         >
           {indeterminate && (
-            <Minus size={14} className="text-wl-text-inverse pointer-events-none" />
+            <Minus
+              size={14}
+              className="text-wl-text-inverse pointer-events-none"
+            />
           )}
           {checked && !indeterminate && (
-            <Check size={14} className="text-wl-text-inverse pointer-events-none" />
+            <Check
+              size={14}
+              className="text-wl-text-inverse pointer-events-none"
+            />
           )}
         </label>
 
@@ -120,7 +130,7 @@ export const FormCheckbox = forwardRef<HTMLInputElement, FormCheckboxProps>(
             className={cn(
               "text-sm font-medium cursor-pointer select-none",
               hasError ? "text-wl-danger-400" : "text-wl-text-primary",
-              disabled && "opacity-50 cursor-not-allowed"
+              disabled && "opacity-50 cursor-not-allowed",
             )}
           >
             {label}
@@ -128,7 +138,7 @@ export const FormCheckbox = forwardRef<HTMLInputElement, FormCheckboxProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 FormCheckbox.displayName = "FormCheckbox";
@@ -178,7 +188,7 @@ export function FormCheckboxGroup({
         : value.filter((v) => v !== optionValue);
       onChange?.(newValues);
     },
-    [value, onChange]
+    [value, onChange],
   );
 
   return (
@@ -199,7 +209,7 @@ export function FormCheckboxGroup({
       <div
         className={cn(
           "flex gap-3",
-          layout === "vertical" ? "flex-col" : "flex-row flex-wrap"
+          layout === "vertical" ? "flex-col" : "flex-row flex-wrap",
         )}
       >
         {options.map((option) => (

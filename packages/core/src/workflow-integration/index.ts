@@ -15,10 +15,7 @@
  */
 
 import type { Logger } from "pino";
-import {
-  WorkflowEngine,
-  type WorkflowExecution,
-} from "@witylogix/framework";
+import { WorkflowEngine, type WorkflowExecution } from "@witylogix/framework";
 import type {
   CreateDeliveryOrderInput,
   AssignDriverInput,
@@ -87,9 +84,15 @@ type WorkflowEventHandler =
   | ((event: WorkflowFailedEvent) => void | Promise<void>);
 
 const eventHandlers = {
-  "workflow.triggered": [] as Array<(e: WorkflowTriggeredEvent) => void | Promise<void>>,
-  "workflow.completed": [] as Array<(e: WorkflowCompletedEvent) => void | Promise<void>>,
-  "workflow.failed": [] as Array<(e: WorkflowFailedEvent) => void | Promise<void>>,
+  "workflow.triggered": [] as Array<
+    (e: WorkflowTriggeredEvent) => void | Promise<void>
+  >,
+  "workflow.completed": [] as Array<
+    (e: WorkflowCompletedEvent) => void | Promise<void>
+  >,
+  "workflow.failed": [] as Array<
+    (e: WorkflowFailedEvent) => void | Promise<void>
+  >,
 };
 
 /**
@@ -139,10 +142,7 @@ export class WorkflowIntegrationService {
   /**
    * Determine if workflow should be triggered for this tenant.
    */
-  private shouldTrigger(
-    tenantId: string,
-    workflowName: string,
-  ): boolean {
+  private shouldTrigger(tenantId: string, workflowName: string): boolean {
     const config = getIntegrationConfig(tenantId);
 
     if (config.triggerMode === "disabled") {
@@ -174,26 +174,27 @@ export class WorkflowIntegrationService {
     // Fire and forget: execute in background
     setImmediate(async () => {
       try {
-        const result = await this.engine.executeWorkflow(
-          workflowName,
-          input,
-          {
-            tenantDb: context.tenantDb,
-            prisma: (globalThis as any).prisma,
-            userId: context.userId,
-            tenantId: context.tenantId,
-            logger: context.logger,
-            metadata: context.metadata,
-            transactionId: context.requestId,
-          },
-        );
+        const result = await this.engine.executeWorkflow(workflowName, input, {
+          tenantDb: context.tenantDb,
+          prisma: (globalThis as any).prisma,
+          userId: context.userId,
+          tenantId: context.tenantId,
+          logger: context.logger,
+          metadata: context.metadata,
+          transactionId: context.requestId,
+        });
 
         // Emit completion event
         if (result.status === "completed") {
           await emitWorkflowEvent("workflow.completed", {
             workflowName,
             executionId: result.id,
-            operationType: `${workflowName.split(/(?=[A-Z])/)[0].toLowerCase()}.${workflowName.split(/(?=[A-Z])/).slice(1).join("").toLowerCase()}` as any,
+            operationType:
+              `${workflowName.split(/(?=[A-Z])/)[0].toLowerCase()}.${workflowName
+                .split(/(?=[A-Z])/)
+                .slice(1)
+                .join("")
+                .toLowerCase()}` as any,
             tenantId: context.tenantId,
             output: result.output,
             durationMs: result.durationMs || 0,
@@ -203,7 +204,12 @@ export class WorkflowIntegrationService {
           await emitWorkflowEvent("workflow.failed", {
             workflowName,
             executionId: result.id,
-            operationType: `${workflowName.split(/(?=[A-Z])/)[0].toLowerCase()}.${workflowName.split(/(?=[A-Z])/).slice(1).join("").toLowerCase()}` as any,
+            operationType:
+              `${workflowName.split(/(?=[A-Z])/)[0].toLowerCase()}.${workflowName
+                .split(/(?=[A-Z])/)
+                .slice(1)
+                .join("")
+                .toLowerCase()}` as any,
             tenantId: context.tenantId,
             error: result.error?.message || "Unknown error",
             durationMs: result.durationMs || 0,
@@ -211,12 +217,20 @@ export class WorkflowIntegrationService {
           } as WorkflowFailedEvent);
         }
       } catch (err) {
-        this.logger.error(err, `[WorkflowIntegration] Async workflow execution failed for ${workflowName}`);
+        this.logger.error(
+          err,
+          `[WorkflowIntegration] Async workflow execution failed for ${workflowName}`,
+        );
 
         await emitWorkflowEvent("workflow.failed", {
           workflowName,
           executionId,
-          operationType: `${workflowName.split(/(?=[A-Z])/)[0].toLowerCase()}.${workflowName.split(/(?=[A-Z])/).slice(1).join("").toLowerCase()}` as any,
+          operationType:
+            `${workflowName.split(/(?=[A-Z])/)[0].toLowerCase()}.${workflowName
+              .split(/(?=[A-Z])/)
+              .slice(1)
+              .join("")
+              .toLowerCase()}` as any,
           tenantId: context.tenantId,
           error: err instanceof Error ? err.message : String(err),
           durationMs: 0,
@@ -387,7 +401,10 @@ export class WorkflowIntegrationService {
       }
     } catch (err) {
       // Log error but don't block API response
-      this.logger.error(err, `[WorkflowIntegration] Failed to trigger ${workflowName}`);
+      this.logger.error(
+        err,
+        `[WorkflowIntegration] Failed to trigger ${workflowName}`,
+      );
 
       // Emit failed event
       const executionId = crypto.randomUUID();
@@ -523,7 +540,10 @@ export class WorkflowIntegrationService {
         };
       }
     } catch (err) {
-      this.logger.error(err, `[WorkflowIntegration] Failed to trigger ${workflowName}`);
+      this.logger.error(
+        err,
+        `[WorkflowIntegration] Failed to trigger ${workflowName}`,
+      );
 
       const executionId = crypto.randomUUID();
       await emitWorkflowEvent("workflow.failed", {
@@ -658,7 +678,10 @@ export class WorkflowIntegrationService {
         };
       }
     } catch (err) {
-      this.logger.error(err, `[WorkflowIntegration] Failed to trigger ${workflowName}`);
+      this.logger.error(
+        err,
+        `[WorkflowIntegration] Failed to trigger ${workflowName}`,
+      );
 
       const executionId = crypto.randomUUID();
       await emitWorkflowEvent("workflow.failed", {

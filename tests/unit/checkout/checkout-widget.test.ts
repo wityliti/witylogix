@@ -161,8 +161,7 @@ class CheckoutWidget {
 
   isDateBlackedOut(date: Date): boolean {
     return this.getBlackoutDates().some(
-      (blackoutDate) =>
-        blackoutDate.toDateString() === date.toDateString()
+      (blackoutDate) => blackoutDate.toDateString() === date.toDateString(),
     );
   }
 
@@ -254,7 +253,7 @@ class CheckoutWidget {
       baseRate,
       surcharge: baseRate * 0.1,
       discount: this.selectedSlot ? 0 : 0,
-      totalRate: baseRate + (baseRate * 0.1),
+      totalRate: baseRate + baseRate * 0.1,
     };
   }
 

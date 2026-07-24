@@ -710,7 +710,12 @@ export interface MagentoAsyncBulkResponse {
   request_items: number;
   available_operations: number;
   failed_operations: number;
-  operation_status: "TYPE_OBJECT" | "COMPLETE" | "RETRIABLE" | "NOT_RETRIABLE" | "OPEN";
+  operation_status:
+    | "TYPE_OBJECT"
+    | "COMPLETE"
+    | "RETRIABLE"
+    | "NOT_RETRIABLE"
+    | "OPEN";
   result_message?: string;
   errors: boolean;
   extension_attributes?: Record<string, unknown>;

@@ -123,11 +123,9 @@ export class RedisRateLimiter {
   /**
    * Set custom rate limit for specific endpoint.
    */
-  setEndpointLimit(
-    endpoint: string,
-    config: Partial<RateLimitConfig>
-  ): void {
-    const existing = this.endpointOverrides.get(endpoint) || this.planLimits.PRO;
+  setEndpointLimit(endpoint: string, config: Partial<RateLimitConfig>): void {
+    const existing =
+      this.endpointOverrides.get(endpoint) || this.planLimits.PRO;
     this.endpointOverrides.set(endpoint, { ...existing, ...config });
   }
 
@@ -138,18 +136,23 @@ export class RedisRateLimiter {
   async checkLimit(
     tenantId: string,
     planTier: "FREE" | "PRO" | "ENTERPRISE",
-    endpoint: string = "default"
+    endpoint: string = "default",
   ): Promise<RateLimitResult> {
     const now = Date.now();
 
     // Use auth endpoint limits if applicable
     let config = this.authEndpointLimits.get(endpoint);
     if (!config) {
-      config = this.endpointOverrides.get(endpoint) || this.planLimits[planTier];
+      config =
+        this.endpointOverrides.get(endpoint) || this.planLimits[planTier];
     }
 
-    const { windowMs, maxRequests, burstMultiplier = 1, burstWindowMs = 0 } =
-      config;
+    const {
+      windowMs,
+      maxRequests,
+      burstMultiplier = 1,
+      burstWindowMs = 0,
+    } = config;
 
     try {
       if (this.isRedisAvailable && this.redisClient) {
@@ -160,7 +163,7 @@ export class RedisRateLimiter {
           windowMs,
           maxRequests,
           burstMultiplier,
-          burstWindowMs
+          burstWindowMs,
         );
       }
     } catch (error) {
@@ -178,7 +181,7 @@ export class RedisRateLimiter {
       windowMs,
       maxRequests,
       burstMultiplier,
-      burstWindowMs
+      burstWindowMs,
     );
   }
 
@@ -192,7 +195,7 @@ export class RedisRateLimiter {
     windowMs: number,
     maxRequests: number,
     burstMultiplier: number,
-    burstWindowMs: number
+    burstWindowMs: number,
   ): Promise<RateLimitResult> {
     const mainKey = `rl:${tenantId}:${endpoint}:main`;
     const burstKey = `rl:${tenantId}:${endpoint}:burst`;
@@ -227,7 +230,7 @@ export class RedisRateLimiter {
     const burstCount = results[5] as number;
     let resetAt = parseInt((results[6] as string) || String(now + windowMs));
     let burstResetAt = parseInt(
-      (results[7] as string) || String(now + burstWindowMs)
+      (results[7] as string) || String(now + burstWindowMs),
     );
 
     // Check burst limit
@@ -256,14 +259,18 @@ export class RedisRateLimiter {
     // Set expiration times if not set
     if (!results[6]) {
       resetAt = now + windowMs;
-      await this.redisClient.setex(resetAtKey, Math.ceil(windowMs / 1000), resetAt);
+      await this.redisClient.setex(
+        resetAtKey,
+        Math.ceil(windowMs / 1000),
+        resetAt,
+      );
     }
     if (!results[7]) {
       burstResetAt = now + burstWindowMs;
       await this.redisClient.setex(
         burstResetKey,
         Math.ceil(burstWindowMs / 1000),
-        burstResetAt
+        burstResetAt,
       );
     }
 
@@ -286,7 +293,7 @@ export class RedisRateLimiter {
     windowMs: number,
     maxRequests: number,
     burstMultiplier: number,
-    burstWindowMs: number
+    burstWindowMs: number,
   ): RateLimitResult {
     const key = `${tenantId}:${endpoint}`;
 
@@ -356,14 +363,15 @@ export class RedisRateLimiter {
   async getStatus(
     tenantId: string,
     planTier: "FREE" | "PRO" | "ENTERPRISE",
-    endpoint: string = "default"
+    endpoint: string = "default",
   ): Promise<RateLimitResult> {
     const now = Date.now();
 
     // Use auth endpoint limits if applicable
     let config = this.authEndpointLimits.get(endpoint);
     if (!config) {
-      config = this.endpointOverrides.get(endpoint) || this.planLimits[planTier];
+      config =
+        this.endpointOverrides.get(endpoint) || this.planLimits[planTier];
     }
 
     const { windowMs, maxRequests } = config;
@@ -413,7 +421,7 @@ export class RedisRateLimiter {
     }
 
     const keysToDelete = Array.from(this.memoryStorage.keys()).filter((key) =>
-      key.startsWith(`${tenantId}:`)
+      key.startsWith(`${tenantId}:`),
     );
     keysToDelete.forEach((key) => this.memoryStorage.delete(key));
   }

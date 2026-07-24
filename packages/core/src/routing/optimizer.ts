@@ -16,12 +16,33 @@
  */
 
 import type { GeoPoint } from "./distance.js";
-import { computeDistanceMatrix, computeETAs, haversineDistance, estimateTravelTime } from "./distance.js";
-import type { OptimizationStop, Vehicle, RouteSolution } from "./constraints.js";
-import { checkCapacity, checkSkillMatch, checkTimeWindows, calculateRouteMetrics, checkShiftLimits } from "./constraints.js";
-import { nearestNeighbor, multiStartNearestNeighbor } from "./algorithms/nearest-neighbor.js";
+import {
+  computeDistanceMatrix,
+  computeETAs,
+  haversineDistance,
+  estimateTravelTime,
+} from "./distance.js";
+import type {
+  OptimizationStop,
+  Vehicle,
+  RouteSolution,
+} from "./constraints.js";
+import {
+  checkCapacity,
+  checkSkillMatch,
+  checkTimeWindows,
+  calculateRouteMetrics,
+  checkShiftLimits,
+} from "./constraints.js";
+import {
+  nearestNeighbor,
+  multiStartNearestNeighbor,
+} from "./algorithms/nearest-neighbor.js";
 import { twoOptBestImprovement } from "./algorithms/two-opt.js";
-import { clarkeWrightSavings, assignRoutesToVehicles } from "./algorithms/savings.js";
+import {
+  clarkeWrightSavings,
+  assignRoutesToVehicles,
+} from "./algorithms/savings.js";
 
 // ── Type Definitions ────────────────────────────────────────
 
@@ -51,7 +72,11 @@ export interface OptimizationConstraints {
  * Algorithm selection and tuning parameters.
  */
 export interface OptimizationSettings {
-  algorithm: "nearest_neighbor" | "nearest_neighbor_2opt" | "savings" | "genetic";
+  algorithm:
+    | "nearest_neighbor"
+    | "nearest_neighbor_2opt"
+    | "savings"
+    | "genetic";
   maxIterations: number;
   timeLimit: number; // seconds
   distanceMatrix?: number[][]; // pre-computed
@@ -112,7 +137,9 @@ export interface OptimizationResult {
  *   },
  * });
  */
-export async function optimizeRoutes(request: OptimizationRequest): Promise<OptimizationResult> {
+export async function optimizeRoutes(
+  request: OptimizationRequest,
+): Promise<OptimizationResult> {
   const startTime = Date.now();
 
   // Validate inputs
@@ -127,7 +154,10 @@ export async function optimizeRoutes(request: OptimizationRequest): Promise<Opti
   // Compute distance matrix if not provided
   const distanceMatrix =
     request.settings.distanceMatrix ||
-    computeDistanceMatrix([request.depot, ...request.stops.map((s) => s.location)]);
+    computeDistanceMatrix([
+      request.depot,
+      ...request.stops.map((s) => s.location),
+    ]);
 
   const speedKmh = request.settings.speedKmh || 60;
 
@@ -195,14 +225,21 @@ export async function optimizeRoutes(request: OptimizationRequest): Promise<Opti
     );
 
     // Collect stops that couldn't be assigned
-    const assignedStopIds = new Set(routes.flatMap((r) => r.stops.map((s) => s.id)));
+    const assignedStopIds = new Set(
+      routes.flatMap((r) => r.stops.map((s) => s.id)),
+    );
     unassignedStops = request.stops.filter((s) => !assignedStopIds.has(s.id));
 
     // Calculate metrics
     const metrics = calculateMetrics(routes, request.stops, request.vehicles);
 
     // Count violations
-    const violations = countViolations(routes, request.vehicles, request.depot, distanceMatrix);
+    const violations = countViolations(
+      routes,
+      request.vehicles,
+      request.depot,
+      distanceMatrix,
+    );
 
     const result: OptimizationResult = {
       routes,
@@ -294,7 +331,11 @@ function optimizeNearestNeighbor2Opt(
   const vehicle = vehicles[0];
 
   // Get initial solution
-  let route = multiStartNearestNeighbor(distanceMatrix, 0, Math.min(3, stops.length));
+  let route = multiStartNearestNeighbor(
+    distanceMatrix,
+    0,
+    Math.min(3, stops.length),
+  );
 
   // Improve with 2-opt
   route = twoOptBestImprovement(route, distanceMatrix, maxIterations);
@@ -428,7 +469,12 @@ function validateAndFilterRoutes(
 
     // Check time windows
     if (constraints.respectTimeWindows) {
-      const violations = checkTimeWindows(route, depot, distanceMatrix, speedKmh);
+      const violations = checkTimeWindows(
+        route,
+        depot,
+        distanceMatrix,
+        speedKmh,
+      );
       if (violations.length > 0) return false;
     }
 
@@ -459,9 +505,16 @@ function calculateMetrics(
   }
 
   const vehiclesUsed = new Set(routes.map((r) => r.vehicleId)).size;
-  const totalCapacityWeight = vehicles.reduce((sum, v) => sum + v.capacity.weight, 0);
+  const totalCapacityWeight = vehicles.reduce(
+    (sum, v) => sum + v.capacity.weight,
+    0,
+  );
   const averageUtilization =
-    vehiclesUsed > 0 ? (totalWeight / (vehiclesUsed * (totalCapacityWeight / vehicles.length))) * 100 : 0;
+    vehiclesUsed > 0
+      ? (totalWeight /
+          (vehiclesUsed * (totalCapacityWeight / vehicles.length))) *
+        100
+      : 0;
 
   return {
     totalDistance,

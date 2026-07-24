@@ -147,7 +147,8 @@ export function ActivityTimeline({
               onClick={() => onActivityClick?.(activity)}
             >
               {/* Timeline connector */}
-              <div className="absolute left-[27px] top-[48px] bottom-0 w-0.5 bg-wl-border-subtle"
+              <div
+                className="absolute left-[27px] top-[48px] bottom-0 w-0.5 bg-wl-border-subtle"
                 style={{ display: isLast ? "none" : "block" }}
               />
 
@@ -155,12 +156,14 @@ export function ActivityTimeline({
               <div className="flex gap-4 pb-6">
                 {/* Timeline node */}
                 <div className="flex-shrink-0 pt-1">
-                  <div className={cn(
-                    "w-12 h-12 rounded-full flex items-center justify-center",
-                    "border-2 border-wl-border-subtle bg-wl-bg-surface",
-                    "transition-all duration-200 hover:border-wl-primary-500 hover:shadow-md",
-                    "group"
-                  )}>
+                  <div
+                    className={cn(
+                      "w-12 h-12 rounded-full flex items-center justify-center",
+                      "border-2 border-wl-border-subtle bg-wl-bg-surface",
+                      "transition-all duration-200 hover:border-wl-primary-500 hover:shadow-md",
+                      "group",
+                    )}
+                  >
                     <div className={cn(actionColor)}>
                       {getActionIcon(activity.action)}
                     </div>
@@ -172,8 +175,7 @@ export function ActivityTimeline({
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-wl-text-primary">
-                        <span>{activity.userName}</span>
-                        {" "}
+                        <span>{activity.userName}</span>{" "}
                         <span className="text-wl-text-secondary font-normal">
                           {actionLabel}
                         </span>
@@ -199,10 +201,13 @@ export function ActivityTimeline({
                         {relativeTime}
                       </p>
                       <p className="text-xs text-wl-text-tertiary mt-1">
-                        {new Date(activity.timestamp).toLocaleTimeString("en-US", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        {new Date(activity.timestamp).toLocaleTimeString(
+                          "en-US",
+                          {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          },
+                        )}
                       </p>
                     </div>
                   </div>

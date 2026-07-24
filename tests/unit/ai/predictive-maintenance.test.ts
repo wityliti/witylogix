@@ -19,7 +19,7 @@ import {
 // ─── TEST DATA ──────────────────────────────────────────────────────────────
 
 const createMockComponent = (
-  overrides?: Partial<ComponentHealth>
+  overrides?: Partial<ComponentHealth>,
 ): ComponentHealth => ({
   componentId: "comp-001",
   type: "engine",
@@ -139,7 +139,7 @@ describe("FailureProbabilityCalculator", () => {
       component,
       "moderate",
       "highway",
-      0.5
+      0.5,
     );
 
     expect(prediction.failureProbability).toBeLessThan(0.5);
@@ -158,7 +158,7 @@ describe("FailureProbabilityCalculator", () => {
       component,
       "hot",
       "city",
-      1.0
+      1.0,
     );
 
     expect(prediction.failureProbability).toBeGreaterThan(0.5);
@@ -172,17 +172,17 @@ describe("FailureProbabilityCalculator", () => {
       component,
       "moderate",
       "highway",
-      0.5
+      0.5,
     );
     const predictionHot = calculator.calculateFailureProbability(
       component,
       "hot",
       "highway",
-      0.5
+      0.5,
     );
 
     expect(predictionHot.failureProbability).toBeGreaterThan(
-      predictionModerate.failureProbability
+      predictionModerate.failureProbability,
     );
   });
 
@@ -193,17 +193,17 @@ describe("FailureProbabilityCalculator", () => {
       component,
       "moderate",
       "city",
-      0.5
+      0.5,
     );
     const predictionHighway = calculator.calculateFailureProbability(
       component,
       "moderate",
       "highway",
-      0.5
+      0.5,
     );
 
     expect(predictionCity.failureProbability).toBeGreaterThan(
-      predictionHighway.failureProbability
+      predictionHighway.failureProbability,
     );
   });
 
@@ -218,7 +218,7 @@ describe("FailureProbabilityCalculator", () => {
       component,
       "hot",
       "city",
-      1.0
+      1.0,
     );
 
     expect(prediction.failureProbability).toBeLessThanOrEqual(0.95);
@@ -511,7 +511,11 @@ describe("AlertGenerator", () => {
       },
     ];
 
-    const alerts = generator.generateAlerts("vehicle-001", "VH-001", predictions);
+    const alerts = generator.generateAlerts(
+      "vehicle-001",
+      "VH-001",
+      predictions,
+    );
 
     expect(alerts.length).toBeGreaterThan(0);
     expect(alerts[0].severity).toBe("critical");
@@ -536,7 +540,11 @@ describe("AlertGenerator", () => {
       },
     ];
 
-    const alerts = generator.generateAlerts("vehicle-002", "VH-002", predictions);
+    const alerts = generator.generateAlerts(
+      "vehicle-002",
+      "VH-002",
+      predictions,
+    );
 
     expect(alerts[0].severity).toBe("urgent");
   });

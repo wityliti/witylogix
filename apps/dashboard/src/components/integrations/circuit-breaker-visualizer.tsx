@@ -89,7 +89,7 @@ export function CircuitBreakerVisualizer({
     toX: number,
     toY: number,
     label: string,
-    count: number
+    count: number,
   ) => {
     const dx = toX - fromX;
     const dy = toY - fromY;
@@ -148,7 +148,10 @@ export function CircuitBreakerVisualizer({
   };
 
   // Get transition counts
-  const getTransitionCount = (from: CircuitBreakerState, to: CircuitBreakerState): number => {
+  const getTransitionCount = (
+    from: CircuitBreakerState,
+    to: CircuitBreakerState,
+  ): number => {
     const t = transitions.find((tr) => tr.from === from && tr.to === to);
     return t?.count || 0;
   };
@@ -168,7 +171,7 @@ export function CircuitBreakerVisualizer({
               className={cn(
                 "px-3 py-1.5 rounded text-xs font-medium transition-colors",
                 "bg-wl-primary-500 text-white hover:bg-wl-primary-600",
-                isResetting && "opacity-60 cursor-not-allowed"
+                isResetting && "opacity-60 cursor-not-allowed",
               )}
             >
               {isResetting ? "Resetting..." : "Reset"}
@@ -192,7 +195,7 @@ export function CircuitBreakerVisualizer({
               statePositions.open.x,
               statePositions.open.y,
               "Closed→Open",
-              getTransitionCount("closed", "open")
+              getTransitionCount("closed", "open"),
             )}
             {drawArrow(
               statePositions.open.x,
@@ -200,7 +203,7 @@ export function CircuitBreakerVisualizer({
               statePositions["half-open"].x,
               statePositions["half-open"].y,
               "Open→Half-Open",
-              getTransitionCount("open", "half-open")
+              getTransitionCount("open", "half-open"),
             )}
             {drawArrow(
               statePositions["half-open"].x,
@@ -208,7 +211,7 @@ export function CircuitBreakerVisualizer({
               statePositions.closed.x,
               statePositions.closed.y,
               "Half-Open→Closed",
-              getTransitionCount("half-open", "closed")
+              getTransitionCount("half-open", "closed"),
             )}
             {drawArrow(
               statePositions["half-open"].x - 20,
@@ -216,7 +219,7 @@ export function CircuitBreakerVisualizer({
               statePositions.open.x + 20,
               statePositions.open.y - 20,
               "Half-Open→Open",
-              getTransitionCount("half-open", "open")
+              getTransitionCount("half-open", "open"),
             )}
 
             {/* State circles */}
@@ -299,7 +302,10 @@ export function CircuitBreakerVisualizer({
             {(["closed", "open", "half-open"] as const).map((state) => {
               const segment = stateHistory.find((s) => s.state === state);
               return (
-                <div key={state} className="p-3 rounded bg-wl-surface-hover border border-wl-border-subtle">
+                <div
+                  key={state}
+                  className="p-3 rounded bg-wl-surface-hover border border-wl-border-subtle"
+                >
                   <div className="flex items-center gap-2 mb-1">
                     <div
                       className="w-2 h-2 rounded-full"

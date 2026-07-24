@@ -183,7 +183,9 @@ export class ErrorMapper {
           message: stripeError.message || "Stripe API error",
           code: stripeError.code || stripeError.type,
           statusCode: (error as any).statusCode || 500,
-          retryable: (error as any).statusCode ? (error as any).statusCode >= 500 : false,
+          retryable: (error as any).statusCode
+            ? (error as any).statusCode >= 500
+            : false,
         };
       }
       return { message: String(error) };
@@ -205,7 +207,9 @@ export class ErrorMapper {
         return {
           message,
           statusCode: (error as any).statusCode || 500,
-          retryable: (error as any).statusCode ? (error as any).statusCode >= 500 : false,
+          retryable: (error as any).statusCode
+            ? (error as any).statusCode >= 500
+            : false,
         };
       }
       return { message: String(error) };
@@ -213,7 +217,11 @@ export class ErrorMapper {
 
     // AWS error parser
     this.parsers.set("aws", (error) => {
-      if (typeof error === "object" && error !== null && ("name" in error || "code" in error)) {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        ("name" in error || "code" in error)
+      ) {
         const code = (error as any).code || (error as any).name;
         return {
           message: (error as any).message || "AWS API error",
@@ -287,7 +295,10 @@ export class ErrorMapper {
     return "INTEGRATION_ERROR";
   }
 
-  private isRetryable(code: IntegrationErrorCode, statusCode?: number): boolean {
+  private isRetryable(
+    code: IntegrationErrorCode,
+    statusCode?: number,
+  ): boolean {
     // Always retryable
     if (
       code === "INTEGRATION_RATE_LIMITED" ||
@@ -305,7 +316,10 @@ export class ErrorMapper {
     return false;
   }
 
-  private getRetryDelay(code: IntegrationErrorCode, statusCode?: number): number | undefined {
+  private getRetryDelay(
+    code: IntegrationErrorCode,
+    statusCode?: number,
+  ): number | undefined {
     switch (code) {
       case "INTEGRATION_RATE_LIMITED":
         return 60000; // 1 minute
@@ -331,7 +345,9 @@ export class ErrorMapper {
     return retryableCodes.some((c) => code.includes(c));
   }
 
-  private sanitizeErrorDetails(error: unknown): Record<string, unknown> | undefined {
+  private sanitizeErrorDetails(
+    error: unknown,
+  ): Record<string, unknown> | undefined {
     if (typeof error !== "object" || error === null) {
       return undefined;
     }
@@ -344,7 +360,11 @@ export class ErrorMapper {
         details[key] = "[REDACTED]";
       } else if (typeof value === "string" && this.isSensitiveValue(value)) {
         details[key] = "[REDACTED]";
-      } else if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+      } else if (
+        typeof value === "string" ||
+        typeof value === "number" ||
+        typeof value === "boolean"
+      ) {
         details[key] = value;
       }
     }

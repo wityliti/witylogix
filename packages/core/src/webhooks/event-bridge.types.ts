@@ -4,10 +4,7 @@
  * Bridges TypedEventBus emissions to outbound webhook deliveries
  */
 
-import type {
-  EventEnvelope,
-  EventMetadata,
-} from "../event-bus/types.js";
+import type { EventEnvelope, EventMetadata } from "../event-bus/types.js";
 import type { WebhookEndpoint } from "./types.js";
 
 /**

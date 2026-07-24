@@ -11,14 +11,23 @@
  */
 
 import { EventEmitter } from "node:events";
-import type { WorkflowJobData, WorkflowJobResult, WorkerOptions, Job, WorkerInterface } from "./types.js";
+import type {
+  WorkflowJobData,
+  WorkflowJobResult,
+  WorkerOptions,
+  Job,
+  WorkerInterface,
+} from "./types.js";
 import type { WorkflowEngine } from "../workflow/engine.js";
 import type { WorkflowContext } from "../types/index.js";
 
 class InMemoryWorker implements WorkerInterface<WorkflowJobData> {
   name: string;
   opts: any;
-  private processor?: (job: Job<WorkflowJobData>, token?: string) => Promise<any>;
+  private processor?: (
+    job: Job<WorkflowJobData>,
+    token?: string,
+  ) => Promise<any>;
   private listeners: Map<string, Set<(...args: any[]) => void>> = new Map();
 
   constructor(name: string, opts?: any) {
@@ -41,7 +50,10 @@ class InMemoryWorker implements WorkerInterface<WorkflowJobData> {
     this.listeners.get(event)?.forEach((listener) => listener(...args));
   }
 
-  async process(name: string | null, processor: (job: Job<WorkflowJobData>, token?: string) => Promise<any>): Promise<void> {
+  async process(
+    name: string | null,
+    processor: (job: Job<WorkflowJobData>, token?: string) => Promise<any>,
+  ): Promise<void> {
     this.processor = processor;
   }
 
@@ -93,7 +105,10 @@ export class WorkflowWorker extends EventEmitter {
       this.worker.on("stalled", this.onJobStalled.bind(this));
       this.worker.on("error", this.onWorkerError.bind(this));
       this.emit("worker:started", { timestamp: new Date() });
-      console.log("[WorkflowWorker] Started with concurrency:", this.config.concurrency);
+      console.log(
+        "[WorkflowWorker] Started with concurrency:",
+        this.config.concurrency,
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.emit("worker:error", { error: message, timestamp: new Date() });
@@ -101,7 +116,10 @@ export class WorkflowWorker extends EventEmitter {
     }
   }
 
-  private async processJob(job: Job<WorkflowJobData>, token?: string): Promise<WorkflowJobResult> {
+  private async processJob(
+    job: Job<WorkflowJobData>,
+    token?: string,
+  ): Promise<WorkflowJobResult> {
     const jobId = String(job.id);
     this.activeJobs.add(jobId);
     this.jobSteps.set(jobId, 0);
@@ -112,7 +130,12 @@ export class WorkflowWorker extends EventEmitter {
         throw new Error("Worker is shutting down, job will be retried");
       }
 
-      const { workflowName, input, context: jobContext, executionOptions } = job.data;
+      const {
+        workflowName,
+        input,
+        context: jobContext,
+        executionOptions,
+      } = job.data;
 
       const workflowContext: WorkflowContext = {
         userId: jobContext.userId,
@@ -129,13 +152,18 @@ export class WorkflowWorker extends EventEmitter {
         },
       };
 
-      const stepCount = this.engine.getWorkflow(workflowName)?.steps.length ?? 0;
+      const stepCount =
+        this.engine.getWorkflow(workflowName)?.steps.length ?? 0;
       let completedSteps = 0;
 
       const eventListener = (event: any) => {
-        if (event.type === "step:completed" && event.executionId === workflowContext.transactionId) {
+        if (
+          event.type === "step:completed" &&
+          event.executionId === workflowContext.transactionId
+        ) {
           completedSteps++;
-          const progress = stepCount > 0 ? Math.floor((completedSteps / stepCount) * 100) : 0;
+          const progress =
+            stepCount > 0 ? Math.floor((completedSteps / stepCount) * 100) : 0;
           job.progress = progress;
           this.emit("job:progress", { jobId, progress, timestamp: new Date() });
         }
@@ -143,10 +171,15 @@ export class WorkflowWorker extends EventEmitter {
 
       this.engine.onWorkflowEvent(eventListener);
 
-      const execution = await this.engine.executeWorkflow(workflowName, input, workflowContext, {
-        executionId: jobContext.transactionId,
-        ...executionOptions,
-      });
+      const execution = await this.engine.executeWorkflow(
+        workflowName,
+        input,
+        workflowContext,
+        {
+          executionId: jobContext.transactionId,
+          ...executionOptions,
+        },
+      );
 
       this.engine.offWorkflowEvent(eventListener);
 
@@ -161,15 +194,21 @@ export class WorkflowWorker extends EventEmitter {
         };
         this.emit("job:completed", { jobId, result, timestamp: new Date() });
         return result;
-      } else if (execution.status === "failed" || execution.status === "compensated") {
-        const error = execution.error || new Error("Workflow failed without error details");
+      } else if (
+        execution.status === "failed" ||
+        execution.status === "compensated"
+      ) {
+        const error =
+          execution.error || new Error("Workflow failed without error details");
         throw error;
       } else {
         throw new Error(`Unexpected workflow status: ${execution.status}`);
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      const isRetriable = !(error instanceof Error && error.message.includes("not retriable"));
+      const isRetriable = !(
+        error instanceof Error && error.message.includes("not retriable")
+      );
       this.emit("job:error", {
         jobId,
         error: message,
@@ -184,19 +223,42 @@ export class WorkflowWorker extends EventEmitter {
     }
   }
 
-  private onJobActive(job: { id: string; name: string; data: WorkflowJobData }): void {
+  private onJobActive(job: {
+    id: string;
+    name: string;
+    data: WorkflowJobData;
+  }): void {
     const jobId = String(job.id);
-    this.emit("job:active", { jobId, workflowName: job.data.workflowName, timestamp: new Date() });
+    this.emit("job:active", {
+      jobId,
+      workflowName: job.data.workflowName,
+      timestamp: new Date(),
+    });
   }
 
-  private onJobCompleted(job: { id: string; name: string; returnvalue: any }): void {
+  private onJobCompleted(job: {
+    id: string;
+    name: string;
+    returnvalue: any;
+  }): void {
     const jobId = String(job.id);
-    this.emit("job:completed", { jobId, result: job.returnvalue, timestamp: new Date() });
+    this.emit("job:completed", {
+      jobId,
+      result: job.returnvalue,
+      timestamp: new Date(),
+    });
   }
 
-  private onJobFailed(job: { id: string; name: string; failedReason: string }, error: Error): void {
+  private onJobFailed(
+    job: { id: string; name: string; failedReason: string },
+    error: Error,
+  ): void {
     const jobId = String(job.id);
-    this.emit("job:failed", { jobId, error: error.message, timestamp: new Date() });
+    this.emit("job:failed", {
+      jobId,
+      error: error.message,
+      timestamp: new Date(),
+    });
   }
 
   private onJobStalled(jobId: string): void {
@@ -217,7 +279,9 @@ export class WorkflowWorker extends EventEmitter {
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
     if (this.activeJobs.size > 0) {
-      console.warn(`[WorkflowWorker] Timeout waiting for ${this.activeJobs.size} jobs to complete`);
+      console.warn(
+        `[WorkflowWorker] Timeout waiting for ${this.activeJobs.size} jobs to complete`,
+      );
     }
     await this.worker.close();
     this.emit("worker:shutdown", { timestamp: new Date() });
@@ -226,7 +290,9 @@ export class WorkflowWorker extends EventEmitter {
 
   async forceShutdown(): Promise<void> {
     this._isShuttingDown = true;
-    console.warn(`[WorkflowWorker] Force shutdown requested, ${this.activeJobs.size} jobs will be interrupted`);
+    console.warn(
+      `[WorkflowWorker] Force shutdown requested, ${this.activeJobs.size} jobs will be interrupted`,
+    );
     await this.worker.close();
     this.emit("worker:force-shutdown", { timestamp: new Date() });
   }
@@ -264,7 +330,10 @@ export class WorkflowWorker extends EventEmitter {
   }
 
   async getMetrics(): Promise<{ activeJobs: number; concurrency: number }> {
-    return { activeJobs: this.activeJobs.size, concurrency: this.config.concurrency! };
+    return {
+      activeJobs: this.activeJobs.size,
+      concurrency: this.config.concurrency!,
+    };
   }
 
   isShuttingDown(): boolean {

@@ -29,8 +29,8 @@ import type {
   PaginatedResponse,
   GraphQLRequest,
   GraphQLResponse,
-} from './field-service-sdk-types.js';
-import { APIError } from './field-service-sdk-types.js';
+} from "./field-service-sdk-types.js";
+import { APIError } from "./field-service-sdk-types.js";
 
 interface JobberConfig {
   accessToken: string;
@@ -69,27 +69,31 @@ export class JobberV2Client {
   constructor(config: JobberConfig) {
     this.config = config;
     this.accessToken = config.accessToken;
-    this.apiUrl = config.apiUrl || 'https://api.getjobber.com/graphql';
+    this.apiUrl = config.apiUrl || "https://api.getjobber.com/graphql";
   }
 
   /**
    * Refresh OAuth2 access token
    */
   async refreshAccessToken(): Promise<string> {
-    if (!this.config.refreshToken || !this.config.clientId || !this.config.clientSecret) {
+    if (
+      !this.config.refreshToken ||
+      !this.config.clientId ||
+      !this.config.clientSecret
+    ) {
       throw new APIError(
-        'REFRESH_TOKEN_FAILED',
+        "REFRESH_TOKEN_FAILED",
         401,
-        { reason: 'Missing refresh token or client credentials' },
+        { reason: "Missing refresh token or client credentials" },
         false,
       );
     }
 
-    const response = await fetch('https://api.getjobber.com/oauth/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch("https://api.getjobber.com/oauth/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        grant_type: 'refresh_token',
+        grant_type: "refresh_token",
         refresh_token: this.config.refreshToken,
         client_id: this.config.clientId,
         client_secret: this.config.clientSecret,
@@ -98,9 +102,9 @@ export class JobberV2Client {
 
     if (!response.ok) {
       throw new APIError(
-        'TOKEN_REFRESH_FAILED',
+        "TOKEN_REFRESH_FAILED",
         response.status,
-        { endpoint: '/oauth/token' },
+        { endpoint: "/oauth/token" },
         true,
       );
     }
@@ -116,7 +120,7 @@ export class JobberV2Client {
    */
   async healthCheck(): Promise<boolean> {
     try {
-      const query = '{ viewer { id } }';
+      const query = "{ viewer { id } }";
       await this.graphqlRequest(query);
       return true;
     } catch {
@@ -166,7 +170,7 @@ export class JobberV2Client {
           city: request.location.city,
           province: request.location.state,
           postalCode: request.location.postalCode,
-          country: request.location.country || 'CA',
+          country: request.location.country || "CA",
         },
         notes: request.notes,
       },
@@ -175,7 +179,7 @@ export class JobberV2Client {
     const result = await this.graphqlRequest(mutation, variables);
     if (result.jobCreate?.errors?.length > 0) {
       throw new APIError(
-        'JOB_CREATE_FAILED',
+        "JOB_CREATE_FAILED",
         400,
         { errors: result.jobCreate.errors },
         false,
@@ -221,7 +225,10 @@ export class JobberV2Client {
   /**
    * Update job
    */
-  async updateJob(jobId: string, request: JobUpdateRequest): Promise<JobResponse> {
+  async updateJob(
+    jobId: string,
+    request: JobUpdateRequest,
+  ): Promise<JobResponse> {
     const mutation = `
       mutation UpdateJob($id: ID!, $input: JobInput!) {
         jobUpdate(id: $id, input: $input) {
@@ -279,7 +286,9 @@ export class JobberV2Client {
   /**
    * List jobs with cursor-based pagination
    */
-  async listJobs(request?: PaginationRequest): Promise<PaginatedResponse<JobResponse>> {
+  async listJobs(
+    request?: PaginationRequest,
+  ): Promise<PaginatedResponse<JobResponse>> {
     const query = `
       query ListJobs($first: Int!, $after: String) {
         jobs(first: $first, after: $after) {
@@ -316,7 +325,9 @@ export class JobberV2Client {
 
     const result = await this.graphqlRequest(query, variables);
     return {
-      items: (result.jobs.edges || []).map((edge: any) => this.mapJobResponse(edge.node)),
+      items: (result.jobs.edges || []).map((edge: any) =>
+        this.mapJobResponse(edge.node),
+      ),
       total: result.jobs.totalCount || 0,
       hasMore: result.jobs.pageInfo?.hasNextPage || false,
       nextPageToken: result.jobs.pageInfo?.endCursor,
@@ -326,7 +337,10 @@ export class JobberV2Client {
   /**
    * Schedule job for technician
    */
-  async scheduleJob(jobId: string, request: JobScheduleRequest): Promise<JobResponse> {
+  async scheduleJob(
+    jobId: string,
+    request: JobScheduleRequest,
+  ): Promise<JobResponse> {
     const mutation = `
       mutation ScheduleJob($id: ID!, $input: JobInput!) {
         jobUpdate(id: $id, input: $input) {
@@ -377,7 +391,7 @@ export class JobberV2Client {
     const variables = {
       id: jobId,
       input: {
-        status: 'COMPLETED',
+        status: "COMPLETED",
         notes,
       },
     };
@@ -391,7 +405,9 @@ export class JobberV2Client {
   /**
    * Create customer
    */
-  async createCustomer(request: CustomerCreateRequest): Promise<CustomerResponse> {
+  async createCustomer(
+    request: CustomerCreateRequest,
+  ): Promise<CustomerResponse> {
     const mutation = `
       mutation CreateClient($input: ClientInput!) {
         clientCreate(input: $input) {
@@ -424,7 +440,7 @@ export class JobberV2Client {
           city: request.primaryAddress.city,
           province: request.primaryAddress.state,
           postalCode: request.primaryAddress.postalCode,
-          country: request.primaryAddress.country || 'CA',
+          country: request.primaryAddress.country || "CA",
         },
       },
     };
@@ -432,7 +448,7 @@ export class JobberV2Client {
     const result = await this.graphqlRequest(mutation, variables);
     if (result.clientCreate?.errors?.length > 0) {
       throw new APIError(
-        'CLIENT_CREATE_FAILED',
+        "CLIENT_CREATE_FAILED",
         400,
         { errors: result.clientCreate.errors },
         false,
@@ -470,7 +486,10 @@ export class JobberV2Client {
   /**
    * Update customer
    */
-  async updateCustomer(customerId: string, request: CustomerUpdateRequest): Promise<CustomerResponse> {
+  async updateCustomer(
+    customerId: string,
+    request: CustomerUpdateRequest,
+  ): Promise<CustomerResponse> {
     const mutation = `
       mutation UpdateClient($id: ID!, $input: ClientInput!) {
         clientUpdate(id: $id, input: $input) {
@@ -504,7 +523,9 @@ export class JobberV2Client {
   /**
    * List customers with cursor pagination
    */
-  async listCustomers(request?: PaginationRequest): Promise<PaginatedResponse<CustomerResponse>> {
+  async listCustomers(
+    request?: PaginationRequest,
+  ): Promise<PaginatedResponse<CustomerResponse>> {
     const query = `
       query ListClients($first: Int!, $after: String) {
         clients(first: $first, after: $after) {
@@ -535,7 +556,9 @@ export class JobberV2Client {
 
     const result = await this.graphqlRequest(query, variables);
     return {
-      items: (result.clients.edges || []).map((edge: any) => this.mapCustomerResponse(edge.node)),
+      items: (result.clients.edges || []).map((edge: any) =>
+        this.mapCustomerResponse(edge.node),
+      ),
       total: result.clients.totalCount || 0,
       hasMore: result.clients.pageInfo?.hasNextPage || false,
       nextPageToken: result.clients.pageInfo?.endCursor,
@@ -571,7 +594,9 @@ export class JobberV2Client {
   /**
    * List technicians
    */
-  async listTechnicians(request?: PaginationRequest): Promise<PaginatedResponse<TechnicianResponse>> {
+  async listTechnicians(
+    request?: PaginationRequest,
+  ): Promise<PaginatedResponse<TechnicianResponse>> {
     const query = `
       query ListTeamMembers($first: Int!, $after: String) {
         teamMembers(first: $first, after: $after) {
@@ -613,7 +638,10 @@ export class JobberV2Client {
   /**
    * Update technician availability
    */
-  async updateTechnicianAvailability(technicianId: string, status: string): Promise<TechnicianResponse> {
+  async updateTechnicianAvailability(
+    technicianId: string,
+    status: string,
+  ): Promise<TechnicianResponse> {
     const mutation = `
       mutation UpdateTeamMember($id: ID!, $input: TeamMemberInput!) {
         teamMemberUpdate(id: $id, input: $input) {
@@ -651,7 +679,9 @@ export class JobberV2Client {
   /**
    * Create estimate (quote in Jobber)
    */
-  async createEstimate(request: EstimateCreateRequest): Promise<EstimateResponse> {
+  async createEstimate(
+    request: EstimateCreateRequest,
+  ): Promise<EstimateResponse> {
     const mutation = `
       mutation CreateQuote($input: QuoteInput!) {
         quoteCreate(input: $input) {
@@ -678,7 +708,10 @@ export class JobberV2Client {
         issueDate: request.issueDate.toISOString(),
         expiryDate: request.expiryDate?.toISOString(),
         lineItems: request.lineItems,
-        total: request.lineItems.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0),
+        total: request.lineItems.reduce(
+          (sum, item) => sum + item.quantity * item.unitPrice,
+          0,
+        ),
         notes: request.notes,
       },
     };
@@ -717,7 +750,10 @@ export class JobberV2Client {
   /**
    * Update estimate
    */
-  async updateEstimate(estimateId: string, request: EstimateUpdateRequest): Promise<EstimateResponse> {
+  async updateEstimate(
+    estimateId: string,
+    request: EstimateUpdateRequest,
+  ): Promise<EstimateResponse> {
     const mutation = `
       mutation UpdateQuote($id: ID!, $input: QuoteInput!) {
         quoteUpdate(id: $id, input: $input) {
@@ -804,7 +840,10 @@ export class JobberV2Client {
         dueDate: request.dueDate.toISOString(),
         jobIds: request.jobIds,
         lineItems: request.lineItems,
-        total: request.lineItems.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0),
+        total: request.lineItems.reduce(
+          (sum, item) => sum + item.quantity * item.unitPrice,
+          0,
+        ),
         notes: request.notes,
       },
     };
@@ -842,7 +881,10 @@ export class JobberV2Client {
   /**
    * Update invoice
    */
-  async updateInvoice(invoiceId: string, request: InvoiceUpdateRequest): Promise<InvoiceResponse> {
+  async updateInvoice(
+    invoiceId: string,
+    request: InvoiceUpdateRequest,
+  ): Promise<InvoiceResponse> {
     const mutation = `
       mutation UpdateInvoice($id: ID!, $input: InvoiceInput!) {
         invoiceUpdate(id: $id, input: $input) {
@@ -876,7 +918,9 @@ export class JobberV2Client {
   /**
    * List invoices
    */
-  async listInvoices(request?: PaginationRequest): Promise<PaginatedResponse<InvoiceResponse>> {
+  async listInvoices(
+    request?: PaginationRequest,
+  ): Promise<PaginatedResponse<InvoiceResponse>> {
     const query = `
       query ListInvoices($first: Int!, $after: String) {
         invoices(first: $first, after: $after) {
@@ -906,7 +950,9 @@ export class JobberV2Client {
 
     const result = await this.graphqlRequest(query, variables);
     return {
-      items: (result.invoices.edges || []).map((edge: any) => this.mapInvoiceResponse(edge.node)),
+      items: (result.invoices.edges || []).map((edge: any) =>
+        this.mapInvoiceResponse(edge.node),
+      ),
       total: result.invoices.totalCount || 0,
       hasMore: result.invoices.pageInfo?.hasNextPage || false,
       nextPageToken: result.invoices.pageInfo?.endCursor,
@@ -942,7 +988,7 @@ export class JobberV2Client {
   /**
    * Send invoice via email/SMS
    */
-  async sendInvoice(invoiceId: string, method: 'email' | 'sms'): Promise<void> {
+  async sendInvoice(invoiceId: string, method: "email" | "sms"): Promise<void> {
     const mutation = `
       mutation SendInvoice($id: ID!, $method: String!) {
         invoiceSend(id: $id, method: $method) {
@@ -962,7 +1008,9 @@ export class JobberV2Client {
   /**
    * Create dispatch assignment (assign job to technician)
    */
-  async createDispatchAssignment(request: DispatchAssignmentRequest): Promise<DispatchAssignmentResponse> {
+  async createDispatchAssignment(
+    request: DispatchAssignmentRequest,
+  ): Promise<DispatchAssignmentResponse> {
     await this.scheduleJob(request.jobId, {
       technicianId: request.technicianId,
       scheduledStart: new Date(),
@@ -972,26 +1020,28 @@ export class JobberV2Client {
       id: `${request.jobId}-${request.technicianId}`,
       jobId: request.jobId,
       technicianId: request.technicianId,
-      status: 'assigned',
+      status: "assigned",
       assignedAt: new Date(),
-      priority: request.priority || 'medium',
+      priority: request.priority || "medium",
     };
   }
 
   /**
    * Get dispatch assignment
    */
-  async getDispatchAssignment(assignmentId: string): Promise<DispatchAssignmentResponse> {
-    const [jobId, technicianId] = assignmentId.split('-');
+  async getDispatchAssignment(
+    assignmentId: string,
+  ): Promise<DispatchAssignmentResponse> {
+    const [jobId, technicianId] = assignmentId.split("-");
     const job = await this.getJob(jobId);
 
     return {
       id: assignmentId,
       jobId,
       technicianId,
-      status: 'assigned',
+      status: "assigned",
       assignedAt: job.createdAt || new Date(),
-      priority: 'high',
+      priority: "high",
     };
   }
 
@@ -1000,7 +1050,8 @@ export class JobberV2Client {
    */
   async batchCreateJobs(requests: JobCreateRequest[]): Promise<JobResponse[]> {
     const mutations = requests
-      .map((_, idx) => `
+      .map(
+        (_, idx) => `
         job${idx}: jobCreate(input: $input${idx}) {
           job {
             id
@@ -1013,8 +1064,9 @@ export class JobberV2Client {
             createdAt
           }
         }
-      `)
-      .join('\n');
+      `,
+      )
+      .join("\n");
 
     const variables: Record<string, unknown> = {};
     requests.forEach((req, idx) => {
@@ -1029,19 +1081,21 @@ export class JobberV2Client {
           city: req.location.city,
           province: req.location.state,
           postalCode: req.location.postalCode,
-          country: req.location.country || 'CA',
+          country: req.location.country || "CA",
         },
       };
     });
 
     const mutation = `mutation BatchCreateJobs(${Object.keys(variables)
-      .map(k => `$${k}: JobInput!`)
-      .join(', ')}) {
+      .map((k) => `$${k}: JobInput!`)
+      .join(", ")}) {
       ${mutations}
     }`;
 
     const result = await this.graphqlRequest(mutation, variables);
-    return requests.map((_, idx) => this.mapJobResponse(result[`job${idx}`].job));
+    return requests.map((_, idx) =>
+      this.mapJobResponse(result[`job${idx}`].job),
+    );
   }
 
   // ─── HELPER METHODS ────────────────────────────────────────────────────────
@@ -1061,25 +1115,29 @@ export class JobberV2Client {
 
           try {
             const response = await fetch(this.apiUrl, {
-              method: 'POST',
+              method: "POST",
               headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${this.accessToken}`,
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${this.accessToken}`,
               },
               body: JSON.stringify({ query, variables }),
               signal: AbortSignal.timeout(30000),
             });
 
-            const costUsed = parseInt(response.headers.get('X-GraphQL-Cost-Used') || '10');
-            const costLimit = parseInt(response.headers.get('X-GraphQL-Cost-Limit') || '1000');
+            const costUsed = parseInt(
+              response.headers.get("X-GraphQL-Cost-Used") || "10",
+            );
+            const costLimit = parseInt(
+              response.headers.get("X-GraphQL-Cost-Limit") || "1000",
+            );
             this.costTracker.used = costUsed;
             this.costTracker.limit = costLimit;
 
             if (!response.ok) {
               throw new APIError(
-                'GRAPHQL_REQUEST_FAILED',
+                "GRAPHQL_REQUEST_FAILED",
                 response.status,
-                { endpoint: '/graphql', status: response.statusText },
+                { endpoint: "/graphql", status: response.statusText },
                 response.status >= 500,
               );
             }
@@ -1088,7 +1146,7 @@ export class JobberV2Client {
 
             if (data.errors && data.errors.length > 0) {
               throw new APIError(
-                'GRAPHQL_ERROR',
+                "GRAPHQL_ERROR",
                 400,
                 { errors: data.errors },
                 false,
@@ -1098,12 +1156,7 @@ export class JobberV2Client {
             return data.data;
           } catch (error) {
             if (error instanceof APIError) throw error;
-            throw new APIError(
-              'REQUEST_FAILED',
-              500,
-              { cause: error },
-              true,
-            );
+            throw new APIError("REQUEST_FAILED", 500, { cause: error }, true);
           }
         },
         resolve,
@@ -1149,9 +1202,12 @@ export class JobberV2Client {
    */
   private async waitForCostLimit(): Promise<void> {
     const now = new Date();
-    if (this.costTracker.used >= this.costTracker.limit && now < this.costTracker.resetAt) {
+    if (
+      this.costTracker.used >= this.costTracker.limit &&
+      now < this.costTracker.resetAt
+    ) {
       const waitTime = this.costTracker.resetAt.getTime() - now.getTime();
-      await new Promise(resolve => setTimeout(resolve, waitTime + 100));
+      await new Promise((resolve) => setTimeout(resolve, waitTime + 100));
     }
   }
 
@@ -1163,21 +1219,27 @@ export class JobberV2Client {
       id: data.id,
       jobNumber: data.number || data.jobNumber,
       customerId: data.clientId,
-      title: data.title || '',
+      title: data.title || "",
       description: data.description,
-      status: data.status?.toLowerCase() || 'scheduled',
-      priority: data.priority?.toLowerCase() || 'medium',
+      status: data.status?.toLowerCase() || "scheduled",
+      priority: data.priority?.toLowerCase() || "medium",
       location: {
-        address: data.address?.street || '',
-        city: data.address?.city || '',
+        address: data.address?.street || "",
+        city: data.address?.city || "",
         state: data.address?.province,
-        postalCode: data.address?.postalCode || '',
-        country: data.address?.country || 'CA',
+        postalCode: data.address?.postalCode || "",
+        country: data.address?.country || "CA",
       },
       assignedTechnicians: data.teamMembers?.map((m: any) => m.id) || [],
-      scheduledStart: data.scheduledStartTime ? new Date(data.scheduledStartTime) : undefined,
-      scheduledEnd: data.scheduledEndTime ? new Date(data.scheduledEndTime) : undefined,
-      actualStart: data.actualStartTime ? new Date(data.actualStartTime) : undefined,
+      scheduledStart: data.scheduledStartTime
+        ? new Date(data.scheduledStartTime)
+        : undefined,
+      scheduledEnd: data.scheduledEndTime
+        ? new Date(data.scheduledEndTime)
+        : undefined,
+      actualStart: data.actualStartTime
+        ? new Date(data.actualStartTime)
+        : undefined,
       actualEnd: data.actualEndTime ? new Date(data.actualEndTime) : undefined,
       total: data.total || 0,
       notes: data.notes,
@@ -1193,20 +1255,20 @@ export class JobberV2Client {
   private mapCustomerResponse(data: any): CustomerResponse {
     return {
       id: data.id,
-      firstName: data.firstName || '',
-      lastName: data.lastName || '',
+      firstName: data.firstName || "",
+      lastName: data.lastName || "",
       companyName: data.companyName,
       email: data.email,
       phone: data.phone,
       mobile: data.mobile,
-      type: data.type || 'both',
-      status: data.status?.toLowerCase() || 'active',
+      type: data.type || "both",
+      status: data.status?.toLowerCase() || "active",
       primaryAddress: {
-        address: data.billingAddress?.street || '',
-        city: data.billingAddress?.city || '',
+        address: data.billingAddress?.street || "",
+        city: data.billingAddress?.city || "",
         state: data.billingAddress?.province,
-        postalCode: data.billingAddress?.postalCode || '',
-        country: data.billingAddress?.country || 'CA',
+        postalCode: data.billingAddress?.postalCode || "",
+        country: data.billingAddress?.country || "CA",
       },
       createdAt: new Date(data.createdAt || Date.now()),
       updatedAt: new Date(data.updatedAt || Date.now()),
@@ -1219,11 +1281,11 @@ export class JobberV2Client {
   private mapTechnicianResponse(data: any): TechnicianResponse {
     return {
       id: data.id,
-      firstName: data.firstName || '',
-      lastName: data.lastName || '',
+      firstName: data.firstName || "",
+      lastName: data.lastName || "",
       email: data.email,
       phone: data.phone,
-      status: data.status?.toLowerCase() || 'available',
+      status: data.status?.toLowerCase() || "available",
       skills: data.skills || [],
       currentLocation: data.currentLocation
         ? {
@@ -1247,7 +1309,7 @@ export class JobberV2Client {
       estimateNumber: data.number || data.quoteNumber,
       customerId: data.clientId,
       jobId: data.jobId,
-      status: data.status?.toLowerCase() || 'draft',
+      status: data.status?.toLowerCase() || "draft",
       issueDate: new Date(data.issueDate),
       expiryDate: data.expiryDate ? new Date(data.expiryDate) : undefined,
       lineItems: data.lineItems || [],
@@ -1270,14 +1332,14 @@ export class JobberV2Client {
       invoiceNumber: data.number || data.invoiceNumber,
       customerId: data.clientId,
       jobIds: data.jobIds || [],
-      status: data.status?.toLowerCase() || 'draft',
+      status: data.status?.toLowerCase() || "draft",
       invoiceDate: new Date(data.invoiceDate),
       dueDate: new Date(data.dueDate),
       lineItems: data.lineItems || [],
       subtotal: data.subtotal || data.total * 0.9,
       total: data.total || 0,
       amountPaid: data.amountPaid,
-      amountDue: data.amountDue || (data.total - (data.amountPaid || 0)),
+      amountDue: data.amountDue || data.total - (data.amountPaid || 0),
       notes: data.notes,
       sentAt: data.sentAt ? new Date(data.sentAt) : undefined,
       createdAt: new Date(data.createdAt || Date.now()),

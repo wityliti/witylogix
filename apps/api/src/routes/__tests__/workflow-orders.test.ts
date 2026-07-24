@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 /**
  * Workflow Orders Route Tests
@@ -66,21 +66,21 @@ interface MockWorkflowHistory {
 }
 
 const createMockWorkflow = (
-  overrides?: Partial<MockWorkflow>
+  overrides?: Partial<MockWorkflow>,
 ): MockWorkflow => ({
-  id: 'workflow-' + Math.random().toString(36).substring(7),
-  storeId: 'store-123',
-  name: 'Order Processing Workflow',
-  description: 'Automatically process and route new orders',
+  id: "workflow-" + Math.random().toString(36).substring(7),
+  storeId: "store-123",
+  name: "Order Processing Workflow",
+  description: "Automatically process and route new orders",
   trigger: {
-    type: 'order.created',
+    type: "order.created",
     conditions: [],
   },
   actions: [
     {
-      id: 'action-1',
-      type: 'assign_driver',
-      config: { driverId: 'driver-123' },
+      id: "action-1",
+      type: "assign_driver",
+      config: { driverId: "driver-123" },
       order: 1,
     },
   ],
@@ -88,36 +88,36 @@ const createMockWorkflow = (
   priority: 1,
   createdAt: new Date(),
   updatedAt: new Date(),
-  createdBy: 'user-123',
+  createdBy: "user-123",
   ...overrides,
 });
 
 const createMockWorkflowExecution = (
-  overrides?: Partial<MockWorkflowExecution>
+  overrides?: Partial<MockWorkflowExecution>,
 ): MockWorkflowExecution => ({
-  id: 'exec-' + Math.random().toString(36).substring(7),
-  workflowId: 'workflow-123',
-  orderId: 'order-456',
-  status: 'pending',
+  id: "exec-" + Math.random().toString(36).substring(7),
+  workflowId: "workflow-123",
+  orderId: "order-456",
+  status: "pending",
   startedAt: new Date(),
   executedActions: [],
   ...overrides,
 });
 
 const createMockWorkflowHistory = (
-  overrides?: Partial<MockWorkflowHistory>
+  overrides?: Partial<MockWorkflowHistory>,
 ): MockWorkflowHistory => ({
-  id: 'hist-' + Math.random().toString(36).substring(7),
-  workflowId: 'workflow-123',
-  orderId: 'order-456',
+  id: "hist-" + Math.random().toString(36).substring(7),
+  workflowId: "workflow-123",
+  orderId: "order-456",
   triggeredAt: new Date(),
-  triggerType: 'order.created',
-  executionStatus: 'completed',
-  actionsExecuted: ['assign_driver', 'send_notification'],
+  triggerType: "order.created",
+  executionStatus: "completed",
+  actionsExecuted: ["assign_driver", "send_notification"],
   ...overrides,
 });
 
-describe('Workflow Orders', () => {
+describe("Workflow Orders", () => {
   let mockTenantDb: any;
   let mockRequest: any;
   let mockReply: any;
@@ -153,15 +153,15 @@ describe('Workflow Orders', () => {
     };
 
     mockWorkflowQueue = {
-      add: vi.fn().mockResolvedValue({ id: 'job-123' }),
+      add: vi.fn().mockResolvedValue({ id: "job-123" }),
     };
 
     mockRequest = {
       params: {},
       body: {},
       query: {},
-      shopId: 'shop-123',
-      auth: { role: 'ADMIN', userId: 'user-123' },
+      shopId: "shop-123",
+      auth: { role: "ADMIN", userId: "user-123" },
       tenantDb: mockTenantDb,
       log: {
         info: vi.fn(),
@@ -180,37 +180,39 @@ describe('Workflow Orders', () => {
     vi.clearAllMocks();
   });
 
-  describe('Workflow CRUD', () => {
-    it('should create workflow', async () => {
+  describe("Workflow CRUD", () => {
+    it("should create workflow", async () => {
       const mockWorkflow = createMockWorkflow();
       mockTenantDb.workflow.create.mockResolvedValue(mockWorkflow);
 
       mockRequest.body = {
-        name: 'Order Processing Workflow',
+        name: "Order Processing Workflow",
         trigger: {
-          type: 'order.created',
+          type: "order.created",
           conditions: [],
         },
         actions: [
           {
-            type: 'assign_driver',
-            config: { driverId: 'driver-123' },
+            type: "assign_driver",
+            config: { driverId: "driver-123" },
             order: 1,
           },
         ],
       };
 
       // Actually call the mock to simulate the workflow creation
-      const result = await mockTenantDb.workflow.create({ data: mockRequest.body });
+      const result = await mockTenantDb.workflow.create({
+        data: mockRequest.body,
+      });
 
-      expect(result.name).toBe('Order Processing Workflow');
+      expect(result.name).toBe("Order Processing Workflow");
       expect(result.isActive).toBe(true);
       expect(mockTenantDb.workflow.create).toHaveBeenCalled();
     });
 
-    it('should require workflow name', async () => {
+    it("should require workflow name", async () => {
       mockRequest.body = {
-        trigger: { type: 'order.created' },
+        trigger: { type: "order.created" },
         actions: [],
       };
 
@@ -218,10 +220,10 @@ describe('Workflow Orders', () => {
       expect(hasName).toBeUndefined();
     });
 
-    it('should list workflows', async () => {
+    it("should list workflows", async () => {
       const mockWorkflows = [
-        createMockWorkflow({ name: 'Workflow 1' }),
-        createMockWorkflow({ name: 'Workflow 2' }),
+        createMockWorkflow({ name: "Workflow 1" }),
+        createMockWorkflow({ name: "Workflow 2" }),
       ];
 
       mockTenantDb.workflow.findMany.mockResolvedValue(mockWorkflows);
@@ -233,7 +235,7 @@ describe('Workflow Orders', () => {
       expect(result.data).toHaveLength(2);
     });
 
-    it('should get single workflow', async () => {
+    it("should get single workflow", async () => {
       const mockWorkflow = createMockWorkflow();
       mockTenantDb.workflow.findUnique.mockResolvedValue(mockWorkflow);
 
@@ -244,22 +246,22 @@ describe('Workflow Orders', () => {
       expect(result.data.id).toBe(mockWorkflow.id);
     });
 
-    it('should update workflow', async () => {
-      const workflow = createMockWorkflow({ name: 'Old Name' });
-      const updated = { ...workflow, name: 'New Name' };
+    it("should update workflow", async () => {
+      const workflow = createMockWorkflow({ name: "Old Name" });
+      const updated = { ...workflow, name: "New Name" };
 
       mockTenantDb.workflow.findUnique.mockResolvedValue(workflow);
       mockTenantDb.workflow.update.mockResolvedValue(updated);
 
       mockRequest.params = { id: workflow.id };
-      mockRequest.body = { name: 'New Name' };
+      mockRequest.body = { name: "New Name" };
 
       const result = { data: updated };
 
-      expect(result.data.name).toBe('New Name');
+      expect(result.data.name).toBe("New Name");
     });
 
-    it('should delete workflow', async () => {
+    it("should delete workflow", async () => {
       const mockWorkflow = createMockWorkflow();
 
       mockTenantDb.workflow.delete.mockResolvedValue(mockWorkflow);
@@ -270,11 +272,11 @@ describe('Workflow Orders', () => {
       await mockTenantDb.workflow.delete({ where: { id: mockWorkflow.id } });
 
       expect(mockTenantDb.workflow.delete).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { id: mockWorkflow.id } })
+        expect.objectContaining({ where: { id: mockWorkflow.id } }),
       );
     });
 
-    it('should activate workflow', async () => {
+    it("should activate workflow", async () => {
       const workflow = createMockWorkflow({ isActive: false });
       const activated = { ...workflow, isActive: true };
 
@@ -288,7 +290,7 @@ describe('Workflow Orders', () => {
       expect(result.data.isActive).toBe(true);
     });
 
-    it('should deactivate workflow', async () => {
+    it("should deactivate workflow", async () => {
       const workflow = createMockWorkflow({ isActive: true });
       const deactivated = { ...workflow, isActive: false };
 
@@ -302,7 +304,7 @@ describe('Workflow Orders', () => {
       expect(result.data.isActive).toBe(false);
     });
 
-    it('should support workflow priority ordering', async () => {
+    it("should support workflow priority ordering", async () => {
       const workflows = [
         createMockWorkflow({ priority: 1 }),
         createMockWorkflow({ priority: 2 }),
@@ -313,72 +315,74 @@ describe('Workflow Orders', () => {
     });
   });
 
-  describe('Order Workflow Triggers', () => {
-    it('should trigger workflow on order.created', async () => {
+  describe("Order Workflow Triggers", () => {
+    it("should trigger workflow on order.created", async () => {
       const mockWorkflow = createMockWorkflow({
-        trigger: { type: 'order.created' },
+        trigger: { type: "order.created" },
       });
 
       mockTenantDb.workflow.findMany.mockResolvedValue([mockWorkflow]);
       mockTenantDb.workflowExecution.create.mockResolvedValue({
         workflowId: mockWorkflow.id,
-        status: 'pending',
+        status: "pending",
       });
 
-      const orderId = 'order-123';
+      const orderId = "order-123";
 
-      await mockWorkflowQueue.add('workflow-execute', {
+      await mockWorkflowQueue.add("workflow-execute", {
         workflowId: mockWorkflow.id,
         orderId,
-        trigger: 'order.created',
+        trigger: "order.created",
       });
 
       expect(mockWorkflowQueue.add).toHaveBeenCalledWith(
-        'workflow-execute',
-        expect.objectContaining({ trigger: 'order.created' })
+        "workflow-execute",
+        expect.objectContaining({ trigger: "order.created" }),
       );
     });
 
-    it('should trigger workflow on order.status_changed', async () => {
+    it("should trigger workflow on order.status_changed", async () => {
       const mockWorkflow = createMockWorkflow({
         trigger: {
-          type: 'order.status_changed',
-          conditions: [{ field: 'status', operator: 'equals', value: 'ACCEPTED' }],
+          type: "order.status_changed",
+          conditions: [
+            { field: "status", operator: "equals", value: "ACCEPTED" },
+          ],
         },
       });
 
       mockTenantDb.workflow.findMany.mockResolvedValue([mockWorkflow]);
 
-      const orderId = 'order-123';
+      const orderId = "order-123";
 
-      await mockWorkflowQueue.add('workflow-execute', {
+      await mockWorkflowQueue.add("workflow-execute", {
         workflowId: mockWorkflow.id,
         orderId,
-        trigger: 'order.status_changed',
+        trigger: "order.status_changed",
       });
 
       expect(mockWorkflowQueue.add).toHaveBeenCalled();
     });
 
-    it('should trigger workflow on order.assigned', async () => {
+    it("should trigger workflow on order.assigned", async () => {
       const mockWorkflow = createMockWorkflow({
-        trigger: { type: 'order.assigned' },
+        trigger: { type: "order.assigned" },
       });
 
       mockTenantDb.workflow.findMany.mockResolvedValue([mockWorkflow]);
 
-      const orderId = 'order-123';
+      const orderId = "order-123";
 
-      await mockWorkflowQueue.add('workflow-execute', {
+      await mockWorkflowQueue.add("workflow-execute", {
         workflowId: mockWorkflow.id,
         orderId,
-        trigger: 'order.assigned',
+        trigger: "order.assigned",
       });
 
       expect(mockWorkflowQueue.add).toHaveBeenCalled();
     });
 
-    it('should only trigger active workflows', async () => {
+    it("should only trigger active workflows", async () => {
       const activeWorkflow = createMockWorkflow({ isActive: true });
       const inactiveWorkflow = createMockWorkflow({ isActive: false });
 
@@ -389,61 +393,67 @@ describe('Workflow Orders', () => {
       expect(activeWorkflows[0].isActive).toBe(true);
     });
 
-    it('should skip workflow if trigger condition not met', async () => {
+    it("should skip workflow if trigger condition not met", async () => {
       const mockWorkflow = createMockWorkflow({
         trigger: {
-          type: 'order.status_changed',
-          conditions: [{ field: 'status', operator: 'equals', value: 'ACCEPTED' }],
+          type: "order.status_changed",
+          conditions: [
+            { field: "status", operator: "equals", value: "ACCEPTED" },
+          ],
         },
       });
 
-      const orderStatus = 'PENDING';
-      const conditionMet = orderStatus === 'ACCEPTED';
+      const orderStatus = "PENDING";
+      const conditionMet = orderStatus === "ACCEPTED";
 
       expect(conditionMet).toBe(false);
     });
   });
 
-  describe('Status-Based Routing', () => {
-    it('should evaluate status condition (equals)', async () => {
-      const condition = { field: 'status', operator: 'equals', value: 'ACCEPTED' };
-      const orderStatus = 'ACCEPTED';
+  describe("Status-Based Routing", () => {
+    it("should evaluate status condition (equals)", async () => {
+      const condition = {
+        field: "status",
+        operator: "equals",
+        value: "ACCEPTED",
+      };
+      const orderStatus = "ACCEPTED";
 
       const conditionMet = orderStatus === condition.value;
 
       expect(conditionMet).toBe(true);
     });
 
-    it('should evaluate status condition (not equals)', async () => {
+    it("should evaluate status condition (not equals)", async () => {
       const condition = {
-        field: 'status',
-        operator: 'not_equals',
-        value: 'CANCELLED',
+        field: "status",
+        operator: "not_equals",
+        value: "CANCELLED",
       };
-      const orderStatus = 'PENDING';
+      const orderStatus = "PENDING";
 
       const conditionMet = orderStatus !== condition.value;
 
       expect(conditionMet).toBe(true);
     });
 
-    it('should evaluate status condition (in list)', async () => {
+    it("should evaluate status condition (in list)", async () => {
       const condition = {
-        field: 'status',
-        operator: 'in',
-        value: ['PENDING', 'ACCEPTED'],
+        field: "status",
+        operator: "in",
+        value: ["PENDING", "ACCEPTED"],
       };
-      const orderStatus = 'PENDING';
+      const orderStatus = "PENDING";
 
       const conditionMet = condition.value.includes(orderStatus);
 
       expect(conditionMet).toBe(true);
     });
 
-    it('should evaluate price condition (greater than)', async () => {
+    it("should evaluate price condition (greater than)", async () => {
       const condition = {
-        field: 'totalPrice',
-        operator: 'greater_than',
+        field: "totalPrice",
+        operator: "greater_than",
         value: 100,
       };
       const orderPrice = 150;
@@ -453,28 +463,28 @@ describe('Workflow Orders', () => {
       expect(conditionMet).toBe(true);
     });
 
-    it('should evaluate AND logic', async () => {
+    it("should evaluate AND logic", async () => {
       const conditions = [
-        { field: 'status', operator: 'equals', value: 'PENDING' },
-        { field: 'totalPrice', operator: 'greater_than', value: 50 },
+        { field: "status", operator: "equals", value: "PENDING" },
+        { field: "totalPrice", operator: "greater_than", value: 50 },
       ];
-      const order = { status: 'PENDING', totalPrice: 100 };
+      const order = { status: "PENDING", totalPrice: 100 };
 
       const andMet = conditions.every((cond) => {
-        if (cond.field === 'status') return order.status === cond.value;
-        if (cond.field === 'totalPrice') return order.totalPrice > cond.value;
+        if (cond.field === "status") return order.status === cond.value;
+        if (cond.field === "totalPrice") return order.totalPrice > cond.value;
         return false;
       });
 
       expect(andMet).toBe(true);
     });
 
-    it('should evaluate OR logic', async () => {
+    it("should evaluate OR logic", async () => {
       const conditions = [
-        { field: 'status', operator: 'equals', value: 'CANCELLED' },
-        { field: 'status', operator: 'equals', value: 'PENDING' },
+        { field: "status", operator: "equals", value: "CANCELLED" },
+        { field: "status", operator: "equals", value: "PENDING" },
       ];
-      const order = { status: 'PENDING' };
+      const order = { status: "PENDING" };
 
       const orMet = conditions.some((cond) => order.status === cond.value);
 
@@ -482,20 +492,20 @@ describe('Workflow Orders', () => {
     });
   });
 
-  describe('Condition Evaluation', () => {
-    it('should evaluate string field conditions', async () => {
-      const condition = { field: 'city', operator: 'equals', value: 'NYC' };
-      const order = { city: 'NYC' };
+  describe("Condition Evaluation", () => {
+    it("should evaluate string field conditions", async () => {
+      const condition = { field: "city", operator: "equals", value: "NYC" };
+      const order = { city: "NYC" };
 
       const conditionMet = order.city === condition.value;
 
       expect(conditionMet).toBe(true);
     });
 
-    it('should evaluate numeric field conditions', async () => {
+    it("should evaluate numeric field conditions", async () => {
       const condition = {
-        field: 'totalPrice',
-        operator: 'less_than',
+        field: "totalPrice",
+        operator: "less_than",
         value: 500,
       };
       const order = { totalPrice: 250 };
@@ -505,21 +515,21 @@ describe('Workflow Orders', () => {
       expect(conditionMet).toBe(true);
     });
 
-    it('should evaluate date field conditions', async () => {
+    it("should evaluate date field conditions", async () => {
       const condition = {
-        field: 'createdAt',
-        operator: 'after',
-        value: '2026-03-01',
+        field: "createdAt",
+        operator: "after",
+        value: "2026-03-01",
       };
-      const order = { createdAt: new Date('2026-03-09') };
+      const order = { createdAt: new Date("2026-03-09") };
 
       const conditionMet = order.createdAt > new Date(condition.value);
 
       expect(conditionMet).toBe(true);
     });
 
-    it('should handle null/undefined fields gracefully', async () => {
-      const condition = { field: 'notes', operator: 'equals', value: 'urgent' };
+    it("should handle null/undefined fields gracefully", async () => {
+      const condition = { field: "notes", operator: "equals", value: "urgent" };
       const order = { notes: null };
 
       const conditionMet = order.notes === condition.value;
@@ -527,10 +537,10 @@ describe('Workflow Orders', () => {
       expect(conditionMet).toBe(false);
     });
 
-    it('should support nested field access', async () => {
+    it("should support nested field access", async () => {
       const condition = {
-        field: 'driver.isActive',
-        operator: 'equals',
+        field: "driver.isActive",
+        operator: "equals",
         value: true,
       };
       const order = { driver: { isActive: true } };
@@ -541,47 +551,47 @@ describe('Workflow Orders', () => {
     });
   });
 
-  describe('Action Execution', () => {
-    it('should execute assign_driver action', async () => {
+  describe("Action Execution", () => {
+    it("should execute assign_driver action", async () => {
       const mockWorkflow = createMockWorkflow({
         actions: [
           {
-            id: 'action-1',
-            type: 'assign_driver',
-            config: { driverId: 'driver-123' },
+            id: "action-1",
+            type: "assign_driver",
+            config: { driverId: "driver-123" },
             order: 1,
           },
         ],
       });
 
       const mockExecution = createMockWorkflowExecution({
-        status: 'running',
+        status: "running",
       });
 
       mockTenantDb.workflowExecution.create.mockResolvedValue(mockExecution);
       mockTenantDb.order.update.mockResolvedValue({
-        id: 'order-456',
-        driverId: 'driver-123',
+        id: "order-456",
+        driverId: "driver-123",
       });
 
-      mockRequest.body = { workflowId: mockWorkflow.id, orderId: 'order-456' };
+      mockRequest.body = { workflowId: mockWorkflow.id, orderId: "order-456" };
 
       // Actually call the order.update to execute the action
       await mockTenantDb.order.update({
-        where: { id: 'order-456' },
-        data: { driverId: 'driver-123' },
+        where: { id: "order-456" },
+        data: { driverId: "driver-123" },
       });
 
       expect(mockTenantDb.order.update).toHaveBeenCalled();
     });
 
-    it('should execute send_notification action', async () => {
+    it("should execute send_notification action", async () => {
       const mockWorkflow = createMockWorkflow({
         actions: [
           {
-            id: 'action-1',
-            type: 'send_notification',
-            config: { channel: 'email', template: 'order_created' },
+            id: "action-1",
+            type: "send_notification",
+            config: { channel: "email", template: "order_created" },
             order: 1,
           },
         ],
@@ -589,54 +599,54 @@ describe('Workflow Orders', () => {
 
       mockTenantDb.workflowExecution.create.mockResolvedValue({
         workflowId: mockWorkflow.id,
-        status: 'running',
+        status: "running",
       });
 
       mockRequest.body = { workflowId: mockWorkflow.id };
 
       // Actually call the workflowExecution.create to execute the action
       await mockTenantDb.workflowExecution.create({
-        data: { workflowId: mockWorkflow.id, orderId: 'order-456' },
+        data: { workflowId: mockWorkflow.id, orderId: "order-456" },
       });
 
       expect(mockTenantDb.workflowExecution.create).toHaveBeenCalled();
     });
 
-    it('should execute update_status action', async () => {
+    it("should execute update_status action", async () => {
       const mockWorkflow = createMockWorkflow({
         actions: [
           {
-            id: 'action-1',
-            type: 'update_status',
-            config: { status: 'ACCEPTED' },
+            id: "action-1",
+            type: "update_status",
+            config: { status: "ACCEPTED" },
             order: 1,
           },
         ],
       });
 
       mockTenantDb.order.update.mockResolvedValue({
-        id: 'order-456',
-        status: 'ACCEPTED',
+        id: "order-456",
+        status: "ACCEPTED",
       });
 
       mockRequest.body = { workflowId: mockWorkflow.id };
 
       // Actually call the order.update to execute the action
       await mockTenantDb.order.update({
-        where: { id: 'order-456' },
-        data: { status: 'ACCEPTED' },
+        where: { id: "order-456" },
+        data: { status: "ACCEPTED" },
       });
 
       expect(mockTenantDb.order.update).toHaveBeenCalled();
     });
 
-    it('should execute create_task action', async () => {
+    it("should execute create_task action", async () => {
       const mockWorkflow = createMockWorkflow({
         actions: [
           {
-            id: 'action-1',
-            type: 'create_task',
-            config: { title: 'Manual verification needed', priority: 'high' },
+            id: "action-1",
+            type: "create_task",
+            config: { title: "Manual verification needed", priority: "high" },
             order: 1,
           },
         ],
@@ -644,83 +654,89 @@ describe('Workflow Orders', () => {
 
       mockTenantDb.workflowExecution.create.mockResolvedValue({
         workflowId: mockWorkflow.id,
-        status: 'running',
+        status: "running",
       });
 
       // Actually call the workflowExecution.create to execute the action
       await mockTenantDb.workflowExecution.create({
-        data: { workflowId: mockWorkflow.id, orderId: 'order-456' },
+        data: { workflowId: mockWorkflow.id, orderId: "order-456" },
       });
 
       expect(mockTenantDb.workflowExecution.create).toHaveBeenCalled();
     });
 
-    it('should execute multiple actions in order', async () => {
+    it("should execute multiple actions in order", async () => {
       const mockWorkflow = createMockWorkflow({
         actions: [
           {
-            id: 'action-1',
-            type: 'update_status',
-            config: { status: 'ACCEPTED' },
+            id: "action-1",
+            type: "update_status",
+            config: { status: "ACCEPTED" },
             order: 1,
           },
           {
-            id: 'action-2',
-            type: 'assign_driver',
-            config: { driverId: 'driver-123' },
+            id: "action-2",
+            type: "assign_driver",
+            config: { driverId: "driver-123" },
             order: 2,
           },
           {
-            id: 'action-3',
-            type: 'send_notification',
-            config: { channel: 'push' },
+            id: "action-3",
+            type: "send_notification",
+            config: { channel: "push" },
             order: 3,
           },
         ],
       });
 
-      const sortedActions = mockWorkflow.actions.sort((a, b) => a.order! - b.order!);
+      const sortedActions = mockWorkflow.actions.sort(
+        (a, b) => a.order! - b.order!,
+      );
 
       expect(sortedActions).toHaveLength(3);
-      expect(sortedActions[0].type).toBe('update_status');
-      expect(sortedActions[1].type).toBe('assign_driver');
-      expect(sortedActions[2].type).toBe('send_notification');
+      expect(sortedActions[0].type).toBe("update_status");
+      expect(sortedActions[1].type).toBe("assign_driver");
+      expect(sortedActions[2].type).toBe("send_notification");
     });
 
-    it('should skip action on condition failure', async () => {
+    it("should skip action on condition failure", async () => {
       const mockWorkflow = createMockWorkflow({
         actions: [
           {
-            id: 'action-1',
-            type: 'assign_driver',
+            id: "action-1",
+            type: "assign_driver",
             config: {
-              driverId: 'driver-123',
-              condition: { field: 'status', operator: 'equals', value: 'ACCEPTED' },
+              driverId: "driver-123",
+              condition: {
+                field: "status",
+                operator: "equals",
+                value: "ACCEPTED",
+              },
             },
             order: 1,
           },
         ],
       });
 
-      const order = { status: 'PENDING' };
-      const conditionMet = order.status === 'ACCEPTED';
+      const order = { status: "PENDING" };
+      const conditionMet = order.status === "ACCEPTED";
 
       expect(conditionMet).toBe(false);
     });
 
-    it('should continue on action failure with error handling', async () => {
+    it("should continue on action failure with error handling", async () => {
       const mockWorkflow = createMockWorkflow({
         actions: [
           {
-            id: 'action-1',
-            type: 'assign_driver',
-            config: { driverId: 'driver-invalid' },
+            id: "action-1",
+            type: "assign_driver",
+            config: { driverId: "driver-invalid" },
             order: 1,
           },
           {
-            id: 'action-2',
-            type: 'send_notification',
-            config: { channel: 'email' },
+            id: "action-2",
+            type: "send_notification",
+            config: { channel: "email" },
             order: 2,
           },
         ],
@@ -731,32 +747,32 @@ describe('Workflow Orders', () => {
       mockRequest.body = { workflowId: mockWorkflow.id };
 
       // Actually call the driver.findUnique to execute the error handling
-      await mockTenantDb.driver.findUnique({ where: { id: 'driver-invalid' } });
+      await mockTenantDb.driver.findUnique({ where: { id: "driver-invalid" } });
 
       expect(mockTenantDb.driver.findUnique).toHaveBeenCalled();
     });
   });
 
-  describe('Workflow Execution & History', () => {
-    it('should create workflow execution record', async () => {
+  describe("Workflow Execution & History", () => {
+    it("should create workflow execution record", async () => {
       const mockExecution = createMockWorkflowExecution();
       mockTenantDb.workflowExecution.create.mockResolvedValue(mockExecution);
 
-      mockRequest.body = { workflowId: 'workflow-123', orderId: 'order-456' };
+      mockRequest.body = { workflowId: "workflow-123", orderId: "order-456" };
 
       // Actually call the workflowExecution.create to execute the action
       await mockTenantDb.workflowExecution.create({
-        data: { workflowId: 'workflow-123', orderId: 'order-456' },
+        data: { workflowId: "workflow-123", orderId: "order-456" },
       });
 
       expect(mockTenantDb.workflowExecution.create).toHaveBeenCalled();
     });
 
-    it('should update execution status on completion', async () => {
-      const execution = createMockWorkflowExecution({ status: 'running' });
+    it("should update execution status on completion", async () => {
+      const execution = createMockWorkflowExecution({ status: "running" });
       const completed = {
         ...execution,
-        status: 'completed',
+        status: "completed",
         completedAt: new Date(),
       };
 
@@ -764,29 +780,33 @@ describe('Workflow Orders', () => {
 
       const result = { data: completed };
 
-      expect(result.data.status).toBe('completed');
+      expect(result.data.status).toBe("completed");
       expect(result.data.completedAt).toBeDefined();
     });
 
-    it('should record executed actions', async () => {
+    it("should record executed actions", async () => {
       const mockExecution = createMockWorkflowExecution({
-        executedActions: ['update_status', 'assign_driver', 'send_notification'],
+        executedActions: [
+          "update_status",
+          "assign_driver",
+          "send_notification",
+        ],
       });
 
       expect(mockExecution.executedActions).toHaveLength(3);
     });
 
-    it('should capture execution errors', async () => {
+    it("should capture execution errors", async () => {
       const mockExecution = createMockWorkflowExecution({
-        status: 'failed',
-        error: 'Driver not found',
+        status: "failed",
+        error: "Driver not found",
       });
 
-      expect(mockExecution.status).toBe('failed');
-      expect(mockExecution.error).toBe('Driver not found');
+      expect(mockExecution.status).toBe("failed");
+      expect(mockExecution.error).toBe("Driver not found");
     });
 
-    it('should list workflow history', async () => {
+    it("should list workflow history", async () => {
       const mockHistory = [
         createMockWorkflowHistory(),
         createMockWorkflowHistory(),
@@ -794,44 +814,46 @@ describe('Workflow Orders', () => {
 
       mockTenantDb.workflowHistory.findMany.mockResolvedValue(mockHistory);
 
-      mockRequest.params = { id: 'workflow-123' };
+      mockRequest.params = { id: "workflow-123" };
 
       const result = { data: mockHistory };
 
       expect(result.data).toHaveLength(2);
     });
 
-    it('should filter history by order', async () => {
+    it("should filter history by order", async () => {
       const mockHistory = [
-        createMockWorkflowHistory({ orderId: 'order-123' }),
-        createMockWorkflowHistory({ orderId: 'order-456' }),
+        createMockWorkflowHistory({ orderId: "order-123" }),
+        createMockWorkflowHistory({ orderId: "order-456" }),
       ];
 
       mockTenantDb.workflowHistory.findMany.mockResolvedValue([mockHistory[0]]);
 
-      mockRequest.query = { orderId: 'order-123' };
+      mockRequest.query = { orderId: "order-123" };
 
       const result = { data: [mockHistory[0]] };
 
-      expect(result.data[0].orderId).toBe('order-123');
+      expect(result.data[0].orderId).toBe("order-123");
     });
 
-    it('should include execution duration in history', async () => {
-      const startedAt = new Date('2026-03-09T10:00:00Z');
-      const completedAt = new Date('2026-03-09T10:00:30Z');
+    it("should include execution duration in history", async () => {
+      const startedAt = new Date("2026-03-09T10:00:00Z");
+      const completedAt = new Date("2026-03-09T10:00:30Z");
       const durationMs = completedAt.getTime() - startedAt.getTime();
 
       expect(durationMs).toBe(30000);
     });
 
-    it('should support pagination on history', async () => {
+    it("should support pagination on history", async () => {
       const mockHistory = Array.from({ length: 50 }, (_, i) =>
-        createMockWorkflowHistory({ id: `hist-${i}` })
+        createMockWorkflowHistory({ id: `hist-${i}` }),
       );
 
-      mockTenantDb.workflowHistory.findMany.mockResolvedValue(mockHistory.slice(0, 20));
+      mockTenantDb.workflowHistory.findMany.mockResolvedValue(
+        mockHistory.slice(0, 20),
+      );
 
-      mockRequest.params = { id: 'workflow-123' };
+      mockRequest.params = { id: "workflow-123" };
       mockRequest.query = { page: 1, limit: 20 };
 
       const result = { data: mockHistory.slice(0, 20) };
@@ -840,33 +862,33 @@ describe('Workflow Orders', () => {
     });
   });
 
-  describe('Error Recovery & Resilience', () => {
-    it('should mark execution as failed on error', async () => {
+  describe("Error Recovery & Resilience", () => {
+    it("should mark execution as failed on error", async () => {
       const mockExecution = createMockWorkflowExecution({
-        status: 'failed',
-        error: 'Database connection error',
+        status: "failed",
+        error: "Database connection error",
       });
 
       mockTenantDb.workflowExecution.update.mockResolvedValue(mockExecution);
 
       const result = { data: mockExecution };
 
-      expect(result.data.status).toBe('failed');
+      expect(result.data.status).toBe("failed");
     });
 
-    it('should retry failed workflow execution', async () => {
+    it("should retry failed workflow execution", async () => {
       const execution = createMockWorkflowExecution({
-        status: 'failed',
-        error: 'Timeout',
+        status: "failed",
+        error: "Timeout",
       });
 
       mockTenantDb.workflowExecution.create.mockResolvedValue({
         ...execution,
-        id: 'exec-new',
-        status: 'pending',
+        id: "exec-new",
+        status: "pending",
       });
 
-      await mockWorkflowQueue.add('workflow-execute-retry', {
+      await mockWorkflowQueue.add("workflow-execute-retry", {
         workflowId: execution.workflowId,
         orderId: execution.orderId,
         previousExecutionId: execution.id,
@@ -875,45 +897,47 @@ describe('Workflow Orders', () => {
       expect(mockWorkflowQueue.add).toHaveBeenCalled();
     });
 
-    it('should log workflow errors for debugging', async () => {
+    it("should log workflow errors for debugging", async () => {
       mockRequest.log.error = vi.fn();
 
-      const error = new Error('Driver assignment failed');
+      const error = new Error("Driver assignment failed");
 
-      mockRequest.log.error('Workflow action failed', {
-        workflowId: 'workflow-123',
-        action: 'assign_driver',
+      mockRequest.log.error("Workflow action failed", {
+        workflowId: "workflow-123",
+        action: "assign_driver",
         error: error.message,
       });
 
       expect(mockRequest.log.error).toHaveBeenCalled();
     });
 
-    it('should handle transaction rollback on error', async () => {
-      mockTenantDb.$transaction.mockRejectedValue(new Error('Transaction failed'));
+    it("should handle transaction rollback on error", async () => {
+      mockTenantDb.$transaction.mockRejectedValue(
+        new Error("Transaction failed"),
+      );
 
-      mockRequest.body = { workflowId: 'workflow-123' };
+      mockRequest.body = { workflowId: "workflow-123" };
 
       const willThrow = async () => {
         try {
           await mockTenantDb.$transaction(async () => {});
         } catch (e) {
-          throw new Error('Workflow execution failed');
+          throw new Error("Workflow execution failed");
         }
       };
 
-      await expect(willThrow()).rejects.toThrow('Workflow execution failed');
+      await expect(willThrow()).rejects.toThrow("Workflow execution failed");
     });
 
-    it('should support manual workflow retry', async () => {
-      const execution = createMockWorkflowExecution({ status: 'failed' });
+    it("should support manual workflow retry", async () => {
+      const execution = createMockWorkflowExecution({ status: "failed" });
 
       mockTenantDb.workflowExecution.findUnique.mockResolvedValue(execution);
 
       mockRequest.params = { id: execution.id };
-      mockRequest.body = { action: 'retry' };
+      mockRequest.body = { action: "retry" };
 
-      await mockWorkflowQueue.add('workflow-execute-retry', {
+      await mockWorkflowQueue.add("workflow-execute-retry", {
         workflowId: execution.workflowId,
         orderId: execution.orderId,
       });
@@ -922,28 +946,30 @@ describe('Workflow Orders', () => {
     });
   });
 
-  describe('Workflow State Management', () => {
-    it('should maintain execution state', async () => {
+  describe("Workflow State Management", () => {
+    it("should maintain execution state", async () => {
       const mockExecution = createMockWorkflowExecution({
-        status: 'running',
-        executedActions: ['action-1'],
+        status: "running",
+        executedActions: ["action-1"],
       });
 
       mockTenantDb.workflowExecution.update.mockResolvedValue({
         ...mockExecution,
-        executedActions: ['action-1', 'action-2'],
+        executedActions: ["action-1", "action-2"],
       });
 
-      const result = { data: { ...mockExecution, executedActions: ['action-1', 'action-2'] } };
+      const result = {
+        data: { ...mockExecution, executedActions: ["action-1", "action-2"] },
+      };
 
       expect(result.data.executedActions).toHaveLength(2);
     });
 
-    it('should prevent concurrent executions of same workflow for order', async () => {
+    it("should prevent concurrent executions of same workflow for order", async () => {
       const execution1 = createMockWorkflowExecution({
-        workflowId: 'workflow-123',
-        orderId: 'order-456',
-        status: 'running',
+        workflowId: "workflow-123",
+        orderId: "order-456",
+        status: "running",
       });
 
       mockTenantDb.workflowExecution.findMany.mockResolvedValue([execution1]);
@@ -953,9 +979,9 @@ describe('Workflow Orders', () => {
       expect(hasRunningExecution).toBe(true);
     });
 
-    it('should preserve execution context across actions', async () => {
+    it("should preserve execution context across actions", async () => {
       const mockExecution = createMockWorkflowExecution({
-        status: 'running',
+        status: "running",
       });
 
       const context = {
@@ -970,10 +996,10 @@ describe('Workflow Orders', () => {
     });
   });
 
-  describe('Error Handling & Validation', () => {
-    it('should return 400 for missing trigger', async () => {
+  describe("Error Handling & Validation", () => {
+    it("should return 400 for missing trigger", async () => {
       mockRequest.body = {
-        name: 'Bad Workflow',
+        name: "Bad Workflow",
         actions: [],
       };
 
@@ -981,35 +1007,36 @@ describe('Workflow Orders', () => {
       expect(hasTrigger).toBeUndefined();
     });
 
-    it('should return 400 for empty actions', async () => {
+    it("should return 400 for empty actions", async () => {
       mockRequest.body = {
-        name: 'Bad Workflow',
-        trigger: { type: 'order.created' },
+        name: "Bad Workflow",
+        trigger: { type: "order.created" },
         actions: [],
       };
 
-      const hasActions = mockRequest.body.actions && mockRequest.body.actions.length > 0;
+      const hasActions =
+        mockRequest.body.actions && mockRequest.body.actions.length > 0;
       expect(hasActions).toBe(false);
     });
 
-    it('should return 404 for non-existent workflow', async () => {
+    it("should return 404 for non-existent workflow", async () => {
       mockTenantDb.workflow.findUnique.mockResolvedValue(null);
 
-      mockRequest.params = { id: 'non-existent' };
+      mockRequest.params = { id: "non-existent" };
 
       mockReply.status(404);
 
       expect(mockReply.status).toHaveBeenCalledWith(404);
     });
 
-    it('should return 201 for successful workflow creation', async () => {
+    it("should return 201 for successful workflow creation", async () => {
       const mockWorkflow = createMockWorkflow();
       mockTenantDb.workflow.create.mockResolvedValue(mockWorkflow);
 
       mockRequest.body = {
-        name: 'New Workflow',
-        trigger: { type: 'order.created' },
-        actions: [{ type: 'send_notification', config: {} }],
+        name: "New Workflow",
+        trigger: { type: "order.created" },
+        actions: [{ type: "send_notification", config: {} }],
       };
 
       mockReply.status(201);
@@ -1017,10 +1044,10 @@ describe('Workflow Orders', () => {
       expect(mockReply.status).toHaveBeenCalledWith(201);
     });
 
-    it('should enforce role-based access', async () => {
-      mockRequest.auth = { role: 'VIEWER' };
+    it("should enforce role-based access", async () => {
+      mockRequest.auth = { role: "VIEWER" };
 
-      const canCreate = mockRequest.auth.role === 'ADMIN';
+      const canCreate = mockRequest.auth.role === "ADMIN";
       expect(canCreate).toBe(false);
     });
   });

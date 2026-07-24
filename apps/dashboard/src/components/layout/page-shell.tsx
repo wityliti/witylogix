@@ -30,7 +30,7 @@ export interface PageShellProps {
   className?: string;
 }
 
-export function PageShell ({
+export function PageShell({
   title,
   description,
   primaryAction,
@@ -42,10 +42,7 @@ export function PageShell ({
   const hasActions = Boolean(primaryAction) || Boolean(secondaryActions);
 
   return (
-    <section
-      className={cn("space-y-8", className)}
-      aria-label={title}
-    >
+    <section className={cn("space-y-8", className)} aria-label={title}>
       <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-semibold tracking-tight text-wl-text-primary m-0">

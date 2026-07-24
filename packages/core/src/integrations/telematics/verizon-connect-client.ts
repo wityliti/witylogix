@@ -177,7 +177,8 @@ export class VerizonConnectClient extends TelematicsAdapter {
 
   constructor(config: TelematicsConfig) {
     super(config);
-    const credentials = config.credentials as unknown as VerizonConnectCredentials;
+    const credentials =
+      config.credentials as unknown as VerizonConnectCredentials;
     this.accessToken = credentials.accessToken;
     this.clientId = credentials.clientId;
     this.clientSecret = credentials.clientSecret;
@@ -336,7 +337,9 @@ export class VerizonConnectClient extends TelematicsAdapter {
    * Get diagnostics for a vehicle
    * GET /vehicles/{id}/diagnostics
    */
-  async getVehicleDiagnostics(vehicleId: string): Promise<NormalizedDiagnostic> {
+  async getVehicleDiagnostics(
+    vehicleId: string,
+  ): Promise<NormalizedDiagnostic> {
     const cacheKey = `verizon:diagnostics:${vehicleId}`;
     const cached = this.cache.get(cacheKey) as NormalizedDiagnostic | undefined;
     if (cached) return cached;
@@ -414,14 +417,13 @@ export class VerizonConnectClient extends TelematicsAdapter {
       }
 
       const data = (await response.json()) as { alerts: VerizonConnectAlert[] };
-      const behaviorAlerts = (data.alerts || []).filter(
-        (a) =>
-          [
-            "harsh_braking",
-            "harsh_acceleration",
-            "speeding",
-            "harsh_turn",
-          ].includes(a.type),
+      const behaviorAlerts = (data.alerts || []).filter((a) =>
+        [
+          "harsh_braking",
+          "harsh_acceleration",
+          "speeding",
+          "harsh_turn",
+        ].includes(a.type),
       );
 
       return behaviorAlerts.map((alert) => ({
@@ -432,7 +434,9 @@ export class VerizonConnectClient extends TelematicsAdapter {
         severity: alert.severity as NormalizedBehaviorEvent["severity"],
         latitude: alert.location?.latitude ?? 0,
         longitude: alert.location?.longitude ?? 0,
-        speed: alert.speed ? { value: alert.speed, unit: "mph" as const } : undefined,
+        speed: alert.speed
+          ? { value: alert.speed, unit: "mph" as const }
+          : undefined,
         speedLimit: alert.speedLimit
           ? { value: alert.speedLimit, unit: "mph" as const }
           : undefined,
@@ -448,7 +452,9 @@ export class VerizonConnectClient extends TelematicsAdapter {
    */
   async getFuelLevel(vehicleId: string): Promise<NormalizedFuelReading> {
     const cacheKey = `verizon:fuel:${vehicleId}`;
-    const cached = this.cache.get(cacheKey) as NormalizedFuelReading | undefined;
+    const cached = this.cache.get(cacheKey) as
+      | NormalizedFuelReading
+      | undefined;
     if (cached) return cached;
 
     return this.retryWithBackoff(async () => {
@@ -601,7 +607,9 @@ export class VerizonConnectClient extends TelematicsAdapter {
         );
       }
 
-      const data = (await response.json()) as { drivers: VerizonConnectDriver[] };
+      const data = (await response.json()) as {
+        drivers: VerizonConnectDriver[];
+      };
       return data.drivers || [];
     });
   }
@@ -668,7 +676,9 @@ export class VerizonConnectClient extends TelematicsAdapter {
         );
       }
 
-      const data = (await response.json()) as { geofence: VerizonConnectGeofence };
+      const data = (await response.json()) as {
+        geofence: VerizonConnectGeofence;
+      };
       return data.geofence;
     });
   }
@@ -677,7 +687,9 @@ export class VerizonConnectClient extends TelematicsAdapter {
    * Get maintenance records
    * GET /vehicles/{id}/maintenance
    */
-  async getMaintenance(vehicleId: string): Promise<VerizonConnectMaintenance[]> {
+  async getMaintenance(
+    vehicleId: string,
+  ): Promise<VerizonConnectMaintenance[]> {
     return this.retryWithBackoff(async () => {
       const response = await this.fetchWithTimeout(
         `${this.baseUrl}/vehicles/${vehicleId}/maintenance`,

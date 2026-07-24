@@ -10,12 +10,15 @@ import type {
   PatternFeatures,
   SimilarDay,
   HistoricalDemand,
-} from '../types';
+} from "../types";
 
 /**
  * Calculate Euclidean distance in feature space
  */
-function euclideanDistance(features1: PatternFeatures, features2: PatternFeatures): number {
+function euclideanDistance(
+  features1: PatternFeatures,
+  features2: PatternFeatures,
+): number {
   let distance = 0;
 
   // Day of week (cyclical, so use sin/cos encoding)
@@ -72,7 +75,7 @@ export function extractPatternFeatures(
     hour: data.hour,
     holiday: data.isHoliday ? 1 : 0,
     weather: weatherIntensity,
-    eventType: data.eventType || 'none',
+    eventType: data.eventType || "none",
     trend: trend,
     seasonal_hour: seasonalHour,
     seasonal_day: seasonalDay,
@@ -153,11 +156,12 @@ export function findSimilarDays(
   const dailyData: Map<string, SimilarDay> = new Map();
 
   for (const sim of similarities) {
-    const dayKey = sim.data.timestamp.toISOString().split('T')[0];
+    const dayKey = sim.data.timestamp.toISOString().split("T")[0];
 
     if (!dailyData.has(dayKey) && dailyData.size < k) {
       // Similarity score: inverse of distance, weighted by recency
-      const similarity = Math.exp(-sim.distance) * (0.5 + 0.5 * sim.recencyWeight);
+      const similarity =
+        Math.exp(-sim.distance) * (0.5 + 0.5 * sim.recencyWeight);
 
       dailyData.set(dayKey, {
         historicalDate: new Date(sim.data.timestamp),
@@ -234,14 +238,19 @@ export function matchHolidayPattern(
   historicalData: HistoricalDemand[],
 ): { prediction: number; confidence: number } {
   // Find same date in previous years
-  const yearMatches: Array<{ date: Date; value: number; yearDiff: number }> = [];
+  const yearMatches: Array<{ date: Date; value: number; yearDiff: number }> =
+    [];
 
   const targetMonth = targetDate.getMonth();
   const targetDay = targetDate.getDate();
   const currentYear = targetDate.getFullYear();
 
   for (const d of historicalData) {
-    if (d.isHoliday && d.timestamp.getMonth() === targetMonth && d.timestamp.getDate() === targetDay) {
+    if (
+      d.isHoliday &&
+      d.timestamp.getMonth() === targetMonth &&
+      d.timestamp.getDate() === targetDay
+    ) {
       const yearDiff = currentYear - d.timestamp.getFullYear();
       if (yearDiff > 0 && yearDiff <= 5) {
         // Look back up to 5 years
@@ -269,7 +278,8 @@ export function matchHolidayPattern(
 
   // Confidence: high if recent pattern is consistent
   const recentYears = yearMatches.filter((m) => m.yearDiff <= 2);
-  const confidence = recentYears.length > 0 ? Math.min(1, recentYears.length / 2) : 0.3;
+  const confidence =
+    recentYears.length > 0 ? Math.min(1, recentYears.length / 2) : 0.3;
 
   return { prediction, confidence };
 }
@@ -282,10 +292,15 @@ export function getClusterAverageFallback(
   dayOfWeek: number,
   hour: number,
 ): number {
-  const matches = historicalData.filter((d) => d.dayOfWeek === dayOfWeek && d.hour === hour);
+  const matches = historicalData.filter(
+    (d) => d.dayOfWeek === dayOfWeek && d.hour === hour,
+  );
 
   if (matches.length === 0) {
-    return historicalData.reduce((sum, d) => sum + d.value, 0) / Math.max(1, historicalData.length);
+    return (
+      historicalData.reduce((sum, d) => sum + d.value, 0) /
+      Math.max(1, historicalData.length)
+    );
   }
 
   return matches.reduce((sum, d) => sum + d.value, 0) / matches.length;
@@ -301,9 +316,13 @@ export function aggregateToDailyForecast(
     return { prediction: 0, confidence: 0 };
   }
 
-  const totalDemand = hourlyPredictions.reduce((sum, p) => sum + p.prediction, 0);
+  const totalDemand = hourlyPredictions.reduce(
+    (sum, p) => sum + p.prediction,
+    0,
+  );
   const avgConfidence =
-    hourlyPredictions.reduce((sum, p) => sum + p.confidence, 0) / hourlyPredictions.length;
+    hourlyPredictions.reduce((sum, p) => sum + p.confidence, 0) /
+    hourlyPredictions.length;
 
   return {
     prediction: totalDemand,

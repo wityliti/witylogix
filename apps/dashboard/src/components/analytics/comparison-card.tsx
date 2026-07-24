@@ -27,8 +27,8 @@ export function ComparisonCard({
   format = "number",
   showRatio = true,
 }: ComparisonCardProps) {
-  const { total, leftPercent, rightPercent, delta, deltaPct, trend } = useMemo(
-    () => {
+  const { total, leftPercent, rightPercent, delta, deltaPct, trend } =
+    useMemo(() => {
       const total = leftValue + rightValue;
       const leftPercent = total > 0 ? (leftValue / total) * 100 : 0;
       const rightPercent = total > 0 ? (rightValue / total) * 100 : 0;
@@ -45,9 +45,7 @@ export function ComparisonCard({
         deltaPct,
         trend,
       };
-    },
-    [leftValue, rightValue]
-  );
+    }, [leftValue, rightValue]);
 
   const formatValue = (value: number): string => {
     switch (format) {
@@ -79,14 +77,13 @@ export function ComparisonCard({
               }
             >
               <span
-                className={cn(
-                  "inline-block",
-                  trend === "down" && "rotate-180"
-                )}
+                className={cn("inline-block", trend === "down" && "rotate-180")}
               >
                 {trend === "up" ? "↑" : "↓"}
               </span>
-              {trend === "flat" ? "No change" : `${Math.abs(Number(deltaPct))}%`}
+              {trend === "flat"
+                ? "No change"
+                : `${Math.abs(Number(deltaPct))}%`}
             </Badge>
           </div>
 
@@ -94,9 +91,7 @@ export function ComparisonCard({
           <div className="grid grid-cols-2 gap-3">
             {/* Left value */}
             <div>
-              <p className="text-xs text-wl-text-tertiary mb-1">
-                {leftLabel}
-              </p>
+              <p className="text-xs text-wl-text-tertiary mb-1">{leftLabel}</p>
               <p className="text-xl font-bold text-wl-text-primary tabular-nums">
                 {formatValue(leftValue)}
               </p>
@@ -109,9 +104,7 @@ export function ComparisonCard({
 
             {/* Right value */}
             <div>
-              <p className="text-xs text-wl-text-tertiary mb-1">
-                {rightLabel}
-              </p>
+              <p className="text-xs text-wl-text-tertiary mb-1">{rightLabel}</p>
               <p className="text-xl font-bold text-wl-text-primary tabular-nums">
                 {formatValue(rightValue)}
               </p>
@@ -164,7 +157,7 @@ export function ComparisonCard({
                     ? "text-wl-success-400"
                     : trend === "down"
                       ? "text-wl-danger-400"
-                      : "text-wl-text-secondary"
+                      : "text-wl-text-secondary",
                 )}
               >
                 {delta > 0 ? "+" : ""}

@@ -11,21 +11,21 @@
  * ~150 lines, 8 tests
  */
 
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, Page } from "@playwright/test";
 
-test.describe('Supply Chain Operations', () => {
+test.describe("Supply Chain Operations", () => {
   let page: Page;
 
   test.beforeEach(async ({ browser }) => {
     page = await browser.newPage();
-    await page.goto('/');
+    await page.goto("/");
 
     // Login if required
     const loginButton = await page.$('[data-testid="login-button"]');
     if (loginButton) {
       await loginButton.click();
-      await page.fill('[data-testid="email-input"]', 'admin@test.com');
-      await page.fill('[data-testid="password-input"]', 'admin123');
+      await page.fill('[data-testid="email-input"]', "admin@test.com");
+      await page.fill('[data-testid="password-input"]', "admin123");
       await page.click('[data-testid="submit-button"]');
       await page.waitForNavigation();
     }
@@ -35,7 +35,7 @@ test.describe('Supply Chain Operations', () => {
     await page.close();
   });
 
-  test('should navigate to supply chain module', async () => {
+  test("should navigate to supply chain module", async () => {
     // Click supply chain menu
     await page.click('[data-testid="menu-supply-chain"]');
     await page.waitForURL(/.*supply-chain.*/);
@@ -46,10 +46,10 @@ test.describe('Supply Chain Operations', () => {
 
     const heading = await page.$('[data-testid="dashboard-heading"]');
     const text = await heading?.textContent();
-    expect(text).toContain('Supply Chain');
+    expect(text).toContain("Supply Chain");
   });
 
-  test('should view inventory levels', async () => {
+  test("should view inventory levels", async () => {
     // Navigate to inventory section
     await page.click('[data-testid="menu-supply-chain"]');
     await page.click('[data-testid="inventory-tab"]');
@@ -73,7 +73,7 @@ test.describe('Supply Chain Operations', () => {
     expect(rowCount).toBeGreaterThan(0);
   });
 
-  test('should search and filter inventory', async () => {
+  test("should search and filter inventory", async () => {
     // Navigate to inventory
     await page.click('[data-testid="menu-supply-chain"]');
     await page.click('[data-testid="inventory-tab"]');
@@ -82,8 +82,8 @@ test.describe('Supply Chain Operations', () => {
     const searchInput = await page.$('[data-testid="inventory-search"]');
     expect(searchInput).toBeTruthy();
 
-    await searchInput?.fill('SKU001');
-    await page.keyboard.press('Enter');
+    await searchInput?.fill("SKU001");
+    await page.keyboard.press("Enter");
 
     // Verify results filtered
     const rows = await page.locator('[data-testid="inventory-row"]');
@@ -91,12 +91,14 @@ test.describe('Supply Chain Operations', () => {
 
     if (rowCount > 0) {
       const firstRow = rows.first();
-      const skuText = await firstRow.locator('[data-testid="sku-cell"]').textContent();
-      expect(skuText).toContain('SKU001');
+      const skuText = await firstRow
+        .locator('[data-testid="sku-cell"]')
+        .textContent();
+      expect(skuText).toContain("SKU001");
     }
   });
 
-  test('should create purchase order', async () => {
+  test("should create purchase order", async () => {
     // Navigate to orders
     await page.click('[data-testid="menu-supply-chain"]');
     await page.click('[data-testid="orders-tab"]');
@@ -109,9 +111,9 @@ test.describe('Supply Chain Operations', () => {
     await page.waitForURL(/.*order.*create.*/);
 
     // Fill order details
-    await page.fill('[data-testid="supplier-select"]', 'Supplier A');
-    await page.fill('[data-testid="sku-input"]', 'SKU001');
-    await page.fill('[data-testid="quantity-input"]', '100');
+    await page.fill('[data-testid="supplier-select"]', "Supplier A");
+    await page.fill('[data-testid="sku-input"]', "SKU001");
+    await page.fill('[data-testid="quantity-input"]', "100");
 
     // Add line item
     await page.click('[data-testid="add-line-button"]');
@@ -124,7 +126,7 @@ test.describe('Supply Chain Operations', () => {
     expect(successMessage).toBeTruthy();
   });
 
-  test('should process fulfillment wave', async () => {
+  test("should process fulfillment wave", async () => {
     // Navigate to fulfillment
     await page.click('[data-testid="menu-supply-chain"]');
     await page.click('[data-testid="fulfillment-tab"]');
@@ -137,10 +139,12 @@ test.describe('Supply Chain Operations', () => {
     await page.waitForURL(/.*wave.*create.*/);
 
     // Select warehouse
-    await page.fill('[data-testid="warehouse-select"]', 'WH_NYC');
+    await page.fill('[data-testid="warehouse-select"]', "WH_NYC");
 
     // Add orders to wave
-    const orderCheckboxes = await page.locator('[data-testid="order-checkbox"]');
+    const orderCheckboxes = await page.locator(
+      '[data-testid="order-checkbox"]',
+    );
     const checkboxCount = await orderCheckboxes.count();
 
     if (checkboxCount > 0) {
@@ -156,7 +160,7 @@ test.describe('Supply Chain Operations', () => {
     expect(waveDetail).toBeTruthy();
   });
 
-  test('should view fulfillment status', async () => {
+  test("should view fulfillment status", async () => {
     // Navigate to fulfillment
     await page.click('[data-testid="menu-supply-chain"]');
     await page.click('[data-testid="fulfillment-tab"]');
@@ -182,7 +186,7 @@ test.describe('Supply Chain Operations', () => {
     expect(orderCount).toBeGreaterThan(0);
   });
 
-  test('should track shipments', async () => {
+  test("should track shipments", async () => {
     // Navigate to shipments
     await page.click('[data-testid="menu-supply-chain"]');
     await page.click('[data-testid="shipments-tab"]');
@@ -192,7 +196,9 @@ test.describe('Supply Chain Operations', () => {
     expect(shipmentsTable).toBeTruthy();
 
     // Find shipped order
-    const shipmentRow = await page.locator('[data-testid="shipment-row"]').first();
+    const shipmentRow = await page
+      .locator('[data-testid="shipment-row"]')
+      .first();
     if (shipmentRow) {
       // Click to view tracking
       await shipmentRow.click();
@@ -212,7 +218,7 @@ test.describe('Supply Chain Operations', () => {
     }
   });
 
-  test('should view demand forecast', async () => {
+  test("should view demand forecast", async () => {
     // Navigate to demand planning
     await page.click('[data-testid="menu-supply-chain"]');
     await page.click('[data-testid="demand-planning-tab"]');

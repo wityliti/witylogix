@@ -1,15 +1,18 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import Link from 'next/link';
-import { Header } from '@/components/layout/header';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { LoadingSkeleton, TableSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { useApiList } from '@/hooks/use-api';
+import { useState, useMemo } from "react";
+import Link from "next/link";
+import { Header } from "@/components/layout/header";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import {
+  LoadingSkeleton,
+  TableSkeleton,
+} from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { useApiList } from "@/hooks/use-api";
 import {
   BarChart3,
   Users,
@@ -24,18 +27,18 @@ import {
   CheckCircle2,
   Plus,
   ShieldCheck,
-} from 'lucide-react';
+} from "lucide-react";
 
 // Types
 interface Store {
   id: string;
   name: string;
   domain: string;
-  planTier: 'free' | 'starter' | 'growth' | 'enterprise';
+  planTier: "free" | "starter" | "growth" | "enterprise";
   owner: string;
   ordersThisMonth: number;
   revenue: number;
-  status: 'active' | 'suspended' | 'trial';
+  status: "active" | "suspended" | "trial";
   lastActive: string;
   totalUsers: number;
 }
@@ -75,16 +78,43 @@ const MetricsBar = ({ stores }: { stores: Store[] }) => {
   const activeStores = stores.filter((s) => s.status === "active").length;
   const totalOrders = stores.reduce((sum, s) => sum + s.ordersThisMonth, 0);
   const totalRevenue = stores.reduce((sum, s) => sum + s.revenue, 0);
-  const activeSubscriptions = stores.filter((s) => s.planTier !== "free").length;
+  const activeSubscriptions = stores.filter(
+    (s) => s.planTier !== "free",
+  ).length;
 
   return (
     <div className="grid gap-4 mb-6 grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
       {[
-        { label: "Total Stores", value: totalStores.toString(), icon: ShoppingCart, color: "#6366f1" },
-        { label: "Active Stores", value: activeStores.toString(), icon: CheckCircle2, color: "#10b981" },
-        { label: "Orders (30d)", value: totalOrders.toLocaleString(), icon: BarChart3, color: "#f59e0b" },
-        { label: "Revenue", value: `$${(totalRevenue / 1000).toFixed(0)}K`, icon: TrendingUp, color: "#8b5cf6" },
-        { label: "Paid Plans", value: activeSubscriptions.toString(), icon: Zap, color: "#3b82f6" },
+        {
+          label: "Total Stores",
+          value: totalStores.toString(),
+          icon: ShoppingCart,
+          color: "#6366f1",
+        },
+        {
+          label: "Active Stores",
+          value: activeStores.toString(),
+          icon: CheckCircle2,
+          color: "#10b981",
+        },
+        {
+          label: "Orders (30d)",
+          value: totalOrders.toLocaleString(),
+          icon: BarChart3,
+          color: "#f59e0b",
+        },
+        {
+          label: "Revenue",
+          value: `$${(totalRevenue / 1000).toFixed(0)}K`,
+          icon: TrendingUp,
+          color: "#8b5cf6",
+        },
+        {
+          label: "Paid Plans",
+          value: activeSubscriptions.toString(),
+          icon: Zap,
+          color: "#3b82f6",
+        },
       ].map((metric, idx) => {
         const Icon = metric.icon;
         return (
@@ -102,7 +132,9 @@ const MetricsBar = ({ stores }: { stores: Store[] }) => {
                   backgroundColor: metric.color + "15",
                 }}
               >
-                <Icon style={{ color: metric.color, width: "20px", height: "20px" }} />
+                <Icon
+                  style={{ color: metric.color, width: "20px", height: "20px" }}
+                />
               </div>
               <div className="flex-1">
                 <p className="text-gray-400 text-xs font-semibold m-0 uppercase tracking-wider">
@@ -124,8 +156,18 @@ const MetricsBar = ({ stores }: { stores: Store[] }) => {
 const SystemHealth = () => {
   const metrics = [
     { label: "API Uptime", value: "99.98%", status: "healthy", icon: Server },
-    { label: "DB Connections", value: "245 / 500", status: "healthy", icon: Database },
-    { label: "Queue Depth", value: "1,234 jobs", status: "warning", icon: ActivitySquare },
+    {
+      label: "DB Connections",
+      value: "245 / 500",
+      status: "healthy",
+      icon: Database,
+    },
+    {
+      label: "Queue Depth",
+      value: "1,234 jobs",
+      status: "warning",
+      icon: ActivitySquare,
+    },
     { label: "Cache Hit Rate", value: "94.2%", status: "healthy", icon: Zap },
   ];
 
@@ -146,10 +188,19 @@ const SystemHealth = () => {
                 <div
                   className={cn(
                     "p-2 rounded-md flex items-center justify-center flex-shrink-0",
-                    metric.status === "healthy" ? "bg-emerald-500/10" : "bg-amber-500/10"
+                    metric.status === "healthy"
+                      ? "bg-emerald-500/10"
+                      : "bg-amber-500/10",
                   )}
                 >
-                  <Icon style={{ color: metric.status === "healthy" ? "#10b981" : "#f59e0b", width: "18px", height: "18px" }} />
+                  <Icon
+                    style={{
+                      color:
+                        metric.status === "healthy" ? "#10b981" : "#f59e0b",
+                      width: "18px",
+                      height: "18px",
+                    }}
+                  />
                 </div>
                 <div>
                   <p className="text-xs text-gray-400 m-0 mb-0.5 font-semibold uppercase">
@@ -213,15 +264,25 @@ const QuickActions = () => {
 };
 
 // Stores Table
-const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[]; loading: boolean; error: Error | null; onRetry: () => void }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+const StoresHealthTable = ({
+  stores,
+  loading,
+  error,
+  onRetry,
+}: {
+  stores: Store[];
+  loading: boolean;
+  error: Error | null;
+  onRetry: () => void;
+}) => {
+  const [searchTerm, setSearchTerm] = useState("");
 
   const filteredStores = useMemo(() => {
     return stores.filter(
       (store) =>
         store.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         store.domain.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        store.owner.toLowerCase().includes(searchTerm.toLowerCase())
+        store.owner.toLowerCase().includes(searchTerm.toLowerCase()),
     );
   }, [stores, searchTerm]);
 
@@ -251,7 +312,16 @@ const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-wl-border-default bg-wl-bg-root">
-                {['Store', 'Plan', 'Orders (30d)', 'Revenue', 'Users', 'Status', 'Last Active', 'Actions'].map((header) => (
+                {[
+                  "Store",
+                  "Plan",
+                  "Orders (30d)",
+                  "Revenue",
+                  "Users",
+                  "Status",
+                  "Last Active",
+                  "Actions",
+                ].map((header) => (
                   <th
                     key={header}
                     className="p-3 text-left text-gray-400 font-semibold text-xs uppercase tracking-wider"
@@ -265,10 +335,13 @@ const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[
               {filteredStores.map((store, idx) => (
                 <tr
                   key={store.id}
-                  className={cn('border-b border-wl-border-default transition-all duration-200 hover:bg-wl-bg-elevated', {
-                    'bg-wl-bg-root': idx % 2 === 0,
-                    'bg-wl-bg-surface': idx % 2 !== 0,
-                  })}
+                  className={cn(
+                    "border-b border-wl-border-default transition-all duration-200 hover:bg-wl-bg-elevated",
+                    {
+                      "bg-wl-bg-root": idx % 2 === 0,
+                      "bg-wl-bg-surface": idx % 2 !== 0,
+                    },
+                  )}
                 >
                   <td className="p-3">
                     <Link
@@ -285,13 +358,14 @@ const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[
                     <Badge
                       variant="default"
                       style={{
-                        backgroundColor: getPlanColor(store.planTier) + '20',
+                        backgroundColor: getPlanColor(store.planTier) + "20",
                         color: getPlanColor(store.planTier),
-                        fontSize: '0.75rem',
+                        fontSize: "0.75rem",
                         border: `1px solid ${getPlanColor(store.planTier)}40`,
                       }}
                     >
-                      {store.planTier.charAt(0).toUpperCase() + store.planTier.slice(1)}
+                      {store.planTier.charAt(0).toUpperCase() +
+                        store.planTier.slice(1)}
                     </Badge>
                   </td>
                   <td className="p-3 text-white font-medium">
@@ -305,7 +379,13 @@ const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[
                   </td>
                   <td className="p-3">
                     <Badge
-                      variant={store.status === 'active' ? 'success' : store.status === 'suspended' ? 'danger' : 'info'}
+                      variant={
+                        store.status === "active"
+                          ? "success"
+                          : store.status === "suspended"
+                            ? "danger"
+                            : "info"
+                      }
                       className="text-xs capitalize"
                     >
                       {store.status}
@@ -331,7 +411,12 @@ const StoresHealthTable = ({ stores, loading, error, onRetry }: { stores: Store[
 
 // Main Page
 export default function AdminDashboardPage() {
-  const { items: stores, loading, error, refetch } = useApiList<Store>('/api/v4/shops');
+  const {
+    items: stores,
+    loading,
+    error,
+    refetch,
+  } = useApiList<Store>("/api/v4/shops");
 
   if (loading && stores.length === 0) return <LoadingSkeleton />;
 
@@ -353,7 +438,12 @@ export default function AdminDashboardPage() {
         <QuickActions />
 
         {/* Stores Health Table */}
-        <StoresHealthTable stores={stores} loading={loading} error={error} onRetry={refetch} />
+        <StoresHealthTable
+          stores={stores}
+          loading={loading}
+          error={error}
+          onRetry={refetch}
+        />
       </main>
 
       <style>{`

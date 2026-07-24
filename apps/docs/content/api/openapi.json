@@ -33,7 +33,13 @@
           },
           "status": {
             "type": "string",
-            "enum": ["pending", "picked_up", "in_transit", "delivered", "failed"],
+            "enum": [
+              "pending",
+              "picked_up",
+              "in_transit",
+              "delivered",
+              "failed"
+            ],
             "description": "Current shipment status"
           },
           "origin": {

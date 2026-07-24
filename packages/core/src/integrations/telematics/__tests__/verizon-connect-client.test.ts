@@ -409,9 +409,7 @@ describe("VerizonConnectClient", () => {
     });
 
     it("should return false on error", async () => {
-      global.fetch = vi.fn(() =>
-        Promise.reject(new Error("Network error")),
-      );
+      global.fetch = vi.fn(() => Promise.reject(new Error("Network error")));
 
       const healthy = await client.healthCheck();
       expect(healthy).toBe(false);

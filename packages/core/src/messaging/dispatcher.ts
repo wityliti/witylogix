@@ -9,19 +9,25 @@
  * - Per-tenant rate limiting
  */
 
-import type { Message, MessageTemplate, SendResult, BatchSendOptions, BatchSendResult } from './types.js';
+import type {
+  Message,
+  MessageTemplate,
+  SendResult,
+  BatchSendOptions,
+  BatchSendResult,
+} from "./types.js";
 import {
   MessageChannel,
   MessagePriority,
   DeliveryStatus,
   MessagingError,
   RateLimitError,
-} from './types.js';
-import { MessageProvider } from './providers/base.js';
-import { EmailProvider } from './providers/email.js';
-import { SmsProvider } from './providers/sms.js';
-import { WhatsAppProvider } from './providers/whatsapp.js';
-import { PushProvider } from './providers/push.js';
+} from "./types.js";
+import { MessageProvider } from "./providers/base.js";
+import { EmailProvider } from "./providers/email.js";
+import { SmsProvider } from "./providers/sms.js";
+import { WhatsAppProvider } from "./providers/whatsapp.js";
+import { PushProvider } from "./providers/push.js";
 
 /**
  * Message dispatcher for multi-channel delivery.
@@ -34,9 +40,21 @@ export class MessageDispatcher {
   constructor(
     private config: {
       providers: {
-        email?: { provider: 'sendgrid' | 'smtp' | 'console'; apiKey?: string; from: string; host?: string; port?: number; auth?: { user: string; pass: string } };
+        email?: {
+          provider: "sendgrid" | "smtp" | "console";
+          apiKey?: string;
+          from: string;
+          host?: string;
+          port?: number;
+          auth?: { user: string; pass: string };
+        };
         sms?: { accountSid: string; authToken: string; fromNumber: string };
-        whatsapp?: { phoneNumberId: string; businessAccountId: string; accessToken: string; webhookSecret?: string };
+        whatsapp?: {
+          phoneNumberId: string;
+          businessAccountId: string;
+          accessToken: string;
+          webhookSecret?: string;
+        };
         push?: { projectId: string; privateKey: string; clientEmail: string };
       };
       maxRetries?: number;
@@ -52,11 +70,17 @@ export class MessageDispatcher {
    */
   private initializeProviders(): void {
     if (this.config.providers.email) {
-      this.providers.set(MessageChannel.EMAIL, new EmailProvider(this.config.providers.email));
+      this.providers.set(
+        MessageChannel.EMAIL,
+        new EmailProvider(this.config.providers.email),
+      );
     }
 
     if (this.config.providers.sms) {
-      this.providers.set(MessageChannel.SMS, new SmsProvider(this.config.providers.sms));
+      this.providers.set(
+        MessageChannel.SMS,
+        new SmsProvider(this.config.providers.sms),
+      );
     }
 
     if (this.config.providers.whatsapp) {
@@ -67,7 +91,10 @@ export class MessageDispatcher {
     }
 
     if (this.config.providers.push) {
-      this.providers.set(MessageChannel.PUSH, new PushProvider(this.config.providers.push));
+      this.providers.set(
+        MessageChannel.PUSH,
+        new PushProvider(this.config.providers.push),
+      );
     }
   }
 
@@ -101,11 +128,7 @@ export class MessageDispatcher {
     messages: Message[],
     options: BatchSendOptions = {},
   ): Promise<BatchSendResult> {
-    const {
-      concurrencyLimit = 10,
-      failFast = false,
-      rateLimit,
-    } = options;
+    const { concurrencyLimit = 10, failFast = false, rateLimit } = options;
 
     const results: Array<SendResult & { messageId: string }> = [];
     const errors: Array<{ messageId: string; error: string }> = [];
@@ -124,7 +147,8 @@ export class MessageDispatcher {
             results.push({ ...result, messageId: message.id });
           })
           .catch((error) => {
-            const errorMsg = error instanceof Error ? error.message : String(error);
+            const errorMsg =
+              error instanceof Error ? error.message : String(error);
             errors.push({ messageId: message.id, error: errorMsg });
 
             if (failFast) {
@@ -141,7 +165,7 @@ export class MessageDispatcher {
           pending.splice(0, 1); // Remove completed promise
         } catch {
           if (failFast) {
-            throw new Error('Batch send failed');
+            throw new Error("Batch send failed");
           }
         }
       }
@@ -177,8 +201,8 @@ export class MessageDispatcher {
       tenantId,
       channel: MessageChannel.EMAIL, // Assume email for example
       to,
-      body: 'Template body', // Would be loaded from DB
-      subject: 'Subject', // Would be loaded from DB
+      body: "Template body", // Would be loaded from DB
+      subject: "Subject", // Would be loaded from DB
       templateId,
       templateVars: variables,
       priority: MessagePriority.NORMAL,
@@ -251,14 +275,17 @@ export class MessageDispatcher {
     return {
       success: false,
       status: DeliveryStatus.FAILED,
-      error: lastError?.message || 'Unknown error',
+      error: lastError?.message || "Unknown error",
     };
   }
 
   /**
    * Check rate limit for tenant + channel combination.
    */
-  private async checkRateLimit(tenantId: string, channel: MessageChannel): Promise<void> {
+  private async checkRateLimit(
+    tenantId: string,
+    channel: MessageChannel,
+  ): Promise<void> {
     const key = `${tenantId}_${channel}`;
     let limiter = this.rateLimiters.get(key);
 

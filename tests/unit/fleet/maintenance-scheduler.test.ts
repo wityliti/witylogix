@@ -123,7 +123,10 @@ describe("PreventiveScheduler", () => {
         updatedAt: new Date(),
       });
 
-    const result = await scheduler.autoScheduleFromTemplate("v1", "STANDARD_SEDAN");
+    const result = await scheduler.autoScheduleFromTemplate(
+      "v1",
+      "STANDARD_SEDAN",
+    );
 
     expect(result).toHaveLength(3); // Oil change + tire + brake from template
     expect(mockPrisma.maintenanceSchedule.create).toHaveBeenCalled();
@@ -207,7 +210,10 @@ describe("ReactiveHandler", () => {
       status: "MAINTENANCE",
     });
 
-    const result = await handler.reportBreakdown("v1", "Engine failure reported");
+    const result = await handler.reportBreakdown(
+      "v1",
+      "Engine failure reported",
+    );
 
     expect(result.type).toBe("REACTIVE");
     expect(result.status).toBe("SCHEDULED");

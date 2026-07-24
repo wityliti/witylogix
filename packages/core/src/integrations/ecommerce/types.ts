@@ -287,22 +287,38 @@ export interface IECommerceAdapter {
   // Order operations
   getOrders(options?: SyncOptions): Promise<ECommerceOrder[]>;
   getOrderById(orderId: string): Promise<ECommerceOrder>;
-  updateOrder(orderId: string, data: Partial<ECommerceOrder>): Promise<ECommerceOrder>;
+  updateOrder(
+    orderId: string,
+    data: Partial<ECommerceOrder>,
+  ): Promise<ECommerceOrder>;
 
   // Product operations
   getProducts(options?: SyncOptions): Promise<ECommerceProduct[]>;
   getProductById(productId: string): Promise<ECommerceProduct>;
   createProduct(product: ECommerceProduct): Promise<ECommerceProduct>;
-  updateProduct(productId: string, data: Partial<ECommerceProduct>): Promise<ECommerceProduct>;
+  updateProduct(
+    productId: string,
+    data: Partial<ECommerceProduct>,
+  ): Promise<ECommerceProduct>;
 
   // Customer operations
   getCustomers(options?: SyncOptions): Promise<ECommerceCustomer[]>;
   getCustomerById(customerId: string): Promise<ECommerceCustomer>;
-  updateCustomer(customerId: string, data: Partial<ECommerceCustomer>): Promise<ECommerceCustomer>;
+  updateCustomer(
+    customerId: string,
+    data: Partial<ECommerceCustomer>,
+  ): Promise<ECommerceCustomer>;
 
   // Fulfillment operations
-  createFulfillment(orderId: string, request: FulfillmentRequest): Promise<FulfillmentResponse>;
-  updateFulfillment(orderId: string, fulfillmentId: string, data: Partial<FulfillmentResponse>): Promise<FulfillmentResponse>;
+  createFulfillment(
+    orderId: string,
+    request: FulfillmentRequest,
+  ): Promise<FulfillmentResponse>;
+  updateFulfillment(
+    orderId: string,
+    fulfillmentId: string,
+    data: Partial<FulfillmentResponse>,
+  ): Promise<FulfillmentResponse>;
 
   // Inventory operations
   updateInventory(request: InventoryUpdateRequest): Promise<ECommerceInventory>;
@@ -386,10 +402,13 @@ export interface AuditLogEntry {
   entityType: string;
   entityId: string;
   action: "create" | "update" | "delete" | "sync";
-  changes?: Record<string, {
-    from: unknown;
-    to: unknown;
-  }>;
+  changes?: Record<
+    string,
+    {
+      from: unknown;
+      to: unknown;
+    }
+  >;
   userId?: string;
   source: "api" | "webhook" | "sync";
 }

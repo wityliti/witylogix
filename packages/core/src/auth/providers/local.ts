@@ -54,7 +54,10 @@ export class LocalAuthProvider implements BaseAuthProvider {
    */
   async authenticate(request: AuthenticationRequest): Promise<AuthResult> {
     if (!request.email || !request.password) {
-      throw new InvalidCredentialsError("local", "Email and password are required");
+      throw new InvalidCredentialsError(
+        "local",
+        "Email and password are required",
+      );
     }
 
     // In production: this would query the User table, verify password hash against scrypt
@@ -86,7 +89,10 @@ export class LocalAuthProvider implements BaseAuthProvider {
    * Handle callback — not applicable for local auth (no callback URL).
    */
   async handleCallback(callbackData: CallbackData): Promise<AuthResult> {
-    throw new ConfigurationError("local", "Local auth does not support callbacks");
+    throw new ConfigurationError(
+      "local",
+      "Local auth does not support callbacks",
+    );
   }
 
   /**
@@ -123,7 +129,10 @@ export class LocalAuthProvider implements BaseAuthProvider {
   /**
    * Revoke a token — minimal; mainly used to clear Redis session.
    */
-  async revokeSession(accessToken: string, refreshToken?: string): Promise<void> {
+  async revokeSession(
+    accessToken: string,
+    refreshToken?: string,
+  ): Promise<void> {
     // Local auth: just clear the session in Redis / app-level cache
     // No external IdP to notify
   }
@@ -145,8 +154,14 @@ export class LocalAuthProvider implements BaseAuthProvider {
   /**
    * Get authorization URL — not applicable for local auth.
    */
-  async getAuthorizationUrl(redirectUri: string, state: string): Promise<AuthorizationUrl> {
-    throw new ConfigurationError("local", "Local auth does not use authorization URLs");
+  async getAuthorizationUrl(
+    redirectUri: string,
+    state: string,
+  ): Promise<AuthorizationUrl> {
+    throw new ConfigurationError(
+      "local",
+      "Local auth does not use authorization URLs",
+    );
   }
 
   /**

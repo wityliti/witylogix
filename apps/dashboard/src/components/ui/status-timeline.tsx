@@ -55,7 +55,7 @@ export const StatusTimeline = forwardRef<HTMLDivElement, StatusTimelineProps>(
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     if (orientation === "horizontal") {
       return (
@@ -67,30 +67,40 @@ export const StatusTimeline = forwardRef<HTMLDivElement, StatusTimelineProps>(
               {/* Filled portion */}
               <div
                 className="h-full bg-wl-success-500 transition-all duration-500"
-                style={{ width: `${(currentStep / (steps.length - 1 || 1)) * 100}%` }}
+                style={{
+                  width: `${(currentStep / (steps.length - 1 || 1)) * 100}%`,
+                }}
               />
             </div>
 
             {/* Steps */}
             <div className="relative flex justify-between items-start">
               {steps.map((step, index) => {
-                const status = step.status || (index <= currentStep ? "completed" : "pending");
+                const status =
+                  step.status ||
+                  (index <= currentStep ? "completed" : "pending");
                 const config = statusConfig[status];
 
                 return (
-                  <div key={step.id} className="flex flex-col items-center gap-2 flex-1">
+                  <div
+                    key={step.id}
+                    className="flex flex-col items-center gap-2 flex-1"
+                  >
                     {/* Dot */}
                     <div
                       className={cn(
                         "w-4 h-4 rounded-full border-2 bg-wl-bg-primary",
                         "relative z-10 flex items-center justify-center",
                         "transition-all duration-300",
-                        index <= currentStep && "ring-4 ring-wl-success-100 dark:ring-wl-success-900",
-                        config.dot
+                        index <= currentStep &&
+                          "ring-4 ring-wl-success-100 dark:ring-wl-success-900",
+                        config.dot,
                       )}
                     >
                       {step.icon && (
-                        <span className="text-wl-text-inverse text-xs">{step.icon}</span>
+                        <span className="text-wl-text-inverse text-xs">
+                          {step.icon}
+                        </span>
                       )}
                     </div>
 
@@ -100,7 +110,9 @@ export const StatusTimeline = forwardRef<HTMLDivElement, StatusTimelineProps>(
                         {step.title}
                       </p>
                       {step.timestamp && (
-                        <p className="text-xs text-wl-text-tertiary">{step.timestamp}</p>
+                        <p className="text-xs text-wl-text-tertiary">
+                          {step.timestamp}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -116,7 +128,8 @@ export const StatusTimeline = forwardRef<HTMLDivElement, StatusTimelineProps>(
     return (
       <div ref={ref} className={cn("space-y-4", className)} {...props}>
         {steps.map((step, index) => {
-          const status = step.status || (index <= currentStep ? "completed" : "pending");
+          const status =
+            step.status || (index <= currentStep ? "completed" : "pending");
           const config = statusConfig[status];
           const isLast = index === steps.length - 1;
           const isActive = index === currentStep;
@@ -131,15 +144,22 @@ export const StatusTimeline = forwardRef<HTMLDivElement, StatusTimelineProps>(
                     "w-4 h-4 rounded-full border-2 bg-wl-bg-primary",
                     "relative z-10 flex items-center justify-center",
                     "transition-all duration-300",
-                    isActive && "ring-4 ring-wl-primary-100 dark:ring-wl-primary-900"
+                    isActive &&
+                      "ring-4 ring-wl-primary-100 dark:ring-wl-primary-900",
                   )}
                   style={{
-                    borderColor: config.dot.match(/border-[\w-]+/)?.[0]?.replace("border-", ""),
-                    backgroundColor: config.dot.match(/bg-[\w-]+/)?.[0]?.replace("bg-", ""),
+                    borderColor: config.dot
+                      .match(/border-[\w-]+/)?.[0]
+                      ?.replace("border-", ""),
+                    backgroundColor: config.dot
+                      .match(/bg-[\w-]+/)?.[0]
+                      ?.replace("bg-", ""),
                   }}
                 >
                   {step.icon && (
-                    <span className="text-wl-text-inverse text-xs">{step.icon}</span>
+                    <span className="text-wl-text-inverse text-xs">
+                      {step.icon}
+                    </span>
                   )}
                 </div>
 
@@ -148,7 +168,9 @@ export const StatusTimeline = forwardRef<HTMLDivElement, StatusTimelineProps>(
                   <div
                     className={cn(
                       "w-0.5 flex-1 min-h-24",
-                      status === "completed" ? config.line : "bg-wl-border-default"
+                      status === "completed"
+                        ? config.line
+                        : "bg-wl-border-default",
                     )}
                   />
                 )}
@@ -174,7 +196,7 @@ export const StatusTimeline = forwardRef<HTMLDivElement, StatusTimelineProps>(
                         ? "bg-wl-success-100 text-wl-success-700 dark:bg-wl-success-900 dark:text-wl-success-200"
                         : status === "active"
                           ? "bg-wl-primary-100 text-wl-primary-700 dark:bg-wl-primary-900 dark:text-wl-primary-200"
-                          : "bg-wl-neutral-100 text-wl-neutral-700 dark:bg-wl-neutral-900 dark:text-wl-neutral-200"
+                          : "bg-wl-neutral-100 text-wl-neutral-700 dark:bg-wl-neutral-900 dark:text-wl-neutral-200",
                     )}
                   >
                     {config.label}
@@ -183,7 +205,9 @@ export const StatusTimeline = forwardRef<HTMLDivElement, StatusTimelineProps>(
 
                 {/* Timestamp */}
                 {step.timestamp && (
-                  <p className="text-xs text-wl-text-tertiary mt-2">{step.timestamp}</p>
+                  <p className="text-xs text-wl-text-tertiary mt-2">
+                    {step.timestamp}
+                  </p>
                 )}
 
                 {/* POD Image */}
@@ -195,7 +219,9 @@ export const StatusTimeline = forwardRef<HTMLDivElement, StatusTimelineProps>(
                       className="w-24 h-24 object-cover rounded-lg border border-wl-border-subtle shadow-sm"
                     />
                     {step.podLabel && (
-                      <p className="text-xs text-wl-text-tertiary mt-1">{step.podLabel}</p>
+                      <p className="text-xs text-wl-text-tertiary mt-1">
+                        {step.podLabel}
+                      </p>
                     )}
                   </div>
                 )}
@@ -205,8 +231,7 @@ export const StatusTimeline = forwardRef<HTMLDivElement, StatusTimelineProps>(
         })}
       </div>
     );
-  }
+  },
 );
 
 StatusTimeline.displayName = "StatusTimeline";
-

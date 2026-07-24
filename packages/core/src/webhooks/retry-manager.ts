@@ -77,7 +77,7 @@ export class RetryManager {
     // Clamp attempt number to available delays
     const clampedAttempt = Math.min(
       attemptNumber,
-      this.backoffDelays.length - 1
+      this.backoffDelays.length - 1,
     );
     const baseDelay = this.backoffDelays[clampedAttempt];
 
@@ -247,13 +247,11 @@ export class RetryManager {
     return {
       totalEndpoints: states.length,
       openCircuits: states.filter((s) => s.circuitOpen).length,
-      activeRetries: states.filter(
-        (s) => s.attemptCount > 0 && !s.circuitOpen
-      ).length,
+      activeRetries: states.filter((s) => s.attemptCount > 0 && !s.circuitOpen)
+        .length,
       averageAttempts:
         states.length > 0
-          ? states.reduce((sum, s) => sum + s.attemptCount, 0) /
-            states.length
+          ? states.reduce((sum, s) => sum + s.attemptCount, 0) / states.length
           : 0,
     };
   }

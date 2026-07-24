@@ -5,7 +5,7 @@
  * Thread-safe using Prisma atomic updates.
  */
 
-import { PrismaClient } from '@witylogix/db';
+import { PrismaClient } from "@witylogix/db";
 
 export interface InvoiceNumberResult {
   invoiceNumber: string;
@@ -28,7 +28,7 @@ export interface InvoiceNumberResult {
 export async function generateInvoiceNumber(
   tenantId: string,
   prisma: PrismaClient,
-  prefix: string = 'INV',
+  prefix: string = "INV",
 ): Promise<InvoiceNumberResult> {
   const currentYear = new Date().getFullYear();
 
@@ -66,7 +66,7 @@ export async function generateInvoiceNumber(
   }
 
   // Format: INV-2026-00001
-  const paddedSequence = String(sequenceNumber).padStart(5, '0');
+  const paddedSequence = String(sequenceNumber).padStart(5, "0");
   const invoiceNumber = `${counter.prefix}-${currentYear}-${paddedSequence}`;
 
   return {
@@ -106,7 +106,7 @@ export async function getNextInvoiceNumber(
 
   // Would increment
   const nextSequence = counter.currentNumber + 1;
-  const paddedSequence = String(nextSequence).padStart(5, '0');
+  const paddedSequence = String(nextSequence).padStart(5, "0");
   return `${counter.prefix}-${currentYear}-${paddedSequence}`;
 }
 

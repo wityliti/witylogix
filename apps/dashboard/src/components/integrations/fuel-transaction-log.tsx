@@ -182,10 +182,15 @@ export function FuelTransactionLog({
     return {
       totalCost: sortedTransactions.reduce((sum, t) => sum + t.totalCost, 0),
       totalGallons: sortedTransactions.reduce((sum, t) => sum + t.gallons, 0),
-      avgMpg: sortedTransactions.length > 0
-        ? (sortedTransactions.reduce((sum, t) => sum + (t.mileage / t.gallons), 0) /
-            sortedTransactions.length).toFixed(2)
-        : "0.00",
+      avgMpg:
+        sortedTransactions.length > 0
+          ? (
+              sortedTransactions.reduce(
+                (sum, t) => sum + t.mileage / t.gallons,
+                0,
+              ) / sortedTransactions.length
+            ).toFixed(2)
+          : "0.00",
       fraudCount: sortedTransactions.filter((t) => t.isFraudAlert).length,
     };
   }, [sortedTransactions]);
@@ -203,7 +208,16 @@ export function FuelTransactionLog({
     onExport?.(sortedTransactions);
 
     // Generate CSV
-    const headers = ["Date", "Driver", "Vehicle", "Station", "Gallons", "Cost", "Card", "Fraud Alert"];
+    const headers = [
+      "Date",
+      "Driver",
+      "Vehicle",
+      "Station",
+      "Gallons",
+      "Cost",
+      "Card",
+      "Fraud Alert",
+    ];
     const rows = sortedTransactions.map((t) => [
       t.date.toLocaleDateString(),
       t.driver,
@@ -228,7 +242,7 @@ export function FuelTransactionLog({
     <div
       className={cn(
         "flex flex-col bg-wl-bg-surface border border-wl-border-subtle rounded-lg overflow-hidden",
-        className
+        className,
       )}
     >
       {/* Header */}
@@ -239,10 +253,17 @@ export function FuelTransactionLog({
               <Fuel className="w-5 h-5 text-wl-primary-500" />
               Fuel Transaction Log
             </h3>
-            <p className="text-xs text-wl-text-secondary mt-1">{sortedTransactions.length} transactions</p>
+            <p className="text-xs text-wl-text-secondary mt-1">
+              {sortedTransactions.length} transactions
+            </p>
           </div>
 
-          <Button variant="secondary" size="sm" onClick={handleExport} className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleExport}
+            className="flex items-center gap-2"
+          >
             <Download className="w-4 h-4" />
             Export CSV
           </Button>
@@ -252,7 +273,9 @@ export function FuelTransactionLog({
       {/* Filters */}
       <div className="p-4 border-b border-wl-border-subtle bg-wl-bg-overlay flex items-end gap-3">
         <div className="flex-1">
-          <label className="text-xs text-wl-text-secondary block mb-2">From Date</label>
+          <label className="text-xs text-wl-text-secondary block mb-2">
+            From Date
+          </label>
           <input
             type="date"
             value={dateRangeStart}
@@ -262,7 +285,9 @@ export function FuelTransactionLog({
         </div>
 
         <div className="flex-1">
-          <label className="text-xs text-wl-text-secondary block mb-2">To Date</label>
+          <label className="text-xs text-wl-text-secondary block mb-2">
+            To Date
+          </label>
           <input
             type="date"
             value={dateRangeEnd}
@@ -290,25 +315,34 @@ export function FuelTransactionLog({
         <div className="p-3 bg-wl-bg-surface rounded-lg">
           <p className="text-xs text-wl-text-secondary mb-1">Total Cost</p>
           <p className="text-lg font-bold text-wl-text-primary">
-            ${totals.totalCost.toLocaleString("en-US", { maximumFractionDigits: 2 })}
+            $
+            {totals.totalCost.toLocaleString("en-US", {
+              maximumFractionDigits: 2,
+            })}
           </p>
         </div>
 
         <div className="p-3 bg-wl-bg-surface rounded-lg">
           <p className="text-xs text-wl-text-secondary mb-1">Total Gallons</p>
           <p className="text-lg font-bold text-wl-text-primary">
-            {totals.totalGallons.toLocaleString("en-US", { maximumFractionDigits: 1 })}
+            {totals.totalGallons.toLocaleString("en-US", {
+              maximumFractionDigits: 1,
+            })}
           </p>
         </div>
 
         <div className="p-3 bg-wl-bg-surface rounded-lg">
           <p className="text-xs text-wl-text-secondary mb-1">Avg MPG</p>
-          <p className="text-lg font-bold text-wl-success-400">{totals.avgMpg}</p>
+          <p className="text-lg font-bold text-wl-success-400">
+            {totals.avgMpg}
+          </p>
         </div>
 
         <div className="p-3 bg-wl-bg-surface rounded-lg">
           <p className="text-xs text-wl-text-secondary mb-1">Fraud Alerts</p>
-          <p className="text-lg font-bold text-wl-danger-400">{totals.fraudCount}</p>
+          <p className="text-lg font-bold text-wl-danger-400">
+            {totals.fraudCount}
+          </p>
         </div>
       </div>
 
@@ -332,18 +366,26 @@ export function FuelTransactionLog({
                   className="flex items-center gap-1 text-xs font-semibold text-wl-text-secondary hover:text-wl-text-primary transition-colors"
                 >
                   Driver
-                  {sortField === "driver" && <ArrowUpDown className="w-3 h-3" />}
+                  {sortField === "driver" && (
+                    <ArrowUpDown className="w-3 h-3" />
+                  )}
                 </button>
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-wl-text-secondary">Vehicle</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-wl-text-secondary">Station</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-wl-text-secondary">
+                Vehicle
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-wl-text-secondary">
+                Station
+              </th>
               <th className="px-4 py-3 text-left">
                 <button
                   onClick={() => handleSort("gallons")}
                   className="flex items-center gap-1 text-xs font-semibold text-wl-text-secondary hover:text-wl-text-primary transition-colors"
                 >
                   Gallons
-                  {sortField === "gallons" && <ArrowUpDown className="w-3 h-3" />}
+                  {sortField === "gallons" && (
+                    <ArrowUpDown className="w-3 h-3" />
+                  )}
                 </button>
               </th>
               <th className="px-4 py-3 text-left">
@@ -355,8 +397,12 @@ export function FuelTransactionLog({
                   {sortField === "cost" && <ArrowUpDown className="w-3 h-3" />}
                 </button>
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-wl-text-secondary">Card</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-wl-text-secondary">Status</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-wl-text-secondary">
+                Card
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-wl-text-secondary">
+                Status
+              </th>
             </tr>
           </thead>
 
@@ -366,7 +412,7 @@ export function FuelTransactionLog({
                 key={txn.id}
                 className={cn(
                   "border-b border-wl-border-subtle hover:bg-wl-bg-overlay/50 transition-colors",
-                  txn.isFraudAlert && "bg-wl-danger-bg/10"
+                  txn.isFraudAlert && "bg-wl-danger-bg/10",
                 )}
               >
                 <td className="px-4 py-3">
@@ -377,14 +423,18 @@ export function FuelTransactionLog({
                     </span>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-sm text-wl-text-primary">{txn.driver}</td>
+                <td className="px-4 py-3 text-sm text-wl-text-primary">
+                  {txn.driver}
+                </td>
                 <td className="px-4 py-3">
                   <Badge variant="default">{txn.vehicle}</Badge>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-start gap-1">
                     <MapPin className="w-3.5 h-3.5 text-wl-text-secondary flex-shrink-0 mt-0.5" />
-                    <div className="text-sm text-wl-text-primary">{txn.station}</div>
+                    <div className="text-sm text-wl-text-primary">
+                      {txn.station}
+                    </div>
                   </div>
                 </td>
                 <td className="px-4 py-3 text-sm font-semibold text-wl-text-primary">
@@ -393,10 +443,16 @@ export function FuelTransactionLog({
                 <td className="px-4 py-3 text-sm font-semibold text-wl-text-primary">
                   ${txn.totalCost.toFixed(2)}
                 </td>
-                <td className="px-4 py-3 text-sm text-wl-text-secondary font-mono">{txn.cardUsed}</td>
+                <td className="px-4 py-3 text-sm text-wl-text-secondary font-mono">
+                  {txn.cardUsed}
+                </td>
                 <td className="px-4 py-3">
                   {txn.isFraudAlert ? (
-                    <Badge variant="danger" dot className="flex items-center gap-1">
+                    <Badge
+                      variant="danger"
+                      dot
+                      className="flex items-center gap-1"
+                    >
                       <AlertTriangle className="w-3 h-3" />
                       Alert
                     </Badge>

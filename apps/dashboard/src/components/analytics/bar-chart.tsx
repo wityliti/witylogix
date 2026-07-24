@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-} from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { ChartTooltip } from "./chart-tooltip";
 
@@ -72,9 +67,7 @@ export function BarChart({
   // Calculate max value for Y scale
   const allValues =
     mode === "stacked"
-      ? data.map((_, i) =>
-          series.reduce((sum, s) => sum + (s.data[i] || 0), 0)
-        )
+      ? data.map((_, i) => series.reduce((sum, s) => sum + (s.data[i] || 0), 0))
       : series.flatMap((s) => s.data);
   const maxValue = Math.max(...allValues, 100);
 
@@ -108,7 +101,7 @@ export function BarChart({
           ? series.reduce(
               (sum, s, i) =>
                 sum + (i < seriesIndex ? s.data[dataIndex] || 0 : 0),
-              0
+              0,
             )
           : 0;
 
@@ -122,7 +115,7 @@ export function BarChart({
       setTooltipVisible(true);
       setHoveredBar(`${seriesIndex}-${dataIndex}`);
     },
-    [chartSeries, data, mode, series]
+    [chartSeries, data, mode, series],
   );
 
   const handleBarMouseLeave = () => {
@@ -308,9 +301,7 @@ export function BarChart({
                 const value = s.data[dataIndex] || 0;
                 const barHeight = (value / maxValue) * chartHeight;
                 const y = stackedY - barHeight;
-                const x =
-                  padding.left +
-                  categoryWidth * (dataIndex + 0.2);
+                const x = padding.left + categoryWidth * (dataIndex + 0.2);
                 stackedY = y;
 
                 return (
@@ -389,9 +380,7 @@ export function BarChart({
                 const value = s.data[dataIndex] || 0;
                 const barLength = (value / maxValue) * chartWidth;
                 const x = stackedX;
-                const y =
-                  padding.top +
-                  categoryWidth * (dataIndex + 0.2);
+                const y = padding.top + categoryWidth * (dataIndex + 0.2);
                 stackedX = x + barLength;
 
                 return (
@@ -435,9 +424,7 @@ export function BarChart({
         data={tooltipData}
         renderContent={(data) => (
           <div className="space-y-1">
-            <p className="font-semibold text-wl-text-primary">
-              {data?.label}
-            </p>
+            <p className="font-semibold text-wl-text-primary">{data?.label}</p>
             <p className="text-wl-text-secondary text-xs">
               {data?.series}: {data?.value}
             </p>

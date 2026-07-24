@@ -5,60 +5,63 @@
  * setup guides, and configuration suggestions.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { SetupWizardAssistant, type SetupWizardState } from '../setup-wizard-assistant.js';
+import { describe, it, expect, beforeEach } from "vitest";
+import {
+  SetupWizardAssistant,
+  type SetupWizardState,
+} from "../setup-wizard-assistant.js";
 
-describe('SetupWizardAssistant', () => {
+describe("SetupWizardAssistant", () => {
   let wizard: SetupWizardAssistant;
 
   beforeEach(() => {
     wizard = new SetupWizardAssistant();
   });
 
-  describe('Wizard Initialization', () => {
-    it('should initialize wizard for new tenant', () => {
+  describe("Wizard Initialization", () => {
+    it("should initialize wizard for new tenant", () => {
       const state = wizard.initializeWizard(
-        'tenant-1',
-        'Olive Garden',
-        'Italian restaurant chain',
-        'growth'
+        "tenant-1",
+        "Olive Garden",
+        "Italian restaurant chain",
+        "growth",
       );
 
-      expect(state.tenantId).toBe('tenant-1');
-      expect(state.companyName).toBe('Olive Garden');
-      expect(state.industry).toBe('restaurant');
-      expect(state.businessSize).toBe('growth');
+      expect(state.tenantId).toBe("tenant-1");
+      expect(state.companyName).toBe("Olive Garden");
+      expect(state.industry).toBe("restaurant");
+      expect(state.businessSize).toBe("growth");
       expect(state.steps.length).toBeGreaterThan(0);
       expect(state.currentStepIndex).toBe(0);
       expect(state.completedSteps.size).toBe(0);
       expect(state.startedAt).toBeInstanceOf(Date);
     });
 
-    it('should detect restaurant industry', () => {
+    it("should detect restaurant industry", () => {
       const state = wizard.initializeWizard(
-        'tenant-1',
-        'Quick Pizza',
-        'Local pizza restaurant'
+        "tenant-1",
+        "Quick Pizza",
+        "Local pizza restaurant",
       );
 
-      expect(state.industry).toBe('restaurant');
+      expect(state.industry).toBe("restaurant");
     });
 
-    it('should detect ecommerce industry', () => {
+    it("should detect ecommerce industry", () => {
       const state = wizard.initializeWizard(
-        'tenant-1',
-        'TechStore',
-        'Online electronics retailer'
+        "tenant-1",
+        "TechStore",
+        "Online electronics retailer",
       );
 
-      expect(state.industry).toBe('ecommerce');
+      expect(state.industry).toBe("ecommerce");
     });
 
-    it('should create prioritized steps', () => {
+    it("should create prioritized steps", () => {
       const state = wizard.initializeWizard(
-        'tenant-1',
-        'Restaurant Co',
-        'Full-service restaurant'
+        "tenant-1",
+        "Restaurant Co",
+        "Full-service restaurant",
       );
 
       expect(state.steps.length).toBeGreaterThan(0);
@@ -73,38 +76,40 @@ describe('SetupWizardAssistant', () => {
       });
     });
 
-    it('should respect business size in step ordering', () => {
+    it("should respect business size in step ordering", () => {
       const starterState = wizard.initializeWizard(
-        'tenant-1',
-        'Restaurant',
-        '',
-        'starter'
+        "tenant-1",
+        "Restaurant",
+        "",
+        "starter",
       );
 
       const enterpriseState = wizard.initializeWizard(
-        'tenant-2',
-        'Restaurant',
-        '',
-        'enterprise'
+        "tenant-2",
+        "Restaurant",
+        "",
+        "enterprise",
       );
 
-      expect(starterState.steps.length).toBeLessThanOrEqual(enterpriseState.steps.length);
+      expect(starterState.steps.length).toBeLessThanOrEqual(
+        enterpriseState.steps.length,
+      );
     });
   });
 
-  describe('Step Completion', () => {
+  describe("Step Completion", () => {
     let state: SetupWizardState;
 
     beforeEach(() => {
       state = wizard.initializeWizard(
-        'tenant-1',
-        'Sample Restaurant',
-        '',
-        'growth'
+        "tenant-1",
+        "Sample Restaurant",
+        "",
+        "growth",
       );
     });
 
-    it('should complete a step', () => {
+    it("should complete a step", () => {
       expect(state.completedSteps.has(0)).toBe(false);
 
       wizard.completeStep(state, 0);
@@ -113,7 +118,7 @@ describe('SetupWizardAssistant', () => {
       expect(state.steps[0].completedAt).toBeInstanceOf(Date);
     });
 
-    it('should update current step after completion', () => {
+    it("should update current step after completion", () => {
       const initialStep = state.currentStepIndex;
 
       wizard.completeStep(state, 0);
@@ -121,7 +126,7 @@ describe('SetupWizardAssistant', () => {
       expect(state.currentStepIndex).not.toBe(initialStep);
     });
 
-    it('should skip a step', () => {
+    it("should skip a step", () => {
       expect(state.skippedSteps.has(1)).toBe(false);
 
       wizard.skipStep(state, 1);
@@ -130,7 +135,7 @@ describe('SetupWizardAssistant', () => {
       expect(state.steps[1].skippedAt).toBeInstanceOf(Date);
     });
 
-    it('should allow skipping and completing different steps', () => {
+    it("should allow skipping and completing different steps", () => {
       wizard.completeStep(state, 0);
       wizard.skipStep(state, 1);
 
@@ -139,19 +144,19 @@ describe('SetupWizardAssistant', () => {
     });
   });
 
-  describe('Setup Progress', () => {
+  describe("Setup Progress", () => {
     let state: SetupWizardState;
 
     beforeEach(() => {
       state = wizard.initializeWizard(
-        'tenant-1',
-        'Sample Restaurant',
-        '',
-        'growth'
+        "tenant-1",
+        "Sample Restaurant",
+        "",
+        "growth",
       );
     });
 
-    it('should calculate progress percentage', () => {
+    it("should calculate progress percentage", () => {
       const progress = wizard.getProgress(state);
 
       expect(progress.completionPercentage).toBe(0);
@@ -163,7 +168,7 @@ describe('SetupWizardAssistant', () => {
       expect(progress2.completionPercentage).toBeLessThan(100);
     });
 
-    it('should track completed and skipped steps', () => {
+    it("should track completed and skipped steps", () => {
       wizard.completeStep(state, 0);
       wizard.skipStep(state, 1);
 
@@ -173,24 +178,26 @@ describe('SetupWizardAssistant', () => {
       expect(progress.skippedSteps).toBe(1);
     });
 
-    it('should estimate remaining time', () => {
+    it("should estimate remaining time", () => {
       const progress1 = wizard.getProgress(state);
       const initialRemaining = progress1.estimatedRemainingMinutes;
 
       wizard.completeStep(state, 0);
       const progress2 = wizard.getProgress(state);
 
-      expect(progress2.estimatedRemainingMinutes).toBeLessThan(initialRemaining);
+      expect(progress2.estimatedRemainingMinutes).toBeLessThan(
+        initialRemaining,
+      );
     });
 
-    it('should provide next recommended step', () => {
+    it("should provide next recommended step", () => {
       const progress = wizard.getProgress(state);
 
       expect(progress.nextRecommendedStep).toBeDefined();
       expect(progress.nextRecommendedStep?.stepNumber).toBe(0);
     });
 
-    it('should be 100% complete when all steps done', () => {
+    it("should be 100% complete when all steps done", () => {
       for (let i = 0; i < state.steps.length; i++) {
         wizard.completeStep(state, i);
       }
@@ -202,50 +209,52 @@ describe('SetupWizardAssistant', () => {
     });
   });
 
-  describe('Next Action Suggestions', () => {
+  describe("Next Action Suggestions", () => {
     let state: SetupWizardState;
 
     beforeEach(() => {
       state = wizard.initializeWizard(
-        'tenant-1',
-        'Sample Restaurant',
-        '',
-        'growth'
+        "tenant-1",
+        "Sample Restaurant",
+        "",
+        "growth",
       );
     });
 
-    it('should suggest next action after provider connection', () => {
-      const nextAction = wizard.getNextAction(state, 'stripe');
+    it("should suggest next action after provider connection", () => {
+      const nextAction = wizard.getNextAction(state, "stripe");
 
       expect(nextAction).toBeDefined();
       expect(nextAction?.providerId).toBeTruthy();
     });
 
-    it('should return null when all steps complete', () => {
+    it("should return null when all steps complete", () => {
       for (let i = 0; i < state.steps.length; i++) {
         wizard.completeStep(state, i);
       }
 
-      const nextAction = wizard.getNextAction(state, 'stripe');
+      const nextAction = wizard.getNextAction(state, "stripe");
 
       expect(nextAction).toBeNull();
     });
 
-    it('should suggest critical steps first', () => {
-      const nextAction = wizard.getNextAction(state, 'stripe');
+    it("should suggest critical steps first", () => {
+      const nextAction = wizard.getNextAction(state, "stripe");
 
       if (nextAction) {
-        const step = state.steps.find((s) => s.stepNumber === nextAction.stepNumber);
+        const step = state.steps.find(
+          (s) => s.stepNumber === nextAction.stepNumber,
+        );
         expect(step?.priority).toMatch(/critical|high/);
       }
     });
   });
 
-  describe('Integration Setup Guides', () => {
-    it('should generate setup guide for known provider', () => {
-      const guide = wizard.getIntegrationSetupGuide('stripe');
+  describe("Integration Setup Guides", () => {
+    it("should generate setup guide for known provider", () => {
+      const guide = wizard.getIntegrationSetupGuide("stripe");
 
-      expect(guide.providerId).toBe('stripe');
+      expect(guide.providerId).toBe("stripe");
       expect(guide.providerName).toBeTruthy();
       expect(guide.basicSteps.length).toBeGreaterThan(0);
       expect(guide.authSteps.length).toBeGreaterThan(0);
@@ -253,22 +262,28 @@ describe('SetupWizardAssistant', () => {
       expect(guide.estimatedMinutes).toBeGreaterThan(0);
     });
 
-    it('should include auth steps for OAuth provider', () => {
-      const guide = wizard.getIntegrationSetupGuide('shopify');
+    it("should include auth steps for OAuth provider", () => {
+      const guide = wizard.getIntegrationSetupGuide("shopify");
 
       expect(guide.authSteps.length).toBeGreaterThan(0);
-      expect(guide.authSteps.some((s) => s.toLowerCase().includes('oauth') || s.toLowerCase().includes('authorize'))).toBe(true);
+      expect(
+        guide.authSteps.some(
+          (s) =>
+            s.toLowerCase().includes("oauth") ||
+            s.toLowerCase().includes("authorize"),
+        ),
+      ).toBe(true);
     });
 
-    it('should include webhook steps for providers with webhook support', () => {
-      const guide = wizard.getIntegrationSetupGuide('stripe');
+    it("should include webhook steps for providers with webhook support", () => {
+      const guide = wizard.getIntegrationSetupGuide("stripe");
 
       expect(guide.webhookSteps).toBeDefined();
       expect(guide.webhookSteps?.length).toBeGreaterThan(0);
     });
 
-    it('should list common issues and solutions', () => {
-      const guide = wizard.getIntegrationSetupGuide('stripe');
+    it("should list common issues and solutions", () => {
+      const guide = wizard.getIntegrationSetupGuide("stripe");
 
       expect(guide.commonIssues.length).toBeGreaterThan(0);
       guide.commonIssues.forEach((issue) => {
@@ -277,14 +292,16 @@ describe('SetupWizardAssistant', () => {
       });
     });
 
-    it('should throw for unknown provider', () => {
-      expect(() => wizard.getIntegrationSetupGuide('unknown-provider-xyz')).toThrow();
+    it("should throw for unknown provider", () => {
+      expect(() =>
+        wizard.getIntegrationSetupGuide("unknown-provider-xyz"),
+      ).toThrow();
     });
   });
 
-  describe('Configuration Suggestions', () => {
-    it('should provide config suggestions for stripe', () => {
-      const suggestions = wizard.getConfigSuggestions('stripe', 'growth');
+  describe("Configuration Suggestions", () => {
+    it("should provide config suggestions for stripe", () => {
+      const suggestions = wizard.getConfigSuggestions("stripe", "growth");
 
       expect(suggestions.length).toBeGreaterThan(0);
       suggestions.forEach((s) => {
@@ -294,44 +311,46 @@ describe('SetupWizardAssistant', () => {
       });
     });
 
-    it('should vary recommendations by business size', () => {
-      const starter = wizard.getConfigSuggestions('stripe', 'starter');
-      const enterprise = wizard.getConfigSuggestions('stripe', 'enterprise');
+    it("should vary recommendations by business size", () => {
+      const starter = wizard.getConfigSuggestions("stripe", "starter");
+      const enterprise = wizard.getConfigSuggestions("stripe", "enterprise");
 
       const starterRecommended = starter.filter((s) => s.recommended).length;
-      const enterpriseRecommended = enterprise.filter((s) => s.recommended).length;
+      const enterpriseRecommended = enterprise.filter(
+        (s) => s.recommended,
+      ).length;
 
       expect(enterpriseRecommended).toBeGreaterThanOrEqual(starterRecommended);
     });
 
-    it('should identify integration dependencies in config', () => {
-      const suggestions = wizard.getConfigSuggestions('stripe', 'enterprise');
+    it("should identify integration dependencies in config", () => {
+      const suggestions = wizard.getConfigSuggestions("stripe", "enterprise");
 
-      const withDeps = suggestions.filter((s) => s.affectsOtherIntegrations.length > 0);
+      const withDeps = suggestions.filter(
+        (s) => s.affectsOtherIntegrations.length > 0,
+      );
       expect(withDeps.length).toBeGreaterThan(0);
     });
 
-    it('should return empty array for unknown provider', () => {
-      const suggestions = wizard.getConfigSuggestions('unknown-provider', 'growth');
+    it("should return empty array for unknown provider", () => {
+      const suggestions = wizard.getConfigSuggestions(
+        "unknown-provider",
+        "growth",
+      );
 
       expect(Array.isArray(suggestions)).toBe(true);
       expect(suggestions.length).toBe(0);
     });
   });
 
-  describe('Workflow State Transitions', () => {
+  describe("Workflow State Transitions", () => {
     let state: SetupWizardState;
 
     beforeEach(() => {
-      state = wizard.initializeWizard(
-        'tenant-1',
-        'Restaurant',
-        '',
-        'growth'
-      );
+      state = wizard.initializeWizard("tenant-1", "Restaurant", "", "growth");
     });
 
-    it('should mark wizard complete when all steps done', () => {
+    it("should mark wizard complete when all steps done", () => {
       expect(state.completedAt).toBeUndefined();
 
       for (let i = 0; i < state.steps.length; i++) {
@@ -341,7 +360,7 @@ describe('SetupWizardAssistant', () => {
       expect(state.completedAt).toBeDefined();
     });
 
-    it('should not mark complete with only skipped steps', () => {
+    it("should not mark complete with only skipped steps", () => {
       for (let i = 0; i < state.steps.length; i++) {
         wizard.skipStep(state, i);
       }
@@ -349,7 +368,7 @@ describe('SetupWizardAssistant', () => {
       expect(state.completedAt).toBeDefined();
     });
 
-    it('should track step completion order', () => {
+    it("should track step completion order", () => {
       const timestamps: Date[] = [];
 
       wizard.completeStep(state, 0);
@@ -358,17 +377,19 @@ describe('SetupWizardAssistant', () => {
       wizard.completeStep(state, 1);
       timestamps.push(state.steps[1].completedAt!);
 
-      expect(timestamps[1].getTime()).toBeGreaterThanOrEqual(timestamps[0].getTime());
+      expect(timestamps[1].getTime()).toBeGreaterThanOrEqual(
+        timestamps[0].getTime(),
+      );
     });
   });
 
-  describe('Multi-Step Scenarios', () => {
-    it('should handle realistic setup flow for restaurant', () => {
+  describe("Multi-Step Scenarios", () => {
+    it("should handle realistic setup flow for restaurant", () => {
       const state = wizard.initializeWizard(
-        'restaurant-1',
-        'Fast Food Chain',
-        'Quick service restaurant',
-        'enterprise'
+        "restaurant-1",
+        "Fast Food Chain",
+        "Quick service restaurant",
+        "enterprise",
       );
 
       const progress1 = wizard.getProgress(state);
@@ -390,12 +411,12 @@ describe('SetupWizardAssistant', () => {
       expect(nextAction).toBeDefined();
     });
 
-    it('should handle rapid completion', () => {
+    it("should handle rapid completion", () => {
       const state = wizard.initializeWizard(
-        'quick-tenant',
-        'Small Business',
-        '',
-        'starter'
+        "quick-tenant",
+        "Small Business",
+        "",
+        "starter",
       );
 
       for (let i = 0; i < Math.min(3, state.steps.length); i++) {

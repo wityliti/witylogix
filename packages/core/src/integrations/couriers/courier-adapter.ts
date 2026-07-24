@@ -50,7 +50,9 @@ export abstract class CourierAdapter {
    * @returns Created delivery with ID and tracking information
    * @throws {Error} If delivery cannot be created
    */
-  abstract createDelivery(request: CreateDeliveryRequest): Promise<CourierDelivery>;
+  abstract createDelivery(
+    request: CreateDeliveryRequest,
+  ): Promise<CourierDelivery>;
 
   /**
    * Get current status of a delivery.
@@ -94,7 +96,9 @@ export abstract class CourierAdapter {
    * @returns Registered webhook information with ID
    * @throws {Error} If webhook cannot be registered
    */
-  abstract registerWebhook(registration: WebhookRegistration): Promise<WebhookInfo>;
+  abstract registerWebhook(
+    registration: WebhookRegistration,
+  ): Promise<WebhookInfo>;
 
   /**
    * Deregister a webhook.

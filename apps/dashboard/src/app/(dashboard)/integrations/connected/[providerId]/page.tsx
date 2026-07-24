@@ -56,12 +56,19 @@ function relativeTime(ts: string): string {
 }
 
 function eventLabel(eventType: string): string {
-  return eventType.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+  return eventType
+    .replace(/_/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function isErrorEvent(e: IntegrationEvent): boolean {
   const t = e.eventType.toUpperCase();
-  return t === "ERROR" || t === "HEALTH_CHECK" && (e.metadata as Record<string, unknown>)?.healthy === false;
+  return (
+    t === "ERROR" ||
+    (t === "HEALTH_CHECK" &&
+      (e.metadata as Record<string, unknown>)?.healthy === false)
+  );
 }
 
 interface UsageMetric {
@@ -111,8 +118,14 @@ export default function IntegrationDetailPage() {
   const params = useParams();
   const connectionId = params.providerId as string;
 
-  const { isLoading: connectionsLoading, getStatus, pauseSync, resumeSync, forceSync, disconnect } =
-    useIntegrationStatus({ enablePolling: true });
+  const {
+    isLoading: connectionsLoading,
+    getStatus,
+    pauseSync,
+    resumeSync,
+    forceSync,
+    disconnect,
+  } = useIntegrationStatus({ enablePolling: true });
   const connection = getStatus(connectionId);
 
   const { data: usageData } = useApiQuery<{ usage: UsageMetric[] }>(
@@ -162,10 +175,13 @@ export default function IntegrationDetailPage() {
               {!isLoading && (
                 <>
                   <p className="text-gray-400 mb-4">
-                    The integration you&apos;re looking for doesn&apos;t exist or has been disconnected.
+                    The integration you&apos;re looking for doesn&apos;t exist
+                    or has been disconnected.
                   </p>
                   <Button variant="primary" asChild>
-                    <Link href="/integrations/connected">View All Integrations</Link>
+                    <Link href="/integrations/connected">
+                      View All Integrations
+                    </Link>
                   </Button>
                 </>
               )}
@@ -202,7 +218,8 @@ export default function IntegrationDetailPage() {
             </h1>
             <div className="flex items-center gap-3 mt-2">
               <Badge variant={isHealthy ? "success" : "danger"}>
-                {connection.status.charAt(0).toUpperCase() + connection.status.slice(1)}
+                {connection.status.charAt(0).toUpperCase() +
+                  connection.status.slice(1)}
               </Badge>
               <span className="text-sm text-gray-400">
                 Uptime: {connection.uptime}%
@@ -238,9 +255,7 @@ export default function IntegrationDetailPage() {
                 <div className="text-2xl font-bold text-white">
                   {metric.value.toLocaleString()}
                 </div>
-                <div className="text-xs text-gray-500 mt-1">
-                  {metric.unit}
-                </div>
+                <div className="text-xs text-gray-500 mt-1">{metric.unit}</div>
               </CardContent>
             </Card>
           ))}
@@ -291,7 +306,7 @@ export default function IntegrationDetailPage() {
                     try {
                       const result = await api.post<{ message?: string }>(
                         `/api/v4/integrations/${connectionId}/test`,
-                        {}
+                        {},
                       );
                       setShowTestResult({
                         success: true,
@@ -300,7 +315,8 @@ export default function IntegrationDetailPage() {
                     } catch (err) {
                       setShowTestResult({
                         success: false,
-                        message: err instanceof Error ? err.message : "Test failed",
+                        message:
+                          err instanceof Error ? err.message : "Test failed",
                       });
                     }
                   }}
@@ -318,7 +334,7 @@ export default function IntegrationDetailPage() {
                 "bg-wl-bg-elevated border",
                 showTestResult.success
                   ? "border-emerald-500/20"
-                  : "border-red-500/20"
+                  : "border-red-500/20",
               )}
             >
               <CardContent className="pt-6">
@@ -329,7 +345,9 @@ export default function IntegrationDetailPage() {
                     <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
                   )}
                   <div className="flex-1">
-                    <p className="text-sm text-white">{showTestResult.message}</p>
+                    <p className="text-sm text-white">
+                      {showTestResult.message}
+                    </p>
                     <button
                       onClick={() => setShowTestResult(null)}
                       className="text-xs text-gray-500 hover:text-gray-400 mt-2"
@@ -357,7 +375,9 @@ export default function IntegrationDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {activityLog.length === 0 ? (
-                <p className="text-sm text-gray-500 text-center py-4">No activity recorded yet.</p>
+                <p className="text-sm text-gray-500 text-center py-4">
+                  No activity recorded yet.
+                </p>
               ) : (
                 activityLog.map((entry) => {
                   const time = new Date(entry.timestamp);
@@ -376,7 +396,7 @@ export default function IntegrationDetailPage() {
                         "p-3 rounded-lg border-l-2",
                         entry.status === "success"
                           ? "border-l-emerald-500 bg-emerald-500/5"
-                          : "border-l-amber-500 bg-amber-500/5"
+                          : "border-l-amber-500 bg-amber-500/5",
                       )}
                     >
                       <div className="flex items-start justify-between">
@@ -413,7 +433,10 @@ export default function IntegrationDetailPage() {
                   const isExpanded = expandedErrors.has(error.id);
 
                   return (
-                    <div key={error.id} className="border border-red-500/20 rounded-lg bg-red-500/5">
+                    <div
+                      key={error.id}
+                      className="border border-red-500/20 rounded-lg bg-red-500/5"
+                    >
                       <button
                         onClick={() => {
                           const newSet = new Set(expandedErrors);
@@ -425,9 +448,13 @@ export default function IntegrationDetailPage() {
                       >
                         <div className="flex items-start justify-between">
                           <div>
-                            <p className="text-sm font-medium text-red-500">{error.message}</p>
+                            <p className="text-sm font-medium text-red-500">
+                              {error.message}
+                            </p>
                             {error.context && (
-                              <p className="text-xs text-gray-500 mt-1">{error.context}</p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {error.context}
+                              </p>
                             )}
                           </div>
                           <span className="text-xs text-gray-500 ml-2">
@@ -481,23 +508,23 @@ export default function IntegrationDetailPage() {
                   Subscribed Events
                 </label>
                 <div className="space-y-2">
-                  {["orders.created", "orders.updated", "inventory.changed"].map(
-                    (event) => (
-                      <label
-                        key={event}
-                        className="flex items-center gap-2 cursor-pointer"
-                      >
-                        <input
-                          type="checkbox"
-                          defaultChecked
-                          className="w-4 h-4 rounded"
-                        />
-                        <span className="text-sm text-gray-400">
-                          {event}
-                        </span>
-                      </label>
-                    )
-                  )}
+                  {[
+                    "orders.created",
+                    "orders.updated",
+                    "inventory.changed",
+                  ].map((event) => (
+                    <label
+                      key={event}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        defaultChecked
+                        className="w-4 h-4 rounded"
+                      />
+                      <span className="text-sm text-gray-400">{event}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
             </CardContent>
@@ -511,7 +538,9 @@ export default function IntegrationDetailPage() {
             <CardContent className="space-y-3 text-sm">
               <div>
                 <p className="text-gray-500 mb-1">Provider</p>
-                <p className="text-white font-medium">{connection.providerName}</p>
+                <p className="text-white font-medium">
+                  {connection.providerName}
+                </p>
               </div>
               <div>
                 <p className="text-gray-500 mb-1">Category</p>
@@ -527,7 +556,9 @@ export default function IntegrationDetailPage() {
                 <div>
                   <p className="text-gray-500 mb-1">Credentials Expire</p>
                   <p className="text-white font-medium">
-                    {new Date(connection.credentialsExpireAt).toLocaleDateString()}
+                    {new Date(
+                      connection.credentialsExpireAt,
+                    ).toLocaleDateString()}
                   </p>
                 </div>
               )}
@@ -543,7 +574,7 @@ export default function IntegrationDetailPage() {
               <div className="flex items-center gap-2">
                 <input
                   type="text"
-                  value={`${typeof window !== 'undefined' ? window.location.origin : ''}/api/v4/webhooks/${connectionId}`}
+                  value={`${typeof window !== "undefined" ? window.location.origin : ""}/api/v4/webhooks/${connectionId}`}
                   readOnly
                   className="flex-1 px-3 py-2 bg-wl-bg-root border border-wl-border-default rounded text-xs text-gray-400 font-mono"
                 />
@@ -551,7 +582,7 @@ export default function IntegrationDetailPage() {
                   className="p-2 hover:bg-wl-bg-elevated rounded transition-colors"
                   onClick={() => {
                     navigator.clipboard.writeText(
-                      `${window.location.origin}/api/v4/webhooks/${connectionId}`
+                      `${window.location.origin}/api/v4/webhooks/${connectionId}`,
                     );
                   }}
                 >
@@ -583,13 +614,17 @@ export default function IntegrationDetailPage() {
 
       {/* Disconnect Modal */}
       {showDisconnectModal && (
-        <Modal isOpen={showDisconnectModal} onClose={() => setShowDisconnectModal(false)}>
+        <Modal
+          isOpen={showDisconnectModal}
+          onClose={() => setShowDisconnectModal(false)}
+        >
           <div className="space-y-4">
             <h2 className="text-xl font-bold text-white">
               Disconnect {connection.providerName}?
             </h2>
             <p className="text-gray-400">
-              This will stop syncing data from {connection.providerName}. You can reconnect anytime.
+              This will stop syncing data from {connection.providerName}. You
+              can reconnect anytime.
             </p>
             <div className="flex gap-3 pt-4">
               <Button

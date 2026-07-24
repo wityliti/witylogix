@@ -3,7 +3,7 @@
  * Kept dependency-free so they can be unit-tested without React Native.
  */
 
-export type BarcodeMode = 'pickup' | 'pod';
+export type BarcodeMode = "pickup" | "pod";
 
 export interface ScanValidationResult {
   valid: boolean;
@@ -12,11 +12,11 @@ export interface ScanValidationResult {
 
 /** Supported barcode formats accepted by the scanner. */
 export const SUPPORTED_BARCODE_TYPES = [
-  'qr',
-  'code128',
-  'code39',
-  'ean13',
-  'ean8',
+  "qr",
+  "code128",
+  "code39",
+  "ean13",
+  "ean8",
 ] as const;
 
 export type SupportedBarcodeType = (typeof SUPPORTED_BARCODE_TYPES)[number];
@@ -37,9 +37,10 @@ export function validatePickupBarcode(
   expected: string,
 ): ScanValidationResult {
   if (!scanned || !expected) {
-    return { valid: false, error: 'Missing barcode data' };
+    return { valid: false, error: "Missing barcode data" };
   }
-  const match = normalizeBarcodeData(scanned) === normalizeBarcodeData(expected);
+  const match =
+    normalizeBarcodeData(scanned) === normalizeBarcodeData(expected);
   return match
     ? { valid: true }
     : {
@@ -54,7 +55,7 @@ export function validatePickupBarcode(
  */
 export function validatePodBarcode(scanned: string): ScanValidationResult {
   if (!scanned || !scanned.trim()) {
-    return { valid: false, error: 'No barcode data scanned' };
+    return { valid: false, error: "No barcode data scanned" };
   }
   return { valid: true };
 }

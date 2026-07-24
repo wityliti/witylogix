@@ -14,15 +14,15 @@
  * Batch Operations: up to 100 records per request
  */
 
-import { z } from 'zod';
-import { createHmac } from 'crypto';
+import { z } from "zod";
+import { createHmac } from "crypto";
 
 // ─── VALIDATION SCHEMAS ────────────────────────────────────────────────
 
 const HubSpotConfigSchema = z.object({
-  clientId: z.string().min(1, 'clientId required'),
-  clientSecret: z.string().min(1, 'clientSecret required'),
-  redirectUri: z.string().url('Invalid redirectUri'),
+  clientId: z.string().min(1, "clientId required"),
+  clientSecret: z.string().min(1, "clientSecret required"),
+  redirectUri: z.string().url("Invalid redirectUri"),
   apiKey: z.string().optional(),
 });
 
@@ -34,32 +34,32 @@ const HubSpotTokenRequestSchema = z.object({
   access_token: z.string(),
   refresh_token: z.string(),
   expires_in: z.number().optional(),
-  token_type: z.string().default('Bearer'),
+  token_type: z.string().default("Bearer"),
 });
 
 const SearchFilterSchema = z.object({
   propertyName: z.string(),
   operator: z.enum([
-    'EQ',
-    'NEQ',
-    'LT',
-    'LTE',
-    'GT',
-    'GTE',
-    'BETWEEN',
-    'IN',
-    'NOT_IN',
-    'CONTAINS_TOKEN',
-    'CONTAINS',
-    'NOT_CONTAINS',
-    'HAS_PROPERTY',
+    "EQ",
+    "NEQ",
+    "LT",
+    "LTE",
+    "GT",
+    "GTE",
+    "BETWEEN",
+    "IN",
+    "NOT_IN",
+    "CONTAINS_TOKEN",
+    "CONTAINS",
+    "NOT_CONTAINS",
+    "HAS_PROPERTY",
   ]),
   value: z.union([z.string(), z.number(), z.array(z.string())]),
 });
 
 const SearchFilterGroupSchema = z.object({
   filters: z.array(SearchFilterSchema),
-  filterOperator: z.enum(['AND', 'OR']).optional(),
+  filterOperator: z.enum(["AND", "OR"]).optional(),
 });
 
 const CRMObjectSchema = z.object({
@@ -70,7 +70,7 @@ const CRMObjectSchema = z.object({
       z.object({
         id: z.string(),
         type: z.string(),
-      })
+      }),
     )
     .optional(),
   createdAt: z.string().optional(),
@@ -87,26 +87,28 @@ const CustomPropertySchema = z.object({
   name: z.string(),
   label: z.string(),
   type: z.enum([
-    'string',
-    'number',
-    'date',
-    'enumeration',
-    'phone_number',
-    'textarea',
+    "string",
+    "number",
+    "date",
+    "enumeration",
+    "phone_number",
+    "textarea",
   ]),
   fieldType: z
     .enum([
-      'text',
-      'textarea',
-      'select',
-      'multi-select',
-      'checkbox',
-      'date',
-      'phone_number',
+      "text",
+      "textarea",
+      "select",
+      "multi-select",
+      "checkbox",
+      "date",
+      "phone_number",
     ])
     .optional(),
   description: z.string().optional(),
-  options: z.array(z.object({ label: z.string(), value: z.string() })).optional(),
+  options: z
+    .array(z.object({ label: z.string(), value: z.string() }))
+    .optional(),
   hidden: z.boolean().optional(),
 });
 
@@ -121,7 +123,7 @@ const PipelineSchema = z.object({
         label: z.string(),
         displayOrder: z.number(),
         metadata: z.record(z.unknown()).optional(),
-      })
+      }),
     )
     .optional(),
 });
@@ -358,9 +360,9 @@ export class HubSpotSDKClient {
   private tokenExpiresAt: Date | null = null;
   private rateLimitInfo: RateLimitInfo | null = null;
 
-  private readonly baseUrl = 'https://api.hubapi.com';
-  private readonly authUrl = 'https://app.hubspot.com/oauth/authorize';
-  private readonly tokenUrl = 'https://api.hubapi.com/oauth/v1/token';
+  private readonly baseUrl = "https://api.hubapi.com";
+  private readonly authUrl = "https://app.hubspot.com/oauth/authorize";
+  private readonly tokenUrl = "https://api.hubapi.com/oauth/v1/token";
 
   /**
    * Create HubSpot SDK client
@@ -391,19 +393,19 @@ export class HubSpotSDKClient {
    */
   getAuthorizationUrl(
     scopes: string[] = [
-      'crm.objects.contacts.read',
-      'crm.objects.contacts.write',
-      'crm.objects.companies.read',
-      'crm.objects.companies.write',
-      'crm.objects.deals.read',
-      'crm.objects.deals.write',
-    ]
+      "crm.objects.contacts.read",
+      "crm.objects.contacts.write",
+      "crm.objects.companies.read",
+      "crm.objects.companies.write",
+      "crm.objects.deals.read",
+      "crm.objects.deals.write",
+    ],
   ): string {
     const params = new URLSearchParams({
       client_id: this.config.clientId,
       redirect_uri: this.config.redirectUri,
-      response_type: 'code',
-      scope: scopes.join(' '),
+      response_type: "code",
+      scope: scopes.join(" "),
     });
 
     return `${this.authUrl}?${params}`;
@@ -426,7 +428,7 @@ export class HubSpotSDKClient {
     const validated = HubSpotOAuthCodeSchema.parse({ code });
 
     const params = new URLSearchParams({
-      grant_type: 'authorization_code',
+      grant_type: "authorization_code",
       client_id: this.config.clientId,
       client_secret: this.config.clientSecret,
       redirect_uri: this.config.redirectUri,
@@ -434,14 +436,14 @@ export class HubSpotSDKClient {
     });
 
     const response = await fetch(this.tokenUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: params.toString(),
     });
 
     if (!response.ok) {
       throw new Error(
-        `OAuth token exchange failed: ${response.status} ${response.statusText}`
+        `OAuth token exchange failed: ${response.status} ${response.statusText}`,
       );
     }
 
@@ -466,25 +468,25 @@ export class HubSpotSDKClient {
    */
   async refreshAccessToken(): Promise<HubSpotTokenResponse> {
     if (!this.refreshToken) {
-      throw new Error('No refresh token available');
+      throw new Error("No refresh token available");
     }
 
     const params = new URLSearchParams({
-      grant_type: 'refresh_token',
+      grant_type: "refresh_token",
       client_id: this.config.clientId,
       client_secret: this.config.clientSecret,
       refresh_token: this.refreshToken,
     });
 
     const response = await fetch(this.tokenUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: params.toString(),
     });
 
     if (!response.ok) {
       throw new Error(
-        `Token refresh failed: ${response.status} ${response.statusText}`
+        `Token refresh failed: ${response.status} ${response.statusText}`,
       );
     }
 
@@ -526,8 +528,8 @@ export class HubSpotSDKClient {
    * Update rate limit info from response headers
    */
   private updateRateLimitInfo(headers: Headers): void {
-    const remaining = headers.get('x-hubspot-ratelimit-remaining');
-    const limit = headers.get('x-hubspot-ratelimit-interval-milliseconds');
+    const remaining = headers.get("x-hubspot-ratelimit-remaining");
+    const limit = headers.get("x-hubspot-ratelimit-interval-milliseconds");
 
     if (remaining && limit) {
       this.rateLimitInfo = {
@@ -541,128 +543,123 @@ export class HubSpotSDKClient {
   /**
    * Get Contact by ID
    */
-  async getContact(
-    id: string,
-    properties?: string[]
-  ): Promise<HubSpotContact> {
-    return this.getCRMObject<HubSpotContact>('contacts', id, properties);
+  async getContact(id: string, properties?: string[]): Promise<HubSpotContact> {
+    return this.getCRMObject<HubSpotContact>("contacts", id, properties);
   }
 
   /**
    * Create Contact
    */
   async createContact(
-    data: Omit<HubSpotContact, 'id'>
+    data: Omit<HubSpotContact, "id">,
   ): Promise<HubSpotContact> {
-    return this.createCRMObject<HubSpotContact>('contacts', data);
+    return this.createCRMObject<HubSpotContact>("contacts", data);
   }
 
   /**
    * Update Contact
    */
-  async updateContact(id: string, data: Partial<HubSpotContact>): Promise<void> {
-    await this.updateCRMObject('contacts', id, data);
+  async updateContact(
+    id: string,
+    data: Partial<HubSpotContact>,
+  ): Promise<void> {
+    await this.updateCRMObject("contacts", id, data);
   }
 
   /**
    * Delete Contact
    */
   async deleteContact(id: string): Promise<void> {
-    await this.deleteCRMObject('contacts', id);
+    await this.deleteCRMObject("contacts", id);
   }
 
   /**
    * Get Company by ID
    */
-  async getCompany(
-    id: string,
-    properties?: string[]
-  ): Promise<HubSpotCompany> {
-    return this.getCRMObject<HubSpotCompany>('companies', id, properties);
+  async getCompany(id: string, properties?: string[]): Promise<HubSpotCompany> {
+    return this.getCRMObject<HubSpotCompany>("companies", id, properties);
   }
 
   /**
    * Create Company
    */
   async createCompany(
-    data: Omit<HubSpotCompany, 'id'>
+    data: Omit<HubSpotCompany, "id">,
   ): Promise<HubSpotCompany> {
-    return this.createCRMObject<HubSpotCompany>('companies', data);
+    return this.createCRMObject<HubSpotCompany>("companies", data);
   }
 
   /**
    * Update Company
    */
-  async updateCompany(id: string, data: Partial<HubSpotCompany>): Promise<void> {
-    await this.updateCRMObject('companies', id, data);
+  async updateCompany(
+    id: string,
+    data: Partial<HubSpotCompany>,
+  ): Promise<void> {
+    await this.updateCRMObject("companies", id, data);
   }
 
   /**
    * Delete Company
    */
   async deleteCompany(id: string): Promise<void> {
-    await this.deleteCRMObject('companies', id);
+    await this.deleteCRMObject("companies", id);
   }
 
   /**
    * Get Deal by ID
    */
   async getDeal(id: string, properties?: string[]): Promise<HubSpotDeal> {
-    return this.getCRMObject<HubSpotDeal>('deals', id, properties);
+    return this.getCRMObject<HubSpotDeal>("deals", id, properties);
   }
 
   /**
    * Create Deal
    */
-  async createDeal(data: Omit<HubSpotDeal, 'id'>): Promise<HubSpotDeal> {
-    return this.createCRMObject<HubSpotDeal>('deals', data);
+  async createDeal(data: Omit<HubSpotDeal, "id">): Promise<HubSpotDeal> {
+    return this.createCRMObject<HubSpotDeal>("deals", data);
   }
 
   /**
    * Update Deal
    */
   async updateDeal(id: string, data: Partial<HubSpotDeal>): Promise<void> {
-    await this.updateCRMObject('deals', id, data);
+    await this.updateCRMObject("deals", id, data);
   }
 
   /**
    * Delete Deal
    */
   async deleteDeal(id: string): Promise<void> {
-    await this.deleteCRMObject('deals', id);
+    await this.deleteCRMObject("deals", id);
   }
 
   /**
    * Get Ticket by ID
    */
-  async getTicket(
-    id: string,
-    properties?: string[]
-  ): Promise<HubSpotTicket> {
-    return this.getCRMObject<HubSpotTicket>('tickets', id, properties);
+  async getTicket(id: string, properties?: string[]): Promise<HubSpotTicket> {
+    return this.getCRMObject<HubSpotTicket>("tickets", id, properties);
   }
 
   /**
    * Create Ticket
    */
-  async createTicket(
-    data: Omit<HubSpotTicket, 'id'>
-  ): Promise<HubSpotTicket> {
-    return this.createCRMObject<HubSpotTicket>('tickets', data);
+  async createTicket(data: Omit<HubSpotTicket, "id">): Promise<HubSpotTicket> {
+    return this.createCRMObject<HubSpotTicket>("tickets", data);
   }
 
   /**
    * Update Ticket
    */
   async updateTicket(id: string, data: Partial<HubSpotTicket>): Promise<void> {
-    await this.updateCRMObject('tickets', id, data);
+    await this.updateCRMObject("tickets", id, data);
   }
 
   /**
    * Delete Ticket
    */
   async deleteTicket(id: string): Promise<void> {
-    await this.deleteCRMObject('tickets', id);
+    await this.deleteCRMObject("tickets", id);
   }
 
   /**
@@ -670,18 +667,18 @@ export class HubSpotSDKClient {
    */
   async getLineItem(
     id: string,
-    properties?: string[]
+    properties?: string[],
   ): Promise<HubSpotLineItem> {
-    return this.getCRMObject<HubSpotLineItem>('line_items', id, properties);
+    return this.getCRMObject<HubSpotLineItem>("line_items", id, properties);
   }
 
   /**
    * Create Line Item
    */
   async createLineItem(
-    data: Omit<HubSpotLineItem, 'id'>
+    data: Omit<HubSpotLineItem, "id">,
   ): Promise<HubSpotLineItem> {
-    return this.createCRMObject<HubSpotLineItem>('line_items', data);
+    return this.createCRMObject<HubSpotLineItem>("line_items", data);
   }
 
   /**
@@ -689,28 +686,25 @@ export class HubSpotSDKClient {
    */
   async updateLineItem(
     id: string,
-    data: Partial<HubSpotLineItem>
+    data: Partial<HubSpotLineItem>,
   ): Promise<void> {
-    await this.updateCRMObject('line_items', id, data);
+    await this.updateCRMObject("line_items", id, data);
   }
 
   /**
    * Get Product by ID
    */
-  async getProduct(
-    id: string,
-    properties?: string[]
-  ): Promise<HubSpotProduct> {
-    return this.getCRMObject<HubSpotProduct>('products', id, properties);
+  async getProduct(id: string, properties?: string[]): Promise<HubSpotProduct> {
+    return this.getCRMObject<HubSpotProduct>("products", id, properties);
   }
 
   /**
    * Create Product
    */
   async createProduct(
-    data: Omit<HubSpotProduct, 'id'>
+    data: Omit<HubSpotProduct, "id">,
   ): Promise<HubSpotProduct> {
-    return this.createCRMObject<HubSpotProduct>('products', data);
+    return this.createCRMObject<HubSpotProduct>("products", data);
   }
 
   /**
@@ -718,9 +712,9 @@ export class HubSpotSDKClient {
    */
   async updateProduct(
     id: string,
-    data: Partial<HubSpotProduct>
+    data: Partial<HubSpotProduct>,
   ): Promise<void> {
-    await this.updateCRMObject('products', id, data);
+    await this.updateCRMObject("products", id, data);
   }
 
   /**
@@ -729,19 +723,16 @@ export class HubSpotSDKClient {
   private async getCRMObject<T extends { id?: string }>(
     objectType: string,
     id: string,
-    properties?: string[]
+    properties?: string[],
   ): Promise<T> {
-    const url = new URL(
-      `/crm/v3/objects/${objectType}/${id}`,
-      this.baseUrl
-    );
+    const url = new URL(`/crm/v3/objects/${objectType}/${id}`, this.baseUrl);
 
     if (properties && properties.length > 0) {
-      url.searchParams.set('properties', properties.join(','));
+      url.searchParams.set("properties", properties.join(","));
     }
 
-    const response = await this.makeRequest(url.toString(), { method: 'GET' });
-    const data = await response.json() as Record<string, unknown>;
+    const response = await this.makeRequest(url.toString(), { method: "GET" });
+    const data = (await response.json()) as Record<string, unknown>;
 
     return {
       id: data.id,
@@ -754,15 +745,15 @@ export class HubSpotSDKClient {
    */
   private async createCRMObject<T extends { id?: string }>(
     objectType: string,
-    data: Record<string, unknown>
+    data: Record<string, unknown>,
   ): Promise<T> {
     const url = `${this.baseUrl}/crm/v3/objects/${objectType}`;
     const response = await this.makeRequest(url, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(data),
     });
 
-    const result = await response.json() as Record<string, unknown>;
+    const result = (await response.json()) as Record<string, unknown>;
     return {
       id: result.id,
       ...result,
@@ -775,11 +766,11 @@ export class HubSpotSDKClient {
   private async updateCRMObject(
     objectType: string,
     id: string,
-    data: Record<string, unknown>
+    data: Record<string, unknown>,
   ): Promise<void> {
     const url = `${this.baseUrl}/crm/v3/objects/${objectType}/${id}`;
     await this.makeRequest(url, {
-      method: 'PATCH',
+      method: "PATCH",
       body: JSON.stringify(data),
     });
   }
@@ -789,7 +780,7 @@ export class HubSpotSDKClient {
    */
   private async deleteCRMObject(objectType: string, id: string): Promise<void> {
     const url = `${this.baseUrl}/crm/v3/objects/${objectType}/${id}`;
-    await this.makeRequest(url, { method: 'DELETE' });
+    await this.makeRequest(url, { method: "DELETE" });
   }
 
   /**
@@ -817,13 +808,13 @@ export class HubSpotSDKClient {
   async searchContacts(
     filterGroup: SearchFilterGroup,
     after?: string,
-    limit: number = 10
+    limit: number = 10,
   ): Promise<SearchResult<HubSpotContact>> {
     return this.searchCRMObjects<HubSpotContact>(
-      'contacts',
+      "contacts",
       filterGroup,
       after,
-      limit
+      limit,
     );
   }
 
@@ -833,13 +824,13 @@ export class HubSpotSDKClient {
   async searchCompanies(
     filterGroup: SearchFilterGroup,
     after?: string,
-    limit: number = 10
+    limit: number = 10,
   ): Promise<SearchResult<HubSpotCompany>> {
     return this.searchCRMObjects<HubSpotCompany>(
-      'companies',
+      "companies",
       filterGroup,
       after,
-      limit
+      limit,
     );
   }
 
@@ -849,9 +840,14 @@ export class HubSpotSDKClient {
   async searchDeals(
     filterGroup: SearchFilterGroup,
     after?: string,
-    limit: number = 10
+    limit: number = 10,
   ): Promise<SearchResult<HubSpotDeal>> {
-    return this.searchCRMObjects<HubSpotDeal>('deals', filterGroup, after, limit);
+    return this.searchCRMObjects<HubSpotDeal>(
+      "deals",
+      filterGroup,
+      after,
+      limit,
+    );
   }
 
   /**
@@ -861,7 +857,7 @@ export class HubSpotSDKClient {
     objectType: string,
     filterGroup: SearchFilterGroup,
     after?: string,
-    limit: number = 10
+    limit: number = 10,
   ): Promise<SearchResult<T>> {
     const url = `${this.baseUrl}/crm/v3/objects/${objectType}/search`;
 
@@ -872,7 +868,7 @@ export class HubSpotSDKClient {
     };
 
     const response = await this.makeRequest(url, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(body),
     });
 
@@ -898,11 +894,11 @@ export class HubSpotSDKClient {
     fromObjectId: string,
     toObjectType: string,
     toObjectId: string,
-    associationType: string = 'contact_to_company'
+    associationType: string = "contact_to_company",
   ): Promise<void> {
     const url = `${this.baseUrl}/crm/v3/objects/${fromObjectType}/${fromObjectId}/associations/${toObjectType}/${toObjectId}/${associationType}`;
 
-    await this.makeRequest(url, { method: 'PUT' });
+    await this.makeRequest(url, { method: "PUT" });
   }
 
   /**
@@ -911,12 +907,14 @@ export class HubSpotSDKClient {
   async listAssociations(
     objectType: string,
     objectId: string,
-    associationType: string
+    associationType: string,
   ): Promise<Array<{ id: string; type: string }>> {
     const url = `${this.baseUrl}/crm/v3/objects/${objectType}/${objectId}/associations/${associationType}`;
 
-    const response = await this.makeRequest(url, { method: 'GET' });
-    const data = await response.json() as { results?: Array<{ id: string; type: string }> };
+    const response = await this.makeRequest(url, { method: "GET" });
+    const data = (await response.json()) as {
+      results?: Array<{ id: string; type: string }>;
+    };
 
     return data.results || [];
   }
@@ -929,26 +927,35 @@ export class HubSpotSDKClient {
     fromObjectId: string,
     toObjectType: string,
     toObjectId: string,
-    associationType: string
+    associationType: string,
   ): Promise<void> {
     const url = `${this.baseUrl}/crm/v3/objects/${fromObjectType}/${fromObjectId}/associations/${toObjectType}/${toObjectId}/${associationType}`;
 
-    await this.makeRequest(url, { method: 'DELETE' });
+    await this.makeRequest(url, { method: "DELETE" });
   }
 
   /**
    * Get custom properties for object type
    */
-  async getCustomProperties(objectType: string): Promise<Array<{
-    name: string;
-    label: string;
-    type: string;
-    [key: string]: unknown;
-  }>> {
+  async getCustomProperties(objectType: string): Promise<
+    Array<{
+      name: string;
+      label: string;
+      type: string;
+      [key: string]: unknown;
+    }>
+  > {
     const url = `${this.baseUrl}/crm/v3/properties/${objectType}`;
 
-    const response = await this.makeRequest(url, { method: 'GET' });
-    const data = await response.json() as { results?: Array<{ name: string; label: string; type: string; [key: string]: unknown }> };
+    const response = await this.makeRequest(url, { method: "GET" });
+    const data = (await response.json()) as {
+      results?: Array<{
+        name: string;
+        label: string;
+        type: string;
+        [key: string]: unknown;
+      }>;
+    };
 
     return data.results || [];
   }
@@ -958,13 +965,13 @@ export class HubSpotSDKClient {
    */
   async createCustomProperty(
     objectType: string,
-    property: z.infer<typeof CustomPropertySchema>
+    property: z.infer<typeof CustomPropertySchema>,
   ): Promise<Record<string, unknown>> {
     const validated = CustomPropertySchema.parse(property);
     const url = `${this.baseUrl}/crm/v3/properties/${objectType}`;
 
     const response = await this.makeRequest(url, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(validated),
     });
 
@@ -977,8 +984,10 @@ export class HubSpotSDKClient {
   async getDealPipelines(): Promise<Array<z.infer<typeof PipelineSchema>>> {
     const url = `${this.baseUrl}/crm/v3/pipelines/deals`;
 
-    const response = await this.makeRequest(url, { method: 'GET' });
-    const data = await response.json() as { results?: Array<z.infer<typeof PipelineSchema>> };
+    const response = await this.makeRequest(url, { method: "GET" });
+    const data = (await response.json()) as {
+      results?: Array<z.infer<typeof PipelineSchema>>;
+    };
 
     return data.results || [];
   }
@@ -989,8 +998,10 @@ export class HubSpotSDKClient {
   async getTicketPipelines(): Promise<Array<z.infer<typeof PipelineSchema>>> {
     const url = `${this.baseUrl}/crm/v3/pipelines/tickets`;
 
-    const response = await this.makeRequest(url, { method: 'GET' });
-    const data = await response.json() as { results?: Array<z.infer<typeof PipelineSchema>> };
+    const response = await this.makeRequest(url, { method: "GET" });
+    const data = (await response.json()) as {
+      results?: Array<z.infer<typeof PipelineSchema>>;
+    };
 
     return data.results || [];
   }
@@ -1022,25 +1033,25 @@ export class HubSpotSDKClient {
    * ```
    */
   async batchCreateContacts(
-    inputs: Array<Omit<HubSpotContact, 'id'>>
+    inputs: Array<Omit<HubSpotContact, "id">>,
   ): Promise<Array<HubSpotContact>> {
-    return this.batchCreateCRMObjects<HubSpotContact>('contacts', inputs);
+    return this.batchCreateCRMObjects<HubSpotContact>("contacts", inputs);
   }
 
   /**
    * Batch update Contacts
    */
   async batchUpdateContacts(
-    inputs: Array<{ id: string } & Partial<HubSpotContact>>
+    inputs: Array<{ id: string } & Partial<HubSpotContact>>,
   ): Promise<Array<HubSpotContact>> {
-    return this.batchUpdateCRMObjects<HubSpotContact>('contacts', inputs);
+    return this.batchUpdateCRMObjects<HubSpotContact>("contacts", inputs);
   }
 
   /**
    * Batch archive Contacts
    */
   async batchArchiveContacts(ids: string[]): Promise<void> {
-    return this.batchArchiveCRMObjects('contacts', ids);
+    return this.batchArchiveCRMObjects("contacts", ids);
   }
 
   /**
@@ -1048,20 +1059,20 @@ export class HubSpotSDKClient {
    */
   private async batchCreateCRMObjects<T extends { id?: string }>(
     objectType: string,
-    inputs: Array<Record<string, unknown>>
+    inputs: Array<Record<string, unknown>>,
   ): Promise<T[]> {
     if (inputs.length > 100) {
-      throw new Error('Batch operations limited to 100 records per request');
+      throw new Error("Batch operations limited to 100 records per request");
     }
 
     const url = `${this.baseUrl}/crm/v3/objects/${objectType}/batch/create`;
 
     const response = await this.makeRequest(url, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({ inputs }),
     });
 
-    const data = await response.json() as { results?: T[] };
+    const data = (await response.json()) as { results?: T[] };
     return data.results || [];
   }
 
@@ -1070,20 +1081,20 @@ export class HubSpotSDKClient {
    */
   private async batchUpdateCRMObjects<T extends { id?: string }>(
     objectType: string,
-    inputs: Array<Record<string, unknown>>
+    inputs: Array<Record<string, unknown>>,
   ): Promise<T[]> {
     if (inputs.length > 100) {
-      throw new Error('Batch operations limited to 100 records per request');
+      throw new Error("Batch operations limited to 100 records per request");
     }
 
     const url = `${this.baseUrl}/crm/v3/objects/${objectType}/batch/update`;
 
     const response = await this.makeRequest(url, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({ inputs }),
     });
 
-    const data = await response.json() as { results?: T[] };
+    const data = (await response.json()) as { results?: T[] };
     return data.results || [];
   }
 
@@ -1092,16 +1103,16 @@ export class HubSpotSDKClient {
    */
   private async batchArchiveCRMObjects(
     objectType: string,
-    ids: string[]
+    ids: string[],
   ): Promise<void> {
     if (ids.length > 100) {
-      throw new Error('Batch operations limited to 100 records per request');
+      throw new Error("Batch operations limited to 100 records per request");
     }
 
     const url = `${this.baseUrl}/crm/v3/objects/${objectType}/batch/archive`;
 
     await this.makeRequest(url, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({ inputs: ids.map((id) => ({ id })) }),
     });
   }
@@ -1124,9 +1135,9 @@ export class HubSpotSDKClient {
    * ```
    */
   verifyWebhookSignature(signature: string, body: string): boolean {
-    const hmac = createHmac('sha256', this.config.clientSecret);
+    const hmac = createHmac("sha256", this.config.clientSecret);
     hmac.update(body);
-    const computed = hmac.digest('hex');
+    const computed = hmac.digest("hex");
 
     return computed === signature;
   }
@@ -1136,16 +1147,20 @@ export class HubSpotSDKClient {
    */
   private async makeRequest(
     url: string,
-    options: { method?: string; headers?: Record<string, string>; body?: string } = {}
+    options: {
+      method?: string;
+      headers?: Record<string, string>;
+      body?: string;
+    } = {},
   ): Promise<Response> {
     if (!this.accessToken) {
-      throw new Error('Not authenticated');
+      throw new Error("Not authenticated");
     }
 
     const { headers: extraHeaders, ...restOptions } = options;
     const headers: Record<string, string> = {
       Authorization: `Bearer ${this.accessToken}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...extraHeaders,
     };
 
@@ -1159,7 +1174,7 @@ export class HubSpotSDKClient {
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
       throw new Error(
-        `HubSpot API error ${response.status}: ${JSON.stringify(error)}`
+        `HubSpot API error ${response.status}: ${JSON.stringify(error)}`,
       );
     }
 

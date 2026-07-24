@@ -2,7 +2,7 @@
  * Custom error classes for the Witylogix SDK
  */
 
-import type { ApiErrorResponse, ErrorOptions } from './types';
+import type { ApiErrorResponse, ErrorOptions } from "./types";
 
 /**
  * Base error class for all API errors
@@ -14,9 +14,9 @@ export class ApiError extends Error {
 
   constructor(message: string, options: ErrorOptions) {
     super(message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
     this.status = options.status;
-    this.code = options.code || 'UNKNOWN_ERROR';
+    this.code = options.code || "UNKNOWN_ERROR";
     this.details = options.details;
 
     // Maintain proper prototype chain for instanceof checks
@@ -70,7 +70,7 @@ export class ApiError extends Error {
 export class AuthError extends ApiError {
   constructor(message: string, options: ErrorOptions) {
     super(message, options);
-    this.name = 'AuthError';
+    this.name = "AuthError";
     Object.setPrototypeOf(this, AuthError.prototype);
   }
 }
@@ -81,7 +81,7 @@ export class AuthError extends ApiError {
 export class NotFoundError extends ApiError {
   constructor(message: string, options: ErrorOptions) {
     super(message, options);
-    this.name = 'NotFoundError';
+    this.name = "NotFoundError";
     Object.setPrototypeOf(this, NotFoundError.prototype);
   }
 }
@@ -92,9 +92,12 @@ export class NotFoundError extends ApiError {
 export class RateLimitError extends ApiError {
   public readonly retryAfter?: number;
 
-  constructor(message: string, options: ErrorOptions & { retryAfter?: number } = { status: 429 }) {
+  constructor(
+    message: string,
+    options: ErrorOptions & { retryAfter?: number } = { status: 429 },
+  ) {
     super(message, options);
-    this.name = 'RateLimitError';
+    this.name = "RateLimitError";
     this.retryAfter = options.retryAfter;
     Object.setPrototypeOf(this, RateLimitError.prototype);
   }
@@ -106,7 +109,7 @@ export class RateLimitError extends ApiError {
 export class BadRequestError extends ApiError {
   constructor(message: string, options: ErrorOptions) {
     super(message, options);
-    this.name = 'BadRequestError';
+    this.name = "BadRequestError";
     Object.setPrototypeOf(this, BadRequestError.prototype);
   }
 }
@@ -117,7 +120,7 @@ export class BadRequestError extends ApiError {
 export class ServerError extends ApiError {
   constructor(message: string, options: ErrorOptions) {
     super(message, options);
-    this.name = 'ServerError';
+    this.name = "ServerError";
     Object.setPrototypeOf(this, ServerError.prototype);
   }
 }
@@ -128,7 +131,7 @@ export class ServerError extends ApiError {
 export class NetworkError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'NetworkError';
+    this.name = "NetworkError";
     Object.setPrototypeOf(this, NetworkError.prototype);
   }
 }
@@ -139,7 +142,7 @@ export class NetworkError extends Error {
 export class ConfigError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'ConfigError';
+    this.name = "ConfigError";
     Object.setPrototypeOf(this, ConfigError.prototype);
   }
 }

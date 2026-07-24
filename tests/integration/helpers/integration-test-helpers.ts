@@ -136,7 +136,10 @@ export function createMockHTTPClient(config: MockHTTPClientConfig = {}) {
 // MOCK RATE LIMITER
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function createMockRateLimiter(limit: number = 100, windowMs: number = 60000) {
+export function createMockRateLimiter(
+  limit: number = 100,
+  windowMs: number = 60000,
+) {
   let state: RateLimiterState = {
     remaining: limit,
     reset: Date.now() + windowMs,
@@ -310,13 +313,19 @@ export function assertSyncResult(
 } {
   const violations: string[] = [];
 
-  if (options.minRecords !== undefined && result.recordsSync < options.minRecords) {
+  if (
+    options.minRecords !== undefined &&
+    result.recordsSync < options.minRecords
+  ) {
     violations.push(
       `Expected at least ${options.minRecords} records synced, got ${result.recordsSync}`,
     );
   }
 
-  if (options.maxErrors !== undefined && result.errors.length > options.maxErrors) {
+  if (
+    options.maxErrors !== undefined &&
+    result.errors.length > options.maxErrors
+  ) {
     violations.push(
       `Expected at most ${options.maxErrors} errors, got ${result.errors.length}`,
     );
@@ -544,8 +553,11 @@ export function createMockFetchResponse(
     delay?: number;
   } = {},
 ): Response {
-  const { status = 200, headers = { "content-type": "application/json" }, delay = 0 } =
-    options;
+  const {
+    status = 200,
+    headers = { "content-type": "application/json" },
+    delay = 0,
+  } = options;
 
   const responseInit: ResponseInit = {
     status,

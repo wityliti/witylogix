@@ -97,7 +97,7 @@ describe("CursorPaginator", () => {
     it("should reject tampered cursors", async () => {
       const cursor = paginator.generateCursor(10);
       const tampered = Buffer.from(
-        JSON.stringify({ index: 50, timestamp: Date.now(), signature: "fake" })
+        JSON.stringify({ index: 50, timestamp: Date.now(), signature: "fake" }),
       ).toString("base64");
 
       const parsed = paginator.parseCursor(tampered);

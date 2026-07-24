@@ -1,8 +1,16 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useApiList, useApiQuery, useApiMutation, ApiFilters, UseApiListResult, UseApiQueryResult, UseApiMutationResult } from './use-api';
-import { api } from '@/lib/api';
+import { useState } from "react";
+import {
+  useApiList,
+  useApiQuery,
+  useApiMutation,
+  ApiFilters,
+  UseApiListResult,
+  UseApiQueryResult,
+  UseApiMutationResult,
+} from "./use-api";
+import { api } from "@/lib/api";
 
 export type NotificationChannel =
   | "EMAIL"
@@ -20,11 +28,7 @@ export type NotificationCategory =
   | "SYSTEM"
   | "ALERTS";
 
-export type NotificationStatus =
-  | "UNREAD"
-  | "READ"
-  | "ARCHIVED"
-  | "DISMISSED";
+export type NotificationStatus = "UNREAD" | "READ" | "ARCHIVED" | "DISMISSED";
 
 export type DeliveryStatus =
   | "SENT"
@@ -88,17 +92,27 @@ export interface DeliveryLogEntry {
 }
 
 /** Base list hook */
-export function useNotificationsList(filters?: ApiFilters): UseApiListResult<Notification> {
-  return useApiList<Notification>('/api/v4/notifications', filters);
+export function useNotificationsList(
+  filters?: ApiFilters,
+): UseApiListResult<Notification> {
+  return useApiList<Notification>("/api/v4/notifications", filters);
 }
 
 /** Rich composite hook used by the notifications inbox page */
 export function useNotifications(filters?: ApiFilters) {
-  const listResult = useApiList<Notification>('/api/v4/notifications', filters);
-  const markAllReadMutation = useApiMutation<void>('POST', '/api/v4/notifications/mark-all-read');
-  const deleteBulkMutation = useApiMutation<void>('POST', '/api/v4/notifications/delete-bulk');
+  const listResult = useApiList<Notification>("/api/v4/notifications", filters);
+  const markAllReadMutation = useApiMutation<void>(
+    "POST",
+    "/api/v4/notifications/mark-all-read",
+  );
+  const deleteBulkMutation = useApiMutation<void>(
+    "POST",
+    "/api/v4/notifications/delete-bulk",
+  );
 
-  const unreadCount = listResult.items.filter((n) => n.status === 'UNREAD').length;
+  const unreadCount = listResult.items.filter(
+    (n) => n.status === "UNREAD",
+  ).length;
   const hasMore = listResult.pagination.page < listResult.pagination.totalPages;
 
   return {
@@ -109,7 +123,9 @@ export function useNotifications(filters?: ApiFilters) {
     unreadCount,
     pagination: listResult.pagination,
     refetch: listResult.refetch,
-    loadMore: async () => { listResult.setPage(listResult.pagination.page + 1); },
+    loadMore: async () => {
+      listResult.setPage(listResult.pagination.page + 1);
+    },
     markAsRead: async (id: string) => {
       await api.patch(`/api/v4/notifications/${id}/read`);
       listResult.refetch();
@@ -118,36 +134,56 @@ export function useNotifications(filters?: ApiFilters) {
       await api.patch(`/api/v4/notifications/${id}/unread`);
       listResult.refetch();
     },
-    markAllAsRead: async () => { await markAllReadMutation.execute({}); listResult.refetch(); },
+    markAllAsRead: async () => {
+      await markAllReadMutation.execute({});
+      listResult.refetch();
+    },
     deleteNotification: async (id: string) => {
       await api.delete(`/api/v4/notifications/${id}`);
       listResult.refetch();
     },
-    deleteBulk: async (ids: string[]) => { await deleteBulkMutation.execute({ ids }); listResult.refetch(); },
+    deleteBulk: async (ids: string[]) => {
+      await deleteBulkMutation.execute({ ids });
+      listResult.refetch();
+    },
   };
 }
 
-export function useNotificationDetail(id: string | null): UseApiQueryResult<Notification> {
+export function useNotificationDetail(
+  id: string | null,
+): UseApiQueryResult<Notification> {
   return useApiQuery<Notification>(id ? `/api/v4/notifications/${id}` : null);
 }
 
-export function useMarkNotificationAsRead(id: string): UseApiMutationResult<Notification> {
-  return useApiMutation<Notification>('PATCH', `/api/v4/notifications/${id}/read`);
+export function useMarkNotificationAsRead(
+  id: string,
+): UseApiMutationResult<Notification> {
+  return useApiMutation<Notification>(
+    "PATCH",
+    `/api/v4/notifications/${id}/read`,
+  );
 }
 
 export function useDeleteNotification(id: string): UseApiMutationResult<void> {
-  return useApiMutation<void>('DELETE', `/api/v4/notifications/${id}`);
+  return useApiMutation<void>("DELETE", `/api/v4/notifications/${id}`);
 }
 
 /** Base query hook for preferences */
 export function useNotificationPreferencesQuery(): UseApiQueryResult<NotificationPreferences> {
-  return useApiQuery<NotificationPreferences>('/api/v4/notification-preferences');
+  return useApiQuery<NotificationPreferences>(
+    "/api/v4/notification-preferences",
+  );
 }
 
 /** Rich composite hook used by the notification preferences page */
 export function useNotificationPreferences() {
-  const queryResult = useApiQuery<NotificationPreferences>('/api/v4/notification-preferences');
-  const updateMutation = useApiMutation<NotificationPreferences>('PATCH', '/api/v4/notification-preferences');
+  const queryResult = useApiQuery<NotificationPreferences>(
+    "/api/v4/notification-preferences",
+  );
+  const updateMutation = useApiMutation<NotificationPreferences>(
+    "PATCH",
+    "/api/v4/notification-preferences",
+  );
   const [isSaving, setIsSaving] = useState(false);
 
   const updatePreferences = async (prefs: Partial<NotificationPreferences>) => {
@@ -160,16 +196,21 @@ export function useNotificationPreferences() {
     }
   };
 
-  const toggleChannelCategory = async (channel: NotificationChannel, category: NotificationCategory) => {
+  const toggleChannelCategory = async (
+    channel: NotificationChannel,
+    category: NotificationCategory,
+  ) => {
     const current = queryResult.data;
     if (!current) return;
     const existing = current.channelMatrix.find(
-      (p) => p.channel === channel && p.category === category
+      (p) => p.channel === channel && p.category === category,
     );
     await updatePreferences({
       channelMatrix: existing
         ? current.channelMatrix.map((p) =>
-            p.channel === channel && p.category === category ? { ...p, enabled: !p.enabled } : p
+            p.channel === channel && p.category === category
+              ? { ...p, enabled: !p.enabled }
+              : p,
           )
         : [...current.channelMatrix, { channel, category, enabled: true }],
     });
@@ -187,27 +228,47 @@ export function useNotificationPreferences() {
 }
 
 export function useUpdateNotificationPreferences(): UseApiMutationResult<NotificationPreferences> {
-  return useApiMutation<NotificationPreferences>('PATCH', '/api/v4/notification-preferences');
+  return useApiMutation<NotificationPreferences>(
+    "PATCH",
+    "/api/v4/notification-preferences",
+  );
 }
 
-export function useSendTestNotification(): UseApiMutationResult<{ success: boolean; message: string }> {
-  return useApiMutation<{ success: boolean; message: string }>('POST', '/api/v4/notifications/test');
+export function useSendTestNotification(): UseApiMutationResult<{
+  success: boolean;
+  message: string;
+}> {
+  return useApiMutation<{ success: boolean; message: string }>(
+    "POST",
+    "/api/v4/notifications/test",
+  );
 }
 
 /** Base list hook */
-export function useDeliveryLogList(filters?: ApiFilters): UseApiListResult<DeliveryLogEntry> {
-  return useApiList<DeliveryLogEntry>('/api/v4/notifications/delivery-log', filters);
+export function useDeliveryLogList(
+  filters?: ApiFilters,
+): UseApiListResult<DeliveryLogEntry> {
+  return useApiList<DeliveryLogEntry>(
+    "/api/v4/notifications/delivery-log",
+    filters,
+  );
 }
 
 /** Rich composite hook used by the delivery log page */
 export function useDeliveryLog(filters?: ApiFilters) {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [logFilters, setFilters] = useState<ApiFilters>(filters ?? {});
-  const listResult = useApiList<DeliveryLogEntry>('/api/v4/notifications/delivery-log', {
-    ...logFilters,
-    search: searchQuery,
-  });
-  const exportMutation = useApiMutation<{ url: string }>('POST', '/api/v4/notifications/delivery-log/export');
+  const listResult = useApiList<DeliveryLogEntry>(
+    "/api/v4/notifications/delivery-log",
+    {
+      ...logFilters,
+      search: searchQuery,
+    },
+  );
+  const exportMutation = useApiMutation<{ url: string }>(
+    "POST",
+    "/api/v4/notifications/delivery-log/export",
+  );
 
   const hasMore = listResult.pagination.page < listResult.pagination.totalPages;
 
@@ -222,7 +283,11 @@ export function useDeliveryLog(filters?: ApiFilters) {
     setSearchQuery,
     setFilters,
     refetch: listResult.refetch,
-    loadMore: () => { listResult.setPage(listResult.pagination.page + 1); },
-    exportCSV: async () => { await exportMutation.execute({}); },
+    loadMore: () => {
+      listResult.setPage(listResult.pagination.page + 1);
+    },
+    exportCSV: async () => {
+      await exportMutation.execute({});
+    },
   };
 }

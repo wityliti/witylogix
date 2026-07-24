@@ -3,13 +3,40 @@
  * Shared types for Salesforce, HubSpot, and future CRM providers
  */
 
-export type CRMProvider = 'salesforce' | 'hubspot' | 'zoho' | 'dynamics' | 'pipedrive';
+export type CRMProvider =
+  | "salesforce"
+  | "hubspot"
+  | "zoho"
+  | "dynamics"
+  | "pipedrive";
 
-export type CRMSyncStatus = 'pending' | 'synced' | 'failed' | 'skipped' | 'partial';
+export type CRMSyncStatus =
+  | "pending"
+  | "synced"
+  | "failed"
+  | "skipped"
+  | "partial";
 
-export type CRMRecordType = 'contact' | 'account' | 'opportunity' | 'deal' | 'activity';
+export type CRMRecordType =
+  | "contact"
+  | "account"
+  | "opportunity"
+  | "deal"
+  | "activity";
 
-export type CRMFieldType = 'string' | 'number' | 'boolean' | 'date' | 'email' | 'phone' | 'select' | 'multiselect' | 'textarea' | 'url' | 'currency' | 'percent';
+export type CRMFieldType =
+  | "string"
+  | "number"
+  | "boolean"
+  | "date"
+  | "email"
+  | "phone"
+  | "select"
+  | "multiselect"
+  | "textarea"
+  | "url"
+  | "currency"
+  | "percent";
 
 // ─── CORE CRM ENTITIES ────────────────────────────────────────────
 
@@ -89,10 +116,10 @@ export interface CRMDeal {
 
 export interface CRMActivity {
   id: string;
-  type: 'call' | 'email' | 'meeting' | 'task' | 'note';
+  type: "call" | "email" | "meeting" | "task" | "note";
   subject: string;
   description?: string;
-  recordType: 'contact' | 'account' | 'opportunity' | 'deal';
+  recordType: "contact" | "account" | "opportunity" | "deal";
   recordId: string;
   owner?: string;
   dueDate?: Date;
@@ -107,7 +134,7 @@ export interface CRMWebhookEvent {
   eventType: string;
   recordType: CRMRecordType;
   recordId: string;
-  action: 'created' | 'updated' | 'deleted';
+  action: "created" | "updated" | "deleted";
   data?: Record<string, unknown>;
   timestamp: Date;
 }
@@ -117,33 +144,58 @@ export interface CRMWebhookEvent {
 export interface ICRMAdapter {
   // Authentication
   getAuthorizationUrl(state?: string): string;
-  authenticate(authCode: string, metadata?: Record<string, unknown>): Promise<CRMConnection>;
+  authenticate(
+    authCode: string,
+    metadata?: Record<string, unknown>,
+  ): Promise<CRMConnection>;
   refreshToken(connection: CRMConnection): Promise<string>;
 
   // Contact Operations
-  getContacts(filters?: CRMContactFilter, pagination?: CRMPaginationParams): Promise<CRMPagedResult<CRMContact>>;
+  getContacts(
+    filters?: CRMContactFilter,
+    pagination?: CRMPaginationParams,
+  ): Promise<CRMPagedResult<CRMContact>>;
   getContact(id: string): Promise<CRMContact>;
-  createContact(contact: Omit<CRMContact, 'id' | 'lastModifiedAt'>): Promise<CRMContact>;
+  createContact(
+    contact: Omit<CRMContact, "id" | "lastModifiedAt">,
+  ): Promise<CRMContact>;
   updateContact(id: string, updates: Partial<CRMContact>): Promise<CRMContact>;
 
   // Account Operations
-  getAccounts(filters?: CRMAccountFilter, pagination?: CRMPaginationParams): Promise<CRMPagedResult<CRMAccount>>;
+  getAccounts(
+    filters?: CRMAccountFilter,
+    pagination?: CRMPaginationParams,
+  ): Promise<CRMPagedResult<CRMAccount>>;
   getAccount(id: string): Promise<CRMAccount>;
-  createAccount(account: Omit<CRMAccount, 'id' | 'lastModifiedAt'>): Promise<CRMAccount>;
+  createAccount(
+    account: Omit<CRMAccount, "id" | "lastModifiedAt">,
+  ): Promise<CRMAccount>;
   updateAccount(id: string, updates: Partial<CRMAccount>): Promise<CRMAccount>;
 
   // Opportunity/Deal Operations
-  getOpportunities(filters?: CRMOpportunityFilter, pagination?: CRMPaginationParams): Promise<CRMPagedResult<CRMOpportunity>>;
+  getOpportunities(
+    filters?: CRMOpportunityFilter,
+    pagination?: CRMPaginationParams,
+  ): Promise<CRMPagedResult<CRMOpportunity>>;
   getOpportunity(id: string): Promise<CRMOpportunity>;
   updateDeal(id: string, updates: Partial<CRMDeal>): Promise<CRMDeal>;
 
   // Activity Operations
-  getActivities(recordId: string, pagination?: CRMPaginationParams): Promise<CRMPagedResult<CRMActivity>>;
-  createActivity(activity: Omit<CRMActivity, 'id' | 'lastModifiedAt'>): Promise<CRMActivity>;
+  getActivities(
+    recordId: string,
+    pagination?: CRMPaginationParams,
+  ): Promise<CRMPagedResult<CRMActivity>>;
+  createActivity(
+    activity: Omit<CRMActivity, "id" | "lastModifiedAt">,
+  ): Promise<CRMActivity>;
   syncActivities(activities: CRMActivity[]): Promise<CRMSyncResult[]>;
 
   // Search Operations
-  search(query: string, recordType: CRMRecordType, pagination?: CRMPaginationParams): Promise<CRMPagedResult<unknown>>;
+  search(
+    query: string,
+    recordType: CRMRecordType,
+    pagination?: CRMPaginationParams,
+  ): Promise<CRMPagedResult<unknown>>;
 
   // Rate Limit Info
   getRateLimitInfo(): RateLimitInfo;
@@ -171,11 +223,11 @@ export interface CRMConnection {
 
 export interface CRMSyncConfig {
   autoSync: boolean;
-  syncFrequency?: 'hourly' | 'daily' | 'weekly';
+  syncFrequency?: "hourly" | "daily" | "weekly";
   bidirectional: boolean;
   fieldMappings?: CRMFieldMapping[];
   webhooksEnabled: boolean;
-  conflictResolution: 'crm_wins' | 'witylogix_wins' | 'manual';
+  conflictResolution: "crm_wins" | "witylogix_wins" | "manual";
   lastSyncToken?: string; // For incremental sync
 }
 
@@ -185,8 +237,13 @@ export interface CRMFieldMapping {
   witylogixField: string;
   crmField: string;
   recordType: CRMRecordType;
-  direction: 'bidirectional' | 'to_crm' | 'from_crm';
-  transformation?: 'none' | 'uppercase' | 'lowercase' | 'phone_format' | 'custom';
+  direction: "bidirectional" | "to_crm" | "from_crm";
+  transformation?:
+    | "none"
+    | "uppercase"
+    | "lowercase"
+    | "phone_format"
+    | "custom";
   transformationScript?: string;
   isRequired: boolean;
   createdAt: Date;
@@ -201,8 +258,8 @@ export interface CRMSyncLog {
   recordType: CRMRecordType;
   recordId: string;
   externalId?: string;
-  syncType: 'create' | 'update' | 'delete' | 'sync';
-  direction: 'to_crm' | 'from_crm' | 'bidirectional';
+  syncType: "create" | "update" | "delete" | "sync";
+  direction: "to_crm" | "from_crm" | "bidirectional";
   status: CRMSyncStatus;
   errorMessage?: string;
   errorDetails?: Record<string, unknown>;
@@ -247,7 +304,7 @@ export interface CRMPaginationParams {
   offset?: number;
   cursor?: string;
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }
 
 export interface CRMPagedResult<T> {
@@ -276,7 +333,7 @@ export interface CRMSyncContext {
   provider: CRMProvider;
   syncToken?: string;
   fieldMappings: CRMFieldMapping[];
-  conflictResolution: 'crm_wins' | 'witylogix_wins' | 'manual';
+  conflictResolution: "crm_wins" | "witylogix_wins" | "manual";
 }
 
 // ─── RATE LIMITING ────────────────────────────────────────────
@@ -331,7 +388,7 @@ export interface CRMLead {
   company?: string;
   source?: string;
   status?: string;
-  rating?: 'hot' | 'warm' | 'cold';
+  rating?: "hot" | "warm" | "cold";
   description?: string;
   metadata?: Record<string, unknown>;
   lastModifiedAt?: Date;
@@ -361,7 +418,7 @@ export interface CRMPipelineStage {
 
 // ─── SYNC DIRECTION & ADVANCED CONFIG ──────────────────────────────────
 
-export type SyncDirection = 'inbound' | 'outbound' | 'bidirectional';
+export type SyncDirection = "inbound" | "outbound" | "bidirectional";
 
 export interface CRMAdvancedConfig extends CRMSyncConfig {
   syncDirection: SyncDirection;
@@ -379,7 +436,7 @@ export interface CRMAdvancedConfig extends CRMSyncConfig {
 export interface ZohoCRMConfig {
   clientId: string;
   clientSecret: string;
-  domain: 'com' | 'eu' | 'in' | 'au' | 'ca' | 'jp'; // Domain-specific endpoints
+  domain: "com" | "eu" | "in" | "au" | "ca" | "jp"; // Domain-specific endpoints
   redirectUri: string;
   apiVersion?: string; // Default v6
 }
@@ -390,7 +447,7 @@ export interface MicrosoftDynamicsConfig {
   tenantId: string;
   organizationUrl: string; // https://[org].crm.dynamics.com
   apiVersion?: string; // Default v9.2
-  authMode: 'client_credentials' | 'auth_code';
+  authMode: "client_credentials" | "auth_code";
 }
 
 export interface PipedriveConfig {
@@ -429,7 +486,7 @@ export interface SyncStateToken {
 }
 
 export interface ConflictResolution {
-  strategy: 'last_write_wins' | 'source_priority' | 'manual' | 'merge';
+  strategy: "last_write_wins" | "source_priority" | "manual" | "merge";
   sourceOfTruth?: CRMProvider;
   manualReviewRequired?: boolean;
 }
@@ -437,7 +494,7 @@ export interface ConflictResolution {
 export interface EntityRelationshipMapping {
   sourceType: CRMRecordType;
   targetType: CRMRecordType;
-  relationshipType: 'one_to_one' | 'one_to_many' | 'many_to_many';
+  relationshipType: "one_to_one" | "one_to_many" | "many_to_many";
   foreignKeyMapping?: {
     sourceField: string;
     targetField: string;

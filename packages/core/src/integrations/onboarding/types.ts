@@ -9,13 +9,13 @@
 
 /** Supported authentication methods for integrations. */
 export enum IntegrationAuthType {
-  API_KEY = 'API_KEY',
-  OAUTH2 = 'OAUTH2',
-  OAUTH1 = 'OAUTH1',
-  BASIC_AUTH = 'BASIC_AUTH',
-  BEARER_TOKEN = 'BEARER_TOKEN',
-  WEBHOOK_SECRET = 'WEBHOOK_SECRET',
-  CUSTOM = 'CUSTOM',
+  API_KEY = "API_KEY",
+  OAUTH2 = "OAUTH2",
+  OAUTH1 = "OAUTH1",
+  BASIC_AUTH = "BASIC_AUTH",
+  BEARER_TOKEN = "BEARER_TOKEN",
+  WEBHOOK_SECRET = "WEBHOOK_SECRET",
+  CUSTOM = "CUSTOM",
 }
 
 // ─── Setup Configuration ────────────────────────────────────────
@@ -25,7 +25,7 @@ export interface CredentialField {
   key: string;
   label: string;
   placeholder?: string;
-  type: 'text' | 'password' | 'url' | 'textarea' | 'select';
+  type: "text" | "password" | "url" | "textarea" | "select";
   required: boolean;
   helpUrl?: string;
   helpText?: string;
@@ -40,7 +40,7 @@ export interface OAuthConfig {
   tokenUrl: string;
   revokeUrl?: string;
   scopes: string[];
-  grantType: 'authorization_code' | 'client_credentials' | 'password';
+  grantType: "authorization_code" | "client_credentials" | "password";
   pkceRequired?: boolean;
   customParams?: Record<string, string>;
 }
@@ -105,11 +105,11 @@ export interface OAuthTokenResponse {
 
 /** Health status of an integration. */
 export enum HealthStatus {
-  HEALTHY = 'HEALTHY',
-  DEGRADED = 'DEGRADED',
-  DOWN = 'DOWN',
-  UNAUTHORIZED = 'UNAUTHORIZED',
-  RATE_LIMITED = 'RATE_LIMITED',
+  HEALTHY = "HEALTHY",
+  DEGRADED = "DEGRADED",
+  DOWN = "DOWN",
+  UNAUTHORIZED = "UNAUTHORIZED",
+  RATE_LIMITED = "RATE_LIMITED",
 }
 
 /** Comprehensive health check result. */
@@ -186,7 +186,7 @@ export interface IntegrationConnection {
 export interface ValidationEndpoint {
   providerId: string;
   endpoint: string;
-  method: 'GET' | 'POST';
+  method: "GET" | "POST";
   headers?: Record<string, string>;
   body?: Record<string, unknown>;
   successStatusCodes: number[];
@@ -228,30 +228,30 @@ export class IntegrationOnboardingError extends Error {
   constructor(
     public code: string,
     message: string,
-    public details?: Record<string, unknown>
+    public details?: Record<string, unknown>,
   ) {
     super(message);
-    this.name = 'IntegrationOnboardingError';
+    this.name = "IntegrationOnboardingError";
   }
 }
 
 export class OAuthFlowError extends IntegrationOnboardingError {
   constructor(message: string, details?: Record<string, unknown>) {
-    super('OAUTH_FLOW_ERROR', message, details);
-    this.name = 'OAuthFlowError';
+    super("OAUTH_FLOW_ERROR", message, details);
+    this.name = "OAuthFlowError";
   }
 }
 
 export class CredentialValidationError extends IntegrationOnboardingError {
   constructor(message: string, details?: Record<string, unknown>) {
-    super('CREDENTIAL_VALIDATION_ERROR', message, details);
-    this.name = 'CredentialValidationError';
+    super("CREDENTIAL_VALIDATION_ERROR", message, details);
+    this.name = "CredentialValidationError";
   }
 }
 
 export class HealthCheckError extends IntegrationOnboardingError {
   constructor(message: string, details?: Record<string, unknown>) {
-    super('HEALTH_CHECK_ERROR', message, details);
-    this.name = 'HealthCheckError';
+    super("HEALTH_CHECK_ERROR", message, details);
+    this.name = "HealthCheckError";
   }
 }

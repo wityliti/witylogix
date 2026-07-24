@@ -49,7 +49,10 @@ export interface SchedulerStatus {
 // Task Scheduler Class
 
 export class TaskScheduler {
-  private tasks = new Map<string, ScheduledTask & { status: TaskStatus; timeout?: NodeJS.Timeout }>();
+  private tasks = new Map<
+    string,
+    ScheduledTask & { status: TaskStatus; timeout?: NodeJS.Timeout }
+  >();
   private isRunning = false;
   private checkInterval: NodeJS.Timeout | null = null;
   private readonly checkIntervalMs = 60000;
@@ -89,7 +92,9 @@ export class TaskScheduler {
     }
 
     this.isRunning = true;
-    console.log(`[Scheduler] Starting with ${this.tasks.size} tasks registered`);
+    console.log(
+      `[Scheduler] Starting with ${this.tasks.size} tasks registered`,
+    );
 
     await this.check();
 
@@ -184,7 +189,8 @@ export class TaskScheduler {
     return {
       isRunning: this.isRunning,
       tasksRegistered: this.tasks.size,
-      tasksEnabled: Array.from(this.tasks.values()).filter((t) => t.enabled).length,
+      tasksEnabled: Array.from(this.tasks.values()).filter((t) => t.enabled)
+        .length,
       tasks,
     };
   }

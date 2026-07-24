@@ -5,11 +5,17 @@
  * with tiered pricing, surcharges, minimums, and combined rules
  */
 
-import type { InvoiceLineItem } from './types.js';
+import type { InvoiceLineItem } from "./types.js";
 
 // ─── BILLING RULE TYPES ──────────────────────────────────────────────────
 
-export type BillingRuleType = 'per-delivery' | 'per-mile' | 'per-hour' | 'per-kg' | 'subscription' | 'flat-rate';
+export type BillingRuleType =
+  | "per-delivery"
+  | "per-mile"
+  | "per-hour"
+  | "per-kg"
+  | "subscription"
+  | "flat-rate";
 
 export interface Tier {
   min: number;
@@ -19,7 +25,7 @@ export interface Tier {
 
 export interface Surcharge {
   name: string;
-  type: 'percentage' | 'fixed';
+  type: "percentage" | "fixed";
   value: number;
   condition?: (context: BillingContext) => boolean; // Optional condition for applying surcharge
 }
@@ -72,15 +78,18 @@ export interface SubscriptionPlan {
   includedDeliveries?: number;
   overage?: {
     rate: number;
-    unit: 'per-delivery' | 'per-mile' | 'per-kg';
+    unit: "per-delivery" | "per-mile" | "per-kg";
   };
-  billingCycle: 'monthly' | 'quarterly' | 'annual';
+  billingCycle: "monthly" | "quarterly" | "annual";
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface LineItemWithMetadata extends Omit<InvoiceLineItem, 'createdAt'> {
+export interface LineItemWithMetadata extends Omit<
+  InvoiceLineItem,
+  "createdAt"
+> {
   ruleId?: string;
   ruleName?: string;
   baseAmount?: number;
@@ -96,12 +105,15 @@ export class BillingRuleEngine {
    * @param rules - Array of billing rules to evaluate
    * @returns Array of line items generated from matching rules
    */
-  evaluateRules(context: BillingContext, rules: BillingRule[]): LineItemWithMetadata[] {
+  evaluateRules(
+    context: BillingContext,
+    rules: BillingRule[],
+  ): LineItemWithMetadata[] {
     const lineItems: LineItemWithMetadata[] = [];
 
     // Filter and sort applicable rules
     const applicableRules = rules
-      .filter(rule => this.isRuleApplicable(rule, context))
+      .filter((rule) => this.isRuleApplicable(rule, context))
       .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
 
     // Evaluate each rule
@@ -116,37 +128,40 @@ export class BillingRuleEngine {
   /**
    * Evaluate a single billing rule and generate line items
    */
-  private evaluateRule(rule: BillingRule, context: BillingContext): LineItemWithMetadata[] {
+  private evaluateRule(
+    rule: BillingRule,
+    context: BillingContext,
+  ): LineItemWithMetadata[] {
     const items: LineItemWithMetadata[] = [];
 
     switch (rule.type) {
-      case 'per-delivery':
+      case "per-delivery":
         items.push(this.calculatePerDelivery(rule, context));
         break;
 
-      case 'per-mile':
+      case "per-mile":
         if (context.distance !== undefined) {
           items.push(this.calculatePerMile(rule, context));
         }
         break;
 
-      case 'per-hour':
+      case "per-hour":
         if (context.duration !== undefined) {
           items.push(this.calculatePerHour(rule, context));
         }
         break;
 
-      case 'per-kg':
+      case "per-kg":
         if (context.weight !== undefined) {
           items.push(this.calculatePerKg(rule, context));
         }
         break;
 
-      case 'flat-rate':
+      case "flat-rate":
         items.push(this.calculateFlatRate(rule, context));
         break;
 
-      case 'subscription':
+      case "subscription":
         // Subscriptions are handled separately, not as line items
         break;
     }
@@ -157,7 +172,10 @@ export class BillingRuleEngine {
   /**
    * Calculate per-delivery charge
    */
-  private calculatePerDelivery(rule: BillingRule, context: BillingContext): LineItemWithMetadata {
+  private calculatePerDelivery(
+    rule: BillingRule,
+    context: BillingContext,
+  ): LineItemWithMetadata {
     let amount = rule.baseAmount ?? 0;
     const baseAmount = amount;
 
@@ -170,8 +188,9 @@ export class BillingRuleEngine {
 
     return {
       id: this.generateLineItemId(),
-      invoiceId: '', // Will be set by invoice service
-      description: rule.description || `${rule.name || 'Delivery Charge'} (${rule.type})`,
+      invoiceId: "", // Will be set by invoice service
+      description:
+        rule.description || `${rule.name || "Delivery Charge"} (${rule.type})`,
       deliveryId: context.deliveryId,
       quantity: 1,
       unitPrice: amount,
@@ -190,7 +209,10 @@ export class BillingRuleEngine {
   /**
    * Calculate per-mile charge with tiered pricing support
    */
-  private calculatePerMile(rule: BillingRule, context: BillingContext): LineItemWithMetadata {
+  private calculatePerMile(
+    rule: BillingRule,
+    context: BillingContext,
+  ): LineItemWithMetadata {
     const distance = context.distance!;
     const unitRate = rule.unitRate ?? 0;
 
@@ -200,7 +222,8 @@ export class BillingRuleEngine {
       amount = 0;
       for (const tier of rule.tiers) {
         if (distance <= tier.min) break;
-        const segmentEnd = tier.max === null ? distance : Math.min(distance, tier.max);
+        const segmentEnd =
+          tier.max === null ? distance : Math.min(distance, tier.max);
         amount += (segmentEnd - tier.min) * tier.rate;
       }
     } else {
@@ -217,7 +240,7 @@ export class BillingRuleEngine {
 
     return {
       id: this.generateLineItemId(),
-      invoiceId: '', // Will be set by invoice service
+      invoiceId: "", // Will be set by invoice service
       description: rule.name || `Distance Charge (${distance} miles)`,
       deliveryId: context.deliveryId,
       quantity: distance,
@@ -239,7 +262,10 @@ export class BillingRuleEngine {
   /**
    * Calculate per-hour charge
    */
-  private calculatePerHour(rule: BillingRule, context: BillingContext): LineItemWithMetadata {
+  private calculatePerHour(
+    rule: BillingRule,
+    context: BillingContext,
+  ): LineItemWithMetadata {
     const hours = context.duration!;
     const unitRate = rule.unitRate ?? 0;
 
@@ -255,7 +281,7 @@ export class BillingRuleEngine {
 
     return {
       id: this.generateLineItemId(),
-      invoiceId: '', // Will be set by invoice service
+      invoiceId: "", // Will be set by invoice service
       description: rule.name || `Time Charge (${hours} hours)`,
       deliveryId: context.deliveryId,
       quantity: hours,
@@ -277,7 +303,10 @@ export class BillingRuleEngine {
   /**
    * Calculate per-kilogram charge
    */
-  private calculatePerKg(rule: BillingRule, context: BillingContext): LineItemWithMetadata {
+  private calculatePerKg(
+    rule: BillingRule,
+    context: BillingContext,
+  ): LineItemWithMetadata {
     const weight = context.weight!;
     const unitRate = rule.unitRate ?? 0;
 
@@ -287,7 +316,8 @@ export class BillingRuleEngine {
       amount = 0;
       for (const tier of rule.tiers) {
         if (weight <= tier.min) break;
-        const segmentEnd = tier.max === null ? weight : Math.min(weight, tier.max);
+        const segmentEnd =
+          tier.max === null ? weight : Math.min(weight, tier.max);
         amount += (segmentEnd - tier.min) * tier.rate;
       }
     } else {
@@ -304,7 +334,7 @@ export class BillingRuleEngine {
 
     return {
       id: this.generateLineItemId(),
-      invoiceId: '', // Will be set by invoice service
+      invoiceId: "", // Will be set by invoice service
       description: rule.name || `Weight Charge (${weight} kg)`,
       deliveryId: context.deliveryId,
       quantity: weight,
@@ -326,7 +356,10 @@ export class BillingRuleEngine {
   /**
    * Calculate flat-rate charge
    */
-  private calculateFlatRate(rule: BillingRule, context: BillingContext): LineItemWithMetadata {
+  private calculateFlatRate(
+    rule: BillingRule,
+    context: BillingContext,
+  ): LineItemWithMetadata {
     let amount = rule.baseAmount ?? 0;
     const baseAmount = amount;
 
@@ -339,8 +372,8 @@ export class BillingRuleEngine {
 
     return {
       id: this.generateLineItemId(),
-      invoiceId: '', // Will be set by invoice service
-      description: rule.name || 'Fixed Charge',
+      invoiceId: "", // Will be set by invoice service
+      description: rule.name || "Fixed Charge",
       deliveryId: context.deliveryId,
       quantity: 1,
       unitPrice: amount,
@@ -359,7 +392,10 @@ export class BillingRuleEngine {
   /**
    * Check if a rule is applicable to the delivery context
    */
-  private isRuleApplicable(rule: BillingRule, context: BillingContext): boolean {
+  private isRuleApplicable(
+    rule: BillingRule,
+    context: BillingContext,
+  ): boolean {
     if (!rule.isActive) {
       return false;
     }
@@ -371,25 +407,38 @@ export class BillingRuleEngine {
 
     // Check customer applicability
     if (appliesTo.customerIds && appliesTo.customerIds.length > 0) {
-      if (!context.customerId || !appliesTo.customerIds.includes(context.customerId)) {
+      if (
+        !context.customerId ||
+        !appliesTo.customerIds.includes(context.customerId)
+      ) {
         return false;
       }
     }
 
     // Check delivery type applicability
     if (appliesTo.deliveryTypes && appliesTo.deliveryTypes.length > 0) {
-      if (!context.serviceType || !appliesTo.deliveryTypes.includes(context.serviceType)) {
+      if (
+        !context.serviceType ||
+        !appliesTo.deliveryTypes.includes(context.serviceType)
+      ) {
         return false;
       }
     }
 
     // Check time window applicability
-    if (appliesTo.timeWindows && appliesTo.timeWindows.length > 0 && context.pickupTime) {
+    if (
+      appliesTo.timeWindows &&
+      appliesTo.timeWindows.length > 0 &&
+      context.pickupTime
+    ) {
       const hour = context.pickupTime.getHours();
       const dayOfWeek = context.pickupTime.getDay();
 
       const matchesWindow = appliesTo.timeWindows.some(
-        window => dayOfWeek === window.dayOfWeek && hour >= window.startHour && hour < window.endHour,
+        (window) =>
+          dayOfWeek === window.dayOfWeek &&
+          hour >= window.startHour &&
+          hour < window.endHour,
       );
 
       if (!matchesWindow) {
@@ -403,7 +452,11 @@ export class BillingRuleEngine {
   /**
    * Calculate total surcharges for a line item
    */
-  private calculateSurcharges(rule: BillingRule, context: BillingContext, baseAmount: number): number {
+  private calculateSurcharges(
+    rule: BillingRule,
+    context: BillingContext,
+    baseAmount: number,
+  ): number {
     if (!rule.surcharges || rule.surcharges.length === 0) {
       return 0;
     }
@@ -415,7 +468,9 @@ export class BillingRuleEngine {
       }
 
       const surchargeAmount =
-        surcharge.type === 'percentage' ? (baseAmount * surcharge.value) / 100 : surcharge.value;
+        surcharge.type === "percentage"
+          ? (baseAmount * surcharge.value) / 100
+          : surcharge.value;
 
       return total + surchargeAmount;
     }, 0);
@@ -424,7 +479,11 @@ export class BillingRuleEngine {
   /**
    * Apply minimum and maximum charge limits
    */
-  private applyLimits(amount: number, minimum?: number, maximum?: number): number {
+  private applyLimits(
+    amount: number,
+    minimum?: number,
+    maximum?: number,
+  ): number {
     if (minimum !== undefined && amount < minimum) {
       return minimum;
     }
@@ -449,7 +508,14 @@ export class BillingRuleEngine {
    * @param discounts - Array of discount definitions
    * @returns Discounted line items
    */
-  applyDiscounts(items: LineItemWithMetadata[], discounts: Array<{ type: 'percentage' | 'fixed'; value: number; description?: string }>): LineItemWithMetadata[] {
+  applyDiscounts(
+    items: LineItemWithMetadata[],
+    discounts: Array<{
+      type: "percentage" | "fixed";
+      value: number;
+      description?: string;
+    }>,
+  ): LineItemWithMetadata[] {
     if (!discounts || discounts.length === 0) {
       return items;
     }
@@ -458,7 +524,7 @@ export class BillingRuleEngine {
     let totalDiscount = 0;
 
     for (const discount of discounts) {
-      if (discount.type === 'percentage') {
+      if (discount.type === "percentage") {
         totalDiscount += (subtotal * discount.value) / 100;
       } else {
         totalDiscount += discount.value;
@@ -469,7 +535,7 @@ export class BillingRuleEngine {
     if (totalDiscount > 0) {
       const discountProportion = totalDiscount / subtotal;
 
-      return items.map(item => ({
+      return items.map((item) => ({
         ...item,
         amount: item.amount * (1 - discountProportion),
       }));
@@ -486,9 +552,18 @@ export class BillingRuleEngine {
    */
   calculateTax(
     items: LineItemWithMetadata[],
-    taxRules: Array<{ rate: number; description?: string; jurisdiction?: string }>,
+    taxRules: Array<{
+      rate: number;
+      description?: string;
+      jurisdiction?: string;
+    }>,
   ): {
-    items: Array<{ description: string; rate: number; amount: number; jurisdiction?: string }>;
+    items: Array<{
+      description: string;
+      rate: number;
+      amount: number;
+      jurisdiction?: string;
+    }>;
     total: number;
   } {
     if (!taxRules || taxRules.length === 0) {
@@ -504,7 +579,7 @@ export class BillingRuleEngine {
       totalTax += taxAmount;
 
       taxItems.push({
-        description: rule.description || `Tax (${rule.jurisdiction || 'N/A'})`,
+        description: rule.description || `Tax (${rule.jurisdiction || "N/A"})`,
         rate: rule.rate,
         amount: taxAmount,
         jurisdiction: rule.jurisdiction,
@@ -520,13 +595,16 @@ export class BillingRuleEngine {
    * @param billingStartDate - Start date for this billing period
    * @returns Line items for subscription invoice
    */
-  generateRecurringInvoice(plan: SubscriptionPlan, billingStartDate: Date): LineItemWithMetadata[] {
+  generateRecurringInvoice(
+    plan: SubscriptionPlan,
+    billingStartDate: Date,
+  ): LineItemWithMetadata[] {
     const items: LineItemWithMetadata[] = [];
 
     // Base subscription charge
     items.push({
       id: this.generateLineItemId(),
-      invoiceId: '', // Will be set by invoice service
+      invoiceId: "", // Will be set by invoice service
       description: `${plan.name} - ${plan.billingCycle} Subscription`,
       quantity: 1,
       unitPrice: plan.monthlyAmount,
@@ -548,7 +626,11 @@ export class BillingRuleEngine {
    * @param context - Billing context
    * @returns Combined line items
    */
-  combineRules(baseRule: BillingRule, additionalRules: BillingRule[], context: BillingContext): LineItemWithMetadata[] {
+  combineRules(
+    baseRule: BillingRule,
+    additionalRules: BillingRule[],
+    context: BillingContext,
+  ): LineItemWithMetadata[] {
     const allRules = [baseRule, ...additionalRules];
     return this.evaluateRules(context, allRules);
   }
@@ -583,7 +665,7 @@ export function createBillingRule(
 export function createSurcharge(
   name: string,
   value: number,
-  type: 'percentage' | 'fixed' = 'percentage',
+  type: "percentage" | "fixed" = "percentage",
   condition?: (context: BillingContext) => boolean,
 ): Surcharge {
   return { name, value, type, condition };
@@ -592,6 +674,10 @@ export function createSurcharge(
 /**
  * Helper function to create a tier
  */
-export function createTier(min: number, max: number | null, rate: number): Tier {
+export function createTier(
+  min: number,
+  max: number | null,
+  rate: number,
+): Tier {
   return { min, max, rate };
 }

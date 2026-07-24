@@ -4,7 +4,7 @@
  * ~100 lines
  */
 
-import { randomUUID } from 'crypto';
+import { randomUUID } from "crypto";
 
 // ─── TYPES ──────────────────────────────────────────────────────────────────
 
@@ -13,7 +13,7 @@ export interface NotificationPayload {
   recipientId: string;
   templateId: string;
   channels: NotificationChannel[];
-  priority: 'LOW' | 'NORMAL' | 'HIGH' | 'CRITICAL';
+  priority: "LOW" | "NORMAL" | "HIGH" | "CRITICAL";
   subject?: string;
   content: string;
   variables?: Record<string, unknown>;
@@ -22,10 +22,10 @@ export interface NotificationPayload {
 }
 
 export interface NotificationChannel {
-  type: 'EMAIL' | 'SMS' | 'PUSH' | 'WHATSAPP' | 'IN_APP' | 'SLACK';
+  type: "EMAIL" | "SMS" | "PUSH" | "WHATSAPP" | "IN_APP" | "SLACK";
   provider?: string;
   destination: string;
-  status: 'PENDING' | 'SENT' | 'DELIVERED' | 'FAILED' | 'BOUNCED';
+  status: "PENDING" | "SENT" | "DELIVERED" | "FAILED" | "BOUNCED";
   sentAt?: Date;
   deliveredAt?: Date;
   failureReason?: string;
@@ -48,7 +48,7 @@ export interface TemplateContext {
   templateId: string;
   locale: string;
   variables: Record<string, unknown>;
-  formatForChannel: 'EMAIL' | 'SMS' | 'PUSH' | 'WHATSAPP';
+  formatForChannel: "EMAIL" | "SMS" | "PUSH" | "WHATSAPP";
 }
 
 export interface QuietHours {
@@ -63,7 +63,7 @@ export interface DeliveryReceipt {
   channel: string;
   provider: string;
   providerMessageId: string;
-  status: 'DELIVERED' | 'FAILED' | 'BOUNCED';
+  status: "DELIVERED" | "FAILED" | "BOUNCED";
   receivedAt: Date;
   metadata?: Record<string, unknown>;
 }
@@ -75,8 +75,8 @@ function randomId(): string {
 }
 
 function randomEmail(): string {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let username = '';
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let username = "";
   for (let i = 0; i < 10; i++) {
     username += chars.charAt(Math.floor(Math.random() * chars.length));
   }
@@ -89,71 +89,85 @@ function randomPhone(): string {
 
 // ─── NOTIFICATION PAYLOAD FACTORIES ─────────────────────────────────────────
 
-export const createEmailChannel = (overrides?: Partial<NotificationChannel>): NotificationChannel => ({
-  type: 'EMAIL',
-  provider: 'sendgrid',
+export const createEmailChannel = (
+  overrides?: Partial<NotificationChannel>,
+): NotificationChannel => ({
+  type: "EMAIL",
+  provider: "sendgrid",
   destination: randomEmail(),
-  status: 'PENDING',
+  status: "PENDING",
   retryCount: 0,
   ...overrides,
 });
 
-export const createSmsChannel = (overrides?: Partial<NotificationChannel>): NotificationChannel => ({
-  type: 'SMS',
-  provider: 'twilio',
+export const createSmsChannel = (
+  overrides?: Partial<NotificationChannel>,
+): NotificationChannel => ({
+  type: "SMS",
+  provider: "twilio",
   destination: randomPhone(),
-  status: 'PENDING',
+  status: "PENDING",
   retryCount: 0,
   ...overrides,
 });
 
-export const createPushChannel = (overrides?: Partial<NotificationChannel>): NotificationChannel => ({
-  type: 'PUSH',
-  provider: 'fcm',
+export const createPushChannel = (
+  overrides?: Partial<NotificationChannel>,
+): NotificationChannel => ({
+  type: "PUSH",
+  provider: "fcm",
   destination: `device_${randomId()}`,
-  status: 'PENDING',
+  status: "PENDING",
   retryCount: 0,
   ...overrides,
 });
 
-export const createWhatsAppChannel = (overrides?: Partial<NotificationChannel>): NotificationChannel => ({
-  type: 'WHATSAPP',
-  provider: 'meta',
+export const createWhatsAppChannel = (
+  overrides?: Partial<NotificationChannel>,
+): NotificationChannel => ({
+  type: "WHATSAPP",
+  provider: "meta",
   destination: randomPhone(),
-  status: 'PENDING',
+  status: "PENDING",
   retryCount: 0,
   ...overrides,
 });
 
-export const createInAppChannel = (overrides?: Partial<NotificationChannel>): NotificationChannel => ({
-  type: 'IN_APP',
-  provider: 'pusher',
+export const createInAppChannel = (
+  overrides?: Partial<NotificationChannel>,
+): NotificationChannel => ({
+  type: "IN_APP",
+  provider: "pusher",
   destination: `user_${randomId()}`,
-  status: 'PENDING',
+  status: "PENDING",
   retryCount: 0,
   ...overrides,
 });
 
-export const createSlackChannel = (overrides?: Partial<NotificationChannel>): NotificationChannel => ({
-  type: 'SLACK',
-  provider: 'slack',
+export const createSlackChannel = (
+  overrides?: Partial<NotificationChannel>,
+): NotificationChannel => ({
+  type: "SLACK",
+  provider: "slack",
   destination: `#notifications`,
-  status: 'PENDING',
+  status: "PENDING",
   retryCount: 0,
   ...overrides,
 });
 
-export const createNotificationPayload = (overrides?: Partial<NotificationPayload>): NotificationPayload => ({
+export const createNotificationPayload = (
+  overrides?: Partial<NotificationPayload>,
+): NotificationPayload => ({
   id: randomId(),
   recipientId: randomId(),
-  templateId: 'order.confirmation',
+  templateId: "order.confirmation",
   channels: [createEmailChannel()],
-  priority: 'NORMAL',
-  subject: 'Your Order Confirmation',
-  content: 'Your order has been confirmed.',
+  priority: "NORMAL",
+  subject: "Your Order Confirmation",
+  content: "Your order has been confirmed.",
   variables: {
     orderId: `ORD-${Math.random().toString(36).substr(2, 9)}`,
-    customerName: 'John Doe',
+    customerName: "John Doe",
     totalAmount: 99.99,
   },
   createdAt: new Date(),
@@ -162,7 +176,7 @@ export const createNotificationPayload = (overrides?: Partial<NotificationPayloa
 
 export const createMultiChannelPayload = (
   channels: NotificationChannel[],
-  overrides?: Partial<NotificationPayload>
+  overrides?: Partial<NotificationPayload>,
 ): NotificationPayload => ({
   ...createNotificationPayload(overrides),
   channels,
@@ -170,92 +184,106 @@ export const createMultiChannelPayload = (
 
 // ─── CHANNEL PAYLOAD FACTORIES ──────────────────────────────────────────────
 
-export const createEmailChannelPayload = (overrides?: Partial<ChannelPayload>): ChannelPayload => ({
-  channel: 'EMAIL',
-  provider: 'sendgrid',
+export const createEmailChannelPayload = (
+  overrides?: Partial<ChannelPayload>,
+): ChannelPayload => ({
+  channel: "EMAIL",
+  provider: "sendgrid",
   destination: randomEmail(),
-  subject: 'Your Notification',
-  body: 'Please see the attached HTML.',
-  html: '<html><body><h1>Your Notification</h1><p>Details here.</p></body></html>',
+  subject: "Your Notification",
+  body: "Please see the attached HTML.",
+  html: "<html><body><h1>Your Notification</h1><p>Details here.</p></body></html>",
   variables: {
-    recipientName: 'John Doe',
+    recipientName: "John Doe",
   },
   ...overrides,
 });
 
-export const createSmsChannelPayload = (overrides?: Partial<ChannelPayload>): ChannelPayload => ({
-  channel: 'SMS',
-  provider: 'twilio',
+export const createSmsChannelPayload = (
+  overrides?: Partial<ChannelPayload>,
+): ChannelPayload => ({
+  channel: "SMS",
+  provider: "twilio",
   destination: randomPhone(),
-  body: 'Your order #12345 has been confirmed.',
+  body: "Your order #12345 has been confirmed.",
   variables: {
-    orderId: '12345',
+    orderId: "12345",
   },
   ...overrides,
 });
 
-export const createPushChannelPayload = (overrides?: Partial<ChannelPayload>): ChannelPayload => ({
-  channel: 'PUSH',
-  provider: 'fcm',
+export const createPushChannelPayload = (
+  overrides?: Partial<ChannelPayload>,
+): ChannelPayload => ({
+  channel: "PUSH",
+  provider: "fcm",
   destination: `device_${randomId()}`,
-  subject: 'Order Update',
-  body: 'Your order has been dispatched.',
+  subject: "Order Update",
+  body: "Your order has been dispatched.",
   variables: {
-    orderId: '12345',
-    status: 'DISPATCHED',
+    orderId: "12345",
+    status: "DISPATCHED",
   },
   ...overrides,
 });
 
 // ─── DELIVERY RECEIPT FACTORIES ─────────────────────────────────────────────
 
-export const createDeliveryReceipt = (overrides?: Partial<DeliveryReceipt>): DeliveryReceipt => ({
+export const createDeliveryReceipt = (
+  overrides?: Partial<DeliveryReceipt>,
+): DeliveryReceipt => ({
   channelPayloadId: randomId(),
-  channel: 'EMAIL',
-  provider: 'sendgrid',
+  channel: "EMAIL",
+  provider: "sendgrid",
   providerMessageId: `sg_${randomId()}`,
-  status: 'DELIVERED',
+  status: "DELIVERED",
   receivedAt: new Date(),
   ...overrides,
 });
 
 export const createFailedDeliveryReceipt = (
   reason: string,
-  overrides?: Partial<DeliveryReceipt>
+  overrides?: Partial<DeliveryReceipt>,
 ): DeliveryReceipt => ({
   ...createDeliveryReceipt(overrides),
-  status: 'FAILED',
+  status: "FAILED",
   failureReason: reason,
 });
 
 // ─── TEMPLATE CONTEXT FACTORIES ─────────────────────────────────────────────
 
-export const createTemplateContext = (overrides?: Partial<TemplateContext>): TemplateContext => ({
-  templateId: 'order.confirmation',
-  locale: 'en-US',
+export const createTemplateContext = (
+  overrides?: Partial<TemplateContext>,
+): TemplateContext => ({
+  templateId: "order.confirmation",
+  locale: "en-US",
   variables: {
-    orderId: 'ORD-12345',
-    customerName: 'Jane Smith',
+    orderId: "ORD-12345",
+    customerName: "Jane Smith",
     totalAmount: 199.99,
-    estimatedDelivery: '2026-03-20',
+    estimatedDelivery: "2026-03-20",
   },
-  formatForChannel: 'EMAIL',
+  formatForChannel: "EMAIL",
   ...overrides,
 });
 
 // ─── QUIET HOURS FACTORIES ──────────────────────────────────────────────────
 
-export const createQuietHours = (overrides?: Partial<QuietHours>): QuietHours => ({
+export const createQuietHours = (
+  overrides?: Partial<QuietHours>,
+): QuietHours => ({
   enabled: true,
-  startTime: '22:00',
-  endTime: '08:00',
-  timezone: 'America/New_York',
+  startTime: "22:00",
+  endTime: "08:00",
+  timezone: "America/New_York",
   ...overrides,
 });
 
 // ─── BULK FACTORIES ─────────────────────────────────────────────────────────
 
-export const createManyNotifications = (count: number): NotificationPayload[] => {
+export const createManyNotifications = (
+  count: number,
+): NotificationPayload[] => {
   const notifications: NotificationPayload[] = [];
   for (let i = 0; i < count; i++) {
     notifications.push(createNotificationPayload());
@@ -278,7 +306,7 @@ export const createFailoverScenario = (): {
   secondary: NotificationChannel;
   tertiary: NotificationChannel;
 } => ({
-  primary: createEmailChannel({ provider: 'sendgrid' }),
-  secondary: createEmailChannel({ provider: 'mailgun' }),
-  tertiary: createEmailChannel({ provider: 'ses' }),
+  primary: createEmailChannel({ provider: "sendgrid" }),
+  secondary: createEmailChannel({ provider: "mailgun" }),
+  tertiary: createEmailChannel({ provider: "ses" }),
 });

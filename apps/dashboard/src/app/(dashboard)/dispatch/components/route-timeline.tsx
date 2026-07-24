@@ -142,7 +142,10 @@ export function RouteTimeline({
       {/* Route rows */}
       <div className="divide-y divide-wl-border-subtle">
         {routes.map((route) => (
-          <div key={route.id} className="flex hover:bg-wl-bg-overlay transition-colors">
+          <div
+            key={route.id}
+            className="flex hover:bg-wl-bg-overlay transition-colors"
+          >
             {/* Driver info */}
             <div
               className="w-40 flex-shrink-0 p-4 border-r border-wl-border-subtle bg-wl-bg-surface"
@@ -202,7 +205,7 @@ export function RouteTimeline({
                           "flex items-center justify-center text-xs font-bold text-white",
                           selectedStop?.id === stop.id
                             ? "ring-2 ring-offset-2 ring-wl-primary-500"
-                            : "group-hover:ring-2 group-hover:ring-offset-2 group-hover:ring-wl-primary-400"
+                            : "group-hover:ring-2 group-hover:ring-offset-2 group-hover:ring-wl-primary-400",
                         )}
                         style={{
                           backgroundColor: route.color,
@@ -219,7 +222,13 @@ export function RouteTimeline({
                             Stop #{stop.sequence}
                           </p>
                           <p className="text-wl-text-secondary">
-                            ETA: {new Date(stop.estimatedArrival || "").toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                            ETA:{" "}
+                            {new Date(
+                              stop.estimatedArrival || "",
+                            ).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
                           </p>
                           {stop.customerName && (
                             <p className="text-wl-text-secondary">
@@ -250,7 +259,8 @@ export function RouteTimeline({
       {/* Legend */}
       <div className="bg-wl-bg-overlay/50 px-4 py-3 border-t border-wl-border-subtle">
         <p className="text-xs text-wl-text-secondary">
-          Drag stops to reassign routes • Estimated arrival times shown on timeline
+          Drag stops to reassign routes • Estimated arrival times shown on
+          timeline
         </p>
       </div>
     </div>

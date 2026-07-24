@@ -12,7 +12,12 @@ import {
 } from "lucide-react";
 import { Tooltip } from "@/components/ui/tooltip";
 
-export type DeliveryStatus = "sent" | "delivered" | "read" | "failed" | "retrying";
+export type DeliveryStatus =
+  | "sent"
+  | "delivered"
+  | "read"
+  | "failed"
+  | "retrying";
 
 export interface DeliveryAttempt {
   timestamp: Date;
@@ -103,7 +108,7 @@ const TimelineItem = React.memo(
                 "w-0.5 h-12",
                 attempt.status === "failed"
                   ? "bg-[var(--wl-danger)]/20"
-                  : "bg-[var(--wl-border)]"
+                  : "bg-[var(--wl-border)]",
               )}
             />
           )}
@@ -136,7 +141,7 @@ const TimelineItem = React.memo(
               className={cn(
                 "mt-2 p-2 rounded-sm text-xs",
                 "bg-[var(--wl-danger)]/10 border border-[var(--wl-danger)]/20",
-                "text-[var(--wl-danger)]"
+                "text-[var(--wl-danger)]",
               )}
             >
               <strong>Error:</strong> {attempt.errorMessage}
@@ -145,30 +150,23 @@ const TimelineItem = React.memo(
         </div>
       </div>
     );
-  }
+  },
 );
 
 TimelineItem.displayName = "TimelineItem";
 
 export const DeliveryTimeline = React.memo(
-  ({
-    attempts,
-    channel = "email",
-    className,
-  }: DeliveryTimelineProps) => {
+  ({ attempts, channel = "email", className }: DeliveryTimelineProps) => {
     const stats = useMemo(() => {
       const firstAttempt = attempts[0];
       const lastAttempt = attempts[attempts.length - 1];
       const totalDuration = lastAttempt?.timestamp.getTime()
-        ? lastAttempt.timestamp.getTime() -
-          firstAttempt.timestamp.getTime()
+        ? lastAttempt.timestamp.getTime() - firstAttempt.timestamp.getTime()
         : 0;
 
-      const failureCount = attempts.filter(
-        (a) => a.status === "failed"
-      ).length;
+      const failureCount = attempts.filter((a) => a.status === "failed").length;
       const retryCount = attempts.filter(
-        (a) => a.retryCount && a.retryCount > 0
+        (a) => a.retryCount && a.retryCount > 0,
       ).length;
 
       return { totalDuration, failureCount, retryCount };
@@ -180,7 +178,7 @@ export const DeliveryTimeline = React.memo(
           className={cn(
             "flex items-center justify-center p-8 rounded-md",
             "bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)]",
-            className
+            className,
           )}
         >
           <p className="text-sm text-[var(--wl-text-secondary)]">
@@ -242,7 +240,7 @@ export const DeliveryTimeline = React.memo(
           <div
             className={cn(
               "px-4 py-3 rounded-md border",
-              "bg-[var(--wl-danger)]/10 border-[var(--wl-danger)]/20"
+              "bg-[var(--wl-danger)]/10 border-[var(--wl-danger)]/20",
             )}
           >
             <p className="text-sm font-semibold text-[var(--wl-danger)]">
@@ -256,7 +254,7 @@ export const DeliveryTimeline = React.memo(
         )}
       </div>
     );
-  }
+  },
 );
 
 DeliveryTimeline.displayName = "DeliveryTimeline";

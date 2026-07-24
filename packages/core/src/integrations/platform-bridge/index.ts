@@ -3,15 +3,12 @@
  * Multi-platform e-commerce integration abstraction layer
  */
 
-export {
-  DataNormalizer,
-  createDataNormalizer,
-} from './data-normalizer.js';
+export { DataNormalizer, createDataNormalizer } from "./data-normalizer.js";
 
 export {
   WebhookNormalizer,
   createWebhookNormalizer,
-} from './webhook-normalizer.js';
+} from "./webhook-normalizer.js";
 
 export {
   PlatformSource,
@@ -31,4 +28,4 @@ export {
   type SyncDirection,
   type SyncConfig,
   type SyncStatus,
-} from './types.js';
+} from "./types.js";

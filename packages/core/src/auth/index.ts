@@ -50,7 +50,11 @@ export {
 
 // ─── REGISTRY ───────────────────────────────────────────────
 
-export { AuthProviderRegistry, getAuthProviderRegistry, resetAuthProviderRegistry } from "./provider-registry.js";
+export {
+  AuthProviderRegistry,
+  getAuthProviderRegistry,
+  resetAuthProviderRegistry,
+} from "./provider-registry.js";
 
 // ─── SESSION MANAGER ────────────────────────────────────────
 

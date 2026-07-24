@@ -54,12 +54,15 @@ const CourierPartnerCard = forwardRef<HTMLDivElement, CourierPartnerCardProps>(
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     return (
       <Card
         ref={ref}
-        className={cn("flex flex-col gap-4 hover:shadow-lg transition-shadow", className)}
+        className={cn(
+          "flex flex-col gap-4 hover:shadow-lg transition-shadow",
+          className,
+        )}
         {...props}
       >
         {/* Header with logo and category */}
@@ -86,7 +89,7 @@ const CourierPartnerCard = forwardRef<HTMLDivElement, CourierPartnerCardProps>(
               <span
                 className={cn(
                   "inline-block text-xs font-medium rounded px-2 py-1 mt-1",
-                  categoryColors[category]
+                  categoryColors[category],
                 )}
               >
                 {categoryLabels[category]}
@@ -141,7 +144,7 @@ const CourierPartnerCard = forwardRef<HTMLDivElement, CourierPartnerCardProps>(
                   "w-4 h-4",
                   i < Math.floor(rating)
                     ? "fill-wl-warning-400 text-wl-warning-400"
-                    : "text-wl-border-subtle"
+                    : "text-wl-border-subtle",
                 )}
               />
             ))}
@@ -196,7 +199,7 @@ const CourierPartnerCard = forwardRef<HTMLDivElement, CourierPartnerCardProps>(
         </div>
       </Card>
     );
-  }
+  },
 );
 
 CourierPartnerCard.displayName = "CourierPartnerCard";

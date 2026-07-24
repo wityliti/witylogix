@@ -110,7 +110,9 @@ export class GeotabClient extends TelematicsAdapter {
         },
       });
 
-      const normalized = devices.map((d) => this.normalizer.normalizeGeotabDevice(d));
+      const normalized = devices.map((d) =>
+        this.normalizer.normalizeGeotabDevice(d),
+      );
       this.cache.set(cacheKey, normalized, 300000); // 5 min cache
       return normalized;
     });
@@ -125,17 +127,14 @@ export class GeotabClient extends TelematicsAdapter {
     if (cached) return cached;
 
     return this.retryWithBackoff(async () => {
-      const statuses = await this.jsonrpcCall<GeotabDeviceStatusInfo[]>(
-        "Get",
-        {
-          typeName: "DeviceStatusInfo",
-          search: {
-            deviceSearch: {
-              id: vehicleId,
-            },
+      const statuses = await this.jsonrpcCall<GeotabDeviceStatusInfo[]>("Get", {
+        typeName: "DeviceStatusInfo",
+        search: {
+          deviceSearch: {
+            id: vehicleId,
           },
         },
-      );
+      });
 
       if (!statuses || statuses.length === 0) {
         throw new Error(`No status info available for device ${vehicleId}`);
@@ -151,7 +150,9 @@ export class GeotabClient extends TelematicsAdapter {
   /**
    * Get diagnostics for a vehicle (Get FaultData + StatusData)
    */
-  async getVehicleDiagnostics(vehicleId: string): Promise<NormalizedDiagnostic> {
+  async getVehicleDiagnostics(
+    vehicleId: string,
+  ): Promise<NormalizedDiagnostic> {
     const cacheKey = `geotab:diagnostics:${vehicleId}`;
     const cached = this.cache.get(cacheKey) as NormalizedDiagnostic | undefined;
     if (cached) return cached;
@@ -220,7 +221,9 @@ export class GeotabClient extends TelematicsAdapter {
    */
   async getFuelLevel(vehicleId: string): Promise<NormalizedFuelReading> {
     const cacheKey = `geotab:fuel:${vehicleId}`;
-    const cached = this.cache.get(cacheKey) as NormalizedFuelReading | undefined;
+    const cached = this.cache.get(cacheKey) as
+      | NormalizedFuelReading
+      | undefined;
     if (cached) return cached;
 
     return this.retryWithBackoff(async () => {

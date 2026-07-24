@@ -27,7 +27,10 @@ export class MapboxProvider implements RoutingProvider {
     this.accessToken = accessToken;
   }
 
-  async getRoute(origin: Coordinates, destination: Coordinates): Promise<RouteResult> {
+  async getRoute(
+    origin: Coordinates,
+    destination: Coordinates,
+  ): Promise<RouteResult> {
     return this.getRouteWithWaypoints([origin, destination]);
   }
 
@@ -40,15 +43,18 @@ export class MapboxProvider implements RoutingProvider {
       .map((w) => `${w.longitude},${w.latitude}`)
       .join(";");
 
-    const url = `${MAPBOX_BASE}/directions/v5/mapbox/driving/${coords}?` +
+    const url =
+      `${MAPBOX_BASE}/directions/v5/mapbox/driving/${coords}?` +
       `geometries=geojson&overview=full&access_token=${this.accessToken}`;
 
     const res = await fetch(url);
     if (!res.ok) {
-      throw new Error(`Mapbox Directions API error: ${res.status} ${res.statusText}`);
+      throw new Error(
+        `Mapbox Directions API error: ${res.status} ${res.statusText}`,
+      );
     }
 
-    const data = await res.json() as Record<string, any>;
+    const data = (await res.json()) as Record<string, any>;
     const route = data.routes?.[0];
 
     if (!route) {
@@ -62,29 +68,32 @@ export class MapboxProvider implements RoutingProvider {
     };
   }
 
-  async getDistanceMatrix(points: Coordinates[]): Promise<DistanceMatrixResult> {
+  async getDistanceMatrix(
+    points: Coordinates[],
+  ): Promise<DistanceMatrixResult> {
     if (points.length > 25) {
       // Mapbox Matrix API limit is 25 coordinates
       // For larger sets, chunk and merge (or upgrade to Phase 2 OSRM)
       throw new Error(
         `Mapbox Matrix API supports max 25 points (got ${points.length}). ` +
-        `Consider upgrading to OSRM provider for larger matrices.`
+          `Consider upgrading to OSRM provider for larger matrices.`,
       );
     }
 
-    const coords = points
-      .map((p) => `${p.longitude},${p.latitude}`)
-      .join(";");
+    const coords = points.map((p) => `${p.longitude},${p.latitude}`).join(";");
 
-    const url = `${MAPBOX_BASE}/directions-matrix/v1/mapbox/driving/${coords}?` +
+    const url =
+      `${MAPBOX_BASE}/directions-matrix/v1/mapbox/driving/${coords}?` +
       `annotations=duration,distance&access_token=${this.accessToken}`;
 
     const res = await fetch(url);
     if (!res.ok) {
-      throw new Error(`Mapbox Matrix API error: ${res.status} ${res.statusText}`);
+      throw new Error(
+        `Mapbox Matrix API error: ${res.status} ${res.statusText}`,
+      );
     }
 
-    const data = await res.json() as Record<string, any>;
+    const data = (await res.json()) as Record<string, any>;
 
     return {
       durations: data.durations,
@@ -94,38 +103,48 @@ export class MapboxProvider implements RoutingProvider {
 
   async geocode(address: string): Promise<GeocodingResult[]> {
     const encoded = encodeURIComponent(address);
-    const url = `${MAPBOX_BASE}/search/geocode/v6/forward?` +
+    const url =
+      `${MAPBOX_BASE}/search/geocode/v6/forward?` +
       `q=${encoded}&access_token=${this.accessToken}&limit=5`;
 
     const res = await fetch(url);
     if (!res.ok) {
-      throw new Error(`Mapbox Geocoding API error: ${res.status} ${res.statusText}`);
+      throw new Error(
+        `Mapbox Geocoding API error: ${res.status} ${res.statusText}`,
+      );
     }
 
-    const data = await res.json() as Record<string, any>;
+    const data = (await res.json()) as Record<string, any>;
 
     return (data.features || []).map((f: any) => ({
       latitude: f.geometry.coordinates[1],
       longitude: f.geometry.coordinates[0],
       formattedAddress: f.properties.full_address || f.properties.name || "",
-      confidence: f.properties.match_code?.confidence === "exact" ? 1.0
-        : f.properties.match_code?.confidence === "high" ? 0.8
-        : f.properties.match_code?.confidence === "medium" ? 0.6
-        : 0.4,
+      confidence:
+        f.properties.match_code?.confidence === "exact"
+          ? 1.0
+          : f.properties.match_code?.confidence === "high"
+            ? 0.8
+            : f.properties.match_code?.confidence === "medium"
+              ? 0.6
+              : 0.4,
     }));
   }
 
   async reverseGeocode(coords: Coordinates): Promise<GeocodingResult> {
-    const url = `${MAPBOX_BASE}/search/geocode/v6/reverse?` +
+    const url =
+      `${MAPBOX_BASE}/search/geocode/v6/reverse?` +
       `longitude=${coords.longitude}&latitude=${coords.latitude}` +
       `&access_token=${this.accessToken}&limit=1`;
 
     const res = await fetch(url);
     if (!res.ok) {
-      throw new Error(`Mapbox Reverse Geocoding error: ${res.status} ${res.statusText}`);
+      throw new Error(
+        `Mapbox Reverse Geocoding error: ${res.status} ${res.statusText}`,
+      );
     }
 
-    const data = await res.json() as Record<string, any>;
+    const data = (await res.json()) as Record<string, any>;
     const feature = data.features?.[0];
 
     if (!feature) {
@@ -135,12 +154,16 @@ export class MapboxProvider implements RoutingProvider {
     return {
       latitude: feature.geometry.coordinates[1],
       longitude: feature.geometry.coordinates[0],
-      formattedAddress: feature.properties.full_address || feature.properties.name || "",
+      formattedAddress:
+        feature.properties.full_address || feature.properties.name || "",
       confidence: 1.0,
     };
   }
 
-  async getETA(origin: Coordinates, destination: Coordinates): Promise<ETAResult> {
+  async getETA(
+    origin: Coordinates,
+    destination: Coordinates,
+  ): Promise<ETAResult> {
     const route = await this.getRoute(origin, destination);
     return {
       durationSeconds: route.durationSeconds,

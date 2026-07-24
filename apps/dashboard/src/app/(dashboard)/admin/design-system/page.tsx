@@ -90,14 +90,54 @@ const COLOR_TOKENS = {
 
 // Typography samples
 const TYPOGRAPHY_SAMPLES = [
-  { name: "3XL Heading", size: "30px", weight: 700, text: "The Quick Brown Fox" },
-  { name: "2XL Heading", size: "24px", weight: 700, text: "The Quick Brown Fox" },
-  { name: "XL Heading", size: "20px", weight: 700, text: "The Quick Brown Fox" },
-  { name: "LG Heading", size: "17px", weight: 700, text: "The Quick Brown Fox" },
-  { name: "MD Body", size: "15px", weight: 400, text: "The quick brown fox jumps over the lazy dog" },
-  { name: "Base Body", size: "14px", weight: 400, text: "The quick brown fox jumps over the lazy dog" },
-  { name: "SM Caption", size: "13px", weight: 500, text: "The quick brown fox jumps over the lazy dog" },
-  { name: "XS Label", size: "11px", weight: 600, text: "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG" },
+  {
+    name: "3XL Heading",
+    size: "30px",
+    weight: 700,
+    text: "The Quick Brown Fox",
+  },
+  {
+    name: "2XL Heading",
+    size: "24px",
+    weight: 700,
+    text: "The Quick Brown Fox",
+  },
+  {
+    name: "XL Heading",
+    size: "20px",
+    weight: 700,
+    text: "The Quick Brown Fox",
+  },
+  {
+    name: "LG Heading",
+    size: "17px",
+    weight: 700,
+    text: "The Quick Brown Fox",
+  },
+  {
+    name: "MD Body",
+    size: "15px",
+    weight: 400,
+    text: "The quick brown fox jumps over the lazy dog",
+  },
+  {
+    name: "Base Body",
+    size: "14px",
+    weight: 400,
+    text: "The quick brown fox jumps over the lazy dog",
+  },
+  {
+    name: "SM Caption",
+    size: "13px",
+    weight: 500,
+    text: "The quick brown fox jumps over the lazy dog",
+  },
+  {
+    name: "XS Label",
+    size: "11px",
+    weight: 600,
+    text: "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG",
+  },
 ];
 
 // Spacing scale
@@ -154,7 +194,12 @@ const ColorPaletteSection = () => {
               <h4 className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-widest">
                 {categoryName}
               </h4>
-              <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))" }}>
+              <div
+                className="grid gap-4"
+                style={{
+                  gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+                }}
+              >
                 {Object.entries(colors).map(([tokenName, hexValue]) => (
                   <div key={tokenName} className="flex gap-3 items-start">
                     <div
@@ -192,7 +237,13 @@ const TypographySection = () => {
       <CardContent>
         <div className="grid gap-4">
           {TYPOGRAPHY_SAMPLES.map((sample, idx) => (
-            <div key={idx} className={cn("flex items-center gap-4 pb-4", { "border-b border-[#1e1e2e]": idx < TYPOGRAPHY_SAMPLES.length - 1 })}>
+            <div
+              key={idx}
+              className={cn("flex items-center gap-4 pb-4", {
+                "border-b border-[#1e1e2e]":
+                  idx < TYPOGRAPHY_SAMPLES.length - 1,
+              })}
+            >
               <div className="min-w-20">
                 <p className="m-0 text-xs font-semibold text-gray-400 uppercase tracking-widest">
                   {sample.name}
@@ -202,7 +253,13 @@ const TypographySection = () => {
                 </code>
               </div>
               <div className="flex-1">
-                <div style={{ fontSize: sample.size as any, fontWeight: sample.weight as any }} className="text-white">
+                <div
+                  style={{
+                    fontSize: sample.size as any,
+                    fontWeight: sample.weight as any,
+                  }}
+                  className="text-white"
+                >
                   {sample.text}
                 </div>
               </div>
@@ -256,7 +313,9 @@ const SpacingSection = () => {
 // Components Showcase
 const ComponentsShowcase = () => {
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedBadge, setSelectedBadge] = useState<"success" | "warning" | "danger" | "info">("success");
+  const [selectedBadge, setSelectedBadge] = useState<
+    "success" | "warning" | "danger" | "info"
+  >("success");
 
   return (
     <div className="grid gap-6">
@@ -266,14 +325,33 @@ const ComponentsShowcase = () => {
           <CardTitle>Buttons</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}>
-            <Button variant="primary" size="md">Primary Button</Button>
-            <Button variant="secondary" size="md">Secondary Button</Button>
-            <Button variant="ghost" size="md">Ghost Button</Button>
-            <Button variant="danger" size="md">Danger Button</Button>
-            <Button variant="primary" size="sm">Small</Button>
-            <Button variant="primary" size="lg">Large</Button>
-            <Button variant="primary" size="md" disabled>Disabled</Button>
+          <div
+            className="grid gap-4"
+            style={{
+              gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+            }}
+          >
+            <Button variant="primary" size="md">
+              Primary Button
+            </Button>
+            <Button variant="secondary" size="md">
+              Secondary Button
+            </Button>
+            <Button variant="ghost" size="md">
+              Ghost Button
+            </Button>
+            <Button variant="danger" size="md">
+              Danger Button
+            </Button>
+            <Button variant="primary" size="sm">
+              Small
+            </Button>
+            <Button variant="primary" size="lg">
+              Large
+            </Button>
+            <Button variant="primary" size="md" disabled>
+              Disabled
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -332,7 +410,12 @@ const ComponentsShowcase = () => {
           <CardTitle>Stat Cards</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
+          <div
+            className="grid gap-4"
+            style={{
+              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            }}
+          >
             <StatCard
               label="Total Orders"
               value="2,345"
@@ -394,10 +477,14 @@ const ComponentsShowcase = () => {
                   Modal Example
                 </h2>
                 <p className="text-gray-400 m-0 mb-4">
-                  This is a sample modal dialog showing component usage in the design system.
+                  This is a sample modal dialog showing component usage in the
+                  design system.
                 </p>
                 <div className="flex gap-3 justify-end">
-                  <Button variant="secondary" onClick={() => setModalOpen(false)}>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setModalOpen(false)}
+                  >
                     Cancel
                   </Button>
                   <Button variant="primary" onClick={() => setModalOpen(false)}>
@@ -429,10 +516,26 @@ export default function DesignSystemPage() {
         <div className="mb-8">
           <Tabs
             tabs={[
-              { id: "colors", label: "Colors", icon: <Palette className="w-4 h-4" /> },
-              { id: "typography", label: "Typography", icon: <Type className="w-4 h-4" /> },
-              { id: "spacing", label: "Spacing", icon: <Layout className="w-4 h-4" /> },
-              { id: "components", label: "Components", icon: <Bell className="w-4 h-4" /> },
+              {
+                id: "colors",
+                label: "Colors",
+                icon: <Palette className="w-4 h-4" />,
+              },
+              {
+                id: "typography",
+                label: "Typography",
+                icon: <Type className="w-4 h-4" />,
+              },
+              {
+                id: "spacing",
+                label: "Spacing",
+                icon: <Layout className="w-4 h-4" />,
+              },
+              {
+                id: "components",
+                label: "Components",
+                icon: <Bell className="w-4 h-4" />,
+              },
             ]}
             activeTab={activeTab}
             onChange={setActiveTab}

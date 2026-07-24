@@ -3,8 +3,16 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { EFSTChekv2Client, EFSTChekAPIError } from "../../../../packages/core/src/integrations/fuel-fleet/efs-tchek-v2-client";
-import type { SDKConfig, MoneyCodeRequest, SettlementRequest, PreAuthorizationRequest } from "../../../../packages/core/src/integrations/fuel-fleet/fuel-fleet-sdk-types";
+import {
+  EFSTChekv2Client,
+  EFSTChekAPIError,
+} from "../../../../packages/core/src/integrations/fuel-fleet/efs-tchek-v2-client";
+import type {
+  SDKConfig,
+  MoneyCodeRequest,
+  SettlementRequest,
+  PreAuthorizationRequest,
+} from "../../../../packages/core/src/integrations/fuel-fleet/fuel-fleet-sdk-types";
 
 describe("EFSTChekv2Client", () => {
   let client: EFSTChekv2Client;
@@ -210,7 +218,7 @@ describe("EFSTChekv2Client", () => {
 
     it("should post-authorize and reconcile transaction", async () => {
       const preAuthId = "preauth_123";
-      const actualAmount = 195.50;
+      const actualAmount = 195.5;
       const actualQuantity = 48.75;
 
       expect(actualAmount).toBeGreaterThan(0);
@@ -355,7 +363,9 @@ describe("EFSTChekv2Client", () => {
 
   describe("Error Handling", () => {
     it("should throw EFSTChekAPIError", () => {
-      const error = new EFSTChekAPIError("API_ERROR", "Request failed", { reason: "test" });
+      const error = new EFSTChekAPIError("API_ERROR", "Request failed", {
+        reason: "test",
+      });
 
       expect(error).toBeInstanceOf(EFSTChekAPIError);
       expect(error.code).toBe("API_ERROR");
@@ -363,7 +373,9 @@ describe("EFSTChekv2Client", () => {
     });
 
     it("should include HTTP error codes", () => {
-      const error = new EFSTChekAPIError("HTTP_401", "Unauthorized", { status: 401 });
+      const error = new EFSTChekAPIError("HTTP_401", "Unauthorized", {
+        status: 401,
+      });
       expect(error.code).toBe("HTTP_401");
     });
   });

@@ -79,7 +79,10 @@ export function Table<T extends { id?: string }>({
   if (sortedData.length === 0) {
     return (
       <div
-        className={cn("px-8 py-6 text-center text-wl-text-secondary", className)}
+        className={cn(
+          "px-8 py-6 text-center text-wl-text-secondary",
+          className,
+        )}
         style={style}
       >
         {emptyMessage}
@@ -91,7 +94,7 @@ export function Table<T extends { id?: string }>({
     <div
       className={cn(
         "overflow-x-auto border border-wl-border-subtle rounded-lg",
-        className
+        className,
       )}
       style={style}
     >
@@ -100,7 +103,7 @@ export function Table<T extends { id?: string }>({
           <tr
             className={cn(
               "bg-wl-bg-surface border-b border-wl-border-subtle",
-              stickyHeader && "sticky top-0 z-10"
+              stickyHeader && "sticky top-0 z-10",
             )}
           >
             {columns.map((column) => (
@@ -110,7 +113,8 @@ export function Table<T extends { id?: string }>({
                 className={cn(
                   "px-4 py-3 text-xs font-semibold uppercase tracking-wider",
                   "text-wl-text-secondary transition-colors duration-fast ease-default",
-                  column.sortable && "cursor-pointer hover:text-wl-text-primary"
+                  column.sortable &&
+                    "cursor-pointer hover:text-wl-text-primary",
                 )}
                 style={{
                   textAlign: column.align || "left",
@@ -122,7 +126,7 @@ export function Table<T extends { id?: string }>({
                   className={cn(
                     "flex items-center gap-2",
                     column.align === "center" && "justify-center",
-                    column.align === "right" && "justify-end"
+                    column.align === "right" && "justify-end",
                   )}
                 >
                   {column.header}
@@ -163,23 +167,29 @@ export function Table<T extends { id?: string }>({
                 className={cn(
                   "border-b border-wl-border-subtle transition-colors duration-fast ease-default group",
                   isSelected && "bg-wl-primary-500/10",
-                  !isSelected && striped && rowIndex % 2 === 1 && "bg-wl-bg-surface",
+                  !isSelected &&
+                    striped &&
+                    rowIndex % 2 === 1 &&
+                    "bg-wl-bg-surface",
                   onRowClick && !isSelected && "hover:bg-white/[0.02]",
-                  onRowClick && "cursor-pointer"
+                  onRowClick && "cursor-pointer",
                 )}
               >
                 {columns.map((column) => {
                   const cellValue = row[column.key as keyof T];
-                  const rendered: import("react").ReactNode = column.render ? column.render(row) : (cellValue as import("react").ReactNode);
+                  const rendered: import("react").ReactNode = column.render
+                    ? column.render(row)
+                    : (cellValue as import("react").ReactNode);
                   const isMonoContent =
-                    typeof cellValue === "string" && /^[A-Za-z0-9_-]+$/.test(cellValue);
+                    typeof cellValue === "string" &&
+                    /^[A-Za-z0-9_-]+$/.test(cellValue);
 
                   return (
                     <td
                       key={column.key}
                       className={cn(
                         "px-4 py-3 text-sm text-wl-text-primary",
-                        isMonoContent && "font-mono"
+                        isMonoContent && "font-mono",
                       )}
                       style={{
                         textAlign: column.align || "left",
@@ -200,22 +210,84 @@ export function Table<T extends { id?: string }>({
 }
 
 // Shadcn-compatible sub-components for pages that use composable table API
-export function TableHeader({ children, className }: { children?: ReactNode; className?: string }) {
-  return <thead className={cn("bg-wl-bg-elevated", className)}>{children}</thead>;
+export function TableHeader({
+  children,
+  className,
+}: {
+  children?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <thead className={cn("bg-wl-bg-elevated", className)}>{children}</thead>
+  );
 }
 
-export function TableBody({ children, className }: { children?: ReactNode; className?: string }) {
+export function TableBody({
+  children,
+  className,
+}: {
+  children?: ReactNode;
+  className?: string;
+}) {
   return <tbody className={className}>{children}</tbody>;
 }
 
-export function TableRow({ children, className }: { children?: ReactNode; className?: string }) {
-  return <tr className={cn("border-b border-wl-border-subtle hover:bg-wl-bg-overlay", className)}>{children}</tr>;
+export function TableRow({
+  children,
+  className,
+}: {
+  children?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <tr
+      className={cn(
+        "border-b border-wl-border-subtle hover:bg-wl-bg-overlay",
+        className,
+      )}
+    >
+      {children}
+    </tr>
+  );
 }
 
-export function TableHead({ children, className, colSpan }: { children?: ReactNode; className?: string; colSpan?: number }) {
-  return <th colSpan={colSpan} className={cn("px-4 py-3 text-left text-xs font-semibold text-wl-text-secondary", className)}>{children}</th>;
+export function TableHead({
+  children,
+  className,
+  colSpan,
+}: {
+  children?: ReactNode;
+  className?: string;
+  colSpan?: number;
+}) {
+  return (
+    <th
+      colSpan={colSpan}
+      className={cn(
+        "px-4 py-3 text-left text-xs font-semibold text-wl-text-secondary",
+        className,
+      )}
+    >
+      {children}
+    </th>
+  );
 }
 
-export function TableCell({ children, className, colSpan }: { children?: ReactNode; className?: string; colSpan?: number }) {
-  return <td colSpan={colSpan} className={cn("px-4 py-3 text-sm text-wl-text-primary", className)}>{children}</td>;
+export function TableCell({
+  children,
+  className,
+  colSpan,
+}: {
+  children?: ReactNode;
+  className?: string;
+  colSpan?: number;
+}) {
+  return (
+    <td
+      colSpan={colSpan}
+      className={cn("px-4 py-3 text-sm text-wl-text-primary", className)}
+    >
+      {children}
+    </td>
+  );
 }

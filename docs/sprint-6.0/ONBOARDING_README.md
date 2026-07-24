@@ -5,6 +5,7 @@ Production-quality onboarding wizard inspired by Fleetbase's flow, built with Ne
 ## Architecture
 
 ### State Machine
+
 ```
 VERIFY_EMAIL
     ↓ (emailVerified=true)
@@ -21,6 +22,7 @@ CONFIGURE_WORKSPACE
 ```
 
 ### File Structure
+
 ```
 apps/dashboard/src/app/onboarding/
 ├── layout.tsx              # Full-screen layout with left illustration + right form
@@ -40,7 +42,9 @@ apps/dashboard/src/app/onboarding/
 ## Components
 
 ### 1. Layout (`layout.tsx`)
+
 **Responsive two-panel design:**
+
 - **Left Panel** (hidden on mobile):
   - Witylogix branding with gradient logo
   - Animated SVG illustration (route animation, moving truck, pulsing dots)
@@ -53,13 +57,16 @@ apps/dashboard/src/app/onboarding/
   - Full-width on mobile, side-by-side on desktop
 
 **Key Features:**
+
 - Dark theme with amber gradients
 - Animated route visualization with moving truck
 - Backdrop gradient effects
 - Mobile-responsive (stacks vertically on small screens)
 
 ### 2. Page (`page.tsx`)
+
 **Main orchestrator component:**
+
 - State machine managing main steps and sub-steps
 - URL query parameter persistence (`?step=...&sub=...`)
 - Progress calculation and display
@@ -68,6 +75,7 @@ apps/dashboard/src/app/onboarding/
 - Smooth fade-in transitions
 
 **Key Methods:**
+
 - `handleNext()` - Move to next step with validation
 - `handleBack()` - Return to previous step
 - `handleSkip()` - Skip optional sub-steps
@@ -76,7 +84,9 @@ apps/dashboard/src/app/onboarding/
 ### 3. Step Components
 
 #### VerifyEmail (`verify-email.tsx`)
+
 **6-digit OTP verification:**
+
 ```
 Features:
 - Individual digit input boxes (auto-focus, backspace handling)
@@ -89,7 +99,9 @@ Features:
 ```
 
 #### ChooseDeployment (`choose-deployment.tsx`)
+
 **Deployment model selection:**
+
 ```
 Cloud (SaaS)
 ├─ Features: Instant setup, Auto updates, 99.9% SLA, Built-in security
@@ -107,7 +119,9 @@ Additional:
 ```
 
 #### CompanyInfo (`company-info.tsx`)
+
 **Company details collection:**
+
 ```
 Fields:
 - Company Name (required, text input)
@@ -125,7 +139,9 @@ Features:
 ```
 
 #### IndustrySelect (`industry-select.tsx`)
+
 **Industry selection with custom option:**
+
 ```
 Industries (3-column grid):
 - E-Commerce & Retail (shopping bag)
@@ -147,7 +163,9 @@ Features:
 ```
 
 #### GoalsSelect (`goals-select.tsx`)
+
 **Multi-select goals:**
+
 ```
 Goals (2-column grid, 10 options):
 - Route Optimization
@@ -171,7 +189,9 @@ Features:
 ```
 
 ### 4. Types (`types.ts`)
+
 **TypeScript enums and interfaces:**
+
 ```typescript
 enum OnboardingStep { VERIFY_EMAIL, CHOOSE_DEPLOYMENT, CONFIGURE_WORKSPACE }
 enum OnboardingSubStep { COMPANY_INFO, INDUSTRY, GOALS, ... }
@@ -211,18 +231,21 @@ interface OnboardingData {
 ## Design System Integration
 
 ### Tailwind + CSS Variables
+
 - **Primary Color**: `--wl-primary-500` (Amber #f5a623)
 - **Backgrounds**: `--wl-bg-surface`, `--wl-bg-overlay`, `--wl-bg-elevated`
 - **Text Colors**: Primary, Secondary, Tertiary levels
 - **Borders**: `--wl-border-subtle`, `--wl-border-default`, `--wl-border-strong`
 
 ### Components Used
+
 - `Button` (variants: primary, secondary, ghost, danger)
 - `Badge` (variants: default, success, warning, danger, info, primary)
 - `Input` (text, URL, tel types)
 - Custom styled elements with Tailwind classes
 
 ### Icons
+
 - Lucide React icons throughout
 - Consistent icon sizing (w-4 h-4 for small, w-5 h-5 for medium, w-6 h-6 for large)
 - Color-coordinated with content
@@ -230,6 +253,7 @@ interface OnboardingData {
 ## Navigation & URL Structure
 
 ### Query Parameters
+
 ```
 /onboarding
   ?step=verify-email
@@ -244,6 +268,7 @@ interface OnboardingData {
 ```
 
 ### Navigation Flow
+
 ```
 Back button (disabled on first step)
 Next button (enabled when step valid)
@@ -254,82 +279,116 @@ Launch Dashboard (final step, redirects to /)
 ## Validation Logic
 
 ### Email Verification
+
 - Step validates: `emailVerified === true`
 - Demo code: `123456`
 - API call simulated (1.5s delay)
 
 ### Deployment
+
 - Step validates: `deploymentType !== null`
 - Two options available
 
 ### Company Info
+
 - Required: `companyName` and `companySize`
 - Optional: website, logo, phone
 
 ### Industry
+
 - Required: `industry !== null`
 - Custom text input available
 
 ### Goals
+
 - Required: `goals.length > 0`
 - Multi-select minimum 1
 
 ### Subsequent Steps
+
 - Marked optional (can skip)
 - Validate to `true` (no blocking)
 
 ## Animations
 
 ### Fade-in Stagger
+
 ```css
 @keyframes wl-fade-in {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 ```
 
 ### Route Animation
+
 ```css
 @keyframes dash {
-  0% { stroke-dashoffset: 500; }
-  50% { stroke-dashoffset: 0; }
-  100% { stroke-dashoffset: -500; }
+  0% {
+    stroke-dashoffset: 500;
+  }
+  50% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -500;
+  }
 }
 
 @keyframes moveRoute {
   /* Truck moves along route */
-  0% { transform: translate(-150px, -100px); }
-  ...
-  100% { transform: translate(160px, -120px); }
+  0% {
+    transform: translate(-150px, -100px);
+  }
+  ... 100% {
+    transform: translate(160px, -120px);
+  }
 }
 
 @keyframes pulse {
-  0%, 100% { r: 8; opacity: 1; }
-  50% { r: 14; opacity: 0.5; }
+  0%,
+  100% {
+    r: 8;
+    opacity: 1;
+  }
+  50% {
+    r: 14;
+    opacity: 0.5;
+  }
 }
 ```
 
 ## Future Steps (Placeholders)
 
 ### Integrations (`integrations-select.tsx`)
+
 - Coming soon screen
 - Integration catalog (Shopify, WooCommerce, etc.)
 - API key configuration
 - Test connection button
 
 ### Dashboard Layout (`dashboard-layout.tsx`)
+
 - Coming soon screen
 - Preset dashboard layouts
 - Widget selection
 - Customization options
 
 ### Data Import
+
 - Coming soon screen
 - CSV/Excel upload
 - Legacy system migration
 - Data mapping interface
 
 ### Review
+
 - Confirmation screen
 - Summary of all selections
 - Edit buttons per section
@@ -338,11 +397,13 @@ Launch Dashboard (final step, redirects to /)
 ## Testing
 
 ### Demo Credentials
+
 - Email: `demo@witylogix.com`
 - Verification code: `123456`
 - No real email verification (simulated)
 
 ### Test Scenarios
+
 1. **Happy Path**: Complete all steps in order
 2. **Validation**: Try advancing without required fields
 3. **Back Navigation**: Verify back button persists data

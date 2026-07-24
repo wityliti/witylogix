@@ -75,143 +75,154 @@ async function onboardingRoutes(fastify: FastifyInstance): Promise<void> {
   // Returns the current user's onboarding progress, or null if
   // onboarding is already complete or not yet started.
 
-  fastify.get("/progress", async (request: FastifyRequest, reply: FastifyReply) => {
-    const userId = request.auth?.userId;
-    if (!userId) {
-      throw new ValidationError("User authentication required");
-    }
+  fastify.get(
+    "/progress",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const userId = request.auth?.userId;
+      if (!userId) {
+        throw new ValidationError("User authentication required");
+      }
 
-    const progress = await prisma.onboardingProgress.findUnique({
-      where: { userId },
-      select: {
-        id: true,
-        currentStep: true,
-        currentSubStep: true,
-        completedSteps: true,
-        data: true,
-        startedAt: true,
-        completedAt: true,
-        isActive: true,
-      },
-    });
+      const progress = await prisma.onboardingProgress.findUnique({
+        where: { userId },
+        select: {
+          id: true,
+          currentStep: true,
+          currentSubStep: true,
+          completedSteps: true,
+          data: true,
+          startedAt: true,
+          completedAt: true,
+          isActive: true,
+        },
+      });
 
-    if (!progress || progress.completedAt) {
-      return { data: null, completed: !!progress?.completedAt };
-    }
+      if (!progress || progress.completedAt) {
+        return { data: null, completed: !!progress?.completedAt };
+      }
 
-    return { data: progress };
-  });
+      return { data: progress };
+    },
+  );
 
   // ── UPDATE ONBOARDING PROGRESS ────────────────────────────
   // Persists step changes and form data as the user advances
   // through the onboarding wizard.
 
-  fastify.put("/progress", async (request: FastifyRequest, reply: FastifyReply) => {
-    const userId = request.auth?.userId;
-    if (!userId) {
-      throw new ValidationError("User authentication required");
-    }
+  fastify.put(
+    "/progress",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const userId = request.auth?.userId;
+      if (!userId) {
+        throw new ValidationError("User authentication required");
+      }
 
-    const body = updateProgressSchema.parse(request.body);
+      const body = updateProgressSchema.parse(request.body);
 
-    const progress = await prisma.onboardingProgress.findUnique({
-      where: { userId },
-    });
+      const progress = await prisma.onboardingProgress.findUnique({
+        where: { userId },
+      });
 
-    if (!progress) {
-      throw new NotFoundError("OnboardingProgress", userId);
-    }
+      if (!progress) {
+        throw new NotFoundError("OnboardingProgress", userId);
+      }
 
-    if (progress.completedAt) {
-      throw new ValidationError("Onboarding is already complete");
-    }
+      if (progress.completedAt) {
+        throw new ValidationError("Onboarding is already complete");
+      }
 
-    // Merge new data with existing data
-    const existingData = (progress.data as Record<string, unknown>) || {};
-    const mergedData = body.data
-      ? { ...existingData, ...body.data }
-      : existingData;
+      // Merge new data with existing data
+      const existingData = (progress.data as Record<string, unknown>) || {};
+      const mergedData = body.data
+        ? { ...existingData, ...body.data }
+        : existingData;
 
-    // Merge completed steps (union of existing + new)
-    const existingSteps = progress.completedSteps || [];
-    const newSteps = body.completedSteps || [];
-    const mergedSteps = [...new Set([...existingSteps, ...newSteps])];
+      // Merge completed steps (union of existing + new)
+      const existingSteps = progress.completedSteps || [];
+      const newSteps = body.completedSteps || [];
+      const mergedSteps = [...new Set([...existingSteps, ...newSteps])];
 
-    const updated = await prisma.onboardingProgress.update({
-      where: { userId },
-      data: {
-        currentStep: body.currentStep,
-        currentSubStep: body.currentSubStep ?? null,
-        completedSteps: mergedSteps,
-        data: mergedData,
-      },
-    });
+      const updated = await prisma.onboardingProgress.update({
+        where: { userId },
+        data: {
+          currentStep: body.currentStep,
+          currentSubStep: body.currentSubStep ?? null,
+          completedSteps: mergedSteps,
+          data: mergedData,
+        },
+      });
 
-    return { data: updated };
-  });
+      return { data: updated };
+    },
+  );
 
   // ── VERIFY EMAIL ──────────────────────────────────────────
   // Validates a 6-digit code that was sent to the user's email
   // during registration. Code is stored in Redis with 15min TTL.
 
-  fastify.post("/verify-email", async (request: FastifyRequest, reply: FastifyReply) => {
-    const userId = request.auth?.userId;
-    if (!userId) {
-      throw new ValidationError("User authentication required");
-    }
+  fastify.post(
+    "/verify-email",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const userId = request.auth?.userId;
+      if (!userId) {
+        throw new ValidationError("User authentication required");
+      }
 
-    const { code } = verifyEmailSchema.parse(request.body);
+      const { code } = verifyEmailSchema.parse(request.body);
 
-    const redis = getRedis();
-    const redisKey = verificationRedisKey(userId);
-    const storedCode = await redis.get(redisKey);
+      const redis = getRedis();
+      const redisKey = verificationRedisKey(userId);
+      const storedCode = await redis.get(redisKey);
 
-    if (!storedCode) {
-      throw new ValidationError("Verification code expired or not found. Please request a new one.");
-    }
+      if (!storedCode) {
+        throw new ValidationError(
+          "Verification code expired or not found. Please request a new one.",
+        );
+      }
 
-    if (storedCode !== code) {
-      throw new ValidationError("Invalid verification code.");
-    }
+      if (storedCode !== code) {
+        throw new ValidationError("Invalid verification code.");
+      }
 
-    // Mark email as verified
-    const verifiedAt = new Date();
-    await prisma.user.update({
-      where: { id: userId },
-      data: { emailVerifiedAt: verifiedAt },
-    });
-
-    // Delete the code from Redis
-    await redis.del(redisKey);
-
-    // Update onboarding progress — merge JSON so we don't replace entire `data` blob
-    const progress = await prisma.onboardingProgress.findUnique({
-      where: { userId },
-      select: { id: true, data: true, completedAt: true },
-    });
-    if (progress && !progress.completedAt) {
-      const prevData = (progress.data as Record<string, unknown>) || {};
-      await prisma.onboardingProgress.update({
-        where: { userId },
-        data: {
-          currentStep: "choose-deployment",
-          completedSteps: { push: "verify-email" },
-          data: {
-            ...prevData,
-            emailVerified: true,
-            emailVerifiedAt: verifiedAt.toISOString(),
-          },
-        },
+      // Mark email as verified
+      const verifiedAt = new Date();
+      await prisma.user.update({
+        where: { id: userId },
+        data: { emailVerifiedAt: verifiedAt },
       });
-    }
 
-    return {
-      data: {
-        verified: true,
-        verifiedAt: verifiedAt.toISOString(),
-      },
-    };
-  });
+      // Delete the code from Redis
+      await redis.del(redisKey);
+
+      // Update onboarding progress — merge JSON so we don't replace entire `data` blob
+      const progress = await prisma.onboardingProgress.findUnique({
+        where: { userId },
+        select: { id: true, data: true, completedAt: true },
+      });
+      if (progress && !progress.completedAt) {
+        const prevData = (progress.data as Record<string, unknown>) || {};
+        await prisma.onboardingProgress.update({
+          where: { userId },
+          data: {
+            currentStep: "choose-deployment",
+            completedSteps: { push: "verify-email" },
+            data: {
+              ...prevData,
+              emailVerified: true,
+              emailVerifiedAt: verifiedAt.toISOString(),
+            },
+          },
+        });
+      }
+
+      return {
+        data: {
+          verified: true,
+          verifiedAt: verifiedAt.toISOString(),
+        },
+      };
+    },
+  );
 
   // ── RESEND VERIFICATION EMAIL ─────────────────────────────
   // Rate-limited endpoint to resend the 6-digit code.
@@ -272,10 +283,16 @@ async function onboardingRoutes(fastify: FastifyInstance): Promise<void> {
         );
       } catch (err) {
         // Email queue failure is non-fatal — log the code in dev
-        fastify.log.warn({ err, code }, "Failed to enqueue verification email — code logged for dev");
+        fastify.log.warn(
+          { err, code },
+          "Failed to enqueue verification email — code logged for dev",
+        );
       }
 
-      fastify.log.info({ userId, code }, "[onboarding] Verification code generated (logged for dev)");
+      fastify.log.info(
+        { userId, code },
+        "[onboarding] Verification code generated (logged for dev)",
+      );
 
       return { data: { message: "Verification email sent" } };
     },
@@ -286,106 +303,111 @@ async function onboardingRoutes(fastify: FastifyInstance): Promise<void> {
   // WorkspaceSettings and marking onboarding as complete.
   // Runs inside a Prisma transaction for atomicity.
 
-  fastify.post("/complete", async (request: FastifyRequest, reply: FastifyReply) => {
-    const userId = request.auth?.userId;
-    if (!userId) {
-      throw new ValidationError("User authentication required");
-    }
+  fastify.post(
+    "/complete",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const userId = request.auth?.userId;
+      if (!userId) {
+        throw new ValidationError("User authentication required");
+      }
 
-    const body = completeOnboardingSchema.parse(request.body);
+      const body = completeOnboardingSchema.parse(request.body);
 
-    // Find user + org context
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true, name: true, shopId: true },
-    });
-
-    if (!user) {
-      throw new NotFoundError("User", userId);
-    }
-
-    // Find the user's org membership
-    const orgMember = await prisma.orgMember.findFirst({
-      where: { userId, isActive: true },
-      select: { orgId: true, role: true },
-    });
-
-    if (!orgMember) {
-      throw new ValidationError("User must belong to an organization to complete onboarding");
-    }
-
-    // Check onboarding progress
-    const progress = await prisma.onboardingProgress.findUnique({
-      where: { userId },
-    });
-
-    if (!progress || progress.completedAt) {
-      throw new ValidationError("No active onboarding session found");
-    }
-
-    // Generate workspace slug
-    const workspaceName = body.workspaceName || "default-workspace";
-    const slug = workspaceName
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "");
-
-    // Atomically create workspace and complete onboarding
-    const result = await prisma.$transaction(async (tx) => {
-      // Create workspace
-      const workspace = await tx.workspace.create({
-        data: {
-          orgId: orgMember.orgId,
-          name: workspaceName,
-          slug: `${slug}-${Date.now().toString(36)}`, // Ensure uniqueness
-          deploymentType: body.deploymentType,
-          industry: body.industry,
-          goals: body.goals,
-          selectedIntegrations: body.selectedIntegrations,
-          dashboardLayout: body.dashboardLayout || {},
-          provisionedAt: new Date(),
-        },
+      // Find user + org context
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, name: true, shopId: true },
       });
 
-      // Create workspace settings
-      await tx.workspaceSettings.create({
-        data: {
-          workspaceId: workspace.id,
-          timezone: body.timezone,
-          currency: body.currency,
-          distanceUnit: body.distanceUnit,
-          weightUnit: body.weightUnit,
-          dateFormat: body.dateFormat,
-          locale: body.locale,
-        },
+      if (!user) {
+        throw new NotFoundError("User", userId);
+      }
+
+      // Find the user's org membership
+      const orgMember = await prisma.orgMember.findFirst({
+        where: { userId, isActive: true },
+        select: { orgId: true, role: true },
       });
 
-      // Mark onboarding as complete
-      await tx.onboardingProgress.update({
+      if (!orgMember) {
+        throw new ValidationError(
+          "User must belong to an organization to complete onboarding",
+        );
+      }
+
+      // Check onboarding progress
+      const progress = await prisma.onboardingProgress.findUnique({
         where: { userId },
-        data: {
-          completedAt: new Date(),
-          currentStep: "complete",
-          completedSteps: { push: "review" },
-          data: {
-            ...(progress.data as Record<string, unknown>),
-            workspaceId: workspace.id,
-            completedAt: new Date().toISOString(),
-          },
-        },
       });
 
-      return workspace;
-    });
+      if (!progress || progress.completedAt) {
+        throw new ValidationError("No active onboarding session found");
+      }
 
-    return {
-      data: {
-        workspace: result,
-        redirectUrl: "/",
-        message: "Onboarding complete! Welcome to Witylogix.",
-      },
-    };
-  });
+      // Generate workspace slug
+      const workspaceName = body.workspaceName || "default-workspace";
+      const slug = workspaceName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+
+      // Atomically create workspace and complete onboarding
+      const result = await prisma.$transaction(async (tx) => {
+        // Create workspace
+        const workspace = await tx.workspace.create({
+          data: {
+            orgId: orgMember.orgId,
+            name: workspaceName,
+            slug: `${slug}-${Date.now().toString(36)}`, // Ensure uniqueness
+            deploymentType: body.deploymentType,
+            industry: body.industry,
+            goals: body.goals,
+            selectedIntegrations: body.selectedIntegrations,
+            dashboardLayout: body.dashboardLayout || {},
+            provisionedAt: new Date(),
+          },
+        });
+
+        // Create workspace settings
+        await tx.workspaceSettings.create({
+          data: {
+            workspaceId: workspace.id,
+            timezone: body.timezone,
+            currency: body.currency,
+            distanceUnit: body.distanceUnit,
+            weightUnit: body.weightUnit,
+            dateFormat: body.dateFormat,
+            locale: body.locale,
+          },
+        });
+
+        // Mark onboarding as complete
+        await tx.onboardingProgress.update({
+          where: { userId },
+          data: {
+            completedAt: new Date(),
+            currentStep: "complete",
+            completedSteps: { push: "review" },
+            data: {
+              ...(progress.data as Record<string, unknown>),
+              workspaceId: workspace.id,
+              completedAt: new Date().toISOString(),
+            },
+          },
+        });
+
+        return workspace;
+      });
+
+      return {
+        data: {
+          workspace: result,
+          redirectUrl: "/",
+          message: "Onboarding complete! Welcome to Witylogix.",
+        },
+      };
+    },
+  );
 }
 
 export default onboardingRoutes;

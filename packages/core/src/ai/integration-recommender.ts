@@ -12,29 +12,29 @@
  * Deterministic & testable — no external LLM calls.
  */
 
-import type { IntegrationProvider } from '../integrations/registry/integration-registry.js';
-import { integrationRegistry } from '../integrations/registry/integration-registry.js';
+import type { IntegrationProvider } from "../integrations/registry/integration-registry.js";
+import { integrationRegistry } from "../integrations/registry/integration-registry.js";
 
 // ─── TYPES ──────────────────────────────────────────────────────────────
 
 export type IndustryType =
-  | 'restaurant'
-  | 'ecommerce'
-  | 'logistics_trucking'
-  | 'healthcare_delivery'
-  | 'field_service'
-  | 'wholesale_distribution'
-  | 'general';
+  | "restaurant"
+  | "ecommerce"
+  | "logistics_trucking"
+  | "healthcare_delivery"
+  | "field_service"
+  | "wholesale_distribution"
+  | "general";
 
 export type WorkflowType =
-  | 'routing'
-  | 'payments'
-  | 'telematics'
-  | 'fulfillment'
-  | 'customer_communication'
-  | 'accounting'
-  | 'inventory'
-  | 'order_management';
+  | "routing"
+  | "payments"
+  | "telematics"
+  | "fulfillment"
+  | "customer_communication"
+  | "accounting"
+  | "inventory"
+  | "order_management";
 
 export interface IntegrationRecommendation {
   providerId: string;
@@ -46,14 +46,14 @@ export interface IntegrationRecommendation {
   popularityScore: number; // 0-100
   reason: string;
   setupEstimateMinutes: number;
-  setupComplexity: 'simple' | 'moderate' | 'complex';
+  setupComplexity: "simple" | "moderate" | "complex";
   synergiesWithConnected: string[]; // IDs of tenant's providers that this synergizes with
 }
 
 export interface TenantIntegrationProfile {
   tenantId: string;
   industry: IndustryType;
-  businessSize: 'starter' | 'growth' | 'enterprise';
+  businessSize: "starter" | "growth" | "enterprise";
   detectedWorkflows: WorkflowType[];
   connectedProviderIds: string[];
   companyDescription?: string;
@@ -61,83 +61,107 @@ export interface TenantIntegrationProfile {
 
 // ─── INDUSTRY ↔ PROVIDER MAPPING ────────────────────────────────────────
 
-const INDUSTRY_PROVIDER_MAP: Record<IndustryType, { providers: string[]; weights: Record<string, number> }> = {
+const INDUSTRY_PROVIDER_MAP: Record<
+  IndustryType,
+  { providers: string[]; weights: Record<string, number> }
+> = {
   restaurant: {
-    providers: ['toast-pos', 'square-for-restaurants', 'doordash-drive', 'uber-eats', 'stripe', 'twilio', 'square-payments'],
+    providers: [
+      "toast-pos",
+      "square-for-restaurants",
+      "doordash-drive",
+      "uber-eats",
+      "stripe",
+      "twilio",
+      "square-payments",
+    ],
     weights: {
-      'toast-pos': 0.95,
-      'square-for-restaurants': 0.90,
-      'doordash-drive': 0.85,
-      'uber-eats': 0.80,
-      'stripe': 0.75,
-      'square-payments': 0.72,
-      'twilio': 0.70,
-      'sendgrid': 0.55,
-      'quickbooks': 0.65,
+      "toast-pos": 0.95,
+      "square-for-restaurants": 0.9,
+      "doordash-drive": 0.85,
+      "uber-eats": 0.8,
+      stripe: 0.75,
+      "square-payments": 0.72,
+      twilio: 0.7,
+      sendgrid: 0.55,
+      quickbooks: 0.65,
     },
   },
   ecommerce: {
-    providers: ['shopify', 'stripe', 'shipstation', 'sendgrid', 'easypost', 'amazon-seller-central'],
+    providers: [
+      "shopify",
+      "stripe",
+      "shipstation",
+      "sendgrid",
+      "easypost",
+      "amazon-seller-central",
+    ],
     weights: {
-      'shopify': 0.95,
-      'stripe': 0.90,
-      'shipstation': 0.85,
-      'sendgrid': 0.80,
-      'easypost': 0.78,
-      'amazon-seller-central': 0.75,
-      'quickbooks': 0.70,
-      'google-analytics': 0.65,
+      shopify: 0.95,
+      stripe: 0.9,
+      shipstation: 0.85,
+      sendgrid: 0.8,
+      easypost: 0.78,
+      "amazon-seller-central": 0.75,
+      quickbooks: 0.7,
+      "google-analytics": 0.65,
     },
   },
   logistics_trucking: {
-    providers: ['samsara', 'motive-eld', 'dat-load-board', 'fedex', 'geotab'],
+    providers: ["samsara", "motive-eld", "dat-load-board", "fedex", "geotab"],
     weights: {
-      'samsara': 0.95,
-      'motive-eld': 0.92,
-      'dat-load-board': 0.88,
-      'geotab': 0.85,
-      'verizon-connect': 0.82,
-      'omnitracs': 0.80,
-      'quickbooks': 0.70,
-      'google-maps': 0.68,
-      'twilio': 0.60,
+      samsara: 0.95,
+      "motive-eld": 0.92,
+      "dat-load-board": 0.88,
+      geotab: 0.85,
+      "verizon-connect": 0.82,
+      omnitracs: 0.8,
+      quickbooks: 0.7,
+      "google-maps": 0.68,
+      twilio: 0.6,
     },
   },
   healthcare_delivery: {
-    providers: ['epic', 'docusign', 'twilio', 'google-maps', 'hl7-fhir'],
+    providers: ["epic", "docusign", "twilio", "google-maps", "hl7-fhir"],
     weights: {
-      'epic': 0.95,
-      'hl7-fhir': 0.90,
-      'docusign': 0.85,
-      'twilio': 0.80,
-      'google-maps': 0.75,
-      'cerner': 0.80,
-      'quickbooks': 0.65,
+      epic: 0.95,
+      "hl7-fhir": 0.9,
+      docusign: 0.85,
+      twilio: 0.8,
+      "google-maps": 0.75,
+      cerner: 0.8,
+      quickbooks: 0.65,
     },
   },
   field_service: {
-    providers: ['servicetitan', 'jobber', 'stripe', 'twilio', 'google-maps'],
+    providers: ["servicetitan", "jobber", "stripe", "twilio", "google-maps"],
     weights: {
-      'servicetitan': 0.95,
-      'jobber': 0.92,
-      'stripe': 0.88,
-      'twilio': 0.85,
-      'google-maps': 0.80,
-      'housecall-pro': 0.85,
-      'quickbooks': 0.75,
-      'slack': 0.70,
+      servicetitan: 0.95,
+      jobber: 0.92,
+      stripe: 0.88,
+      twilio: 0.85,
+      "google-maps": 0.8,
+      "housecall-pro": 0.85,
+      quickbooks: 0.75,
+      slack: 0.7,
     },
   },
   wholesale_distribution: {
-    providers: ['sap', 'oracle-netsuite', 'manhattan-associates', 'quickbooks', 'salesforce'],
+    providers: [
+      "sap",
+      "oracle-netsuite",
+      "manhattan-associates",
+      "quickbooks",
+      "salesforce",
+    ],
     weights: {
-      'sap': 0.95,
-      'oracle-netsuite': 0.92,
-      'manhattan-associates': 0.90,
-      'quickbooks': 0.85,
-      'salesforce': 0.80,
-      'microsoft-dynamics-365': 0.85,
-      'amazon-seller-central': 0.60,
+      sap: 0.95,
+      "oracle-netsuite": 0.92,
+      "manhattan-associates": 0.9,
+      quickbooks: 0.85,
+      salesforce: 0.8,
+      "microsoft-dynamics-365": 0.85,
+      "amazon-seller-central": 0.6,
     },
   },
   general: {
@@ -149,34 +173,68 @@ const INDUSTRY_PROVIDER_MAP: Record<IndustryType, { providers: string[]; weights
 // ─── WORKFLOW ↔ PROVIDER MAPPING ────────────────────────────────────────
 
 const WORKFLOW_PROVIDER_MAP: Record<WorkflowType, string[]> = {
-  routing: ['valhalla', 'vroom', 'google-routes-api', 'mapbox-directions', 'here-routing', 'route4me'],
-  payments: ['stripe', 'square-payments', 'paypal', 'braintree', 'authorize-net', 'adyen'],
-  telematics: ['samsara', 'geotab', 'verizon-connect', 'trimble', 'flespi', 'azuga'],
-  fulfillment: ['shipstation', 'easypost', 'shippo', 'fedex', 'ups', 'usps'],
-  customer_communication: ['twilio', 'sendgrid', 'mailgun', 'slack', 'whatsapp-business', 'onesignal'],
-  accounting: ['quickbooks', 'xero', 'sage', 'wave', 'freshbooks'],
-  inventory: ['fishbowl', 'shopify', 'woocommerce', 'magento', 'square-online'],
-  order_management: ['shopify', 'woocommerce', 'square-online', 'toast-pos', 'magento'],
+  routing: [
+    "valhalla",
+    "vroom",
+    "google-routes-api",
+    "mapbox-directions",
+    "here-routing",
+    "route4me",
+  ],
+  payments: [
+    "stripe",
+    "square-payments",
+    "paypal",
+    "braintree",
+    "authorize-net",
+    "adyen",
+  ],
+  telematics: [
+    "samsara",
+    "geotab",
+    "verizon-connect",
+    "trimble",
+    "flespi",
+    "azuga",
+  ],
+  fulfillment: ["shipstation", "easypost", "shippo", "fedex", "ups", "usps"],
+  customer_communication: [
+    "twilio",
+    "sendgrid",
+    "mailgun",
+    "slack",
+    "whatsapp-business",
+    "onesignal",
+  ],
+  accounting: ["quickbooks", "xero", "sage", "wave", "freshbooks"],
+  inventory: ["fishbowl", "shopify", "woocommerce", "magento", "square-online"],
+  order_management: [
+    "shopify",
+    "woocommerce",
+    "square-online",
+    "toast-pos",
+    "magento",
+  ],
 };
 
 // ─── PROVIDER POPULARITY BASELINE ───────────────────────────────────────
 
 const PROVIDER_POPULARITY: Record<string, number> = {
-  'stripe': 95,
-  'shopify': 92,
-  'google-maps': 90,
-  'twilio': 88,
-  'sendgrid': 86,
-  'salesforce': 84,
-  'quickbooks': 82,
-  'samsara': 80,
-  'slack': 78,
-  'amazon-seller-central': 76,
-  'fedex': 75,
-  'toast-pos': 72,
-  'valhalla': 70,
-  'mapbox': 68,
-  'here-maps': 65,
+  stripe: 95,
+  shopify: 92,
+  "google-maps": 90,
+  twilio: 88,
+  sendgrid: 86,
+  salesforce: 84,
+  quickbooks: 82,
+  samsara: 80,
+  slack: 78,
+  "amazon-seller-central": 76,
+  fedex: 75,
+  "toast-pos": 72,
+  valhalla: 70,
+  mapbox: 68,
+  "here-maps": 65,
 };
 
 // ─── INTEGRATION RECOMMENDER ENGINE ──────────────────────────────────────
@@ -184,7 +242,7 @@ const PROVIDER_POPULARITY: Record<string, number> = {
 export class IntegrationRecommender {
   constructor(
     private registry = integrationRegistry,
-    private dependencyGraph?: IntegrationDependencyGraph
+    private dependencyGraph?: IntegrationDependencyGraph,
   ) {}
 
   /**
@@ -192,7 +250,7 @@ export class IntegrationRecommender {
    */
   getRecommendations(
     profile: TenantIntegrationProfile,
-    limit: number = 10
+    limit: number = 10,
   ): IntegrationRecommendation[] {
     const allProviders = this.registry.getProduction();
     const connected = new Set(profile.connectedProviderIds);
@@ -211,7 +269,7 @@ export class IntegrationRecommender {
    */
   getIndustryRecommendations(
     industry: IndustryType,
-    connectedIds: string[] = []
+    connectedIds: string[] = [],
   ): IntegrationRecommendation[] {
     const industryConfig = INDUSTRY_PROVIDER_MAP[industry];
     if (!industryConfig || industryConfig.providers.length === 0) {
@@ -220,16 +278,19 @@ export class IntegrationRecommender {
 
     const connected = new Set(connectedIds);
     const profile: TenantIntegrationProfile = {
-      tenantId: '',
+      tenantId: "",
       industry,
-      businessSize: 'growth',
+      businessSize: "growth",
       detectedWorkflows: [],
       connectedProviderIds: connectedIds,
     };
 
     return industryConfig.providers
       .map((id) => this.registry.getProvider(id))
-      .filter((p): p is IntegrationProvider => p !== undefined && !connected.has(p.id))
+      .filter(
+        (p): p is IntegrationProvider =>
+          p !== undefined && !connected.has(p.id),
+      )
       .map((p) => this.scoreProvider(p, profile))
       .sort((a, b) => b.relevanceScore - a.relevanceScore);
   }
@@ -239,30 +300,30 @@ export class IntegrationRecommender {
    */
   detectIndustry(
     companyName: string,
-    companyDescription: string = ''
+    companyDescription: string = "",
   ): IndustryType {
     const fullText = `${companyName} ${companyDescription}`.toLowerCase();
 
     // Known brand names that map directly to industries
     const knownBrands: Record<string, IndustryType> = {
-      'olive garden': 'restaurant',
-      'mcdonald': 'restaurant',
-      'burger king': 'restaurant',
-      'taco bell': 'restaurant',
-      'pizza hut': 'restaurant',
-      'domino': 'restaurant',
-      'subway': 'restaurant',
-      'chipotle': 'restaurant',
-      'wendy': 'restaurant',
-      'starbucks': 'restaurant',
-      'chick-fil-a': 'restaurant',
-      'panera': 'restaurant',
-      'applebee': 'restaurant',
-      'ihop': 'restaurant',
-      'denny': 'restaurant',
-      'red lobster': 'restaurant',
-      'outback': 'restaurant',
-      'cheesecake factory': 'restaurant',
+      "olive garden": "restaurant",
+      mcdonald: "restaurant",
+      "burger king": "restaurant",
+      "taco bell": "restaurant",
+      "pizza hut": "restaurant",
+      domino: "restaurant",
+      subway: "restaurant",
+      chipotle: "restaurant",
+      wendy: "restaurant",
+      starbucks: "restaurant",
+      "chick-fil-a": "restaurant",
+      panera: "restaurant",
+      applebee: "restaurant",
+      ihop: "restaurant",
+      denny: "restaurant",
+      "red lobster": "restaurant",
+      outback: "restaurant",
+      "cheesecake factory": "restaurant",
     };
 
     for (const [brand, industry] of Object.entries(knownBrands)) {
@@ -272,12 +333,64 @@ export class IntegrationRecommender {
     }
 
     const keywords: Record<IndustryType, string[]> = {
-      restaurant: ['restaurant', 'cafe', 'pizzeria', 'diner', 'pub', 'bar', 'food', 'catering', 'kitchen'],
-      ecommerce: ['ecommerce', 'shop', 'store', 'online retail', 'marketplace', 'dropship', 'catalog', 'product'],
-      logistics_trucking: ['logistics', 'trucking', 'transport', 'shipping', 'freight', 'carrier', 'fleet'],
-      healthcare_delivery: ['healthcare', 'medical', 'clinic', 'hospital', 'health delivery', 'telemedicine', 'pharmacy', 'delivery', 'dispatch'],
-      field_service: ['field service', 'hvac', 'plumbing', 'electrical', 'contractor', 'technician', 'home service'],
-      wholesale_distribution: ['wholesale', 'distributor', 'distribution', 'b2b', 'supply', 'manufacturer'],
+      restaurant: [
+        "restaurant",
+        "cafe",
+        "pizzeria",
+        "diner",
+        "pub",
+        "bar",
+        "food",
+        "catering",
+        "kitchen",
+      ],
+      ecommerce: [
+        "ecommerce",
+        "shop",
+        "store",
+        "online retail",
+        "marketplace",
+        "dropship",
+        "catalog",
+        "product",
+      ],
+      logistics_trucking: [
+        "logistics",
+        "trucking",
+        "transport",
+        "shipping",
+        "freight",
+        "carrier",
+        "fleet",
+      ],
+      healthcare_delivery: [
+        "healthcare",
+        "medical",
+        "clinic",
+        "hospital",
+        "health delivery",
+        "telemedicine",
+        "pharmacy",
+        "delivery",
+        "dispatch",
+      ],
+      field_service: [
+        "field service",
+        "hvac",
+        "plumbing",
+        "electrical",
+        "contractor",
+        "technician",
+        "home service",
+      ],
+      wholesale_distribution: [
+        "wholesale",
+        "distributor",
+        "distribution",
+        "b2b",
+        "supply",
+        "manufacturer",
+      ],
       general: [],
     };
 
@@ -292,14 +405,17 @@ export class IntegrationRecommender {
       general: 0,
     };
 
-    let bestMatch: IndustryType = 'general';
+    let bestMatch: IndustryType = "general";
     let bestScore = 0;
     let bestPriority = 0;
 
     for (const [industry, kws] of Object.entries(keywords)) {
       const score = kws.filter((kw) => fullText.includes(kw)).length;
       const priority = industryPriority[industry] ?? 0;
-      if (score > bestScore || (score === bestScore && score > 0 && priority > bestPriority)) {
+      if (
+        score > bestScore ||
+        (score === bestScore && score > 0 && priority > bestPriority)
+      ) {
         bestScore = score;
         bestMatch = industry as IndustryType;
         bestPriority = priority;
@@ -316,7 +432,9 @@ export class IntegrationRecommender {
     const workflows = new Set<WorkflowType>();
     const connected = new Set(connectedProviderIds);
 
-    for (const [workflow, providerIds] of Object.entries(WORKFLOW_PROVIDER_MAP)) {
+    for (const [workflow, providerIds] of Object.entries(
+      WORKFLOW_PROVIDER_MAP,
+    )) {
       const workflowType = workflow as WorkflowType;
       if (providerIds.some((id) => connected.has(id))) {
         workflows.add(workflowType);
@@ -331,10 +449,16 @@ export class IntegrationRecommender {
    */
   private scoreProvider(
     provider: IntegrationProvider,
-    profile: TenantIntegrationProfile
+    profile: TenantIntegrationProfile,
   ): IntegrationRecommendation {
-    const industryMatch = this.calculateIndustryMatch(provider.id, profile.industry);
-    const workflowComplement = this.calculateWorkflowComplement(provider.id, profile.detectedWorkflows);
+    const industryMatch = this.calculateIndustryMatch(
+      provider.id,
+      profile.industry,
+    );
+    const workflowComplement = this.calculateWorkflowComplement(
+      provider.id,
+      profile.detectedWorkflows,
+    );
     const popularityScore = PROVIDER_POPULARITY[provider.id] ?? 50;
 
     // Synergy bonus: check if this provider pairs well with connected integrations
@@ -344,13 +468,19 @@ export class IntegrationRecommender {
       : 0;
 
     const synergiesWithConnected = this.dependencyGraph
-      ? this.dependencyGraph.getComplementaryProviders(provider.id, Array.from(connected))
+      ? this.dependencyGraph.getComplementaryProviders(
+          provider.id,
+          Array.from(connected),
+        )
       : [];
 
     // Composite score: Industry (40%) + Workflow (35%) + Popularity (20%) + Synergy (5%)
     const relevanceScore = Math.min(
       100,
-      (industryMatch * 0.4 + workflowComplement * 0.35 + popularityScore * 0.2 + synergyScore * 0.05)
+      industryMatch * 0.4 +
+        workflowComplement * 0.35 +
+        popularityScore * 0.2 +
+        synergyScore * 0.05,
     );
 
     const setupEstimate = this.estimateSetupTime(provider);
@@ -364,7 +494,10 @@ export class IntegrationRecommender {
       industryMatch: Math.round(industryMatch),
       workflowComplement: Math.round(workflowComplement),
       popularityScore: Math.round(popularityScore),
-      reason: this.generateRecommendationReason(provider, profile, { industryMatch, workflowComplement }),
+      reason: this.generateRecommendationReason(provider, profile, {
+        industryMatch,
+        workflowComplement,
+      }),
       setupEstimateMinutes: setupEstimate,
       setupComplexity,
       synergiesWithConnected,
@@ -374,7 +507,10 @@ export class IntegrationRecommender {
   /**
    * Calculate how well provider matches tenant's industry
    */
-  private calculateIndustryMatch(providerId: string, industry: IndustryType): number {
+  private calculateIndustryMatch(
+    providerId: string,
+    industry: IndustryType,
+  ): number {
     const config = INDUSTRY_PROVIDER_MAP[industry];
     if (!config) return 0;
 
@@ -387,7 +523,10 @@ export class IntegrationRecommender {
   /**
    * Calculate how well provider complements detected workflows
    */
-  private calculateWorkflowComplement(providerId: string, workflows: WorkflowType[]): number {
+  private calculateWorkflowComplement(
+    providerId: string,
+    workflows: WorkflowType[],
+  ): number {
     if (workflows.length === 0) return 25; // baseline for no detected workflows
 
     let matches = 0;
@@ -408,7 +547,7 @@ export class IntegrationRecommender {
     let baseTime = 15; // minutes
 
     // OAuth adds 5 minutes
-    if (provider.authMethod === 'oauth2') {
+    if (provider.authMethod === "oauth2") {
       baseTime += 5;
     }
 
@@ -418,7 +557,7 @@ export class IntegrationRecommender {
     }
 
     // Custom auth adds 10 minutes
-    if (provider.authMethod === 'custom') {
+    if (provider.authMethod === "custom") {
       baseTime += 10;
     }
 
@@ -428,14 +567,16 @@ export class IntegrationRecommender {
   /**
    * Determine setup complexity
    */
-  private determineComplexity(provider: IntegrationProvider): 'simple' | 'moderate' | 'complex' {
-    if (provider.authMethod === 'custom' || provider.webhookSupport) {
-      return 'complex';
+  private determineComplexity(
+    provider: IntegrationProvider,
+  ): "simple" | "moderate" | "complex" {
+    if (provider.authMethod === "custom" || provider.webhookSupport) {
+      return "complex";
     }
-    if (provider.authMethod === 'oauth2') {
-      return 'moderate';
+    if (provider.authMethod === "oauth2") {
+      return "moderate";
     }
-    return 'simple';
+    return "simple";
   }
 
   /**
@@ -444,27 +585,30 @@ export class IntegrationRecommender {
   private generateRecommendationReason(
     provider: IntegrationProvider,
     profile: TenantIntegrationProfile,
-    scores: { industryMatch: number; workflowComplement: number }
+    scores: { industryMatch: number; workflowComplement: number },
   ): string {
     const reasons: string[] = [];
 
     if (scores.industryMatch > 70) {
-      reasons.push(`Best-in-class for ${profile.industry.replace(/_/g, ' ')}`);
+      reasons.push(`Best-in-class for ${profile.industry.replace(/_/g, " ")}`);
     }
 
     if (scores.workflowComplement > 70) {
-      reasons.push('Complements your existing workflows');
+      reasons.push("Complements your existing workflows");
     }
 
-    if (PROVIDER_POPULARITY[provider.id] && PROVIDER_POPULARITY[provider.id] > 80) {
-      reasons.push('Market leader in its category');
+    if (
+      PROVIDER_POPULARITY[provider.id] &&
+      PROVIDER_POPULARITY[provider.id] > 80
+    ) {
+      reasons.push("Market leader in its category");
     }
 
     if (reasons.length === 0) {
-      reasons.push('Recommended based on your integrations');
+      reasons.push("Recommended based on your integrations");
     }
 
-    return reasons.join('. ');
+    return reasons.join(". ");
   }
 }
 
@@ -473,7 +617,7 @@ export class IntegrationRecommender {
 export interface DependencyEdge {
   from: string;
   to: string;
-  synergyType: 'data-flow' | 'complement' | 'required' | 'optional';
+  synergyType: "data-flow" | "complement" | "required" | "optional";
   weight: number; // 0-1, higher = stronger synergy
 }
 
@@ -487,12 +631,15 @@ export class IntegrationDependencyGraph {
   /**
    * Get providers that synergize well with a given provider
    */
-  getComplementaryProviders(providerId: string, excludeIds: string[] = []): string[] {
+  getComplementaryProviders(
+    providerId: string,
+    excludeIds: string[] = [],
+  ): string[] {
     const exclude = new Set([providerId, ...excludeIds]);
     const edges = this.edges.get(providerId) ?? [];
 
     return edges
-      .filter((e) => e.synergyType !== 'required' && !exclude.has(e.to))
+      .filter((e) => e.synergyType !== "required" && !exclude.has(e.to))
       .sort((a, b) => b.weight - a.weight)
       .slice(0, 3)
       .map((e) => e.to);
@@ -518,9 +665,10 @@ export class IntegrationDependencyGraph {
   /**
    * Get visual graph data for frontend
    */
-  getGraphData(
-    selectedNodeIds: string[]
-  ): { nodes: Array<{ id: string; label: string }>; edges: DependencyEdge[] } {
+  getGraphData(selectedNodeIds: string[]): {
+    nodes: Array<{ id: string; label: string }>;
+    edges: DependencyEdge[];
+  } {
     const registry = integrationRegistry;
     const nodeSet = new Set(selectedNodeIds);
 
@@ -549,72 +697,227 @@ export class IntegrationDependencyGraph {
   private buildDefaultGraph(): void {
     const connections: DependencyEdge[] = [
       // Routing + Maps
-      { from: 'valhalla', to: 'google-maps', synergyType: 'complement', weight: 0.8 },
-      { from: 'vroom', to: 'mapbox', synergyType: 'complement', weight: 0.8 },
-      { from: 'google-routes-api', to: 'google-maps', synergyType: 'complement', weight: 0.9 },
+      {
+        from: "valhalla",
+        to: "google-maps",
+        synergyType: "complement",
+        weight: 0.8,
+      },
+      { from: "vroom", to: "mapbox", synergyType: "complement", weight: 0.8 },
+      {
+        from: "google-routes-api",
+        to: "google-maps",
+        synergyType: "complement",
+        weight: 0.9,
+      },
 
       // Routing + Telematics
-      { from: 'valhalla', to: 'samsara', synergyType: 'data-flow', weight: 0.85 },
-      { from: 'vroom', to: 'geotab', synergyType: 'data-flow', weight: 0.8 },
-      { from: 'google-routes-api', to: 'samsara', synergyType: 'complement', weight: 0.75 },
+      {
+        from: "valhalla",
+        to: "samsara",
+        synergyType: "data-flow",
+        weight: 0.85,
+      },
+      { from: "vroom", to: "geotab", synergyType: "data-flow", weight: 0.8 },
+      {
+        from: "google-routes-api",
+        to: "samsara",
+        synergyType: "complement",
+        weight: 0.75,
+      },
 
       // Telematics + ELD
-      { from: 'samsara', to: 'samsara-eld', synergyType: 'data-flow', weight: 0.95 },
-      { from: 'geotab', to: 'geotab-drive', synergyType: 'data-flow', weight: 0.95 },
-      { from: 'motive-eld', to: 'samsara', synergyType: 'complement', weight: 0.7 },
+      {
+        from: "samsara",
+        to: "samsara-eld",
+        synergyType: "data-flow",
+        weight: 0.95,
+      },
+      {
+        from: "geotab",
+        to: "geotab-drive",
+        synergyType: "data-flow",
+        weight: 0.95,
+      },
+      {
+        from: "motive-eld",
+        to: "samsara",
+        synergyType: "complement",
+        weight: 0.7,
+      },
 
       // E-commerce + Payments
-      { from: 'shopify', to: 'stripe', synergyType: 'required', weight: 1.0 },
-      { from: 'shopify', to: 'square-payments', synergyType: 'complement', weight: 0.8 },
-      { from: 'woocommerce', to: 'stripe', synergyType: 'complement', weight: 0.85 },
-      { from: 'square-online', to: 'square-payments', synergyType: 'data-flow', weight: 0.95 },
+      { from: "shopify", to: "stripe", synergyType: "required", weight: 1.0 },
+      {
+        from: "shopify",
+        to: "square-payments",
+        synergyType: "complement",
+        weight: 0.8,
+      },
+      {
+        from: "woocommerce",
+        to: "stripe",
+        synergyType: "complement",
+        weight: 0.85,
+      },
+      {
+        from: "square-online",
+        to: "square-payments",
+        synergyType: "data-flow",
+        weight: 0.95,
+      },
 
       // E-commerce + Fulfillment
-      { from: 'shopify', to: 'shipstation', synergyType: 'data-flow', weight: 0.9 },
-      { from: 'shopify', to: 'easypost', synergyType: 'complement', weight: 0.75 },
-      { from: 'woocommerce', to: 'shipstation', synergyType: 'complement', weight: 0.8 },
+      {
+        from: "shopify",
+        to: "shipstation",
+        synergyType: "data-flow",
+        weight: 0.9,
+      },
+      {
+        from: "shopify",
+        to: "easypost",
+        synergyType: "complement",
+        weight: 0.75,
+      },
+      {
+        from: "woocommerce",
+        to: "shipstation",
+        synergyType: "complement",
+        weight: 0.8,
+      },
 
       // Fulfillment + Shipping
-      { from: 'shipstation', to: 'fedex', synergyType: 'data-flow', weight: 0.9 },
-      { from: 'shipstation', to: 'ups', synergyType: 'data-flow', weight: 0.9 },
-      { from: 'easypost', to: 'fedex', synergyType: 'complement', weight: 0.8 },
+      {
+        from: "shipstation",
+        to: "fedex",
+        synergyType: "data-flow",
+        weight: 0.9,
+      },
+      { from: "shipstation", to: "ups", synergyType: "data-flow", weight: 0.9 },
+      { from: "easypost", to: "fedex", synergyType: "complement", weight: 0.8 },
 
       // Payments + Accounting
-      { from: 'stripe', to: 'quickbooks', synergyType: 'data-flow', weight: 0.85 },
-      { from: 'square-payments', to: 'quickbooks', synergyType: 'complement', weight: 0.75 },
-      { from: 'paypal', to: 'xero', synergyType: 'data-flow', weight: 0.8 },
+      {
+        from: "stripe",
+        to: "quickbooks",
+        synergyType: "data-flow",
+        weight: 0.85,
+      },
+      {
+        from: "square-payments",
+        to: "quickbooks",
+        synergyType: "complement",
+        weight: 0.75,
+      },
+      { from: "paypal", to: "xero", synergyType: "data-flow", weight: 0.8 },
 
       // CRM + Accounting
-      { from: 'salesforce', to: 'oracle-netsuite', synergyType: 'complement', weight: 0.75 },
-      { from: 'hubspot', to: 'quickbooks', synergyType: 'complement', weight: 0.7 },
+      {
+        from: "salesforce",
+        to: "oracle-netsuite",
+        synergyType: "complement",
+        weight: 0.75,
+      },
+      {
+        from: "hubspot",
+        to: "quickbooks",
+        synergyType: "complement",
+        weight: 0.7,
+      },
 
       // E-commerce + Email
-      { from: 'shopify', to: 'sendgrid', synergyType: 'complement', weight: 0.75 },
-      { from: 'square-online', to: 'sendgrid', synergyType: 'complement', weight: 0.7 },
+      {
+        from: "shopify",
+        to: "sendgrid",
+        synergyType: "complement",
+        weight: 0.75,
+      },
+      {
+        from: "square-online",
+        to: "sendgrid",
+        synergyType: "complement",
+        weight: 0.7,
+      },
 
       // Messaging
-      { from: 'twilio', to: 'sendgrid', synergyType: 'complement', weight: 0.7 },
-      { from: 'slack', to: 'servicetitan', synergyType: 'complement', weight: 0.75 },
+      {
+        from: "twilio",
+        to: "sendgrid",
+        synergyType: "complement",
+        weight: 0.7,
+      },
+      {
+        from: "slack",
+        to: "servicetitan",
+        synergyType: "complement",
+        weight: 0.75,
+      },
 
       // Field Service + Payments
-      { from: 'servicetitan', to: 'stripe', synergyType: 'complement', weight: 0.8 },
-      { from: 'jobber', to: 'stripe', synergyType: 'complement', weight: 0.75 },
+      {
+        from: "servicetitan",
+        to: "stripe",
+        synergyType: "complement",
+        weight: 0.8,
+      },
+      { from: "jobber", to: "stripe", synergyType: "complement", weight: 0.75 },
 
       // Field Service + Maps
-      { from: 'servicetitan', to: 'google-maps', synergyType: 'complement', weight: 0.8 },
-      { from: 'jobber', to: 'google-maps', synergyType: 'complement', weight: 0.8 },
+      {
+        from: "servicetitan",
+        to: "google-maps",
+        synergyType: "complement",
+        weight: 0.8,
+      },
+      {
+        from: "jobber",
+        to: "google-maps",
+        synergyType: "complement",
+        weight: 0.8,
+      },
 
       // ERP + Supply Chain
-      { from: 'sap', to: 'manhattan-associates', synergyType: 'complement', weight: 0.85 },
-      { from: 'oracle-netsuite', to: 'manhattan-associates', synergyType: 'complement', weight: 0.8 },
+      {
+        from: "sap",
+        to: "manhattan-associates",
+        synergyType: "complement",
+        weight: 0.85,
+      },
+      {
+        from: "oracle-netsuite",
+        to: "manhattan-associates",
+        synergyType: "complement",
+        weight: 0.8,
+      },
 
       // POS + Payments
-      { from: 'toast-pos', to: 'stripe', synergyType: 'complement', weight: 0.8 },
-      { from: 'square-for-restaurants', to: 'square-payments', synergyType: 'data-flow', weight: 0.95 },
+      {
+        from: "toast-pos",
+        to: "stripe",
+        synergyType: "complement",
+        weight: 0.8,
+      },
+      {
+        from: "square-for-restaurants",
+        to: "square-payments",
+        synergyType: "data-flow",
+        weight: 0.95,
+      },
 
       // POS + Delivery
-      { from: 'toast-pos', to: 'doordash-drive', synergyType: 'complement', weight: 0.85 },
-      { from: 'toast-pos', to: 'uber-eats', synergyType: 'complement', weight: 0.8 },
+      {
+        from: "toast-pos",
+        to: "doordash-drive",
+        synergyType: "complement",
+        weight: 0.85,
+      },
+      {
+        from: "toast-pos",
+        to: "uber-eats",
+        synergyType: "complement",
+        weight: 0.8,
+      },
     ];
 
     for (const edge of connections) {
@@ -643,7 +946,7 @@ export interface CategoryCoverageSummary {
 
 export function analyzeCategoryGaps(
   connectedProviderIds: string[],
-  industry: IndustryType
+  industry: IndustryType,
 ): CategoryCoverageSummary {
   const registry = integrationRegistry;
   const connected = new Set(connectedProviderIds);
@@ -653,13 +956,18 @@ export function analyzeCategoryGaps(
 
   // Mark critical categories by industry
   const criticalByIndustry: Record<IndustryType, string[]> = {
-    restaurant: ['pos-restaurant', 'payments', 'messaging', 'last-mile'],
-    ecommerce: ['e-commerce', 'payments', 'shipping', 'email'],
-    logistics_trucking: ['telematics', 'eld', 'routing', 'maps', 'freight'],
-    healthcare_delivery: ['healthcare', 'e-signatures', 'messaging', 'maps'],
-    field_service: ['field-service', 'payments', 'maps', 'messaging'],
-    wholesale_distribution: ['erp-accounting', 'supply-chain', 'crm', 'shipping'],
-    general: ['e-commerce', 'payments', 'messaging', 'email'],
+    restaurant: ["pos-restaurant", "payments", "messaging", "last-mile"],
+    ecommerce: ["e-commerce", "payments", "shipping", "email"],
+    logistics_trucking: ["telematics", "eld", "routing", "maps", "freight"],
+    healthcare_delivery: ["healthcare", "e-signatures", "messaging", "maps"],
+    field_service: ["field-service", "payments", "maps", "messaging"],
+    wholesale_distribution: [
+      "erp-accounting",
+      "supply-chain",
+      "crm",
+      "shipping",
+    ],
+    general: ["e-commerce", "payments", "messaging", "email"],
   };
 
   const critical = criticalByIndustry[industry] ?? [];
@@ -668,7 +976,10 @@ export function analyzeCategoryGaps(
   // Count providers per category
   for (const provider of registry.getProduction()) {
     if (connected.has(provider.id)) {
-      categoryMap.set(provider.category, (categoryMap.get(provider.category) ?? 0) + 1);
+      categoryMap.set(
+        provider.category,
+        (categoryMap.get(provider.category) ?? 0) + 1,
+      );
     }
   }
 
@@ -689,7 +1000,10 @@ export function analyzeCategoryGaps(
     }
   }
 
-  const coverageByCategory: Record<string, { count: number; critical: boolean }> = {};
+  const coverageByCategory: Record<
+    string,
+    { count: number; critical: boolean }
+  > = {};
   for (const [category, count] of categoryMap) {
     coverageByCategory[category] = {
       count,
@@ -699,7 +1013,8 @@ export function analyzeCategoryGaps(
 
   const totalCritical = critical.length;
   const coveredCritical = critical.filter((c) => categoryMap.has(c)).length;
-  const overallCoverage = totalCritical > 0 ? (coveredCritical / totalCritical) * 100 : 0;
+  const overallCoverage =
+    totalCritical > 0 ? (coveredCritical / totalCritical) * 100 : 0;
 
   return {
     coverageByCategory,
@@ -708,4 +1023,3 @@ export function analyzeCategoryGaps(
     recommendations,
   };
 }
-

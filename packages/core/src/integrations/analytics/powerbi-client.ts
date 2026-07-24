@@ -10,7 +10,7 @@
  * - Capacity management
  */
 
-import { AnalyticsAdapter } from './analytics-adapter.js';
+import { AnalyticsAdapter } from "./analytics-adapter.js";
 import type {
   AnalyticsConfig,
   QueryDefinition,
@@ -24,7 +24,7 @@ import type {
   HealthCheckResult,
   DataSource,
   FilterDefinition,
-} from './types.js';
+} from "./types.js";
 
 interface PowerBIDataset {
   id: string;
@@ -99,14 +99,14 @@ interface AzureADToken {
  * Supports both service principal and master user authentication.
  */
 export class PowerBIClient extends AnalyticsAdapter {
-  private accessToken: string = '';
-  private refreshToken: string = '';
+  private accessToken: string = "";
+  private refreshToken: string = "";
   private tokenExpiresAt: number = 0;
-  private groupId: string = '';
+  private groupId: string = "";
 
   constructor(config: AnalyticsConfig) {
     super(config);
-    this.groupId = config.defaultWorkspaceId || '';
+    this.groupId = config.defaultWorkspaceId || "";
   }
 
   /**
@@ -142,14 +142,14 @@ export class PowerBIClient extends AnalyticsAdapter {
     const token: string = await this.authenticate();
 
     const response: Response = await fetch(
-      'https://api.powerbi.com/v1.0/myorg/groups',
+      "https://api.powerbi.com/v1.0/myorg/groups",
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -175,13 +175,13 @@ export class PowerBIClient extends AnalyticsAdapter {
     const workspaceId: string = groupId || this.groupId;
     const url: string = workspaceId
       ? `https://api.powerbi.com/v1.0/myorg/groups/${workspaceId}/datasets`
-      : 'https://api.powerbi.com/v1.0/myorg/datasets';
+      : "https://api.powerbi.com/v1.0/myorg/datasets";
 
     const response: Response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
     });
 
@@ -214,10 +214,10 @@ export class PowerBIClient extends AnalyticsAdapter {
       : `https://api.powerbi.com/v1.0/myorg/datasets/${datasetId}/refreshes`;
 
     const response: Response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
     });
 
@@ -237,7 +237,7 @@ export class PowerBIClient extends AnalyticsAdapter {
     datasetId: string,
     tableName: string,
     rows: Record<string, unknown>[],
-    groupId?: string
+    groupId?: string,
   ): Promise<void> {
     const token: string = await this.authenticate();
     const workspaceId: string = groupId || this.groupId;
@@ -250,10 +250,10 @@ export class PowerBIClient extends AnalyticsAdapter {
     };
 
     const response: Response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
     });
@@ -273,7 +273,7 @@ export class PowerBIClient extends AnalyticsAdapter {
   async executeDaxQuery(
     datasetId: string,
     daxQuery: string,
-    groupId?: string
+    groupId?: string,
   ): Promise<QueryResult> {
     const token: string = await this.authenticate();
     const workspaceId: string = groupId || this.groupId;
@@ -290,10 +290,10 @@ export class PowerBIClient extends AnalyticsAdapter {
     };
 
     const response: Response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
     });
@@ -307,10 +307,11 @@ export class PowerBIClient extends AnalyticsAdapter {
 
     return {
       executionId: `powerbi-${datasetId}-${Date.now()}`,
-      columns: results?.tables?.[0]?.columns?.map((col: any) => ({
-        name: col.name,
-        type: 'string',
-      })) || [],
+      columns:
+        results?.tables?.[0]?.columns?.map((col: any) => ({
+          name: col.name,
+          type: "string",
+        })) || [],
       rows: results?.tables?.[0]?.rows || [],
       executionTimeMs: 0,
       fromCache: false,
@@ -327,13 +328,13 @@ export class PowerBIClient extends AnalyticsAdapter {
     const workspaceId: string = groupId || this.groupId;
     const url: string = workspaceId
       ? `https://api.powerbi.com/v1.0/myorg/groups/${workspaceId}/reports`
-      : 'https://api.powerbi.com/v1.0/myorg/reports';
+      : "https://api.powerbi.com/v1.0/myorg/reports";
 
     const response: Response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
     });
 
@@ -364,13 +365,13 @@ export class PowerBIClient extends AnalyticsAdapter {
     const workspaceId: string = groupId || this.groupId;
     const url: string = workspaceId
       ? `https://api.powerbi.com/v1.0/myorg/groups/${workspaceId}/dashboards`
-      : 'https://api.powerbi.com/v1.0/myorg/dashboards';
+      : "https://api.powerbi.com/v1.0/myorg/dashboards";
 
     const response: Response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
     });
 
@@ -403,7 +404,7 @@ export class PowerBIClient extends AnalyticsAdapter {
     entityId: string,
     datasetId: string,
     userId: string,
-    rlsRules?: RLSRule[]
+    rlsRules?: RLSRule[],
   ): Promise<EmbedToken> {
     const token: string = await this.authenticate();
 
@@ -428,19 +429,21 @@ export class PowerBIClient extends AnalyticsAdapter {
 
     // Add RLS rules to roles if provided
     if (rlsRules && rlsRules.length > 0) {
-      body.identities[0].roles = rlsRules.map((rule: RLSRule) => `${rule.field}:'${rule.allowedValues.join("','")}'`);
+      body.identities[0].roles = rlsRules.map(
+        (rule: RLSRule) => `${rule.field}:'${rule.allowedValues.join("','")}'`,
+      );
     }
 
     const response: Response = await fetch(
-      'https://api.powerbi.com/v1.0/myorg/generateToken',
+      "https://api.powerbi.com/v1.0/myorg/generateToken",
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(body),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -453,9 +456,9 @@ export class PowerBIClient extends AnalyticsAdapter {
       id: `powerbi-token-${Date.now()}`,
       token: data.token,
       entityId,
-      entityType: 'report',
+      entityType: "report",
       userId,
-      scopes: ['view', 'edit'],
+      scopes: ["view", "edit"],
       rlsRules,
       expiresAt: new Date(Date.now() + data.expiration * 1000),
       createdAt: new Date(),
@@ -472,13 +475,13 @@ export class PowerBIClient extends AnalyticsAdapter {
     const workspaceId: string = groupId || this.groupId;
     const url: string = workspaceId
       ? `https://api.powerbi.com/v1.0/myorg/groups/${workspaceId}/dataflows`
-      : 'https://api.powerbi.com/v1.0/myorg/dataflows';
+      : "https://api.powerbi.com/v1.0/myorg/dataflows";
 
     const response: Response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
     });
 
@@ -505,14 +508,14 @@ export class PowerBIClient extends AnalyticsAdapter {
     const token: string = await this.authenticate();
 
     const response: Response = await fetch(
-      'https://api.powerbi.com/v1.0/myorg/capacities',
+      "https://api.powerbi.com/v1.0/myorg/capacities",
       {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -541,7 +544,7 @@ export class PowerBIClient extends AnalyticsAdapter {
     return datasets.map((ds: PowerBIDataset) => ({
       id: ds.id,
       name: ds.name,
-      type: 'dataset',
+      type: "dataset",
       tableName: ds.name,
       owner: ds.configuredBy,
       archived: false,
@@ -553,16 +556,18 @@ export class PowerBIClient extends AnalyticsAdapter {
   /**
    * Protected method: Execute query implementation for Power BI.
    */
-  protected async _executeQueryImpl(query: QueryDefinition): Promise<QueryResult> {
+  protected async _executeQueryImpl(
+    query: QueryDefinition,
+  ): Promise<QueryResult> {
     // Execute DAX query against the data source
-    return this.executeDaxQuery(query.dataSource, query.fields.join(','));
+    return this.executeDaxQuery(query.dataSource, query.fields.join(","));
   }
 
   /**
    * Protected method: Create dashboard implementation for Power BI.
    */
   protected async _createDashboardImpl(
-    dashboard: DashboardDefinition
+    dashboard: DashboardDefinition,
   ): Promise<DashboardDefinition> {
     // Power BI dashboards are created through reports
     // This is a placeholder that would integrate with Power BI's dashboard API
@@ -573,9 +578,13 @@ export class PowerBIClient extends AnalyticsAdapter {
   /**
    * Protected method: Get dashboard implementation for Power BI.
    */
-  protected async _getDashboardImpl(dashboardId: string): Promise<DashboardDefinition> {
+  protected async _getDashboardImpl(
+    dashboardId: string,
+  ): Promise<DashboardDefinition> {
     const dashboards: PowerBIDashboard[] = await this.getDashboards();
-    const dashboard: PowerBIDashboard | undefined = dashboards.find((d: PowerBIDashboard) => d.id === dashboardId);
+    const dashboard: PowerBIDashboard | undefined = dashboards.find(
+      (d: PowerBIDashboard) => d.id === dashboardId,
+    );
 
     if (!dashboard) {
       throw new Error(`Dashboard ${dashboardId} not found`);
@@ -596,7 +605,7 @@ export class PowerBIClient extends AnalyticsAdapter {
    */
   protected async _updateDashboardImpl(
     dashboardId: string,
-    _updates: Partial<DashboardDefinition>
+    _updates: Partial<DashboardDefinition>,
   ): Promise<DashboardDefinition> {
     return this._getDashboardImpl(dashboardId);
   }
@@ -616,9 +625,9 @@ export class PowerBIClient extends AnalyticsAdapter {
     userId: string,
     _scopes: EmbedScope[],
     rlsRules?: RLSRule[],
-    _expiryMinutes?: number
+    _expiryMinutes?: number,
   ): Promise<EmbedToken> {
-    return this.generateEmbedTokenWithRLS(entityId, '', userId, rlsRules);
+    return this.generateEmbedTokenWithRLS(entityId, "", userId, rlsRules);
   }
 
   /**
@@ -627,7 +636,7 @@ export class PowerBIClient extends AnalyticsAdapter {
   protected async _exportDashboardImpl(
     entityId: string,
     format: AnalyticsExportFormat,
-    _filters?: FilterDefinition[]
+    _filters?: FilterDefinition[],
   ): Promise<ExportResult> {
     const token: string = await this.authenticate();
 
@@ -640,27 +649,27 @@ export class PowerBIClient extends AnalyticsAdapter {
     };
 
     const response: Response = await fetch(
-      'https://api.powerbi.com/v1.0/myorg/reports/export',
+      "https://api.powerbi.com/v1.0/myorg/reports/export",
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(body),
-      }
+      },
     );
 
     if (!response.ok) {
       throw new Error(`Failed to export report: ${response.statusText}`);
     }
 
-    const location: string | null = response.headers.get('location');
+    const location: string | null = response.headers.get("location");
 
     return {
       jobId: location || `export-${Date.now()}`,
       format,
-      status: 'in_progress',
+      status: "in_progress",
     };
   }
 
@@ -672,13 +681,13 @@ export class PowerBIClient extends AnalyticsAdapter {
       const token: string = await this.authenticate();
 
       const response: Response = await fetch(
-        'https://api.powerbi.com/v1.0/myorg/datasets',
+        "https://api.powerbi.com/v1.0/myorg/datasets",
         {
-          method: 'GET',
+          method: "GET",
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       return {
@@ -687,7 +696,8 @@ export class PowerBIClient extends AnalyticsAdapter {
         responseTimeMs: 0,
       };
     } catch (error: unknown) {
-      const message: string = error instanceof Error ? error.message : String(error);
+      const message: string =
+        error instanceof Error ? error.message : String(error);
       return {
         healthy: false,
         authenticated: false,
@@ -701,29 +711,31 @@ export class PowerBIClient extends AnalyticsAdapter {
    * Obtain access token from Azure AD using client credentials.
    */
   private async _obtainAccessToken(): Promise<string> {
-    const clientId: string = this.config.credentials.clientId || '';
-    const clientSecret: string = this.config.credentials.clientSecret || '';
-    const tenantId: string = this.config.credentials.tenantId || 'common';
+    const clientId: string = this.config.credentials.clientId || "";
+    const clientSecret: string = this.config.credentials.clientSecret || "";
+    const tenantId: string = this.config.credentials.tenantId || "common";
 
     if (!clientId || !clientSecret) {
-      throw new Error('Power BI authentication requires clientId and clientSecret');
+      throw new Error(
+        "Power BI authentication requires clientId and clientSecret",
+      );
     }
 
     const body = new URLSearchParams();
-    body.append('grant_type', 'client_credentials');
-    body.append('client_id', clientId);
-    body.append('client_secret', clientSecret);
-    body.append('resource', 'https://analysis.windows.net/powerbi/api');
+    body.append("grant_type", "client_credentials");
+    body.append("client_id", clientId);
+    body.append("client_secret", clientSecret);
+    body.append("resource", "https://analysis.windows.net/powerbi/api");
 
     const response: Response = await fetch(
       `https://login.microsoftonline.com/${tenantId}/oauth2/token`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          "Content-Type": "application/x-www-form-urlencoded",
         },
         body,
-      }
+      },
     );
 
     if (!response.ok) {
@@ -742,30 +754,30 @@ export class PowerBIClient extends AnalyticsAdapter {
    * Refresh access token using refresh token.
    */
   private async _refreshAccessToken(): Promise<AzureADToken> {
-    const clientId: string = this.config.credentials.clientId || '';
-    const clientSecret: string = this.config.credentials.clientSecret || '';
-    const tenantId: string = this.config.credentials.tenantId || 'common';
+    const clientId: string = this.config.credentials.clientId || "";
+    const clientSecret: string = this.config.credentials.clientSecret || "";
+    const tenantId: string = this.config.credentials.tenantId || "common";
 
     if (!this.refreshToken) {
-      throw new Error('No refresh token available');
+      throw new Error("No refresh token available");
     }
 
     const body = new URLSearchParams();
-    body.append('grant_type', 'refresh_token');
-    body.append('client_id', clientId);
-    body.append('client_secret', clientSecret);
-    body.append('refresh_token', this.refreshToken);
-    body.append('resource', 'https://analysis.windows.net/powerbi/api');
+    body.append("grant_type", "refresh_token");
+    body.append("client_id", clientId);
+    body.append("client_secret", clientSecret);
+    body.append("refresh_token", this.refreshToken);
+    body.append("resource", "https://analysis.windows.net/powerbi/api");
 
     const response: Response = await fetch(
       `https://login.microsoftonline.com/${tenantId}/oauth2/token`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          "Content-Type": "application/x-www-form-urlencoded",
         },
         body,
-      }
+      },
     );
 
     if (!response.ok) {

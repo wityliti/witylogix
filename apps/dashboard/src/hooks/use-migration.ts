@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback } from "react";
 
 export interface MigrationStep {
   step: 1 | 2 | 3 | 4 | 5;
-  status: 'pending' | 'active' | 'completed' | 'failed';
+  status: "pending" | "active" | "completed" | "failed";
 }
 
 export interface FieldMapping {
@@ -18,7 +18,13 @@ export interface Migration {
   id: string;
   sourceProvider: string;
   targetProvider: string;
-  status: 'planning' | 'shadow' | 'executing' | 'completed' | 'rolled_back' | 'failed';
+  status:
+    | "planning"
+    | "shadow"
+    | "executing"
+    | "completed"
+    | "rolled_back"
+    | "failed";
   progress: number;
   startTime?: Date;
   endTime?: Date;
@@ -51,7 +57,7 @@ export interface MigrationHistory {
   sourceProvider: string;
   targetProvider: string;
   completedAt: Date;
-  status: 'success' | 'partial' | 'failed';
+  status: "success" | "partial" | "failed";
   totalRequests: number;
   failedRequests: number;
   duration: number;
@@ -63,15 +69,15 @@ export function useMigrations() {
     isLoading: false,
     fetchMigrations: async () => {},
     createMigration: async (_src: string, _tgt: string): Promise<Migration> => {
-      throw new Error('Migration API not available');
+      throw new Error("Migration API not available");
     },
   };
 }
 
 export function useMigrationWizard(_initialMigrationId?: string) {
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5>(1);
-  const [sourceProvider, setSourceProvider] = useState('');
-  const [targetProvider, setTargetProvider] = useState('');
+  const [sourceProvider, setSourceProvider] = useState("");
+  const [targetProvider, setTargetProvider] = useState("");
   const [fieldMappings, setFieldMappings] = useState<FieldMapping[]>([]);
   const [shadowModeEnabled, setShadowModeEnabled] = useState(false);
   const [isValidating] = useState(false);
@@ -85,12 +91,13 @@ export function useMigrationWizard(_initialMigrationId?: string) {
     setFieldMappings(mappings);
   }, []);
 
-  const validateMigration = useCallback(async (): Promise<MigrationValidation> => {
-    throw new Error('Migration validation not available');
-  }, []);
+  const validateMigration =
+    useCallback(async (): Promise<MigrationValidation> => {
+      throw new Error("Migration validation not available");
+    }, []);
 
   const startMigration = useCallback(async (): Promise<Migration> => {
-    throw new Error('Migration execution not available');
+    throw new Error("Migration execution not available");
   }, []);
 
   return {

@@ -1,10 +1,10 @@
 // @ts-nocheck
 /**
  * App Bridge Integration: Typed wrapper around Shopify App Bridge for extensions
- * 
+ *
  * This module provides type-safe access to Shopify's App Bridge actions,
  * with error boundaries and message queuing for unreliable iframe conditions.
- * 
+ *
  * Usage:
  *   const bridge = createAppBridgeClient(config);
  *   const result = await bridge.applyDiscount('SUMMER20', 20);
@@ -15,16 +15,16 @@ import type {
   DiscountResult,
   AddressResult,
   SessionData,
-} from './types.ts';
+} from "./types.ts";
 
 /**
  * Action types supported by Shopify App Bridge
  * Maps to official App Bridge action types
  */
 type AppBridgeAction =
-  | 'ApplyDiscount'
-  | 'UpdateShippingAddress'
-  | 'RequestSession';
+  | "ApplyDiscount"
+  | "UpdateShippingAddress"
+  | "RequestSession";
 
 /**
  * Message envelope sent to/from Shopify App Bridge
@@ -41,7 +41,7 @@ interface AppBridgeMessage {
  */
 interface AppBridgeResponse {
   id: string;
-  status: 'success' | 'error';
+  status: "success" | "error";
   data?: any;
   error?: {
     code: string;
@@ -64,7 +64,8 @@ export class AppBridgeClient {
   private config: AppBridgeClientConfig;
   private messageQueue: AppBridgeMessage[] = [];
   private isReady: boolean = false;
-  private responseHandlers: Map<string, (response: AppBridgeResponse) => void> = new Map();
+  private responseHandlers: Map<string, (response: AppBridgeResponse) => void> =
+    new Map();
   private messageId: number = 0;
 
   constructor(config: AppBridgeClientConfig) {
@@ -78,19 +79,27 @@ export class AppBridgeClient {
    * @internal
    */
   private setupMessageListener(): void {
-    window.addEventListener('message', (event) => {
+    window.addEventListener("message", (event) => {
       // Validate origin if appBridgeOrigin is configured
-      if (this.config.appBridgeOrigin && event.origin !== this.config.appBridgeOrigin) {
+      if (
+        this.config.appBridgeOrigin &&
+        event.origin !== this.config.appBridgeOrigin
+      ) {
         return;
       }
 
       const message = event.data;
-      
+
       // Check if this is an App Bridge response
-      if (message && typeof message === 'object' && 'id' in message && 'status' in message) {
+      if (
+        message &&
+        typeof message === "object" &&
+        "id" in message &&
+        "status" in message
+      ) {
         const response = message as AppBridgeResponse;
         const handler = this.responseHandlers.get(response.id);
-        
+
         if (handler) {
           handler(response);
           this.responseHandlers.delete(response.id);
@@ -116,7 +125,7 @@ export class AppBridgeClient {
   /**
    * Send a message to App Bridge
    * Queues message if not yet ready, sends immediately if ready
-   * 
+   *
    * @param action - App Bridge action type
    * @param payload - Action payload
    * @returns Promise<AppBridgeResponse> - Response from Shopify
@@ -124,7 +133,7 @@ export class AppBridgeClient {
    */
   private async sendMessage(
     action: AppBridgeAction,
-    payload?: Record<string, any>
+    payload?: Record<string, any>,
   ): Promise<AppBridgeResponse> {
     const message: AppBridgeMessage = {
       type: action,
@@ -135,13 +144,15 @@ export class AppBridgeClient {
     return new Promise((resolve, reject) => {
       // Register response handler
       this.responseHandlers.set(message.id!, (response) => {
-        if (response.status === 'success') {
+        if (response.status === "success") {
           resolve(response);
         } else {
-          reject(new AppBridgeError(
-            response.error?.message || 'Unknown error',
-            response.error?.code || 'UNKNOWN'
-          ));
+          reject(
+            new AppBridgeError(
+              response.error?.message || "Unknown error",
+              response.error?.code || "UNKNOWN",
+            ),
+          );
         }
       });
 
@@ -155,7 +166,7 @@ export class AppBridgeClient {
       setTimeout(() => {
         if (this.responseHandlers.has(message.id!)) {
           this.responseHandlers.delete(message.id!);
-          reject(new AppBridgeError('Request timeout', 'TIMEOUT'));
+          reject(new AppBridgeError("Request timeout", "TIMEOUT"));
         }
       }, 30000);
     });
@@ -170,12 +181,12 @@ export class AppBridgeClient {
       ? window.parent
       : window.top || window.parent;
 
-    const origin = this.config.appBridgeOrigin || '*';
+    const origin = this.config.appBridgeOrigin || "*";
 
     try {
       target.postMessage(message, origin);
     } catch (error) {
-      console.error('[AppBridge] Failed to post message:', error);
+      console.error("[AppBridge] Failed to post message:", error);
     }
   }
 
@@ -195,14 +206,17 @@ export class AppBridgeClient {
   /**
    * Apply a discount code to the checkout
    * Validates discount eligibility with backend before applying
-   * 
+   *
    * @param code - Discount code (e.g., 'SUMMER20')
    * @param expectedPercent - Expected discount percentage for validation
    * @returns Promise<DiscountResult> - Discount application result
    */
-  async applyDiscount(code: string, expectedPercent: number): Promise<DiscountResult> {
+  async applyDiscount(
+    code: string,
+    expectedPercent: number,
+  ): Promise<DiscountResult> {
     try {
-      const response = await this.sendMessage('ApplyDiscount', {
+      const response = await this.sendMessage("ApplyDiscount", {
         code,
         expectedPercent,
         apiKey: this.config.apiKey,
@@ -224,8 +238,8 @@ export class AppBridgeClient {
       }
       return {
         success: false,
-        error: 'Failed to apply discount',
-        errorCode: 'UNKNOWN',
+        error: "Failed to apply discount",
+        errorCode: "UNKNOWN",
       };
     }
   }
@@ -233,7 +247,7 @@ export class AppBridgeClient {
   /**
    * Update shipping address in checkout
    * Called after user selects delivery option
-   * 
+   *
    * @param address - New shipping address
    * @returns Promise<AddressResult> - Address update result
    */
@@ -246,7 +260,7 @@ export class AppBridgeClient {
     country: string;
   }): Promise<AddressResult> {
     try {
-      await this.sendMessage('UpdateShippingAddress', {
+      await this.sendMessage("UpdateShippingAddress", {
         address,
         apiKey: this.config.apiKey,
         shopId: this.config.shopId,
@@ -262,7 +276,7 @@ export class AppBridgeClient {
       }
       return {
         success: false,
-        error: 'Failed to update address',
+        error: "Failed to update address",
       };
     }
   }
@@ -270,12 +284,12 @@ export class AppBridgeClient {
   /**
    * Request session data from checkout
    * Returns customer ID if logged in, guest email if available
-   * 
+   *
    * @returns Promise<SessionData> - Current session information
    */
   async requestSession(): Promise<SessionData> {
     try {
-      const response = await this.sendMessage('RequestSession', {
+      const response = await this.sendMessage("RequestSession", {
         apiKey: this.config.apiKey,
       });
 
@@ -283,13 +297,13 @@ export class AppBridgeClient {
         customerId: response.data?.customerId,
         guestEmail: response.data?.guestEmail,
         cartValue: response.data?.cartValue || 0,
-        currency: response.data?.currency || 'USD',
+        currency: response.data?.currency || "USD",
       };
     } catch (error) {
       // Return empty session on error
       return {
         cartValue: 0,
-        currency: 'USD',
+        currency: "USD",
       };
     }
   }
@@ -298,19 +312,19 @@ export class AppBridgeClient {
    * Map App Bridge error codes to user-friendly codes
    * @internal
    */
-  private mapErrorCode(code: string): DiscountResult['errorCode'] {
+  private mapErrorCode(code: string): DiscountResult["errorCode"] {
     switch (code.toLowerCase()) {
-      case 'invalid_code':
-      case 'code_not_found':
-        return 'INVALID_CODE';
-      case 'expired':
-      case 'code_expired':
-        return 'EXPIRED';
-      case 'limit':
-      case 'usage_limit_exceeded':
-        return 'LIMIT_EXCEEDED';
+      case "invalid_code":
+      case "code_not_found":
+        return "INVALID_CODE";
+      case "expired":
+      case "code_expired":
+        return "EXPIRED";
+      case "limit":
+      case "usage_limit_exceeded":
+        return "LIMIT_EXCEEDED";
       default:
-        return 'UNKNOWN';
+        return "UNKNOWN";
     }
   }
 }
@@ -322,26 +336,28 @@ export class AppBridgeClient {
 export class AppBridgeError extends Error {
   constructor(
     message: string,
-    public code: string
+    public code: string,
   ) {
     super(message);
-    this.name = 'AppBridgeError';
+    this.name = "AppBridgeError";
   }
 }
 
 /**
  * Create and initialize an App Bridge client for the extension
  * Reads config from window.__EXTENSION_CONFIG__ or accepts as parameter
- * 
+ *
  * @param config - Extension configuration (optional if __EXTENSION_CONFIG__ available)
  * @returns AppBridgeClient - Initialized client ready for use
  */
-export function createAppBridgeClient(config?: AppBridgeClientConfig): AppBridgeClient {
+export function createAppBridgeClient(
+  config?: AppBridgeClientConfig,
+): AppBridgeClient {
   const finalConfig = config || (window as any).__EXTENSION_CONFIG__;
 
   if (!finalConfig) {
     throw new Error(
-      'AppBridge: No configuration found. Pass config or set window.__EXTENSION_CONFIG__'
+      "AppBridge: No configuration found. Pass config or set window.__EXTENSION_CONFIG__",
     );
   }
 
@@ -362,12 +378,12 @@ export class ErrorBoundary {
   /**
    * Catch error from component tree and handle gracefully
    * Sends error to parent frame for logging via postMessage
-   * 
+   *
    * @param error - Error that occurred
    * @param errorInfo - Component stack info
    */
   captureError(error: Error, errorInfo: string): void {
-    console.error('[Extension] Error caught by boundary:', error);
+    console.error("[Extension] Error caught by boundary:", error);
 
     // Call user-provided error handler
     if (this.onError) {
@@ -377,19 +393,22 @@ export class ErrorBoundary {
     // Report to parent window (POS) or dashboard for monitoring
     try {
       if (window.parent && window.parent !== window) {
-        window.parent.postMessage({
-          type: 'wl:extension-error',
-          error: error.message,
-          stack: error.stack,
-          errorInfo,
-          metadata: {
-            version: (window as any).__EXTENSION_METADATA__?.version,
-            extensionId: (window as any).__EXTENSION_CONFIG__?.extensionId,
+        window.parent.postMessage(
+          {
+            type: "wl:extension-error",
+            error: error.message,
+            stack: error.stack,
+            errorInfo,
+            metadata: {
+              version: (window as any).__EXTENSION_METADATA__?.version,
+              extensionId: (window as any).__EXTENSION_CONFIG__?.extensionId,
+            },
           },
-        }, '*');
+          "*",
+        );
       }
     } catch (reportError) {
-      console.error('[Extension] Failed to report error:', reportError);
+      console.error("[Extension] Failed to report error:", reportError);
     }
   }
 }
@@ -397,7 +416,7 @@ export class ErrorBoundary {
 /**
  * Wrap a handler function with error boundary protection
  * Catches exceptions and logs them gracefully
- * 
+ *
  * @param handler - Async function to wrap
  * @param errorBoundary - Error boundary for logging
  * @returns Wrapped function that won't throw
@@ -405,14 +424,14 @@ export class ErrorBoundary {
  */
 export function withErrorBoundary(
   handler: (...args: any[]) => Promise<any>,
-  errorBoundary: ErrorBoundary
+  errorBoundary: ErrorBoundary,
 ): (...args: any[]) => Promise<any> {
   return async (...args: any[]) => {
     try {
       return await handler(...args);
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
-      errorBoundary.captureError(err, 'Handler error');
+      errorBoundary.captureError(err, "Handler error");
       throw err;
     }
   };
@@ -421,7 +440,7 @@ export function withErrorBoundary(
 /**
  * Retry a failed App Bridge action with exponential backoff
  * Useful for transient network failures
- * 
+ *
  * @param fn - Function to retry
  * @param maxRetries - Maximum number of retry attempts (default: 3)
  * @param initialDelay - Initial delay in ms (default: 100)
@@ -431,7 +450,7 @@ export function withErrorBoundary(
 export async function withRetry<T>(
   fn: () => Promise<T>,
   maxRetries: number = 3,
-  initialDelay: number = 100
+  initialDelay: number = 100,
 ): Promise<T> {
   let lastError: Error | null = null;
 
@@ -449,5 +468,5 @@ export async function withRetry<T>(
     }
   }
 
-  throw lastError || new Error('Failed after retries');
+  throw lastError || new Error("Failed after retries");
 }

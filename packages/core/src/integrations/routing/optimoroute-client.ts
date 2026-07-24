@@ -12,7 +12,7 @@
  * Reference: https://docs.optimoroute.com/
  */
 
-import { RoutingAdapter } from './routing-adapter.js';
+import { RoutingAdapter } from "./routing-adapter.js";
 import type {
   RouteRequest,
   RouteResponse,
@@ -23,7 +23,7 @@ import type {
   MatrixResponse,
   MatrixElement,
   RoutingAdapterConfig,
-} from './types.js';
+} from "./types.js";
 
 /**
  * OptimoRoute order definition
@@ -73,7 +73,7 @@ interface OptimorderPlanRequest {
   orders: OptimorderOrder[];
   vehicles: OptimorderVehicle[];
   options?: {
-    algorithm?: 'default' | 'fast' | 'balanced' | 'thorough';
+    algorithm?: "default" | "fast" | "balanced" | "thorough";
     traffic?: boolean;
     avoid_unreachable?: boolean;
     auto_start?: boolean;
@@ -111,7 +111,7 @@ interface OptimorderRoute {
  * OptimoRoute plan response
  */
 interface OptimorderPlanResponse {
-  status: 'success' | 'error';
+  status: "success" | "error";
   message?: string;
   plan_id?: string;
   routes: OptimorderRoute[];
@@ -133,7 +133,7 @@ interface OptimorderPlanResponse {
  */
 interface OptimorderRouteStatus {
   vehicle_id: string;
-  status: 'pending' | 'active' | 'completed';
+  status: "pending" | "active" | "completed";
   current_location?: {
     latitude: number;
     longitude: number;
@@ -167,7 +167,7 @@ interface OptimorderCompletionEvent {
  */
 interface OptimorderUpdateOrderRequest {
   id: string;
-  status?: 'pending' | 'assigned' | 'completed' | 'cancelled';
+  status?: "pending" | "assigned" | "completed" | "cancelled";
   priority?: number;
   time_window?: {
     start: number;
@@ -190,16 +190,16 @@ export class OptimocourteClient extends RoutingAdapter {
 
   constructor(config: RoutingAdapterConfig & { apiKey: string }) {
     super({
-      baseUrl: 'https://api.optimoroute.com/v1',
+      baseUrl: "https://api.optimoroute.com/v1",
       rateLimit: 20,
       ...config,
     });
 
     if (!config.apiKey) {
-      throw new Error('OptimoRoute API key is required');
+      throw new Error("OptimoRoute API key is required");
     }
 
-    this.baseUrl = this.config.baseUrl || 'https://api.optimoroute.com/v1';
+    this.baseUrl = this.config.baseUrl || "https://api.optimoroute.com/v1";
     this.apiKey = config.apiKey;
     this.cacheTtl = this.config.cache_ttl || 600000; // 10 minutes
   }
@@ -242,12 +242,12 @@ export class OptimocourteClient extends RoutingAdapter {
    * Turn-by-turn routing (not primary)
    */
   async route(request: RouteRequest): Promise<RouteResponse> {
-    return this.executeRequest('route', async () => {
+    return this.executeRequest("route", async () => {
       return {
         distance_m: 0,
         duration_s: 0,
         legs: [],
-        polyline: '',
+        polyline: "",
         bounds: {
           ne: { lat: 0, lng: 0 },
           sw: { lat: 0, lng: 0 },
@@ -260,8 +260,8 @@ export class OptimocourteClient extends RoutingAdapter {
    * Optimize routes using OptimoRoute API
    */
   async optimize(request: OptimizationRequest): Promise<OptimizationResponse> {
-    return this.executeRequest('optimize', async () => {
-      const cacheKey = this.getCacheKey('optimize', request);
+    return this.executeRequest("optimize", async () => {
+      const cacheKey = this.getCacheKey("optimize", request);
       const cached = this.getFromCache(cacheKey);
       if (cached) {
         return cached as OptimizationResponse;
@@ -275,10 +275,13 @@ export class OptimocourteClient extends RoutingAdapter {
           longitude: this.normalizeCoordinate(j.location).lng,
         },
         service_time: j.duration_s ? Math.ceil(j.duration_s / 60) : 5,
-        time_window: j.time_window ? {
-          start: j.time_window.earliest || Math.floor(Date.now() / 1000),
-          end: j.time_window.latest || Math.floor(Date.now() / 1000) + 86400,
-        } : undefined,
+        time_window: j.time_window
+          ? {
+              start: j.time_window.earliest || Math.floor(Date.now() / 1000),
+              end:
+                j.time_window.latest || Math.floor(Date.now() / 1000) + 86400,
+            }
+          : undefined,
         priority: j.priority || 0,
         tags: j.skills,
         demand: j.priority || 1,
@@ -291,10 +294,12 @@ export class OptimocourteClient extends RoutingAdapter {
           latitude: this.normalizeCoordinate(v.start_location || [0, 0]).lat,
           longitude: this.normalizeCoordinate(v.start_location || [0, 0]).lng,
         },
-        end_location: v.end_location ? {
-          latitude: this.normalizeCoordinate(v.end_location).lat,
-          longitude: this.normalizeCoordinate(v.end_location).lng,
-        } : undefined,
+        end_location: v.end_location
+          ? {
+              latitude: this.normalizeCoordinate(v.end_location).lat,
+              longitude: this.normalizeCoordinate(v.end_location).lng,
+            }
+          : undefined,
         available_from: v.available_from,
         available_until: v.available_until,
         capacity: v.capacity || 1000,
@@ -306,7 +311,7 @@ export class OptimocourteClient extends RoutingAdapter {
         orders,
         vehicles,
         options: {
-          algorithm: 'balanced',
+          algorithm: "balanced",
           traffic: false,
           avoid_unreachable: true,
           auto_start: true,
@@ -318,15 +323,15 @@ export class OptimocourteClient extends RoutingAdapter {
         payload,
       );
 
-      if (response.status !== 'success') {
+      if (response.status !== "success") {
         throw new Error(`OptimoRoute planning failed: ${response.message}`);
       }
 
       // Convert to standard format
       const routes: OptimizedRoute[] = response.routes.map((route) => ({
-        vehicle: parseInt(route.vehicle_id.replace(/\D/g, ''), 10) || 0,
+        vehicle: parseInt(route.vehicle_id.replace(/\D/g, ""), 10) || 0,
         steps: route.stops.map((stop) => ({
-          type: 'job' as const,
+          type: "job" as const,
           location: [stop.location.latitude, stop.location.longitude],
           arrival_time: stop.arrival_time,
           departure_time: stop.departure_time,
@@ -340,7 +345,7 @@ export class OptimocourteClient extends RoutingAdapter {
       }));
 
       const result: OptimizationResponse = {
-        code: 'OK',
+        code: "OK",
         summary: {
           distance_m: response.statistics.total_distance,
           duration_s: response.statistics.total_time,
@@ -363,7 +368,7 @@ export class OptimocourteClient extends RoutingAdapter {
    * Get route status
    */
   async getRouteStatus(vehicleId: string): Promise<OptimorderRouteStatus> {
-    return this.executeRequest('get-route-status', async () => {
+    return this.executeRequest("get-route-status", async () => {
       return await this.makeRequest<OptimorderRouteStatus>(
         `${this.baseUrl}/vehicles/${vehicleId}/status`,
         {},
@@ -374,12 +379,12 @@ export class OptimocourteClient extends RoutingAdapter {
   /**
    * Update order (dispatch, complete, etc.)
    */
-  async updateOrder(orderId: string, update: OptimorderUpdateOrderRequest): Promise<void> {
-    return this.executeRequest('update-order', async () => {
-      await this.makeRequest(
-        `${this.baseUrl}/orders/${orderId}`,
-        update,
-      );
+  async updateOrder(
+    orderId: string,
+    update: OptimorderUpdateOrderRequest,
+  ): Promise<void> {
+    return this.executeRequest("update-order", async () => {
+      await this.makeRequest(`${this.baseUrl}/orders/${orderId}`, update);
     });
   }
 
@@ -387,11 +392,8 @@ export class OptimocourteClient extends RoutingAdapter {
    * Report completion event
    */
   async reportCompletion(event: OptimorderCompletionEvent): Promise<void> {
-    return this.executeRequest('report-completion', async () => {
-      await this.makeRequest(
-        `${this.baseUrl}/completion_events`,
-        event,
-      );
+    return this.executeRequest("report-completion", async () => {
+      await this.makeRequest(`${this.baseUrl}/completion_events`, event);
     });
   }
 
@@ -403,14 +405,17 @@ export class OptimocourteClient extends RoutingAdapter {
     vehicle_id?: string;
     date?: string;
   }): Promise<OptimorderRoute[]> {
-    return this.executeRequest('get-routes', async () => {
+    return this.executeRequest("get-routes", async () => {
       const params = new URLSearchParams();
-      if (filters?.status) params.append('status', filters.status);
-      if (filters?.vehicle_id) params.append('vehicle_id', filters.vehicle_id);
-      if (filters?.date) params.append('date', filters.date);
+      if (filters?.status) params.append("status", filters.status);
+      if (filters?.vehicle_id) params.append("vehicle_id", filters.vehicle_id);
+      if (filters?.date) params.append("date", filters.date);
 
-      const url = `${this.baseUrl}/routes${params.toString() ? `?${params}` : ''}`;
-      const response = await this.makeRequest<{ routes: OptimorderRoute[] }>(url, {});
+      const url = `${this.baseUrl}/routes${params.toString() ? `?${params}` : ""}`;
+      const response = await this.makeRequest<{ routes: OptimorderRoute[] }>(
+        url,
+        {},
+      );
       return response.routes;
     });
   }
@@ -419,8 +424,8 @@ export class OptimocourteClient extends RoutingAdapter {
    * Matrix calculation
    */
   async matrix(request: MatrixRequest): Promise<MatrixResponse> {
-    return this.executeRequest('matrix', async () => {
-      const cacheKey = this.getCacheKey('matrix', request);
+    return this.executeRequest("matrix", async () => {
+      const cacheKey = this.getCacheKey("matrix", request);
       const cached = this.getFromCache(cacheKey);
       if (cached) {
         return cached as MatrixResponse;
@@ -436,7 +441,7 @@ export class OptimocourteClient extends RoutingAdapter {
           matrix[i][j] = {
             distance_m: 0,
             duration_s: 0,
-            status: 'OK',
+            status: "OK",
           };
         }
       }
@@ -461,20 +466,23 @@ export class OptimocourteClient extends RoutingAdapter {
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     try {
-      const method = payload && Object.keys(payload).length > 0 ? 'POST' : 'GET';
+      const method =
+        payload && Object.keys(payload).length > 0 ? "POST" : "GET";
       const response = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': this.apiKey,
-          'User-Agent': this.config.user_agent || 'Witylogix/1.0',
+          "Content-Type": "application/json",
+          "X-API-Key": this.apiKey,
+          "User-Agent": this.config.user_agent || "Witylogix/1.0",
         },
-        body: method === 'POST' ? JSON.stringify(payload) : undefined,
+        body: method === "POST" ? JSON.stringify(payload) : undefined,
         signal: controller.signal,
       });
 
       if (!response.ok) {
-        throw new Error(`OptimoRoute API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `OptimoRoute API error: ${response.status} ${response.statusText}`,
+        );
       }
 
       return (await response.json()) as T;

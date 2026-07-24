@@ -4,7 +4,11 @@
  * Normalizes Shopify format to Witylogix generic format
  */
 
-import { CollectionPlatformAdapter, Collection, CollectionRule } from '../types';
+import {
+  CollectionPlatformAdapter,
+  Collection,
+  CollectionRule,
+} from "../types";
 
 // ─── TYPES ─────────────────────────────────────────────────────────────
 
@@ -122,7 +126,10 @@ export class ShopifyCollectionAdapter implements CollectionPlatformAdapter {
   /**
    * Sync a collection from Shopify
    */
-  async syncCollection(shopId: string, externalCollectionId: string): Promise<Collection> {
+  async syncCollection(
+    shopId: string,
+    externalCollectionId: string,
+  ): Promise<Collection> {
     const response = await this.executeGraphQL<{
       collection: {
         id: string;
@@ -139,7 +146,7 @@ export class ShopifyCollectionAdapter implements CollectionPlatformAdapter {
           appliedDisjunctively: boolean;
           rules: Array<{
             column: string;
-            relation: 'and' | 'or';
+            relation: "and" | "or";
             condition: string;
             value: string;
           }>;
@@ -150,7 +157,9 @@ export class ShopifyCollectionAdapter implements CollectionPlatformAdapter {
     });
 
     if (!response.data?.collection) {
-      throw new Error(`Failed to fetch collection ${externalCollectionId} from Shopify`);
+      throw new Error(
+        `Failed to fetch collection ${externalCollectionId} from Shopify`,
+      );
     }
 
     const collection = response.data.collection;
@@ -167,14 +176,14 @@ export class ShopifyCollectionAdapter implements CollectionPlatformAdapter {
     }
 
     return {
-      id: '', // Will be set by collection manager
+      id: "", // Will be set by collection manager
       shopId,
       externalId: externalCollectionId,
-      source: 'SHOPIFY',
+      source: "SHOPIFY",
       title: collection.title,
       description: collection.description,
-      type: rules && rules.length > 0 ? 'auto' : 'manual',
-      sortOrder: 'manual',
+      type: rules && rules.length > 0 ? "auto" : "manual",
+      sortOrder: "manual",
       imageUrl: collection.image?.src,
       isActive: true,
       rules,
@@ -190,7 +199,7 @@ export class ShopifyCollectionAdapter implements CollectionPlatformAdapter {
   async fetchProducts(
     externalCollectionId: string,
     limit: number = 20,
-    cursor?: string
+    cursor?: string,
   ): Promise<{
     products: Array<{
       externalId: string;
@@ -221,7 +230,9 @@ export class ShopifyCollectionAdapter implements CollectionPlatformAdapter {
     });
 
     if (!response.data?.collection?.products) {
-      throw new Error(`Failed to fetch products for collection ${externalCollectionId}`);
+      throw new Error(
+        `Failed to fetch products for collection ${externalCollectionId}`,
+      );
     }
 
     const productsData = response.data.collection.products;
@@ -231,14 +242,19 @@ export class ShopifyCollectionAdapter implements CollectionPlatformAdapter {
         externalId: edge.node.id,
         title: edge.node.title,
       })),
-      nextCursor: productsData.pageInfo.hasNextPage ? productsData.pageInfo.endCursor || undefined : undefined,
+      nextCursor: productsData.pageInfo.hasNextPage
+        ? productsData.pageInfo.endCursor || undefined
+        : undefined,
     };
   }
 
   /**
    * Push collection rules to Shopify
    */
-  async pushRules(externalCollectionId: string, rules: CollectionRule[]): Promise<void> {
+  async pushRules(
+    externalCollectionId: string,
+    rules: CollectionRule[],
+  ): Promise<void> {
     if (!rules || rules.length === 0) {
       return; // No rules to push
     }
@@ -272,8 +288,12 @@ export class ShopifyCollectionAdapter implements CollectionPlatformAdapter {
     });
 
     if (response.errors || response.data?.collectionUpdate.userErrors.length) {
-      const errorMsg = response.errors?.[0]?.message || response.data?.collectionUpdate.userErrors[0]?.message;
-      throw new Error(`Failed to push rules to Shopify collection: ${errorMsg}`);
+      const errorMsg =
+        response.errors?.[0]?.message ||
+        response.data?.collectionUpdate.userErrors[0]?.message;
+      throw new Error(
+        `Failed to push rules to Shopify collection: ${errorMsg}`,
+      );
     }
   }
 
@@ -293,16 +313,16 @@ export class ShopifyCollectionAdapter implements CollectionPlatformAdapter {
    */
   private async executeGraphQL<T>(
     query: string,
-    variables: Record<string, any> = {}
+    variables: Record<string, any> = {},
   ): Promise<ShopifyGraphQLResponse<T>> {
     const url = `https://${this.config.shopUrl}/admin/api/2024-01/graphql.json`;
 
     try {
       const response = await fetch(url, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'X-Shopify-Access-Token': this.config.accessToken,
+          "Content-Type": "application/json",
+          "X-Shopify-Access-Token": this.config.accessToken,
         },
         body: JSON.stringify({
           query,
@@ -313,15 +333,17 @@ export class ShopifyCollectionAdapter implements CollectionPlatformAdapter {
               }
               return acc;
             },
-            {} as Record<string, any>
+            {} as Record<string, any>,
           ),
         }),
       });
 
       // Extract rate limit info from headers
-      const rateLimitHeader = response.headers.get('X-Shopify-Shop-Api-Call-Limit');
+      const rateLimitHeader = response.headers.get(
+        "X-Shopify-Shop-Api-Call-Limit",
+      );
       if (rateLimitHeader) {
-        const [used, limit] = rateLimitHeader.split('/').map(Number);
+        const [used, limit] = rateLimitHeader.split("/").map(Number);
         this.rateLimitInfo = {
           used,
           remaining: limit - used,
@@ -330,13 +352,15 @@ export class ShopifyCollectionAdapter implements CollectionPlatformAdapter {
       }
 
       if (!response.ok) {
-        throw new Error(`Shopify API returned ${response.status}: ${response.statusText}`);
+        throw new Error(
+          `Shopify API returned ${response.status}: ${response.statusText}`,
+        );
       }
 
       const data: ShopifyGraphQLResponse<T> = await response.json();
 
       if (data.errors) {
-        const errorMsg = data.errors.map((e) => e.message).join('; ');
+        const errorMsg = data.errors.map((e) => e.message).join("; ");
         throw new Error(`Shopify GraphQL error: ${errorMsg}`);
       }
 
@@ -345,7 +369,9 @@ export class ShopifyCollectionAdapter implements CollectionPlatformAdapter {
       if (error instanceof Error) {
         throw error;
       }
-      throw new Error(`Failed to execute Shopify GraphQL query: ${String(error)}`);
+      throw new Error(
+        `Failed to execute Shopify GraphQL query: ${String(error)}`,
+      );
     }
   }
 
@@ -370,7 +396,7 @@ export class ShopifyCollectionAdapter implements CollectionPlatformAdapter {
 
       return !!response.data?.shop?.name;
     } catch (error) {
-      console.error('Shopify connection validation failed:', error);
+      console.error("Shopify connection validation failed:", error);
       return false;
     }
   }
@@ -381,7 +407,10 @@ export class ShopifyCollectionAdapter implements CollectionPlatformAdapter {
   async ensureRateLimit(): Promise<void> {
     if (this.rateLimitInfo.remaining < 5) {
       // Back off if low on API calls
-      const waitTime = Math.max(1000, (this.rateLimitInfo.resetAt.getTime() - Date.now()) / 2);
+      const waitTime = Math.max(
+        1000,
+        (this.rateLimitInfo.resetAt.getTime() - Date.now()) / 2,
+      );
       await new Promise((resolve) => setTimeout(resolve, waitTime));
     }
   }
@@ -392,7 +421,10 @@ export class ShopifyCollectionAdapter implements CollectionPlatformAdapter {
 /**
  * Create a Shopify collection adapter instance
  */
-export function createShopifyAdapter(shopUrl: string, accessToken: string): ShopifyCollectionAdapter {
+export function createShopifyAdapter(
+  shopUrl: string,
+  accessToken: string,
+): ShopifyCollectionAdapter {
   return new ShopifyCollectionAdapter({
     shopUrl,
     accessToken,

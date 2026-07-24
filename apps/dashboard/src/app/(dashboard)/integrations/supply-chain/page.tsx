@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { useApiList } from '@/hooks/use-api';
-import { ErrorState } from '@/components/ui/error-state';
-import { cn } from '@/lib/utils';
-import { Header } from '@/components/layout/header';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { StatCard } from '@/components/ui/stat-card';
+import { useState, useMemo } from "react";
+import { useApiList } from "@/hooks/use-api";
+import { ErrorState } from "@/components/ui/error-state";
+import { cn } from "@/lib/utils";
+import { Header } from "@/components/layout/header";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { StatCard } from "@/components/ui/stat-card";
 import {
   Package,
   Warehouse,
@@ -20,13 +20,19 @@ import {
   RefreshCw,
   Pause,
   Play,
-} from 'lucide-react';
+} from "lucide-react";
 
 /* ═══════════════════════════════════════════════════════════
    SUPPLY CHAIN INTEGRATIONS — Warehouse & inventory management
    ═══════════════════════════════════════════════════════════ */
 
-type SupplyChainProvider = "manhattan" | "blueyonder" | "korber" | "deposco" | "extensiv" | "fishbowl";
+type SupplyChainProvider =
+  | "manhattan"
+  | "blueyonder"
+  | "korber"
+  | "deposco"
+  | "extensiv"
+  | "fishbowl";
 type SyncMode = "REAL_TIME" | "BATCH" | "SCHEDULED";
 type SyncStatus = "SYNCING" | "SYNCED" | "FAILED" | "PENDING";
 type FulfillmentStatus = "ON_TIME" | "AT_RISK" | "LATE" | "COMPLETED";
@@ -52,7 +58,6 @@ interface InventorySync {
   lastUpdate: string;
   successRate: number;
 }
-
 
 const SUPPLY_CHAIN_PROVIDERS = [
   {
@@ -93,11 +98,13 @@ const SUPPLY_CHAIN_PROVIDERS = [
   },
 ];
 
-
 const syncStatusVariant = (
-  status: SyncStatus
+  status: SyncStatus,
 ): "success" | "warning" | "danger" | "info" | "default" => {
-  const map: Record<SyncStatus, "success" | "warning" | "danger" | "info" | "default"> = {
+  const map: Record<
+    SyncStatus,
+    "success" | "warning" | "danger" | "info" | "default"
+  > = {
     SYNCING: "info",
     SYNCED: "success",
     FAILED: "danger",
@@ -107,46 +114,60 @@ const syncStatusVariant = (
 };
 
 export default function SupplyChainIntegrationsPage() {
-  const [expandedWarehouse, setExpandedWarehouse] = useState<string | null>(null);
-  const [view, setView] = useState<"warehouses" | "inventory" | "fulfillment" | "health">(
-    "warehouses"
+  const [expandedWarehouse, setExpandedWarehouse] = useState<string | null>(
+    null,
   );
+  const [view, setView] = useState<
+    "warehouses" | "inventory" | "fulfillment" | "health"
+  >("warehouses");
 
   const {
     items: warehouseConnections,
     loading: warehousesLoading,
     error: warehousesError,
     refetch: refetchWarehouses,
-  } = useApiList<WarehouseConnection>('/api/v4/integrations/connections?category=supply-chain');
+  } = useApiList<WarehouseConnection>(
+    "/api/v4/integrations/connections?category=supply-chain",
+  );
 
   const {
     items: inventorySyncs,
     loading: inventoryLoading,
     error: inventoryError,
-  } = useApiList<InventorySync>('/api/v4/supply-chain/stock-gauges');
+  } = useApiList<InventorySync>("/api/v4/supply-chain/stock-gauges");
 
   const connections = warehouseConnections ?? [];
   const syncs = inventorySyncs ?? [];
 
   const syncedCount = useMemo(
     () => connections.filter((w) => w.syncStatus === "SYNCED").length,
-    [connections]
+    [connections],
   );
   const totalWarehouses = useMemo(
     () => connections.reduce((sum, w) => sum + w.warehouseCount, 0),
-    [connections]
+    [connections],
   );
   const totalItems = useMemo(
     () => syncs.reduce((sum, s) => sum + s.itemsTracked, 0),
-    [syncs]
+    [syncs],
   );
 
-  if ((warehousesError || inventoryError) && !warehousesLoading && !inventoryLoading) {
+  if (
+    (warehousesError || inventoryError) &&
+    !warehousesLoading &&
+    !inventoryLoading
+  ) {
     return (
       <>
-        <Header title="Supply Chain Integrations" subtitle="Warehouse and inventory management" />
+        <Header
+          title="Supply Chain Integrations"
+          subtitle="Warehouse and inventory management"
+        />
         <div className="p-6">
-          <ErrorState error={warehousesError ?? inventoryError} onRetry={refetchWarehouses} />
+          <ErrorState
+            error={warehousesError ?? inventoryError}
+            onRetry={refetchWarehouses}
+          />
         </div>
       </>
     );
@@ -179,7 +200,7 @@ export default function SupplyChainIntegrationsPage() {
           />
           <StatCard
             label="Items Tracked"
-            value={totalItems > 0 ? `${Math.floor(totalItems / 1000)}K` : '—'}
+            value={totalItems > 0 ? `${Math.floor(totalItems / 1000)}K` : "—"}
             icon={<Package size={16} />}
             accentColor="#3b82f6"
             index={1}
@@ -201,21 +222,27 @@ export default function SupplyChainIntegrationsPage() {
         </div>
 
         {/* View Toggle */}
-        <div className={cn("flex gap-2 mb-6 bg-wl-bg-elevated rounded-md p-1 w-fit flex-wrap")}>
-          {(["warehouses", "inventory", "fulfillment", "health"] as const).map((v) => (
-            <button
-              key={v}
-              onClick={() => setView(v)}
-              className={cn(
-                "px-3 py-1 rounded-sm border-none text-xs font-semibold cursor-pointer capitalize",
-                view === v
-                  ? "bg-blue-500 text-white"
-                  : "bg-transparent text-gray-300"
-              )}
-            >
-              {v}
-            </button>
-          ))}
+        <div
+          className={cn(
+            "flex gap-2 mb-6 bg-wl-bg-elevated rounded-md p-1 w-fit flex-wrap",
+          )}
+        >
+          {(["warehouses", "inventory", "fulfillment", "health"] as const).map(
+            (v) => (
+              <button
+                key={v}
+                onClick={() => setView(v)}
+                className={cn(
+                  "px-3 py-1 rounded-sm border-none text-xs font-semibold cursor-pointer capitalize",
+                  view === v
+                    ? "bg-blue-500 text-white"
+                    : "bg-transparent text-gray-300",
+                )}
+              >
+                {v}
+              </button>
+            ),
+          )}
         </div>
 
         {/* Warehouses View */}
@@ -236,26 +263,48 @@ export default function SupplyChainIntegrationsPage() {
                 <p className={cn("text-xs font-semibold text-white mb-4")}>
                   Order Flow Pipeline
                 </p>
-                <div className={cn("flex items-center justify-between text-center")}>
+                <div
+                  className={cn(
+                    "flex items-center justify-between text-center",
+                  )}
+                >
                   <div className={cn("flex-1")}>
                     <p className={cn("text-2xl mb-1")}>📥</p>
-                    <p className={cn("text-xs font-semibold text-white")}>Inbound</p>
-                    <p className={cn("text-xs text-gray-300 mt-1")}>PO Receipt</p>
+                    <p className={cn("text-xs font-semibold text-white")}>
+                      Inbound
+                    </p>
+                    <p className={cn("text-xs text-gray-300 mt-1")}>
+                      PO Receipt
+                    </p>
                   </div>
                   <div className={cn("flex-1 flex justify-center")}>
-                    <div className={cn("w-12 h-0.5 bg-gradient-to-r from-blue-400 to-transparent")} />
+                    <div
+                      className={cn(
+                        "w-12 h-0.5 bg-gradient-to-r from-blue-400 to-transparent",
+                      )}
+                    />
                   </div>
                   <div className={cn("flex-1")}>
                     <p className={cn("text-2xl mb-1")}>🏭</p>
-                    <p className={cn("text-xs font-semibold text-white")}>Warehouse</p>
-                    <p className={cn("text-xs text-gray-300 mt-1")}>Storage & QC</p>
+                    <p className={cn("text-xs font-semibold text-white")}>
+                      Warehouse
+                    </p>
+                    <p className={cn("text-xs text-gray-300 mt-1")}>
+                      Storage & QC
+                    </p>
                   </div>
                   <div className={cn("flex-1 flex justify-center")}>
-                    <div className={cn("w-12 h-0.5 bg-gradient-to-r from-transparent to-emerald-400")} />
+                    <div
+                      className={cn(
+                        "w-12 h-0.5 bg-gradient-to-r from-transparent to-emerald-400",
+                      )}
+                    />
                   </div>
                   <div className={cn("flex-1")}>
                     <p className={cn("text-2xl mb-1")}>📤</p>
-                    <p className={cn("text-xs font-semibold text-white")}>Outbound</p>
+                    <p className={cn("text-xs font-semibold text-white")}>
+                      Outbound
+                    </p>
                     <p className={cn("text-xs text-gray-300 mt-1")}>Shipping</p>
                   </div>
                 </div>
@@ -264,21 +313,26 @@ export default function SupplyChainIntegrationsPage() {
 
             {/* Connection Cards */}
             {warehousesLoading && (
-              <div className={cn("text-sm text-gray-400 py-8 text-center")}>Loading connections...</div>
+              <div className={cn("text-sm text-gray-400 py-8 text-center")}>
+                Loading connections...
+              </div>
             )}
             {warehousesError && (
               <div className={cn("text-sm text-red-400 py-8 text-center")}>
                 Failed to load warehouse connections.
               </div>
             )}
-            {!warehousesLoading && !warehousesError && connections.length === 0 && (
-              <div className={cn("py-12 text-center text-gray-400 text-sm")}>
-                No supply-chain integrations connected yet. Click &quot;Connect Warehouse&quot; to get started.
-              </div>
-            )}
+            {!warehousesLoading &&
+              !warehousesError &&
+              connections.length === 0 && (
+                <div className={cn("py-12 text-center text-gray-400 text-sm")}>
+                  No supply-chain integrations connected yet. Click
+                  &quot;Connect Warehouse&quot; to get started.
+                </div>
+              )}
             {connections.map((warehouse, idx) => {
               const provider = SUPPLY_CHAIN_PROVIDERS.find(
-                (p) => p.slug === warehouse.provider
+                (p) => p.slug === warehouse.provider,
               );
               const isExpanded = expandedWarehouse === warehouse.id;
 
@@ -287,7 +341,7 @@ export default function SupplyChainIntegrationsPage() {
                   key={warehouse.id}
                   className={cn(
                     "cursor-pointer transition-all blue-500",
-                    isExpanded && "ring-1 ring-blue-400"
+                    isExpanded && "ring-1 ring-blue-400",
                   )}
                   style={{ animationDelay: `${idx * 40}ms` }}
                   onClick={() =>
@@ -295,9 +349,15 @@ export default function SupplyChainIntegrationsPage() {
                   }
                 >
                   <div className={cn("p-4")}>
-                    <div className={cn("flex items-start justify-between mb-3")}>
-                      <div className={cn("flex items-center gap-3 flex-1 min-w-0")}>
-                        <span className={cn("text-2xl shrink-0")}>{provider?.icon}</span>
+                    <div
+                      className={cn("flex items-start justify-between mb-3")}
+                    >
+                      <div
+                        className={cn("flex items-center gap-3 flex-1 min-w-0")}
+                      >
+                        <span className={cn("text-2xl shrink-0")}>
+                          {provider?.icon}
+                        </span>
                         <div className={cn("min-w-0")}>
                           <p className={cn("text-sm font-semibold text-white")}>
                             {warehouse.name}
@@ -307,7 +367,10 @@ export default function SupplyChainIntegrationsPage() {
                           </p>
                         </div>
                       </div>
-                      <Badge variant={syncStatusVariant(warehouse.syncStatus)} dot>
+                      <Badge
+                        variant={syncStatusVariant(warehouse.syncStatus)}
+                        dot
+                      >
                         {warehouse.syncStatus === "SYNCING"
                           ? "Syncing..."
                           : warehouse.syncStatus === "SYNCED"
@@ -318,31 +381,49 @@ export default function SupplyChainIntegrationsPage() {
                       </Badge>
                     </div>
 
-                    <div className={cn("flex items-center justify-between text-xs text-gray-300 mb-3")}>
+                    <div
+                      className={cn(
+                        "flex items-center justify-between text-xs text-gray-300 mb-3",
+                      )}
+                    >
                       <span>Last sync: {warehouse.lastSync}</span>
                       {warehouse.errorCount > 0 && (
                         <span className={cn("text-red-500 font-semibold")}>
-                          {warehouse.errorCount} error{warehouse.errorCount !== 1 ? "s" : ""}
+                          {warehouse.errorCount} error
+                          {warehouse.errorCount !== 1 ? "s" : ""}
                         </span>
                       )}
                     </div>
 
                     {isExpanded && (
-                      <div className={cn("border-t border-wl-border-default pt-3 mt-3 space-y-3")}>
+                      <div
+                        className={cn(
+                          "border-t border-wl-border-default pt-3 mt-3 space-y-3",
+                        )}
+                      >
                         {/* Location Mapping */}
                         <div>
-                          <p className={cn("text-xs font-semibold text-white mb-2")}>
+                          <p
+                            className={cn(
+                              "text-xs font-semibold text-white mb-2",
+                            )}
+                          >
                             Mapped Locations
                           </p>
                           <div className={cn("grid grid-cols-2 gap-2")}>
-                            {Array.from({ length: warehouse.warehouseCount }).map((_, i) => (
+                            {Array.from({
+                              length: warehouse.warehouseCount,
+                            }).map((_, i) => (
                               <div
                                 key={i}
                                 className={cn(
-                                  "p-2 rounded bg-wl-bg-surface border border-wl-border-default flex items-center gap-2"
+                                  "p-2 rounded bg-wl-bg-surface border border-wl-border-default flex items-center gap-2",
                                 )}
                               >
-                                <Warehouse size={14} className={cn("text-blue-400")} />
+                                <Warehouse
+                                  size={14}
+                                  className={cn("text-blue-400")}
+                                />
                                 <span className={cn("text-xs text-gray-400")}>
                                   Location {i + 1}
                                 </span>
@@ -353,7 +434,11 @@ export default function SupplyChainIntegrationsPage() {
 
                         {/* Sync Configuration */}
                         <div className={cn("bg-wl-bg-surface rounded p-3")}>
-                          <p className={cn("text-xs font-semibold text-white mb-2")}>
+                          <p
+                            className={cn(
+                              "text-xs font-semibold text-white mb-2",
+                            )}
+                          >
                             Sync Details
                           </p>
                           <div className={cn("grid grid-cols-2 gap-2 text-xs")}>
@@ -410,7 +495,9 @@ export default function SupplyChainIntegrationsPage() {
             </h3>
 
             {inventoryLoading && (
-              <div className={cn("text-sm text-gray-400 py-8 text-center")}>Loading inventory syncs...</div>
+              <div className={cn("text-sm text-gray-400 py-8 text-center")}>
+                Loading inventory syncs...
+              </div>
             )}
             {inventoryError && (
               <div className={cn("text-sm text-red-400 py-8 text-center")}>
@@ -419,24 +506,35 @@ export default function SupplyChainIntegrationsPage() {
             )}
             {!inventoryLoading && !inventoryError && syncs.length === 0 && (
               <div className={cn("py-12 text-center text-gray-400 text-sm")}>
-                Connect a supply-chain integration to see inventory sync configuration.
+                Connect a supply-chain integration to see inventory sync
+                configuration.
               </div>
             )}
             {syncs.map((sync, idx) => (
-              <Card key={sync.id} className={cn("blue-500")} style={{ animationDelay: `${idx * 40}ms` }}>
+              <Card
+                key={sync.id}
+                className={cn("blue-500")}
+                style={{ animationDelay: `${idx * 40}ms` }}
+              >
                 <div className={cn("p-4")}>
                   <div className={cn("flex items-start justify-between mb-3")}>
                     <div className={cn("flex-1 min-w-0")}>
                       <p className={cn("text-sm font-semibold text-white")}>
                         {sync.warehouse}
                       </p>
-                      <div className={cn("flex items-center gap-3 mt-1 text-xs text-gray-300")}>
-                        <span className={cn("px-2 py-1 rounded bg-wl-bg-surface font-medium")}>
+                      <div
+                        className={cn(
+                          "flex items-center gap-3 mt-1 text-xs text-gray-300",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "px-2 py-1 rounded bg-wl-bg-surface font-medium",
+                          )}
+                        >
                           {sync.mode.replace(/_/g, " ")}
                         </span>
-                        {sync.interval && (
-                          <span>{sync.interval}</span>
-                        )}
+                        {sync.interval && <span>{sync.interval}</span>}
                         {!sync.interval && sync.mode === "REAL_TIME" && (
                           <span>Live streaming</span>
                         )}
@@ -453,7 +551,9 @@ export default function SupplyChainIntegrationsPage() {
                   <div className={cn("bg-wl-bg-surface rounded p-3 mb-3")}>
                     <div className={cn("grid grid-cols-3 gap-3 text-xs")}>
                       <div>
-                        <p className={cn("text-gray-300 mb-1")}>Items Tracked</p>
+                        <p className={cn("text-gray-300 mb-1")}>
+                          Items Tracked
+                        </p>
                         <p className={cn("font-bold text-white")}>
                           {(sync.itemsTracked / 1000).toFixed(1)}K
                         </p>
@@ -475,7 +575,9 @@ export default function SupplyChainIntegrationsPage() {
 
                   <div className={cn("flex gap-2")}>
                     <Button
-                      variant={sync.status === "PAUSED" ? "primary" : "secondary"}
+                      variant={
+                        sync.status === "PAUSED" ? "primary" : "secondary"
+                      }
                       size="sm"
                     >
                       {sync.status === "PAUSED" ? (

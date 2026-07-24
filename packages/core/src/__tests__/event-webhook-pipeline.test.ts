@@ -189,7 +189,7 @@ describe("Event-Webhook Pipeline Integration", () => {
             "X-Webhook-Signature": expect.any(String),
             "X-Webhook-Id": event.id,
           }),
-        })
+        }),
       );
     });
   });
@@ -225,13 +225,12 @@ describe("Event-Webhook Pipeline Integration", () => {
       };
 
       eventBridge.filterEndpoints = (endpoints, event) => {
-        return endpoints.filter((ep) => ep.tenantId === event.metadata.tenantId);
+        return endpoints.filter(
+          (ep) => ep.tenantId === event.metadata.tenantId,
+        );
       };
 
-      const filtered = eventBridge.filterEndpoints(
-        [webhookA, webhookB],
-        event
-      );
+      const filtered = eventBridge.filterEndpoints([webhookA, webhookB], event);
 
       expect(filtered).toHaveLength(1);
       expect(filtered[0].id).toBe("webhook_A");
@@ -267,7 +266,7 @@ describe("Event-Webhook Pipeline Integration", () => {
 
       eventBridge.filterEndpoints = (endpoints, event) => {
         return endpoints.filter(
-          (ep) => ep.tenantId === event.metadata.tenantId && ep.active
+          (ep) => ep.tenantId === event.metadata.tenantId && ep.active,
         );
       };
 
@@ -312,7 +311,7 @@ describe("Event-Webhook Pipeline Integration", () => {
           (ep) =>
             ep.tenantId === event.metadata.tenantId &&
             ep.active &&
-            ep.events.includes(event.type)
+            ep.events.includes(event.type),
         );
       };
 
@@ -541,8 +540,9 @@ describe("Event-Webhook Pipeline Integration", () => {
             if (attempt === policy.maxAttempts) throw error;
 
             const delay = Math.min(
-              policy.initialDelayMs * Math.pow(policy.backoffMultiplier, attempt - 1),
-              policy.maxDelayMs
+              policy.initialDelayMs *
+                Math.pow(policy.backoffMultiplier, attempt - 1),
+              policy.maxDelayMs,
             );
             retryDelays.push(delay);
 
@@ -560,7 +560,7 @@ describe("Event-Webhook Pipeline Integration", () => {
 
       await eventBridge.executeWithRetry(
         () => mockHttpClient.post(endpoint.url, event),
-        retryPolicy
+        retryPolicy,
       );
 
       expect(mockHttpClient.post).toHaveBeenCalledTimes(3);
@@ -606,8 +606,8 @@ describe("Event-Webhook Pipeline Integration", () => {
       await expect(
         eventBridge.executeWithRetry(
           () => mockHttpClient.post(endpoint.url, event),
-          retryPolicy
-        )
+          retryPolicy,
+        ),
       ).rejects.toThrow("Persistent failure");
 
       expect(mockHttpClient.post).toHaveBeenCalledTimes(3);
@@ -643,8 +643,8 @@ describe("Event-Webhook Pipeline Integration", () => {
       eventBridge.deliverToConcurrently = async (endpoints, event) => {
         return Promise.all(
           endpoints.map((ep) =>
-            mockHttpClient.post(ep.url, event).catch((err) => ({ error: err }))
-          )
+            mockHttpClient.post(ep.url, event).catch((err) => ({ error: err })),
+          ),
         );
       };
 
@@ -700,7 +700,7 @@ describe("Event-Webhook Pipeline Integration", () => {
           headers: expect.objectContaining({
             "X-Correlation-Id": correlationId,
           }),
-        })
+        }),
       );
     });
   });
@@ -741,7 +741,7 @@ describe("Event-Webhook Pipeline Integration", () => {
 
       // Next attempt should fail immediately
       expect(() =>
-        eventBridge.checkCircuitBreaker(endpoint, circuitBreakerConfig)
+        eventBridge.checkCircuitBreaker(endpoint, circuitBreakerConfig),
       ).toThrow("Circuit breaker open");
     });
   });

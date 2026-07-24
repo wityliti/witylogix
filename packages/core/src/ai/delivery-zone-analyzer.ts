@@ -88,7 +88,11 @@ class KMeansClustering {
   private maxIterations: number;
   private tolerance: number;
 
-  constructor(k: number = 5, maxIterations: number = 100, tolerance: number = 0.001) {
+  constructor(
+    k: number = 5,
+    maxIterations: number = 100,
+    tolerance: number = 0.001,
+  ) {
     this.k = k;
     this.maxIterations = maxIterations;
     this.tolerance = tolerance;
@@ -136,7 +140,7 @@ class KMeansClustering {
    */
   private assignClusters(
     points: Coordinate[],
-    centroids: Coordinate[]
+    centroids: Coordinate[],
   ): number[] {
     return points.map((point) => {
       let nearestIdx = 0;
@@ -159,7 +163,7 @@ class KMeansClustering {
    */
   private updateCentroids(
     points: Coordinate[],
-    assignments: number[]
+    assignments: number[],
   ): Coordinate[] {
     const newCentroids: Coordinate[] = [];
 
@@ -171,9 +175,11 @@ class KMeansClustering {
         newCentroids.push(points[Math.floor(Math.random() * points.length)]);
       } else {
         const avgLat =
-          clusterPoints.reduce((s, p) => s + p.latitude, 0) / clusterPoints.length;
+          clusterPoints.reduce((s, p) => s + p.latitude, 0) /
+          clusterPoints.length;
         const avgLon =
-          clusterPoints.reduce((s, p) => s + p.longitude, 0) / clusterPoints.length;
+          clusterPoints.reduce((s, p) => s + p.longitude, 0) /
+          clusterPoints.length;
 
         newCentroids.push({
           latitude: avgLat,
@@ -190,7 +196,7 @@ class KMeansClustering {
    */
   private hasConverged(
     oldCentroids: Coordinate[],
-    newCentroids: Coordinate[]
+    newCentroids: Coordinate[],
   ): boolean {
     let totalMovement = 0;
 
@@ -204,9 +210,10 @@ class KMeansClustering {
   /**
    * Run k-means clustering
    */
-  public cluster(
-    points: Coordinate[]
-  ): { clusters: number[]; centroids: Coordinate[] } {
+  public cluster(points: Coordinate[]): {
+    clusters: number[];
+    centroids: Coordinate[];
+  } {
     if (points.length === 0) {
       return { clusters: [], centroids: [] };
     }
@@ -290,7 +297,7 @@ export class DeliveryZoneAnalyzer {
 
     for (let i = 0; i < centroids.length; i++) {
       const zoneDeliveries = this.deliveries.filter(
-        (_, idx) => clusters[idx] === i
+        (_, idx) => clusters[idx] === i,
       );
 
       if (zoneDeliveries.length === 0) continue;
@@ -391,7 +398,9 @@ export class DeliveryZoneAnalyzer {
         hour,
         deliveryCount: data?.count || 0,
         avgDuration: data
-          ? Math.round(data.durations.reduce((s, d) => s + d, 0) / data.durations.length)
+          ? Math.round(
+              data.durations.reduce((s, d) => s + d, 0) / data.durations.length,
+            )
           : 0,
       });
     }
@@ -400,10 +409,7 @@ export class DeliveryZoneAnalyzer {
     const suggestedDrivers = new Map<string, number>();
     for (const zone of this.zones) {
       // Heuristic: 1 driver per 20 deliveries, minimum 1
-      const suggested = Math.max(
-        1,
-        Math.ceil(zone.deliveryCount / 20)
-      );
+      const suggested = Math.max(1, Math.ceil(zone.deliveryCount / 20));
       suggestedDrivers.set(zone.id, suggested);
     }
 
@@ -534,6 +540,8 @@ export class DeliveryZoneAnalyzer {
 /**
  * Create zone analyzer instance
  */
-export function createDeliveryZoneAnalyzer(numZones?: number): DeliveryZoneAnalyzer {
+export function createDeliveryZoneAnalyzer(
+  numZones?: number,
+): DeliveryZoneAnalyzer {
   return new DeliveryZoneAnalyzer(numZones);
 }

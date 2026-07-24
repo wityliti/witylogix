@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { cn } from '@/lib/utils';
-import { Header } from '@/components/layout/header';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import Link from 'next/link';
+import { useState, useMemo } from "react";
+import { cn } from "@/lib/utils";
+import { Header } from "@/components/layout/header";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import Link from "next/link";
 import {
   Slack,
   MessageSquare,
@@ -23,8 +23,8 @@ import {
   Settings,
   ArrowRight,
   MessageCircle,
-} from 'lucide-react';
-import { useApiList, useApiQuery } from '@/hooks/use-api';
+} from "lucide-react";
+import { useApiList, useApiQuery } from "@/hooks/use-api";
 
 /* ═══════════════════════════════════════════════════════
    COLLABORATION INTEGRATIONS PAGE — real API data
@@ -38,7 +38,7 @@ import { useApiList, useApiQuery } from '@/hooks/use-api';
 interface Connection {
   id: string;
   providerName: string;
-  status: 'connected' | 'disconnected' | 'error' | 'pending';
+  status: "connected" | "disconnected" | "error" | "pending";
   lastSyncTime?: string;
   apiCallsCount: number;
   errorCount: number;
@@ -66,42 +66,67 @@ interface NotificationStats {
 
 function providerIcon(name: string): React.ReactNode {
   const n = name.toLowerCase();
-  if (n.includes('slack')) return <Slack className="w-5 h-5" />;
-  if (n.includes('teams') || n.includes('microsoft')) return <MessageSquare className="w-5 h-5" />;
-  if (n.includes('pusher')) return <Send className="w-5 h-5" />;
-  if (n.includes('track') || n.includes('pod')) return <Activity className="w-5 h-5" />;
+  if (n.includes("slack")) return <Slack className="w-5 h-5" />;
+  if (n.includes("teams") || n.includes("microsoft"))
+    return <MessageSquare className="w-5 h-5" />;
+  if (n.includes("pusher")) return <Send className="w-5 h-5" />;
+  if (n.includes("track") || n.includes("pod"))
+    return <Activity className="w-5 h-5" />;
   return <MessageCircle className="w-5 h-5" />;
 }
 
-function statusVariant(s: string): 'success' | 'warning' | 'danger' | 'default' {
-  if (s === 'connected') return 'success';
-  if (s === 'error') return 'danger';
-  if (s === 'pending') return 'warning';
-  return 'default';
+function statusVariant(
+  s: string,
+): "success" | "warning" | "danger" | "default" {
+  if (s === "connected") return "success";
+  if (s === "error") return "danger";
+  if (s === "pending") return "warning";
+  return "default";
 }
 
 function statusIcon(s: string) {
-  if (s === 'connected') return <CheckCircle2 className="w-4 h-4 text-wl-success-400" />;
-  if (s === 'error') return <AlertCircle className="w-4 h-4 text-wl-danger-400" />;
+  if (s === "connected")
+    return <CheckCircle2 className="w-4 h-4 text-wl-success-400" />;
+  if (s === "error")
+    return <AlertCircle className="w-4 h-4 text-wl-danger-400" />;
   return <Clock className="w-4 h-4 text-wl-text-tertiary" />;
 }
 
 const fmtDate = (iso: string) =>
-  new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  new Date(iso).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 
 const fmtSync = (iso?: string) => {
-  if (!iso) return 'Never synced';
+  if (!iso) return "Never synced";
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'Just now';
+  if (mins < 1) return "Just now";
   if (mins < 60) return `${mins}m ago`;
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs}h ago`;
   return `${Math.floor(hrs / 24)}d ago`;
 };
 
-const MESSAGING_KEYWORDS = ['slack', 'teams', 'microsoft', 'pusher', 'track', 'workwave', 'podium', 'dispatch'];
-const MESSAGING_CATEGORIES = new Set(['messaging', 'collaboration', 'communication', 'chat', 'notifications']);
+const MESSAGING_KEYWORDS = [
+  "slack",
+  "teams",
+  "microsoft",
+  "pusher",
+  "track",
+  "workwave",
+  "podium",
+  "dispatch",
+];
+const MESSAGING_CATEGORIES = new Set([
+  "messaging",
+  "collaboration",
+  "communication",
+  "chat",
+  "notifications",
+]);
 
 function isMessagingConnection(c: Connection): boolean {
   return (
@@ -136,12 +161,13 @@ function ProvidersSection({
           No collaboration integrations connected
         </p>
         <p className="text-xs text-wl-text-tertiary mb-4">
-          Connect Slack, Microsoft Teams, or other messaging platforms to receive real-time logistics alerts.
+          Connect Slack, Microsoft Teams, or other messaging platforms to
+          receive real-time logistics alerts.
         </p>
         <Button
           variant="primary"
           size="sm"
-          onClick={() => (window.location.href = '/integrations/catalog')}
+          onClick={() => (window.location.href = "/integrations/catalog")}
         >
           Browse Integrations
         </Button>
@@ -164,7 +190,9 @@ function ProvidersSection({
               <div>
                 <div className="flex items-center gap-2">
                   {statusIcon(c.status)}
-                  <p className="text-sm font-semibold text-wl-text-primary">{c.providerName}</p>
+                  <p className="text-sm font-semibold text-wl-text-primary">
+                    {c.providerName}
+                  </p>
                 </div>
                 <p className="text-xs text-wl-text-tertiary mt-0.5">
                   Synced {fmtSync(c.lastSyncTime)}
@@ -186,8 +214,10 @@ function ProvidersSection({
             <div className="text-center">
               <p
                 className={cn(
-                  'text-lg font-bold font-mono',
-                  c.errorCount > 0 ? 'text-wl-danger-400' : 'text-wl-success-400',
+                  "text-lg font-bold font-mono",
+                  c.errorCount > 0
+                    ? "text-wl-danger-400"
+                    : "text-wl-success-400",
                 )}
               >
                 {c.errorCount}
@@ -195,7 +225,9 @@ function ProvidersSection({
               <p className="text-xs text-wl-text-tertiary mt-0.5">Errors</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-bold font-mono text-wl-text-primary">{c.uptime}%</p>
+              <p className="text-lg font-bold font-mono text-wl-text-primary">
+                {c.uptime}%
+              </p>
               <p className="text-xs text-wl-text-tertiary mt-0.5">Uptime</p>
             </div>
           </div>
@@ -250,7 +282,9 @@ function TeamSection({
                 {m.name || m.email}
               </p>
               {m.name && (
-                <p className="text-xs text-wl-text-tertiary truncate">{m.email}</p>
+                <p className="text-xs text-wl-text-tertiary truncate">
+                  {m.email}
+                </p>
               )}
               <div className="flex items-center gap-2 mt-1">
                 <Badge variant="default" className="text-[10px] py-0">
@@ -283,7 +317,9 @@ function DeliveryStatsSection({
   if (error || !stats) {
     return (
       <Card className="p-8 text-center bg-wl-bg-surface border-wl-border-default">
-        <p className="text-sm text-wl-text-secondary">No delivery stats available</p>
+        <p className="text-sm text-wl-text-secondary">
+          No delivery stats available
+        </p>
       </Card>
     );
   }
@@ -293,7 +329,9 @@ function DeliveryStatsSection({
   if (channels.length === 0) {
     return (
       <Card className="p-8 text-center bg-wl-bg-surface border-wl-border-default">
-        <p className="text-sm text-wl-text-secondary">No notifications sent yet</p>
+        <p className="text-sm text-wl-text-secondary">
+          No notifications sent yet
+        </p>
         <p className="text-xs text-wl-text-tertiary mt-1">
           Stats will appear once notifications have been dispatched.
         </p>
@@ -305,7 +343,7 @@ function DeliveryStatsSection({
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       {channels.map(([channel, data]) => {
         const successRate =
-          data.sent > 0 ? ((data.delivered / data.sent) * 100).toFixed(1) : '0';
+          data.sent > 0 ? ((data.delivered / data.sent) * 100).toFixed(1) : "0";
         return (
           <Card
             key={channel}
@@ -325,13 +363,17 @@ function DeliveryStatsSection({
                 <p className="text-lg font-bold font-mono text-wl-success-400">
                   {data.delivered.toLocaleString()}
                 </p>
-                <p className="text-xs text-wl-text-tertiary mt-0.5">Delivered</p>
+                <p className="text-xs text-wl-text-tertiary mt-0.5">
+                  Delivered
+                </p>
               </div>
               <div className="text-center">
                 <p
                   className={cn(
-                    'text-lg font-bold font-mono',
-                    data.failed > 0 ? 'text-wl-danger-400' : 'text-wl-text-tertiary',
+                    "text-lg font-bold font-mono",
+                    data.failed > 0
+                      ? "text-wl-danger-400"
+                      : "text-wl-text-tertiary",
                   )}
                 >
                   {data.failed}
@@ -341,8 +383,12 @@ function DeliveryStatsSection({
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-wl-text-tertiary">Success Rate</span>
-                <span className="text-xs font-semibold text-wl-success-400">{successRate}%</span>
+                <span className="text-xs text-wl-text-tertiary">
+                  Success Rate
+                </span>
+                <span className="text-xs font-semibold text-wl-success-400">
+                  {successRate}%
+                </span>
               </div>
               <div className="w-full h-1.5 bg-wl-bg-overlay rounded-full overflow-hidden">
                 <div
@@ -362,39 +408,45 @@ function DeliveryStatsSection({
 
 export default function CollaborationPage() {
   const [activeSection, setActiveSection] = useState<
-    'providers' | 'team' | 'stats' | 'routes'
-  >('providers');
+    "providers" | "team" | "stats" | "routes"
+  >("providers");
 
   const {
     items: connections,
     loading: connLoading,
     error: connError,
-  } = useApiList<Connection>('/api/v4/integrations/connections');
+  } = useApiList<Connection>("/api/v4/integrations/connections");
 
   const {
     items: teamMembers,
     loading: teamLoading,
     error: teamError,
-  } = useApiList<TeamMember>('/api/v4/settings/team');
+  } = useApiList<TeamMember>("/api/v4/settings/team");
 
   const {
     data: notifStats,
     loading: statsLoading,
     error: statsError,
-  } = useApiQuery<NotificationStats>('/api/v4/notifications/stats?days=30');
+  } = useApiQuery<NotificationStats>("/api/v4/notifications/stats?days=30");
 
   const messagingCount = useMemo(
     () => connections.filter(isMessagingConnection).length,
     [connections],
   );
 
-  const connectedCount = connections.filter((c) => c.status === 'connected').length;
+  const connectedCount = connections.filter(
+    (c) => c.status === "connected",
+  ).length;
 
   const SECTIONS = [
-    { id: 'providers' as const, label: `Providers (${messagingCount})`, icon: Plug },
-    { id: 'team' as const, label: `Team (${teamMembers.length})`, icon: Users },
-    { id: 'stats' as const, label: 'Delivery Stats', icon: Activity },
-    { id: 'routes' as const, label: 'Message Routes', icon: Send },
+    {
+      id: "providers" as const,
+      label: `Providers (${messagingCount})`,
+      icon: Plug,
+    },
+    { id: "team" as const, label: `Team (${teamMembers.length})`, icon: Users },
+    { id: "stats" as const, label: "Delivery Stats", icon: Activity },
+    { id: "routes" as const, label: "Message Routes", icon: Send },
   ];
 
   return (
@@ -413,7 +465,7 @@ export default function CollaborationPage() {
             <Button
               variant="primary"
               size="md"
-              onClick={() => (window.location.href = '/integrations/catalog')}
+              onClick={() => (window.location.href = "/integrations/catalog")}
             >
               <Plus className="w-4 h-4 mr-1.5" />
               Add Integration
@@ -430,10 +482,10 @@ export default function CollaborationPage() {
               key={id}
               onClick={() => setActiveSection(id)}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all',
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
                 activeSection === id
-                  ? 'bg-wl-bg-overlay text-wl-text-primary shadow-sm'
-                  : 'text-wl-text-tertiary hover:text-wl-text-secondary',
+                  ? "bg-wl-bg-overlay text-wl-text-primary shadow-sm"
+                  : "text-wl-text-tertiary hover:text-wl-text-secondary",
               )}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -442,7 +494,7 @@ export default function CollaborationPage() {
           ))}
         </div>
 
-        {activeSection === 'providers' && (
+        {activeSection === "providers" && (
           <ProvidersSection
             connections={connections}
             loading={connLoading}
@@ -450,10 +502,12 @@ export default function CollaborationPage() {
           />
         )}
 
-        {activeSection === 'team' && (
+        {activeSection === "team" && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-wl-text-primary">Team Members</p>
+              <p className="text-sm font-medium text-wl-text-primary">
+                Team Members
+              </p>
               <Link href="/settings/team">
                 <Button variant="ghost" size="sm">
                   Manage Team
@@ -469,7 +523,7 @@ export default function CollaborationPage() {
           </div>
         )}
 
-        {activeSection === 'stats' && (
+        {activeSection === "stats" && (
           <div className="space-y-4">
             <p className="text-sm font-medium text-wl-text-primary">
               Notification Delivery (last 30 days)
@@ -482,7 +536,7 @@ export default function CollaborationPage() {
           </div>
         )}
 
-        {activeSection === 'routes' && (
+        {activeSection === "routes" && (
           <Card className="p-12 text-center bg-wl-bg-surface border-wl-border-default">
             <div className="w-12 h-12 rounded-full bg-wl-bg-overlay flex items-center justify-center mx-auto mb-4">
               <Send className="w-6 h-6 text-wl-text-tertiary" />
@@ -491,7 +545,8 @@ export default function CollaborationPage() {
               Message routing coming soon
             </p>
             <p className="text-xs text-wl-text-tertiary mb-4">
-              Route logistics events (delivery updates, driver alerts, exceptions) to specific channels and teams.
+              Route logistics events (delivery updates, driver alerts,
+              exceptions) to specific channels and teams.
             </p>
             <Link href="/settings/notifications">
               <Button variant="ghost" size="sm">

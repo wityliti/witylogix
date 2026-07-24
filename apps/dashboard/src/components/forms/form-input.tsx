@@ -14,13 +14,30 @@
 
 "use client";
 
-import { forwardRef, InputHTMLAttributes, ReactNode, useState, useCallback, useRef } from "react";
+import {
+  forwardRef,
+  InputHTMLAttributes,
+  ReactNode,
+  useState,
+  useCallback,
+  useRef,
+} from "react";
 import { Eye, EyeOff, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type InputType = "text" | "email" | "password" | "number" | "tel" | "url" | "search";
+type InputType =
+  | "text"
+  | "email"
+  | "password"
+  | "number"
+  | "tel"
+  | "url"
+  | "search";
 
-export interface FormInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "prefix"> {
+export interface FormInputProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "type" | "prefix"
+> {
   /** Input type */
   type?: InputType;
   /** Prefix element (icon or text) */
@@ -83,7 +100,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [showPassword, setShowPassword] = useState(false);
     const debounceTimeoutRef = useRef<NodeJS.Timeout>();
@@ -108,13 +125,19 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
             clearTimeout(debounceTimeoutRef.current);
           }
           debounceTimeoutRef.current = setTimeout(() => {
-            onChange({ ...e, target: { ...e.target, value: finalValue } } as any);
+            onChange({
+              ...e,
+              target: { ...e.target, value: finalValue },
+            } as any);
           }, debounceMs);
         } else {
-          onChange?.({ ...e, target: { ...e.target, value: finalValue } } as any);
+          onChange?.({
+            ...e,
+            target: { ...e.target, value: finalValue },
+          } as any);
         }
       },
-      [type, autoFormat, debounceMs, onChange]
+      [type, autoFormat, debounceMs, onChange],
     );
 
     const handleClear = useCallback(() => {
@@ -162,7 +185,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
             "disabled:opacity-50 disabled:cursor-not-allowed",
             prefix && "pl-10",
             (suffix || showPasswordToggle || showClear) && "pr-10",
-            className
+            className,
           )}
           aria-invalid={hasError}
           {...props}
@@ -203,7 +226,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
         </div>
       </div>
     );
-  }
+  },
 );
 
 FormInput.displayName = "FormInput";

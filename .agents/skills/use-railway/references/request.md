@@ -17,19 +17,18 @@ Tip: append `.md` to any `docs.railway.com` page URL to get a markdown version s
 
 Common doc paths:
 
-| Topic | Path |
-|---|---|
-| Projects | `guides/projects` |
-| Deployments | `guides/deployments` |
-| Volumes | `guides/volumes` |
-| Variables | `guides/variables` |
-| CLI reference | `reference/cli-api` |
-| Pricing | `reference/pricing` |
-| Public networking | `networking/public-networking` |
+| Topic              | Path                            |
+| ------------------ | ------------------------------- |
+| Projects           | `guides/projects`               |
+| Deployments        | `guides/deployments`            |
+| Volumes            | `guides/volumes`                |
+| Variables          | `guides/variables`              |
+| CLI reference      | `reference/cli-api`             |
+| Pricing            | `reference/pricing`             |
+| Public networking  | `networking/public-networking`  |
 | Private networking | `networking/private-networking` |
 
 Fetch official docs first for product behavior questions. Use Central Station only when you need community evidence, prior incidents, or implementation anecdotes.
-
 
 ## Central Station (community)
 
@@ -79,7 +78,6 @@ Thread URLs follow the format: `https://station.railway.com/{topic_slug}/{thread
 
 Community threads are anecdotal. Always pair with official docs when the answer informs an operational decision.
 
-
 ## GraphQL helper
 
 All GraphQL operations use the API helper script, which handles authentication automatically:
@@ -106,7 +104,6 @@ scripts/railway-api.sh \
 
 Common `ProjectUpdateInput` fields: `name`, `isPublic`, `prDeploys`, `botPrEnvironments`.
 
-
 ## Service mutations
 
 The CLI can create services (`railway add`) but cannot rename them or change icons. Use GraphQL:
@@ -123,7 +120,6 @@ scripts/railway-api.sh \
 
 Get the service ID from `railway status --json`.
 
-
 ## Service creation via GraphQL
 
 Prefer `railway add` for most cases. Use GraphQL for programmatic or advanced use:
@@ -138,17 +134,16 @@ scripts/railway-api.sh \
 
 `ServiceCreateInput` fields:
 
-| Field | Type | Description |
-|---|---|---|
-| `projectId` | String! | Target project (required) |
-| `name` | String | Service name (auto-generated if omitted) |
-| `source.image` | String | Docker image (for example, `nginx:latest`) |
-| `source.repo` | String | GitHub repo (for example, `user/repo`) |
-| `branch` | String | Git branch for repo source |
-| `environmentId` | String | Create only in a specific environment |
+| Field           | Type    | Description                                |
+| --------------- | ------- | ------------------------------------------ |
+| `projectId`     | String! | Target project (required)                  |
+| `name`          | String  | Service name (auto-generated if omitted)   |
+| `source.image`  | String  | Docker image (for example, `nginx:latest`) |
+| `source.repo`   | String  | GitHub repo (for example, `user/repo`)     |
+| `branch`        | String  | Git branch for repo source                 |
+| `environmentId` | String  | Create only in a specific environment      |
 
 After creating a service via GraphQL, configure it with a JSON config patch including `isCreated: true` (see [configure.md](configure.md)).
-
 
 ## Metrics queries
 
@@ -184,12 +179,12 @@ scripts/railway-api.sh \
   '{"query":"redis","verified":true}'
 ```
 
-| Parameter | Type | Description |
-|---|---|---|
-| `query` | String | Search term |
-| `verified` | Boolean | Only verified templates |
-| `recommended` | Boolean | Only recommended templates |
-| `first` | Int | Number of results (max ~100) |
+| Parameter     | Type    | Description                  |
+| ------------- | ------- | ---------------------------- |
+| `query`       | String  | Search term                  |
+| `verified`    | Boolean | Only verified templates      |
+| `recommended` | Boolean | Only recommended templates   |
+| `first`       | Int     | Number of results (max ~100) |
 
 Common template codes: `ghost`, `strapi`, `minio`, `n8n`, `uptime-kuma`, `umami`, `postgres`, `redis`, `mysql`, `mongodb`.
 
@@ -230,7 +225,6 @@ scripts/railway-api.sh \
 ```
 
 `serializedConfig` is the raw JSON object from the template query, not a string. Get `workspaceId` via `scripts/railway-api.sh 'query { project(id: "<project-id>") { workspaceId } }' '{}'`.
-
 
 ## Validated against
 

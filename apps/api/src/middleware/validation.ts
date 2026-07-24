@@ -3,8 +3,8 @@
  * Validates incoming requests against schemas
  */
 
-import type { Request, Response, NextFunction } from 'express';
-import { z } from 'zod';
+import type { Request, Response, NextFunction } from "express";
+import { z } from "zod";
 
 export interface ValidationError {
   field: string;
@@ -23,11 +23,11 @@ export function validateRequest(schema: z.ZodSchema) {
     } catch (error) {
       if (error instanceof z.ZodError) {
         const errors: ValidationError[] = error.errors.map((err) => ({
-          field: err.path.join('.'),
+          field: err.path.join("."),
           message: err.message,
         }));
         res.status(400).send({
-          error: 'Validation failed',
+          error: "Validation failed",
           details: errors,
         });
       } else {
@@ -49,11 +49,11 @@ export function validateQuery(schema: z.ZodSchema) {
     } catch (error) {
       if (error instanceof z.ZodError) {
         const errors: ValidationError[] = error.errors.map((err) => ({
-          field: err.path.join('.'),
+          field: err.path.join("."),
           message: err.message,
         }));
         res.status(400).send({
-          error: 'Query validation failed',
+          error: "Query validation failed",
           details: errors,
         });
       } else {
@@ -75,11 +75,11 @@ export function validateParams(schema: z.ZodSchema) {
     } catch (error) {
       if (error instanceof z.ZodError) {
         const errors: ValidationError[] = error.errors.map((err) => ({
-          field: err.path.join('.'),
+          field: err.path.join("."),
           message: err.message,
         }));
         res.status(400).send({
-          error: 'Params validation failed',
+          error: "Params validation failed",
           details: errors,
         });
       } else {

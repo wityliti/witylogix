@@ -22,7 +22,7 @@ export interface MigrationConfig {
 export type FieldTransformer = (
   value: any,
   sourceDoc: any,
-  context?: any
+  context?: any,
 ) => any;
 
 /**
@@ -119,10 +119,10 @@ export interface RecordValidationResult {
  * Conflict resolution strategies
  */
 export enum ConflictResolutionStrategy {
-  SKIP = 'skip',
-  OVERWRITE = 'overwrite',
-  MERGE = 'merge',
-  ERROR = 'error',
+  SKIP = "skip",
+  OVERWRITE = "overwrite",
+  MERGE = "merge",
+  ERROR = "error",
 }
 
 /**

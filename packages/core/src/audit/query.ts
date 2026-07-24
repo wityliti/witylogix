@@ -11,7 +11,7 @@ import {
   EntityHistory,
   UserActivitySummary,
   AuditQueryError,
-} from './types';
+} from "./types";
 
 /**
  * Mock database interface
@@ -35,60 +35,61 @@ export class AuditQueryEngine {
    */
   async queryAuditLog(query: AuditQuery): Promise<AuditQueryResult> {
     if (query.limit && (query.limit < 1 || query.limit > 1000)) {
-      throw new AuditQueryError('Limit must be between 1 and 1000');
+      throw new AuditQueryError("Limit must be between 1 and 1000");
     }
 
     const limit = query.limit ?? 100;
     const offset = query.offset ?? 0;
-    const sortBy = query.sortBy ?? 'timestamp';
-    const sortOrder = query.sortOrder ?? 'desc';
+    const sortBy = query.sortBy ?? "timestamp";
+    const sortOrder = query.sortOrder ?? "desc";
 
     // Build WHERE clause with parameterized queries
     const conditions: string[] = [];
     const params: any[] = [];
 
-    conditions.push('tenant_id = $' + (params.length + 1));
+    conditions.push("tenant_id = $" + (params.length + 1));
     params.push(query.tenantId);
 
     if (query.resource) {
-      conditions.push('resource = $' + (params.length + 1));
+      conditions.push("resource = $" + (params.length + 1));
       params.push(query.resource);
     }
 
     if (query.resourceId) {
-      conditions.push('resource_id = $' + (params.length + 1));
+      conditions.push("resource_id = $" + (params.length + 1));
       params.push(query.resourceId);
     }
 
     if (query.userId) {
-      conditions.push('user_id = $' + (params.length + 1));
+      conditions.push("user_id = $" + (params.length + 1));
       params.push(query.userId);
     }
 
     if (query.action) {
-      conditions.push('action = $' + (params.length + 1));
+      conditions.push("action = $" + (params.length + 1));
       params.push(query.action);
     }
 
     if (query.startDate) {
-      conditions.push('timestamp >= $' + (params.length + 1));
+      conditions.push("timestamp >= $" + (params.length + 1));
       params.push(query.startDate);
     }
 
     if (query.endDate) {
-      conditions.push('timestamp <= $' + (params.length + 1));
+      conditions.push("timestamp <= $" + (params.length + 1));
       params.push(query.endDate);
     }
 
-    const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
+    const whereClause =
+      conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
 
     // Validate sort column to prevent SQL injection
-    const validSortColumns = ['timestamp', 'action', 'resource'];
+    const validSortColumns = ["timestamp", "action", "resource"];
     if (!validSortColumns.includes(sortBy)) {
       throw new AuditQueryError(`Invalid sort column: ${sortBy}`);
     }
 
-    const validSortOrders = ['asc', 'desc'];
+    const validSortOrders = ["asc", "desc"];
     if (!validSortOrders.includes(sortOrder)) {
       throw new AuditQueryError(`Invalid sort order: ${sortOrder}`);
     }
@@ -142,8 +143,9 @@ export class AuditQueryEngine {
     const auditEvents = events.map((row) => this.mapRowToEvent(row));
 
     // Find creation timestamp
-    const createdEvent = auditEvents.find((e) => e.action === 'create');
-    const createdAt = createdEvent?.timestamp ?? auditEvents[0]?.timestamp ?? new Date();
+    const createdEvent = auditEvents.find((e) => e.action === "create");
+    const createdAt =
+      createdEvent?.timestamp ?? auditEvents[0]?.timestamp ?? new Date();
 
     return {
       resourceId,
@@ -164,7 +166,7 @@ export class AuditQueryEngine {
     startDate?: Date,
     endDate?: Date,
   ): Promise<UserActivitySummary> {
-    const conditions = ['tenant_id = $1', 'user_id = $2'];
+    const conditions = ["tenant_id = $1", "user_id = $2"];
     const params: any[] = [tenantId, userId];
 
     if (startDate) {
@@ -177,7 +179,7 @@ export class AuditQueryEngine {
       params.push(endDate);
     }
 
-    const whereClause = conditions.join(' AND ');
+    const whereClause = conditions.join(" AND ");
 
     // Get all events
     const events = await this.db.query(
@@ -197,7 +199,8 @@ export class AuditQueryEngine {
 
     for (const event of auditEvents) {
       eventsByAction[event.action] = (eventsByAction[event.action] ?? 0) + 1;
-      eventsByResource[event.resource] = (eventsByResource[event.resource] ?? 0) + 1;
+      eventsByResource[event.resource] =
+        (eventsByResource[event.resource] ?? 0) + 1;
     }
 
     return {
@@ -230,7 +233,10 @@ export class AuditQueryEngine {
         AND (resource ILIKE $2 OR action ILIKE $2 OR changes_summary ILIKE $2)
     `;
 
-    const countResult = await this.db.queryOne(countSql, [tenantId, searchPattern]);
+    const countResult = await this.db.queryOne(countSql, [
+      tenantId,
+      searchPattern,
+    ]);
     const total = countResult?.count ?? 0;
 
     const sql = `
@@ -241,7 +247,12 @@ export class AuditQueryEngine {
       LIMIT $3 OFFSET $4
     `;
 
-    const rows = await this.db.query(sql, [tenantId, searchPattern, limit, offset]);
+    const rows = await this.db.query(sql, [
+      tenantId,
+      searchPattern,
+      limit,
+      offset,
+    ]);
     const events = rows.map((row) => this.mapRowToEvent(row));
 
     return {
@@ -257,7 +268,10 @@ export class AuditQueryEngine {
    * Get audit summary statistics for a tenant
    * Useful for compliance reporting
    */
-  async getAuditSummary(tenantId: string, days: number = 30): Promise<Record<string, any>> {
+  async getAuditSummary(
+    tenantId: string,
+    days: number = 30,
+  ): Promise<Record<string, any>> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
@@ -316,7 +330,7 @@ export class AuditQueryEngine {
    */
   private parseJson(value: any): any {
     if (!value) return undefined;
-    if (typeof value === 'object') return value;
+    if (typeof value === "object") return value;
     try {
       return JSON.parse(value);
     } catch {

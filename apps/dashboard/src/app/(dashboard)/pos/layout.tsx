@@ -8,11 +8,7 @@ import { cn } from "@/lib/utils";
  * POS Layout with Tab Navigation
  */
 
-export default function POSLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function POSLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const tabs = [
@@ -40,7 +36,7 @@ export default function POSLayout({
                 "px-4 py-3 text-sm font-medium transition-colors border-b-2 whitespace-nowrap flex items-center gap-2",
                 isActive(tab.href)
                   ? "border-indigo-500 text-indigo-400"
-                  : "border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-700"
+                  : "border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-700",
               )}
             >
               <span>{tab.icon}</span>

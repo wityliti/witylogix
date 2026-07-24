@@ -61,8 +61,12 @@ test.describe("Freight Management Workflow", () => {
     await page.waitForSelector('[data-testid="freight-stats"]');
 
     // Check for key metrics
-    const activeLoads = await page.locator('[data-testid="stat-active-loads"]').textContent();
-    const avgRate = await page.locator('[data-testid="stat-avg-rate"]').textContent();
+    const activeLoads = await page
+      .locator('[data-testid="stat-active-loads"]')
+      .textContent();
+    const avgRate = await page
+      .locator('[data-testid="stat-avg-rate"]')
+      .textContent();
 
     expect(activeLoads).toBeDefined();
     expect(avgRate).toBeDefined();
@@ -109,7 +113,9 @@ test.describe("Freight Management Workflow", () => {
 
     // Verify fields populated
     const origin = await page.inputValue('[data-testid="field-origin"]');
-    const destination = await page.inputValue('[data-testid="field-destination"]');
+    const destination = await page.inputValue(
+      '[data-testid="field-destination"]',
+    );
 
     expect(origin).toContain("Los Angeles");
     expect(destination).toContain("New York");
@@ -158,8 +164,12 @@ test.describe("Freight Management Workflow", () => {
     await page.fill('[data-testid="field-delivery-time-to"]', "06:00 PM");
 
     // Verify timewindows set
-    const pickupDate = await page.inputValue('[data-testid="field-pickup-date"]');
-    const deliveryDate = await page.inputValue('[data-testid="field-delivery-date"]');
+    const pickupDate = await page.inputValue(
+      '[data-testid="field-pickup-date"]',
+    );
+    const deliveryDate = await page.inputValue(
+      '[data-testid="field-delivery-date"]',
+    );
 
     expect(pickupDate).toBe("03/20/2024");
     expect(deliveryDate).toBe("03/22/2024");
@@ -183,7 +193,9 @@ test.describe("Freight Management Workflow", () => {
     // Wait for success message
     await page.waitForSelector('[data-testid="success-message"]');
 
-    const successMsg = await page.locator('[data-testid="success-message"]').textContent();
+    const successMsg = await page
+      .locator('[data-testid="success-message"]')
+      .textContent();
     expect(successMsg).toContain("created");
   });
 
@@ -226,7 +238,9 @@ test.describe("Freight Management Workflow", () => {
     expect(datRates).toBeDefined();
 
     // Check for Truckstop rates
-    const truckstopRates = await page.locator('[data-testid="provider-TRUCKSTOP"]');
+    const truckstopRates = await page.locator(
+      '[data-testid="provider-TRUCKSTOP"]',
+    );
     expect(truckstopRates).toBeDefined();
   });
 
@@ -241,7 +255,9 @@ test.describe("Freight Management Workflow", () => {
     await page.waitForSelector('[data-testid="rate-comparison-modal"]');
 
     // Get all provider rates
-    const rates = await page.locator('[data-testid="provider-rate"]').allTextContents();
+    const rates = await page
+      .locator('[data-testid="provider-rate"]')
+      .allTextContents();
 
     // Verify rates are displayed
     expect(rates.length).toBeGreaterThan(0);
@@ -276,14 +292,19 @@ test.describe("Freight Management Workflow", () => {
     await page.waitForSelector('[data-testid="audit-dialog"]');
 
     // Select audit parameters
-    await page.selectOption('[data-testid="field-audit-period"]', "last_30_days");
+    await page.selectOption(
+      '[data-testid="field-audit-period"]',
+      "last_30_days",
+    );
     await page.selectOption('[data-testid="field-tolerance"]', "2_percent");
 
     // Submit audit
     await page.click('[data-testid="btn-submit-audit"]');
 
     // Wait for audit results
-    await page.waitForSelector('[data-testid="audit-results"]', { timeout: 30000 });
+    await page.waitForSelector('[data-testid="audit-results"]', {
+      timeout: 30000,
+    });
 
     const results = await page.locator('[data-testid="audit-results"]');
     expect(results).toBeDefined();
@@ -295,7 +316,10 @@ test.describe("Freight Management Workflow", () => {
     // Run audit first
     await page.click('[data-testid="btn-run-audit"]');
     await page.waitForSelector('[data-testid="audit-dialog"]');
-    await page.selectOption('[data-testid="field-audit-period"]', "last_30_days");
+    await page.selectOption(
+      '[data-testid="field-audit-period"]',
+      "last_30_days",
+    );
     await page.click('[data-testid="btn-submit-audit"]');
 
     // Wait for results
@@ -317,7 +341,9 @@ test.describe("Freight Management Workflow", () => {
 
     await page.waitForSelector('[data-testid="carrier-compliance-page"]');
 
-    const page_element = await page.locator('[data-testid="carrier-compliance-page"]');
+    const page_element = await page.locator(
+      '[data-testid="carrier-compliance-page"]',
+    );
     expect(page_element).toBeDefined();
   });
 
@@ -327,13 +353,19 @@ test.describe("Freight Management Workflow", () => {
     await page.waitForSelector('[data-testid="carrier-row"]');
 
     // Get first carrier
-    const firstCarrier = await page.locator('[data-testid="carrier-row"]').first();
+    const firstCarrier = await page
+      .locator('[data-testid="carrier-row"]')
+      .first();
 
     // Check for rating
-    const rating = await firstCarrier.locator('[data-testid="safety-rating"]').textContent();
+    const rating = await firstCarrier
+      .locator('[data-testid="safety-rating"]')
+      .textContent();
 
     expect(rating).toBeDefined();
-    expect(["Satisfactory", "Conditional", "Unsatisfactory"]).toContain(rating?.trim());
+    expect(["Satisfactory", "Conditional", "Unsatisfactory"]).toContain(
+      rating?.trim(),
+    );
   });
 
   test("should view carrier scorecard details", async () => {
@@ -351,7 +383,9 @@ test.describe("Freight Management Workflow", () => {
     expect(scorecard).toBeDefined();
 
     // Check for grade
-    const grade = await page.locator('[data-testid="score-grade"]').textContent();
+    const grade = await page
+      .locator('[data-testid="score-grade"]')
+      .textContent();
     expect(grade).toMatch(/[A-F]/);
   });
 
@@ -374,10 +408,14 @@ test.describe("Freight Management Workflow", () => {
     await page.waitForSelector('[data-testid="driver-hos-row"]');
 
     // Get first driver
-    const firstDriver = await page.locator('[data-testid="driver-hos-row"]').first();
+    const firstDriver = await page
+      .locator('[data-testid="driver-hos-row"]')
+      .first();
 
     // Check for status
-    const status = await firstDriver.locator('[data-testid="hos-status"]').textContent();
+    const status = await firstDriver
+      .locator('[data-testid="hos-status"]')
+      .textContent();
 
     expect(status).toBeDefined();
   });
@@ -388,7 +426,9 @@ test.describe("Freight Management Workflow", () => {
     await page.waitForSelector('[data-testid="violations-section"]');
 
     // Check for violation count
-    const violationCount = await page.locator('[data-testid="violation-count"]').textContent();
+    const violationCount = await page
+      .locator('[data-testid="violation-count"]')
+      .textContent();
 
     // Could be 0 or more
     expect(violationCount).toBeDefined();
@@ -416,7 +456,10 @@ test.describe("Freight Management Workflow", () => {
     await page.selectOption('[data-testid="field-vehicle"]', "vehicle_001");
 
     // Select inspection type
-    await page.selectOption('[data-testid="field-inspection-type"]', "pre_trip");
+    await page.selectOption(
+      '[data-testid="field-inspection-type"]',
+      "pre_trip",
+    );
 
     // Add defect
     await page.click('[data-testid="btn-add-defect"]');
@@ -427,7 +470,10 @@ test.describe("Freight Management Workflow", () => {
     // Fill defect details
     await page.selectOption('[data-testid="field-defect-code"]', "BRAKE");
     await page.selectOption('[data-testid="field-defect-severity"]', "MAJOR");
-    await page.fill('[data-testid="field-defect-description"]', "Brake pad wear detected");
+    await page.fill(
+      '[data-testid="field-defect-description"]',
+      "Brake pad wear detected",
+    );
 
     // Submit form
     await page.click('[data-testid="btn-submit-dvir"]');
@@ -435,7 +481,9 @@ test.describe("Freight Management Workflow", () => {
     // Wait for success
     await page.waitForSelector('[data-testid="success-message"]');
 
-    const successMsg = await page.locator('[data-testid="success-message"]').textContent();
+    const successMsg = await page
+      .locator('[data-testid="success-message"]')
+      .textContent();
     expect(successMsg).toContain("recorded");
   });
 

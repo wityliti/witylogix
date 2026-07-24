@@ -51,7 +51,11 @@ export interface InsurancePolicy {
 
 // ─── MAINTENANCE TYPES ────────────────────────────────────────────────────
 
-export type MaintenanceType = "PREVENTIVE" | "REACTIVE" | "PREDICTIVE" | "RECALL";
+export type MaintenanceType =
+  | "PREVENTIVE"
+  | "REACTIVE"
+  | "PREDICTIVE"
+  | "RECALL";
 export type MaintenanceCategory =
   | "OIL_CHANGE"
   | "TIRE"
@@ -61,7 +65,11 @@ export type MaintenanceCategory =
   | "ELECTRICAL"
   | "BODY"
   | "INSPECTION";
-export type MaintenanceStatus = "SCHEDULED" | "IN_PROGRESS" | "COMPLETED" | "OVERDUE";
+export type MaintenanceStatus =
+  | "SCHEDULED"
+  | "IN_PROGRESS"
+  | "COMPLETED"
+  | "OVERDUE";
 
 export interface MaintenanceRecord {
   id: string;
@@ -359,7 +367,11 @@ export class VehicleNotFoundError extends FleetManagementError {
 
 export class MaintenanceNotFoundError extends FleetManagementError {
   constructor(maintenanceId: string) {
-    super(`Maintenance record not found: ${maintenanceId}`, "MAINTENANCE_NOT_FOUND", 404);
+    super(
+      `Maintenance record not found: ${maintenanceId}`,
+      "MAINTENANCE_NOT_FOUND",
+      404,
+    );
   }
 }
 
@@ -371,7 +383,11 @@ export class InvalidAssignmentError extends FleetManagementError {
 
 export class DeprecationCalculationError extends FleetManagementError {
   constructor(vehicleId: string) {
-    super(`Failed to calculate depreciation for vehicle: ${vehicleId}`, "DEPRECIATION_ERROR", 500);
+    super(
+      `Failed to calculate depreciation for vehicle: ${vehicleId}`,
+      "DEPRECIATION_ERROR",
+      500,
+    );
   }
 }
 

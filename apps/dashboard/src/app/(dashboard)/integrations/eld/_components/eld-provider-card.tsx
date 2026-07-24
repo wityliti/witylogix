@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   CheckCircle2,
   AlertCircle,
@@ -11,7 +11,7 @@ import {
   Settings,
   Power,
   Plus,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface ELDProvider {
   id: string;
@@ -43,10 +43,18 @@ export function ELDProviderCard({ provider }: ELDProviderCardProps) {
             </div>
           </div>
           <Badge
-            variant={provider.status === "connected" ? "success" : provider.status === "error" ? "danger" : "default"}
+            variant={
+              provider.status === "connected"
+                ? "success"
+                : provider.status === "error"
+                  ? "danger"
+                  : "default"
+            }
             className={cn(
-              provider.status === "connected" && "bg-green-500/20 text-green-400 border border-green-500/50",
-              provider.status === "error" && "bg-red-500/20 text-red-400 border border-red-500/50"
+              provider.status === "connected" &&
+                "bg-green-500/20 text-green-400 border border-green-500/50",
+              provider.status === "error" &&
+                "bg-red-500/20 text-red-400 border border-red-500/50",
             )}
           >
             {provider.status === "connected" && (

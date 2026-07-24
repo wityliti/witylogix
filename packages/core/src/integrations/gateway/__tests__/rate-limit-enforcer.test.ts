@@ -44,9 +44,9 @@ describe("RateLimitEnforcer", () => {
     });
 
     it("should throw error for unregistered provider", async () => {
-      await expect(enforcer.checkLimit("unknown-provider", "req-1")).rejects.toThrow(
-        "Provider unknown-provider not registered",
-      );
+      await expect(
+        enforcer.checkLimit("unknown-provider", "req-1"),
+      ).rejects.toThrow("Provider unknown-provider not registered");
     });
   });
 
@@ -106,9 +106,9 @@ describe("RateLimitEnforcer", () => {
       }
 
       // Queue is full, should reject
-      await expect(enforcer.checkLimit("test-provider", "req-7", 100)).rejects.toThrow(
-        "Rate limit exceeded",
-      );
+      await expect(
+        enforcer.checkLimit("test-provider", "req-7", 100),
+      ).rejects.toThrow("Rate limit exceeded");
     });
 
     it("should include retry-after on rate limit error", async () => {

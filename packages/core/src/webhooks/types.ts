@@ -115,7 +115,12 @@ export interface WebhookEndpoint {
 /**
  * Delivery status enumeration
  */
-export type DeliveryStatus = "pending" | "delivering" | "delivered" | "failed" | "circuit_open";
+export type DeliveryStatus =
+  | "pending"
+  | "delivering"
+  | "delivered"
+  | "failed"
+  | "circuit_open";
 
 /**
  * Webhook delivery record

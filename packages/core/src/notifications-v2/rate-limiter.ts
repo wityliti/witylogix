@@ -2,7 +2,11 @@
  * Rate Limiter — Notification rate limiting per customer
  */
 
-import { NotificationChannel, RateLimitStatus, RateLimitConfig } from "./types.js";
+import {
+  NotificationChannel,
+  RateLimitStatus,
+  RateLimitConfig,
+} from "./types.js";
 
 /**
  * Rate limit entry
@@ -189,7 +193,12 @@ export class RateLimiter {
    * Reset all rate limits for a customer
    */
   resetAll(customerId: string): void {
-    for (const channel of ["email", "sms", "whatsapp", "push"] as NotificationChannel[]) {
+    for (const channel of [
+      "email",
+      "sms",
+      "whatsapp",
+      "push",
+    ] as NotificationChannel[]) {
       this.reset(customerId, channel);
     }
   }

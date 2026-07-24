@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { Header } from '@/components/layout/header';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { StatCard } from '@/components/ui/stat-card';
-import { cn } from '@/lib/utils';
-import { useApiList } from '@/hooks/use-api';
+import { useState, useMemo } from "react";
+import { Header } from "@/components/layout/header";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { StatCard } from "@/components/ui/stat-card";
+import { cn } from "@/lib/utils";
+import { useApiList } from "@/hooks/use-api";
 
 /* ═══════════════════════════════════════════════════════════
    CRM INTEGRATION PAGE — Multi-vendor CRM sync & management
@@ -17,7 +17,7 @@ interface CRMProvider {
   id: string;
   name: string;
   logo: string;
-  status: 'connected' | 'disconnected' | 'error';
+  status: "connected" | "disconnected" | "error";
   lastSync: string;
   syncCount: number;
   contactsCount: number;
@@ -28,9 +28,9 @@ interface CRMProvider {
 interface SyncLog {
   id: string;
   timestamp: string;
-  type: 'contact' | 'deal' | 'activity' | 'field';
-  direction: 'push' | 'pull' | 'bidirectional';
-  status: 'success' | 'failed' | 'pending';
+  type: "contact" | "deal" | "activity" | "field";
+  direction: "push" | "pull" | "bidirectional";
+  status: "success" | "failed" | "pending";
   details: string;
   recordsAffected: number;
 }
@@ -39,27 +39,28 @@ interface FieldMapping {
   id: string;
   witylogixField: string;
   crmField: string;
-  type: 'string' | 'number' | 'date' | 'boolean';
+  type: "string" | "number" | "date" | "boolean";
   required: boolean;
   customMapping?: boolean;
 }
 
-
-const getStatusColor = (status: string): 'success' | 'danger' | 'warning' | 'default' => {
+const getStatusColor = (
+  status: string,
+): "success" | "danger" | "warning" | "default" => {
   switch (status) {
-    case 'connected':
-      return 'success';
-    case 'error':
-      return 'danger';
-    case 'disconnected':
-      return 'default';
+    case "connected":
+      return "success";
+    case "error":
+      return "danger";
+    case "disconnected":
+      return "default";
     default:
-      return 'default';
+      return "default";
   }
 };
 
 const formatDateTime = (isoStr: string): string => {
-  if (!isoStr) return '—';
+  if (!isoStr) return "—";
   const date = new Date(isoStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -68,44 +69,69 @@ const formatDateTime = (isoStr: string): string => {
 
   if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
-
 export default function CRMIntegrationPage() {
-  const [selectedProvider, setSelectedProvider] = useState<string | null>('salesforce');
-  const [syncFilterType, setSyncFilterType] = useState<'all' | 'contact' | 'deal' | 'activity'>('all');
-  const [conflictResolution, setConflictResolution] = useState<'witylogix' | 'crm' | 'manual'>('manual');
+  const [selectedProvider, setSelectedProvider] = useState<string | null>(
+    "salesforce",
+  );
+  const [syncFilterType, setSyncFilterType] = useState<
+    "all" | "contact" | "deal" | "activity"
+  >("all");
+  const [conflictResolution, setConflictResolution] = useState<
+    "witylogix" | "crm" | "manual"
+  >("manual");
   const [autoSyncEnabled, setAutoSyncEnabled] = useState(true);
 
   // Fetch data from API
-  const { items: providers, loading: providersLoading, error: providersError, refetch } = useApiList<CRMProvider>('/api/v4/integrations/crm/providers');
-  const { items: syncLogs, loading: logsLoading } = useApiList<SyncLog>('/api/v4/integrations/crm/sync-logs');
-  const { items: fieldMappings } = useApiList<FieldMapping>('/api/v4/integrations/crm/field-mappings');
+  const {
+    items: providers,
+    loading: providersLoading,
+    error: providersError,
+    refetch,
+  } = useApiList<CRMProvider>("/api/v4/integrations/crm/providers");
+  const { items: syncLogs, loading: logsLoading } = useApiList<SyncLog>(
+    "/api/v4/integrations/crm/sync-logs",
+  );
+  const { items: fieldMappings } = useApiList<FieldMapping>(
+    "/api/v4/integrations/crm/field-mappings",
+  );
 
-  const connectedCount = providers.filter((p) => p.status === 'connected').length;
+  const connectedCount = providers.filter(
+    (p) => p.status === "connected",
+  ).length;
   const totalContacts = providers.reduce((sum, p) => sum + p.contactsCount, 0);
   const totalDeals = providers.reduce((sum, p) => sum + p.dealsCount, 0);
   const syncSuccessRate = (
-    (syncLogs.filter((s) => s.status === 'success').length / Math.max(syncLogs.length, 1)) *
+    (syncLogs.filter((s) => s.status === "success").length /
+      Math.max(syncLogs.length, 1)) *
     100
   ).toFixed(1);
 
   const filteredLogs = useMemo(
     () =>
       syncLogs.filter((log) => {
-        if (syncFilterType !== 'all' && log.type !== syncFilterType) return false;
+        if (syncFilterType !== "all" && log.type !== syncFilterType)
+          return false;
         return true;
       }),
-    [syncFilterType, syncLogs]
+    [syncFilterType, syncLogs],
   );
 
   if (providersError) {
     return (
       <div className="p-6">
         <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-4">
-          <p className="text-sm text-red-400">Failed to load CRM integrations</p>
-          <Button onClick={refetch} variant="secondary" size="sm" className="mt-3">
+          <p className="text-sm text-red-400">
+            Failed to load CRM integrations
+          </p>
+          <Button
+            onClick={refetch}
+            variant="secondary"
+            size="sm"
+            className="mt-3"
+          >
             Retry
           </Button>
         </div>
@@ -176,8 +202,9 @@ export default function CRMIntegrationPage() {
                   key={provider.id}
                   onClick={() => setSelectedProvider(provider.id)}
                   className={cn(
-                    'cursor-pointer transition-all',
-                    selectedProvider === provider.id && 'ring-2 ring-wl-primary-500'
+                    "cursor-pointer transition-all",
+                    selectedProvider === provider.id &&
+                      "ring-2 ring-wl-primary-500",
                   )}
                 >
                   <div className="flex items-start justify-between mb-3">
@@ -189,14 +216,17 @@ export default function CRMIntegrationPage() {
                         <h3 className="text-sm font-semibold text-white">
                           {provider.name}
                         </h3>
-                        <Badge variant={getStatusColor(provider.status)} className="mt-1">
+                        <Badge
+                          variant={getStatusColor(provider.status)}
+                          className="mt-1"
+                        >
                           {provider.status}
                         </Badge>
                       </div>
                     </div>
                   </div>
 
-                  {provider.status === 'error' && provider.errorMessage && (
+                  {provider.status === "error" && provider.errorMessage && (
                     <div className="bg-red-900/30 border border-red-400/30 rounded px-2 py-1.5 mb-2 text-xs text-red-400">
                       {provider.errorMessage}
                     </div>
@@ -235,7 +265,7 @@ export default function CRMIntegrationPage() {
                     <Button variant="secondary" size="sm" className="flex-1">
                       Settings
                     </Button>
-                    {provider.status !== 'disconnected' && (
+                    {provider.status !== "disconnected" && (
                       <Button variant="ghost" size="sm" className="flex-1">
                         Sync Now
                       </Button>
@@ -256,7 +286,9 @@ export default function CRMIntegrationPage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-sm font-semibold text-white">Auto-Sync Enabled</h4>
+                  <h4 className="text-sm font-semibold text-white">
+                    Auto-Sync Enabled
+                  </h4>
                   <p className="text-xs text-gray-500 mt-1">
                     Automatically sync data every 30 minutes
                   </p>
@@ -277,7 +309,7 @@ export default function CRMIntegrationPage() {
                   Conflict Resolution
                 </h4>
                 <div className="space-y-2">
-                  {(['witylogix', 'crm', 'manual'] as const).map((option) => (
+                  {(["witylogix", "crm", "manual"] as const).map((option) => (
                     <label
                       key={option}
                       className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-wl-bg-elevated"
@@ -290,14 +322,18 @@ export default function CRMIntegrationPage() {
                       />
                       <div>
                         <span className="text-sm font-medium text-white capitalize">
-                          {option === 'witylogix' ? 'Prefer Witylogix' : option === 'crm' ? 'Prefer CRM' : 'Manual Review'}
+                          {option === "witylogix"
+                            ? "Prefer Witylogix"
+                            : option === "crm"
+                              ? "Prefer CRM"
+                              : "Manual Review"}
                         </span>
                         <p className="text-xs text-gray-500">
-                          {option === 'witylogix'
-                            ? 'Always use Witylogix data when conflicts occur'
-                            : option === 'crm'
-                            ? 'Always use CRM data when conflicts occur'
-                            : 'Require manual approval for conflicting records'}
+                          {option === "witylogix"
+                            ? "Always use Witylogix data when conflicts occur"
+                            : option === "crm"
+                              ? "Always use CRM data when conflicts occur"
+                              : "Require manual approval for conflicting records"}
                         </p>
                       </div>
                     </label>
@@ -324,7 +360,9 @@ export default function CRMIntegrationPage() {
                     <th className="p-3 text-left font-semibold text-gray-400">
                       CRM Field
                     </th>
-                    <th className="p-3 text-left font-semibold text-gray-400">Type</th>
+                    <th className="p-3 text-left font-semibold text-gray-400">
+                      Type
+                    </th>
                     <th className="p-3 text-center font-semibold text-gray-400">
                       Required
                     </th>
@@ -338,8 +376,10 @@ export default function CRMIntegrationPage() {
                     <tr
                       key={mapping.id}
                       className={cn(
-                        'border-b border-wl-border-default',
-                        idx % 2 === 0 ? 'bg-transparent' : 'bg-wl-bg-elevated/30'
+                        "border-b border-wl-border-default",
+                        idx % 2 === 0
+                          ? "bg-transparent"
+                          : "bg-wl-bg-elevated/30",
                       )}
                     >
                       <td className="p-3 text-white font-medium">
@@ -382,18 +422,18 @@ export default function CRMIntegrationPage() {
           <CardHeader>
             <CardTitle>Sync Activity Log</CardTitle>
             <div className="flex gap-2 ml-auto">
-              {(['all', 'contact', 'deal', 'activity'] as const).map((type) => (
+              {(["all", "contact", "deal", "activity"] as const).map((type) => (
                 <button
                   key={type}
                   onClick={() => setSyncFilterType(type)}
                   className={cn(
-                    'px-3 py-1 text-xs font-semibold rounded-md border capitalize transition-all',
+                    "px-3 py-1 text-xs font-semibold rounded-md border capitalize transition-all",
                     syncFilterType === type
-                      ? 'bg-blue-500 text-white border-blue-500'
-                      : 'bg-transparent text-gray-400 border-wl-border-default hover:border-wl-border-default'
+                      ? "bg-blue-500 text-white border-blue-500"
+                      : "bg-transparent text-gray-400 border-wl-border-default hover:border-wl-border-default",
                   )}
                 >
-                  {type === 'all' ? 'All' : type}
+                  {type === "all" ? "All" : type}
                 </button>
               ))}
             </div>
@@ -402,7 +442,10 @@ export default function CRMIntegrationPage() {
             <div className="space-y-3">
               {logsLoading ? (
                 Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="h-12 bg-wl-bg-elevated/50 rounded animate-pulse" />
+                  <div
+                    key={i}
+                    className="h-12 bg-wl-bg-elevated/50 rounded animate-pulse"
+                  />
                 ))
               ) : filteredLogs.length === 0 ? (
                 <p className="text-center text-gray-400">No sync logs</p>
@@ -411,12 +454,12 @@ export default function CRMIntegrationPage() {
                   <div
                     key={log.id}
                     className={cn(
-                      'p-3 rounded-md border',
-                      log.status === 'success'
-                        ? 'border-emerald-400/20 bg-emerald-900/30'
-                        : log.status === 'failed'
-                        ? 'border-red-400/20 bg-red-900/30'
-                        : 'border-amber-400/20 bg-amber-900/30'
+                      "p-3 rounded-md border",
+                      log.status === "success"
+                        ? "border-emerald-400/20 bg-emerald-900/30"
+                        : log.status === "failed"
+                          ? "border-red-400/20 bg-red-900/30"
+                          : "border-amber-400/20 bg-amber-900/30",
                     )}
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -424,11 +467,11 @@ export default function CRMIntegrationPage() {
                         <div className="flex items-center gap-2 mb-1">
                           <Badge
                             variant={
-                              log.status === 'success'
-                                ? 'success'
-                                : log.status === 'failed'
-                                ? 'danger'
-                                : 'warning'
+                              log.status === "success"
+                                ? "success"
+                                : log.status === "failed"
+                                  ? "danger"
+                                  : "warning"
                             }
                           >
                             {log.status}

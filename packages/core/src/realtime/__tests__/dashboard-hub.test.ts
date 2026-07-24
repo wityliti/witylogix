@@ -240,9 +240,7 @@ describe("DashboardHub", () => {
     it("should register connection handler that listens for heartbeat", () => {
       // Verify the socket server has a connection handler registered
       const onCalls = mockSocketServer.on.mock.calls;
-      const connectionCall = onCalls.find(
-        (call) => call[0] === "connection"
-      );
+      const connectionCall = onCalls.find((call) => call[0] === "connection");
       expect(connectionCall).toBeDefined();
     });
 

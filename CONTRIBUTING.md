@@ -24,12 +24,12 @@ There are many ways to help, regardless of your experience level:
 
 ### Prerequisites
 
-| Tool | Version | Purpose |
-|------|---------|---------|
-| Node.js | >= 20.0.0 | Runtime |
-| pnpm | 9.15 | Package manager |
-| Docker | Latest | PostgreSQL, Redis, and other services |
-| Git | Latest | Version control |
+| Tool    | Version   | Purpose                               |
+| ------- | --------- | ------------------------------------- |
+| Node.js | >= 20.0.0 | Runtime                               |
+| pnpm    | 9.15      | Package manager                       |
+| Docker  | Latest    | PostgreSQL, Redis, and other services |
+| Git     | Latest    | Version control                       |
 
 ### Getting Started
 
@@ -140,10 +140,10 @@ Always create new objects instead of mutating existing ones:
 
 ```typescript
 // Correct: return a new object
-const updated = { ...order, status: 'delivered' };
+const updated = { ...order, status: "delivered" };
 
 // Wrong: mutate in place
-order.status = 'delivered';
+order.status = "delivered";
 ```
 
 ### File Size Limits
@@ -173,10 +173,10 @@ Follow the TDD cycle for all new features and bug fixes:
 
 ### Test Frameworks
 
-| Type | Framework | Command |
-|------|-----------|---------|
-| Unit | Vitest | `pnpm test` |
-| E2E | Playwright | `pnpm test:e2e` |
+| Type | Framework  | Command         |
+| ---- | ---------- | --------------- |
+| Unit | Vitest     | `pnpm test`     |
+| E2E  | Playwright | `pnpm test:e2e` |
 
 ### Guidelines
 
@@ -198,16 +198,16 @@ We use [Conventional Commits](https://www.conventionalcommits.org/). Every commi
 
 ### Types
 
-| Type | When to Use |
-|------|-------------|
-| `feat` | A new feature |
-| `fix` | A bug fix |
+| Type       | When to Use                                             |
+| ---------- | ------------------------------------------------------- |
+| `feat`     | A new feature                                           |
+| `fix`      | A bug fix                                               |
 | `refactor` | Code change that neither fixes a bug nor adds a feature |
-| `docs` | Documentation only |
-| `test` | Adding or updating tests |
-| `chore` | Build process, dependencies, or tooling changes |
-| `perf` | Performance improvement |
-| `ci` | CI/CD configuration changes |
+| `docs`     | Documentation only                                      |
+| `test`     | Adding or updating tests                                |
+| `chore`    | Build process, dependencies, or tooling changes         |
+| `perf`     | Performance improvement                                 |
+| `ci`       | CI/CD configuration changes                             |
 
 ### Examples
 
@@ -245,14 +245,17 @@ Use the app or package name as the scope when the change is limited to one works
 
    ```markdown
    ## Summary
+
    - Brief description of changes
 
    ## Test Plan
+
    - [ ] Unit tests added/updated
    - [ ] E2E tests added/updated (if applicable)
    - [ ] Manual testing steps
 
    ## Related Issues
+
    Closes #<issue-number>
    ```
 

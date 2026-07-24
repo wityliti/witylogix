@@ -13,9 +13,15 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import { HOSRulesEngine, RuleEvaluator } from "../../../packages/core/src/compliance/hos-rules-engine-v2.js";
+import {
+  HOSRulesEngine,
+  RuleEvaluator,
+} from "../../../packages/core/src/compliance/hos-rules-engine-v2.js";
 import { HOSCalculator } from "../../../packages/core/src/compliance/hos-calculator.js";
-import type { LogEntry, RuleSet } from "../../../packages/core/src/compliance/hos-types.js";
+import type {
+  LogEntry,
+  RuleSet,
+} from "../../../packages/core/src/compliance/hos-types.js";
 import { DutyStatus } from "../../../packages/core/src/compliance/hos-types.js";
 
 describe("HOSRulesEngine", () => {
@@ -50,7 +56,7 @@ describe("HOSRulesEngine", () => {
 
       expect(result.isCompliant).toBe(false);
       const driving11Violation = result.violations.find(
-        (v) => v.violationType === "DRIVING_11"
+        (v) => v.violationType === "DRIVING_11",
       );
       expect(driving11Violation).toBeDefined();
       expect(driving11Violation?.severity).toBe("CRITICAL");
@@ -77,7 +83,7 @@ describe("HOSRulesEngine", () => {
       const result = engine.evaluate(logs, "US_PROPERTY");
 
       const driving11Violation = result.violations.find(
-        (v) => v.violationType === "DRIVING_11"
+        (v) => v.violationType === "DRIVING_11",
       );
       expect(driving11Violation).toBeUndefined();
     });
@@ -158,7 +164,7 @@ describe("HOSRulesEngine", () => {
 
       expect(result.isCompliant).toBe(false);
       const window14Violation = result.violations.find(
-        (v) => v.violationType === "ON_DUTY_14"
+        (v) => v.violationType === "ON_DUTY_14",
       );
       expect(window14Violation).toBeDefined();
       expect(window14Violation?.severity).toBe("CRITICAL");
@@ -214,7 +220,7 @@ describe("HOSRulesEngine", () => {
 
       // Total on-duty: 8 + 2 = 10 hours (within 14h window)
       const window14Violation = result.violations.find(
-        (v) => v.violationType === "ON_DUTY_14"
+        (v) => v.violationType === "ON_DUTY_14",
       );
       expect(window14Violation).toBeUndefined();
     });
@@ -242,7 +248,7 @@ describe("HOSRulesEngine", () => {
       const result = engine.evaluate(logs, "US_PROPERTY");
 
       const breakViolation = result.violations.find(
-        (v) => v.violationType === "BREAK_30MIN"
+        (v) => v.violationType === "BREAK_30MIN",
       );
       expect(breakViolation).toBeDefined();
       expect(breakViolation?.severity).toBe("CRITICAL");
@@ -297,7 +303,7 @@ describe("HOSRulesEngine", () => {
       const result = engine.evaluate(logs, "US_PROPERTY");
 
       const breakViolation = result.violations.find(
-        (v) => v.violationType === "BREAK_30MIN"
+        (v) => v.violationType === "BREAK_30MIN",
       );
       expect(breakViolation).toBeUndefined();
     });
@@ -316,7 +322,7 @@ describe("HOSRulesEngine", () => {
           vehicleId: "vehicle_1",
           startTime: new Date(sevenDaysAgo.getTime() + i * 24 * 60 * 60 * 1000),
           endTime: new Date(
-            sevenDaysAgo.getTime() + (i + 1) * 24 * 60 * 60 * 1000
+            sevenDaysAgo.getTime() + (i + 1) * 24 * 60 * 60 * 1000,
           ),
           dutyStatus: DutyStatus.DRIVING,
           hours: 9.5, // 9.5 * 8 = 76 hours > 70 hour limit
@@ -331,7 +337,7 @@ describe("HOSRulesEngine", () => {
 
       expect(result.isCompliant).toBe(false);
       const cycleViolation = result.violations.find(
-        (v) => v.violationType === "CYCLE_70_HOUR"
+        (v) => v.violationType === "CYCLE_70_HOUR",
       );
       expect(cycleViolation).toBeDefined();
     });
@@ -348,7 +354,7 @@ describe("HOSRulesEngine", () => {
           vehicleId: "vehicle_1",
           startTime: new Date(eightDaysAgo.getTime() + i * 24 * 60 * 60 * 1000),
           endTime: new Date(
-            eightDaysAgo.getTime() + (i + 1) * 24 * 60 * 60 * 1000
+            eightDaysAgo.getTime() + (i + 1) * 24 * 60 * 60 * 1000,
           ),
           dutyStatus: DutyStatus.DRIVING,
           hours: 10, // 10 * 7 = 70 hours
@@ -364,7 +370,7 @@ describe("HOSRulesEngine", () => {
       const cycleViolation = result.violations.find(
         (v) =>
           v.violationType === "CYCLE_70_HOUR" ||
-          v.violationType === "CYCLE_70_HOUR_8DAY"
+          v.violationType === "CYCLE_70_HOUR_8DAY",
       );
       expect(cycleViolation).toBeUndefined();
     });
@@ -581,7 +587,7 @@ describe("HOSRulesEngine", () => {
 
       expect(result.isCompliant).toBe(false);
       const driving13Violation = result.violations.find(
-        (v) => v.violationType === "DRIVING_11"
+        (v) => v.violationType === "DRIVING_11",
       );
       expect(driving13Violation).toBeDefined();
     });

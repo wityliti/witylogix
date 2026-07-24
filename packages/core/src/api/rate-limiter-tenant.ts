@@ -90,11 +90,9 @@ export class TenantRateLimiter {
   /**
    * Set custom rate limit for specific endpoint.
    */
-  setEndpointLimit(
-    endpoint: string,
-    config: Partial<RateLimitConfig>
-  ): void {
-    const existing = this.endpointOverrides.get(endpoint) || this.planLimits.PRO;
+  setEndpointLimit(endpoint: string, config: Partial<RateLimitConfig>): void {
+    const existing =
+      this.endpointOverrides.get(endpoint) || this.planLimits.PRO;
     this.endpointOverrides.set(endpoint, { ...existing, ...config });
   }
 
@@ -104,14 +102,20 @@ export class TenantRateLimiter {
   async checkLimit(
     tenantId: string,
     planTier: "FREE" | "PRO" | "ENTERPRISE",
-    endpoint: string = "default"
+    endpoint: string = "default",
   ): Promise<RateLimitResult> {
     const now = Date.now();
     const key = `${tenantId}:${endpoint}`;
 
     // Get applicable limits
-    const config = this.endpointOverrides.get(endpoint) || this.planLimits[planTier];
-    const { windowMs, maxRequests, burstMultiplier = 1, burstWindowMs = 0 } = config;
+    const config =
+      this.endpointOverrides.get(endpoint) || this.planLimits[planTier];
+    const {
+      windowMs,
+      maxRequests,
+      burstMultiplier = 1,
+      burstWindowMs = 0,
+    } = config;
 
     // Get or create entry
     let entry = this.storage.get(key);
@@ -178,12 +182,13 @@ export class TenantRateLimiter {
   async getStatus(
     tenantId: string,
     planTier: "FREE" | "PRO" | "ENTERPRISE",
-    endpoint: string = "default"
+    endpoint: string = "default",
   ): Promise<RateLimitResult> {
     const now = Date.now();
     const key = `${tenantId}:${endpoint}`;
 
-    const config = this.endpointOverrides.get(endpoint) || this.planLimits[planTier];
+    const config =
+      this.endpointOverrides.get(endpoint) || this.planLimits[planTier];
     const { windowMs, maxRequests } = config;
 
     const entry = this.storage.get(key);
@@ -218,7 +223,7 @@ export class TenantRateLimiter {
    */
   resetTenant(tenantId: string): void {
     const keysToDelete = Array.from(this.storage.keys()).filter((key) =>
-      key.startsWith(`${tenantId}:`)
+      key.startsWith(`${tenantId}:`),
     );
     keysToDelete.forEach((key) => this.storage.delete(key));
   }

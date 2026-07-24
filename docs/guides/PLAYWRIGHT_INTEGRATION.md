@@ -54,6 +54,7 @@ PROJECT_ROOT/
 ## Test Coverage
 
 ### 1. Authentication (9 tests)
+
 ```typescript
 ✓ Login with valid credentials
 ✓ Login with invalid email
@@ -67,6 +68,7 @@ PROJECT_ROOT/
 ```
 
 ### 2. Order Lifecycle (7 tests)
+
 ```typescript
 ✓ Create order with all fields
 ✓ Create order with minimal fields
@@ -79,6 +81,7 @@ PROJECT_ROOT/
 ```
 
 ### 3. Driver Management (9 tests)
+
 ```typescript
 ✓ View driver list with pagination
 ✓ Filter drivers by availability
@@ -92,6 +95,7 @@ PROJECT_ROOT/
 ```
 
 ### 4. Order Tracking (7 tests)
+
 ```typescript
 ✓ Navigate to tracking page
 ✓ Search shipment by tracking ID
@@ -105,6 +109,7 @@ PROJECT_ROOT/
 ```
 
 ### 5. Webhook Management (9 tests)
+
 ```typescript
 ✓ Navigate to webhook page
 ✓ Display webhook list
@@ -175,7 +180,7 @@ All UI interactions abstracted into reusable page objects:
 // tests/e2e/pages/login.page.ts
 const loginPage = new LoginPage(page);
 await loginPage.navigate();
-await loginPage.fillCredentials('admin@test.com', 'password');
+await loginPage.fillCredentials("admin@test.com", "password");
 await loginPage.submit();
 ```
 
@@ -184,11 +189,11 @@ await loginPage.submit();
 Pre-configured fixtures for different user roles:
 
 ```typescript
-test('should show admin features', async ({ adminPage }) => {
+test("should show admin features", async ({ adminPage }) => {
   // adminPage is pre-authenticated as admin
 });
 
-test('should show dispatcher features', async ({ dispatcherPage }) => {
+test("should show dispatcher features", async ({ dispatcherPage }) => {
   // dispatcherPage is pre-authenticated as dispatcher
 });
 ```
@@ -199,7 +204,7 @@ Clear, descriptive assertions with timeout support:
 
 ```typescript
 await expect(loginPage.submitButton).toBeEnabled();
-await expect(page).toHaveURL('/dashboard');
+await expect(page).toHaveURL("/dashboard");
 await expect(ordersTable).toBeVisible({ timeout: 10000 });
 ```
 
@@ -252,11 +257,13 @@ test.afterEach(async ({ page }) => {
 ## Package.json Updates
 
 Added to devDependencies:
+
 ```json
 "@playwright/test": "^1.40.0"
 ```
 
 Added scripts:
+
 ```json
 "test:e2e": "playwright test",
 "test:e2e:ui": "playwright test --ui",
@@ -269,16 +276,16 @@ Added scripts:
 Comprehensive set of helper functions in `tests/e2e/utils/helpers.ts`:
 
 ```typescript
-generateTrackingId()        // Create unique tracking IDs
-generateTestEmail()         // Create unique test emails
-generatePhoneNumber()       // Generate US phone numbers
-generateAddress()           // Generate US addresses
-getTableData()             // Extract table rows
-confirmModal()             // Handle dialogs
-getErrorMessage()          // Get error text
-waitForNetworkIdle()       // Wait for network completion
-clickWithRetry()           // Click with retry logic
-fillInputField()           // Fill input safely
+generateTrackingId(); // Create unique tracking IDs
+generateTestEmail(); // Create unique test emails
+generatePhoneNumber(); // Generate US phone numbers
+generateAddress(); // Generate US addresses
+getTableData(); // Extract table rows
+confirmModal(); // Handle dialogs
+getErrorMessage(); // Get error text
+waitForNetworkIdle(); // Wait for network completion
+clickWithRetry(); // Click with retry logic
+fillInputField(); // Fill input safely
 // ... and 10+ more
 ```
 
@@ -314,36 +321,43 @@ jobs:
 ## Running Tests
 
 ### All Tests
+
 ```bash
 pnpm test:e2e
 ```
 
 ### Single File
+
 ```bash
 npx playwright test tests/e2e/specs/auth.spec.ts
 ```
 
 ### By Pattern
+
 ```bash
 npx playwright test -g "login with valid credentials"
 ```
 
 ### Specific Project
+
 ```bash
 npx playwright test --project=chromium
 ```
 
 ### With UI
+
 ```bash
 pnpm test:e2e:ui
 ```
 
 ### Headed Mode
+
 ```bash
 pnpm test:e2e:headed
 ```
 
 ### Debug Mode
+
 ```bash
 pnpm test:e2e:debug
 ```
@@ -351,19 +365,23 @@ pnpm test:e2e:debug
 ## Debugging
 
 ### View HTML Report
+
 ```bash
 npx playwright show-report tests/e2e/results/html
 ```
 
 ### View Trace
+
 ```bash
 npx playwright show-trace tests/e2e/results/trace.zip
 ```
 
 ### Screenshots
+
 Automatic failure screenshots saved to `tests/e2e/results/`
 
 ### Videos
+
 Video recordings retained on failure for debugging
 
 ## Best Practices Implemented
@@ -400,7 +418,9 @@ Video recordings retained on failure for debugging
 ## Documentation Files
 
 ### tests/e2e/README.md
+
 Comprehensive documentation with:
+
 - Setup instructions
 - Running tests
 - Test structure
@@ -412,7 +432,9 @@ Comprehensive documentation with:
 - Adding new tests
 
 ### tests/e2e/SETUP.md
+
 Quick start guide with:
+
 - 4-step setup
 - File structure
 - Test categories

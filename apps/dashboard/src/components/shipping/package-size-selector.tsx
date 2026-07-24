@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { forwardRef, useState, type HTMLAttributes } from 'react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Package, Box } from 'lucide-react';
+import { forwardRef, useState, type HTMLAttributes } from "react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Package, Box } from "lucide-react";
 
 interface PackageDimensions {
   length: number;
@@ -20,9 +20,12 @@ interface PackagePreset {
   icon?: React.ReactNode;
 }
 
-type UnitSystem = 'imperial' | 'metric';
+type UnitSystem = "imperial" | "metric";
 
-interface PackageSizeSelectorProps extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
+interface PackageSizeSelectorProps extends Omit<
+  HTMLAttributes<HTMLDivElement>,
+  "onChange"
+> {
   /** Current package dimensions */
   value: PackageDimensions;
   /** Callback when dimensions change */
@@ -35,28 +38,28 @@ interface PackageSizeSelectorProps extends Omit<HTMLAttributes<HTMLDivElement>, 
 
 const defaultPresets: PackagePreset[] = [
   {
-    id: 'letter',
-    name: 'Letter/Envelope',
+    id: "letter",
+    name: "Letter/Envelope",
     dimensions: { length: 11.5, width: 8.5, height: 0.25, weight: 0.1 },
-    icon: '📮',
+    icon: "📮",
   },
   {
-    id: 'small-box',
-    name: 'Small Box',
+    id: "small-box",
+    name: "Small Box",
     dimensions: { length: 8, width: 6, height: 4, weight: 1 },
-    icon: '📦',
+    icon: "📦",
   },
   {
-    id: 'medium-box',
-    name: 'Medium Box',
+    id: "medium-box",
+    name: "Medium Box",
     dimensions: { length: 12, width: 9, height: 8, weight: 3 },
-    icon: '📫',
+    icon: "📫",
   },
   {
-    id: 'large-box',
-    name: 'Large Box',
+    id: "large-box",
+    name: "Large Box",
     dimensions: { length: 18, width: 14, height: 12, weight: 5 },
-    icon: '📦',
+    icon: "📦",
   },
 ];
 
@@ -75,17 +78,20 @@ const defaultPresets: PackagePreset[] = [
  * />
  * ```
  */
-const PackageSizeSelector = forwardRef<HTMLDivElement, PackageSizeSelectorProps>(
+const PackageSizeSelector = forwardRef<
+  HTMLDivElement,
+  PackageSizeSelectorProps
+>(
   (
     {
       value,
       onChange,
       presets = defaultPresets,
-      defaultUnits = 'imperial',
+      defaultUnits = "imperial",
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [isCustom, setIsCustom] = useState(false);
     const [units, setUnits] = useState<UnitSystem>(defaultUnits);
@@ -97,7 +103,7 @@ const PackageSizeSelector = forwardRef<HTMLDivElement, PackageSizeSelectorProps>
 
     const handleDimensionChange = (
       key: keyof PackageDimensions,
-      newValue: string
+      newValue: string,
     ) => {
       const numValue = parseFloat(newValue) || 0;
       onChange({
@@ -107,20 +113,16 @@ const PackageSizeSelector = forwardRef<HTMLDivElement, PackageSizeSelectorProps>
     };
 
     const toggleUnits = () => {
-      setUnits(units === 'imperial' ? 'metric' : 'imperial');
+      setUnits(units === "imperial" ? "metric" : "imperial");
     };
 
-    const lengthLabel = units === 'imperial' ? 'Length (in)' : 'Length (cm)';
-    const widthLabel = units === 'imperial' ? 'Width (in)' : 'Width (cm)';
-    const heightLabel = units === 'imperial' ? 'Height (in)' : 'Height (cm)';
-    const weightLabel = units === 'imperial' ? 'Weight (lb)' : 'Weight (kg)';
+    const lengthLabel = units === "imperial" ? "Length (in)" : "Length (cm)";
+    const widthLabel = units === "imperial" ? "Width (in)" : "Width (cm)";
+    const heightLabel = units === "imperial" ? "Height (in)" : "Height (cm)";
+    const weightLabel = units === "imperial" ? "Weight (lb)" : "Weight (kg)";
 
     return (
-      <div
-        ref={ref}
-        className={cn('space-y-4', className)}
-        {...props}
-      >
+      <div ref={ref} className={cn("space-y-4", className)} {...props}>
         {/* Presets */}
         <div>
           <h4 className="text-sm font-semibold text-wl-text-primary mb-3">
@@ -132,15 +134,15 @@ const PackageSizeSelector = forwardRef<HTMLDivElement, PackageSizeSelectorProps>
                 key={preset.id}
                 onClick={() => handlePresetSelect(preset)}
                 className={cn(
-                  'relative p-3 rounded-lg border transition-all duration-200',
-                  'flex flex-col items-center justify-center gap-2',
-                  'cursor-pointer',
+                  "relative p-3 rounded-lg border transition-all duration-200",
+                  "flex flex-col items-center justify-center gap-2",
+                  "cursor-pointer",
                   !isCustom &&
                     value.length === preset.dimensions.length &&
                     value.width === preset.dimensions.width &&
                     value.height === preset.dimensions.height
-                    ? 'border-wl-primary-500 bg-wl-primary-500/8 ring-1 ring-wl-primary-500'
-                    : 'border-wl-border-subtle bg-wl-bg-elevated hover:border-wl-border-default'
+                    ? "border-wl-primary-500 bg-wl-primary-500/8 ring-1 ring-wl-primary-500"
+                    : "border-wl-border-subtle bg-wl-bg-elevated hover:border-wl-border-default",
                 )}
               >
                 <span className="text-2xl">{preset.icon}</span>
@@ -148,7 +150,8 @@ const PackageSizeSelector = forwardRef<HTMLDivElement, PackageSizeSelectorProps>
                   {preset.name}
                 </span>
                 <span className="text-xs text-wl-text-tertiary">
-                  {preset.dimensions.length}×{preset.dimensions.width}×{preset.dimensions.height}
+                  {preset.dimensions.length}×{preset.dimensions.width}×
+                  {preset.dimensions.height}
                 </span>
               </button>
             ))}
@@ -157,12 +160,12 @@ const PackageSizeSelector = forwardRef<HTMLDivElement, PackageSizeSelectorProps>
             <button
               onClick={() => setIsCustom(true)}
               className={cn(
-                'p-3 rounded-lg border transition-all duration-200',
-                'flex flex-col items-center justify-center gap-2',
-                'cursor-pointer',
+                "p-3 rounded-lg border transition-all duration-200",
+                "flex flex-col items-center justify-center gap-2",
+                "cursor-pointer",
                 isCustom
-                  ? 'border-wl-primary-500 bg-wl-primary-500/8 ring-1 ring-wl-primary-500'
-                  : 'border-wl-border-subtle bg-wl-bg-elevated hover:border-wl-border-default'
+                  ? "border-wl-primary-500 bg-wl-primary-500/8 ring-1 ring-wl-primary-500"
+                  : "border-wl-border-subtle bg-wl-bg-elevated hover:border-wl-border-default",
               )}
             >
               <Box size={24} className="text-wl-text-secondary" />
@@ -184,7 +187,9 @@ const PackageSizeSelector = forwardRef<HTMLDivElement, PackageSizeSelectorProps>
                 onClick={toggleUnits}
                 className="text-xs"
               >
-                {units === 'imperial' ? 'Switch to Metric' : 'Switch to Imperial'}
+                {units === "imperial"
+                  ? "Switch to Metric"
+                  : "Switch to Imperial"}
               </Button>
             </div>
 
@@ -200,7 +205,7 @@ const PackageSizeSelector = forwardRef<HTMLDivElement, PackageSizeSelectorProps>
                   step="0.1"
                   value={value.length}
                   onChange={(e) =>
-                    handleDimensionChange('length', e.target.value)
+                    handleDimensionChange("length", e.target.value)
                   }
                   placeholder="Length"
                   className="text-sm"
@@ -217,7 +222,7 @@ const PackageSizeSelector = forwardRef<HTMLDivElement, PackageSizeSelectorProps>
                   step="0.1"
                   value={value.width}
                   onChange={(e) =>
-                    handleDimensionChange('width', e.target.value)
+                    handleDimensionChange("width", e.target.value)
                   }
                   placeholder="Width"
                   className="text-sm"
@@ -234,7 +239,7 @@ const PackageSizeSelector = forwardRef<HTMLDivElement, PackageSizeSelectorProps>
                   step="0.1"
                   value={value.height}
                   onChange={(e) =>
-                    handleDimensionChange('height', e.target.value)
+                    handleDimensionChange("height", e.target.value)
                   }
                   placeholder="Height"
                   className="text-sm"
@@ -251,7 +256,7 @@ const PackageSizeSelector = forwardRef<HTMLDivElement, PackageSizeSelectorProps>
                   step="0.1"
                   value={value.weight}
                   onChange={(e) =>
-                    handleDimensionChange('weight', e.target.value)
+                    handleDimensionChange("weight", e.target.value)
                   }
                   placeholder="Weight"
                   className="text-sm"
@@ -262,19 +267,19 @@ const PackageSizeSelector = forwardRef<HTMLDivElement, PackageSizeSelectorProps>
             {/* Summary */}
             <div className="pt-3 border-t border-wl-border-subtle">
               <p className="text-xs text-wl-text-secondary">
-                {value.length}×{value.width}×{value.height}{' '}
-                {units === 'imperial' ? 'in' : 'cm'}, {value.weight}{' '}
-                {units === 'imperial' ? 'lb' : 'kg'}
+                {value.length}×{value.width}×{value.height}{" "}
+                {units === "imperial" ? "in" : "cm"}, {value.weight}{" "}
+                {units === "imperial" ? "lb" : "kg"}
               </p>
             </div>
           </div>
         )}
       </div>
     );
-  }
+  },
 );
 
-PackageSizeSelector.displayName = 'PackageSizeSelector';
+PackageSizeSelector.displayName = "PackageSizeSelector";
 
 export { PackageSizeSelector };
 export type { PackageDimensions, PackagePreset, UnitSystem };

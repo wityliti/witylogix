@@ -128,7 +128,10 @@ export class FirebasePushProvider implements NotificationProvider {
    */
   async getStatus(): Promise<ProviderStatus> {
     // Cache status for 60 seconds
-    if (this.lastStatusCheck && Date.now() - this.lastStatusCheck.timestamp < 60000) {
+    if (
+      this.lastStatusCheck &&
+      Date.now() - this.lastStatusCheck.timestamp < 60000
+    ) {
       return this.lastStatusCheck.status;
     }
 
@@ -165,7 +168,9 @@ export class FirebasePushProvider implements NotificationProvider {
    * Build FCM-specific message payload.
    * Maps NotificationMessage to FCM message format with notification + data payloads.
    */
-  private buildFCMPayload(message: NotificationMessage): Record<string, unknown> {
+  private buildFCMPayload(
+    message: NotificationMessage,
+  ): Record<string, unknown> {
     return {
       message: {
         token: message.to,
@@ -230,7 +235,7 @@ export class FirebasePushProvider implements NotificationProvider {
         throw new Error(`Token exchange failed: ${error}`);
       }
 
-      const tokenData = await tokenResponse.json() as {
+      const tokenData = (await tokenResponse.json()) as {
         access_token: string;
         expires_in: number;
       };
@@ -273,12 +278,14 @@ export class FirebasePushProvider implements NotificationProvider {
     };
 
     // Encode header and payload as base64
-    const headerEncoded = Buffer.from(JSON.stringify(header)).toString("base64")
+    const headerEncoded = Buffer.from(JSON.stringify(header))
+      .toString("base64")
       .replace(/\+/g, "-")
       .replace(/\//g, "_")
       .replace(/=/g, "");
 
-    const payloadEncoded = Buffer.from(JSON.stringify(payload)).toString("base64")
+    const payloadEncoded = Buffer.from(JSON.stringify(payload))
+      .toString("base64")
       .replace(/\+/g, "-")
       .replace(/\//g, "_")
       .replace(/=/g, "");
@@ -288,7 +295,8 @@ export class FirebasePushProvider implements NotificationProvider {
     // Sign with RS256
     const signer = createSign("RSA-SHA256");
     signer.update(message);
-    const signature = signer.sign(this.credentials.privateKey, "base64")
+    const signature = signer
+      .sign(this.credentials.privateKey, "base64")
       .replace(/\+/g, "-")
       .replace(/\//g, "_")
       .replace(/=/g, "");
@@ -338,7 +346,7 @@ export class FirebasePushProvider implements NotificationProvider {
         );
       }
 
-      const errorData = await response.json() as {
+      const errorData = (await response.json()) as {
         error?: {
           code: number;
           message: string;
@@ -354,7 +362,7 @@ export class FirebasePushProvider implements NotificationProvider {
       );
     }
 
-    const data = await response.json() as { name?: string };
+    const data = (await response.json()) as { name?: string };
     return data;
   }
 

@@ -87,7 +87,7 @@ const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
 
 function lookupCityCoords(
   city: string,
-  _country?: string | null
+  _country?: string | null,
 ): { lat: number; lng: number } | null {
   if (!city) return null;
   const exact = CITY_COORDS[city];
@@ -165,7 +165,12 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
 
       const totalSent = await request.tenantDb.campaign.aggregate({
         where: { shopId: request.shopId },
-        _sum: { sentCount: true, deliveredCount: true, openedCount: true, clickedCount: true },
+        _sum: {
+          sentCount: true,
+          deliveredCount: true,
+          openedCount: true,
+          clickedCount: true,
+        },
       });
 
       return {
@@ -178,109 +183,106 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
           clickedCount: totalSent._sum.clickedCount ?? 0,
         },
       };
-    }
+    },
   );
 
   // ── LIST CAMPAIGNS ──────────────────────────────────────────────────────────
 
-  fastify.get(
-    "/",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        const {
-          page = 1,
-          limit = 20,
-          type,
-          status,
-          search,
-        } = request.query as {
-          page?: number;
-          limit?: number;
-          type?: string;
-          status?: string;
-          search?: string;
-        };
+  fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const {
+        page = 1,
+        limit = 20,
+        type,
+        status,
+        search,
+      } = request.query as {
+        page?: number;
+        limit?: number;
+        type?: string;
+        status?: string;
+        search?: string;
+      };
 
-        const pageNum = Math.max(1, parseInt(String(page)) || 1);
-        const pageSize = Math.min(100, Math.max(1, parseInt(String(limit)) || 20));
+      const pageNum = Math.max(1, parseInt(String(page)) || 1);
+      const pageSize = Math.min(
+        100,
+        Math.max(1, parseInt(String(limit)) || 20),
+      );
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const where: any = {
-          shopId: request.shopId,
-          ...(type ? { type } : {}),
-          ...(status ? { status } : {}),
-          ...(search ? { name: { contains: search, mode: "insensitive" } } : {}),
-        };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const where: any = {
+        shopId: request.shopId,
+        ...(type ? { type } : {}),
+        ...(status ? { status } : {}),
+        ...(search ? { name: { contains: search, mode: "insensitive" } } : {}),
+      };
 
-        const [total, items] = await Promise.all([
-          request.tenantDb.campaign.count({ where }),
-          request.tenantDb.campaign.findMany({
-            where,
-            orderBy: { createdAt: "desc" },
-            skip: (pageNum - 1) * pageSize,
-            take: pageSize,
-            select: {
-              id: true,
-              name: true,
-              type: true,
-              status: true,
-              sentCount: true,
-              deliveredCount: true,
-              openedCount: true,
-              clickedCount: true,
-              failedCount: true,
-              unsubscribedCount: true,
-              scheduledAt: true,
-              startedAt: true,
-              completedAt: true,
-              createdAt: true,
-              updatedAt: true,
-            },
-          }),
-        ]);
-
-        return {
-          data: items,
-          pagination: {
-            page: pageNum,
-            limit: pageSize,
-            total,
-            pages: Math.ceil(total / pageSize),
+      const [total, items] = await Promise.all([
+        request.tenantDb.campaign.count({ where }),
+        request.tenantDb.campaign.findMany({
+          where,
+          orderBy: { createdAt: "desc" },
+          skip: (pageNum - 1) * pageSize,
+          take: pageSize,
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            status: true,
+            sentCount: true,
+            deliveredCount: true,
+            openedCount: true,
+            clickedCount: true,
+            failedCount: true,
+            unsubscribedCount: true,
+            scheduledAt: true,
+            startedAt: true,
+            completedAt: true,
+            createdAt: true,
+            updatedAt: true,
           },
-        };
-      } catch (error) {
-        fastify.log.error({ err: error }, "Failed to list campaigns");
-        return reply.code(500).send({ error: "Failed to list campaigns" });
-      }
+        }),
+      ]);
+
+      return {
+        data: items,
+        pagination: {
+          page: pageNum,
+          limit: pageSize,
+          total,
+          pages: Math.ceil(total / pageSize),
+        },
+      };
+    } catch (error) {
+      fastify.log.error({ err: error }, "Failed to list campaigns");
+      return reply.code(500).send({ error: "Failed to list campaigns" });
     }
-  );
+  });
 
   // ── GET SINGLE CAMPAIGN ─────────────────────────────────────────────────────
 
-  fastify.get(
-    "/:id",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        const { id } = request.params as { id: string };
+  fastify.get("/:id", async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { id } = request.params as { id: string };
 
-        const campaign = await request.tenantDb.campaign.findFirst({
-          where: { id, shopId: request.shopId },
-        });
+      const campaign = await request.tenantDb.campaign.findFirst({
+        where: { id, shopId: request.shopId },
+      });
 
-        if (!campaign) {
-          throw new NotFoundError("Campaign", id);
-        }
-
-        return { data: campaign };
-      } catch (error) {
-        if (error instanceof NotFoundError) {
-          return reply.code(404).send({ error: error.message });
-        }
-        fastify.log.error({ err: error }, "Failed to get campaign");
-        return reply.code(500).send({ error: "Failed to get campaign" });
+      if (!campaign) {
+        throw new NotFoundError("Campaign", id);
       }
+
+      return { data: campaign };
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return reply.code(404).send({ error: error.message });
+      }
+      fastify.log.error({ err: error }, "Failed to get campaign");
+      return reply.code(500).send({ error: "Failed to get campaign" });
     }
-  );
+  });
 
   // ── CAMPAIGN GEO (recipient/customer city distribution) ────────────────────
 
@@ -344,7 +346,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to get campaign geo");
         return reply.code(500).send({ error: "Failed to get campaign geo" });
       }
-    }
+    },
   );
 
   // ── CREATE CAMPAIGN ─────────────────────────────────────────────────────────
@@ -402,7 +404,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
 
         if (!["DRAFT", "SCHEDULED"].includes(existing.status)) {
           throw new ConflictError(
-            `Cannot update campaign in '${existing.status}' status`
+            `Cannot update campaign in '${existing.status}' status`,
           );
         }
 
@@ -443,7 +445,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to update campaign");
         return reply.code(500).send({ error: "Failed to update campaign" });
       }
-    }
+    },
   );
 
   // ── SEND CAMPAIGN ───────────────────────────────────────────────────────────
@@ -463,7 +465,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
 
         if (!["DRAFT", "SCHEDULED"].includes(existing.status)) {
           throw new ConflictError(
-            `Cannot send campaign in '${existing.status}' status`
+            `Cannot send campaign in '${existing.status}' status`,
           );
         }
 
@@ -472,7 +474,10 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
           data: { status: "SENDING" as any, startedAt: new Date() },
         });
 
-        fastify.log.info({ campaignId: id, shopId: request.shopId }, "Campaign send triggered");
+        fastify.log.info(
+          { campaignId: id, shopId: request.shopId },
+          "Campaign send triggered",
+        );
         return campaign;
       } catch (error) {
         if (error instanceof NotFoundError)
@@ -482,7 +487,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to send campaign");
         return reply.code(500).send({ error: "Failed to send campaign" });
       }
-    }
+    },
   );
 
   // ── PAUSE CAMPAIGN ──────────────────────────────────────────────────────────
@@ -502,7 +507,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
 
         if (!["SENDING", "SCHEDULED"].includes(existing.status)) {
           throw new ConflictError(
-            `Cannot pause campaign in '${existing.status}' status`
+            `Cannot pause campaign in '${existing.status}' status`,
           );
         }
 
@@ -520,7 +525,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to pause campaign");
         return reply.code(500).send({ error: "Failed to pause campaign" });
       }
-    }
+    },
   );
 
   // ── RESUME CAMPAIGN ─────────────────────────────────────────────────────────
@@ -540,7 +545,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
 
         if (existing.status !== "PAUSED") {
           throw new ConflictError(
-            `Cannot resume campaign in '${existing.status}' status`
+            `Cannot resume campaign in '${existing.status}' status`,
           );
         }
 
@@ -558,7 +563,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to resume campaign");
         return reply.code(500).send({ error: "Failed to resume campaign" });
       }
-    }
+    },
   );
 
   // ── DELETE CAMPAIGN ─────────────────────────────────────────────────────────
@@ -578,7 +583,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
 
         if (existing.status !== "DRAFT") {
           throw new ConflictError(
-            `Cannot delete campaign in '${existing.status}' status`
+            `Cannot delete campaign in '${existing.status}' status`,
           );
         }
 
@@ -593,7 +598,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to delete campaign");
         return reply.code(500).send({ error: "Failed to delete campaign" });
       }
-    }
+    },
   );
 
   // ── GET CAMPAIGN EVENTS ─────────────────────────────────────────────────────
@@ -603,14 +608,21 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const { id } = request.params as { id: string };
-        const { page = 1, limit = 50, eventType } = request.query as {
+        const {
+          page = 1,
+          limit = 50,
+          eventType,
+        } = request.query as {
           page?: number;
           limit?: number;
           eventType?: string;
         };
 
         const pageNum = Math.max(1, parseInt(String(page)) || 1);
-        const pageSize = Math.min(200, Math.max(1, parseInt(String(limit)) || 50));
+        const pageSize = Math.min(
+          200,
+          Math.max(1, parseInt(String(limit)) || 50),
+        );
 
         const campaign = await request.tenantDb.campaign.findFirst({
           where: { id, shopId: request.shopId },
@@ -649,7 +661,7 @@ async function campaignsRoutes(fastify: FastifyInstance): Promise<void> {
         fastify.log.error({ err: error }, "Failed to get campaign events");
         return reply.code(500).send({ error: "Failed to get campaign events" });
       }
-    }
+    },
   );
 }
 

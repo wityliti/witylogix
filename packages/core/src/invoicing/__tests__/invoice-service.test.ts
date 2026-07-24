@@ -3,21 +3,21 @@
  * Comprehensive tests for invoice creation, finalization, payment, and reporting
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { InvoiceService } from '../invoice-service.js';
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { InvoiceService } from "../invoice-service.js";
 import {
   InvoiceNotFoundError,
   InvalidInvoiceStateError,
   RateCardNotFoundError,
-} from '../types.js';
-import type { RateCard, DeliveryForCosting } from '../types.js';
+} from "../types.js";
+import type { RateCard, DeliveryForCosting } from "../types.js";
 
 // ─── FIXTURES ────────────────────────────────────────────────────────
 
 const mockRateCard: RateCard = {
-  id: 'rc-1',
-  tenantId: 'tenant-1',
-  name: 'Standard',
+  id: "rc-1",
+  tenantId: "tenant-1",
+  name: "Standard",
   baseRate: 5.0,
   perKmRate: 1.0,
   perKgRate: 0.5,
@@ -39,7 +39,7 @@ const mockRateCard: RateCard = {
   updatedAt: new Date(),
 };
 
-describe('InvoiceService', () => {
+describe("InvoiceService", () => {
   let service: InvoiceService;
   let mockPrisma: any;
 
@@ -76,45 +76,47 @@ describe('InvoiceService', () => {
     service = new InvoiceService(mockPrisma);
   });
 
-  describe('createInvoice', () => {
-    it('should reject if no delivery or route IDs provided', async () => {
+  describe("createInvoice", () => {
+    it("should reject if no delivery or route IDs provided", async () => {
       await expect(
         service.createInvoice({
-          tenantId: 'tenant-1',
+          tenantId: "tenant-1",
         }),
-      ).rejects.toThrow('Must provide either deliveryIds, routeIds, or manualLineItems');
+      ).rejects.toThrow(
+        "Must provide either deliveryIds, routeIds, or manualLineItems",
+      );
     });
 
-    it('should throw if rate card not found', async () => {
+    it("should throw if rate card not found", async () => {
       mockPrisma.rateCard.findUnique.mockResolvedValue(null);
 
       await expect(
         service.createInvoice({
-          tenantId: 'tenant-1',
-          deliveryIds: ['delv-1'],
-          rateCardId: 'rc-missing',
+          tenantId: "tenant-1",
+          deliveryIds: ["delv-1"],
+          rateCardId: "rc-missing",
         }),
       ).rejects.toThrow(RateCardNotFoundError);
     });
 
-    it('should use default rate card when not specified', async () => {
+    it("should use default rate card when not specified", async () => {
       mockPrisma.rateCard.findFirst.mockResolvedValue(mockRateCard);
       mockPrisma.order.findUnique.mockResolvedValue({
-        id: 'delv-1',
+        id: "delv-1",
         totalWeight: 5,
         createdAt: new Date(),
         metadata: { distanceKm: 3 },
       });
       mockPrisma.invoice.create.mockResolvedValue({
-        id: 'inv-1',
-        tenantId: 'tenant-1',
-        invoiceNumber: 'DRAFT-TEMP',
-        status: 'DRAFT',
+        id: "inv-1",
+        tenantId: "tenant-1",
+        invoiceNumber: "DRAFT-TEMP",
+        status: "DRAFT",
         subtotal: 10,
         discountTotal: 0,
         taxTotal: 0,
         total: 10,
-        currency: 'USD',
+        currency: "USD",
         issuedAt: new Date(),
         dueAt: new Date(),
         lineItems: [],
@@ -124,37 +126,37 @@ describe('InvoiceService', () => {
       });
 
       const invoice = await service.createInvoice({
-        tenantId: 'tenant-1',
-        deliveryIds: ['delv-1'],
+        tenantId: "tenant-1",
+        deliveryIds: ["delv-1"],
       });
 
       expect(invoice).toBeDefined();
-      expect(invoice.status).toBe('draft');
-      expect(invoice.invoiceNumber).toBe('DRAFT-TEMP');
+      expect(invoice.status).toBe("draft");
+      expect(invoice.invoiceNumber).toBe("DRAFT-TEMP");
     });
 
-    it('should create invoice with line items', async () => {
+    it("should create invoice with line items", async () => {
       mockPrisma.rateCard.findFirst.mockResolvedValue(mockRateCard);
       mockPrisma.order.findUnique.mockResolvedValue({
-        id: 'delv-1',
+        id: "delv-1",
         totalWeight: 2,
         createdAt: new Date(),
         metadata: { distanceKm: 3 },
       });
 
       const mockCreatedInvoice = {
-        id: 'inv-1',
-        tenantId: 'tenant-1',
-        invoiceNumber: 'DRAFT-TEMP',
-        status: 'DRAFT',
+        id: "inv-1",
+        tenantId: "tenant-1",
+        invoiceNumber: "DRAFT-TEMP",
+        status: "DRAFT",
         subtotal: 10,
         discountTotal: 0,
         taxTotal: 0,
         total: 10,
-        currency: 'USD',
+        currency: "USD",
         issuedAt: new Date(),
         dueAt: new Date(),
-        lineItems: [{ id: 'li-1', description: 'Delivery', amount: 10 }],
+        lineItems: [{ id: "li-1", description: "Delivery", amount: 10 }],
         discounts: [],
         taxes: [],
         payments: [],
@@ -163,82 +165,94 @@ describe('InvoiceService', () => {
       mockPrisma.invoice.create.mockResolvedValue(mockCreatedInvoice);
 
       const invoice = await service.createInvoice({
-        tenantId: 'tenant-1',
-        deliveryIds: ['delv-1'],
+        tenantId: "tenant-1",
+        deliveryIds: ["delv-1"],
       });
 
       expect(mockPrisma.invoice.create).toHaveBeenCalled();
       expect(invoice.lineItems).toBeDefined();
     });
 
-    it('should apply discounts to invoice', async () => {
+    it("should apply discounts to invoice", async () => {
       mockPrisma.rateCard.findFirst.mockResolvedValue(mockRateCard);
       mockPrisma.order.findUnique.mockResolvedValue({
-        id: 'delv-1',
+        id: "delv-1",
         totalWeight: 2,
         createdAt: new Date(),
         metadata: { distanceKm: 3 },
       });
 
       mockPrisma.invoice.create.mockResolvedValue({
-        id: 'inv-1',
-        tenantId: 'tenant-1',
-        invoiceNumber: 'DRAFT-TEMP',
-        status: 'DRAFT',
+        id: "inv-1",
+        tenantId: "tenant-1",
+        invoiceNumber: "DRAFT-TEMP",
+        status: "DRAFT",
         subtotal: 10,
         discountTotal: 1, // 10% discount
         taxTotal: 0,
         total: 9,
-        currency: 'USD',
+        currency: "USD",
         issuedAt: new Date(),
         dueAt: new Date(),
         lineItems: [],
-        discounts: [{ id: 'disc-1', description: 'Volume Discount', type: 'PERCENTAGE', value: '10', amount: '1' }],
+        discounts: [
+          {
+            id: "disc-1",
+            description: "Volume Discount",
+            type: "PERCENTAGE",
+            value: "10",
+            amount: "1",
+          },
+        ],
         taxes: [],
         payments: [],
       });
 
       const invoice = await service.createInvoice({
-        tenantId: 'tenant-1',
-        deliveryIds: ['delv-1'],
-        discounts: [{ description: 'Volume Discount', type: 'percentage', value: 10 }],
+        tenantId: "tenant-1",
+        deliveryIds: ["delv-1"],
+        discounts: [
+          { description: "Volume Discount", type: "percentage", value: 10 },
+        ],
       });
 
       expect(invoice.discountTotal).toBe(1);
       expect(invoice.total).toBe(9);
     });
 
-    it('should apply taxes to invoice', async () => {
+    it("should apply taxes to invoice", async () => {
       mockPrisma.rateCard.findFirst.mockResolvedValue(mockRateCard);
       mockPrisma.order.findUnique.mockResolvedValue({
-        id: 'delv-1',
+        id: "delv-1",
         totalWeight: 2,
         createdAt: new Date(),
         metadata: { distanceKm: 3 },
       });
 
       mockPrisma.invoice.create.mockResolvedValue({
-        id: 'inv-1',
-        tenantId: 'tenant-1',
-        invoiceNumber: 'DRAFT-TEMP',
-        status: 'DRAFT',
+        id: "inv-1",
+        tenantId: "tenant-1",
+        invoiceNumber: "DRAFT-TEMP",
+        status: "DRAFT",
         subtotal: 10,
         discountTotal: 0,
         taxTotal: 0.75, // 7.5% tax
         total: 10.75,
-        currency: 'USD',
+        currency: "USD",
         issuedAt: new Date(),
         dueAt: new Date(),
         lineItems: [],
         discounts: [],
-        taxes: [{ id: 'tax-1', description: 'Sales Tax', rate: 7.5, amount: 0.75 }],
+        taxes: [
+          { id: "tax-1", description: "Sales Tax", rate: 7.5, amount: 0.75 },
+        ],
         payments: [],
       });
 
       const invoice = await service.createInvoice({
-        tenantId: 'tenant-1',
-        deliveryIds: ['delv-1'],
-        taxConfig: [{ jurisdiction: 'CA', rate: 7.5 }],
+        tenantId: "tenant-1",
+        deliveryIds: ["delv-1"],
+        taxConfig: [{ jurisdiction: "CA", rate: 7.5 }],
       });
 
       expect(invoice.taxTotal).toBe(0.75);
@@ -246,31 +260,31 @@ describe('InvoiceService', () => {
     });
   });
 
-  describe('finalizeInvoice', () => {
-    it('should assign invoice number and finalize', async () => {
+  describe("finalizeInvoice", () => {
+    it("should assign invoice number and finalize", async () => {
       mockPrisma.invoice.findFirst.mockResolvedValue({
-        id: 'inv-1',
-        status: 'DRAFT',
-        tenantId: 'tenant-1',
+        id: "inv-1",
+        status: "DRAFT",
+        tenantId: "tenant-1",
       });
 
       mockPrisma.invoiceNumberCounter.upsert.mockResolvedValue({
-        tenantId: 'tenant-1',
-        prefix: 'INV',
+        tenantId: "tenant-1",
+        prefix: "INV",
         year: 2026,
         currentNumber: 1,
       });
 
       mockPrisma.invoice.update.mockResolvedValue({
-        id: 'inv-1',
-        tenantId: 'tenant-1',
-        invoiceNumber: 'INV-2026-00001',
-        status: 'FINALIZED',
+        id: "inv-1",
+        tenantId: "tenant-1",
+        invoiceNumber: "INV-2026-00001",
+        status: "FINALIZED",
         subtotal: 10,
         discountTotal: 0,
         taxTotal: 0,
         total: 10,
-        currency: 'USD',
+        currency: "USD",
         issuedAt: new Date(),
         dueAt: new Date(),
         lineItems: [],
@@ -279,134 +293,145 @@ describe('InvoiceService', () => {
         payments: [],
       });
 
-      const invoice = await service.finalizeInvoice('inv-1', 'tenant-1');
+      const invoice = await service.finalizeInvoice("inv-1", "tenant-1");
 
-      expect(invoice.status).toBe('finalized');
+      expect(invoice.status).toBe("finalized");
       expect(invoice.invoiceNumber).toMatch(/^INV-\d{4}-\d{5}$/);
     });
 
-    it('should reject finalization of non-draft invoice', async () => {
+    it("should reject finalization of non-draft invoice", async () => {
       mockPrisma.invoice.findFirst.mockResolvedValue({
-        id: 'inv-1',
-        status: 'FINALIZED',
-        tenantId: 'tenant-1',
-      });
-
-      await expect(service.finalizeInvoice('inv-1', 'tenant-1')).rejects.toThrow(
-        InvalidInvoiceStateError,
-      );
-    });
-  });
-
-  describe('voidInvoice', () => {
-    it('should void invoice with reason', async () => {
-      mockPrisma.invoice.findFirst.mockResolvedValue({
-        id: 'inv-1',
-        status: 'FINALIZED',
-        tenantId: 'tenant-1',
-      });
-
-      mockPrisma.invoice.update.mockResolvedValue({
-        id: 'inv-1',
-        tenantId: 'tenant-1',
-        invoiceNumber: 'INV-2026-00001',
-        status: 'VOIDED',
-        voidedAt: new Date(),
-        voidReason: 'Duplicate entry',
-        subtotal: 10,
-        discountTotal: 0,
-        taxTotal: 0,
-        total: 10,
-        currency: 'USD',
-        issuedAt: new Date(),
-        dueAt: new Date(),
-        lineItems: [],
-        discounts: [],
-        taxes: [],
-        payments: [],
-      });
-
-      const invoice = await service.voidInvoice('inv-1', 'tenant-1', 'Duplicate entry');
-
-      expect(invoice.status).toBe('voided');
-      expect(invoice.voidReason).toBe('Duplicate entry');
-    });
-
-    it('should reject voiding already voided invoice', async () => {
-      mockPrisma.invoice.findFirst.mockResolvedValue({
-        id: 'inv-1',
-        status: 'VOIDED',
-        tenantId: 'tenant-1',
+        id: "inv-1",
+        status: "FINALIZED",
+        tenantId: "tenant-1",
       });
 
       await expect(
-        service.voidInvoice('inv-1', 'tenant-1', 'Already voided'),
+        service.finalizeInvoice("inv-1", "tenant-1"),
       ).rejects.toThrow(InvalidInvoiceStateError);
     });
   });
 
-  describe('markAsPaid', () => {
-    it('should record payment and update status', async () => {
+  describe("voidInvoice", () => {
+    it("should void invoice with reason", async () => {
       mockPrisma.invoice.findFirst.mockResolvedValue({
-        id: 'inv-1',
-        status: 'FINALIZED',
-        tenantId: 'tenant-1',
+        id: "inv-1",
+        status: "FINALIZED",
+        tenantId: "tenant-1",
+      });
+
+      mockPrisma.invoice.update.mockResolvedValue({
+        id: "inv-1",
+        tenantId: "tenant-1",
+        invoiceNumber: "INV-2026-00001",
+        status: "VOIDED",
+        voidedAt: new Date(),
+        voidReason: "Duplicate entry",
+        subtotal: 10,
+        discountTotal: 0,
+        taxTotal: 0,
+        total: 10,
+        currency: "USD",
+        issuedAt: new Date(),
+        dueAt: new Date(),
+        lineItems: [],
+        discounts: [],
+        taxes: [],
+        payments: [],
+      });
+
+      const invoice = await service.voidInvoice(
+        "inv-1",
+        "tenant-1",
+        "Duplicate entry",
+      );
+
+      expect(invoice.status).toBe("voided");
+      expect(invoice.voidReason).toBe("Duplicate entry");
+    });
+
+    it("should reject voiding already voided invoice", async () => {
+      mockPrisma.invoice.findFirst.mockResolvedValue({
+        id: "inv-1",
+        status: "VOIDED",
+        tenantId: "tenant-1",
+      });
+
+      await expect(
+        service.voidInvoice("inv-1", "tenant-1", "Already voided"),
+      ).rejects.toThrow(InvalidInvoiceStateError);
+    });
+  });
+
+  describe("markAsPaid", () => {
+    it("should record payment and update status", async () => {
+      mockPrisma.invoice.findFirst.mockResolvedValue({
+        id: "inv-1",
+        status: "FINALIZED",
+        tenantId: "tenant-1",
         total: 100,
       });
 
       mockPrisma.invoicePayment.create.mockResolvedValue({
-        id: 'pmt-1',
-        invoiceId: 'inv-1',
+        id: "pmt-1",
+        invoiceId: "inv-1",
         amount: 100,
-        method: 'credit_card',
+        method: "credit_card",
         paidAt: new Date(),
       });
 
       mockPrisma.invoicePayment.findMany.mockResolvedValue([
-        { id: 'pmt-1', amount: 100, paidAt: new Date() },
+        { id: "pmt-1", amount: 100, paidAt: new Date() },
       ]);
 
       mockPrisma.invoice.update.mockResolvedValue({
-        id: 'inv-1',
-        tenantId: 'tenant-1',
-        invoiceNumber: 'INV-2026-00001',
-        status: 'PAID',
+        id: "inv-1",
+        tenantId: "tenant-1",
+        invoiceNumber: "INV-2026-00001",
+        status: "PAID",
         subtotal: 100,
         discountTotal: 0,
         taxTotal: 0,
         total: 100,
-        currency: 'USD',
+        currency: "USD",
         issuedAt: new Date(),
         dueAt: new Date(),
         paidAt: new Date(),
         lineItems: [],
         discounts: [],
         taxes: [],
-        payments: [{ id: 'pmt-1', amount: 100, method: 'credit_card', paidAt: new Date() }],
+        payments: [
+          {
+            id: "pmt-1",
+            amount: 100,
+            method: "credit_card",
+            paidAt: new Date(),
+          },
+        ],
       });
 
-      const invoice = await service.markAsPaid('inv-1', 'tenant-1', {
+      const invoice = await service.markAsPaid("inv-1", "tenant-1", {
         amount: 100,
-        method: 'credit_card',
+        method: "credit_card",
       });
 
-      expect(invoice.status).toBe('paid');
+      expect(invoice.status).toBe("paid");
       expect(invoice.paidAt).toBeDefined();
     });
   });
 
-  describe('getInvoice', () => {
-    it('should retrieve invoice by ID', async () => {
+  describe("getInvoice", () => {
+    it("should retrieve invoice by ID", async () => {
       const mockInvoice = {
-        id: 'inv-1',
-        tenantId: 'tenant-1',
-        invoiceNumber: 'INV-2026-00001',
-        status: 'FINALIZED',
+        id: "inv-1",
+        tenantId: "tenant-1",
+        invoiceNumber: "INV-2026-00001",
+        status: "FINALIZED",
         subtotal: 100,
         discountTotal: 0,
         taxTotal: 7.5,
         total: 107.5,
-        currency: 'USD',
+        currency: "USD",
         issuedAt: new Date(),
         dueAt: new Date(),
         lineItems: [],
@@ -417,28 +442,28 @@ describe('InvoiceService', () => {
 
       mockPrisma.invoice.findFirst.mockResolvedValue(mockInvoice);
 
-      const invoice = await service.getInvoice('inv-1', 'tenant-1');
+      const invoice = await service.getInvoice("inv-1", "tenant-1");
 
-      expect(invoice.id).toBe('inv-1');
-      expect(invoice.invoiceNumber).toBe('INV-2026-00001');
+      expect(invoice.id).toBe("inv-1");
+      expect(invoice.invoiceNumber).toBe("INV-2026-00001");
     });
 
-    it('should throw if invoice not found', async () => {
+    it("should throw if invoice not found", async () => {
       mockPrisma.invoice.findFirst.mockResolvedValue(null);
 
-      await expect(service.getInvoice('inv-missing', 'tenant-1')).rejects.toThrow(
-        InvoiceNotFoundError,
-      );
+      await expect(
+        service.getInvoice("inv-missing", "tenant-1"),
+      ).rejects.toThrow(InvoiceNotFoundError);
     });
   });
 
-  describe('listInvoices', () => {
-    it('should list invoices with pagination', async () => {
+  describe("listInvoices", () => {
+    it("should list invoices with pagination", async () => {
       const mockInvoices = [
         {
-          id: 'inv-1',
-          tenantId: 'tenant-1',
-          status: 'FINALIZED',
+          id: "inv-1",
+          tenantId: "tenant-1",
+          status: "FINALIZED",
           total: 100,
           issuedAt: new Date(),
           lineItems: [],
@@ -451,44 +476,48 @@ describe('InvoiceService', () => {
       mockPrisma.invoice.findMany.mockResolvedValue(mockInvoices);
       mockPrisma.invoice.count.mockResolvedValue(1);
 
-      const result = await service.listInvoices('tenant-1', {}, { limit: 10, offset: 0 });
+      const result = await service.listInvoices(
+        "tenant-1",
+        {},
+        { limit: 10, offset: 0 },
+      );
 
       expect(result.invoices).toHaveLength(1);
       expect(result.total).toBe(1);
     });
 
-    it('should filter by status', async () => {
+    it("should filter by status", async () => {
       mockPrisma.invoice.findMany.mockResolvedValue([]);
       mockPrisma.invoice.count.mockResolvedValue(0);
 
-      await service.listInvoices('tenant-1', { status: ['paid'] });
+      await service.listInvoices("tenant-1", { status: ["paid"] });
 
       expect(mockPrisma.invoice.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            status: { in: ['PAID'] },
+            status: { in: ["PAID"] },
           }),
         }),
       );
     });
   });
 
-  describe('getInvoiceSummary', () => {
-    it('should generate summary statistics', async () => {
+  describe("getInvoiceSummary", () => {
+    it("should generate summary statistics", async () => {
       const mockInvoices = [
         {
-          id: 'inv-1',
-          status: 'PAID',
+          id: "inv-1",
+          status: "PAID",
           total: 100,
-          currency: 'USD',
+          currency: "USD",
           issuedAt: new Date(),
           payments: [],
         },
         {
-          id: 'inv-2',
-          status: 'FINALIZED',
+          id: "inv-2",
+          status: "FINALIZED",
           total: 50,
-          currency: 'USD',
+          currency: "USD",
           issuedAt: new Date(),
           payments: [],
         },
@@ -496,7 +525,7 @@ describe('InvoiceService', () => {
 
       mockPrisma.invoice.findMany.mockResolvedValue(mockInvoices);
 
-      const summary = await service.getInvoiceSummary('tenant-1');
+      const summary = await service.getInvoiceSummary("tenant-1");
 
       expect(summary.totalInvoices).toBe(2);
       expect(summary.totalBilled).toBe(150);

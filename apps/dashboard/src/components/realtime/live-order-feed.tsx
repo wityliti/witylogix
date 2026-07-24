@@ -7,12 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import type { BadgeVariant } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useApiList } from "@/hooks/use-api";
-import {
-  ChevronUp,
-  Clock,
-  Package,
-  AlertCircle,
-} from "lucide-react";
+import { ChevronUp, Clock, Package, AlertCircle } from "lucide-react";
 
 interface ApiOrder {
   id: string;
@@ -48,7 +43,10 @@ const API_STATUS_MAP: Record<string, Order["status"]> = {
   cancelled: "cancelled",
 };
 
-const statusColors: Record<Order["status"], { badge: BadgeVariant; bg: string }> = {
+const statusColors: Record<
+  Order["status"],
+  { badge: BadgeVariant; bg: string }
+> = {
   pending: { badge: "warning", bg: "bg-wl-warning-bg" },
   assigned: { badge: "info", bg: "bg-wl-info-bg" },
   "in-transit": { badge: "primary", bg: "bg-wl-primary-500/12" },
@@ -104,7 +102,13 @@ function OrderSkeleton() {
   );
 }
 
-function OrderCard({ order, onClick }: { order: Order; onClick?: (order: Order) => void }) {
+function OrderCard({
+  order,
+  onClick,
+}: {
+  order: Order;
+  onClick?: (order: Order) => void;
+}) {
   const { badge, bg: _bg } = statusColors[order.status];
   const statusLabel = statusLabels[order.status];
 
@@ -114,7 +118,7 @@ function OrderCard({ order, onClick }: { order: Order; onClick?: (order: Order) 
       className={cn(
         "bg-wl-bg-overlay rounded-lg p-4 border border-wl-border-subtle",
         "transition-all duration-fast ease-default hover:border-wl-border-default hover:shadow-md",
-        onClick && "cursor-pointer"
+        onClick && "cursor-pointer",
       )}
     >
       <div className="flex items-start justify-between gap-3 mb-3">
@@ -124,9 +128,13 @@ function OrderCard({ order, onClick }: { order: Order; onClick?: (order: Order) 
               Order #{order.id.substring(0, 8)}
             </span>
           </div>
-          <p className="text-xs text-wl-text-secondary truncate">{order.customerName}</p>
+          <p className="text-xs text-wl-text-secondary truncate">
+            {order.customerName}
+          </p>
         </div>
-        <Badge variant={badge} className="flex-shrink-0">{statusLabel}</Badge>
+        <Badge variant={badge} className="flex-shrink-0">
+          {statusLabel}
+        </Badge>
       </div>
 
       <div className="flex items-center justify-between gap-2 text-xs text-wl-text-secondary mb-2">
@@ -153,21 +161,24 @@ function OrderCard({ order, onClick }: { order: Order; onClick?: (order: Order) 
   );
 }
 
-export function LiveOrderFeed({
-  className,
-  onOrderClick,
-}: LiveOrderFeedProps) {
+export function LiveOrderFeed({ className, onOrderClick }: LiveOrderFeedProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [newOrderCount, setNewOrderCount] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const prevCountRef = useRef(0);
 
-  const { items: rawOrders, loading, error, refetch } =
-    useApiList<ApiOrder>('/api/v4/orders', { limit: 10 });
+  const {
+    items: rawOrders,
+    loading,
+    error,
+    refetch,
+  } = useApiList<ApiOrder>("/api/v4/orders", { limit: 10 });
 
   // Poll for new orders every 30 seconds
   useEffect(() => {
-    const interval = setInterval(() => { refetch(); }, 30_000);
+    const interval = setInterval(() => {
+      refetch();
+    }, 30_000);
     return () => clearInterval(interval);
   }, [refetch]);
 
@@ -199,9 +210,13 @@ export function LiveOrderFeed({
           <h3 className="text-sm font-semibold text-wl-text-primary tracking-wider uppercase">
             Live Order Feed
           </h3>
-          <p className="text-xs text-wl-text-secondary mt-1">Real-time order updates</p>
+          <p className="text-xs text-wl-text-secondary mt-1">
+            Real-time order updates
+          </p>
         </div>
-        <div className="text-xs text-wl-text-secondary">{orders.length} orders</div>
+        <div className="text-xs text-wl-text-secondary">
+          {orders.length} orders
+        </div>
       </div>
 
       {newOrderCount > 0 && isScrolled && (
@@ -210,7 +225,7 @@ export function LiveOrderFeed({
           className={cn(
             "bg-wl-primary-500/20 border-b border-wl-primary-500/30 px-5 py-3",
             "flex items-center justify-between cursor-pointer",
-            "hover:bg-wl-primary-500/30 transition-colors duration-fast"
+            "hover:bg-wl-primary-500/30 transition-colors duration-fast",
           )}
         >
           <div className="flex items-center gap-2">
@@ -234,7 +249,9 @@ export function LiveOrderFeed({
           <div className="flex items-center justify-center h-full text-center py-12">
             <div>
               <AlertCircle className="w-8 h-8 text-wl-danger-400 mx-auto mb-2 opacity-70" />
-              <p className="text-xs text-wl-text-secondary">Failed to load orders</p>
+              <p className="text-xs text-wl-text-secondary">
+                Failed to load orders
+              </p>
               <button
                 onClick={() => refetch()}
                 className="text-xs text-wl-primary-400 hover:text-wl-primary-500 mt-2"
@@ -247,7 +264,9 @@ export function LiveOrderFeed({
           <div className="flex items-center justify-center h-full text-center py-12">
             <div>
               <Package className="w-8 h-8 text-wl-text-secondary mx-auto mb-2 opacity-50" />
-              <p className="text-xs text-wl-text-secondary">No orders at the moment</p>
+              <p className="text-xs text-wl-text-secondary">
+                No orders at the moment
+              </p>
             </div>
           </div>
         ) : (

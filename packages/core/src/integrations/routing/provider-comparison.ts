@@ -9,19 +9,30 @@
  * - Latency tracking: time each provider call
  */
 
-import type { Coordinate, RouteRequest, RouteResponse, MatrixRequest, MatrixResponse } from './types.js';
-import type { HERESDKClient } from './here-sdk-client.js';
-import type { TomTomSDKClient } from './tomtom-sdk-client.js';
+import type {
+  Coordinate,
+  RouteRequest,
+  RouteResponse,
+  MatrixRequest,
+  MatrixResponse,
+} from "./types.js";
+import type { HERESDKClient } from "./here-sdk-client.js";
+import type { TomTomSDKClient } from "./tomtom-sdk-client.js";
 
 /**
  * Route type classification
  */
-export type RouteType = 'urban' | 'suburban' | 'highway' | 'multi-stop' | 'unknown';
+export type RouteType =
+  | "urban"
+  | "suburban"
+  | "highway"
+  | "multi-stop"
+  | "unknown";
 
 /**
  * Provider name type
  */
-export type ProviderName = 'here' | 'tomtom' | 'google' | 'mapbox' | 'valhalla';
+export type ProviderName = "here" | "tomtom" | "google" | "mapbox" | "valhalla";
 
 /**
  * Cost model for a provider
@@ -103,7 +114,8 @@ export interface MatrixComparison {
  * Provider comparison engine
  */
 export class ProviderComparisonEngine {
-  private providers: Map<ProviderName, HERESDKClient | TomTomSDKClient> = new Map();
+  private providers: Map<ProviderName, HERESDKClient | TomTomSDKClient> =
+    new Map();
   private costModels: Map<ProviderName, ProviderCostModel> = new Map();
 
   /**
@@ -133,16 +145,16 @@ export class ProviderComparisonEngine {
     const hasWaypoints = (request.waypoints?.length || 0) > 0;
 
     if (hasWaypoints) {
-      return 'multi-stop';
+      return "multi-stop";
     }
 
     // Assume urban if distance < 20km, highway if > 100km, otherwise suburban
     if (distance < 20000) {
-      return 'urban';
+      return "urban";
     } else if (distance > 100000) {
-      return 'highway';
+      return "highway";
     } else {
-      return 'suburban';
+      return "suburban";
     }
   }
 
@@ -157,8 +169,10 @@ export class ProviderComparisonEngine {
     let score = 100;
 
     // Penalize routes that deviate significantly from average
-    const distanceVariance = Math.abs(route.distance - avgDistance) / avgDistance;
-    const durationVariance = Math.abs(route.duration - avgDuration) / avgDuration;
+    const distanceVariance =
+      Math.abs(route.distance - avgDistance) / avgDistance;
+    const durationVariance =
+      Math.abs(route.duration - avgDuration) / avgDuration;
 
     if (distanceVariance > 0.1) {
       score -= distanceVariance * 10; // Up to -10 points for 10% variance
@@ -183,7 +197,10 @@ export class ProviderComparisonEngine {
   /**
    * Calculate cost for a request
    */
-  private calculateCost(provider: ProviderName, route: RouteComparison): number {
+  private calculateCost(
+    provider: ProviderName,
+    route: RouteComparison,
+  ): number {
     const costModel = this.costModels.get(provider);
     if (!costModel) {
       return 0; // No cost data available
@@ -210,7 +227,10 @@ export class ProviderComparisonEngine {
     const results: RouteComparison[] = [];
 
     // Execute requests in parallel
-    const promises: Array<{ provider: ProviderName; promise: Promise<RouteResponse> }> = [];
+    const promises: Array<{
+      provider: ProviderName;
+      promise: Promise<RouteResponse>;
+    }> = [];
 
     for (const [providerName, client] of this.providers) {
       promises.push({
@@ -238,7 +258,10 @@ export class ProviderComparisonEngine {
 
       const latency = Date.now() - resolved.startTime;
       const route = resolved.result;
-      const stepCount = route.legs.reduce((sum, leg) => sum + leg.steps.length, 0);
+      const stepCount = route.legs.reduce(
+        (sum, leg) => sum + leg.steps.length,
+        0,
+      );
 
       const comparison: RouteComparison = {
         provider: resolved.provider,
@@ -267,11 +290,17 @@ export class ProviderComparisonEngine {
 
     // Calculate quality scores
     if (results.length > 0) {
-      const avgDistance = results.reduce((sum, r) => sum + r.distance, 0) / results.length;
-      const avgDuration = results.reduce((sum, r) => sum + r.duration, 0) / results.length;
+      const avgDistance =
+        results.reduce((sum, r) => sum + r.distance, 0) / results.length;
+      const avgDuration =
+        results.reduce((sum, r) => sum + r.duration, 0) / results.length;
 
       for (const result of results) {
-        result.quality = this.calculateQualityScore(result, avgDistance, avgDuration);
+        result.quality = this.calculateQualityScore(
+          result,
+          avgDistance,
+          avgDuration,
+        );
       }
     }
 
@@ -286,10 +315,10 @@ export class ProviderComparisonEngine {
 
     // Generate recommendations
     const recommendations = {
-      bestForSpeed: this.findBestProvider(results, 'duration'),
-      bestForAccuracy: this.findBestProvider(results, 'quality'),
-      bestForCost: this.findBestProvider(results, 'cost'),
-      bestOverall: ranking.length > 0 ? ranking[0].provider : 'here',
+      bestForSpeed: this.findBestProvider(results, "duration"),
+      bestForAccuracy: this.findBestProvider(results, "quality"),
+      bestForCost: this.findBestProvider(results, "cost"),
+      bestOverall: ranking.length > 0 ? ranking[0].provider : "here",
     };
 
     // Cost analysis
@@ -330,7 +359,7 @@ export class ProviderComparisonEngine {
 
         for (const row of matrix.matrix) {
           for (const cell of row) {
-            if (cell.status === 'OK') {
+            if (cell.status === "OK") {
               totalDistance += cell.distance_m;
               totalDuration += cell.duration_s;
             } else {
@@ -347,7 +376,11 @@ export class ProviderComparisonEngine {
           totalDistance,
           totalDuration,
           latency,
-          costPerMatrix: this.calculateMatrixCost(providerName, totalDistance, totalDuration),
+          costPerMatrix: this.calculateMatrixCost(
+            providerName,
+            totalDistance,
+            totalDuration,
+          ),
           cellErrors,
           quality,
         });
@@ -362,7 +395,11 @@ export class ProviderComparisonEngine {
   /**
    * Calculate matrix cost
    */
-  private calculateMatrixCost(provider: ProviderName, distance: number, duration: number): number {
+  private calculateMatrixCost(
+    provider: ProviderName,
+    distance: number,
+    duration: number,
+  ): number {
     const costModel = this.costModels.get(provider);
     if (!costModel) {
       return 0;
@@ -386,20 +423,20 @@ export class ProviderComparisonEngine {
    */
   private findBestProvider(
     results: RouteComparison[],
-    metric: 'duration' | 'distance' | 'cost' | 'quality',
+    metric: "duration" | "distance" | "cost" | "quality",
   ): ProviderName {
-    if (results.length === 0) return 'here';
+    if (results.length === 0) return "here";
 
     let best = results[0];
 
     for (const result of results) {
-      if (metric === 'duration' && result.duration < best.duration) {
+      if (metric === "duration" && result.duration < best.duration) {
         best = result;
-      } else if (metric === 'distance' && result.distance < best.distance) {
+      } else if (metric === "distance" && result.distance < best.distance) {
         best = result;
-      } else if (metric === 'cost' && result.cost < best.cost) {
+      } else if (metric === "cost" && result.cost < best.cost) {
         best = result;
-      } else if (metric === 'quality' && result.quality > best.quality) {
+      } else if (metric === "quality" && result.quality > best.quality) {
         best = result;
       }
     }
@@ -436,7 +473,10 @@ export class ProviderComparisonEngine {
   /**
    * Identify provider strengths
    */
-  private identifyStrengths(target: { provider: ProviderName }, all: RouteComparison[]): string[] {
+  private identifyStrengths(
+    target: { provider: ProviderName },
+    all: RouteComparison[],
+  ): string[] {
     const strengths: string[] = [];
 
     // Find corresponding result
@@ -445,22 +485,22 @@ export class ProviderComparisonEngine {
 
     // Check if best for duration
     if (targetResult.duration === Math.min(...all.map((r) => r.duration))) {
-      strengths.push('fastest');
+      strengths.push("fastest");
     }
 
     // Check if best for distance
     if (targetResult.distance === Math.min(...all.map((r) => r.distance))) {
-      strengths.push('shortest');
+      strengths.push("shortest");
     }
 
     // Check if best for latency
     if (targetResult.latency === Math.min(...all.map((r) => r.latency))) {
-      strengths.push('low-latency');
+      strengths.push("low-latency");
     }
 
     // Check if best for cost
     if (targetResult.cost === Math.min(...all.map((r) => r.cost))) {
-      strengths.push('cheapest');
+      strengths.push("cheapest");
     }
 
     return strengths;
@@ -469,7 +509,10 @@ export class ProviderComparisonEngine {
   /**
    * Identify provider weaknesses
    */
-  private identifyWeaknesses(target: { provider: ProviderName }, all: RouteComparison[]): string[] {
+  private identifyWeaknesses(
+    target: { provider: ProviderName },
+    all: RouteComparison[],
+  ): string[] {
     const weaknesses: string[] = [];
 
     // Find corresponding result
@@ -478,22 +521,22 @@ export class ProviderComparisonEngine {
 
     // Check if worst for duration
     if (targetResult.duration === Math.max(...all.map((r) => r.duration))) {
-      weaknesses.push('slowest');
+      weaknesses.push("slowest");
     }
 
     // Check if worst for distance
     if (targetResult.distance === Math.max(...all.map((r) => r.distance))) {
-      weaknesses.push('longest');
+      weaknesses.push("longest");
     }
 
     // Check if worst for latency
     if (targetResult.latency === Math.max(...all.map((r) => r.latency))) {
-      weaknesses.push('high-latency');
+      weaknesses.push("high-latency");
     }
 
     // Check if worst for cost
     if (targetResult.cost === Math.max(...all.map((r) => r.cost))) {
-      weaknesses.push('most-expensive');
+      weaknesses.push("most-expensive");
     }
 
     return weaknesses;
@@ -502,13 +545,15 @@ export class ProviderComparisonEngine {
   /**
    * Analyze costs
    */
-  private analyzeCosts(
-    results: RouteComparison[],
-  ): { cheapest: ProviderName; costPerRequest: Record<ProviderName, number>; monthlySavings: number } {
+  private analyzeCosts(results: RouteComparison[]): {
+    cheapest: ProviderName;
+    costPerRequest: Record<ProviderName, number>;
+    monthlySavings: number;
+  } {
     const costPerRequest = {} as Record<ProviderName, number>;
     let minCost = Infinity;
     let maxCost = 0;
-    let cheapest: ProviderName = 'here';
+    let cheapest: ProviderName = "here";
 
     for (const result of results) {
       costPerRequest[result.provider] = result.cost;
@@ -539,7 +584,7 @@ export class ProviderComparisonEngine {
     recommendations: Record<string, ProviderName>,
   ): string {
     if (results.length === 0) {
-      return 'No routing results available for comparison.';
+      return "No routing results available for comparison.";
     }
 
     const best = ranking[0];
@@ -547,24 +592,29 @@ export class ProviderComparisonEngine {
     const cheapest = recommendations.bestForCost;
 
     const parts: string[] = [];
-    parts.push(`${best.provider} ranked #1 with ${best.score.toFixed(0)}/100 quality score.`);
+    parts.push(
+      `${best.provider} ranked #1 with ${best.score.toFixed(0)}/100 quality score.`,
+    );
 
     if (fastest !== best.provider) {
       parts.push(`${fastest} is fastest, ${cheapest} is cheapest.`);
     }
 
-    const avgDistance = results.reduce((sum, r) => sum + r.distance, 0) / results.length;
-    const variance = Math.max(...results.map((r) => Math.abs(r.distance - avgDistance) / avgDistance));
+    const avgDistance =
+      results.reduce((sum, r) => sum + r.distance, 0) / results.length;
+    const variance = Math.max(
+      ...results.map((r) => Math.abs(r.distance - avgDistance) / avgDistance),
+    );
 
     if (variance < 0.05) {
-      parts.push('High consistency across providers (≤5% variance).');
+      parts.push("High consistency across providers (≤5% variance).");
     } else if (variance < 0.15) {
-      parts.push('Moderate consistency across providers (5-15% variance).');
+      parts.push("Moderate consistency across providers (5-15% variance).");
     } else {
-      parts.push('Significant variance in routing results across providers.');
+      parts.push("Significant variance in routing results across providers.");
     }
 
-    return parts.join(' ');
+    return parts.join(" ");
   }
 }
 
@@ -573,27 +623,27 @@ export class ProviderComparisonEngine {
  */
 export const DEFAULT_COST_MODELS: ProviderCostModel[] = [
   {
-    provider: 'here',
+    provider: "here",
     baseCostUsd: 0.008,
     monthlyIncludedRequests: 250,
   },
   {
-    provider: 'tomtom',
+    provider: "tomtom",
     baseCostUsd: 0.004,
     monthlyIncludedRequests: 50000,
   },
   {
-    provider: 'google',
+    provider: "google",
     baseCostUsd: 0.004,
     monthlyIncludedRequests: 25000,
   },
   {
-    provider: 'mapbox',
+    provider: "mapbox",
     baseCostUsd: 0.002,
     monthlyIncludedRequests: 100000,
   },
   {
-    provider: 'valhalla',
+    provider: "valhalla",
     baseCostUsd: 0, // Open source
     monthlyIncludedRequests: Infinity,
   },

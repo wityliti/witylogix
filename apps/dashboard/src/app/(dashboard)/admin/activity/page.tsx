@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { Header } from '@/components/layout/header';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { useApiList } from '@/hooks/use-api';
+import { useState, useMemo } from "react";
+import { Header } from "@/components/layout/header";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { useApiList } from "@/hooks/use-api";
 import {
   LogIn,
   ShoppingCart,
@@ -18,7 +18,7 @@ import {
   Lock,
   FileText,
   Download,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface ActivityLog {
   id: string;
@@ -26,7 +26,15 @@ interface ActivityLog {
   userName: string;
   userEmail: string;
   userAvatar: string;
-  type: 'login' | 'order_created' | 'route_planned' | 'setting_changed' | 'logout' | 'permission_changed' | 'export' | 'payment';
+  type:
+    | "login"
+    | "order_created"
+    | "route_planned"
+    | "setting_changed"
+    | "logout"
+    | "permission_changed"
+    | "export"
+    | "payment";
   action: string;
   timestamp: string;
   metadata?: Record<string, any>;
@@ -56,9 +64,7 @@ function ActivityIcon({ type }: { type: string }) {
     payment: "text-emerald-500",
   };
 
-  return (
-    <Icon className={cn("w-5 h-5", colors[type] || "text-gray-400")} />
-  );
+  return <Icon className={cn("w-5 h-5", colors[type] || "text-gray-400")} />;
 }
 
 function ActivityTypeLabel({ type }: { type: string }) {
@@ -81,7 +87,7 @@ function ActivityTypeLabel({ type }: { type: string }) {
 function UserAvatar({ name }: { name: string }) {
   const initials = name
     .split(" ")
-    .map(n => n[0])
+    .map((n) => n[0])
     .join("")
     .toUpperCase();
 
@@ -92,14 +98,13 @@ function UserAvatar({ name }: { name: string }) {
     "bg-blue-600/20 text-blue-500",
   ];
 
-  const colorIndex =
-    initials.charCodeAt(0) % colors.length;
+  const colorIndex = initials.charCodeAt(0) % colors.length;
 
   return (
     <div
       className={cn(
         "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold",
-        colors[colorIndex]
+        colors[colorIndex],
       )}
     >
       {initials}
@@ -108,30 +113,36 @@ function UserAvatar({ name }: { name: string }) {
 }
 
 export default function ActivityPage() {
-  const { items: activities, loading, error, refetch } = useApiList<ActivityLog>('/api/v4/admin/activity');
+  const {
+    items: activities,
+    loading,
+    error,
+    refetch,
+  } = useApiList<ActivityLog>("/api/v4/admin/activity");
   const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [dateRange, setDateRange] = useState('all');
+  const [dateRange, setDateRange] = useState("all");
 
   const activityTypes = [
-    { id: 'login', label: 'Login' },
-    { id: 'order_created', label: 'Orders' },
-    { id: 'route_planned', label: 'Routes' },
-    { id: 'setting_changed', label: 'Settings' },
-    { id: 'logout', label: 'Logout' },
-    { id: 'permission_changed', label: 'Permissions' },
-    { id: 'export', label: 'Exports' },
-    { id: 'payment', label: 'Payments' },
+    { id: "login", label: "Login" },
+    { id: "order_created", label: "Orders" },
+    { id: "route_planned", label: "Routes" },
+    { id: "setting_changed", label: "Settings" },
+    { id: "logout", label: "Logout" },
+    { id: "permission_changed", label: "Permissions" },
+    { id: "export", label: "Exports" },
+    { id: "payment", label: "Payments" },
   ];
 
   const filteredActivities = useMemo(() => {
-    return activities.filter(activity => {
+    return activities.filter((activity) => {
       if (selectedType && activity.type !== selectedType) return false;
       return true;
     });
   }, [selectedType, activities]);
 
   if (loading && activities.length === 0) return <LoadingSkeleton />;
-  if (error && activities.length === 0) return <ErrorState message={error.message} onRetry={refetch} />;
+  if (error && activities.length === 0)
+    return <ErrorState message={error.message} onRetry={refetch} />;
 
   return (
     <div className="min-h-screen bg-wl-bg-surface">
@@ -168,7 +179,7 @@ export default function ActivityPage() {
                 Unique Users
               </p>
               <span className="text-3xl font-bold text-white">
-                {new Set(activities.map(a => a.userId)).size}
+                {new Set(activities.map((a) => a.userId)).size}
               </span>
             </CardContent>
           </Card>
@@ -179,7 +190,11 @@ export default function ActivityPage() {
                 Login/Logout
               </p>
               <span className="text-3xl font-bold text-white">
-                {activities.filter(a => a.type === 'login' || a.type === 'logout').length}
+                {
+                  activities.filter(
+                    (a) => a.type === "login" || a.type === "logout",
+                  ).length
+                }
               </span>
             </CardContent>
           </Card>
@@ -190,7 +205,7 @@ export default function ActivityPage() {
                 Orders Created
               </p>
               <span className="text-3xl font-bold text-white">
-                {activities.filter(a => a.type === 'order_created').length}
+                {activities.filter((a) => a.type === "order_created").length}
               </span>
             </CardContent>
           </Card>
@@ -210,12 +225,12 @@ export default function ActivityPage() {
                     "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                     !selectedType
                       ? "bg-blue-600 text-white"
-                      : "bg-wl-bg-elevated text-gray-400 hover:text-white hover:bg-wl-bg-elevated"
+                      : "bg-wl-bg-elevated text-gray-400 hover:text-white hover:bg-wl-bg-elevated",
                   )}
                 >
                   All Activities
                 </button>
-                {activityTypes.map(type => (
+                {activityTypes.map((type) => (
                   <button
                     key={type.id}
                     onClick={() => setSelectedType(type.id)}
@@ -223,7 +238,7 @@ export default function ActivityPage() {
                       "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                       selectedType === type.id
                         ? "bg-blue-600 text-white"
-                        : "bg-wl-bg-elevated text-gray-400 hover:text-white hover:bg-wl-bg-elevated"
+                        : "bg-wl-bg-elevated text-gray-400 hover:text-white hover:bg-wl-bg-elevated",
                     )}
                   >
                     {type.label}
@@ -266,7 +281,7 @@ export default function ActivityPage() {
                   className={cn(
                     "px-5 py-4 flex gap-4 hover:bg-wl-bg-elevated transition-colors",
                     idx !== filteredActivities.length - 1 &&
-                    "border-b border-wl-border-default"
+                      "border-b border-wl-border-default",
                   )}
                 >
                   {/* Timeline */}
@@ -298,20 +313,26 @@ export default function ActivityPage() {
                           {activity.action}
                         </p>
 
-                        {activity.metadata && Object.keys(activity.metadata).length > 0 && (
-                          <div className="mt-2 p-2 bg-wl-bg-elevated rounded text-xs text-gray-400 space-y-1">
-                            {Object.entries(activity.metadata).map(([key, value]) => (
-                              <div key={key} className="flex justify-between">
-                                <span>{key}:</span>
-                                <span className="text-gray-400 font-medium">
-                                  {typeof value === "object"
-                                    ? JSON.stringify(value)
-                                    : String(value)}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                        {activity.metadata &&
+                          Object.keys(activity.metadata).length > 0 && (
+                            <div className="mt-2 p-2 bg-wl-bg-elevated rounded text-xs text-gray-400 space-y-1">
+                              {Object.entries(activity.metadata).map(
+                                ([key, value]) => (
+                                  <div
+                                    key={key}
+                                    className="flex justify-between"
+                                  >
+                                    <span>{key}:</span>
+                                    <span className="text-gray-400 font-medium">
+                                      {typeof value === "object"
+                                        ? JSON.stringify(value)
+                                        : String(value)}
+                                    </span>
+                                  </div>
+                                ),
+                              )}
+                            </div>
+                          )}
                       </div>
 
                       <div className="text-right flex-shrink-0">

@@ -19,8 +19,7 @@ import type {
  */
 
 const createMockQueryExecutor =
-  (rows: Record<string, unknown>[]) =>
-  async () => {
+  (rows: Record<string, unknown>[]) => async () => {
     return rows;
   };
 

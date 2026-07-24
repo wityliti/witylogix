@@ -13,7 +13,10 @@ interface ChannelBadgeProps {
   size?: "small" | "medium";
 }
 
-const CHANNEL_CONFIG: Record<string, { label: string; tone?: BadgeProps["tone"] }> = {
+const CHANNEL_CONFIG: Record<
+  string,
+  { label: string; tone?: BadgeProps["tone"] }
+> = {
   EMAIL: { label: "Email", tone: "info" },
   SMS: { label: "SMS", tone: "success" },
   WHATSAPP: { label: "WhatsApp", tone: "success" },
@@ -21,10 +24,7 @@ const CHANNEL_CONFIG: Record<string, { label: string; tone?: BadgeProps["tone"] 
   WEBHOOK: { label: "Webhook" },
 };
 
-export function ChannelBadge({
-  channel,
-  size = "medium",
-}: ChannelBadgeProps) {
+export function ChannelBadge({ channel, size = "medium" }: ChannelBadgeProps) {
   const config = CHANNEL_CONFIG[channel] ?? { label: channel };
 
   return (

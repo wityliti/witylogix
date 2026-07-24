@@ -45,8 +45,10 @@ export function DriverBehaviorChart({
 
   // Get max value for Y scale
   const maxValue = Math.max(
-    ...data.map((d) => d.harshBraking + d.rapidAcceleration + d.speeding + d.sharpTurns),
-    10
+    ...data.map(
+      (d) => d.harshBraking + d.rapidAcceleration + d.speeding + d.sharpTurns,
+    ),
+    10,
   );
 
   const eventTypes = [
@@ -58,13 +60,22 @@ export function DriverBehaviorChart({
 
   // Bar dimensions
   const barWidth = Math.max((chartWidth / data.length) * 0.7, 20);
-  const barGap = (chartWidth / data.length) - barWidth;
+  const barGap = chartWidth / data.length - barWidth;
 
   // Draw bars
   const bars = data.map((day, i) => {
     const x = padding.left + (chartWidth / data.length) * i + barGap / 2;
     let y = padding.top + chartHeight;
-    const barSegments: { x: number; y: number; width: number; height: number; color: string; label: string; value: number; date: string }[] = [];
+    const barSegments: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+      color: string;
+      label: string;
+      value: number;
+      date: string;
+    }[] = [];
 
     let totalEvents = 0;
     eventTypes.forEach((event) => {
@@ -98,7 +109,11 @@ export function DriverBehaviorChart({
     const total = segments.reduce((sum, s) => sum + s.value, 0);
     setTooltipData({
       date,
-      segments: segments.map((s) => ({ label: s.label, value: s.value, color: s.color })),
+      segments: segments.map((s) => ({
+        label: s.label,
+        value: s.value,
+        color: s.color,
+      })),
       total,
     });
   };
@@ -122,7 +137,9 @@ export function DriverBehaviorChart({
   return (
     <div ref={containerRef} className={cn("w-full", className)}>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-wl-text-primary">Driver Behavior Events</h3>
+        <h3 className="font-semibold text-wl-text-primary">
+          Driver Behavior Events
+        </h3>
         {dateRange && onDateRangeChange && (
           <div className="text-xs text-wl-text-secondary">
             {new Date(dateRange.start).toLocaleDateString()} -{" "}
@@ -209,9 +226,15 @@ export function DriverBehaviorChart({
 
         {/* X-axis labels */}
         {data.map((day, i) => {
-          const x = padding.left + (chartWidth / data.length) * i + (chartWidth / data.length) / 2;
+          const x =
+            padding.left +
+            (chartWidth / data.length) * i +
+            chartWidth / data.length / 2;
           const date = new Date(day.date);
-          const label = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+          const label = date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          });
 
           return (
             <text

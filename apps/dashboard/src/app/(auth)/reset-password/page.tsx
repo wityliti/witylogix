@@ -3,7 +3,13 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Lock, Loader2, ArrowRight, CheckCircle2, AlertCircle } from "lucide-react";
+import {
+  Lock,
+  Loader2,
+  ArrowRight,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
@@ -49,7 +55,8 @@ function ResetPasswordPageInner() {
 
         setIsTokenValid(true);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Token validation failed";
+        const errorMessage =
+          err instanceof Error ? err.message : "Token validation failed";
         setError(errorMessage);
       } finally {
         setIsValidating(false);
@@ -59,7 +66,9 @@ function ResetPasswordPageInner() {
     validateToken();
   }, [token]);
 
-  const calculatePasswordStrength = (pwd: string): { score: number; label: string; color: string } => {
+  const calculatePasswordStrength = (
+    pwd: string,
+  ): { score: number; label: string; color: string } => {
     let score = 0;
     if (pwd.length >= 8) score++;
     if (pwd.length >= 12) score++;
@@ -67,9 +76,12 @@ function ResetPasswordPageInner() {
     if (/\d/.test(pwd)) score++;
     if (/[!@#$%^&*]/.test(pwd)) score++;
 
-    if (score <= 1) return { score, label: "Weak", color: "var(--wl-danger-500)" };
-    if (score <= 2) return { score, label: "Fair", color: "var(--wl-warning-500)" };
-    if (score <= 3) return { score, label: "Good", color: "var(--wl-primary-500)" };
+    if (score <= 1)
+      return { score, label: "Weak", color: "var(--wl-danger-500)" };
+    if (score <= 2)
+      return { score, label: "Fair", color: "var(--wl-warning-500)" };
+    if (score <= 3)
+      return { score, label: "Good", color: "var(--wl-primary-500)" };
     return { score, label: "Strong", color: "var(--wl-success-500)" };
   };
 
@@ -134,7 +146,8 @@ function ResetPasswordPageInner() {
         router.push("/login");
       }, 3000);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Password reset failed";
+      const errorMessage =
+        err instanceof Error ? err.message : "Password reset failed";
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -175,7 +188,8 @@ function ResetPasswordPageInner() {
             Invalid or expired link
           </h2>
           <p className="text-sm text-wl-text-tertiary leading-relaxed">
-            {error || "This password reset link is no longer valid. Please request a new one."}
+            {error ||
+              "This password reset link is no longer valid. Please request a new one."}
           </p>
         </div>
 
@@ -183,7 +197,8 @@ function ResetPasswordPageInner() {
           href="/forgot-password"
           className="py-3 px-4 rounded-lg border-none text-wl-text-inverse text-sm font-semibold flex items-center justify-center gap-2 transition-all"
           style={{
-            background: "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
+            background:
+              "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
             boxShadow: "0 4px 12px rgba(108, 99, 255, 0.25)",
           }}
         >
@@ -216,7 +231,8 @@ function ResetPasswordPageInner() {
             Password reset successful
           </h2>
           <p className="text-sm text-wl-text-tertiary leading-relaxed">
-            Your password has been updated successfully. You will be redirected to the login page in a moment.
+            Your password has been updated successfully. You will be redirected
+            to the login page in a moment.
           </p>
         </div>
 
@@ -225,7 +241,8 @@ function ResetPasswordPageInner() {
             href="/login"
             className="py-3 px-4 rounded-lg border-none text-wl-text-inverse text-sm font-semibold flex items-center justify-center gap-2 transition-all"
             style={{
-              background: "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
+              background:
+                "linear-gradient(135deg, var(--wl-primary-500) 0%, var(--wl-primary-600) 100%)",
               boxShadow: "0 4px 12px rgba(108, 99, 255, 0.25)",
             }}
           >
@@ -280,26 +297,28 @@ function ResetPasswordPageInner() {
                 passwordError
                   ? "border-wl-danger-500 border-1.5"
                   : "border-wl-border-default",
-                isLoading && "opacity-60"
+                isLoading && "opacity-60",
               )}
               onFocus={(e) => {
                 if (!isLoading) {
-                  e.currentTarget.style.borderColor = passwordError ? "var(--wl-danger-500)" : "var(--wl-primary-500)";
+                  e.currentTarget.style.borderColor = passwordError
+                    ? "var(--wl-danger-500)"
+                    : "var(--wl-primary-500)";
                   e.currentTarget.style.boxShadow = passwordError
                     ? "0 0 0 3px rgba(239, 68, 68, 0.1)"
                     : "0 0 0 3px rgba(108, 99, 255, 0.1)";
                 }
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = passwordError ? "var(--wl-danger-500)" : "1px solid var(--wl-border-default)";
+                e.currentTarget.style.borderColor = passwordError
+                  ? "var(--wl-danger-500)"
+                  : "1px solid var(--wl-border-default)";
                 e.currentTarget.style.boxShadow = "none";
               }}
             />
           </div>
           {passwordError && (
-            <span className="text-xs text-wl-danger-400">
-              {passwordError}
-            </span>
+            <span className="text-xs text-wl-danger-400">{passwordError}</span>
           )}
 
           {/* Password Strength Indicator */}
@@ -311,10 +330,11 @@ function ResetPasswordPageInner() {
                     key={i}
                     className={cn(
                       "flex-1 h-1 rounded-full transition-all",
-                      i < strength.score ? "bg-current" : "bg-wl-border"
+                      i < strength.score ? "bg-current" : "bg-wl-border",
                     )}
                     style={{
-                      backgroundColor: i < strength.score ? strength.color : undefined,
+                      backgroundColor:
+                        i < strength.score ? strength.color : undefined,
                     }}
                   />
                 ))}
@@ -331,10 +351,14 @@ function ResetPasswordPageInner() {
               {/* Password Requirements Checklist */}
               <div className="mt-2 space-y-1 text-xs text-wl-text-tertiary">
                 <div className="flex items-center gap-2">
-                  <div className={cn(
-                    "w-4 h-4 rounded flex items-center justify-center transition-all",
-                    password.length >= 8 ? "bg-wl-success-500/20" : "bg-wl-border"
-                  )}>
+                  <div
+                    className={cn(
+                      "w-4 h-4 rounded flex items-center justify-center transition-all",
+                      password.length >= 8
+                        ? "bg-wl-success-500/20"
+                        : "bg-wl-border",
+                    )}
+                  >
                     {password.length >= 8 && (
                       <CheckCircle2 size={12} className="text-wl-success-500" />
                     )}
@@ -342,10 +366,14 @@ function ResetPasswordPageInner() {
                   At least 8 characters
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className={cn(
-                    "w-4 h-4 rounded flex items-center justify-center transition-all",
-                    /[a-z]/.test(password) && /[A-Z]/.test(password) ? "bg-wl-success-500/20" : "bg-wl-border"
-                  )}>
+                  <div
+                    className={cn(
+                      "w-4 h-4 rounded flex items-center justify-center transition-all",
+                      /[a-z]/.test(password) && /[A-Z]/.test(password)
+                        ? "bg-wl-success-500/20"
+                        : "bg-wl-border",
+                    )}
+                  >
                     {/[a-z]/.test(password) && /[A-Z]/.test(password) && (
                       <CheckCircle2 size={12} className="text-wl-success-500" />
                     )}
@@ -353,10 +381,14 @@ function ResetPasswordPageInner() {
                   Uppercase and lowercase letters
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className={cn(
-                    "w-4 h-4 rounded flex items-center justify-center transition-all",
-                    /\d/.test(password) ? "bg-wl-success-500/20" : "bg-wl-border"
-                  )}>
+                  <div
+                    className={cn(
+                      "w-4 h-4 rounded flex items-center justify-center transition-all",
+                      /\d/.test(password)
+                        ? "bg-wl-success-500/20"
+                        : "bg-wl-border",
+                    )}
+                  >
                     {/\d/.test(password) && (
                       <CheckCircle2 size={12} className="text-wl-success-500" />
                     )}
@@ -364,10 +396,14 @@ function ResetPasswordPageInner() {
                   At least one number
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className={cn(
-                    "w-4 h-4 rounded flex items-center justify-center transition-all",
-                    /[!@#$%^&*]/.test(password) ? "bg-wl-success-500/20" : "bg-wl-border"
-                  )}>
+                  <div
+                    className={cn(
+                      "w-4 h-4 rounded flex items-center justify-center transition-all",
+                      /[!@#$%^&*]/.test(password)
+                        ? "bg-wl-success-500/20"
+                        : "bg-wl-border",
+                    )}
+                  >
                     {/[!@#$%^&*]/.test(password) && (
                       <CheckCircle2 size={12} className="text-wl-success-500" />
                     )}
@@ -410,22 +446,27 @@ function ResetPasswordPageInner() {
               disabled={isLoading}
               className={cn(
                 "w-full py-3 px-3 pl-11 rounded-lg border text-sm bg-wl-bg-surface text-wl-text-primary transition-all outline-none",
-                confirmError || (confirmPassword && password !== confirmPassword)
+                confirmError ||
+                  (confirmPassword && password !== confirmPassword)
                   ? "border-wl-danger-500 border-1.5"
                   : confirmPassword && password === confirmPassword
                     ? "border-wl-success-500"
                     : "border-wl-border-default",
                 isLoading && "opacity-60",
-                confirmPassword && password === confirmPassword ? "pr-11" : "pr-3"
+                confirmPassword && password === confirmPassword
+                  ? "pr-11"
+                  : "pr-3",
               )}
               onFocus={(e) => {
                 if (!isLoading) {
                   e.currentTarget.style.borderColor =
-                    confirmError || (confirmPassword && password !== confirmPassword)
+                    confirmError ||
+                    (confirmPassword && password !== confirmPassword)
                       ? "var(--wl-danger-500)"
                       : "var(--wl-primary-500)";
                   e.currentTarget.style.boxShadow =
-                    confirmError || (confirmPassword && password !== confirmPassword)
+                    confirmError ||
+                    (confirmPassword && password !== confirmPassword)
                       ? "0 0 0 3px rgba(239, 68, 68, 0.1)"
                       : "0 0 0 3px rgba(108, 99, 255, 0.1)";
                 }
@@ -436,9 +477,7 @@ function ResetPasswordPageInner() {
             />
           </div>
           {confirmError && (
-            <span className="text-xs text-wl-danger-400">
-              {confirmError}
-            </span>
+            <span className="text-xs text-wl-danger-400">{confirmError}</span>
           )}
         </div>
 
@@ -455,7 +494,7 @@ function ResetPasswordPageInner() {
           disabled={isLoading}
           className={cn(
             "py-3 px-4 rounded-lg border-none text-wl-text-inverse text-sm font-semibold flex items-center justify-center gap-2 transition-all",
-            isLoading && "opacity-80 cursor-not-allowed"
+            isLoading && "opacity-80 cursor-not-allowed",
           )}
           style={{
             background: isLoading
@@ -465,20 +504,27 @@ function ResetPasswordPageInner() {
           }}
           onMouseEnter={(e) => {
             if (!isLoading) {
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 20px rgba(108, 99, 255, 0.35)";
-              (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow =
+                "0 6px 20px rgba(108, 99, 255, 0.35)";
+              (e.currentTarget as HTMLButtonElement).style.transform =
+                "translateY(-1px)";
             }
           }}
           onMouseLeave={(e) => {
             if (!isLoading) {
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 12px rgba(108, 99, 255, 0.25)";
-              (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow =
+                "0 4px 12px rgba(108, 99, 255, 0.25)";
+              (e.currentTarget as HTMLButtonElement).style.transform =
+                "translateY(0)";
             }
           }}
         >
           {isLoading ? (
             <>
-              <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} />
+              <Loader2
+                size={16}
+                style={{ animation: "spin 1s linear infinite" }}
+              />
               Resetting password...
             </>
           ) : (
@@ -506,7 +552,17 @@ function ResetPasswordPageInner() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center items-center min-h-screen bg-wl-bg"><Loader2 size={32} className="animate-spin" style={{ color: "var(--wl-primary, #6C63FF)" }} /></div>}>
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center min-h-screen bg-wl-bg">
+          <Loader2
+            size={32}
+            className="animate-spin"
+            style={{ color: "var(--wl-primary, #6C63FF)" }}
+          />
+        </div>
+      }
+    >
       <ResetPasswordPageInner />
     </Suspense>
   );

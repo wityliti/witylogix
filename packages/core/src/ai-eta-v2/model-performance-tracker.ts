@@ -14,7 +14,7 @@ import type {
   ModelPerformanceMetrics,
   CalibrationMetrics,
   AccuracyReport,
-} from './types.js';
+} from "./types.js";
 
 interface PerformanceBucket {
   predictions: number[];
@@ -42,7 +42,10 @@ export class ModelPerformanceTracker {
    */
   private calculateMAE(predictions: number[], actuals: number[]): number {
     if (predictions.length === 0) return 0;
-    const sumError = predictions.reduce((sum, pred, i) => sum + Math.abs(pred - actuals[i]), 0);
+    const sumError = predictions.reduce(
+      (sum, pred, i) => sum + Math.abs(pred - actuals[i]),
+      0,
+    );
     return sumError / predictions.length;
   }
 
@@ -80,7 +83,11 @@ export class ModelPerformanceTracker {
   /**
    * Calculate percentile error
    */
-  private calculatePercentileError(predictions: number[], actuals: number[], percentile: number): number {
+  private calculatePercentileError(
+    predictions: number[],
+    actuals: number[],
+    percentile: number,
+  ): number {
     if (predictions.length === 0) return 0;
 
     const errors = predictions.map((pred, i) => Math.abs(pred - actuals[i]));
@@ -93,7 +100,10 @@ export class ModelPerformanceTracker {
   /**
    * Compute metrics from predictions and actuals
    */
-  private computeMetrics(predictions: number[], actuals: number[]): CalibrationMetrics {
+  private computeMetrics(
+    predictions: number[],
+    actuals: number[],
+  ): CalibrationMetrics {
     const mae = this.calculateMAE(predictions, actuals);
     const rmse = this.calculateRMSE(predictions, actuals);
     const mape = this.calculateMAPE(predictions, actuals);
@@ -104,7 +114,8 @@ export class ModelPerformanceTracker {
     const accurateCount = predictions.filter((pred, i) => {
       return Math.abs(pred - actuals[i]) <= 5;
     }).length;
-    const accuracyPercentage = (accurateCount / Math.max(1, predictions.length)) * 100;
+    const accuracyPercentage =
+      (accurateCount / Math.max(1, predictions.length)) * 100;
 
     return {
       mae,
@@ -164,7 +175,11 @@ export class ModelPerformanceTracker {
 
       const modelZoneMap = this.zoneMetrics.get(modelName)!;
       if (!modelZoneMap.has(zone)) {
-        modelZoneMap.set(zone, { predictions: [], actuals: [], timestamps: [] });
+        modelZoneMap.set(zone, {
+          predictions: [],
+          actuals: [],
+          timestamps: [],
+        });
       }
 
       const zoneBucket = modelZoneMap.get(zone)!;
@@ -176,7 +191,11 @@ export class ModelPerformanceTracker {
     // Record to hour metrics if provided
     if (hour !== undefined) {
       if (!this.hourMetrics.has(hour)) {
-        this.hourMetrics.set(hour, { predictions: [], actuals: [], timestamps: [] });
+        this.hourMetrics.set(hour, {
+          predictions: [],
+          actuals: [],
+          timestamps: [],
+        });
       }
 
       const hourBucket = this.hourMetrics.get(hour)!;
@@ -257,8 +276,12 @@ export class ModelPerformanceTracker {
       [] as number[],
     );
 
-    const periodPredictions = filteredIndices.map((i) => this.overallMetrics.predictions[i]);
-    const periodActuals = filteredIndices.map((i) => this.overallMetrics.actuals[i]);
+    const periodPredictions = filteredIndices.map(
+      (i) => this.overallMetrics.predictions[i],
+    );
+    const periodActuals = filteredIndices.map(
+      (i) => this.overallMetrics.actuals[i],
+    );
 
     const overallMetrics =
       periodPredictions.length > 0
@@ -296,7 +319,10 @@ export class ModelPerformanceTracker {
         }
 
         if (bucket.predictions.length > 0) {
-          const metrics = this.computeMetrics(bucket.predictions, bucket.actuals);
+          const metrics = this.computeMetrics(
+            bucket.predictions,
+            bucket.actuals,
+          );
           // Aggregate (simple average for now)
           const existing = byZone[zone];
           existing.mae = (existing.mae + metrics.mae) / 2;
@@ -332,7 +358,7 @@ export class ModelPerformanceTracker {
         // Threshold: 20 minute MAE
         degradationAlerts.push({
           model_name: modelName,
-          metric: 'mae',
+          metric: "mae",
           previous_value: 15,
           current_value: currentMAE,
           change_percentage: ((currentMAE - 15) / 15) * 100,
@@ -372,7 +398,10 @@ export class ModelPerformanceTracker {
     for (const [modelName, zoneMap] of this.zoneMetrics.entries()) {
       const bucket = zoneMap.get(zone);
       if (bucket && bucket.predictions.length > 0) {
-        zoneMetrics[modelName] = this.computeMetrics(bucket.predictions, bucket.actuals);
+        zoneMetrics[modelName] = this.computeMetrics(
+          bucket.predictions,
+          bucket.actuals,
+        );
       }
     }
 
@@ -390,9 +419,15 @@ export class ModelPerformanceTracker {
       .map((t, i) => (t >= cutoffDate ? i : -1))
       .filter((i) => i >= 0);
 
-    this.overallMetrics.predictions = validIndices.map((i) => this.overallMetrics.predictions[i]);
-    this.overallMetrics.actuals = validIndices.map((i) => this.overallMetrics.actuals[i]);
-    this.overallMetrics.timestamps = validIndices.map((i) => this.overallMetrics.timestamps[i]);
+    this.overallMetrics.predictions = validIndices.map(
+      (i) => this.overallMetrics.predictions[i],
+    );
+    this.overallMetrics.actuals = validIndices.map(
+      (i) => this.overallMetrics.actuals[i],
+    );
+    this.overallMetrics.timestamps = validIndices.map(
+      (i) => this.overallMetrics.timestamps[i],
+    );
 
     // Prune zone metrics
     for (const zoneMap of this.zoneMetrics.values()) {

@@ -17,7 +17,7 @@ describe("WebhookRegistry", () => {
       const endpoint = registry.registerEndpoint(
         "tenant_1",
         "https://example.com/webhook",
-        ["order.created", "order.updated"]
+        ["order.created", "order.updated"],
       );
 
       expect(endpoint.id).toBeDefined();
@@ -36,7 +36,11 @@ describe("WebhookRegistry", () => {
 
     it("should require at least one event", () => {
       expect(() => {
-        registry.registerEndpoint("tenant_1", "https://example.com/webhook", []);
+        registry.registerEndpoint(
+          "tenant_1",
+          "https://example.com/webhook",
+          [],
+        );
       }).toThrow("At least one event type required");
     });
 
@@ -44,13 +48,13 @@ describe("WebhookRegistry", () => {
       const endpoint1 = registry.registerEndpoint(
         "tenant_1",
         "https://example.com/webhook1",
-        ["order.created"]
+        ["order.created"],
       );
 
       const endpoint2 = registry.registerEndpoint(
         "tenant_1",
         "https://example.com/webhook2",
-        ["order.created"]
+        ["order.created"],
       );
 
       expect(endpoint1.secret).not.toBe(endpoint2.secret);
@@ -62,7 +66,7 @@ describe("WebhookRegistry", () => {
       const registered = registry.registerEndpoint(
         "tenant_1",
         "https://example.com/webhook",
-        ["order.created"]
+        ["order.created"],
       );
 
       const retrieved = registry.getEndpoint(registered.id);
@@ -79,23 +83,17 @@ describe("WebhookRegistry", () => {
 
   describe("getTenantEndpoints", () => {
     it("should return all endpoints for tenant", () => {
-      registry.registerEndpoint(
-        "tenant_1",
-        "https://example.com/webhook1",
-        ["order.created"]
-      );
+      registry.registerEndpoint("tenant_1", "https://example.com/webhook1", [
+        "order.created",
+      ]);
 
-      registry.registerEndpoint(
-        "tenant_1",
-        "https://example.com/webhook2",
-        ["payment.completed"]
-      );
+      registry.registerEndpoint("tenant_1", "https://example.com/webhook2", [
+        "payment.completed",
+      ]);
 
-      registry.registerEndpoint(
-        "tenant_2",
-        "https://example.com/webhook3",
-        ["order.created"]
-      );
+      registry.registerEndpoint("tenant_2", "https://example.com/webhook3", [
+        "order.created",
+      ]);
 
       const tenant1Endpoints = registry.getTenantEndpoints("tenant_1");
       const tenant2Endpoints = registry.getTenantEndpoints("tenant_2");
@@ -107,23 +105,18 @@ describe("WebhookRegistry", () => {
 
   describe("getSubscribers", () => {
     beforeEach(() => {
-      registry.registerEndpoint(
-        "tenant_1",
-        "https://example.com/webhook1",
-        ["order.created", "order.updated"]
-      );
+      registry.registerEndpoint("tenant_1", "https://example.com/webhook1", [
+        "order.created",
+        "order.updated",
+      ]);
 
-      registry.registerEndpoint(
-        "tenant_1",
-        "https://example.com/webhook2",
-        ["order.*"]
-      );
+      registry.registerEndpoint("tenant_1", "https://example.com/webhook2", [
+        "order.*",
+      ]);
 
-      registry.registerEndpoint(
-        "tenant_1",
-        "https://example.com/webhook3",
-        ["*"]
-      );
+      registry.registerEndpoint("tenant_1", "https://example.com/webhook3", [
+        "*",
+      ]);
     });
 
     it("should return endpoints subscribed to exact event", () => {
@@ -138,7 +131,7 @@ describe("WebhookRegistry", () => {
 
       // Should include "order.*" and "*" subscribers
       const hasWildcardSubscriber = subscribers.some((s) =>
-        s.events.includes("order.*")
+        s.events.includes("order.*"),
       );
       expect(hasWildcardSubscriber).toBe(true);
     });
@@ -159,7 +152,7 @@ describe("WebhookRegistry", () => {
       const endpoint = registry.registerEndpoint(
         "tenant_1",
         "https://example.com/webhook",
-        ["order.created"]
+        ["order.created"],
       );
 
       const updated = registry.updateSubscription(endpoint.id, [
@@ -167,17 +160,14 @@ describe("WebhookRegistry", () => {
         "shipment.created",
       ]);
 
-      expect(updated.events).toEqual([
-        "payment.completed",
-        "shipment.created",
-      ]);
+      expect(updated.events).toEqual(["payment.completed", "shipment.created"]);
     });
 
     it("should update subscription index", () => {
       const endpoint = registry.registerEndpoint(
         "tenant_1",
         "https://example.com/webhook",
-        ["order.created"]
+        ["order.created"],
       );
 
       registry.updateSubscription(endpoint.id, ["payment.completed"]);
@@ -197,7 +187,7 @@ describe("WebhookRegistry", () => {
       const endpoint = registry.registerEndpoint(
         "tenant_1",
         "https://example.com/webhook",
-        ["order.created"]
+        ["order.created"],
       );
 
       const removed = registry.unregisterEndpoint(endpoint.id);
@@ -217,7 +207,7 @@ describe("WebhookRegistry", () => {
       const endpoint = registry.registerEndpoint(
         "tenant_1",
         "https://example.com/webhook",
-        ["order.created"]
+        ["order.created"],
       );
 
       const oldSecret = endpoint.secret;
@@ -233,7 +223,7 @@ describe("WebhookRegistry", () => {
       const endpoint = registry.registerEndpoint(
         "tenant_1",
         "https://example.com/webhook",
-        ["order.created"]
+        ["order.created"],
       );
 
       const oldSecret = endpoint.secret;
@@ -247,7 +237,7 @@ describe("WebhookRegistry", () => {
       const endpoint = registry.registerEndpoint(
         "tenant_1",
         "https://example.com/webhook",
-        ["order.created"]
+        ["order.created"],
       );
 
       const oldSecret = endpoint.secret;
@@ -266,7 +256,7 @@ describe("WebhookRegistry", () => {
       const endpoint = registry.registerEndpoint(
         "tenant_1",
         "https://example.com/webhook",
-        ["order.created"]
+        ["order.created"],
       );
 
       const isValid = registry.validateSecret(endpoint.id, endpoint.secret);
@@ -277,7 +267,7 @@ describe("WebhookRegistry", () => {
       const endpoint = registry.registerEndpoint(
         "tenant_1",
         "https://example.com/webhook",
-        ["order.created"]
+        ["order.created"],
       );
 
       const isValid = registry.validateSecret(endpoint.id, "wrong_secret");
@@ -290,7 +280,7 @@ describe("WebhookRegistry", () => {
       const endpoint = registry.registerEndpoint(
         "tenant_1",
         "https://example.com/webhook",
-        ["order.created"]
+        ["order.created"],
       );
 
       registry.recordDelivery(endpoint.id, true);
@@ -305,7 +295,7 @@ describe("WebhookRegistry", () => {
       const endpoint = registry.registerEndpoint(
         "tenant_1",
         "https://example.com/webhook",
-        ["order.created"]
+        ["order.created"],
       );
 
       registry.recordDelivery(endpoint.id, false);
@@ -319,7 +309,7 @@ describe("WebhookRegistry", () => {
       const endpoint = registry.registerEndpoint(
         "tenant_1",
         "https://example.com/webhook",
-        ["order.created"]
+        ["order.created"],
       );
 
       // Record failures
@@ -337,7 +327,7 @@ describe("WebhookRegistry", () => {
       const endpoint = registry.registerEndpoint(
         "tenant_1",
         "https://example.com/webhook",
-        ["order.created"]
+        ["order.created"],
       );
 
       registry.setActive(endpoint.id, false);
@@ -349,22 +339,18 @@ describe("WebhookRegistry", () => {
 
   describe("fanOutToSubscribers", () => {
     it("should return all subscribers for event", () => {
-      registry.registerEndpoint(
-        "tenant_1",
-        "https://example.com/webhook1",
-        ["order.created"]
-      );
+      registry.registerEndpoint("tenant_1", "https://example.com/webhook1", [
+        "order.created",
+      ]);
 
-      registry.registerEndpoint(
-        "tenant_2",
-        "https://example.com/webhook2",
-        ["order.created"]
-      );
+      registry.registerEndpoint("tenant_2", "https://example.com/webhook2", [
+        "order.created",
+      ]);
 
       const payload = { orderId: "123" };
       const subscribers = registry.fanOutToSubscribers(
         "order.created",
-        payload
+        payload,
       );
 
       expect(subscribers).toHaveLength(2);
@@ -375,17 +361,13 @@ describe("WebhookRegistry", () => {
 
   describe("getStatistics", () => {
     it("should return registry statistics", () => {
-      registry.registerEndpoint(
-        "tenant_1",
-        "https://example.com/webhook1",
-        ["order.created"]
-      );
+      registry.registerEndpoint("tenant_1", "https://example.com/webhook1", [
+        "order.created",
+      ]);
 
-      registry.registerEndpoint(
-        "tenant_1",
-        "https://example.com/webhook2",
-        ["payment.completed"]
-      );
+      registry.registerEndpoint("tenant_1", "https://example.com/webhook2", [
+        "payment.completed",
+      ]);
 
       registry.registerEndpoint("tenant_2", "https://example.com/webhook3", [
         "order.created",

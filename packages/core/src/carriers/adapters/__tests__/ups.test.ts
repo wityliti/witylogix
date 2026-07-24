@@ -3,11 +3,11 @@
  * Comprehensive test suite for UPS shipping adapter
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { UpsAdapter } from '../ups';
-import { CarrierError } from '../../types';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { UpsAdapter } from "../ups";
+import { CarrierError } from "../../types";
 
-describe('UpsAdapter', () => {
+describe("UpsAdapter", () => {
   let adapter: UpsAdapter;
   let mockFetch: ReturnType<typeof vi.fn>;
 
@@ -16,21 +16,21 @@ describe('UpsAdapter', () => {
     global.fetch = mockFetch;
 
     adapter = new UpsAdapter(
-      'ups-client-id-12345',
-      'ups-client-secret-67890',
-      'testing'
+      "ups-client-id-12345",
+      "ups-client-secret-67890",
+      "testing",
     );
   });
 
-  describe('OAuth2 Token Flow', () => {
-    it('should obtain access token via OAuth2 client credentials', async () => {
+  describe("OAuth2 Token Flow", () => {
+    it("should obtain access token via OAuth2 client credentials", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          access_token: 'ups-access-token-12345',
-          token_type: 'Bearer',
+          access_token: "ups-access-token-12345",
+          token_type: "Bearer",
           expires_in: 3600,
         }),
       });
@@ -41,59 +41,63 @@ describe('UpsAdapter', () => {
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
           RateResponse: {
-            Response: { ResponseStatus: { Code: '1' } },
-            RatedShipment: [{
-              Service: { Code: '03', Description: 'UPS Ground' },
-              TotalCharges: { MonetaryValue: '22.50', CurrencyCode: 'USD' },
-            }],
+            Response: { ResponseStatus: { Code: "1" } },
+            RatedShipment: [
+              {
+                Service: { Code: "03", Description: "UPS Ground" },
+                TotalCharges: { MonetaryValue: "22.50", CurrencyCode: "USD" },
+              },
+            ],
           },
         }),
       });
 
       await adapter.getRates({
         origin: {
-          name: 'Shipper',
-          street1: '123 Main St',
-          city: 'Los Angeles',
-          state: 'CA',
-          postalCode: '90001',
-          country: 'US',
+          name: "Shipper",
+          street1: "123 Main St",
+          city: "Los Angeles",
+          state: "CA",
+          postalCode: "90001",
+          country: "US",
         },
         destination: {
-          name: 'Recipient',
-          street1: '456 Oak Ave',
-          city: 'New York',
-          state: 'NY',
-          postalCode: '10001',
-          country: 'US',
+          name: "Recipient",
+          street1: "456 Oak Ave",
+          city: "New York",
+          state: "NY",
+          postalCode: "10001",
+          country: "US",
         },
-        packages: [{ weight: 5, weightUnit: 'lb' }],
-        shipDate: new Date().toISOString().split('T')[0],
+        packages: [{ weight: 5, weightUnit: "lb" }],
+        shipDate: new Date().toISOString().split("T")[0],
       });
 
       const tokenCall = mockFetch.mock.calls[0];
-      expect(tokenCall[0]).toContain('oauth');
-      expect(tokenCall[1].method).toBe('POST');
+      expect(tokenCall[0]).toContain("oauth");
+      expect(tokenCall[1].method).toBe("POST");
     });
 
-    it('should cache access token and reuse', async () => {
+    it("should cache access token and reuse", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          access_token: 'cached-token',
+          access_token: "cached-token",
           expires_in: 3600,
         }),
       });
 
       const rateReply = {
         RateResponse: {
-          Response: { ResponseStatus: { Code: '1' } },
-          RatedShipment: [{
-            Service: { Code: '03' },
-            TotalCharges: { MonetaryValue: '22.50', CurrencyCode: 'USD' },
-          }],
+          Response: { ResponseStatus: { Code: "1" } },
+          RatedShipment: [
+            {
+              Service: { Code: "03" },
+              TotalCharges: { MonetaryValue: "22.50", CurrencyCode: "USD" },
+            },
+          ],
         },
       };
 
@@ -115,23 +119,23 @@ describe('UpsAdapter', () => {
 
       const request = {
         origin: {
-          name: 'Shipper',
-          street1: '123 Main St',
-          city: 'Los Angeles',
-          state: 'CA',
-          postalCode: '90001',
-          country: 'US',
+          name: "Shipper",
+          street1: "123 Main St",
+          city: "Los Angeles",
+          state: "CA",
+          postalCode: "90001",
+          country: "US",
         },
         destination: {
-          name: 'Recipient',
-          street1: '456 Oak Ave',
-          city: 'New York',
-          state: 'NY',
-          postalCode: '10001',
-          country: 'US',
+          name: "Recipient",
+          street1: "456 Oak Ave",
+          city: "New York",
+          state: "NY",
+          postalCode: "10001",
+          country: "US",
         },
-        packages: [{ weight: 5, weightUnit: 'lb' }],
-        shipDate: new Date().toISOString().split('T')[0],
+        packages: [{ weight: 5, weightUnit: "lb" }],
+        shipDate: new Date().toISOString().split("T")[0],
       };
 
       await adapter.getRates(request);
@@ -141,69 +145,69 @@ describe('UpsAdapter', () => {
       expect(mockFetch).toHaveBeenCalledTimes(3);
     });
 
-    it('should handle OAuth2 token request failures', async () => {
+    it("should handle OAuth2 token request failures", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 401,
         ok: false,
-        statusText: 'Unauthorized',
+        statusText: "Unauthorized",
       });
 
       await expect(
         adapter.getRates({
           origin: {
-            name: 'Shipper',
-            street1: '123 Main St',
-            city: 'Los Angeles',
-            state: 'CA',
-            postalCode: '90001',
-            country: 'US',
+            name: "Shipper",
+            street1: "123 Main St",
+            city: "Los Angeles",
+            state: "CA",
+            postalCode: "90001",
+            country: "US",
           },
           destination: {
-            name: 'Recipient',
-            street1: '456 Oak Ave',
-            city: 'New York',
-            state: 'NY',
-            postalCode: '10001',
-            country: 'US',
+            name: "Recipient",
+            street1: "456 Oak Ave",
+            city: "New York",
+            state: "NY",
+            postalCode: "10001",
+            country: "US",
           },
-          packages: [{ weight: 5, weightUnit: 'lb' }],
-          shipDate: new Date().toISOString().split('T')[0],
-        })
+          packages: [{ weight: 5, weightUnit: "lb" }],
+          shipDate: new Date().toISOString().split("T")[0],
+        }),
       ).rejects.toThrow(CarrierError);
     });
   });
 
-  describe('getRates()', () => {
+  describe("getRates()", () => {
     beforeEach(() => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          access_token: 'token-123',
+          access_token: "token-123",
           expires_in: 3600,
         }),
       });
     });
 
-    it('should parse rate response correctly', async () => {
+    it("should parse rate response correctly", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
           RateResponse: {
-            Response: { ResponseStatus: { Code: '1' } },
+            Response: { ResponseStatus: { Code: "1" } },
             RatedShipment: [
               {
-                Service: { Code: '03', Description: 'UPS Ground' },
-                TotalCharges: { MonetaryValue: '22.50', CurrencyCode: 'USD' },
-                GuaranteedDelivery: { BusinessDaysInTransit: '5' },
+                Service: { Code: "03", Description: "UPS Ground" },
+                TotalCharges: { MonetaryValue: "22.50", CurrencyCode: "USD" },
+                GuaranteedDelivery: { BusinessDaysInTransit: "5" },
               },
               {
-                Service: { Code: '02', Description: 'UPS 2nd Day Air' },
-                TotalCharges: { MonetaryValue: '35.75', CurrencyCode: 'USD' },
-                GuaranteedDelivery: { BusinessDaysInTransit: '2' },
+                Service: { Code: "02", Description: "UPS 2nd Day Air" },
+                TotalCharges: { MonetaryValue: "35.75", CurrencyCode: "USD" },
+                GuaranteedDelivery: { BusinessDaysInTransit: "2" },
               },
             ],
           },
@@ -212,45 +216,45 @@ describe('UpsAdapter', () => {
 
       const rates = await adapter.getRates({
         origin: {
-          name: 'Shipper',
-          street1: '123 Main St',
-          city: 'Los Angeles',
-          state: 'CA',
-          postalCode: '90001',
-          country: 'US',
+          name: "Shipper",
+          street1: "123 Main St",
+          city: "Los Angeles",
+          state: "CA",
+          postalCode: "90001",
+          country: "US",
         },
         destination: {
-          name: 'Recipient',
-          street1: '456 Oak Ave',
-          city: 'New York',
-          state: 'NY',
-          postalCode: '10001',
-          country: 'US',
+          name: "Recipient",
+          street1: "456 Oak Ave",
+          city: "New York",
+          state: "NY",
+          postalCode: "10001",
+          country: "US",
         },
-        packages: [{ weight: 5, weightUnit: 'lb' }],
-        shipDate: '2024-03-15',
+        packages: [{ weight: 5, weightUnit: "lb" }],
+        shipDate: "2024-03-15",
       });
 
       expect(rates).toHaveLength(2);
       expect(rates[0]).toEqual(
         expect.objectContaining({
-          carrier: 'UPS',
-          service: 'UPS Ground',
-          serviceCode: '03',
-          totalCharge: 22.50,
+          carrier: "UPS",
+          service: "UPS Ground",
+          serviceCode: "03",
+          totalCharge: 22.5,
           estimatedTransitDays: 5,
-        })
+        }),
       );
     });
 
-    it('should handle rate error response', async () => {
+    it("should handle rate error response", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 400,
         ok: false,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
           response: {
-            errors: [{ message: 'Invalid address' }],
+            errors: [{ message: "Invalid address" }],
           },
         }),
       });
@@ -258,62 +262,62 @@ describe('UpsAdapter', () => {
       await expect(
         adapter.getRates({
           origin: {
-            name: 'Shipper',
-            street1: '123 Main St',
-            city: 'Los Angeles',
-            state: 'CA',
-            postalCode: '90001',
-            country: 'US',
+            name: "Shipper",
+            street1: "123 Main St",
+            city: "Los Angeles",
+            state: "CA",
+            postalCode: "90001",
+            country: "US",
           },
           destination: {
-            name: 'Recipient',
-            street1: '456 Oak Ave',
-            city: 'New York',
-            state: 'NY',
-            postalCode: '10001',
-            country: 'US',
+            name: "Recipient",
+            street1: "456 Oak Ave",
+            city: "New York",
+            state: "NY",
+            postalCode: "10001",
+            country: "US",
           },
-          packages: [{ weight: 5, weightUnit: 'lb' }],
-          shipDate: new Date().toISOString().split('T')[0],
-        })
+          packages: [{ weight: 5, weightUnit: "lb" }],
+          shipDate: new Date().toISOString().split("T")[0],
+        }),
       ).rejects.toThrow(CarrierError);
     });
   });
 
-  describe('createLabel()', () => {
+  describe("createLabel()", () => {
     beforeEach(() => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          access_token: 'token-123',
+          access_token: "token-123",
           expires_in: 3600,
         }),
       });
     });
 
-    it('should create shipping label with base64 PDF', async () => {
+    it("should create shipping label with base64 PDF", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
           ShipmentResponse: {
-            Response: { ResponseStatus: { Code: '1' } },
+            Response: { ResponseStatus: { Code: "1" } },
             ShipmentResults: {
-              ShipmentIdentificationNumber: 'TRK123456789',
+              ShipmentIdentificationNumber: "TRK123456789",
               PackageResults: [
                 {
-                  TrackingNumber: 'TRACK123',
+                  TrackingNumber: "TRACK123",
                   LabelImage: {
-                    GraphicImage: 'JVBERi0xLjQK...base64encodedPDF...',
+                    GraphicImage: "JVBERi0xLjQK...base64encodedPDF...",
                   },
                 },
               ],
               ShipmentCharges: {
                 TotalCharges: {
-                  MonetaryValue: '22.50',
+                  MonetaryValue: "22.50",
                 },
               },
             },
@@ -323,55 +327,55 @@ describe('UpsAdapter', () => {
 
       const label = await adapter.createLabel({
         origin: {
-          name: 'Shipper',
-          street1: '123 Main St',
-          city: 'Los Angeles',
-          state: 'CA',
-          postalCode: '90001',
-          country: 'US',
-          phone: '5551234567',
+          name: "Shipper",
+          street1: "123 Main St",
+          city: "Los Angeles",
+          state: "CA",
+          postalCode: "90001",
+          country: "US",
+          phone: "5551234567",
         },
         destination: {
-          name: 'Recipient',
-          street1: '456 Oak Ave',
-          city: 'New York',
-          state: 'NY',
-          postalCode: '10001',
-          country: 'US',
+          name: "Recipient",
+          street1: "456 Oak Ave",
+          city: "New York",
+          state: "NY",
+          postalCode: "10001",
+          country: "US",
         },
         packages: [
           {
             weight: 5,
-            weightUnit: 'lb',
+            weightUnit: "lb",
             length: 12,
             width: 8,
             height: 6,
-            dimensionUnit: 'in',
+            dimensionUnit: "in",
           },
         ],
-        serviceCode: '03',
-        shipDate: new Date().toISOString().split('T')[0],
+        serviceCode: "03",
+        shipDate: new Date().toISOString().split("T")[0],
       });
 
       expect(label).toEqual(
         expect.objectContaining({
-          trackingNumber: 'TRACK123',
-          carrier: 'UPS',
+          trackingNumber: "TRACK123",
+          carrier: "UPS",
           labelData: expect.any(String),
-          labelFormat: 'PDF',
-          cost: 22.50,
-        })
+          labelFormat: "PDF",
+          cost: 22.5,
+        }),
       );
     });
 
-    it('should handle label creation error', async () => {
+    it("should handle label creation error", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 400,
         ok: false,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
           response: {
-            errors: [{ message: 'Invalid recipient address' }],
+            errors: [{ message: "Invalid recipient address" }],
           },
         }),
       });
@@ -379,42 +383,42 @@ describe('UpsAdapter', () => {
       await expect(
         adapter.createLabel({
           origin: {
-            name: 'Shipper',
-            street1: '123 Main St',
-            city: 'Los Angeles',
-            state: 'CA',
-            postalCode: '90001',
-            country: 'US',
+            name: "Shipper",
+            street1: "123 Main St",
+            city: "Los Angeles",
+            state: "CA",
+            postalCode: "90001",
+            country: "US",
           },
           destination: {
-            name: 'Recipient',
-            street1: '456 Oak Ave',
-            city: 'New York',
-            state: 'NY',
-            postalCode: '10001',
-            country: 'US',
+            name: "Recipient",
+            street1: "456 Oak Ave",
+            city: "New York",
+            state: "NY",
+            postalCode: "10001",
+            country: "US",
           },
-          packages: [{ weight: 5, weightUnit: 'lb' }],
-          serviceCode: '03',
-        })
+          packages: [{ weight: 5, weightUnit: "lb" }],
+          serviceCode: "03",
+        }),
       ).rejects.toThrow(CarrierError);
     });
   });
 
-  describe('voidLabel()', () => {
+  describe("voidLabel()", () => {
     beforeEach(() => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          access_token: 'token-123',
+          access_token: "token-123",
           expires_in: 3600,
         }),
       });
     });
 
-    it('should void shipment successfully', async () => {
+    it("should void shipment successfully", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
@@ -422,63 +426,81 @@ describe('UpsAdapter', () => {
         json: vi.fn().mockResolvedValueOnce({}),
       });
 
-      const result = await adapter.voidLabel('TRK123456789');
+      const result = await adapter.voidLabel("TRK123456789");
 
       expect(result).toEqual(
         expect.objectContaining({
           success: true,
-          trackingNumber: 'TRK123456789',
+          trackingNumber: "TRK123456789",
           refund: expect.any(Number),
           voidedAt: expect.any(Date),
-        })
+        }),
       );
     });
 
-    it('should reject invalid tracking number', async () => {
-      await expect(adapter.voidLabel('INVALID')).rejects.toThrow(CarrierError);
-      await expect(adapter.voidLabel('')).rejects.toThrow(CarrierError);
+    it("should reject invalid tracking number", async () => {
+      await expect(adapter.voidLabel("INVALID")).rejects.toThrow(CarrierError);
+      await expect(adapter.voidLabel("")).rejects.toThrow(CarrierError);
     });
   });
 
-  describe('getTracking()', () => {
+  describe("getTracking()", () => {
     beforeEach(() => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          access_token: 'token-123',
+          access_token: "token-123",
           expires_in: 3600,
         }),
       });
     });
 
-    it('should retrieve tracking with event parsing', async () => {
+    it("should retrieve tracking with event parsing", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
           trackResponse: {
-            shipment: [{
-              currentStatus: { status: 'IN_TRANSIT' },
-              estimatedDeliveryDate: { date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString() },
-              activity: [{
-                date: new Date().toISOString(),
-                status: { statusType: 'IN_TRANSIT', statusDescription: 'Package in transit' },
-                location: { address: { city: 'Louisville', stateProvinceCode: 'KY', countryCode: 'US', postalCode: '40213' } },
-              }],
-            }],
+            shipment: [
+              {
+                currentStatus: { status: "IN_TRANSIT" },
+                estimatedDeliveryDate: {
+                  date: new Date(
+                    Date.now() + 3 * 24 * 60 * 60 * 1000,
+                  ).toISOString(),
+                },
+                activity: [
+                  {
+                    date: new Date().toISOString(),
+                    status: {
+                      statusType: "IN_TRANSIT",
+                      statusDescription: "Package in transit",
+                    },
+                    location: {
+                      address: {
+                        city: "Louisville",
+                        stateProvinceCode: "KY",
+                        countryCode: "US",
+                        postalCode: "40213",
+                      },
+                    },
+                  },
+                ],
+              },
+            ],
           },
         }),
       });
 
-      const tracking = await adapter.getTracking('TRK123456789');
+      const tracking = await adapter.getTracking("TRK123456789");
 
       expect(tracking).toEqual(
         expect.objectContaining({
-          carrier: 'UPS',
-          trackingNumber: 'TRK123456789',
+          carrier: "UPS",
+          trackingNumber: "TRK123456789",
           status: expect.any(String),
           delivered: expect.any(Boolean),
           events: expect.arrayContaining([
@@ -494,53 +516,55 @@ describe('UpsAdapter', () => {
             }),
           ]),
           estimatedDeliveryDate: expect.any(Date),
-        })
+        }),
       );
     });
 
-    it('should reject invalid tracking number', async () => {
-      await expect(adapter.getTracking('INVALID')).rejects.toThrow(CarrierError);
-      await expect(adapter.getTracking('')).rejects.toThrow(CarrierError);
+    it("should reject invalid tracking number", async () => {
+      await expect(adapter.getTracking("INVALID")).rejects.toThrow(
+        CarrierError,
+      );
+      await expect(adapter.getTracking("")).rejects.toThrow(CarrierError);
     });
   });
 
-  describe('schedulePickup()', () => {
+  describe("schedulePickup()", () => {
     beforeEach(() => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          access_token: 'token-123',
+          access_token: "token-123",
           expires_in: 3600,
         }),
       });
     });
 
-    it('should schedule pickup successfully', async () => {
+    it("should schedule pickup successfully", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          PickupResponse: { PRN: 'UPS-PICKUP-123' },
+          PickupResponse: { PRN: "UPS-PICKUP-123" },
         }),
       });
 
       const pickup = await adapter.schedulePickup({
         location: {
-          name: 'Warehouse',
-          street1: '123 Main St',
-          city: 'Los Angeles',
-          state: 'CA',
-          postalCode: '90001',
-          country: 'US',
-          phone: '5551234567',
+          name: "Warehouse",
+          street1: "123 Main St",
+          city: "Los Angeles",
+          state: "CA",
+          postalCode: "90001",
+          country: "US",
+          phone: "5551234567",
         },
         pickupDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
         timeWindow: {
-          openTime: '09:00',
-          closeTime: '17:00',
+          openTime: "09:00",
+          closeTime: "17:00",
         },
         packageCount: 5,
         totalWeight: 25,
@@ -552,18 +576,18 @@ describe('UpsAdapter', () => {
           pickupDate: expect.any(Date),
           confirmedAt: expect.any(Date),
           confirmationCode: expect.any(String),
-        })
+        }),
       );
     });
 
-    it('should handle pickup scheduling errors', async () => {
+    it("should handle pickup scheduling errors", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 400,
         ok: false,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
           response: {
-            errors: [{ message: 'Invalid address' }],
+            errors: [{ message: "Invalid address" }],
           },
         }),
       });
@@ -571,59 +595,61 @@ describe('UpsAdapter', () => {
       await expect(
         adapter.schedulePickup({
           location: {
-            name: 'Warehouse',
-            street1: '123 Main St',
-            city: 'Los Angeles',
-            state: 'CA',
-            postalCode: '90001',
-            country: 'US',
+            name: "Warehouse",
+            street1: "123 Main St",
+            city: "Los Angeles",
+            state: "CA",
+            postalCode: "90001",
+            country: "US",
           },
           pickupDate: new Date(),
-        })
+        }),
       ).rejects.toThrow(CarrierError);
     });
   });
 
-  describe('validateAddress()', () => {
+  describe("validateAddress()", () => {
     beforeEach(() => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          access_token: 'token-123',
+          access_token: "token-123",
           expires_in: 3600,
         }),
       });
     });
 
-    it('should validate address and return candidates', async () => {
+    it("should validate address and return candidates", async () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         ok: true,
         headers: new Map(),
         json: vi.fn().mockResolvedValueOnce({
-          ValidAddressIndicator: 'Y',
-          ValidAddressResults: [{
-            AddressClassificationCode: 'Commercial',
-            Address: {
-              AddressLine1: '123 Main St',
-              City: 'Los Angeles',
-              StateProvinceCode: 'CA',
-              PostalCode: '90001',
-              CountryCode: 'US',
+          ValidAddressIndicator: "Y",
+          ValidAddressResults: [
+            {
+              AddressClassificationCode: "Commercial",
+              Address: {
+                AddressLine1: "123 Main St",
+                City: "Los Angeles",
+                StateProvinceCode: "CA",
+                PostalCode: "90001",
+                CountryCode: "US",
+              },
             },
-          }],
+          ],
         }),
       });
 
       const result = await adapter.validateAddress({
-        name: 'John Doe',
-        street1: '123 Main St',
-        city: 'Los Angeles',
-        state: 'CA',
-        postalCode: '90001',
-        country: 'US',
+        name: "John Doe",
+        street1: "123 Main St",
+        city: "Los Angeles",
+        state: "CA",
+        postalCode: "90001",
+        country: "US",
       });
 
       expect(result).toEqual(
@@ -636,31 +662,31 @@ describe('UpsAdapter', () => {
             postalCode: expect.any(String),
             country: expect.any(String),
           }),
-        })
+        }),
       );
     });
 
-    it('should reject incomplete addresses', async () => {
+    it("should reject incomplete addresses", async () => {
       await expect(
         adapter.validateAddress({
-          name: 'John',
-          street1: '123 Main St',
-          city: 'Los Angeles',
-          state: 'CA',
-          postalCode: '',
-          country: 'US',
-        })
+          name: "John",
+          street1: "123 Main St",
+          city: "Los Angeles",
+          state: "CA",
+          postalCode: "",
+          country: "US",
+        }),
       ).rejects.toThrow(CarrierError);
     });
   });
 
-  describe('adapter properties', () => {
-    it('should have correct name', () => {
-      expect(adapter.name).toBe('UPS');
+  describe("adapter properties", () => {
+    it("should have correct name", () => {
+      expect(adapter.name).toBe("UPS");
     });
 
-    it('should have correct carrier code', () => {
-      expect(adapter.code).toBe('ups');
+    it("should have correct carrier code", () => {
+      expect(adapter.code).toBe("ups");
     });
   });
 });

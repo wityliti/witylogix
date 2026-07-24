@@ -18,8 +18,13 @@ export function Skeleton({
   className,
   ...props
 }: SkeletonProps) {
-  const effectiveVariant = variant ?? (type && ["text", "circle", "rect", "card"].includes(type) ? type as "text" | "circle" | "rect" | "card" : "rect");
-  const baseClasses = "animate-pulse bg-gradient-to-r from-wl-bg-surface via-wl-bg-elevated to-wl-bg-surface";
+  const effectiveVariant =
+    variant ??
+    (type && ["text", "circle", "rect", "card"].includes(type)
+      ? (type as "text" | "circle" | "rect" | "card")
+      : "rect");
+  const baseClasses =
+    "animate-pulse bg-gradient-to-r from-wl-bg-surface via-wl-bg-elevated to-wl-bg-surface";
 
   const variantClasses = {
     text: "h-4 rounded",
@@ -28,8 +33,16 @@ export function Skeleton({
     card: "rounded-lg",
   };
 
-  const widthClass = width ? (typeof width === "number" ? `w-[${width}px]` : `w-${width}`) : "w-full";
-  const heightClass = height ? (typeof height === "number" ? `h-[${height}px]` : `h-${height}`) : "h-6";
+  const widthClass = width
+    ? typeof width === "number"
+      ? `w-[${width}px]`
+      : `w-${width}`
+    : "w-full";
+  const heightClass = height
+    ? typeof height === "number"
+      ? `h-[${height}px]`
+      : `h-${height}`
+    : "h-6";
 
   return (
     <div
@@ -39,7 +52,7 @@ export function Skeleton({
         effectiveVariant !== "circle" && widthClass,
         effectiveVariant !== "circle" && heightClass,
         effectiveVariant === "circle" && (width || "w-12"),
-        className
+        className,
       )}
       {...props}
     />
@@ -61,7 +74,7 @@ export function TableSkeleton({
     <div
       className={cn(
         "border border-wl-border-subtle rounded-lg overflow-hidden",
-        className
+        className,
       )}
     >
       {/* Header */}
@@ -103,7 +116,7 @@ export function CardSkeleton({ className }: { className?: string }) {
     <div
       className={cn(
         "bg-wl-bg-elevated border border-wl-border-subtle rounded-lg p-5 space-y-4",
-        className
+        className,
       )}
     >
       <Skeleton variant="text" className="h-6 w-1/3" />

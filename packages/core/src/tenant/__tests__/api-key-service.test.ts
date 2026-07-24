@@ -71,12 +71,9 @@ describe("API Key Service", () => {
     });
 
     it("should generate a test key with wl_test_ prefix", async () => {
-      const response = await generateApiKey(
-        testOrgId,
-        "Test Key",
-        ["READ"],
-        { isTest: true }
-      );
+      const response = await generateApiKey(testOrgId, "Test Key", ["READ"], {
+        isTest: true,
+      });
 
       expect(response.secret).toMatch(/^wl_test_/);
       expect(response.prefix).toMatch(/^wl_test_/);
@@ -89,7 +86,7 @@ describe("API Key Service", () => {
         testOrgId,
         "Expiring Key",
         ["READ"],
-        { expiresAt }
+        { expiresAt },
       );
 
       expect(response.expiresAt).toEqual(expiresAt);
@@ -100,7 +97,7 @@ describe("API Key Service", () => {
         testOrgId,
         "Rate Limited Key",
         ["READ"],
-        { rateLimit: 500 }
+        { rateLimit: 500 },
       );
 
       const dbKey = await prisma.apiKey.findUnique({
@@ -117,7 +114,7 @@ describe("API Key Service", () => {
         testOrgId,
         "Scoped Key",
         ["WRITE"],
-        { permissions }
+        { permissions },
       );
 
       const dbKey = await prisma.apiKey.findUnique({
@@ -155,7 +152,11 @@ describe("API Key Service", () => {
     it("should support all scopes", async () => {
       const scopes: ApiKeyScope[] = ["READ", "WRITE", "ADMIN", "WEBHOOK"];
 
-      const response = await generateApiKey(testOrgId, "Full Scope Key", scopes);
+      const response = await generateApiKey(
+        testOrgId,
+        "Full Scope Key",
+        scopes,
+      );
 
       expect(response.scopes).toEqual(scopes);
     });
@@ -210,7 +211,7 @@ describe("API Key Service", () => {
         testOrgId,
         "Expired Key",
         ["READ"],
-        { expiresAt: new Date(Date.now() - 1000) } // 1 second ago
+        { expiresAt: new Date(Date.now() - 1000) }, // 1 second ago
       );
 
       const result = await validateApiKey(expiredResponse.secret);
@@ -222,7 +223,8 @@ describe("API Key Service", () => {
     it("should reject tampering with key content", async () => {
       // Change last character
       const tamperedKey =
-        validKey.slice(0, -1) + (validKey[validKey.length - 1] === "a" ? "b" : "a");
+        validKey.slice(0, -1) +
+        (validKey[validKey.length - 1] === "a" ? "b" : "a");
 
       const result = await validateApiKey(tamperedKey);
 
@@ -256,9 +258,7 @@ describe("API Key Service", () => {
       const newResponse = await rotateApiKey(originalKeyId);
 
       expect(newResponse.secret).not.toBe(originalSecret);
-      expect(newResponse.prefix).not.toBe(
-        originalSecret.slice(0, 8)
-      );
+      expect(newResponse.prefix).not.toBe(originalSecret.slice(0, 8));
       expect(newResponse.scopes).toEqual(["WRITE"]);
     });
 
@@ -500,7 +500,9 @@ describe("API Key Service", () => {
 
     it("should update last used on multiple requests", async () => {
       await recordApiKeyUsage(keyId, "192.168.1.1");
-      const firstTime = (await prisma.apiKey.findUnique({ where: { id: keyId } }))?.lastUsedAt;
+      const firstTime = (
+        await prisma.apiKey.findUnique({ where: { id: keyId } })
+      )?.lastUsedAt;
 
       // Wait slightly and record again
       await new Promise((r) => setTimeout(r, 100));
@@ -509,7 +511,7 @@ describe("API Key Service", () => {
       const dbKey = await prisma.apiKey.findUnique({ where: { id: keyId } });
 
       expect(dbKey?.lastUsedAt?.getTime()).toBeGreaterThan(
-        firstTime?.getTime() || 0
+        firstTime?.getTime() || 0,
       );
     });
   });

@@ -139,10 +139,10 @@ describe("Read Replica Router", () => {
 
       expect(checkedReplica?.lastCheckedAt).toBeDefined();
       expect(checkedReplica?.lastCheckedAt!.getTime()).toBeGreaterThanOrEqual(
-        beforeCheck.getTime()
+        beforeCheck.getTime(),
       );
       expect(checkedReplica?.lastCheckedAt!.getTime()).toBeLessThanOrEqual(
-        afterCheck.getTime()
+        afterCheck.getTime(),
       );
     });
   });
@@ -212,7 +212,9 @@ describe("Read Replica Router", () => {
       const status = router.getStatus();
 
       expect(status.healthyReplicaCount).toBeGreaterThan(0);
-      expect(status.healthyReplicaCount).toBeLessThanOrEqual(replicaUrls.length);
+      expect(status.healthyReplicaCount).toBeLessThanOrEqual(
+        replicaUrls.length,
+      );
     });
 
     it("should include lag information in status", async () => {

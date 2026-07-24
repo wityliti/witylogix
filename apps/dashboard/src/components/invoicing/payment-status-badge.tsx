@@ -71,7 +71,10 @@ function formatDate(dateString: string): string {
   });
 }
 
-export const PaymentStatusBadge = forwardRef<HTMLDivElement, PaymentStatusBadgeProps>(
+export const PaymentStatusBadge = forwardRef<
+  HTMLDivElement,
+  PaymentStatusBadgeProps
+>(
   (
     {
       status,
@@ -86,7 +89,7 @@ export const PaymentStatusBadge = forwardRef<HTMLDivElement, PaymentStatusBadgeP
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const config = statusConfig[status];
     const isErrorStatus = status === "failed" || status === "refunded";
@@ -95,7 +98,12 @@ export const PaymentStatusBadge = forwardRef<HTMLDivElement, PaymentStatusBadgeP
       switch (status) {
         case "pending":
           return (
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -134,7 +142,12 @@ export const PaymentStatusBadge = forwardRef<HTMLDivElement, PaymentStatusBadgeP
           );
         case "refunded":
           return (
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -153,8 +166,14 @@ export const PaymentStatusBadge = forwardRef<HTMLDivElement, PaymentStatusBadgeP
         <p className="font-semibold text-wl-text-primary">
           Payment: {formatCurrency(amount, currency)}
         </p>
-        {timestamp && <p className="text-wl-text-secondary">{formatDate(timestamp)}</p>}
-        {referenceNumber && <p className="font-mono text-wl-text-tertiary">Ref: {referenceNumber}</p>}
+        {timestamp && (
+          <p className="text-wl-text-secondary">{formatDate(timestamp)}</p>
+        )}
+        {referenceNumber && (
+          <p className="font-mono text-wl-text-tertiary">
+            Ref: {referenceNumber}
+          </p>
+        )}
         {method && <p className="text-wl-text-secondary">Method: {method}</p>}
       </div>
     );
@@ -168,17 +187,24 @@ export const PaymentStatusBadge = forwardRef<HTMLDivElement, PaymentStatusBadgeP
             "border transition-colors duration-fast",
             config.bgClass,
             config.textClass,
-            className
+            className,
           )}
           {...props}
         >
           {/* Header */}
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2">
-              <div className={cn("w-3 h-3 rounded-full flex-shrink-0", config.indicatorClass)} />
+              <div
+                className={cn(
+                  "w-3 h-3 rounded-full flex-shrink-0",
+                  config.indicatorClass,
+                )}
+              />
               <div>
                 <p className="text-sm font-semibold">{config.label}</p>
-                <p className="text-xs text-wl-text-secondary">{formatCurrency(amount, currency)}</p>
+                <p className="text-xs text-wl-text-secondary">
+                  {formatCurrency(amount, currency)}
+                </p>
               </div>
             </div>
             <span className="flex-shrink-0">{statusIcon()}</span>
@@ -187,9 +213,15 @@ export const PaymentStatusBadge = forwardRef<HTMLDivElement, PaymentStatusBadgeP
           {/* Details */}
           {timestamp && (
             <div className="text-xs space-y-1 border-t border-current border-opacity-20 pt-2">
-              <p className="text-wl-text-secondary">Processed: {formatDate(timestamp)}</p>
-              {referenceNumber && <p className="font-mono">Ref: {referenceNumber}</p>}
-              {method && <p className="text-wl-text-secondary">Method: {method}</p>}
+              <p className="text-wl-text-secondary">
+                Processed: {formatDate(timestamp)}
+              </p>
+              {referenceNumber && (
+                <p className="font-mono">Ref: {referenceNumber}</p>
+              )}
+              {method && (
+                <p className="text-wl-text-secondary">Method: {method}</p>
+              )}
             </div>
           )}
 
@@ -228,18 +260,25 @@ export const PaymentStatusBadge = forwardRef<HTMLDivElement, PaymentStatusBadgeP
               "transition-colors duration-fast cursor-pointer hover:shadow-md",
               config.bgClass,
               config.textClass,
-              className
+              className,
             )}
             {...props}
           >
             {/* Status Indicator */}
-            <div className={cn("w-2 h-2 rounded-full flex-shrink-0", config.indicatorClass)} />
+            <div
+              className={cn(
+                "w-2 h-2 rounded-full flex-shrink-0",
+                config.indicatorClass,
+              )}
+            />
 
             {/* Status Label */}
             <span className="font-medium text-sm">{config.label}</span>
 
             {/* Amount */}
-            <span className="font-semibold text-sm">{formatCurrency(amount, currency)}</span>
+            <span className="font-semibold text-sm">
+              {formatCurrency(amount, currency)}
+            </span>
 
             {/* Icon */}
             <span className="flex-shrink-0">{statusIcon()}</span>
@@ -248,7 +287,7 @@ export const PaymentStatusBadge = forwardRef<HTMLDivElement, PaymentStatusBadgeP
         <TooltipContent>{tooltipContent}</TooltipContent>
       </Tooltip>
     );
-  }
+  },
 );
 
 PaymentStatusBadge.displayName = "PaymentStatusBadge";

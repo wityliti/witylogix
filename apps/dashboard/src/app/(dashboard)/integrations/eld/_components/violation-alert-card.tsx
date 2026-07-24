@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface ViolationAlert {
   id: string;
@@ -34,32 +34,41 @@ const getSeverityColor = (severity: string) => {
 
 export function ViolationAlertCard({ alert }: ViolationAlertCardProps) {
   return (
-    <Card className={cn(
-      "bg-wl-bg-elevated",
-      alert.severity === "critical" && "border-red-500/50"
-    )}>
+    <Card
+      className={cn(
+        "bg-wl-bg-elevated",
+        alert.severity === "critical" && "border-red-500/50",
+      )}
+    >
       <CardContent className="pt-6">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-start gap-3 flex-1">
-            <div className={cn(
-              "w-2 h-2 rounded-full mt-2 flex-shrink-0",
-              alert.severity === "critical" ? "bg-red-500" : alert.severity === "warning" ? "bg-yellow-500" : "bg-blue-500"
-            )} />
+            <div
+              className={cn(
+                "w-2 h-2 rounded-full mt-2 flex-shrink-0",
+                alert.severity === "critical"
+                  ? "bg-red-500"
+                  : alert.severity === "warning"
+                    ? "bg-yellow-500"
+                    : "bg-blue-500",
+              )}
+            />
             <div className="flex-1">
-              <h4 className="font-semibold text-white">
-                {alert.type}
-              </h4>
+              <h4 className="font-semibold text-white">{alert.type}</h4>
               <p className="text-sm text-gray-500 mt-1">
                 {alert.driverName} • {alert.timestamp}
               </p>
             </div>
           </div>
           <Badge
-            variant={alert.severity === "critical" ? "danger" : alert.severity === "warning" ? "warning" : "info"}
-            className={cn(
-              "capitalize",
-              getSeverityColor(alert.severity)
-            )}
+            variant={
+              alert.severity === "critical"
+                ? "danger"
+                : alert.severity === "warning"
+                  ? "warning"
+                  : "info"
+            }
+            className={cn("capitalize", getSeverityColor(alert.severity))}
           >
             {alert.severity}
           </Badge>
@@ -77,7 +86,7 @@ export function ViolationAlertCard({ alert }: ViolationAlertCardProps) {
               "flex-1",
               alert.severity === "critical"
                 ? "bg-red-500/20 text-red-400 hover:bg-red-500/30"
-                : "bg-blue-500 hover:bg-blue-500/90"
+                : "bg-blue-500 hover:bg-blue-500/90",
             )}
           >
             {alert.severity === "critical" ? "Take Action" : "Review"}

@@ -100,10 +100,7 @@ interface WebhookDeliveryLog {
 export async function action({ request }: ActionFunctionArgs) {
   // Only accept POST requests
   if (request.method !== "POST") {
-    return Response.json(
-      { error: "Method not allowed" },
-      { status: 405 }
-    );
+    return Response.json({ error: "Method not allowed" }, { status: 405 });
   }
 
   try {
@@ -129,7 +126,7 @@ export async function action({ request }: ActionFunctionArgs) {
       });
       return Response.json(
         { error: "Missing required headers" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -137,15 +134,12 @@ export async function action({ request }: ActionFunctionArgs) {
     const isValid = validateWebhookSignature(
       rawBody,
       hmacHeader,
-      process.env.SHOPIFY_API_SECRET || ""
+      process.env.SHOPIFY_API_SECRET || "",
     );
 
     if (!isValid) {
       console.warn("Invalid webhook signature", { shopId, topic, webhookId });
-      return Response.json(
-        { error: "Invalid signature" },
-        { status: 401 }
-      );
+      return Response.json({ error: "Invalid signature" }, { status: 401 });
     }
 
     // Parse webhook payload
@@ -154,10 +148,7 @@ export async function action({ request }: ActionFunctionArgs) {
       payload = JSON.parse(rawBody);
     } catch (e) {
       console.error("Failed to parse webhook payload", { error: e });
-      return Response.json(
-        { error: "Invalid JSON payload" },
-        { status: 400 }
-      );
+      return Response.json({ error: "Invalid JSON payload" }, { status: 400 });
     }
 
     // Log webhook receipt
@@ -176,7 +167,7 @@ export async function action({ request }: ActionFunctionArgs) {
       topic,
       payload,
       shopId,
-      logEntry
+      logEntry,
     );
 
     if (!workflowTriggered) {
@@ -185,10 +176,7 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     // Return 200 OK immediately (webhook is async)
-    return Response.json(
-      { success: true, webhookId, topic },
-      { status: 200 }
-    );
+    return Response.json({ success: true, webhookId, topic }, { status: 200 });
   } catch (error) {
     console.error("Webhook handler error", {
       error: error instanceof Error ? error.message : String(error),
@@ -199,12 +187,9 @@ export async function action({ request }: ActionFunctionArgs) {
     return Response.json(
       {
         success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Unknown error",
+        error: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 200 }
+      { status: 200 },
     );
   }
 }
@@ -223,7 +208,7 @@ export async function action({ request }: ActionFunctionArgs) {
 function validateWebhookSignature(
   payload: string,
   providedHmac: string,
-  secret: string
+  secret: string,
 ): boolean {
   try {
     // Compute HMAC-SHA256 of payload
@@ -253,7 +238,7 @@ async function triggerWorkflowForEvent(
   topic: string,
   payload: unknown,
   shopId: string,
-  logEntry: WebhookDeliveryLog
+  logEntry: WebhookDeliveryLog,
 ): Promise<boolean> {
   const startTime = Date.now();
 
@@ -263,7 +248,7 @@ async function triggerWorkflowForEvent(
         return await triggerCreateDeliveryOrderWorkflow(
           payload as OrderCreatedPayload,
           shopId,
-          logEntry
+          logEntry,
         );
 
       case "orders/fulfilled":
@@ -271,7 +256,7 @@ async function triggerWorkflowForEvent(
         return await triggerCompleteDeliveryWorkflow(
           payload as OrderFulfilledPayload,
           shopId,
-          logEntry
+          logEntry,
         );
 
       default:
@@ -299,7 +284,7 @@ async function triggerWorkflowForEvent(
 async function triggerCreateDeliveryOrderWorkflow(
   payload: OrderCreatedPayload,
   shopId: string,
-  logEntry: WebhookDeliveryLog
+  logEntry: WebhookDeliveryLog,
 ): Promise<boolean> {
   try {
     // Check if order is already being processed (idempotency)
@@ -310,7 +295,11 @@ async function triggerCreateDeliveryOrderWorkflow(
     const idempotencyKey = `order:${shopId}:${orderId}`;
     const cachedWebhook = await checkIdempotency(idempotencyKey);
     if (cachedWebhook) {
-      console.log("Order already processed (idempotent check)", { orderId, shopId, cachedWebhookId: cachedWebhook });
+      console.log("Order already processed (idempotent check)", {
+        orderId,
+        shopId,
+        cachedWebhookId: cachedWebhook,
+      });
       return true; // Consider it "triggered" since it was already started
     }
 
@@ -323,8 +312,7 @@ async function triggerCreateDeliveryOrderWorkflow(
 
     const customerEmail =
       payload.customer?.email || payload.email || "no-email@example.com";
-    const customerPhone =
-      payload.customer?.phone || payload.phone || "";
+    const customerPhone = payload.customer?.phone || payload.phone || "";
 
     const shippingAddress = payload.shipping_address || {
       address1: "",
@@ -404,7 +392,7 @@ async function triggerCreateDeliveryOrderWorkflow(
           event: "orders/create",
           source: "shopify_webhook",
         },
-      }
+      },
     );
 
     console.log("createDeliveryOrder workflow triggered", {
@@ -438,7 +426,7 @@ async function triggerCreateDeliveryOrderWorkflow(
 async function triggerCompleteDeliveryWorkflow(
   payload: OrderFulfilledPayload,
   shopId: string,
-  logEntry: WebhookDeliveryLog
+  logEntry: WebhookDeliveryLog,
 ): Promise<boolean> {
   try {
     const orderId = String(payload.order_id);
@@ -507,7 +495,7 @@ async function triggerCompleteDeliveryWorkflow(
           event: "orders/fulfilled",
           source: "shopify_webhook",
         },
-      }
+      },
     );
 
     console.log("completeDelivery workflow triggered", {
@@ -565,7 +553,9 @@ function getWorkflowQueue() {
  * @param idempotencyKey Unique key for this webhook
  * @returns Cached webhook ID if exists, null otherwise
  */
-async function checkIdempotency(idempotencyKey: string): Promise<string | null> {
+async function checkIdempotency(
+  idempotencyKey: string,
+): Promise<string | null> {
   try {
     // Import Redis client dynamically
     const redis = require("@witylogix/framework").getRedisClient?.();
@@ -587,7 +577,10 @@ async function checkIdempotency(idempotencyKey: string): Promise<string | null> 
  * @param idempotencyKey Unique key for this webhook
  * @param webhookId Shopify webhook ID to store
  */
-async function storeIdempotencyKey(idempotencyKey: string, webhookId: string): Promise<void> {
+async function storeIdempotencyKey(
+  idempotencyKey: string,
+  webhookId: string,
+): Promise<void> {
   try {
     const redis = require("@witylogix/framework").getRedisClient?.();
     if (!redis) {
@@ -607,7 +600,9 @@ async function storeIdempotencyKey(idempotencyKey: string, webhookId: string): P
  * Persist webhook event to database for audit trail and replay capability.
  * @param logEntry Webhook event details
  */
-async function persistWebhookEvent(logEntry: WebhookDeliveryLog): Promise<void> {
+async function persistWebhookEvent(
+  logEntry: WebhookDeliveryLog,
+): Promise<void> {
   try {
     // Import Prisma dynamically
     const { PrismaClient } = require("@witylogix/db");
@@ -622,8 +617,12 @@ async function persistWebhookEvent(logEntry: WebhookDeliveryLog): Promise<void> 
         statusCode: logEntry.statusCode,
         duration: logEntry.duration,
         timestamp: logEntry.timestamp,
-        requestBody: logEntry.requestBody ? JSON.stringify(logEntry.requestBody) : null,
-        responseBody: logEntry.responseBody ? JSON.stringify(logEntry.responseBody) : null,
+        requestBody: logEntry.requestBody
+          ? JSON.stringify(logEntry.requestBody)
+          : null,
+        responseBody: logEntry.responseBody
+          ? JSON.stringify(logEntry.responseBody)
+          : null,
       },
     });
 
@@ -644,7 +643,10 @@ async function persistWebhookEvent(logEntry: WebhookDeliveryLog): Promise<void> 
  * @param shopifyCustomerId Shopify customer ID
  * @returns Internal user ID
  */
-async function mapCustomerToUser(shopId: string, shopifyCustomerId: string): Promise<string> {
+async function mapCustomerToUser(
+  shopId: string,
+  shopifyCustomerId: string,
+): Promise<string> {
   try {
     const { PrismaClient } = require("@witylogix/db");
     const prisma = new PrismaClient();
@@ -671,7 +673,11 @@ async function mapCustomerToUser(shopId: string, shopifyCustomerId: string): Pro
 
     return newMapping.userId;
   } catch (error) {
-    console.error("Failed to map customer to user", { error, shopId, shopifyCustomerId });
+    console.error("Failed to map customer to user", {
+      error,
+      shopId,
+      shopifyCustomerId,
+    });
     // Fallback: generate a consistent ID
     return `user:${shopId}:${shopifyCustomerId}`;
   }
@@ -684,7 +690,10 @@ async function mapCustomerToUser(shopId: string, shopifyCustomerId: string): Pro
  * @param shopifyLocationId Shopify location ID
  * @returns Internal location ID
  */
-async function mapLocationToInternal(shopId: string, shopifyLocationId: string): Promise<string> {
+async function mapLocationToInternal(
+  shopId: string,
+  shopifyLocationId: string,
+): Promise<string> {
   try {
     const { PrismaClient } = require("@witylogix/db");
     const prisma = new PrismaClient();
@@ -703,7 +712,11 @@ async function mapLocationToInternal(shopId: string, shopifyLocationId: string):
     // Fallback: generate a consistent ID
     return `location:${shopId}:${shopifyLocationId}`;
   } catch (error) {
-    console.error("Failed to map location", { error, shopId, shopifyLocationId });
+    console.error("Failed to map location", {
+      error,
+      shopId,
+      shopifyLocationId,
+    });
     // Fallback: generate a consistent ID
     return `location:${shopId}:${shopifyLocationId}`;
   }

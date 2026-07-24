@@ -10,7 +10,7 @@ import type {
   SapPurchaseOrder,
   SapProduct,
   SapInvoice,
-} from './sap-odata-client.js';
+} from "./sap-odata-client.js";
 import type {
   NetSuiteCustomer,
   NetSuiteSalesOrder,
@@ -18,7 +18,7 @@ import type {
   NetSuiteInvoice,
   NetSuiteItem,
   NetSuiteVendor,
-} from './netsuite-sdk-client.js';
+} from "./netsuite-sdk-client.js";
 import type {
   ERPCustomer,
   ERPProduct,
@@ -27,7 +27,7 @@ import type {
   ERPAddress,
   ERPLineItem,
   ERPVendor,
-} from './types.js';
+} from "./types.js";
 
 // ─── UNIT OF MEASURE MAPPING ──────────────────────────────────────────────
 
@@ -36,37 +36,37 @@ import type {
  */
 const UOM_MAPPING: Record<string, string> = {
   // SAP codes
-  'ST': 'EA',
-  'PC': 'EA',
-  'BOX': 'BOX',
-  'KG': 'KG',
-  'L': 'L',
-  'M': 'M',
-  'CM': 'CM',
-  'MM': 'MM',
-  'EA': 'EA',
-  'CT': 'CT', // Carton
-  'PLT': 'PLT', // Pallet
+  ST: "EA",
+  PC: "EA",
+  BOX: "BOX",
+  KG: "KG",
+  L: "L",
+  M: "M",
+  CM: "CM",
+  MM: "MM",
+  EA: "EA",
+  CT: "CT", // Carton
+  PLT: "PLT", // Pallet
 
   // NetSuite codes
-  'Each': 'EA',
-  'Box': 'BOX',
-  'Case': 'CASE',
-  'Kilogram': 'KG',
-  'Gram': 'G',
-  'Liter': 'L',
-  'Meter': 'M',
-  'Centimeter': 'CM',
-  'Millimeter': 'MM',
-  'Carton': 'CT',
-  'Pallet': 'PLT',
+  Each: "EA",
+  Box: "BOX",
+  Case: "CASE",
+  Kilogram: "KG",
+  Gram: "G",
+  Liter: "L",
+  Meter: "M",
+  Centimeter: "CM",
+  Millimeter: "MM",
+  Carton: "CT",
+  Pallet: "PLT",
 };
 
 /**
  * Get normalized UOM code
  */
 function normalizeUOM(uom?: string): string {
-  if (!uom) return 'EA'; // Default to each
+  if (!uom) return "EA"; // Default to each
   return UOM_MAPPING[uom] || uom;
 }
 
@@ -76,30 +76,30 @@ function normalizeUOM(uom?: string): string {
  * Valid ISO 4217 currency codes
  */
 const VALID_CURRENCIES = new Set([
-  'USD',
-  'EUR',
-  'GBP',
-  'JPY',
-  'CHF',
-  'CAD',
-  'AUD',
-  'NZD',
-  'CNY',
-  'INR',
-  'MXN',
-  'BRL',
-  'ZAR',
-  'SGD',
-  'HKD',
-  'SEK',
-  'NOK',
-  'DKK',
-  'AED',
-  'SAR',
-  'KWD',
-  'QAR',
-  'BHD',
-  'OMR',
+  "USD",
+  "EUR",
+  "GBP",
+  "JPY",
+  "CHF",
+  "CAD",
+  "AUD",
+  "NZD",
+  "CNY",
+  "INR",
+  "MXN",
+  "BRL",
+  "ZAR",
+  "SGD",
+  "HKD",
+  "SEK",
+  "NOK",
+  "DKK",
+  "AED",
+  "SAR",
+  "KWD",
+  "QAR",
+  "BHD",
+  "OMR",
 ]);
 
 /**
@@ -118,13 +118,18 @@ function normalizeCurrency(currency?: string): string | undefined {
  */
 function normalizeSapAddress(sapAddress: any): ERPAddress {
   return {
-    type: sapAddress.AddressType === '1' ? 'billing' : sapAddress.AddressType === '2' ? 'shipping' : 'business',
-    line1: sapAddress.StreetName || '',
+    type:
+      sapAddress.AddressType === "1"
+        ? "billing"
+        : sapAddress.AddressType === "2"
+          ? "shipping"
+          : "business",
+    line1: sapAddress.StreetName || "",
     line2: sapAddress.StreetNumber || undefined,
-    city: sapAddress.City || '',
+    city: sapAddress.City || "",
     state: sapAddress.RegionCode || undefined,
-    postalCode: sapAddress.PostalCode || '',
-    country: sapAddress.CountryCode || '',
+    postalCode: sapAddress.PostalCode || "",
+    country: sapAddress.CountryCode || "",
     isDefault: sapAddress.IsDefaultAddress,
   };
 }
@@ -134,13 +139,13 @@ function normalizeSapAddress(sapAddress: any): ERPAddress {
  */
 function normalizeNetSuiteAddress(nsAddress: any): ERPAddress {
   return {
-    type: 'billing',
-    line1: nsAddress.addr1 || '',
+    type: "billing",
+    line1: nsAddress.addr1 || "",
     line2: nsAddress.addr2 || undefined,
-    city: nsAddress.city || '',
+    city: nsAddress.city || "",
     state: nsAddress.state || undefined,
-    postalCode: nsAddress.zip || '',
-    country: nsAddress.country || '',
+    postalCode: nsAddress.zip || "",
+    country: nsAddress.country || "",
     isDefault: nsAddress.isDefault,
   };
 }
@@ -158,23 +163,29 @@ export function normalizeSapCustomer(partner: SapBusinessPartner): ERPCustomer {
     name: partner.BusinessPartnerName,
     companyName: partner.BusinessPartnerName,
     taxId: undefined,
-    status: partner.BusinessPartnerIsBlocked === true ? 'blocked' : 'active',
+    status: partner.BusinessPartnerIsBlocked === true ? "blocked" : "active",
     addresses: partner.BPAddresses?.map(normalizeSapAddress),
-    currency: 'USD', // Default, SAP doesn't provide at BP level
+    currency: "USD", // Default, SAP doesn't provide at BP level
     customFields: {
       sapType: partner.BusinessPartnerType,
       sapLanguage: partner.Language,
       isNaturalPerson: partner.IsNaturalPerson,
     },
-    createdAt: partner.CreationDate ? new Date(partner.CreationDate) : undefined,
-    lastModifiedAt: partner.ModifiedDate ? new Date(partner.ModifiedDate) : undefined,
+    createdAt: partner.CreationDate
+      ? new Date(partner.CreationDate)
+      : undefined,
+    lastModifiedAt: partner.ModifiedDate
+      ? new Date(partner.ModifiedDate)
+      : undefined,
   };
 }
 
 /**
  * Normalize NetSuite customer to unified customer
  */
-export function normalizeNetSuiteCustomer(customer: NetSuiteCustomer): ERPCustomer {
+export function normalizeNetSuiteCustomer(
+  customer: NetSuiteCustomer,
+): ERPCustomer {
   return {
     id: customer.internalId || customer.id,
     externalId: customer.internalId || customer.id,
@@ -189,11 +200,17 @@ export function normalizeNetSuiteCustomer(customer: NetSuiteCustomer): ERPCustom
     creditLimit: customer.creditLimit,
     paymentTerms: customer.paymentTerms,
     currency: normalizeCurrency(customer.currency),
-    status: customer.status || 'active',
-    addresses: customer.billingAddress ? [normalizeNetSuiteAddress(customer.billingAddress)] : undefined,
+    status: customer.status || "active",
+    addresses: customer.billingAddress
+      ? [normalizeNetSuiteAddress(customer.billingAddress)]
+      : undefined,
     customFields: customer.customFields,
-    createdAt: customer.createdDate ? new Date(customer.createdDate) : undefined,
-    lastModifiedAt: customer.lastModifiedDate ? new Date(customer.lastModifiedDate) : undefined,
+    createdAt: customer.createdDate
+      ? new Date(customer.createdDate)
+      : undefined,
+    lastModifiedAt: customer.lastModifiedDate
+      ? new Date(customer.lastModifiedDate)
+      : undefined,
   };
 }
 
@@ -207,14 +224,18 @@ export function normalizeSapVendor(partner: SapBusinessPartner): ERPVendor {
     code: partner.BusinessPartner,
     name: partner.BusinessPartnerName,
     companyName: partner.BusinessPartnerName,
-    status: partner.BusinessPartnerIsBlocked === true ? 'blocked' : 'active',
+    status: partner.BusinessPartnerIsBlocked === true ? "blocked" : "active",
     addresses: partner.BPAddresses?.map(normalizeSapAddress),
-    currency: 'USD', // Default
+    currency: "USD", // Default
     customFields: {
       sapType: partner.BusinessPartnerType,
     },
-    createdAt: partner.CreationDate ? new Date(partner.CreationDate) : undefined,
-    lastModifiedAt: partner.ModifiedDate ? new Date(partner.ModifiedDate) : undefined,
+    createdAt: partner.CreationDate
+      ? new Date(partner.CreationDate)
+      : undefined,
+    lastModifiedAt: partner.ModifiedDate
+      ? new Date(partner.ModifiedDate)
+      : undefined,
   };
 }
 
@@ -234,11 +255,15 @@ export function normalizeNetSuiteVendor(vendor: NetSuiteVendor): ERPVendor {
     taxId: vendor.taxId,
     currency: normalizeCurrency(vendor.currency),
     paymentTerms: vendor.paymentTerms,
-    status: vendor.status || 'active',
-    addresses: vendor.address ? [normalizeNetSuiteAddress(vendor.address)] : undefined,
+    status: vendor.status || "active",
+    addresses: vendor.address
+      ? [normalizeNetSuiteAddress(vendor.address)]
+      : undefined,
     customFields: vendor.customFields,
     createdAt: vendor.createdDate ? new Date(vendor.createdDate) : undefined,
-    lastModifiedAt: vendor.lastModifiedDate ? new Date(vendor.lastModifiedDate) : undefined,
+    lastModifiedAt: vendor.lastModifiedDate
+      ? new Date(vendor.lastModifiedDate)
+      : undefined,
   };
 }
 
@@ -256,7 +281,12 @@ export function normalizeSapProduct(product: SapProduct): ERPProduct {
     description: product.MaterialDescription,
     unit: normalizeUOM(product.BaseUnit),
     quantity: plantData?.Quantity,
-    status: product.Deleted === true ? 'inactive' : product.MaterialStatus === 'active' ? 'active' : 'inactive',
+    status:
+      product.Deleted === true
+        ? "inactive"
+        : product.MaterialStatus === "active"
+          ? "active"
+          : "inactive",
     customFields: {
       sapType: product.MaterialType,
       sapPlant: plantData?.Plant,
@@ -266,8 +296,12 @@ export function normalizeSapProduct(product: SapProduct): ERPProduct {
       reorderPoint: plantData?.ReorderPoint,
       safetyStock: plantData?.SafetyStock,
     },
-    createdAt: product.CreationDate ? new Date(product.CreationDate) : undefined,
-    lastModifiedAt: product.LastModifiedDate ? new Date(product.LastModifiedDate) : undefined,
+    createdAt: product.CreationDate
+      ? new Date(product.CreationDate)
+      : undefined,
+    lastModifiedAt: product.LastModifiedDate
+      ? new Date(product.LastModifiedDate)
+      : undefined,
   };
 }
 
@@ -284,7 +318,7 @@ export function normalizeNetSuiteProduct(item: NetSuiteItem): ERPProduct {
     unit: normalizeUOM(item.saleUnit || item.baseUnit),
     quantity: item.quantityOnHand,
     cost: item.cost,
-    status: item.isInvtItem === false ? 'inactive' : 'active',
+    status: item.isInvtItem === false ? "inactive" : "active",
     customFields: {
       nsType: item.type,
       conversionRate: item.conversionRate,
@@ -297,7 +331,9 @@ export function normalizeNetSuiteProduct(item: NetSuiteItem): ERPProduct {
       isLotNumbered: item.isLotNumbered,
     },
     createdAt: item.createdDate ? new Date(item.createdDate) : undefined,
-    lastModifiedAt: item.lastModifiedDate ? new Date(item.lastModifiedDate) : undefined,
+    lastModifiedAt: item.lastModifiedDate
+      ? new Date(item.lastModifiedDate)
+      : undefined,
   };
 }
 
@@ -311,9 +347,15 @@ function normalizeSapOrderItems(items: any[]): ERPLineItem[] {
     itemCode: item.Material,
     itemName: item.MaterialDescription || item.Material,
     quantity: item.OrderQuantity || 0,
-    unitPrice: item.NetAmount && item.OrderQuantity ? item.NetAmount / item.OrderQuantity : 0,
+    unitPrice:
+      item.NetAmount && item.OrderQuantity
+        ? item.NetAmount / item.OrderQuantity
+        : 0,
     unit: normalizeUOM(item.OrderQuantityUnit),
-    taxRate: item.TotalTaxAmount && item.OrderQuantity ? item.TotalTaxAmount / item.OrderQuantity : undefined,
+    taxRate:
+      item.TotalTaxAmount && item.OrderQuantity
+        ? item.TotalTaxAmount / item.OrderQuantity
+        : undefined,
     totalAmount: item.TotalAmount || 0,
   }));
 }
@@ -330,7 +372,8 @@ function normalizeNetSuiteOrderItems(items: any[]): ERPLineItem[] {
     description: item.description,
     quantity: item.quantity || 0,
     unitPrice: item.rate || 0,
-    discountPercent: typeof item.discount === 'number' ? item.discount : undefined,
+    discountPercent:
+      typeof item.discount === "number" ? item.discount : undefined,
     totalAmount: item.amount || 0,
   }));
 }
@@ -344,9 +387,9 @@ export function normalizeSapSalesOrder(order: SapSalesOrder): ERPOrder {
     externalId: order.SalesOrder,
     orderNumber: order.SalesOrder,
     orderDate: order.DocumentDate ? new Date(order.DocumentDate) : new Date(),
-    customerId: order.Bill_Cust || '',
+    customerId: order.Bill_Cust || "",
     currency: normalizeCurrency(order.OrderCurrency),
-    status: order.OrderStatus === 'confirmed' ? 'confirmed' : 'pending',
+    status: order.OrderStatus === "confirmed" ? "confirmed" : "pending",
     lineItems: normalizeSapOrderItems(order.SOItems || []),
     subtotal: order.NetAmount,
     taxAmount: order.TaxAmount,
@@ -364,12 +407,17 @@ export function normalizeSapSalesOrder(order: SapSalesOrder): ERPOrder {
 /**
  * Normalize NetSuite sales order to unified order
  */
-export function normalizeNetSuiteSalesOrder(order: NetSuiteSalesOrder): ERPOrder {
+export function normalizeNetSuiteSalesOrder(
+  order: NetSuiteSalesOrder,
+): ERPOrder {
   return {
     id: order.internalId || order.id,
     externalId: order.internalId || order.id,
     orderNumber: order.tranId,
-    orderDate: order.tranDate instanceof Date ? order.tranDate : new Date(order.tranDate as string),
+    orderDate:
+      order.tranDate instanceof Date
+        ? order.tranDate
+        : new Date(order.tranDate as string),
     customerId: order.entity,
     customerName: order.entityName,
     currency: normalizeCurrency(order.currency),
@@ -379,11 +427,17 @@ export function normalizeNetSuiteSalesOrder(order: NetSuiteSalesOrder): ERPOrder
     discountAmount: order.discountTotal,
     taxAmount: order.taxTotal,
     total: order.total || 0,
-    shippingAddress: order.shippingAddress ? normalizeNetSuiteAddress(order.shippingAddress) : undefined,
-    billingAddress: order.billingAddress ? normalizeNetSuiteAddress(order.billingAddress) : undefined,
+    shippingAddress: order.shippingAddress
+      ? normalizeNetSuiteAddress(order.shippingAddress)
+      : undefined,
+    billingAddress: order.billingAddress
+      ? normalizeNetSuiteAddress(order.billingAddress)
+      : undefined,
     customFields: order.customFields,
     createdAt: order.createdDate ? new Date(order.createdDate) : undefined,
-    lastModifiedAt: order.lastModifiedDate ? new Date(order.lastModifiedDate) : undefined,
+    lastModifiedAt: order.lastModifiedDate
+      ? new Date(order.lastModifiedDate)
+      : undefined,
   };
 }
 
@@ -396,16 +450,19 @@ export function normalizeSapPurchaseOrder(order: SapPurchaseOrder): ERPOrder {
     externalId: order.PurchaseOrder,
     orderNumber: order.PurchaseOrder,
     orderDate: order.DocumentDate ? new Date(order.DocumentDate) : new Date(),
-    customerId: order.Vendor || '',
+    customerId: order.Vendor || "",
     currency: normalizeCurrency(order.DocumentCurrency),
-    status: order.DocumentStatus === 'released' ? 'confirmed' : 'pending',
+    status: order.DocumentStatus === "released" ? "confirmed" : "pending",
     lineItems: (order.to_PurchaseOrderItem || []).map((item: any) => ({
       lineNumber: parseInt(item.PurchaseOrderItem, 10),
       itemId: item.Material,
       itemCode: item.Material,
       itemName: item.MaterialName || item.Material,
       quantity: item.OrderQuantity || 0,
-      unitPrice: item.NetAmount && item.OrderQuantity ? item.NetAmount / item.OrderQuantity : 0,
+      unitPrice:
+        item.NetAmount && item.OrderQuantity
+          ? item.NetAmount / item.OrderQuantity
+          : 0,
       totalAmount: item.TotalAmount || 0,
     })),
     subtotal: order.NetAmount,
@@ -422,12 +479,17 @@ export function normalizeSapPurchaseOrder(order: SapPurchaseOrder): ERPOrder {
 /**
  * Normalize NetSuite purchase order to unified order
  */
-export function normalizeNetSuitePurchaseOrder(order: NetSuitePurchaseOrder): ERPOrder {
+export function normalizeNetSuitePurchaseOrder(
+  order: NetSuitePurchaseOrder,
+): ERPOrder {
   return {
     id: order.internalId || order.id,
     externalId: order.internalId || order.id,
     orderNumber: order.tranId,
-    orderDate: order.tranDate instanceof Date ? order.tranDate : new Date(order.tranDate as string),
+    orderDate:
+      order.tranDate instanceof Date
+        ? order.tranDate
+        : new Date(order.tranDate as string),
     customerId: order.entity,
     customerName: order.entityName,
     currency: normalizeCurrency(order.currency),
@@ -439,7 +501,9 @@ export function normalizeNetSuitePurchaseOrder(order: NetSuitePurchaseOrder): ER
     total: order.total || 0,
     customFields: order.customFields,
     createdAt: order.createdDate ? new Date(order.createdDate) : undefined,
-    lastModifiedAt: order.lastModifiedDate ? new Date(order.lastModifiedDate) : undefined,
+    lastModifiedAt: order.lastModifiedDate
+      ? new Date(order.lastModifiedDate)
+      : undefined,
   };
 }
 
@@ -451,18 +515,23 @@ export function normalizeSapInvoice(invoice: SapInvoice): ERPInvoice {
     id: invoice.BillingDocument,
     externalId: invoice.BillingDocument,
     invoiceNumber: invoice.BillingDocument,
-    invoiceDate: invoice.DocumentDate ? new Date(invoice.DocumentDate) : new Date(),
+    invoiceDate: invoice.DocumentDate
+      ? new Date(invoice.DocumentDate)
+      : new Date(),
     dueDate: invoice.DocumentDate ? new Date(invoice.DocumentDate) : new Date(),
-    customerId: invoice.BillingCustomer || '',
+    customerId: invoice.BillingCustomer || "",
     currency: normalizeCurrency(invoice.DocumentCurrency),
-    status: invoice.BillingDocumentStatus === 'completed' ? 'paid' : 'posted',
+    status: invoice.BillingDocumentStatus === "completed" ? "paid" : "posted",
     lineItems: (invoice.to_BillingDocumentItem || []).map((item: any) => ({
       lineNumber: parseInt(item.BillingDocumentItem, 10),
       itemId: item.Material,
       itemCode: item.Material,
       itemName: item.MaterialDescription || item.Material,
       quantity: item.BilledQuantity || 0,
-      unitPrice: item.NetAmount && item.BilledQuantity ? item.NetAmount / item.BilledQuantity : 0,
+      unitPrice:
+        item.NetAmount && item.BilledQuantity
+          ? item.NetAmount / item.BilledQuantity
+          : 0,
       totalAmount: item.GrossAmount || 0,
     })),
     subtotal: invoice.TotalNetAmount,
@@ -472,7 +541,9 @@ export function normalizeSapInvoice(invoice: SapInvoice): ERPInvoice {
       sapType: invoice.BillingDocumentType,
       salesOrderRef: invoice.ReferenceSDDocument,
     },
-    createdAt: invoice.CreationDate ? new Date(invoice.CreationDate) : undefined,
+    createdAt: invoice.CreationDate
+      ? new Date(invoice.CreationDate)
+      : undefined,
     lastModifiedAt: undefined,
   };
 }
@@ -485,8 +556,14 @@ export function normalizeNetSuiteInvoice(invoice: NetSuiteInvoice): ERPInvoice {
     id: invoice.internalId || invoice.id,
     externalId: invoice.internalId || invoice.id,
     invoiceNumber: invoice.tranId,
-    invoiceDate: invoice.tranDate instanceof Date ? invoice.tranDate : new Date(invoice.tranDate as string),
-    dueDate: invoice.dueDate instanceof Date ? invoice.dueDate : new Date(invoice.dueDate as string),
+    invoiceDate:
+      invoice.tranDate instanceof Date
+        ? invoice.tranDate
+        : new Date(invoice.tranDate as string),
+    dueDate:
+      invoice.dueDate instanceof Date
+        ? invoice.dueDate
+        : new Date(invoice.dueDate as string),
     customerId: invoice.entity,
     customerName: invoice.entityName,
     currency: normalizeCurrency(invoice.currency),
@@ -498,10 +575,16 @@ export function normalizeNetSuiteInvoice(invoice: NetSuiteInvoice): ERPInvoice {
     total: invoice.total || 0,
     amountPaid: invoice.amountPaid,
     amountDue: invoice.amountRemaining,
-    billingAddress: invoice.billingAddress ? normalizeNetSuiteAddress(invoice.billingAddress) : undefined,
-    shippingAddress: invoice.shippingAddress ? normalizeNetSuiteAddress(invoice.shippingAddress) : undefined,
+    billingAddress: invoice.billingAddress
+      ? normalizeNetSuiteAddress(invoice.billingAddress)
+      : undefined,
+    shippingAddress: invoice.shippingAddress
+      ? normalizeNetSuiteAddress(invoice.shippingAddress)
+      : undefined,
     customFields: invoice.customFields,
     createdAt: invoice.createdDate ? new Date(invoice.createdDate) : undefined,
-    lastModifiedAt: invoice.lastModifiedDate ? new Date(invoice.lastModifiedDate) : undefined,
+    lastModifiedAt: invoice.lastModifiedDate
+      ? new Date(invoice.lastModifiedDate)
+      : undefined,
   };
 }

@@ -45,7 +45,8 @@ export function DemandForecastChart({
     const canvasWidth = Math.max(800, data.length * 40);
     const canvasHeight = height;
 
-    const pointSpacing = (canvasWidth - padding.left - padding.right) / (data.length - 1 || 1);
+    const pointSpacing =
+      (canvasWidth - padding.left - padding.right) / (data.length - 1 || 1);
 
     const labels = data.map((d) => {
       const date = new Date(d.timestamp);
@@ -79,16 +80,20 @@ export function DemandForecastChart({
   const scaleY = useCallback(
     (value: number): number => {
       const normalized = (value - minValue) / valueRange;
-      return canvasHeight - padding.bottom - normalized * (canvasHeight - padding.top - padding.bottom);
+      return (
+        canvasHeight -
+        padding.bottom -
+        normalized * (canvasHeight - padding.top - padding.bottom)
+      );
     },
-    [minValue, valueRange, canvasHeight, padding]
+    [minValue, valueRange, canvasHeight, padding],
   );
 
   const scaleX = useCallback(
     (index: number): number => {
       return padding.left + index * pointSpacing;
     },
-    [padding, pointSpacing]
+    [padding, pointSpacing],
   );
 
   // Generate path strings for lines
@@ -155,7 +160,7 @@ export function DemandForecastChart({
       setHoveredIndex(index);
       setTooltipPos({ x: event.clientX, y: event.clientY });
     },
-    []
+    [],
   );
 
   const handlePointLeave = useCallback(() => {
@@ -166,7 +171,7 @@ export function DemandForecastChart({
     (index: number) => {
       onAnomalyClick?.(index, data[index]);
     },
-    [data, onAnomalyClick]
+    [data, onAnomalyClick],
   );
 
   return (
@@ -174,7 +179,11 @@ export function DemandForecastChart({
       <div className="flex flex-col gap-4">
         {/* Chart container */}
         <div className="overflow-x-auto border border-wl-border-subtle rounded-lg bg-wl-bg-surface p-4">
-          <svg width={canvasWidth} height={canvasHeight} className="bg-transparent">
+          <svg
+            width={canvasWidth}
+            height={canvasHeight}
+            className="bg-transparent"
+          >
             {/* Grid lines */}
             {showGrid && (
               <>
@@ -352,13 +361,22 @@ export function DemandForecastChart({
               {/* Confidence band */}
               <div className="flex items-center gap-2">
                 <div className="w-8 h-4 bg-blue-500/10 rounded border border-blue-500/30" />
-                <span className="text-xs text-wl-text-tertiary">Confidence Band</span>
+                <span className="text-xs text-wl-text-tertiary">
+                  Confidence Band
+                </span>
               </div>
 
               {/* Anomalies */}
               <div className="flex items-center gap-2">
                 <svg width="16" height="16" viewBox="0 0 16 16">
-                  <circle cx="8" cy="8" r="6" fill="none" stroke="rgb(239, 68, 68)" strokeWidth="1" />
+                  <circle
+                    cx="8"
+                    cy="8"
+                    r="6"
+                    fill="none"
+                    stroke="rgb(239, 68, 68)"
+                    strokeWidth="1"
+                  />
                   <circle cx="8" cy="8" r="3" fill="rgb(239, 68, 68)" />
                 </svg>
                 <span className="text-xs text-wl-text-tertiary">Anomaly</span>
@@ -394,7 +412,9 @@ export function DemandForecastChart({
               </p>
             )}
             {data[hoveredIndex].anomaly && (
-              <p className="text-xs text-red-400 font-medium mt-1">Anomaly detected</p>
+              <p className="text-xs text-red-400 font-medium mt-1">
+                Anomaly detected
+              </p>
             )}
           </div>
         )}

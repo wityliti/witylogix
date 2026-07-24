@@ -18,7 +18,7 @@ import type {
   ConflictResolution,
   EntityRelationshipMapping,
   SyncStateToken,
-} from './types.js';
+} from "./types.js";
 
 // ─── SYNC STATE & TRACKING ─────────────────────────────────────────
 
@@ -30,7 +30,7 @@ export interface SyncState {
   lastSyncedAt: Date;
   lastRemoteModifiedAt: Date;
   lastLocalModifiedAt: Date;
-  status: 'synced' | 'pending' | 'failed' | 'conflict';
+  status: "synced" | "pending" | "failed" | "conflict";
 }
 
 export interface SyncConflict {
@@ -68,7 +68,7 @@ export interface CRMSyncEngineConfig {
   maxRetries?: number;
   retryDelayMs?: number;
   enableWebhooks?: boolean;
-  syncDirection: 'inbound' | 'outbound' | 'bidirectional';
+  syncDirection: "inbound" | "outbound" | "bidirectional";
   entityRelationships?: EntityRelationshipMapping[];
 }
 
@@ -83,7 +83,7 @@ export interface SyncErrorRecord {
   retryCount: number;
   maxRetries: number;
   nextRetryAt?: Date;
-  status: 'pending_retry' | 'dead_lettered' | 'resolved';
+  status: "pending_retry" | "dead_lettered" | "resolved";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -98,7 +98,10 @@ export class CRMSyncEngine {
   private errorQueue: SyncErrorRecord[] = [];
   private metrics: SyncMetrics;
 
-  constructor(config: CRMSyncEngineConfig, adapters: Map<CRMProvider, ICRMAdapter>) {
+  constructor(
+    config: CRMSyncEngineConfig,
+    adapters: Map<CRMProvider, ICRMAdapter>,
+  ) {
     this.config = config;
     this.adapters = adapters;
     this.metrics = {
@@ -115,17 +118,25 @@ export class CRMSyncEngine {
 
   // ─── SYNC ORCHESTRATION ────────────────────────────────────────────
 
-  async performFullSync(entityType: 'contact' | 'account' | 'deal' | 'activity'): Promise<SyncMetrics> {
+  async performFullSync(
+    entityType: "contact" | "account" | "deal" | "activity",
+  ): Promise<SyncMetrics> {
     const startTime = Date.now();
     this.metrics.startedAt = new Date();
 
     try {
       for (const [provider, adapter] of this.adapters.entries()) {
-        if (this.config.syncDirection === 'inbound' || this.config.syncDirection === 'bidirectional') {
+        if (
+          this.config.syncDirection === "inbound" ||
+          this.config.syncDirection === "bidirectional"
+        ) {
           await this.syncInbound(provider, adapter, entityType);
         }
 
-        if (this.config.syncDirection === 'outbound' || this.config.syncDirection === 'bidirectional') {
+        if (
+          this.config.syncDirection === "outbound" ||
+          this.config.syncDirection === "bidirectional"
+        ) {
           await this.syncOutbound(provider, adapter, entityType);
         }
       }
@@ -137,7 +148,7 @@ export class CRMSyncEngine {
       await this.processErrorQueue();
     } catch (error) {
       this.metrics.totalErrors++;
-      console.error('Sync error:', error);
+      console.error("Sync error:", error);
     }
 
     this.metrics.durationMs = Date.now() - startTime;
@@ -149,7 +160,7 @@ export class CRMSyncEngine {
   private async syncInbound(
     provider: CRMProvider,
     adapter: ICRMAdapter,
-    entityType: string
+    entityType: string,
   ): Promise<void> {
     let pagination = { limit: this.config.batchSize || 200, offset: 0 };
 
@@ -158,48 +169,49 @@ export class CRMSyncEngine {
         let result;
 
         switch (entityType) {
-          case 'contact':
+          case "contact":
             result = await adapter.getContacts({}, pagination);
             for (const contact of result.data) {
-              await this.syncInboundEntity(provider, 'contact', contact);
+              await this.syncInboundEntity(provider, "contact", contact);
             }
             break;
 
-          case 'account':
+          case "account":
             result = await adapter.getAccounts({}, pagination);
             for (const account of result.data) {
-              await this.syncInboundEntity(provider, 'account', account);
+              await this.syncInboundEntity(provider, "account", account);
             }
             break;
 
-          case 'deal':
+          case "deal":
             result = await adapter.getOpportunities({}, pagination);
             for (const deal of result.data) {
-              await this.syncInboundEntity(provider, 'deal', deal);
+              await this.syncInboundEntity(provider, "deal", deal);
             }
             break;
 
-          case 'activity':
-            result = await adapter.getActivities('', pagination);
+          case "activity":
+            result = await adapter.getActivities("", pagination);
             for (const activity of result.data) {
-              await this.syncInboundEntity(provider, 'activity', activity);
+              await this.syncInboundEntity(provider, "activity", activity);
             }
             break;
         }
 
         if (!result?.hasMore) break;
-        pagination.offset = (pagination.offset || 0) + (this.config.batchSize || 200);
+        pagination.offset =
+          (pagination.offset || 0) + (this.config.batchSize || 200);
       }
     } catch (error) {
       this.metrics.totalErrors++;
-      this.queueError(provider, entityType, '', error as Error);
+      this.queueError(provider, entityType, "", error as Error);
     }
   }
 
   private async syncOutbound(
     provider: CRMProvider,
     adapter: ICRMAdapter,
-    entityType: string
+    entityType: string,
   ): Promise<void> {
     // Implementation would sync local Witylogix data to CRM
     // This would be implemented based on Witylogix data store access
@@ -208,13 +220,14 @@ export class CRMSyncEngine {
   private async syncInboundEntity(
     provider: CRMProvider,
     entityType: string,
-    data: unknown
+    data: unknown,
   ): Promise<void> {
     const stateKey = `${provider}:${entityType}:${(data as Record<string, unknown>).id}`;
     const currentState = this.syncStates.get(stateKey);
 
     try {
-      const remoteModifiedAt = (data as Record<string, unknown>).lastModifiedAt as Date | undefined;
+      const remoteModifiedAt = (data as Record<string, unknown>)
+        .lastModifiedAt as Date | undefined;
 
       // Check for conflicts
       if (currentState && this.hasConflict(currentState, remoteModifiedAt)) {
@@ -241,11 +254,16 @@ export class CRMSyncEngine {
         lastSyncedAt: new Date(),
         lastRemoteModifiedAt: remoteModifiedAt || new Date(),
         lastLocalModifiedAt: new Date(),
-        status: 'synced',
+        status: "synced",
       });
     } catch (error) {
       this.metrics.totalErrors++;
-      this.queueError(provider, entityType, (data as Record<string, unknown>).id as string, error as Error);
+      this.queueError(
+        provider,
+        entityType,
+        (data as Record<string, unknown>).id as string,
+        error as Error,
+      );
     }
   }
 
@@ -255,14 +273,16 @@ export class CRMSyncEngine {
     if (!remoteModifiedAt) return false;
 
     // Conflict if both local and remote have been modified since last sync
-    return state.lastLocalModifiedAt > state.lastSyncedAt &&
-           remoteModifiedAt > state.lastSyncedAt;
+    return (
+      state.lastLocalModifiedAt > state.lastSyncedAt &&
+      remoteModifiedAt > state.lastSyncedAt
+    );
   }
 
   private recordConflict(
     provider: CRMProvider,
     entityType: string,
-    remoteData: unknown
+    remoteData: unknown,
   ): void {
     const conflictKey = `${provider}:${entityType}:${(remoteData as Record<string, unknown>).id}`;
 
@@ -282,28 +302,28 @@ export class CRMSyncEngine {
       const resolution = conflict.resolution || this.config.conflictResolution;
 
       switch (resolution.strategy) {
-        case 'last_write_wins':
+        case "last_write_wins":
           // Use the most recently modified version
           break;
 
-        case 'source_priority':
+        case "source_priority":
           // Use data from the source of truth
-          if ((resolution.sourceOfTruth as string) === 'witylogix') {
+          if ((resolution.sourceOfTruth as string) === "witylogix") {
             // Update CRM with local data
           } else {
             // Update local with CRM data
           }
           break;
 
-        case 'manual':
+        case "manual":
           // Mark for manual review
           conflict.resolution = {
-            strategy: 'manual',
+            strategy: "manual",
             manualReviewRequired: true,
           };
           break;
 
-        case 'merge':
+        case "merge":
           // Merge non-conflicting fields
           this.mergeConflictingData(conflict);
           break;
@@ -341,7 +361,7 @@ export class CRMSyncEngine {
     provider: CRMProvider,
     entityType: string,
     entityId: string,
-    error: Error
+    error: Error,
   ): void {
     const maxRetries = this.config.maxRetries || 3;
     const retryRecord: SyncErrorRecord = {
@@ -353,7 +373,7 @@ export class CRMSyncEngine {
       retryCount: 0,
       maxRetries,
       nextRetryAt: new Date(Date.now() + (this.config.retryDelayMs || 60000)),
-      status: 'pending_retry',
+      status: "pending_retry",
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -364,12 +384,15 @@ export class CRMSyncEngine {
   private async processErrorQueue(): Promise<void> {
     const now = new Date();
     const pendingRetries = this.errorQueue.filter(
-      (record) => record.status === 'pending_retry' && record.nextRetryAt && record.nextRetryAt <= now
+      (record) =>
+        record.status === "pending_retry" &&
+        record.nextRetryAt &&
+        record.nextRetryAt <= now,
     );
 
     for (const record of pendingRetries) {
       if (record.retryCount >= record.maxRetries) {
-        record.status = 'dead_lettered';
+        record.status = "dead_lettered";
         record.updatedAt = new Date();
         continue;
       }
@@ -377,11 +400,13 @@ export class CRMSyncEngine {
       try {
         // Attempt retry
         record.retryCount++;
-        record.status = 'resolved';
+        record.status = "resolved";
         record.updatedAt = new Date();
       } catch (error) {
         record.nextRetryAt = new Date(
-          Date.now() + (this.config.retryDelayMs || 60000) * Math.pow(2, record.retryCount)
+          Date.now() +
+            (this.config.retryDelayMs || 60000) *
+              Math.pow(2, record.retryCount),
         );
         record.updatedAt = new Date();
       }
@@ -399,7 +424,11 @@ export class CRMSyncEngine {
 
   // ─── STATE & METRICS ACCESS ────────────────────────────────────────
 
-  getSyncState(provider: CRMProvider, entityType: string, entityId: string): SyncState | undefined {
+  getSyncState(
+    provider: CRMProvider,
+    entityType: string,
+    entityId: string,
+  ): SyncState | undefined {
     return this.syncStates.get(`${provider}:${entityType}:${entityId}`);
   }
 
@@ -424,7 +453,7 @@ export class CRMSyncEngine {
   generateSyncToken(provider: CRMProvider): SyncStateToken {
     return {
       provider,
-      connectionId: this.config.connections[0]?.id || '',
+      connectionId: this.config.connections[0]?.id || "",
       token: `sync_${Date.now()}_${Math.random().toString(36).substring(7)}`,
       updatedAt: new Date(),
     };
@@ -435,7 +464,7 @@ export class CRMSyncEngine {
   async handleCRMWebhook(
     provider: CRMProvider,
     eventType: string,
-    data: Record<string, unknown>
+    data: Record<string, unknown>,
   ): Promise<void> {
     if (!this.config.enableWebhooks) {
       return;
@@ -455,16 +484,16 @@ export class CRMSyncEngine {
 
   private mapWebhookToEntityType(eventType: string): string | null {
     const mapping: Record<string, string> = {
-      'contact.updated': 'contact',
-      'contact.created': 'contact',
-      'account.updated': 'account',
-      'account.created': 'account',
-      'deal.updated': 'deal',
-      'deal.created': 'deal',
-      'opportunity.updated': 'deal',
-      'opportunity.created': 'deal',
-      'activity.created': 'activity',
-      'activity.updated': 'activity',
+      "contact.updated": "contact",
+      "contact.created": "contact",
+      "account.updated": "account",
+      "account.created": "account",
+      "deal.updated": "deal",
+      "deal.created": "deal",
+      "opportunity.updated": "deal",
+      "opportunity.created": "deal",
+      "activity.created": "activity",
+      "activity.updated": "activity",
     };
 
     return mapping[eventType] || null;

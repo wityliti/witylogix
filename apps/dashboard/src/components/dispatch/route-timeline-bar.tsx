@@ -21,7 +21,11 @@ export interface RouteTimelineBarProps {
   className?: string;
 }
 
-const getTimePosition = (date: Date, startHour: number, endHour: number): number => {
+const getTimePosition = (
+  date: Date,
+  startHour: number,
+  endHour: number,
+): number => {
   const hours = endHour - startHour;
   const totalMinutes = hours * 60;
   const dateMinutes = date.getHours() * 60 + date.getMinutes() - startHour * 60;
@@ -29,7 +33,11 @@ const getTimePosition = (date: Date, startHour: number, endHour: number): number
 };
 
 const formatTime = (date: Date): string => {
-  return date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
+  return date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
 };
 
 export function RouteTimelineBar({
@@ -41,7 +49,10 @@ export function RouteTimelineBar({
 }: RouteTimelineBarProps) {
   const [hoveredStop, setHoveredStop] = useState<DeliveryStop | null>(null);
 
-  const hours = Array.from({ length: endHour - startHour + 1 }, (_, i) => startHour + i);
+  const hours = Array.from(
+    { length: endHour - startHour + 1 },
+    (_, i) => startHour + i,
+  );
   const currentTime = new Date();
   const currentPosition = getTimePosition(currentTime, startHour, endHour);
 
@@ -73,7 +84,8 @@ export function RouteTimelineBar({
       <div className="relative bg-wl-bg-secondary rounded-lg overflow-hidden h-16 border border-wl-border-subtle">
         {/* Hour divider lines */}
         {hours.slice(0, -1).map((hour) => {
-          const position = ((hour - startHour + 1) / (endHour - startHour)) * 100;
+          const position =
+            ((hour - startHour + 1) / (endHour - startHour)) * 100;
           return (
             <div
               key={`divider-${hour}`}
@@ -110,7 +122,7 @@ export function RouteTimelineBar({
               key={stop.id}
               className={cn(
                 "absolute top-0 bottom-0 cursor-pointer transition-all duration-200 hover:shadow-md hover:z-20",
-                statusColor[stop.status]
+                statusColor[stop.status],
               )}
               style={{
                 left: `${startPos}%`,
@@ -141,7 +153,9 @@ export function RouteTimelineBar({
                 <p className="font-semibold text-wl-text-primary">
                   Stop {hoveredStop.sequenceNumber}
                 </p>
-                <p className="text-sm text-wl-text-secondary">{hoveredStop.customerName}</p>
+                <p className="text-sm text-wl-text-secondary">
+                  {hoveredStop.customerName}
+                </p>
               </div>
               <span
                 className={cn(
@@ -150,16 +164,19 @@ export function RouteTimelineBar({
                     ? "bg-wl-success-100 text-wl-success-700 dark:bg-wl-success-900 dark:text-wl-success-200"
                     : hoveredStop.status === "in-transit"
                       ? "bg-wl-primary-100 text-wl-primary-700 dark:bg-wl-primary-900 dark:text-wl-primary-200"
-                      : "bg-wl-neutral-100 text-wl-neutral-700 dark:bg-wl-neutral-900 dark:text-wl-neutral-200"
+                      : "bg-wl-neutral-100 text-wl-neutral-700 dark:bg-wl-neutral-900 dark:text-wl-neutral-200",
                 )}
               >
                 {hoveredStop.status.replace("-", " ").charAt(0).toUpperCase() +
                   hoveredStop.status.slice(1).toLowerCase()}
               </span>
             </div>
-            <p className="text-xs text-wl-text-tertiary">{hoveredStop.address}</p>
+            <p className="text-xs text-wl-text-tertiary">
+              {hoveredStop.address}
+            </p>
             <div className="text-xs text-wl-text-secondary">
-              {formatTime(hoveredStop.startTime)} - {formatTime(hoveredStop.endTime)}
+              {formatTime(hoveredStop.startTime)} -{" "}
+              {formatTime(hoveredStop.endTime)}
             </div>
           </div>
         </div>

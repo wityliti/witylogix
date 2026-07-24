@@ -188,17 +188,20 @@ For detailed code style conventions, see `docs/development/CODE_STYLE.md`. Quick
 - **cn() utility**: Use the `cn()` helper to conditionally combine classNames
 
 Example:
-```tsx
-import { cn } from '@/lib/utils';
 
-<div className={cn(
-  'flex items-center justify-between p-4 rounded-lg',
-  'bg-white dark:bg-gray-900',
-  'border border-gray-200 dark:border-gray-800',
-  isActive && 'bg-blue-50 dark:bg-blue-900'
-)}>
+```tsx
+import { cn } from "@/lib/utils";
+
+<div
+  className={cn(
+    "flex items-center justify-between p-4 rounded-lg",
+    "bg-white dark:bg-gray-900",
+    "border border-gray-200 dark:border-gray-800",
+    isActive && "bg-blue-50 dark:bg-blue-900",
+  )}
+>
   Content
-</div>
+</div>;
 ```
 
 ### File Naming Conventions
@@ -216,12 +219,12 @@ import { cn } from '@/lib/utils';
 4. Side-effect imports (last)
 
 ```typescript
-import React from 'react';
-import { useRouter } from 'next/navigation';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/button';
-import { formatDate } from './helpers';
-import './styles.css';
+import React from "react";
+import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/button";
+import { formatDate } from "./helpers";
+import "./styles.css";
 ```
 
 ## Architecture Overview
@@ -236,6 +239,7 @@ Witylogix is built using a modular monorepo architecture with:
 For a detailed architecture overview, see `docs/architecture/ARCHITECTURE.md` and the ADR documents in `docs/adr/`.
 
 Key architectural principles:
+
 - **Separation of concerns**: Business logic separated from presentation
 - **Type safety**: Full TypeScript strict mode throughout
 - **Plugin architecture**: Extensions and integrations via provider pattern
@@ -282,22 +286,22 @@ cd packages/core && pnpm test
 ### Example Test
 
 ```typescript
-import { describe, it, expect } from 'vitest';
-import { calculateDistance } from './calculateDistance';
+import { describe, it, expect } from "vitest";
+import { calculateDistance } from "./calculateDistance";
 
-describe('calculateDistance', () => {
-  it('should calculate distance between two coordinates', () => {
+describe("calculateDistance", () => {
+  it("should calculate distance between two coordinates", () => {
     const result = calculateDistance(
       { lat: 40.7128, lon: -74.006 },
-      { lat: 34.0522, lon: -118.2437 }
+      { lat: 34.0522, lon: -118.2437 },
     );
     expect(result).toBeGreaterThan(0);
   });
 
-  it('should handle same coordinates', () => {
+  it("should handle same coordinates", () => {
     const result = calculateDistance(
       { lat: 40.7128, lon: -74.006 },
-      { lat: 40.7128, lon: -74.006 }
+      { lat: 40.7128, lon: -74.006 },
     );
     expect(result).toBe(0);
   });
@@ -329,6 +333,7 @@ describe('calculateDistance', () => {
 ### PR Checklist
 
 The template includes:
+
 - Description of changes
 - Type of change (feature, bugfix, docs, etc.)
 - Testing instructions

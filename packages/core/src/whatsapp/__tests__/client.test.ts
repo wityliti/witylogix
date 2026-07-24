@@ -1,15 +1,15 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from "vitest";
 
 /**
  * WhatsApp Client Tests
  * Tests message types, error handling, webhook verification, and API calls
  */
 
-type MessageType = 'text' | 'template' | 'media' | 'interactive';
-type MediaType = 'image' | 'video' | 'audio' | 'document';
+type MessageType = "text" | "template" | "media" | "interactive";
+type MediaType = "image" | "video" | "audio" | "document";
 
 interface TextMessage {
-  type: 'text';
+  type: "text";
   to: string;
   text: {
     preview_url?: boolean;
@@ -18,7 +18,7 @@ interface TextMessage {
 }
 
 interface TemplateMessage {
-  type: 'template';
+  type: "template";
   to: string;
   template: {
     name: string;
@@ -34,7 +34,7 @@ interface TemplateMessage {
 }
 
 interface MediaMessage {
-  type: 'media';
+  type: "media";
   to: string;
   [key: string]: any;
   image?: { link: string; caption?: string };
@@ -44,10 +44,10 @@ interface MediaMessage {
 }
 
 interface InteractiveMessage {
-  type: 'interactive';
+  type: "interactive";
   to: string;
   interactive: {
-    type: 'button' | 'list';
+    type: "button" | "list";
     body: {
       text: string;
     };
@@ -62,7 +62,11 @@ interface InteractiveMessage {
   };
 }
 
-type WhatsAppMessage = TextMessage | TemplateMessage | MediaMessage | InteractiveMessage;
+type WhatsAppMessage =
+  | TextMessage
+  | TemplateMessage
+  | MediaMessage
+  | InteractiveMessage;
 
 interface WebhookEvent {
   object: string;
@@ -78,7 +82,7 @@ interface WebhookEvent {
 }
 
 class WhatsAppClient {
-  private apiUrl = 'https://graph.instagram.com/v18.0';
+  private apiUrl = "https://graph.instagram.com/v18.0";
   private phoneNumberId: string;
   private businessAccountId: string;
   private accessToken: string;
@@ -88,7 +92,7 @@ class WhatsAppClient {
     phoneNumberId: string,
     businessAccountId: string,
     accessToken: string,
-    webhookVerifyToken: string
+    webhookVerifyToken: string,
   ) {
     this.phoneNumberId = phoneNumberId;
     this.businessAccountId = businessAccountId;
@@ -96,9 +100,13 @@ class WhatsAppClient {
     this.webhookVerifyToken = webhookVerifyToken;
   }
 
-  async sendTextMessage(to: string, text: string, previewUrl = false): Promise<any> {
+  async sendTextMessage(
+    to: string,
+    text: string,
+    previewUrl = false,
+  ): Promise<any> {
     const message: TextMessage = {
-      type: 'text',
+      type: "text",
       to,
       text: {
         body: text,
@@ -111,11 +119,11 @@ class WhatsAppClient {
   async sendTemplateMessage(
     to: string,
     templateName: string,
-    languageCode = 'en_US',
-    parameters?: any
+    languageCode = "en_US",
+    parameters?: any,
   ): Promise<any> {
     const message: TemplateMessage = {
-      type: 'template',
+      type: "template",
       to,
       template: {
         name: templateName,
@@ -131,24 +139,24 @@ class WhatsAppClient {
     mediaType: MediaType,
     mediaUrl: string,
     caption?: string,
-    filename?: string
+    filename?: string,
   ): Promise<any> {
     const message: MediaMessage = {
-      type: 'media',
+      type: "media",
       to,
     };
 
     switch (mediaType) {
-      case 'image':
+      case "image":
         message.image = { link: mediaUrl, ...(caption && { caption }) };
         break;
-      case 'video':
+      case "video":
         message.video = { link: mediaUrl, ...(caption && { caption }) };
         break;
-      case 'audio':
+      case "audio":
         message.audio = { link: mediaUrl };
         break;
-      case 'document':
+      case "document":
         message.document = { link: mediaUrl, ...(filename && { filename }) };
         break;
     }
@@ -158,13 +166,16 @@ class WhatsAppClient {
 
   async sendInteractiveMessage(
     to: string,
-    type: 'button' | 'list',
+    type: "button" | "list",
     bodyText: string,
     buttons?: Array<{ id: string; title: string }>,
-    sections?: Array<{ title: string; rows: Array<{ id: string; title: string }> }>
+    sections?: Array<{
+      title: string;
+      rows: Array<{ id: string; title: string }>;
+    }>,
   ): Promise<any> {
     const message: InteractiveMessage = {
-      type: 'interactive',
+      type: "interactive",
       to,
       interactive: {
         type,
@@ -173,13 +184,13 @@ class WhatsAppClient {
       },
     };
 
-    if (type === 'button' && buttons) {
+    if (type === "button" && buttons) {
       message.interactive.action.buttons = buttons.map((btn) => ({
-        type: 'reply',
+        type: "reply",
         reply: { id: btn.id, title: btn.title },
       }));
-    } else if (type === 'list' && sections) {
-      message.interactive.action.button = 'Menu';
+    } else if (type === "list" && sections) {
+      message.interactive.action.button = "Menu";
       message.interactive.action.sections = sections;
     }
 
@@ -189,24 +200,28 @@ class WhatsAppClient {
   private async sendMessage(message: WhatsAppMessage): Promise<any> {
     const endpoint = `${this.apiUrl}/${this.phoneNumberId}/messages`;
     const payload = {
-      messaging_product: 'whatsapp',
+      messaging_product: "whatsapp",
       ...message,
     };
 
     try {
-      const response = await this.makeRequest('POST', endpoint, payload);
+      const response = await this.makeRequest("POST", endpoint, payload);
       return response;
     } catch (error) {
       throw this.handleError(error);
     }
   }
 
-  private async makeRequest(method: string, url: string, data?: any): Promise<any> {
+  private async makeRequest(
+    method: string,
+    url: string,
+    data?: any,
+  ): Promise<any> {
     const options: any = {
       method,
       headers: {
-        'Authorization': `Bearer ${this.accessToken}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.accessToken}`,
+        "Content-Type": "application/json",
       },
     };
 
@@ -229,14 +244,14 @@ class WhatsAppClient {
 
   private handleError(error: any): Error {
     if (error.status === 401) {
-      return new Error('Unauthorized: Invalid access token');
+      return new Error("Unauthorized: Invalid access token");
     } else if (error.status === 429) {
-      return new Error('Rate limited: Too many requests');
+      return new Error("Rate limited: Too many requests");
     } else if (error.status === 400) {
-      const message = error.data?.error?.message || 'Bad request';
+      const message = error.data?.error?.message || "Bad request";
       return new Error(`Bad request: ${message}`);
     } else if (error.status >= 500) {
-      return new Error('Server error: WhatsApp API is unavailable');
+      return new Error("Server error: WhatsApp API is unavailable");
     }
     return new Error(`API error: ${error.message}`);
   }
@@ -244,12 +259,12 @@ class WhatsAppClient {
   verifyWebhookSignature(
     signature: string,
     timestamp: string,
-    body: string
+    body: string,
   ): boolean {
-    const crypto = require('crypto');
-    const hmac = crypto.createHmac('sha256', this.webhookVerifyToken);
+    const crypto = require("crypto");
+    const hmac = crypto.createHmac("sha256", this.webhookVerifyToken);
     hmac.update(`${timestamp}.${body}`);
-    const expectedSignature = hmac.digest('hex');
+    const expectedSignature = hmac.digest("hex");
     return expectedSignature === signature;
   }
 
@@ -268,23 +283,23 @@ class WhatsAppClient {
   }
 }
 
-describe('WhatsAppClient', () => {
+describe("WhatsAppClient", () => {
   let client: WhatsAppClient;
 
   beforeEach(() => {
     client = new WhatsAppClient(
-      'phone123',
-      'business456',
-      'access_token_xyz',
-      'webhook_verify_token'
+      "phone123",
+      "business456",
+      "access_token_xyz",
+      "webhook_verify_token",
     );
     global.fetch = vi.fn();
   });
 
-  describe('Text Message', () => {
-    it('should send text message', async () => {
+  describe("Text Message", () => {
+    it("should send text message", async () => {
       const mockResponse = {
-        messages: [{ id: 'msg_123' }],
+        messages: [{ id: "msg_123" }],
       };
 
       (global.fetch as any).mockResolvedValueOnce({
@@ -292,12 +307,12 @@ describe('WhatsAppClient', () => {
         json: async () => mockResponse,
       });
 
-      const result = await client.sendTextMessage('+1234567890', 'Hello World');
+      const result = await client.sendTextMessage("+1234567890", "Hello World");
       expect(result).toEqual(mockResponse);
     });
 
-    it('should send text with preview URL', async () => {
-      const mockResponse = { messages: [{ id: 'msg_124' }] };
+    it("should send text with preview URL", async () => {
+      const mockResponse = { messages: [{ id: "msg_124" }] };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
@@ -305,32 +320,32 @@ describe('WhatsAppClient', () => {
       });
 
       const result = await client.sendTextMessage(
-        '+1234567890',
-        'Visit https://example.com',
-        true
+        "+1234567890",
+        "Visit https://example.com",
+        true,
       );
       expect(result).toEqual(mockResponse);
       expect(global.fetch).toHaveBeenCalled();
     });
 
-    it('should handle text message errors', async () => {
+    it("should handle text message errors", async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: false,
         status: 400,
         json: async () => ({
-          error: { message: 'Invalid phone number' },
+          error: { message: "Invalid phone number" },
         }),
       });
 
-      await expect(client.sendTextMessage('+invalid', 'Test')).rejects.toThrow(
-        'Bad request'
+      await expect(client.sendTextMessage("+invalid", "Test")).rejects.toThrow(
+        "Bad request",
       );
     });
   });
 
-  describe('Template Message', () => {
-    it('should send template message', async () => {
-      const mockResponse = { messages: [{ id: 'msg_125' }] };
+  describe("Template Message", () => {
+    it("should send template message", async () => {
+      const mockResponse = { messages: [{ id: "msg_125" }] };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
@@ -338,14 +353,14 @@ describe('WhatsAppClient', () => {
       });
 
       const result = await client.sendTemplateMessage(
-        '+1234567890',
-        'order_confirmation'
+        "+1234567890",
+        "order_confirmation",
       );
       expect(result).toEqual(mockResponse);
     });
 
-    it('should send template with parameters', async () => {
-      const mockResponse = { messages: [{ id: 'msg_126' }] };
+    it("should send template with parameters", async () => {
+      const mockResponse = { messages: [{ id: "msg_126" }] };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
@@ -354,36 +369,36 @@ describe('WhatsAppClient', () => {
 
       const parameters = {
         body: [
-          { type: 'text', text: 'Order 123' },
-          { type: 'text', text: '$99.99' },
+          { type: "text", text: "Order 123" },
+          { type: "text", text: "$99.99" },
         ],
       };
 
       const result = await client.sendTemplateMessage(
-        '+1234567890',
-        'order_confirmation',
-        'en_US',
-        parameters
+        "+1234567890",
+        "order_confirmation",
+        "en_US",
+        parameters,
       );
       expect(result).toEqual(mockResponse);
     });
 
-    it('should use default language code', async () => {
-      const mockResponse = { messages: [{ id: 'msg_127' }] };
+    it("should use default language code", async () => {
+      const mockResponse = { messages: [{ id: "msg_127" }] };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
       });
 
-      await client.sendTemplateMessage('+1234567890', 'welcome_template');
+      await client.sendTemplateMessage("+1234567890", "welcome_template");
       expect(global.fetch).toHaveBeenCalled();
     });
   });
 
-  describe('Media Message', () => {
-    it('should send image message', async () => {
-      const mockResponse = { messages: [{ id: 'msg_128' }] };
+  describe("Media Message", () => {
+    it("should send image message", async () => {
+      const mockResponse = { messages: [{ id: "msg_128" }] };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
@@ -391,15 +406,15 @@ describe('WhatsAppClient', () => {
       });
 
       const result = await client.sendMediaMessage(
-        '+1234567890',
-        'image',
-        'https://example.com/image.jpg'
+        "+1234567890",
+        "image",
+        "https://example.com/image.jpg",
       );
       expect(result).toEqual(mockResponse);
     });
 
-    it('should send image with caption', async () => {
-      const mockResponse = { messages: [{ id: 'msg_129' }] };
+    it("should send image with caption", async () => {
+      const mockResponse = { messages: [{ id: "msg_129" }] };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
@@ -407,16 +422,16 @@ describe('WhatsAppClient', () => {
       });
 
       const result = await client.sendMediaMessage(
-        '+1234567890',
-        'image',
-        'https://example.com/image.jpg',
-        'Product Image'
+        "+1234567890",
+        "image",
+        "https://example.com/image.jpg",
+        "Product Image",
       );
       expect(result).toEqual(mockResponse);
     });
 
-    it('should send video message', async () => {
-      const mockResponse = { messages: [{ id: 'msg_130' }] };
+    it("should send video message", async () => {
+      const mockResponse = { messages: [{ id: "msg_130" }] };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
@@ -424,15 +439,15 @@ describe('WhatsAppClient', () => {
       });
 
       const result = await client.sendMediaMessage(
-        '+1234567890',
-        'video',
-        'https://example.com/video.mp4'
+        "+1234567890",
+        "video",
+        "https://example.com/video.mp4",
       );
       expect(result).toEqual(mockResponse);
     });
 
-    it('should send audio message', async () => {
-      const mockResponse = { messages: [{ id: 'msg_131' }] };
+    it("should send audio message", async () => {
+      const mockResponse = { messages: [{ id: "msg_131" }] };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
@@ -440,15 +455,15 @@ describe('WhatsAppClient', () => {
       });
 
       const result = await client.sendMediaMessage(
-        '+1234567890',
-        'audio',
-        'https://example.com/audio.mp3'
+        "+1234567890",
+        "audio",
+        "https://example.com/audio.mp3",
       );
       expect(result).toEqual(mockResponse);
     });
 
-    it('should send document message with filename', async () => {
-      const mockResponse = { messages: [{ id: 'msg_132' }] };
+    it("should send document message with filename", async () => {
+      const mockResponse = { messages: [{ id: "msg_132" }] };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
@@ -456,19 +471,19 @@ describe('WhatsAppClient', () => {
       });
 
       const result = await client.sendMediaMessage(
-        '+1234567890',
-        'document',
-        'https://example.com/invoice.pdf',
+        "+1234567890",
+        "document",
+        "https://example.com/invoice.pdf",
         undefined,
-        'invoice.pdf'
+        "invoice.pdf",
       );
       expect(result).toEqual(mockResponse);
     });
   });
 
-  describe('Interactive Message', () => {
-    it('should send button message', async () => {
-      const mockResponse = { messages: [{ id: 'msg_133' }] };
+  describe("Interactive Message", () => {
+    it("should send button message", async () => {
+      const mockResponse = { messages: [{ id: "msg_133" }] };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
@@ -476,21 +491,21 @@ describe('WhatsAppClient', () => {
       });
 
       const buttons = [
-        { id: 'btn_yes', title: 'Yes' },
-        { id: 'btn_no', title: 'No' },
+        { id: "btn_yes", title: "Yes" },
+        { id: "btn_no", title: "No" },
       ];
 
       const result = await client.sendInteractiveMessage(
-        '+1234567890',
-        'button',
-        'Do you confirm your order?',
-        buttons
+        "+1234567890",
+        "button",
+        "Do you confirm your order?",
+        buttons,
       );
       expect(result).toEqual(mockResponse);
     });
 
-    it('should send list message', async () => {
-      const mockResponse = { messages: [{ id: 'msg_134' }] };
+    it("should send list message", async () => {
+      const mockResponse = { messages: [{ id: "msg_134" }] };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
@@ -499,106 +514,114 @@ describe('WhatsAppClient', () => {
 
       const sections = [
         {
-          title: 'Products',
+          title: "Products",
           rows: [
-            { id: 'prod_1', title: 'Product A' },
-            { id: 'prod_2', title: 'Product B' },
+            { id: "prod_1", title: "Product A" },
+            { id: "prod_2", title: "Product B" },
           ],
         },
       ];
 
       const result = await client.sendInteractiveMessage(
-        '+1234567890',
-        'list',
-        'Choose a product',
+        "+1234567890",
+        "list",
+        "Choose a product",
         undefined,
-        sections
+        sections,
       );
       expect(result).toEqual(mockResponse);
     });
   });
 
-  describe('Error Handling', () => {
-    it('should handle 401 unauthorized error', async () => {
+  describe("Error Handling", () => {
+    it("should handle 401 unauthorized error", async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: false,
         status: 401,
-        json: async () => ({ error: { message: 'Invalid token' } }),
+        json: async () => ({ error: { message: "Invalid token" } }),
       });
 
-      await expect(client.sendTextMessage('+1234567890', 'Test')).rejects.toThrow(
-        'Unauthorized'
-      );
+      await expect(
+        client.sendTextMessage("+1234567890", "Test"),
+      ).rejects.toThrow("Unauthorized");
     });
 
-    it('should handle 429 rate limit error', async () => {
+    it("should handle 429 rate limit error", async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: false,
         status: 429,
-        json: async () => ({ error: { message: 'Rate limited' } }),
+        json: async () => ({ error: { message: "Rate limited" } }),
       });
 
-      await expect(client.sendTextMessage('+1234567890', 'Test')).rejects.toThrow(
-        'Rate limited'
-      );
+      await expect(
+        client.sendTextMessage("+1234567890", "Test"),
+      ).rejects.toThrow("Rate limited");
     });
 
-    it('should handle 400 bad request error', async () => {
+    it("should handle 400 bad request error", async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: false,
         status: 400,
-        json: async () => ({ error: { message: 'Invalid phone number' } }),
+        json: async () => ({ error: { message: "Invalid phone number" } }),
       });
 
-      await expect(client.sendTextMessage('+invalid', 'Test')).rejects.toThrow(
-        'Bad request'
+      await expect(client.sendTextMessage("+invalid", "Test")).rejects.toThrow(
+        "Bad request",
       );
     });
 
-    it('should handle 500 server error', async () => {
+    it("should handle 500 server error", async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: false,
         status: 500,
-        json: async () => ({ error: { message: 'Server error' } }),
+        json: async () => ({ error: { message: "Server error" } }),
       });
 
-      await expect(client.sendTextMessage('+1234567890', 'Test')).rejects.toThrow(
-        'Server error'
-      );
+      await expect(
+        client.sendTextMessage("+1234567890", "Test"),
+      ).rejects.toThrow("Server error");
     });
   });
 
-  describe('Webhook Signature Verification', () => {
-    it('should verify valid webhook signature', () => {
-      const timestamp = '1234567890';
+  describe("Webhook Signature Verification", () => {
+    it("should verify valid webhook signature", () => {
+      const timestamp = "1234567890";
       const body = '{"object":"whatsapp_business_account"}';
-      const crypto = require('crypto');
-      const hmac = crypto.createHmac('sha256', 'webhook_verify_token');
+      const crypto = require("crypto");
+      const hmac = crypto.createHmac("sha256", "webhook_verify_token");
       hmac.update(`${timestamp}.${body}`);
-      const validSignature = hmac.digest('hex');
+      const validSignature = hmac.digest("hex");
 
-      const isValid = client.verifyWebhookSignature(validSignature, timestamp, body);
+      const isValid = client.verifyWebhookSignature(
+        validSignature,
+        timestamp,
+        body,
+      );
       expect(isValid).toBe(true);
     });
 
-    it('should reject invalid webhook signature', () => {
-      const timestamp = '1234567890';
+    it("should reject invalid webhook signature", () => {
+      const timestamp = "1234567890";
       const body = '{"object":"whatsapp_business_account"}';
-      const invalidSignature = 'invalid_signature';
+      const invalidSignature = "invalid_signature";
 
-      const isValid = client.verifyWebhookSignature(invalidSignature, timestamp, body);
+      const isValid = client.verifyWebhookSignature(
+        invalidSignature,
+        timestamp,
+        body,
+      );
       expect(isValid).toBe(false);
     });
 
-    it('should handle signature verification with different data', () => {
-      const timestamp = '1234567890';
+    it("should handle signature verification with different data", () => {
+      const timestamp = "1234567890";
       const body1 = '{"object":"whatsapp_business_account"}';
       const body2 = '{"object":"other"}';
 
-      const crypto = require('crypto');
-      const hmac = crypto.createHmac('sha256', 'webhook_verify_token');
+      const crypto = require("crypto");
+      const hmac = crypto.createHmac("sha256", "webhook_verify_token");
       hmac.update(`${timestamp}.${body1}`);
-      const sig1 = hmac.digest('hex');
+      const sig1 = hmac.digest("hex");
 
       // sig1 should work with body1
       expect(client.verifyWebhookSignature(sig1, timestamp, body1)).toBe(true);
@@ -607,22 +630,22 @@ describe('WhatsAppClient', () => {
     });
   });
 
-  describe('Webhook Event Parsing', () => {
-    it('should parse webhook event with messages', () => {
+  describe("Webhook Event Parsing", () => {
+    it("should parse webhook event with messages", () => {
       const event: WebhookEvent = {
-        object: 'whatsapp_business_account',
+        object: "whatsapp_business_account",
         entry: [
           {
-            id: 'entry_1',
+            id: "entry_1",
             changes: [
               {
                 value: {
                   messages: [
                     {
-                      from: '+1234567890',
-                      id: 'msg_1',
-                      text: { body: 'Hello' },
-                      type: 'text',
+                      from: "+1234567890",
+                      id: "msg_1",
+                      text: { body: "Hello" },
+                      type: "text",
                     },
                   ],
                 },
@@ -634,12 +657,12 @@ describe('WhatsAppClient', () => {
 
       const messages = client.parseWebhookEvent(event);
       expect(messages).toHaveLength(1);
-      expect(messages[0].text.body).toBe('Hello');
+      expect(messages[0].text.body).toBe("Hello");
     });
 
-    it('should handle empty webhook event', () => {
+    it("should handle empty webhook event", () => {
       const event: WebhookEvent = {
-        object: 'whatsapp_business_account',
+        object: "whatsapp_business_account",
         entry: [],
       };
 
@@ -647,27 +670,27 @@ describe('WhatsAppClient', () => {
       expect(messages).toHaveLength(0);
     });
 
-    it('should parse webhook with multiple messages', () => {
+    it("should parse webhook with multiple messages", () => {
       const event: WebhookEvent = {
-        object: 'whatsapp_business_account',
+        object: "whatsapp_business_account",
         entry: [
           {
-            id: 'entry_1',
+            id: "entry_1",
             changes: [
               {
                 value: {
                   messages: [
                     {
-                      from: '+1234567890',
-                      id: 'msg_1',
-                      text: { body: 'Hello' },
-                      type: 'text',
+                      from: "+1234567890",
+                      id: "msg_1",
+                      text: { body: "Hello" },
+                      type: "text",
                     },
                     {
-                      from: '+1234567890',
-                      id: 'msg_2',
-                      text: { body: 'World' },
-                      type: 'text',
+                      from: "+1234567890",
+                      id: "msg_2",
+                      text: { body: "World" },
+                      type: "text",
                     },
                   ],
                 },
@@ -682,40 +705,45 @@ describe('WhatsAppClient', () => {
     });
   });
 
-  describe('Edge Cases', () => {
-    it('should handle empty phone number', async () => {
+  describe("Edge Cases", () => {
+    it("should handle empty phone number", async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: false,
         status: 400,
-        json: async () => ({ error: { message: 'Invalid phone number' } }),
+        json: async () => ({ error: { message: "Invalid phone number" } }),
       });
 
-      await expect(client.sendTextMessage('', 'Test')).rejects.toThrow('Bad request');
+      await expect(client.sendTextMessage("", "Test")).rejects.toThrow(
+        "Bad request",
+      );
     });
 
-    it('should handle very long messages', async () => {
-      const longMessage = 'a'.repeat(4096);
-      const mockResponse = { messages: [{ id: 'msg_135' }] };
+    it("should handle very long messages", async () => {
+      const longMessage = "a".repeat(4096);
+      const mockResponse = { messages: [{ id: "msg_135" }] };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
       });
 
-      const result = await client.sendTextMessage('+1234567890', longMessage);
+      const result = await client.sendTextMessage("+1234567890", longMessage);
       expect(result).toEqual(mockResponse);
     });
 
-    it('should handle special characters in messages', async () => {
-      const specialMessage = 'Hello 👋 & goodbye 👋!';
-      const mockResponse = { messages: [{ id: 'msg_136' }] };
+    it("should handle special characters in messages", async () => {
+      const specialMessage = "Hello 👋 & goodbye 👋!";
+      const mockResponse = { messages: [{ id: "msg_136" }] };
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
       });
 
-      const result = await client.sendTextMessage('+1234567890', specialMessage);
+      const result = await client.sendTextMessage(
+        "+1234567890",
+        specialMessage,
+      );
       expect(result).toEqual(mockResponse);
     });
   });

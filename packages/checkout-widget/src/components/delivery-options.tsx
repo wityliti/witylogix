@@ -3,11 +3,11 @@
  * Delivery method selector with pricing
  */
 
-import React from 'react';
-import { Truck, Clock, Store, AlertCircle } from 'lucide-react';
-import { formatPrice } from '../utils/rate-calculator';
-import type { DeliveryMethod, DeliveryMethodType } from '../types';
-import clsx from 'clsx';
+import React from "react";
+import { Truck, Clock, Store, AlertCircle } from "lucide-react";
+import { formatPrice } from "../utils/rate-calculator";
+import type { DeliveryMethod, DeliveryMethodType } from "../types";
+import clsx from "clsx";
 
 interface DeliveryOptionsProps {
   methods: DeliveryMethod[];
@@ -23,11 +23,11 @@ interface DeliveryOptionsProps {
 
 const getMethodIcon = (methodId: string) => {
   switch (methodId) {
-    case 'standard':
+    case "standard":
       return <Truck className="wl-w-6 wl-h-6" />;
-    case 'express':
+    case "express":
       return <Clock className="wl-w-6 wl-h-6" />;
-    case 'pickup':
+    case "pickup":
       return <Store className="wl-w-6 wl-h-6" />;
     default:
       return <Truck className="wl-w-6 wl-h-6" />;
@@ -38,7 +38,7 @@ export const DeliveryOptions: React.FC<DeliveryOptionsProps> = ({
   methods,
   selectedMethod,
   onMethodSelect,
-  currency = 'USD',
+  currency = "USD",
   isLoading = false,
   compact = false,
   pickupLocations = [],
@@ -46,12 +46,13 @@ export const DeliveryOptions: React.FC<DeliveryOptionsProps> = ({
   selectedPickupLocation,
 }) => {
   const selectedMethodData = methods.find((m) => m.id === selectedMethod);
-  const showPickupSelect = selectedMethod === 'pickup' && pickupLocations.length > 0;
+  const showPickupSelect =
+    selectedMethod === "pickup" && pickupLocations.length > 0;
 
   const enabledMethods = methods.filter((m) => m.enabled);
 
   return (
-    <div className={clsx('wl-w-full wl-space-y-4', { 'wl-max-w-md': compact })}>
+    <div className={clsx("wl-w-full wl-space-y-4", { "wl-max-w-md": compact })}>
       <div className="wl-space-y-3">
         <h3 className="wl-text-lg wl-font-semibold wl-text-wl-foreground">
           Delivery method
@@ -60,7 +61,9 @@ export const DeliveryOptions: React.FC<DeliveryOptionsProps> = ({
         {enabledMethods.length === 0 && (
           <div className="wl-p-4 wl-bg-wl-destructive/10 wl-border wl-border-wl-destructive/30 wl-rounded-lg wl-flex wl-items-start wl-gap-2">
             <AlertCircle className="wl-w-5 wl-h-5 wl-text-wl-destructive wl-flex-shrink-0 wl-mt-0.5" />
-            <p className="wl-text-sm wl-text-wl-destructive">No delivery methods available</p>
+            <p className="wl-text-sm wl-text-wl-destructive">
+              No delivery methods available
+            </p>
           </div>
         )}
 
@@ -75,22 +78,24 @@ export const DeliveryOptions: React.FC<DeliveryOptionsProps> = ({
                 onClick={() => !isDisabled && onMethodSelect(method.id)}
                 disabled={isDisabled}
                 className={clsx(
-                  'wl-w-full wl-p-4 wl-rounded-lg wl-border-2 wl-transition-all wl-text-left',
-                  'wl-flex wl-items-center wl-gap-4',
+                  "wl-w-full wl-p-4 wl-rounded-lg wl-border-2 wl-transition-all wl-text-left",
+                  "wl-flex wl-items-center wl-gap-4",
                   {
-                    'wl-border-wl-accent wl-bg-wl-accent/5': isSelected,
-                    'wl-border-wl-border wl-bg-wl-background wl-hover:border-wl-accent/50': !isSelected && !isDisabled,
-                    'wl-border-wl-border wl-bg-wl-muted wl-opacity-50 wl-cursor-not-allowed': isDisabled,
-                  }
+                    "wl-border-wl-accent wl-bg-wl-accent/5": isSelected,
+                    "wl-border-wl-border wl-bg-wl-background wl-hover:border-wl-accent/50":
+                      !isSelected && !isDisabled,
+                    "wl-border-wl-border wl-bg-wl-muted wl-opacity-50 wl-cursor-not-allowed":
+                      isDisabled,
+                  },
                 )}
                 aria-selected={isSelected}
                 aria-disabled={isDisabled}
               >
                 {/* Icon */}
                 <div
-                  className={clsx('wl-flex-shrink-0 wl-p-2 wl-rounded-lg', {
-                    'wl-bg-wl-accent/20 wl-text-wl-accent': isSelected,
-                    'wl-bg-wl-muted wl-text-wl-muted-foreground': !isSelected,
+                  className={clsx("wl-flex-shrink-0 wl-p-2 wl-rounded-lg", {
+                    "wl-bg-wl-accent/20 wl-text-wl-accent": isSelected,
+                    "wl-bg-wl-muted wl-text-wl-muted-foreground": !isSelected,
                   })}
                 >
                   {getMethodIcon(method.id)}
@@ -120,11 +125,11 @@ export const DeliveryOptions: React.FC<DeliveryOptionsProps> = ({
                   {/* Radio button */}
                   <div
                     className={clsx(
-                      'wl-w-5 wl-h-5 wl-rounded-full wl-border-2 wl-flex wl-items-center wl-justify-center wl-transition-all',
+                      "wl-w-5 wl-h-5 wl-rounded-full wl-border-2 wl-flex wl-items-center wl-justify-center wl-transition-all",
                       {
-                        'wl-border-wl-accent wl-bg-wl-accent': isSelected,
-                        'wl-border-wl-border': !isSelected,
-                      }
+                        "wl-border-wl-accent wl-bg-wl-accent": isSelected,
+                        "wl-border-wl-border": !isSelected,
+                      },
                     )}
                   >
                     {isSelected && (
@@ -146,12 +151,12 @@ export const DeliveryOptions: React.FC<DeliveryOptionsProps> = ({
           </label>
 
           <select
-            value={selectedPickupLocation || ''}
+            value={selectedPickupLocation || ""}
             onChange={(e) => onPickupLocationSelect?.(e.target.value)}
             className={clsx(
-              'wl-w-full wl-px-4 wl-py-2 wl-rounded-lg wl-border-2 wl-transition-colors',
-              'wl-bg-wl-background wl-text-wl-foreground',
-              'wl-focus:border-wl-accent wl-focus:ring-2 wl-focus:ring-wl-accent/20'
+              "wl-w-full wl-px-4 wl-py-2 wl-rounded-lg wl-border-2 wl-transition-colors",
+              "wl-bg-wl-background wl-text-wl-foreground",
+              "wl-focus:border-wl-accent wl-focus:ring-2 wl-focus:ring-wl-accent/20",
             )}
           >
             <option value="">Choose a location...</option>
@@ -169,7 +174,10 @@ export const DeliveryOptions: React.FC<DeliveryOptionsProps> = ({
                 Pickup location:
               </p>
               <p className="wl-text-sm wl-font-medium wl-text-wl-foreground wl-mt-1">
-                {pickupLocations.find((l) => l.id === selectedPickupLocation)?.name}
+                {
+                  pickupLocations.find((l) => l.id === selectedPickupLocation)
+                    ?.name
+                }
               </p>
             </div>
           )}
@@ -185,7 +193,10 @@ export const DeliveryOptions: React.FC<DeliveryOptionsProps> = ({
           <ul className="wl-space-y-1 wl-text-sm wl-text-wl-muted-foreground">
             <li>• {selectedMethodData.estimatedTime}</li>
             {selectedMethodData.estimatedMinutes && (
-              <li>• Approximately {selectedMethodData.estimatedMinutes} minutes from now</li>
+              <li>
+                • Approximately {selectedMethodData.estimatedMinutes} minutes
+                from now
+              </li>
             )}
             <li>• Price: {formatPrice(selectedMethodData.price, currency)}</li>
           </ul>
@@ -196,7 +207,8 @@ export const DeliveryOptions: React.FC<DeliveryOptionsProps> = ({
       <div className="wl-p-3 wl-bg-wl-blue/10 wl-border wl-border-wl-blue/30 wl-rounded-lg wl-flex wl-items-start wl-gap-2">
         <AlertCircle className="wl-w-4 wl-h-4 wl-text-wl-blue wl-flex-shrink-0 wl-mt-0.5" />
         <p className="wl-text-xs wl-text-wl-blue/80">
-          Delivery times may vary. You will receive tracking information once your order is confirmed.
+          Delivery times may vary. You will receive tracking information once
+          your order is confirmed.
         </p>
       </div>
     </div>

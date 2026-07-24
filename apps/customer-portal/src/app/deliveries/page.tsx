@@ -1,46 +1,57 @@
-'use client';
+"use client";
 
-import { useMemo, useState } from 'react';
-import { format, isAfter, isBefore, parseISO } from 'date-fns';
-import { Calendar, MapPin, Package, Star } from 'lucide-react';
-import Link from 'next/link';
-import { cn } from '@/lib/utils';
-import { RatingStars } from '@/components/rating-stars';
-import { OrderListSkeleton, ErrorMessage, EmptyState } from '@/components/loading-skeleton';
-import { useQuery } from '@/lib/use-api';
-import type { ApiOrder } from '@/lib/portal-api';
-import { ROUTES, getStatusLabel, getStatusVariant } from '@/lib/portal-api';
+import { useMemo, useState } from "react";
+import { format, isAfter, isBefore, parseISO } from "date-fns";
+import { Calendar, MapPin, Package, Star } from "lucide-react";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { RatingStars } from "@/components/rating-stars";
+import {
+  OrderListSkeleton,
+  ErrorMessage,
+  EmptyState,
+} from "@/components/loading-skeleton";
+import { useQuery } from "@/lib/use-api";
+import type { ApiOrder } from "@/lib/portal-api";
+import { ROUTES, getStatusLabel, getStatusVariant } from "@/lib/portal-api";
 
 // ─── Paginated response ───────────────────────────────────────
 
 interface PaginatedOrders {
   data: ApiOrder[];
-  pagination: { total: number; page: number; limit: number; totalPages: number };
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }
 
 // ─── Date range filter options ────────────────────────────────
 
-type DateRange = 'all' | '7d' | '30d' | '90d';
+type DateRange = "all" | "7d" | "30d" | "90d";
 
 const DATE_RANGES: { id: DateRange; label: string }[] = [
-  { id: 'all', label: 'All time' },
-  { id: '7d', label: 'Last 7 days' },
-  { id: '30d', label: 'Last 30 days' },
-  { id: '90d', label: 'Last 90 days' },
+  { id: "all", label: "All time" },
+  { id: "7d", label: "Last 7 days" },
+  { id: "30d", label: "Last 30 days" },
+  { id: "90d", label: "Last 90 days" },
 ];
 
 function cutoffForRange(range: DateRange): Date | null {
-  if (range === 'all') return null;
+  if (range === "all") return null;
   const now = new Date();
-  const days = range === '7d' ? 7 : range === '30d' ? 30 : 90;
+  const days = range === "7d" ? 7 : range === "30d" ? 30 : 90;
   return new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 }
 
 // ─── Component ────────────────────────────────────────────────
 
 export default function DeliveriesPage() {
-  const [dateRange, setDateRange] = useState<DateRange>('all');
-  const [ratingFilter, setRatingFilter] = useState<'all' | 'rated' | 'unrated'>('all');
+  const [dateRange, setDateRange] = useState<DateRange>("all");
+  const [ratingFilter, setRatingFilter] = useState<"all" | "rated" | "unrated">(
+    "all",
+  );
 
   // Fetch delivered orders only
   const { data, loading, error, refetch } = useQuery<PaginatedOrders>(
@@ -61,10 +72,10 @@ export default function DeliveriesPage() {
       });
     }
 
-    if (ratingFilter === 'rated') {
+    if (ratingFilter === "rated") {
       // POD with recipientName treated as "rated" proxy — real rating model TBD
       result = result.filter((d) => d.proofOfDelivery?.recipientName);
-    } else if (ratingFilter === 'unrated') {
+    } else if (ratingFilter === "unrated") {
       result = result.filter((d) => !d.proofOfDelivery?.recipientName);
     }
 
@@ -77,8 +88,8 @@ export default function DeliveriesPage() {
         <h1 className="page-title">Delivery History</h1>
         <p className="page-subtitle">
           {data
-            ? `${data.pagination.total} completed delivery${data.pagination.total !== 1 ? 'ies' : ''}`
-            : 'Your past delivered orders'}
+            ? `${data.pagination.total} completed delivery${data.pagination.total !== 1 ? "ies" : ""}`
+            : "Your past delivered orders"}
         </p>
       </div>
 
@@ -89,20 +100,26 @@ export default function DeliveriesPage() {
             <button
               key={r.id}
               onClick={() => setDateRange(r.id)}
-              className={cn('btn btn-sm', dateRange === r.id ? 'btn-primary' : 'btn-ghost')}
+              className={cn(
+                "btn btn-sm",
+                dateRange === r.id ? "btn-primary" : "btn-ghost",
+              )}
             >
               {r.label}
             </button>
           ))}
         </div>
         <div className="flex gap-2">
-          {(['all', 'rated', 'unrated'] as const).map((v) => (
+          {(["all", "rated", "unrated"] as const).map((v) => (
             <button
               key={v}
               onClick={() => setRatingFilter(v)}
-              className={cn('btn btn-sm', ratingFilter === v ? 'btn-primary' : 'btn-ghost')}
+              className={cn(
+                "btn btn-sm",
+                ratingFilter === v ? "btn-primary" : "btn-ghost",
+              )}
             >
-              {v === 'all' ? 'All' : v === 'rated' ? 'Rated' : 'Unrated'}
+              {v === "all" ? "All" : v === "rated" ? "Rated" : "Unrated"}
             </button>
           ))}
         </div>
@@ -121,9 +138,9 @@ export default function DeliveriesPage() {
             icon={<Package size={24} />}
             title="No deliveries found"
             description={
-              dateRange !== 'all'
-                ? 'No deliveries in the selected time range.'
-                : 'Your completed deliveries will appear here.'
+              dateRange !== "all"
+                ? "No deliveries in the selected time range."
+                : "Your completed deliveries will appear here."
             }
           />
         )}
@@ -131,16 +148,28 @@ export default function DeliveriesPage() {
         {!loading && !error && filtered.length > 0 && (
           <div className="flex flex-col gap-4">
             {filtered.map((delivery) => {
-              const deliveredAt = delivery.actualDelivery ?? delivery.proofOfDelivery?.deliveredAt;
-              const orderNumber = delivery.externalOrderNumber ?? `#${delivery.id.slice(-8).toUpperCase()}`;
+              const deliveredAt =
+                delivery.actualDelivery ??
+                delivery.proofOfDelivery?.deliveredAt;
+              const orderNumber =
+                delivery.externalOrderNumber ??
+                `#${delivery.id.slice(-8).toUpperCase()}`;
 
               return (
-                <div key={delivery.id} className="section-card hover:border-wl-primary-500/30 transition-colors">
+                <div
+                  key={delivery.id}
+                  className="section-card hover:border-wl-primary-500/30 transition-colors"
+                >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="font-semibold text-wl-text-primary mono">{orderNumber}</p>
+                      <p className="font-semibold text-wl-text-primary mono">
+                        {orderNumber}
+                      </p>
                       <div className="flex items-center gap-1.5 mt-1 text-sm text-wl-text-secondary">
-                        <MapPin size={12} className="flex-shrink-0 text-wl-text-tertiary" />
+                        <MapPin
+                          size={12}
+                          className="flex-shrink-0 text-wl-text-tertiary"
+                        />
                         <span>
                           {delivery.addressLine1}, {delivery.city}
                         </span>
@@ -148,11 +177,15 @@ export default function DeliveriesPage() {
                     </div>
                     <span
                       className={cn(
-                        'status-badge flex-shrink-0',
-                        getStatusVariant(delivery.status) === 'complete' && 'status-complete',
-                        getStatusVariant(delivery.status) === 'error' && 'status-error',
-                        getStatusVariant(delivery.status) === 'warn' && 'status-warn',
-                        getStatusVariant(delivery.status) === 'default' && 'status-default',
+                        "status-badge flex-shrink-0",
+                        getStatusVariant(delivery.status) === "complete" &&
+                          "status-complete",
+                        getStatusVariant(delivery.status) === "error" &&
+                          "status-error",
+                        getStatusVariant(delivery.status) === "warn" &&
+                          "status-warn",
+                        getStatusVariant(delivery.status) === "default" &&
+                          "status-default",
                       )}
                     >
                       {getStatusLabel(delivery.status)}
@@ -163,7 +196,9 @@ export default function DeliveriesPage() {
                     {deliveredAt && (
                       <div className="flex items-center gap-1">
                         <Calendar size={12} />
-                        <span>Delivered {format(new Date(deliveredAt), 'PPP')}</span>
+                        <span>
+                          Delivered {format(new Date(deliveredAt), "PPP")}
+                        </span>
                       </div>
                     )}
                     {delivery.totalPrice != null && (
@@ -175,7 +210,10 @@ export default function DeliveriesPage() {
 
                   {delivery.driver && (
                     <p className="mt-2 text-xs text-wl-text-tertiary">
-                      Driver: <span className="text-wl-text-secondary">{delivery.driver.name}</span>
+                      Driver:{" "}
+                      <span className="text-wl-text-secondary">
+                        {delivery.driver.name}
+                      </span>
                     </p>
                   )}
 
@@ -186,15 +224,16 @@ export default function DeliveriesPage() {
                     >
                       View Details
                     </Link>
-                    {delivery.status === 'DELIVERED' && !delivery.proofOfDelivery?.recipientName && (
-                      <Link
-                        href={`/orders/${delivery.id}/rate`}
-                        className="btn btn-primary text-sm"
-                      >
-                        <Star size={14} />
-                        Rate Delivery
-                      </Link>
-                    )}
+                    {delivery.status === "DELIVERED" &&
+                      !delivery.proofOfDelivery?.recipientName && (
+                        <Link
+                          href={`/orders/${delivery.id}/rate`}
+                          className="btn btn-primary text-sm"
+                        >
+                          <Star size={14} />
+                          Rate Delivery
+                        </Link>
+                      )}
                   </div>
                 </div>
               );

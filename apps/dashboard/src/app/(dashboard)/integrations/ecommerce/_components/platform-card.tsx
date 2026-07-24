@@ -1,36 +1,31 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  ChevronRight,
-  RotateCw,
-  Settings,
-  Trash2,
-} from 'lucide-react';
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ChevronRight, RotateCw, Settings, Trash2 } from "lucide-react";
 
 interface PlatformConnection {
   id: string;
   name: string;
   slug: string;
   logo: string;
-  status: 'connected' | 'disconnected' | 'error' | 'pending';
+  status: "connected" | "disconnected" | "error" | "pending";
   lastSync?: string;
   productsSynced: number;
   ordersSynced: number;
   syncSettings: {
-    productSync: { enabled: boolean; direction: 'in' | 'out' | 'both' };
-    orderSync: { enabled: boolean; direction: 'in' | 'out' | 'both' };
+    productSync: { enabled: boolean; direction: "in" | "out" | "both" };
+    orderSync: { enabled: boolean; direction: "in" | "out" | "both" };
     inventorySync: { enabled: boolean };
     customerSync: { enabled: boolean };
   };
   webhooks: {
     id: string;
     event: string;
-    status: 'active' | 'failed';
+    status: "active" | "failed";
     lastTriggered: string;
   }[];
 }
@@ -43,11 +38,11 @@ interface PlatformCardProps {
 
 function StatusBadge({ status }: { status: string }) {
   switch (status) {
-    case 'connected':
+    case "connected":
       return <Badge variant="success">Connected</Badge>;
-    case 'error':
+    case "error":
       return <Badge variant="danger">Error</Badge>;
-    case 'pending':
+    case "pending":
       return <Badge variant="warning">Pending</Badge>;
     default:
       return <Badge variant="default">Disconnected</Badge>;
@@ -62,8 +57,8 @@ export function PlatformCard({
   return (
     <Card
       className={cn(
-        'bg-wl-bg-elevated border-wl-border-default cursor-pointer transition-all hover:border-blue-500/50',
-        isExpanded && 'ring-1 ring-wl-primary-500'
+        "bg-wl-bg-elevated border-wl-border-default cursor-pointer transition-all hover:border-blue-500/50",
+        isExpanded && "ring-1 ring-wl-primary-500",
       )}
       onClick={() => onToggleExpand(platform.id)}
     >
@@ -84,7 +79,7 @@ export function PlatformCard({
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {platform.status === 'connected' && (
+            {platform.status === "connected" && (
               <>
                 <Button variant="ghost" size="sm" className="text-gray-500">
                   <RotateCw className="w-4 h-4" />
@@ -96,8 +91,8 @@ export function PlatformCard({
             )}
             <ChevronRight
               className={cn(
-                'w-5 h-5 text-gray-500 transition-transform',
-                isExpanded && 'rotate-90'
+                "w-5 h-5 text-gray-500 transition-transform",
+                isExpanded && "rotate-90",
               )}
             />
           </div>
@@ -141,19 +136,19 @@ export function PlatformCard({
               <div className="space-y-2">
                 {[
                   {
-                    label: 'Product Sync',
+                    label: "Product Sync",
                     enabled: platform.syncSettings.productSync.enabled,
                   },
                   {
-                    label: 'Order Sync',
+                    label: "Order Sync",
                     enabled: platform.syncSettings.orderSync.enabled,
                   },
                   {
-                    label: 'Inventory Sync',
+                    label: "Inventory Sync",
                     enabled: platform.syncSettings.inventorySync.enabled,
                   },
                   {
-                    label: 'Customer Sync',
+                    label: "Customer Sync",
                     enabled: platform.syncSettings.customerSync.enabled,
                   },
                 ].map((setting) => (
@@ -164,8 +159,8 @@ export function PlatformCard({
                     <span className="text-sm text-gray-400">
                       {setting.label}
                     </span>
-                    <Badge variant={setting.enabled ? 'success' : 'default'}>
-                      {setting.enabled ? 'Enabled' : 'Disabled'}
+                    <Badge variant={setting.enabled ? "success" : "default"}>
+                      {setting.enabled ? "Enabled" : "Disabled"}
                     </Badge>
                   </div>
                 ))}
@@ -188,7 +183,7 @@ export function PlatformCard({
                         <span className="text-gray-400">{hook.event}</span>
                         <Badge
                           variant={
-                            hook.status === 'active' ? 'success' : 'danger'
+                            hook.status === "active" ? "success" : "danger"
                           }
                           dot
                         >
@@ -205,7 +200,7 @@ export function PlatformCard({
             )}
 
             {/* Actions */}
-            {platform.status === 'connected' && (
+            {platform.status === "connected" && (
               <div className="flex gap-2 pt-4 border-t border-wl-border-default">
                 <Button variant="secondary" size="sm">
                   Edit Configuration
@@ -216,12 +211,12 @@ export function PlatformCard({
                 </Button>
               </div>
             )}
-            {platform.status === 'disconnected' && (
+            {platform.status === "disconnected" && (
               <Button variant="primary" size="sm" className="w-full">
                 Connect {platform.name}
               </Button>
             )}
-            {platform.status === 'error' && (
+            {platform.status === "error" && (
               <div className="p-3 bg-red-900 rounded text-sm text-red-400">
                 Sync failed. Check webhooks configuration and try again.
               </div>

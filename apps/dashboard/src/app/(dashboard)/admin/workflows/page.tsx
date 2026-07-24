@@ -8,9 +8,15 @@ import { Card } from "../../../../components/ui/card";
 import { Badge } from "../../../../components/ui/badge";
 import { Button } from "../../../../components/ui/button";
 import { Skeleton } from "../../../../components/ui/loading-skeleton";
-import { ArrowRight, Activity, CheckCircle2, AlertCircle, Clock } from "lucide-react";
+import {
+  ArrowRight,
+  Activity,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useApiQuery } from '@/hooks/use-api';
+import { useApiQuery } from "@/hooks/use-api";
 
 interface WorkflowExecution {
   executionId: string;
@@ -44,7 +50,12 @@ const formatDateTime = (isoStr: string): string => {
 
   if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };
 
 const formatDuration = (ms: number | null): string => {
@@ -58,15 +69,20 @@ const formatDuration = (ms: number | null): string => {
 };
 
 const getStatusBadgeVariant = (
-  status: WorkflowExecution["status"]
+  status: WorkflowExecution["status"],
 ): "info" | "success" | "danger" | "warning" => {
   switch (status) {
-    case "running": return "info";
-    case "completed": return "success";
-    case "failed": return "danger";
+    case "running":
+      return "info";
+    case "completed":
+      return "success";
+    case "failed":
+      return "danger";
     case "compensating":
-    case "compensated": return "warning";
-    default: return "info" as any;
+    case "compensated":
+      return "warning";
+    default:
+      return "info" as any;
   }
 };
 
@@ -77,7 +93,9 @@ export default function WorkflowExecutionsPage() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [activeTab, setActiveTab] = useState<"all" | "running" | "completed" | "failed" | "compensating">("all");
+  const [activeTab, setActiveTab] = useState<
+    "all" | "running" | "completed" | "failed" | "compensating"
+  >("all");
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 300);
@@ -91,22 +109,34 @@ export default function WorkflowExecutionsPage() {
     return `/api/workflow/executions?${params.toString()}`;
   }, [activeTab, debouncedSearch]);
 
-  const { data: response, loading, error, refetch } = useApiQuery<WorkflowResponse>(apiUrl);
+  const {
+    data: response,
+    loading,
+    error,
+    refetch,
+  } = useApiQuery<WorkflowResponse>(apiUrl);
 
   const executions = response?.executions ?? [];
 
   const totalRuns = executions.length;
   const activeRuns = executions.filter((e) => e.status === "running").length;
-  const completedRuns = executions.filter((e) => e.status === "completed").length;
+  const completedRuns = executions.filter(
+    (e) => e.status === "completed",
+  ).length;
   const failedRuns = executions.filter((e) => e.status === "failed").length;
 
-  const tabCounts = useMemo(() => ({
-    all: executions.length,
-    running: executions.filter((e) => e.status === "running").length,
-    completed: executions.filter((e) => e.status === "completed").length,
-    failed: executions.filter((e) => e.status === "failed").length,
-    compensating: executions.filter((e) => e.status === "compensating" || e.status === "compensated").length,
-  }), [executions]);
+  const tabCounts = useMemo(
+    () => ({
+      all: executions.length,
+      running: executions.filter((e) => e.status === "running").length,
+      completed: executions.filter((e) => e.status === "completed").length,
+      failed: executions.filter((e) => e.status === "failed").length,
+      compensating: executions.filter(
+        (e) => e.status === "compensating" || e.status === "compensated",
+      ).length,
+    }),
+    [executions],
+  );
 
   return (
     <>
@@ -159,7 +189,9 @@ export default function WorkflowExecutionsPage() {
 
         {/* Filter Tabs */}
         <div className="flex gap-2 mb-5 border-b border-wl-border-default pb-4">
-          {(["all", "running", "completed", "failed", "compensating"] as const).map((tab) => {
+          {(
+            ["all", "running", "completed", "failed", "compensating"] as const
+          ).map((tab) => {
             const isActive = activeTab === tab;
             return (
               <button
@@ -169,7 +201,7 @@ export default function WorkflowExecutionsPage() {
                   "px-3 py-2 text-sm font-medium cursor-pointer bg-transparent border-0 border-b-2 transition-all capitalize",
                   isActive
                     ? "text-white border-b-blue-500"
-                    : "text-gray-400 border-b-transparent"
+                    : "text-gray-400 border-b-transparent",
                 )}
               >
                 {tab === "all" ? "All" : tab}
@@ -197,8 +229,12 @@ export default function WorkflowExecutionsPage() {
         {error && !loading && (
           <Card className="p-6 text-center bg-wl-bg-surface border border-wl-border-default mb-5">
             <AlertCircle size={32} className="mx-auto mb-2 text-red-400" />
-            <p className="text-sm text-gray-400 mb-3">Failed to load workflow executions</p>
-            <Button variant="secondary" size="sm" onClick={() => refetch()}>Retry</Button>
+            <p className="text-sm text-gray-400 mb-3">
+              Failed to load workflow executions
+            </p>
+            <Button variant="secondary" size="sm" onClick={() => refetch()}>
+              Retry
+            </Button>
           </Card>
         )}
 
@@ -209,11 +245,21 @@ export default function WorkflowExecutionsPage() {
               <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-wl-border-default bg-wl-bg-root">
-                    <th className="p-3 px-4 text-left font-semibold text-gray-400">Workflow Name</th>
-                    <th className="p-3 px-4 text-center font-semibold text-gray-400">Status</th>
-                    <th className="p-3 px-4 text-left font-semibold text-gray-400">Started</th>
-                    <th className="p-3 px-4 text-center font-semibold text-gray-400">Duration</th>
-                    <th className="p-3 px-4 text-center font-semibold text-gray-400">Actions</th>
+                    <th className="p-3 px-4 text-left font-semibold text-gray-400">
+                      Workflow Name
+                    </th>
+                    <th className="p-3 px-4 text-center font-semibold text-gray-400">
+                      Status
+                    </th>
+                    <th className="p-3 px-4 text-left font-semibold text-gray-400">
+                      Started
+                    </th>
+                    <th className="p-3 px-4 text-center font-semibold text-gray-400">
+                      Duration
+                    </th>
+                    <th className="p-3 px-4 text-center font-semibold text-gray-400">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -261,14 +307,23 @@ export default function WorkflowExecutionsPage() {
                         "border-b border-wl-border-default transition-colors cursor-pointer hover:bg-wl-bg-elevated",
                         idx % 2 === 0 ? "bg-transparent" : "bg-wl-bg-surface",
                       )}
-                      onClick={() => router.push(`/admin/workflows/${execution.executionId}`)}
+                      onClick={() =>
+                        router.push(`/admin/workflows/${execution.executionId}`)
+                      }
                     >
                       <td className="p-3 px-4">
-                        <div className="font-medium text-white">{execution.workflowName}</div>
-                        <div className="text-[11px] text-gray-500 font-mono mt-0.5">{execution.executionId}</div>
+                        <div className="font-medium text-white">
+                          {execution.workflowName}
+                        </div>
+                        <div className="text-[11px] text-gray-500 font-mono mt-0.5">
+                          {execution.executionId}
+                        </div>
                       </td>
                       <td className="p-3 px-4 text-center">
-                        <Badge variant={getStatusBadgeVariant(execution.status)} dot>
+                        <Badge
+                          variant={getStatusBadgeVariant(execution.status)}
+                          dot
+                        >
                           {getStatusLabel(execution.status)}
                         </Badge>
                       </td>
@@ -284,7 +339,9 @@ export default function WorkflowExecutionsPage() {
                           size="sm"
                           onClick={(e: React.MouseEvent) => {
                             e.stopPropagation();
-                            router.push(`/admin/workflows/${execution.executionId}`);
+                            router.push(
+                              `/admin/workflows/${execution.executionId}`,
+                            );
                           }}
                         >
                           View

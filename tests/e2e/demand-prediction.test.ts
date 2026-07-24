@@ -13,7 +13,11 @@
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import type { AuthenticatedClient } from "./helpers/test-helpers.js";
-import { createAuthenticatedClient, apiPost, apiGet } from "./helpers/test-helpers.js";
+import {
+  createAuthenticatedClient,
+  apiPost,
+  apiGet,
+} from "./helpers/test-helpers.js";
 
 // ─── TYPE DEFINITIONS ───────────────────────────────────────────────────────
 
@@ -89,13 +93,15 @@ export interface WhatIfAnalysis {
 
 // ─── TEST DATA ───────────────────────────────────────────────────────────────
 
-const API_BASE_URL: string = process.env.API_BASE_URL || "http://localhost:3000/api/v4";
+const API_BASE_URL: string =
+  process.env.API_BASE_URL || "http://localhost:3000/api/v4";
 
 let mockHistoricalData: HistoricalData[] = [];
 let mockPredictions: Map<string, DemandPrediction> = new Map();
 let mockModels: Map<string, ModelTraining> = new Map();
 let mockAnomalies: Map<string, Anomaly> = new Map();
-let mockScheduleRecommendations: Map<string, ScheduleRecommendation> = new Map();
+let mockScheduleRecommendations: Map<string, ScheduleRecommendation> =
+  new Map();
 let mockWhatIfAnalyses: Map<string, WhatIfAnalysis> = new Map();
 let mockAlerts: Array<{ anomalyId: string; sentAt: Date }> = [];
 
@@ -111,7 +117,15 @@ beforeEach(() => {
   mockAlerts = [];
 
   // Generate sample historical data
-  const days: string[] = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+  const days: string[] = [
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
+  ];
   const baseOrders: number[] = [120, 140, 130, 150, 160, 100, 90];
 
   for (let i = 0; i < 90; i++) {
@@ -175,10 +189,14 @@ async function generateDemandPrediction(
   if (!model) throw new Error(`Model ${modelId} not found`);
 
   const predictionId: string = `pred_${Math.random().toString(36).substring(7)}`;
-  const endDate: Date = new Date(startDate.getTime() + days * 24 * 60 * 60 * 1000);
+  const endDate: Date = new Date(
+    startDate.getTime() + days * 24 * 60 * 60 * 1000,
+  );
 
   // Calculate prediction based on historical averages
-  const avgOrders: number = mockHistoricalData.reduce((sum, d) => sum + d.ordersCount, 0) / mockHistoricalData.length;
+  const avgOrders: number =
+    mockHistoricalData.reduce((sum, d) => sum + d.ordersCount, 0) /
+    mockHistoricalData.length;
   const baseline: number = avgOrders * days;
   const noise: number = Math.random() * 20 - 10; // ±10 orders
 
@@ -206,10 +224,12 @@ async function detectAnomalies(): Promise<Anomaly[]> {
   // Check for unusual patterns in recent data
   if (mockHistoricalData.length > 0) {
     const recentData: HistoricalData[] = mockHistoricalData.slice(-7);
-    const avgOrders: number = recentData.reduce((sum, d) => sum + d.ordersCount, 0) / recentData.length;
+    const avgOrders: number =
+      recentData.reduce((sum, d) => sum + d.ordersCount, 0) / recentData.length;
 
     for (const data of recentData) {
-      const deviation: number = ((data.ordersCount - avgOrders) / avgOrders) * 100;
+      const deviation: number =
+        ((data.ordersCount - avgOrders) / avgOrders) * 100;
 
       if (Math.abs(deviation) > 30) {
         const anomalyId: string = `anom_${Math.random().toString(36).substring(7)}`;
@@ -251,7 +271,8 @@ async function generateScheduleRecommendation(
   predictionId: string,
   date: Date,
 ): Promise<ScheduleRecommendation> {
-  const prediction: DemandPrediction | undefined = mockPredictions.get(predictionId);
+  const prediction: DemandPrediction | undefined =
+    mockPredictions.get(predictionId);
   if (!prediction) throw new Error(`Prediction ${predictionId} not found`);
 
   const recommendationId: string = `rec_${Math.random().toString(36).substring(7)}`;
@@ -275,13 +296,16 @@ async function performWhatIfAnalysis(
   baselinePredictionId: string,
   capacityIncreasePercent: number,
 ): Promise<WhatIfAnalysis> {
-  const prediction: DemandPrediction | undefined = mockPredictions.get(baselinePredictionId);
-  if (!prediction) throw new Error(`Prediction ${baselinePredictionId} not found`);
+  const prediction: DemandPrediction | undefined =
+    mockPredictions.get(baselinePredictionId);
+  if (!prediction)
+    throw new Error(`Prediction ${baselinePredictionId} not found`);
 
   const analysisId: string = `wif_${Math.random().toString(36).substring(7)}`;
 
   const costPerOrderIncrease: number = capacityIncreasePercent * 500; // $500 per 10% increase
-  const revenueIncrease: number = prediction.predictedRevenue * (capacityIncreasePercent / 100) * 0.5; // 50% conversion
+  const revenueIncrease: number =
+    prediction.predictedRevenue * (capacityIncreasePercent / 100) * 0.5; // 50% conversion
   const roi: number = revenueIncrease / costPerOrderIncrease;
 
   const analysis: WhatIfAnalysis = {
@@ -401,7 +425,9 @@ describe("Demand Prediction E2E Tests", () => {
       expect(prediction.predictedRevenue).toBeGreaterThan(0);
       // Revenue should be roughly predictedOrders * avgOrderValue
       const estimatedRevenue: number = prediction.predictedOrders * 50;
-      expect(Math.abs(prediction.predictedRevenue - estimatedRevenue)).toBeLessThan(1000);
+      expect(
+        Math.abs(prediction.predictedRevenue - estimatedRevenue),
+      ).toBeLessThan(1000);
     });
   });
 
@@ -457,10 +483,8 @@ describe("Demand Prediction E2E Tests", () => {
         7,
       );
 
-      const recommendation: ScheduleRecommendation = await generateScheduleRecommendation(
-        prediction.id,
-        futureDate,
-      );
+      const recommendation: ScheduleRecommendation =
+        await generateScheduleRecommendation(prediction.id, futureDate);
 
       expect(recommendation.recommendedCapacity).toBeGreaterThan(0);
       expect(recommendation.estimatedDemand).toBe(prediction.predictedOrders);
@@ -476,10 +500,8 @@ describe("Demand Prediction E2E Tests", () => {
         7,
       );
 
-      const recommendation: ScheduleRecommendation = await generateScheduleRecommendation(
-        prediction.id,
-        futureDate,
-      );
+      const recommendation: ScheduleRecommendation =
+        await generateScheduleRecommendation(prediction.id, futureDate);
 
       // Capacity should be higher than estimated demand (buffer)
       expect(recommendation.recommendedCapacity).toBeGreaterThan(
@@ -496,10 +518,8 @@ describe("Demand Prediction E2E Tests", () => {
         7,
       );
 
-      const recommendation: ScheduleRecommendation = await generateScheduleRecommendation(
-        prediction.id,
-        futureDate,
-      );
+      const recommendation: ScheduleRecommendation =
+        await generateScheduleRecommendation(prediction.id, futureDate);
 
       expect(recommendation.confidence).toBe(prediction.confidenceLevel);
     });
@@ -515,7 +535,10 @@ describe("Demand Prediction E2E Tests", () => {
         7,
       );
 
-      const analysis: WhatIfAnalysis = await performWhatIfAnalysis(prediction.id, 20);
+      const analysis: WhatIfAnalysis = await performWhatIfAnalysis(
+        prediction.id,
+        20,
+      );
 
       expect(analysis.capacityIncrease).toBe(20);
       expect(analysis.estimatedCostIncrease).toBeGreaterThan(0);
@@ -531,8 +554,14 @@ describe("Demand Prediction E2E Tests", () => {
         7,
       );
 
-      const analysis10: WhatIfAnalysis = await performWhatIfAnalysis(prediction.id, 10);
-      const analysis20: WhatIfAnalysis = await performWhatIfAnalysis(prediction.id, 20);
+      const analysis10: WhatIfAnalysis = await performWhatIfAnalysis(
+        prediction.id,
+        10,
+      );
+      const analysis20: WhatIfAnalysis = await performWhatIfAnalysis(
+        prediction.id,
+        20,
+      );
 
       // Higher capacity increase should affect ROI differently
       expect(analysis10.estimatedCostIncrease).toBeLessThan(
@@ -549,7 +578,10 @@ describe("Demand Prediction E2E Tests", () => {
         7,
       );
 
-      const analysis: WhatIfAnalysis = await performWhatIfAnalysis(prediction.id, 15);
+      const analysis: WhatIfAnalysis = await performWhatIfAnalysis(
+        prediction.id,
+        15,
+      );
 
       expect(analysis.baselinePrediction).toBe(prediction.predictedOrders);
       expect(analysis.scenario).toContain("15%");
@@ -576,14 +608,15 @@ describe("Demand Prediction E2E Tests", () => {
       expect(Array.isArray(anomalies)).toBe(true);
 
       // Generate schedule recommendation
-      const recommendation: ScheduleRecommendation = await generateScheduleRecommendation(
-        prediction.id,
-        futureDate,
-      );
+      const recommendation: ScheduleRecommendation =
+        await generateScheduleRecommendation(prediction.id, futureDate);
       expect(recommendation.recommendedCapacity).toBeGreaterThan(0);
 
       // Perform what-if analysis
-      const analysis: WhatIfAnalysis = await performWhatIfAnalysis(prediction.id, 20);
+      const analysis: WhatIfAnalysis = await performWhatIfAnalysis(
+        prediction.id,
+        20,
+      );
       expect(analysis.roi).toBeGreaterThanOrEqual(0);
     });
   });

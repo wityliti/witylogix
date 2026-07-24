@@ -117,7 +117,8 @@ export abstract class BaseWorker {
       lastError: undefined,
       jobsProcessed: this.jobsProcessed,
       jobsFailed: this.jobsFailed,
-      uptime: this.status === "running" ? now - this.startedAt : this.getUptime(),
+      uptime:
+        this.status === "running" ? now - this.startedAt : this.getUptime(),
     };
   }
 
@@ -370,9 +371,7 @@ export class ProcessManager {
       workers.push(worker.getProcessInfo());
     }
 
-    const healthy = workers.every(
-      (w) => w.status === "running" || !w.status,
-    );
+    const healthy = workers.every((w) => w.status === "running" || !w.status);
 
     return {
       healthy,
@@ -466,10 +465,7 @@ export class ProcessManager {
           JSON.stringify({
             manager: "ProcessManager",
             action: "emitWorkerError",
-            error:
-              err instanceof Error
-                ? err.message
-                : String(err),
+            error: err instanceof Error ? err.message : String(err),
             timestamp: new Date().toISOString(),
           }),
         );
@@ -534,7 +530,8 @@ export class ProcessManager {
       return;
     }
 
-    const currentBackoff = this.restartBackoffs.get(name) || this.config.restartBackoffMs;
+    const currentBackoff =
+      this.restartBackoffs.get(name) || this.config.restartBackoffMs;
     const nextBackoff = Math.min(
       currentBackoff * 2,
       this.config.restartMaxBackoffMs,

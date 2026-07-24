@@ -7,16 +7,17 @@ For incident severity levels, escalation paths, and communication templates see
 
 ## Services & Health Endpoints
 
-| Service        | Health URL pattern                    | Notes                        |
-|----------------|---------------------------------------|------------------------------|
-| api            | `$API_URL/health`                     | Returns `{"status":"ok"}`    |
-| dashboard      | `$DASHBOARD_URL/`                     | Next.js — 200 + HTML         |
-| customer-portal| `$CUSTOMER_PORTAL_URL/`               | Next.js — 200 + HTML         |
-| shopify-app    | `$SHOPIFY_APP_URL/health`             | Returns `{"status":"ok"}`    |
-| tracking-page  | `$TRACKING_PAGE_URL/`                 | Vite SPA — 200 + HTML        |
-| docs           | `$DOCS_URL/`                          | Next.js — 200 + HTML         |
+| Service         | Health URL pattern        | Notes                     |
+| --------------- | ------------------------- | ------------------------- |
+| api             | `$API_URL/health`         | Returns `{"status":"ok"}` |
+| dashboard       | `$DASHBOARD_URL/`         | Next.js — 200 + HTML      |
+| customer-portal | `$CUSTOMER_PORTAL_URL/`   | Next.js — 200 + HTML      |
+| shopify-app     | `$SHOPIFY_APP_URL/health` | Returns `{"status":"ok"}` |
+| tracking-page   | `$TRACKING_PAGE_URL/`     | Vite SPA — 200 + HTML     |
+| docs            | `$DOCS_URL/`              | Next.js — 200 + HTML      |
 
 Run all smoke tests at once:
+
 ```bash
 API_BASE_URL=https://api.witylogix.io \
 DASHBOARD_BASE_URL=https://dashboard.witylogix.io \
@@ -34,6 +35,7 @@ DOCS_BASE_URL=https://docs.witylogix.io \
 **Symptoms**: `probe_success == 0` for a service; health endpoint returning non-200.
 
 **Steps**:
+
 1. Check Railway dashboard for the affected service — look for crash loop or OOM.
 2. Tail recent logs:
    ```bash
@@ -58,6 +60,7 @@ DOCS_BASE_URL=https://docs.witylogix.io \
 **Symptoms**: 5xx rate >1% (warning) or >5% (critical) sustained.
 
 **Steps**:
+
 1. Check API logs for error patterns:
    ```bash
    railway logs --service api --tail 500
@@ -83,6 +86,7 @@ DOCS_BASE_URL=https://docs.witylogix.io \
 **Symptoms**: P95 latency >2s (warning) or >5s (critical).
 
 **Steps**:
+
 1. Check Sentry performance traces for slow transactions.
 2. Inspect DB query time — look for missing indexes or N+1 queries in logs.
 3. Check Railway metrics CPU/memory for the API service — resource pressure causes
@@ -101,6 +105,7 @@ DOCS_BASE_URL=https://docs.witylogix.io \
 shopify-app logs about signature validation or 500 responses.
 
 **Steps**:
+
 1. Check shopify-app health:
    ```bash
    railway logs --service shopify-app --tail 200
@@ -125,6 +130,7 @@ shopify-app logs about signature validation or 500 responses.
 show ingestion errors.
 
 **Steps**:
+
 1. Confirm the tracking-page loads correctly (smoke test):
    ```bash
    BASE_URL=https://track.witylogix.io ./tests/smoke/tracking-page.sh
@@ -142,6 +148,7 @@ show ingestion errors.
 **Symptoms**: Health probe duration >5s; users report slow page loads.
 
 **Steps**:
+
 1. Check Railway metrics for CPU/memory pressure on the affected service.
 2. Check if a cold-start is causing the slowness (Railway scales to zero for idle
    services) — if so, enable always-on or increase minimum instances in Railway
@@ -158,6 +165,7 @@ show ingestion errors.
 **Symptoms**: `probe_ssl_earliest_cert_expiry` < 14 days.
 
 **Steps**:
+
 1. Railway manages SSL certificates automatically for `*.railway.app` domains — no
    manual action needed for those.
 2. For custom domains (`*.witylogix.io`), verify the domain DNS is still pointing to

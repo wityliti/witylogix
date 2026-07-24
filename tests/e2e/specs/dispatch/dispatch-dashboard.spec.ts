@@ -1,9 +1,16 @@
-import { test, expect } from '../../fixtures/auth.fixture';
-import { DispatchPage } from '../../pages/dispatch.page';
-import { setupDispatchMocks, clearAllMocks, setupRealtimeUpdates } from '../../helpers/mock-api';
-import { mockDispatchStats, realtimeStatsUpdate } from '../../fixtures/dispatch-fixtures';
+import { test, expect } from "../../fixtures/auth.fixture";
+import { DispatchPage } from "../../pages/dispatch.page";
+import {
+  setupDispatchMocks,
+  clearAllMocks,
+  setupRealtimeUpdates,
+} from "../../helpers/mock-api";
+import {
+  mockDispatchStats,
+  realtimeStatsUpdate,
+} from "../../fixtures/dispatch-fixtures";
 
-test.describe('Dispatch Dashboard', () => {
+test.describe("Dispatch Dashboard", () => {
   let dispatchPage: DispatchPage;
 
   test.beforeEach(async ({ page, dispatcherPage }) => {
@@ -16,7 +23,7 @@ test.describe('Dispatch Dashboard', () => {
     await clearAllMocks(page);
   });
 
-  test('should display stats bar with active drivers, stops, km, time', async () => {
+  test("should display stats bar with active drivers, stops, km, time", async () => {
     // Verify stats bar is visible
     await dispatchPage.expectStatsBarVisible();
 
@@ -34,7 +41,7 @@ test.describe('Dispatch Dashboard', () => {
     expect(stats.stops).toContain(String(mockDispatchStats.totalStops));
   });
 
-  test('should show color-coded routes on map', async () => {
+  test("should show color-coded routes on map", async () => {
     // Navigate to map view
     await dispatchPage.waitForMapLoad();
 
@@ -45,8 +52,8 @@ test.describe('Dispatch Dashboard', () => {
     expect(markers.length).toBeGreaterThan(0);
 
     // Verify marker types
-    const driverMarkers = markers.filter((m) => m.type === 'driver');
-    const stopMarkers = markers.filter((m) => m.type === 'stop');
+    const driverMarkers = markers.filter((m) => m.type === "driver");
+    const stopMarkers = markers.filter((m) => m.type === "stop");
 
     expect(driverMarkers.length).toBeGreaterThan(0);
     expect(stopMarkers.length).toBeGreaterThan(0);
@@ -58,7 +65,7 @@ test.describe('Dispatch Dashboard', () => {
     });
   });
 
-  test('should display route timeline with driver rows', async () => {
+  test("should display route timeline with driver rows", async () => {
     // Verify route timeline is displayed
     await dispatchPage.expectRouteTimelineWithDrivers();
 
@@ -77,7 +84,7 @@ test.describe('Dispatch Dashboard', () => {
     });
   });
 
-  test('should toggle between unscheduled and scheduled tabs', async () => {
+  test("should toggle between unscheduled and scheduled tabs", async () => {
     // Get unscheduled count
     const unscheduledCount = await dispatchPage.getUnscheduledCount();
     expect(unscheduledCount).toBeGreaterThanOrEqual(0);
@@ -87,23 +94,23 @@ test.describe('Dispatch Dashboard', () => {
     expect(scheduledCount).toBeGreaterThanOrEqual(0);
 
     // Toggle back to unscheduled
-    await dispatchPage.toggleTab('unscheduled');
+    await dispatchPage.toggleTab("unscheduled");
 
     // Verify unscheduled tab is active
     const count = await dispatchPage.stopCards.count();
     expect(count).toBe(unscheduledCount);
   });
 
-  test('should show stop details on click', async () => {
+  test("should show stop details on click", async () => {
     // Navigate to unscheduled tab
-    await dispatchPage.toggleTab('unscheduled');
+    await dispatchPage.toggleTab("unscheduled");
 
     // Get first stop card
     const stopCount = await dispatchPage.stopCards.count();
     expect(stopCount).toBeGreaterThan(0);
 
     // Click first stop
-    await dispatchPage.clickStopCard('stop-006');
+    await dispatchPage.clickStopCard("stop-006");
 
     // Get stop details
     const details = await dispatchPage.getStopDetails();
@@ -113,16 +120,18 @@ test.describe('Dispatch Dashboard', () => {
     expect(details.phone).toBeTruthy();
   });
 
-  test('should allow drag-and-drop stop reassignment', async () => {
+  test("should allow drag-and-drop stop reassignment", async () => {
     // Navigate to unscheduled tab
-    await dispatchPage.toggleTab('unscheduled');
+    await dispatchPage.toggleTab("unscheduled");
 
     // Verify draggable stops exist
     const draggableCount = await dispatchPage.draggableStops.count();
     expect(draggableCount).toBeGreaterThan(0);
 
     // Get first stop
-    const firstStop = await dispatchPage.stopCards.nth(0).getAttribute('data-id');
+    const firstStop = await dispatchPage.stopCards
+      .nth(0)
+      .getAttribute("data-id");
     expect(firstStop).toBeTruthy();
 
     // Get first route
@@ -135,11 +144,11 @@ test.describe('Dispatch Dashboard', () => {
       await dispatchPage.dragStopToRoute(firstStop, `route-${drivers[0].id}`);
 
       // Wait for update
-      await dispatchPage.page.waitForLoadState('networkidle');
+      await dispatchPage.page.waitForLoadState("networkidle");
     }
   });
 
-  test('should trigger route optimization on Plan Routes click', async () => {
+  test("should trigger route optimization on Plan Routes click", async () => {
     // Verify Plan Routes button is visible
     const planRoutesButton = dispatchPage.planRoutesButton;
     await expect(planRoutesButton).toBeVisible();
@@ -148,13 +157,13 @@ test.describe('Dispatch Dashboard', () => {
     await dispatchPage.clickPlanRoutes();
 
     // Wait for optimization to complete
-    await dispatchPage.page.waitForLoadState('networkidle');
+    await dispatchPage.page.waitForLoadState("networkidle");
 
     // Verify routes are still displayed
     await dispatchPage.expectRouteTimelineWithDrivers();
   });
 
-  test('should update stats in real-time', async ({ page }) => {
+  test("should update stats in real-time", async ({ page }) => {
     // Setup real-time mocks
     await setupRealtimeUpdates(page);
 
@@ -163,14 +172,17 @@ test.describe('Dispatch Dashboard', () => {
     expect(initialStats).toBeTruthy();
 
     // Wait for real-time update
-    const hasUpdated = await dispatchPage.waitForStatsUpdate(initialStats, 10000);
+    const hasUpdated = await dispatchPage.waitForStatsUpdate(
+      initialStats,
+      10000,
+    );
 
     // Should have received an update
     // Note: This may pass even if stats don't change if the mock returns same data
     expect(hasUpdated || initialStats).toBeTruthy();
   });
 
-  test('should display driver cards with all information', async () => {
+  test("should display driver cards with all information", async () => {
     // Get driver cards
     const drivers = await dispatchPage.getDriverCards();
 
@@ -187,7 +199,7 @@ test.describe('Dispatch Dashboard', () => {
     });
   });
 
-  test('should select and highlight driver route', async () => {
+  test("should select and highlight driver route", async () => {
     // Get driver cards
     const drivers = await dispatchPage.getDriverCards();
     expect(drivers.length).toBeGreaterThan(0);
@@ -200,12 +212,14 @@ test.describe('Dispatch Dashboard', () => {
     expect(driverName).toBeTruthy();
   });
 
-  test('should handle empty state when no drivers available', async ({ page }) => {
+  test("should handle empty state when no drivers available", async ({
+    page,
+  }) => {
     // Mock empty drivers response
-    await page.route('**/api/drivers*', (route) => {
+    await page.route("**/api/drivers*", (route) => {
       route.respond({
         status: 200,
-        contentType: 'application/json',
+        contentType: "application/json",
         body: JSON.stringify({ data: [] }),
       });
     });
@@ -214,43 +228,47 @@ test.describe('Dispatch Dashboard', () => {
     await dispatchPage.navigateToDispatch();
 
     // Verify empty state or message
-    const emptyStateVisible = await dispatchPage.emptyState.isVisible().catch(() => false);
+    const emptyStateVisible = await dispatchPage.emptyState
+      .isVisible()
+      .catch(() => false);
     // Page should either show empty state or handle gracefully
     expect(emptyStateVisible || true).toBeTruthy();
   });
 
-  test('should handle network errors gracefully', async ({ page }) => {
+  test("should handle network errors gracefully", async ({ page }) => {
     // Simulate network error
-    await page.route('**/api/dispatch/stats*', (route) => {
-      route.abort('failed');
+    await page.route("**/api/dispatch/stats*", (route) => {
+      route.abort("failed");
     });
 
     // Navigate
     await dispatchPage.navigateToDispatch();
 
     // Verify page doesn't crash
-    const header = dispatchPage.page.locator('body');
+    const header = dispatchPage.page.locator("body");
     await expect(header).toBeVisible();
   });
 
-  test('should refresh data when refresh button clicked', async () => {
+  test("should refresh data when refresh button clicked", async () => {
     // Verify initial page loads
     await dispatchPage.expectDispatchPage();
 
     // Click refresh (if button exists)
-    const refreshButton = dispatchPage.page.locator('[data-testid="refresh-btn"]');
+    const refreshButton = dispatchPage.page.locator(
+      '[data-testid="refresh-btn"]',
+    );
     const refreshExists = await refreshButton.isVisible().catch(() => false);
 
     if (refreshExists) {
       await refreshButton.click();
-      await dispatchPage.page.waitForLoadState('networkidle');
+      await dispatchPage.page.waitForLoadState("networkidle");
     }
 
     // Verify page is still functional
     await dispatchPage.expectDispatchPage();
   });
 
-  test('should calculate and display route metrics correctly', async () => {
+  test("should calculate and display route metrics correctly", async () => {
     // Get routes
     const routes = await dispatchPage.getRouteTimeline();
     expect(routes.length).toBeGreaterThan(0);
@@ -262,23 +280,25 @@ test.describe('Dispatch Dashboard', () => {
     });
   });
 
-  test('should display blackout/unavailable time windows', async () => {
+  test("should display blackout/unavailable time windows", async () => {
     // Navigate to scheduled tab
-    await dispatchPage.toggleTab('scheduled');
+    await dispatchPage.toggleTab("scheduled");
 
     // Verify stops are displayed
     const stopCount = await dispatchPage.stopCards.count();
     expect(stopCount).toBeGreaterThanOrEqual(0);
   });
 
-  test('should close stop detail modal', async () => {
+  test("should close stop detail modal", async () => {
     // Open stop details
     const stopCount = await dispatchPage.stopCards.count();
     if (stopCount > 0) {
-      await dispatchPage.clickStopCard('stop-006');
+      await dispatchPage.clickStopCard("stop-006");
 
       // Verify modal is open
-      const detailModal = dispatchPage.page.locator('[data-testid="stop-detail-modal"]');
+      const detailModal = dispatchPage.page.locator(
+        '[data-testid="stop-detail-modal"]',
+      );
       const modalVisible = await detailModal.isVisible().catch(() => false);
 
       if (modalVisible) {
@@ -292,7 +312,7 @@ test.describe('Dispatch Dashboard', () => {
     }
   });
 
-  test('should display multiple routes with different colors', async () => {
+  test("should display multiple routes with different colors", async () => {
     // Get route timeline
     const routes = await dispatchPage.getRouteTimeline();
 

@@ -46,12 +46,12 @@ export const options = {
     // Error rate threshold
     http_req_failed: ["rate<0.01"], // Less than 1%
     // Custom metrics
-    "order_creation_duration": ["p(95)<1000"],
-    "route_optimization_duration": ["p(95)<2000"],
-    "checkout_response_time": ["p(95)<600"],
-    "websocket_connection_time": ["p(95)<2000"],
+    order_creation_duration: ["p(95)<1000"],
+    route_optimization_duration: ["p(95)<2000"],
+    checkout_response_time: ["p(95)<600"],
+    websocket_connection_time: ["p(95)<2000"],
     // Availability
-    "successful_requests": ["rate>0.99"], // 99%+ success rate
+    successful_requests: ["rate>0.99"], // 99%+ success rate
   },
   ext: {
     loadimpact: {
@@ -78,7 +78,7 @@ const activeVUs = new Gauge("active_vus");
 function getHeaders(includeAuth = true): Record<string, string> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    "Accept": "application/json",
+    Accept: "application/json",
   };
 
   if (includeAuth) {
@@ -144,10 +144,14 @@ function scenarioOrderCreationBurst(): void {
     };
 
     const startTime: number = Date.now();
-    const response: Response = http.post(`${BASE_URL}/orders`, JSON.stringify(payload), {
-      headers: getHeaders(),
-      timeout: "30s",
-    });
+    const response: Response = http.post(
+      `${BASE_URL}/orders`,
+      JSON.stringify(payload),
+      {
+        headers: getHeaders(),
+        timeout: "30s",
+      },
+    );
     const duration: number = Date.now() - startTime;
 
     orderCreationDuration.add(duration);
@@ -309,10 +313,13 @@ function scenarioTrackingUpdates(): void {
   group("Order Tracking Updates", () => {
     const orderId: string = `ord_${Math.random().toString(36).substring(7)}`;
 
-    const response: Response = http.get(`${BASE_URL}/orders/${orderId}/tracking`, {
-      headers: getHeaders(),
-      timeout: "10s",
-    });
+    const response: Response = http.get(
+      `${BASE_URL}/orders/${orderId}/tracking`,
+      {
+        headers: getHeaders(),
+        timeout: "10s",
+      },
+    );
 
     checkResponse(response, 200, "Get Tracking");
 
@@ -347,10 +354,13 @@ function scenarioMixedWorkload(): void {
 
     if (workloadType < 0.5) {
       // 50% GET requests
-      const response: Response = http.get(`${BASE_URL}/orders?limit=10&offset=0`, {
-        headers: getHeaders(),
-        timeout: "10s",
-      });
+      const response: Response = http.get(
+        `${BASE_URL}/orders?limit=10&offset=0`,
+        {
+          headers: getHeaders(),
+          timeout: "10s",
+        },
+      );
       checkResponse(response, 200, "List Orders");
     } else if (workloadType < 0.75) {
       // 25% POST requests
@@ -382,10 +392,13 @@ function scenarioMixedWorkload(): void {
 function scenarioErrorHandling(): void {
   group("Error Handling", () => {
     // 404 - Not found
-    const notFoundResponse: Response = http.get(`${BASE_URL}/orders/invalid_id`, {
-      headers: getHeaders(),
-      timeout: "5s",
-    });
+    const notFoundResponse: Response = http.get(
+      `${BASE_URL}/orders/invalid_id`,
+      {
+        headers: getHeaders(),
+        timeout: "5s",
+      },
+    );
 
     check(notFoundResponse, {
       "404 returns correct status": (r) => r.status === 404,
@@ -427,7 +440,10 @@ function scenarioErrorHandling(): void {
 function scenarioConcurrentRequests(): void {
   group("Concurrent Requests", () => {
     const concurrent = 5;
-    const requests: Record<string, string | ((response: Response) => boolean)[]> = {};
+    const requests: Record<
+      string,
+      string | ((response: Response) => boolean)[]
+    > = {};
 
     for (let i = 0; i < concurrent; i++) {
       requests[`order_${i}`] = [

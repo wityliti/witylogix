@@ -2,7 +2,7 @@
 
 /**
  * S3 File Storage Provider
- * 
+ *
  * Real AWS S3 implementation with support for:
  * - Multi-tenant key scoping
  * - BYOK (Bring Your Own Key) pattern
@@ -10,7 +10,7 @@
  * - Batch operations
  */
 
-import { Readable } from 'stream';
+import { Readable } from "stream";
 import {
   FileStorageProvider,
   FileMetadata,
@@ -18,7 +18,7 @@ import {
   ListFilesResult,
   TenantStorageConfig,
   DeployerStorageConfig,
-} from './types';
+} from "./types";
 
 // Manual type definitions for AWS SDK (avoiding actual imports)
 interface S3Client {
@@ -90,8 +90,10 @@ export class S3FileStorage implements FileStorageProvider {
   constructor(config: S3ProviderConfig) {
     this.bucketName = config.bucketName;
     this.region = config.region;
-    this.baseUrl = config.baseUrl || `https://${config.bucketName}.s3.${config.region}.amazonaws.com`;
-    this.tenantId = config.tenantId || 'default';
+    this.baseUrl =
+      config.baseUrl ||
+      `https://${config.bucketName}.s3.${config.region}.amazonaws.com`;
+    this.tenantId = config.tenantId || "default";
 
     // Initialize AWS SDK client
     // In production: const { S3Client } = require('@aws-sdk/client-s3');
@@ -117,7 +119,7 @@ export class S3FileStorage implements FileStorageProvider {
         });
       }
     } catch (error) {
-      console.error('Failed to initialize S3 client:', error);
+      console.error("Failed to initialize S3 client:", error);
     }
   }
 
@@ -130,7 +132,7 @@ export class S3FileStorage implements FileStorageProvider {
       parts.push(category);
     }
     parts.push(key);
-    return parts.join('/');
+    return parts.join("/");
   }
 
   /**
@@ -139,10 +141,10 @@ export class S3FileStorage implements FileStorageProvider {
   async upload(
     key: string,
     data: Buffer | Readable,
-    options?: UploadOptions
+    options?: UploadOptions,
   ): Promise<FileMetadata> {
     if (!this.client) {
-      throw new Error('S3 client not initialized. Check AWS credentials.');
+      throw new Error("S3 client not initialized. Check AWS credentials.");
     }
 
     const scopedKey = this.buildKey(key);
@@ -157,25 +159,27 @@ export class S3FileStorage implements FileStorageProvider {
         ContentType: contentType,
         ContentDisposition: options?.contentDisposition,
         Metadata: options?.metadata,
-        ACL: options?.acl || 'private',
+        ACL: options?.acl || "private",
       };
 
       await this.client.send({
-        type: 'PutObject',
+        type: "PutObject",
         input: command,
       });
 
       const size = Buffer.isBuffer(data) ? data.length : 0;
 
       return {
-        name: key.split('/').pop() || key,
+        name: key.split("/").pop() || key,
         size,
         mimeType: contentType,
         uploadedAt: new Date(),
         url: this.getUrl(key),
       };
     } catch (error) {
-      throw new Error(`Failed to upload file to S3: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to upload file to S3: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -184,7 +188,7 @@ export class S3FileStorage implements FileStorageProvider {
    */
   async download(key: string): Promise<Buffer> {
     if (!this.client) {
-      throw new Error('S3 client not initialized. Check AWS credentials.');
+      throw new Error("S3 client not initialized. Check AWS credentials.");
     }
 
     const scopedKey = this.buildKey(key);
@@ -197,13 +201,15 @@ export class S3FileStorage implements FileStorageProvider {
       };
 
       const response = await this.client.send({
-        type: 'GetObject',
+        type: "GetObject",
         input: command,
       });
 
       return this.streamToBuffer(response.Body);
     } catch (error) {
-      throw new Error(`Failed to download file from S3: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to download file from S3: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -212,7 +218,7 @@ export class S3FileStorage implements FileStorageProvider {
    */
   async delete(key: string): Promise<void> {
     if (!this.client) {
-      throw new Error('S3 client not initialized. Check AWS credentials.');
+      throw new Error("S3 client not initialized. Check AWS credentials.");
     }
 
     const scopedKey = this.buildKey(key);
@@ -225,11 +231,13 @@ export class S3FileStorage implements FileStorageProvider {
       };
 
       await this.client.send({
-        type: 'DeleteObject',
+        type: "DeleteObject",
         input: command,
       });
     } catch (error) {
-      throw new Error(`Failed to delete file from S3: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to delete file from S3: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -246,7 +254,7 @@ export class S3FileStorage implements FileStorageProvider {
    */
   async getSignedUrl(key: string, expiresIn: number = 3600): Promise<string> {
     if (!this.client) {
-      throw new Error('S3 client not initialized. Check AWS credentials.');
+      throw new Error("S3 client not initialized. Check AWS credentials.");
     }
 
     const scopedKey = this.buildKey(key);
@@ -255,7 +263,7 @@ export class S3FileStorage implements FileStorageProvider {
       // Would use: const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
       // const { GetObjectCommand } = require('@aws-sdk/client-s3');
       const signedUrl = await this.client.send({
-        type: 'GetSignedUrl',
+        type: "GetSignedUrl",
         input: {
           Bucket: this.bucketName,
           Key: scopedKey,
@@ -265,7 +273,9 @@ export class S3FileStorage implements FileStorageProvider {
 
       return signedUrl;
     } catch (error) {
-      throw new Error(`Failed to generate signed URL: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to generate signed URL: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -274,7 +284,7 @@ export class S3FileStorage implements FileStorageProvider {
    */
   async listFiles(prefix?: string, token?: string): Promise<ListFilesResult> {
     if (!this.client) {
-      throw new Error('S3 client not initialized. Check AWS credentials.');
+      throw new Error("S3 client not initialized. Check AWS credentials.");
     }
 
     const searchPrefix = prefix
@@ -291,25 +301,29 @@ export class S3FileStorage implements FileStorageProvider {
       };
 
       const response: ListObjectsV2CommandOutput = await this.client.send({
-        type: 'ListObjectsV2',
+        type: "ListObjectsV2",
         input: command,
       });
 
-      const files: FileMetadata[] = (response.Contents || []).map((obj: any) => ({
-        name: obj.Key.split('/').pop() || obj.Key,
-        size: obj.Size || 0,
-        mimeType: this.detectContentType(obj.Key),
-        uploadedAt: obj.LastModified || new Date(),
-        url: `${this.baseUrl}/${obj.Key}`,
-        lastModified: obj.LastModified,
-      }));
+      const files: FileMetadata[] = (response.Contents || []).map(
+        (obj: any) => ({
+          name: obj.Key.split("/").pop() || obj.Key,
+          size: obj.Size || 0,
+          mimeType: this.detectContentType(obj.Key),
+          uploadedAt: obj.LastModified || new Date(),
+          url: `${this.baseUrl}/${obj.Key}`,
+          lastModified: obj.LastModified,
+        }),
+      );
 
       return {
         files,
         nextToken: response.NextContinuationToken,
       };
     } catch (error) {
-      throw new Error(`Failed to list files from S3: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to list files from S3: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -318,7 +332,7 @@ export class S3FileStorage implements FileStorageProvider {
    */
   async exists(key: string): Promise<boolean> {
     if (!this.client) {
-      throw new Error('S3 client not initialized. Check AWS credentials.');
+      throw new Error("S3 client not initialized. Check AWS credentials.");
     }
 
     const scopedKey = this.buildKey(key);
@@ -326,7 +340,7 @@ export class S3FileStorage implements FileStorageProvider {
     try {
       // Would use: const { HeadObjectCommand } = require('@aws-sdk/client-s3');
       await this.client.send({
-        type: 'HeadObject',
+        type: "HeadObject",
         input: {
           Bucket: this.bucketName,
           Key: scopedKey,
@@ -334,10 +348,15 @@ export class S3FileStorage implements FileStorageProvider {
       });
       return true;
     } catch (error: any) {
-      if (error.name === 'NotFound' || error.$metadata?.httpStatusCode === 404) {
+      if (
+        error.name === "NotFound" ||
+        error.$metadata?.httpStatusCode === 404
+      ) {
         return false;
       }
-      throw new Error(`Failed to check file existence: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to check file existence: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -345,35 +364,35 @@ export class S3FileStorage implements FileStorageProvider {
    * Detect MIME type from filename
    */
   private detectContentType(filename: string): string {
-    const ext = filename.split('.').pop()?.toLowerCase() || '';
+    const ext = filename.split(".").pop()?.toLowerCase() || "";
     const mimeTypes: Record<string, string> = {
-      pdf: 'application/pdf',
-      txt: 'text/plain',
-      html: 'text/html',
-      css: 'text/css',
-      js: 'application/javascript',
-      json: 'application/json',
-      xml: 'application/xml',
-      csv: 'text/csv',
-      xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      xls: 'application/vnd.ms-excel',
-      docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      doc: 'application/msword',
-      png: 'image/png',
-      jpg: 'image/jpeg',
-      jpeg: 'image/jpeg',
-      gif: 'image/gif',
-      svg: 'image/svg+xml',
-      webp: 'image/webp',
-      mp4: 'video/mp4',
-      webm: 'video/webm',
-      mp3: 'audio/mpeg',
-      wav: 'audio/wav',
-      zip: 'application/zip',
-      gz: 'application/gzip',
+      pdf: "application/pdf",
+      txt: "text/plain",
+      html: "text/html",
+      css: "text/css",
+      js: "application/javascript",
+      json: "application/json",
+      xml: "application/xml",
+      csv: "text/csv",
+      xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      xls: "application/vnd.ms-excel",
+      docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      doc: "application/msword",
+      png: "image/png",
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      gif: "image/gif",
+      svg: "image/svg+xml",
+      webp: "image/webp",
+      mp4: "video/mp4",
+      webm: "video/webm",
+      mp3: "audio/mpeg",
+      wav: "audio/wav",
+      zip: "application/zip",
+      gz: "application/gzip",
     };
 
-    return mimeTypes[ext] || 'application/octet-stream';
+    return mimeTypes[ext] || "application/octet-stream";
   }
 
   /**
@@ -382,9 +401,9 @@ export class S3FileStorage implements FileStorageProvider {
   private async streamToBuffer(stream: Readable): Promise<Buffer> {
     return new Promise((resolve, reject) => {
       const chunks: Buffer[] = [];
-      stream.on('data', (chunk: Buffer) => chunks.push(chunk));
-      stream.on('end', () => resolve(Buffer.concat(chunks)));
-      stream.on('error', reject);
+      stream.on("data", (chunk: Buffer) => chunks.push(chunk));
+      stream.on("end", () => resolve(Buffer.concat(chunks)));
+      stream.on("error", reject);
     });
   }
 }
@@ -394,7 +413,7 @@ export class S3FileStorage implements FileStorageProvider {
  */
 export function resolveS3Credentials(
   tenantConfig?: TenantStorageConfig,
-  deployerConfig?: DeployerStorageConfig
+  deployerConfig?: DeployerStorageConfig,
 ): S3ProviderConfig | null {
   // Tenant config takes precedence
   if (tenantConfig?.s3) {
@@ -412,8 +431,8 @@ export function resolveS3Credentials(
       bucketName: deployerConfig.s3.bucketName,
       region: deployerConfig.s3.region,
       baseUrl: deployerConfig.s3.baseUrl,
-      accessKeyId: deployerConfig.s3.accessKeyId || '',
-      secretAccessKey: deployerConfig.s3.secretAccessKey || '',
+      accessKeyId: deployerConfig.s3.accessKeyId || "",
+      secretAccessKey: deployerConfig.s3.secretAccessKey || "",
     };
   }
 

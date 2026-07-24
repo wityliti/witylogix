@@ -72,7 +72,12 @@ export function KPICard({
         </Text>
         {delta !== undefined && (
           <InlineStack gap="100" blockAlign="center">
-            <Text as="span" variant="bodySm" tone={deltaTone} fontWeight="medium">
+            <Text
+              as="span"
+              variant="bodySm"
+              tone={deltaTone}
+              fontWeight="medium"
+            >
               {deltaPrefix}
               {delta}
               {deltaUnit}

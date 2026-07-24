@@ -15,12 +15,17 @@
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
-export type ZoneType = 'urban-core' | 'urban' | 'suburban' | 'rural' | 'highway';
+export type ZoneType =
+  | "urban-core"
+  | "urban"
+  | "suburban"
+  | "rural"
+  | "highway";
 
 export interface ResidualFeatures {
   distanceKm: number;
-  hour: number;           // 0–23
-  dayOfWeek: number;      // 0–6 (0 = Sunday)
+  hour: number; // 0–23
+  dayOfWeek: number; // 0–6 (0 = Sunday)
   numStopsRemaining: number;
   driverSpeedKmh: number;
   zoneType: ZoneType;
@@ -33,10 +38,10 @@ export interface TrainingPoint {
 }
 
 export interface ModelConfig {
-  numTrees: number;         // number of boosting rounds (default 20)
-  learningRate: number;     // shrinkage factor (default 0.1)
-  maxDepth: number;         // max depth per tree (default 3)
-  minSamplesLeaf?: number;  // min samples required to form a leaf (default 3)
+  numTrees: number; // number of boosting rounds (default 20)
+  learningRate: number; // shrinkage factor (default 0.1)
+  maxDepth: number; // max depth per tree (default 3)
+  minSamplesLeaf?: number; // min samples required to form a leaf (default 3)
 }
 
 /** A single node in a regression tree */
@@ -68,20 +73,20 @@ export interface ModelState {
 // ─── Feature encoding ─────────────────────────────────────────────────────
 
 const ZONE_TYPE_ENCODE: Record<ZoneType, number> = {
-  'urban-core': 0,
-  'urban': 1,
-  'suburban': 2,
-  'rural': 3,
-  'highway': 4,
+  "urban-core": 0,
+  urban: 1,
+  suburban: 2,
+  rural: 3,
+  highway: 4,
 };
 
 const FEATURE_NAMES = [
-  'distanceKm',
-  'hour',
-  'dayOfWeek',
-  'numStopsRemaining',
-  'driverSpeedKmh',
-  'zoneType',
+  "distanceKm",
+  "hour",
+  "dayOfWeek",
+  "numStopsRemaining",
+  "driverSpeedKmh",
+  "zoneType",
 ] as const;
 
 function encodeFeatures(f: ResidualFeatures): number[] {
@@ -122,7 +127,11 @@ function buildTree(
   featureImportance: Record<string, number>,
 ): TreeNode {
   // Base cases: max depth reached, too few samples, or zero variance
-  if (depth >= maxDepth || targets.length <= minSamplesLeaf * 2 || mse(targets) < 1e-10) {
+  if (
+    depth >= maxDepth ||
+    targets.length <= minSamplesLeaf * 2 ||
+    mse(targets) < 1e-10
+  ) {
     return { isLeaf: true, value: mean(targets) };
   }
 
@@ -137,7 +146,9 @@ function buildTree(
 
   for (let fi = 0; fi < numFeatures; fi++) {
     // Get unique sorted values for this feature
-    const vals = [...new Set(features.map((row) => row[fi]))].sort((a, b) => a - b);
+    const vals = [...new Set(features.map((row) => row[fi]))].sort(
+      (a, b) => a - b,
+    );
 
     for (let vi = 0; vi < vals.length - 1; vi++) {
       const split = (vals[vi] + vals[vi + 1]) / 2;
@@ -152,7 +163,8 @@ function buildTree(
         }
       }
 
-      if (leftIdx.length < minSamplesLeaf || rightIdx.length < minSamplesLeaf) continue;
+      if (leftIdx.length < minSamplesLeaf || rightIdx.length < minSamplesLeaf)
+        continue;
 
       const leftTargets = leftIdx.map((i) => targets[i]);
       const rightTargets = rightIdx.map((i) => targets[i]);
@@ -190,8 +202,22 @@ function buildTree(
     isLeaf: false,
     featureIndex: bestFeatureIdx,
     splitValue: bestSplitValue,
-    left: buildTree(leftFeatures, leftTargets, depth + 1, maxDepth, minSamplesLeaf, featureImportance),
-    right: buildTree(rightFeatures, rightTargets, depth + 1, maxDepth, minSamplesLeaf, featureImportance),
+    left: buildTree(
+      leftFeatures,
+      leftTargets,
+      depth + 1,
+      maxDepth,
+      minSamplesLeaf,
+      featureImportance,
+    ),
+    right: buildTree(
+      rightFeatures,
+      rightTargets,
+      depth + 1,
+      maxDepth,
+      minSamplesLeaf,
+      featureImportance,
+    ),
   };
 }
 
@@ -229,7 +255,9 @@ export class LightGBMResidualModel {
     if (points.length === 0) return;
 
     const features = points.map((p) => encodeFeatures(p.features));
-    const residuals = points.map((p) => p.actualMinutes - p.osrmEstimateMinutes);
+    const residuals = points.map(
+      (p) => p.actualMinutes - p.osrmEstimateMinutes,
+    );
 
     // Initialize base prediction as mean residual
     this.baseValue = mean(residuals);
@@ -259,7 +287,8 @@ export class LightGBMResidualModel {
 
       // Update predictions
       for (let i = 0; i < predictions.length; i++) {
-        predictions[i] += this.config.learningRate * predictTree(treeRoot, features[i]);
+        predictions[i] +=
+          this.config.learningRate * predictTree(treeRoot, features[i]);
       }
     }
   }
@@ -281,7 +310,10 @@ export class LightGBMResidualModel {
 
   /** Return gain-based feature importance (normalized to sum to 1). */
   getFeatureImportance(): Record<string, number> {
-    const total = Object.values(this.featureImportance).reduce((a, b) => a + b, 0);
+    const total = Object.values(this.featureImportance).reduce(
+      (a, b) => a + b,
+      0,
+    );
     if (total === 0) return { ...this.featureImportance };
     return Object.fromEntries(
       Object.entries(this.featureImportance).map(([k, v]) => [k, v / total]),

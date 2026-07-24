@@ -15,37 +15,37 @@ export interface PriorityConfig {
 // Default priority mapping per job type
 const JOB_PRIORITY_MAP: Record<string, PriorityLevel> = {
   // Critical jobs
-  'payment-processing': PriorityLevel.CRITICAL,
-  'emergency-alert': PriorityLevel.CRITICAL,
-  'security-incident': PriorityLevel.CRITICAL,
+  "payment-processing": PriorityLevel.CRITICAL,
+  "emergency-alert": PriorityLevel.CRITICAL,
+  "security-incident": PriorityLevel.CRITICAL,
 
   // High priority
-  'invoice-generation': PriorityLevel.HIGH,
-  'report-generation': PriorityLevel.HIGH,
-  'user-notification': PriorityLevel.HIGH,
-  'integration-sync': PriorityLevel.HIGH,
+  "invoice-generation": PriorityLevel.HIGH,
+  "report-generation": PriorityLevel.HIGH,
+  "user-notification": PriorityLevel.HIGH,
+  "integration-sync": PriorityLevel.HIGH,
 
   // Normal priority (default)
-  'email-send': PriorityLevel.NORMAL,
-  'data-export': PriorityLevel.NORMAL,
-  'webhook-delivery': PriorityLevel.NORMAL,
+  "email-send": PriorityLevel.NORMAL,
+  "data-export": PriorityLevel.NORMAL,
+  "webhook-delivery": PriorityLevel.NORMAL,
 
   // Low priority
-  'analytics-aggregation': PriorityLevel.LOW,
-  'cleanup': PriorityLevel.LOW,
-  'cache-warm': PriorityLevel.LOW,
+  "analytics-aggregation": PriorityLevel.LOW,
+  cleanup: PriorityLevel.LOW,
+  "cache-warm": PriorityLevel.LOW,
 
   // Background jobs
-  'backup': PriorityLevel.BACKGROUND,
-  'optimization': PriorityLevel.BACKGROUND,
-  'maintenance': PriorityLevel.BACKGROUND,
+  backup: PriorityLevel.BACKGROUND,
+  optimization: PriorityLevel.BACKGROUND,
+  maintenance: PriorityLevel.BACKGROUND,
 };
 
 const TIMEOUT_BY_PRIORITY: Record<PriorityLevel, number> = {
-  [PriorityLevel.CRITICAL]: 1000,    // Escalate after 1 second
-  [PriorityLevel.HIGH]: 5000,        // Escalate after 5 seconds
-  [PriorityLevel.NORMAL]: 30000,     // Escalate after 30 seconds
-  [PriorityLevel.LOW]: 120000,       // Escalate after 2 minutes
+  [PriorityLevel.CRITICAL]: 1000, // Escalate after 1 second
+  [PriorityLevel.HIGH]: 5000, // Escalate after 5 seconds
+  [PriorityLevel.NORMAL]: 30000, // Escalate after 30 seconds
+  [PriorityLevel.LOW]: 120000, // Escalate after 2 minutes
   [PriorityLevel.BACKGROUND]: 300000, // Escalate after 5 minutes
 };
 
@@ -56,10 +56,12 @@ export class JobPriority {
   private jobWaitTimes: Map<string, number> = new Map();
 
   constructor(customPriorityMap?: Record<string, PriorityLevel>) {
-    this.priorityMap = new Map(Object.entries({
-      ...JOB_PRIORITY_MAP,
-      ...(customPriorityMap || {}),
-    }));
+    this.priorityMap = new Map(
+      Object.entries({
+        ...JOB_PRIORITY_MAP,
+        ...(customPriorityMap || {}),
+      }),
+    );
   }
 
   getPriority(jobType: string): PriorityLevel {
@@ -78,11 +80,17 @@ export class JobPriority {
     const waitTimeMs = Date.now() - createdAt;
 
     // Check if job should be escalated due to starvation prevention
-    if (basePriority === PriorityLevel.BACKGROUND && waitTimeMs > STARVATION_TIMEOUT_MS) {
+    if (
+      basePriority === PriorityLevel.BACKGROUND &&
+      waitTimeMs > STARVATION_TIMEOUT_MS
+    ) {
       return PriorityLevel.LOW;
     }
 
-    if (basePriority === PriorityLevel.LOW && waitTimeMs > STARVATION_TIMEOUT_MS) {
+    if (
+      basePriority === PriorityLevel.LOW &&
+      waitTimeMs > STARVATION_TIMEOUT_MS
+    ) {
       return PriorityLevel.NORMAL;
     }
 
@@ -172,10 +180,15 @@ export class JobPriority {
    * Batch prioritize jobs - sort by current priority
    */
   prioritizeJobs(
-    jobs: Array<{ id: string; type: string; createdAt: number }>
-  ): Array<{ id: string; type: string; createdAt: number; priority: PriorityLevel }> {
+    jobs: Array<{ id: string; type: string; createdAt: number }>,
+  ): Array<{
+    id: string;
+    type: string;
+    createdAt: number;
+    priority: PriorityLevel;
+  }> {
     return jobs
-      .map(job => ({
+      .map((job) => ({
         ...job,
         priority: this.getCurrentPriority(job.type, job.createdAt),
       }))

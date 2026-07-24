@@ -31,7 +31,10 @@ export class TCOCalculator {
   /**
    * Calculate total cost of ownership for single vehicle
    */
-  async calculateVehicleTCO(vehicleId: string, usefulLifeYears: number = 5): Promise<{
+  async calculateVehicleTCO(
+    vehicleId: string,
+    usefulLifeYears: number = 5,
+  ): Promise<{
     vehicle: Vehicle;
     tco: TCOComponent;
     costPerYear: number;
@@ -42,22 +45,33 @@ export class TCOCalculator {
     });
 
     if (!vehicle) {
-      throw new FleetManagementError(`Vehicle not found: ${vehicleId}`, "VEHICLE_NOT_FOUND", 404);
+      throw new FleetManagementError(
+        `Vehicle not found: ${vehicleId}`,
+        "VEHICLE_NOT_FOUND",
+        404,
+      );
     }
 
     // Acquisition cost (placeholder, would be in database)
     const acquisitionCost = 35000;
 
     // Calculate fuel costs (historical average)
-    const fuelTransactions = await (this.prisma as any).fuelTransaction.findMany({
+    const fuelTransactions = await (
+      this.prisma as any
+    ).fuelTransaction.findMany({
       where: { vehicleId },
     });
 
-    const totalFuelCost = fuelTransactions.reduce((sum: number, t: any) => sum + t.totalCost, 0);
+    const totalFuelCost = fuelTransactions.reduce(
+      (sum: number, t: any) => sum + t.totalCost,
+      0,
+    );
     const avgFuelCostPerYear = totalFuelCost / (fuelTransactions.length || 12);
 
     // Calculate maintenance costs (historical)
-    const maintenanceRecords = await (this.prisma as any).maintenanceRecord.findMany({
+    const maintenanceRecords = await (
+      this.prisma as any
+    ).maintenanceRecord.findMany({
       where: { vehicleId, status: "COMPLETED" },
     });
 
@@ -65,7 +79,8 @@ export class TCOCalculator {
       (sum: number, m: any) => sum + (m.cost || 0),
       0,
     );
-    const avgMaintenanceCostPerYear = totalMaintenanceCost / (maintenanceRecords.length || 12);
+    const avgMaintenanceCostPerYear =
+      totalMaintenanceCost / (maintenanceRecords.length || 12);
 
     // Insurance cost (from policy)
     const insuranceCost = vehicle.insurance.premium * usefulLifeYears;
@@ -129,7 +144,9 @@ export class TCOCalculator {
       tco: r.tco.total,
     }));
 
-    const highestCostVehicles = byVehicle.sort((a, b) => b.tco - a.tco).slice(0, 5);
+    const highestCostVehicles = byVehicle
+      .sort((a, b) => b.tco - a.tco)
+      .slice(0, 5);
 
     return {
       totalTCO,
@@ -145,7 +162,15 @@ export class TCOCalculator {
   async compareVehicles(
     vehicleIds: string[],
     usefulLifeYears: number = 5,
-  ): Promise<Array<{ vehicleId: string; make: string; model: string; tco: number; costPerMile: number }>> {
+  ): Promise<
+    Array<{
+      vehicleId: string;
+      make: string;
+      model: string;
+      tco: number;
+      costPerMile: number;
+    }>
+  > {
     const comparisons = await Promise.all(
       vehicleIds.map((id) => this.calculateVehicleTCO(id, usefulLifeYears)),
     );
@@ -199,18 +224,27 @@ export class CostPerMileTracker {
     });
 
     if (!vehicle) {
-      throw new FleetManagementError(`Vehicle not found: ${vehicleId}`, "VEHICLE_NOT_FOUND", 404);
+      throw new FleetManagementError(
+        `Vehicle not found: ${vehicleId}`,
+        "VEHICLE_NOT_FOUND",
+        404,
+      );
     }
 
     // Get fuel costs
-    const fuelTransactions = await (this.prisma as any).fuelTransaction.findMany({
+    const fuelTransactions = await (
+      this.prisma as any
+    ).fuelTransaction.findMany({
       where: {
         vehicleId,
         date: { gte: startDate, lte: endDate },
       },
     });
 
-    const fuelCost = fuelTransactions.reduce((sum: number, t: any) => sum + t.totalCost, 0);
+    const fuelCost = fuelTransactions.reduce(
+      (sum: number, t: any) => sum + t.totalCost,
+      0,
+    );
 
     // Get maintenance costs
     const maintenance = await (this.prisma as any).maintenanceRecord.findMany({
@@ -220,11 +254,16 @@ export class CostPerMileTracker {
       },
     });
 
-    const maintenanceCost = maintenance.reduce((sum: number, m: any) => sum + (m.cost || 0), 0);
+    const maintenanceCost = maintenance.reduce(
+      (sum: number, m: any) => sum + (m.cost || 0),
+      0,
+    );
 
     // Insurance (pro-rata)
     const dailyInsurance = vehicle.insurance.premium / 365;
-    const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    const daysDiff = Math.ceil(
+      (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
+    );
     const insuranceCost = dailyInsurance * daysDiff;
 
     // Calculate miles
@@ -247,7 +286,10 @@ export class CostPerMileTracker {
       },
     });
 
-    const prevTotalCost = prevFuel.reduce((sum: number, t: any) => sum + t.totalCost, 0);
+    const prevTotalCost = prevFuel.reduce(
+      (sum: number, t: any) => sum + t.totalCost,
+      0,
+    );
     const trend =
       costPerMile > prevTotalCost / Math.max(1, totalMiles)
         ? "UP"
@@ -273,7 +315,10 @@ export class CostPerMileTracker {
   /**
    * Track cost per mile trends
    */
-  async getCostTrends(vehicleId: string, months: number = 6): Promise<
+  async getCostTrends(
+    vehicleId: string,
+    months: number = 6,
+  ): Promise<
     Array<{
       month: string;
       costPerMile: number;
@@ -320,7 +365,8 @@ export class CostPerMileTracker {
     }
 
     const avgHistorical =
-      historical.slice(0, -1).reduce((sum, t) => sum + t.costPerMile, 0) / (historical.length - 1);
+      historical.slice(0, -1).reduce((sum, t) => sum + t.costPerMile, 0) /
+      (historical.length - 1);
     const current = historical[historical.length - 1].costPerMile;
     const variance = ((current - avgHistorical) / avgHistorical) * 100;
 
@@ -328,7 +374,8 @@ export class CostPerMileTracker {
 
     let recommendation = "Cost per mile is normal";
     if (variance > 30) {
-      recommendation = "ALERT: Costs significantly elevated. Check maintenance and fuel efficiency.";
+      recommendation =
+        "ALERT: Costs significantly elevated. Check maintenance and fuel efficiency.";
     } else if (variance > 20) {
       recommendation = "Costs are higher than normal. Review recent activity.";
     } else if (variance < -20) {
@@ -362,7 +409,9 @@ export class BudgetManager {
   async allocateBudget(
     totalBudget: number,
     allocationStrategy: "EQUAL" | "BY_MILEAGE" | "BY_AGE" = "EQUAL",
-  ): Promise<Array<{ vehicleId: string; allocatedBudget: number; allocation: number }>> {
+  ): Promise<
+    Array<{ vehicleId: string; allocatedBudget: number; allocation: number }>
+  > {
     const vehicles = await (this.prisma as any).vehicle.findMany({
       where: { status: { in: ["ACTIVE", "MAINTENANCE"] } },
     });
@@ -381,7 +430,10 @@ export class BudgetManager {
         allocation: (perVehicle / totalBudget) * 100,
       }));
     } else if (allocationStrategy === "BY_MILEAGE") {
-      const totalMiles = vehicles.reduce((sum: number, v: any) => sum + v.mileage, 0);
+      const totalMiles = vehicles.reduce(
+        (sum: number, v: any) => sum + v.mileage,
+        0,
+      );
       allocations = vehicles.map((v: any) => ({
         vehicleId: v.id,
         allocatedBudget: (v.mileage / totalMiles) * totalBudget,
@@ -401,7 +453,10 @@ export class BudgetManager {
     for (const allocation of allocations) {
       await (this.prisma as any).budgetAllocation.upsert({
         where: { vehicleId: allocation.vehicleId },
-        update: { allocatedBudget: allocation.allocatedBudget, month: new Date() },
+        update: {
+          allocatedBudget: allocation.allocatedBudget,
+          month: new Date(),
+        },
         create: {
           vehicleId: allocation.vehicleId,
           allocatedBudget: allocation.allocatedBudget,
@@ -416,7 +471,10 @@ export class BudgetManager {
   /**
    * Track budget variance
    */
-  async trackVariance(vehicleId: string, month: Date): Promise<{
+  async trackVariance(
+    vehicleId: string,
+    month: Date,
+  ): Promise<{
     vehicleId: string;
     allocated: number;
     spent: number;
@@ -446,12 +504,19 @@ export class BudgetManager {
       }),
     ]);
 
-    const fuelSpent = fuel.reduce((sum: number, t: any) => sum + t.totalCost, 0);
-    const maintenanceSpent = maintenance.reduce((sum: number, m: any) => sum + (m.cost || 0), 0);
+    const fuelSpent = fuel.reduce(
+      (sum: number, t: any) => sum + t.totalCost,
+      0,
+    );
+    const maintenanceSpent = maintenance.reduce(
+      (sum: number, m: any) => sum + (m.cost || 0),
+      0,
+    );
     const spent = fuelSpent + maintenanceSpent;
 
     const variance = ((spent - allocated) / allocated) * 100;
-    const status = variance > 10 ? "OVER" : variance < -10 ? "UNDER" : "ON_TRACK";
+    const status =
+      variance > 10 ? "OVER" : variance < -10 ? "UNDER" : "ON_TRACK";
 
     return {
       vehicleId,
@@ -511,7 +576,12 @@ export class LeaseVsBuyAnalyzer {
     leaseTerm: number,
     residualValue: number,
     discountRate: number = 0.05,
-  ): { buyNPV: number; leaseNPV: number; recommendation: string; breakEven: number } {
+  ): {
+    buyNPV: number;
+    leaseNPV: number;
+    recommendation: string;
+    breakEven: number;
+  } {
     // Buy NPV
     let buyNPV = -purchasePrice;
     for (let year = 1; year <= leaseTerm; year++) {
@@ -524,7 +594,8 @@ export class LeaseVsBuyAnalyzer {
     let leaseNPV = 0;
     const monthlyDiscountRate = discountRate / 12;
     for (let month = 1; month <= leaseTerm * 12; month++) {
-      leaseNPV -= leaseMonthlyPayment / Math.pow(1 + monthlyDiscountRate, month);
+      leaseNPV -=
+        leaseMonthlyPayment / Math.pow(1 + monthlyDiscountRate, month);
     }
 
     const npvDifference = leaseNPV - buyNPV;
@@ -558,7 +629,8 @@ export class LeaseVsBuyAnalyzer {
   } {
     const straightLineDeduction = purchasePrice / depreciableLife;
     const firstYearDeduction = straightLineDeduction;
-    const totalTaxBenefit = (purchasePrice / depreciableLife) * depreciableLife * taxRate;
+    const totalTaxBenefit =
+      (purchasePrice / depreciableLife) * depreciableLife * taxRate;
 
     return {
       firstYearDeduction: Math.round(firstYearDeduction * 100) / 100,
@@ -630,7 +702,9 @@ export class FleetRightSizing {
     // Calculate utilization (placeholder: would use real telematics data)
     const currentUtilization = 0.65;
 
-    const recommendedFleetSize = Math.ceil(currentFleetSize * (currentUtilization / targetUtilization));
+    const recommendedFleetSize = Math.ceil(
+      currentFleetSize * (currentUtilization / targetUtilization),
+    );
     const vehiclesToRemove = currentFleetSize - recommendedFleetSize;
 
     // Calculate potential savings
@@ -656,7 +730,9 @@ export class FleetRightSizing {
   /**
    * Detect underutilized vehicles
    */
-  async detectUnderutilizedVehicles(utilisationThreshold: number = 0.4): Promise<
+  async detectUnderutilizedVehicles(
+    utilisationThreshold: number = 0.4,
+  ): Promise<
     Array<{
       vehicleId: string;
       vehicleInfo: string;

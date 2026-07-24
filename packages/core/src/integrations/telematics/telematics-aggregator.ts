@@ -154,7 +154,8 @@ export class TelematicsAggregator {
           (v) => this.getVehicleDeduplicationKey(v) === key,
         );
         if (vehicleFromProvider) {
-          vehicle.externalVehicleIds[provider] = vehicleFromProvider.externalVehicleId;
+          vehicle.externalVehicleIds[provider] =
+            vehicleFromProvider.externalVehicleId;
         }
       }
 
@@ -168,11 +169,15 @@ export class TelematicsAggregator {
   /**
    * Get best-available position from multiple providers
    */
-  async getBestPosition(aggregatedVehicleId: string): Promise<NormalizedPosition | null> {
+  async getBestPosition(
+    aggregatedVehicleId: string,
+  ): Promise<NormalizedPosition | null> {
     const vehicle = this.vehicleRegistry.get(aggregatedVehicleId);
     if (!vehicle) throw new Error(`Vehicle ${aggregatedVehicleId} not found`);
 
-    const positions: Array<NormalizedPosition & { provider: string; freshness: number }> = [];
+    const positions: Array<
+      NormalizedPosition & { provider: string; freshness: number }
+    > = [];
 
     // Fetch position from each provider
     for (const provider of vehicle.providers) {
@@ -203,7 +208,9 @@ export class TelematicsAggregator {
   /**
    * Consolidate alerts from multiple providers with deduplication
    */
-  async getConsolidatedAlerts(aggregatedVehicleId: string): Promise<AggregatedAlert[]> {
+  async getConsolidatedAlerts(
+    aggregatedVehicleId: string,
+  ): Promise<AggregatedAlert[]> {
     const vehicle = this.vehicleRegistry.get(aggregatedVehicleId);
     if (!vehicle) throw new Error(`Vehicle ${aggregatedVehicleId} not found`);
 
@@ -256,7 +263,9 @@ export class TelematicsAggregator {
   /**
    * Merge diagnostics from multiple providers
    */
-  async getMergedDiagnostics(aggregatedVehicleId: string): Promise<NormalizedDiagnostic | null> {
+  async getMergedDiagnostics(
+    aggregatedVehicleId: string,
+  ): Promise<NormalizedDiagnostic | null> {
     const vehicle = this.vehicleRegistry.get(aggregatedVehicleId);
     if (!vehicle) throw new Error(`Vehicle ${aggregatedVehicleId} not found`);
 
@@ -293,8 +302,11 @@ export class TelematicsAggregator {
       ),
       odometer: diagnostics
         .filter((d) => d.odometer)
-        .sort((a, b) => (b.odometer?.value ?? 0) - (a.odometer?.value ?? 0))[0]?.odometer,
-      timestamp: new Date(Math.max(...diagnostics.map((d) => d.timestamp.getTime()))),
+        .sort((a, b) => (b.odometer?.value ?? 0) - (a.odometer?.value ?? 0))[0]
+        ?.odometer,
+      timestamp: new Date(
+        Math.max(...diagnostics.map((d) => d.timestamp.getTime())),
+      ),
     };
 
     return merged;
@@ -328,14 +340,18 @@ export class TelematicsAggregator {
         const alerts = await this.getConsolidatedAlerts(vehicle.id);
         totalAlerts += alerts.length;
       } catch (error) {
-        console.error(`Error calculating health for vehicle ${vehicle.id}:`, error);
+        console.error(
+          `Error calculating health for vehicle ${vehicle.id}:`,
+          error,
+        );
       }
     }
 
     const fleetSize = fleet.length || 1;
     return {
       overall: Math.round(
-        (healthyDevices / fleetSize) * 100 - (devicesWithFaults / fleetSize) * 10,
+        (healthyDevices / fleetSize) * 100 -
+          (devicesWithFaults / fleetSize) * 10,
       ),
       connectivity: Math.round((healthyDevices / fleetSize) * 100),
       faultCodeRate: Math.round((devicesWithFaults / fleetSize) * 100),
@@ -347,7 +363,9 @@ export class TelematicsAggregator {
   /**
    * Get provider status and health
    */
-  async getProviderStatus(): Promise<Record<string, { healthy: boolean; lastError?: string }>> {
+  async getProviderStatus(): Promise<
+    Record<string, { healthy: boolean; lastError?: string }>
+  > {
     const status: Record<string, { healthy: boolean; lastError?: string }> = {};
 
     for (const [name, adapter] of this.providers) {

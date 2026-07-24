@@ -62,7 +62,9 @@ export class AllscriptsFhirV2SdkClient extends EventEmitter {
     super();
 
     if (!config.clientId || !config.clientSecret || !config.tokenEndpoint) {
-      throw new Error("Allscripts SDK requires clientId, clientSecret, and tokenEndpoint");
+      throw new Error(
+        "Allscripts SDK requires clientId, clientSecret, and tokenEndpoint",
+      );
     }
 
     this.config = {
@@ -71,7 +73,8 @@ export class AllscriptsFhirV2SdkClient extends EventEmitter {
     };
 
     this.baseUrl = this.config.baseUrl;
-    this.unityBaseUrl = (this.config.metadata?.unityBaseUrl as string) || this.baseUrl;
+    this.unityBaseUrl =
+      (this.config.metadata?.unityBaseUrl as string) || this.baseUrl;
     this.rateLimiter = {
       tokens: this.config.rateLimit ?? 100,
       capacity: this.config.rateLimit ?? 100,
@@ -92,7 +95,10 @@ export class AllscriptsFhirV2SdkClient extends EventEmitter {
   /**
    * Get SMART authorization URL.
    */
-  getSMARTAuthorizationUrl(redirectUri: string, scope: string = "patient/*.read launch"): string {
+  getSMARTAuthorizationUrl(
+    redirectUri: string,
+    scope: string = "patient/*.read launch",
+  ): string {
     const params = new URLSearchParams({
       response_type: "code",
       client_id: this.config.clientId,
@@ -107,7 +113,10 @@ export class AllscriptsFhirV2SdkClient extends EventEmitter {
   /**
    * Exchange code for token.
    */
-  async exchangeCodeForToken(code: string, redirectUri: string): Promise<OAuth2Token> {
+  async exchangeCodeForToken(
+    code: string,
+    redirectUri: string,
+  ): Promise<OAuth2Token> {
     const body = new URLSearchParams({
       grant_type: "authorization_code",
       code,
@@ -140,7 +149,9 @@ export class AllscriptsFhirV2SdkClient extends EventEmitter {
   /**
    * Search patients.
    */
-  async searchPatients(params: Record<string, string>): Promise<FHIRBundle<NormalizedPatient>> {
+  async searchPatients(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<NormalizedPatient>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/Patient`);
@@ -156,13 +167,17 @@ export class AllscriptsFhirV2SdkClient extends EventEmitter {
    */
   async getPatient(patientId: string): Promise<NormalizedPatient> {
     await this.ensureToken();
-    return this.makeRequest<NormalizedPatient>(`${this.baseUrl}/Patient/${patientId}`);
+    return this.makeRequest<NormalizedPatient>(
+      `${this.baseUrl}/Patient/${patientId}`,
+    );
   }
 
   /**
    * Search encounters.
    */
-  async searchEncounters(params: Record<string, string>): Promise<FHIRBundle<NormalizedEncounter>> {
+  async searchEncounters(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<NormalizedEncounter>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/Encounter`);
@@ -178,7 +193,9 @@ export class AllscriptsFhirV2SdkClient extends EventEmitter {
    */
   async getEncounter(encounterId: string): Promise<NormalizedEncounter> {
     await this.ensureToken();
-    return this.makeRequest<NormalizedEncounter>(`${this.baseUrl}/Encounter/${encounterId}`);
+    return this.makeRequest<NormalizedEncounter>(
+      `${this.baseUrl}/Encounter/${encounterId}`,
+    );
   }
 
   /**
@@ -200,7 +217,9 @@ export class AllscriptsFhirV2SdkClient extends EventEmitter {
   /**
    * Search conditions.
    */
-  async searchConditions(params: Record<string, string>): Promise<FHIRBundle<NormalizedCondition>> {
+  async searchConditions(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<NormalizedCondition>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/Condition`);
@@ -262,7 +281,9 @@ export class AllscriptsFhirV2SdkClient extends EventEmitter {
   /**
    * Search procedures.
    */
-  async searchProcedures(params: Record<string, string>): Promise<FHIRBundle<FHIRResource>> {
+  async searchProcedures(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<FHIRResource>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/Procedure`);
@@ -276,7 +297,9 @@ export class AllscriptsFhirV2SdkClient extends EventEmitter {
   /**
    * Search immunizations.
    */
-  async searchImmunizations(params: Record<string, string>): Promise<FHIRBundle<FHIRResource>> {
+  async searchImmunizations(
+    params: Record<string, string>,
+  ): Promise<FHIRBundle<FHIRResource>> {
     await this.ensureToken();
 
     const url = new URL(`${this.baseUrl}/Immunization`);
@@ -381,7 +404,10 @@ export class AllscriptsFhirV2SdkClient extends EventEmitter {
   /**
    * Initiate bulk export.
    */
-  async initiateBulkExport(resourceTypes?: string[], since?: string): Promise<string> {
+  async initiateBulkExport(
+    resourceTypes?: string[],
+    since?: string,
+  ): Promise<string> {
     await this.ensureToken();
 
     let url = `${this.baseUrl}/$export`;
@@ -419,7 +445,9 @@ export class AllscriptsFhirV2SdkClient extends EventEmitter {
   /**
    * Get bulk export status.
    */
-  async getBulkExportStatus(statusUrl: string): Promise<BulkExportResult | null> {
+  async getBulkExportStatus(
+    statusUrl: string,
+  ): Promise<BulkExportResult | null> {
     await this.ensureToken();
 
     const response = await fetch(statusUrl, {
@@ -434,7 +462,11 @@ export class AllscriptsFhirV2SdkClient extends EventEmitter {
 
     if (!response.ok) {
       const outcome = await this.parseErrorResponse(response);
-      throw this.createError("BULK_EXPORT_STATUS_FAILED", response.status, outcome);
+      throw this.createError(
+        "BULK_EXPORT_STATUS_FAILED",
+        response.status,
+        outcome,
+      );
     }
 
     return response.json() as Promise<BulkExportResult>;
@@ -448,7 +480,9 @@ export class AllscriptsFhirV2SdkClient extends EventEmitter {
       if (this.refreshToken) {
         await this.refreshAccessToken();
       } else {
-        throw new Error("No valid token available. Call exchangeCodeForToken first.");
+        throw new Error(
+          "No valid token available. Call exchangeCodeForToken first.",
+        );
       }
     }
   }
@@ -510,7 +544,11 @@ export class AllscriptsFhirV2SdkClient extends EventEmitter {
 
             if (!response.ok) {
               const outcome = await this.parseErrorResponse(response);
-              throw this.createError("REQUEST_FAILED", response.status, outcome);
+              throw this.createError(
+                "REQUEST_FAILED",
+                response.status,
+                outcome,
+              );
             }
 
             this.circuitBreakerFailures = 0;
@@ -546,10 +584,14 @@ export class AllscriptsFhirV2SdkClient extends EventEmitter {
             });
 
             if (!response.ok) {
-              throw this.createError("BINARY_DOWNLOAD_FAILED", response.status, {
-                resourceType: "OperationOutcome",
-                issue: [],
-              });
+              throw this.createError(
+                "BINARY_DOWNLOAD_FAILED",
+                response.status,
+                {
+                  resourceType: "OperationOutcome",
+                  issue: [],
+                },
+              );
             }
 
             this.circuitBreakerFailures = 0;
@@ -670,7 +712,8 @@ export class AllscriptsFhirV2SdkClient extends EventEmitter {
     this.rateLimiter.lastRefillTime = now;
 
     if (this.rateLimiter.tokens < 1) {
-      const waitTime = (1 - this.rateLimiter.tokens) / this.rateLimiter.refillRate;
+      const waitTime =
+        (1 - this.rateLimiter.tokens) / this.rateLimiter.refillRate;
       await new Promise((resolve) => setTimeout(resolve, waitTime * 1000));
       this.rateLimiter.tokens = 1;
     }
@@ -697,7 +740,9 @@ export class AllscriptsFhirV2SdkClient extends EventEmitter {
   /**
    * Private: Parse error response.
    */
-  private async parseErrorResponse(response: Response): Promise<OperationOutcome> {
+  private async parseErrorResponse(
+    response: Response,
+  ): Promise<OperationOutcome> {
     try {
       return (await response.json()) as OperationOutcome;
     } catch {
@@ -723,7 +768,12 @@ export class AllscriptsFhirV2SdkClient extends EventEmitter {
     outcome: OperationOutcome,
   ): HealthcareSDKError {
     const message = outcome.issue?.[0]?.diagnostics ?? "Unknown error";
-    const error = new HealthcareSDKError(code, statusCode, "allscripts", message);
+    const error = new HealthcareSDKError(
+      code,
+      statusCode,
+      "allscripts",
+      message,
+    );
     error.context = { outcome };
     return error;
   }

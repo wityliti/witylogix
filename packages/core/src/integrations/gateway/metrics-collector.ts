@@ -195,7 +195,10 @@ export class MetricsCollector extends EventEmitter {
   /**
    * Get metrics for a provider or operation.
    */
-  getMetrics(provider: string, operation?: string): OperationMetrics | undefined {
+  getMetrics(
+    provider: string,
+    operation?: string,
+  ): OperationMetrics | undefined {
     const key = operation ? `${provider}.${operation}` : provider;
     return this.metrics.get(key);
   }
@@ -235,10 +238,14 @@ export class MetricsCollector extends EventEmitter {
     const errorRateScore = Math.max(0, 100 - metrics.errorRate);
 
     // Latency score: 100 if avg < 1s, scales down as latency increases
-    const latencyScore = Math.max(0, 100 - (metrics.avgLatency / this.maxLatencyThreshold) * 100);
+    const latencyScore = Math.max(
+      0,
+      100 - (metrics.avgLatency / this.maxLatencyThreshold) * 100,
+    );
 
     // Composite score: weighted average
-    const score = successRateScore * 0.5 + errorRateScore * 0.3 + latencyScore * 0.2;
+    const score =
+      successRateScore * 0.5 + errorRateScore * 0.3 + latencyScore * 0.2;
 
     // Determine status
     let status: "healthy" | "degraded" | "unhealthy" = "healthy";
@@ -287,7 +294,8 @@ export class MetricsCollector extends EventEmitter {
       }
     }
 
-    const successRate = totalRequests > 0 ? (totalSuccesses / totalRequests) * 100 : 0;
+    const successRate =
+      totalRequests > 0 ? (totalSuccesses / totalRequests) * 100 : 0;
     const errorRate = 100 - successRate;
     const avgLatency = totalRequests > 0 ? totalLatency / totalRequests : 0;
 

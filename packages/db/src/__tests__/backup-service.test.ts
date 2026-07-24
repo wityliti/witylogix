@@ -218,7 +218,7 @@ describe("Backup Service", () => {
 
     it("should throw for non-existent backup", async () => {
       await expect(service.restoreFromBackup("non-existent")).rejects.toThrow(
-        "Backup not found"
+        "Backup not found",
       );
     });
 
@@ -233,7 +233,9 @@ describe("Backup Service", () => {
       await service.restoreFromBackup(backupId);
 
       const auditLog = service.getAuditLog();
-      const restoreEvent = auditLog.find((e) => e.action === "restore_completed");
+      const restoreEvent = auditLog.find(
+        (e) => e.action === "restore_completed",
+      );
 
       expect(restoreEvent).toBeDefined();
     });
@@ -253,9 +255,9 @@ describe("Backup Service", () => {
     });
 
     it("should throw for non-existent backup test", async () => {
-      await expect(service.testRestoreFromBackup("non-existent")).rejects.toThrow(
-        "Backup not found"
-      );
+      await expect(
+        service.testRestoreFromBackup("non-existent"),
+      ).rejects.toThrow("Backup not found");
     });
 
     it("should log restore test results", async () => {
@@ -264,7 +266,8 @@ describe("Backup Service", () => {
       const auditLog = service.getAuditLog();
       const testEvent = auditLog.find(
         (e) =>
-          e.action === "restore_test_passed" || e.action === "restore_test_failed"
+          e.action === "restore_test_passed" ||
+          e.action === "restore_test_failed",
       );
 
       expect(testEvent).toBeDefined();
@@ -347,7 +350,8 @@ describe("Backup Service", () => {
       const backupId = await customService.createFullBackup();
 
       const backup = customService.getBackup(backupId)!;
-      const retentionDays = (backup.retentionUntil.getTime() - Date.now()) / (24 * 60 * 60 * 1000);
+      const retentionDays =
+        (backup.retentionUntil.getTime() - Date.now()) / (24 * 60 * 60 * 1000);
 
       expect(retentionDays).toBeGreaterThan(59);
       expect(retentionDays).toBeLessThan(61);
@@ -390,7 +394,7 @@ describe("Backup Service", () => {
 
       expect(recent).toHaveLength(5);
       expect(recent[0].startedAt.getTime()).toBeGreaterThanOrEqual(
-        recent[1].startedAt.getTime()
+        recent[1].startedAt.getTime(),
       );
     }, 15000);
 
@@ -404,7 +408,7 @@ describe("Backup Service", () => {
 
       for (const backup of recent) {
         expect(
-          backup.status === "verified" || backup.status === "completed"
+          backup.status === "verified" || backup.status === "completed",
         ).toBe(true);
       }
     });
@@ -422,7 +426,9 @@ describe("Backup Service", () => {
       await service.createFullBackup();
 
       const auditLog = service.getAuditLog();
-      const creationEvent = auditLog.find((e) => e.action === "full_backup_started");
+      const creationEvent = auditLog.find(
+        (e) => e.action === "full_backup_started",
+      );
 
       expect(creationEvent).toBeDefined();
     });
@@ -431,7 +437,9 @@ describe("Backup Service", () => {
       await service.createFullBackup();
 
       const auditLog = service.getAuditLog();
-      const completionEvent = auditLog.find((e) => e.action === "full_backup_completed");
+      const completionEvent = auditLog.find(
+        (e) => e.action === "full_backup_completed",
+      );
 
       expect(completionEvent).toBeDefined();
     });

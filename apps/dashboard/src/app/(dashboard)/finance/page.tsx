@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useApiQuery, useApiList } from '@/hooks/use-api';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { DollarSign, AlertCircle } from 'lucide-react';
-import Link from 'next/link';
+import { useApiQuery, useApiList } from "@/hooks/use-api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { DollarSign, AlertCircle } from "lucide-react";
+import Link from "next/link";
 
 interface InvoiceSummary {
   totalInvoices: number;
@@ -34,13 +34,16 @@ interface Payment {
 }
 
 export default function FinancePage() {
-  const { data: summaryData, loading: summaryLoading, error: summaryError } =
-    useApiQuery<{ summary: InvoiceSummary }>('/api/v4/invoices/summary');
+  const {
+    data: summaryData,
+    loading: summaryLoading,
+    error: summaryError,
+  } = useApiQuery<{ summary: InvoiceSummary }>("/api/v4/invoices/summary");
   const {
     items: payments,
     loading: paymentsLoading,
     error: paymentsError,
-  } = useApiList<Payment>('/api/v4/payments');
+  } = useApiList<Payment>("/api/v4/payments");
 
   const loading = summaryLoading || paymentsLoading;
   const error = summaryError || paymentsError;
@@ -57,7 +60,9 @@ export default function FinancePage() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold text-white">Finance</h1>
-              <p className="text-sm text-gray-400 mt-1">Revenue, invoices, and payments</p>
+              <p className="text-sm text-gray-400 mt-1">
+                Revenue, invoices, and payments
+              </p>
             </div>
             <Link href="/invoices/create">
               <Button variant="primary" size="md">
@@ -73,26 +78,62 @@ export default function FinancePage() {
         <div className="space-y-6 max-w-7xl">
           {summary && (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card className={cn('p-4 bg-wl-bg-surface border border-wl-border-default')}>
-                <p className="text-xs font-medium text-gray-400 uppercase">Total Billed</p>
+              <Card
+                className={cn(
+                  "p-4 bg-wl-bg-surface border border-wl-border-default",
+                )}
+              >
+                <p className="text-xs font-medium text-gray-400 uppercase">
+                  Total Billed
+                </p>
                 <p className="text-2xl font-bold text-emerald-500 mt-2">
-                  ${summary.totalBilled.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  $
+                  {summary.totalBilled.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
               </Card>
-              <Card className={cn('p-4 bg-wl-bg-surface border border-wl-border-default')}>
-                <p className="text-xs font-medium text-gray-400 uppercase">Collected</p>
+              <Card
+                className={cn(
+                  "p-4 bg-wl-bg-surface border border-wl-border-default",
+                )}
+              >
+                <p className="text-xs font-medium text-gray-400 uppercase">
+                  Collected
+                </p>
                 <p className="text-2xl font-bold text-white mt-2">
-                  ${summary.totalPaid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  $
+                  {summary.totalPaid.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
               </Card>
-              <Card className={cn('p-4 bg-wl-bg-surface border border-wl-border-default')}>
-                <p className="text-xs font-medium text-gray-400 uppercase">Outstanding</p>
+              <Card
+                className={cn(
+                  "p-4 bg-wl-bg-surface border border-wl-border-default",
+                )}
+              >
+                <p className="text-xs font-medium text-gray-400 uppercase">
+                  Outstanding
+                </p>
                 <p className="text-2xl font-bold text-red-500 mt-2">
-                  ${summary.totalOutstanding.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  $
+                  {summary.totalOutstanding.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
               </Card>
-              <Card className={cn('p-4 bg-wl-bg-surface border border-wl-border-default')}>
-                <p className="text-xs font-medium text-gray-400 uppercase">Payment Rate</p>
+              <Card
+                className={cn(
+                  "p-4 bg-wl-bg-surface border border-wl-border-default",
+                )}
+              >
+                <p className="text-xs font-medium text-gray-400 uppercase">
+                  Payment Rate
+                </p>
                 <p className="text-2xl font-bold text-white mt-2">
                   {summary.paymentRate.toFixed(1)}%
                 </p>
@@ -101,7 +142,11 @@ export default function FinancePage() {
           )}
 
           {summary && (
-            <Card className={cn('p-6 bg-wl-bg-surface border border-wl-border-default')}>
+            <Card
+              className={cn(
+                "p-6 bg-wl-bg-surface border border-wl-border-default",
+              )}
+            >
               <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <AlertCircle className="w-5 h-5" />
                 Invoice Status Breakdown
@@ -109,17 +154,19 @@ export default function FinancePage() {
               <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
                 {Object.entries(summary.byStatus).map(([status, count]) => (
                   <div key={status}>
-                    <p className="text-xs font-medium text-gray-400 capitalize">{status}</p>
+                    <p className="text-xs font-medium text-gray-400 capitalize">
+                      {status}
+                    </p>
                     <p
                       className={cn(
-                        'text-2xl font-bold mt-2',
-                        status === 'paid'
-                          ? 'text-emerald-500'
-                          : status === 'overdue'
-                            ? 'text-red-500'
-                            : status === 'voided'
-                              ? 'text-gray-500'
-                              : 'text-white',
+                        "text-2xl font-bold mt-2",
+                        status === "paid"
+                          ? "text-emerald-500"
+                          : status === "overdue"
+                            ? "text-red-500"
+                            : status === "voided"
+                              ? "text-gray-500"
+                              : "text-white",
                       )}
                     >
                       {count}
@@ -130,25 +177,46 @@ export default function FinancePage() {
             </Card>
           )}
 
-          <Card className={cn('p-6 bg-wl-bg-surface border border-wl-border-default overflow-hidden')}>
-            <h2 className="text-lg font-semibold text-white mb-4">Recent Payments</h2>
+          <Card
+            className={cn(
+              "p-6 bg-wl-bg-surface border border-wl-border-default overflow-hidden",
+            )}
+          >
+            <h2 className="text-lg font-semibold text-white mb-4">
+              Recent Payments
+            </h2>
             {payments.length === 0 ? (
-              <p className="text-gray-400 text-center py-8">No payments found</p>
+              <p className="text-gray-400 text-center py-8">
+                No payments found
+              </p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-wl-border-default">
-                      <th className="text-left px-4 py-3 font-semibold text-gray-400">Date</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-400">Reference</th>
-                      <th className="text-right px-4 py-3 font-semibold text-gray-400">Amount</th>
-                      <th className="text-center px-4 py-3 font-semibold text-gray-400">Method</th>
-                      <th className="text-center px-4 py-3 font-semibold text-gray-400">Status</th>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-400">
+                        Date
+                      </th>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-400">
+                        Reference
+                      </th>
+                      <th className="text-right px-4 py-3 font-semibold text-gray-400">
+                        Amount
+                      </th>
+                      <th className="text-center px-4 py-3 font-semibold text-gray-400">
+                        Method
+                      </th>
+                      <th className="text-center px-4 py-3 font-semibold text-gray-400">
+                        Status
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {payments.slice(0, 10).map((payment) => (
-                      <tr key={payment.id} className="border-b border-wl-border-default hover:bg-wl-bg-elevated">
+                      <tr
+                        key={payment.id}
+                        className="border-b border-wl-border-default hover:bg-wl-bg-elevated"
+                      >
                         <td className="px-4 py-3 text-gray-300">
                           {new Date(payment.createdAt).toLocaleDateString()}
                         </td>
@@ -157,25 +225,30 @@ export default function FinancePage() {
                         </td>
                         <td className="text-right px-4 py-3 font-medium text-white">
                           $
-                          {parseFloat(payment.amount).toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
+                          {parseFloat(payment.amount).toLocaleString(
+                            undefined,
+                            {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            },
+                          )}
                         </td>
                         <td className="text-center px-4 py-3">
-                          <Badge variant="primary">{payment.method?.toLowerCase() ?? '—'}</Badge>
+                          <Badge variant="primary">
+                            {payment.method?.toLowerCase() ?? "—"}
+                          </Badge>
                         </td>
                         <td className="text-center px-4 py-3">
                           <Badge
                             variant={
-                              payment.status === 'COMPLETED'
-                                ? 'success'
-                                : payment.status === 'FAILED'
-                                  ? 'danger'
-                                  : 'warning'
+                              payment.status === "COMPLETED"
+                                ? "success"
+                                : payment.status === "FAILED"
+                                  ? "danger"
+                                  : "warning"
                             }
                           >
-                            {payment.status?.toLowerCase() ?? '—'}
+                            {payment.status?.toLowerCase() ?? "—"}
                           </Badge>
                         </td>
                       </tr>

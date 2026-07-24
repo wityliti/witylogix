@@ -57,7 +57,7 @@ export class ChannelRouter {
   async routeChannels(
     priority: NotificationPriority,
     recipientPrefs: RecipientPreferences | undefined,
-    requestChannels?: NotificationChannel[]
+    requestChannels?: NotificationChannel[],
   ): Promise<NotificationChannel[]> {
     // Override with explicit request channels if provided
     if (requestChannels && requestChannels.length > 0) {
@@ -65,10 +65,11 @@ export class ChannelRouter {
     }
 
     // Get channels from priority matrix
-    const matrixChannels = this.priorityMatrix[priority]
-      ?.filter((c) => c.enabled)
-      .sort((a, b) => a.priority - b.priority)
-      .map((c) => c.channel) || [];
+    const matrixChannels =
+      this.priorityMatrix[priority]
+        ?.filter((c) => c.enabled)
+        .sort((a, b) => a.priority - b.priority)
+        .map((c) => c.channel) || [];
 
     if (!recipientPrefs) {
       return matrixChannels;
@@ -76,7 +77,9 @@ export class ChannelRouter {
 
     // Filter by recipient preferences
     return matrixChannels.filter((channel) => {
-      const pref = recipientPrefs.preferences.find((p) => p.channel === channel);
+      const pref = recipientPrefs.preferences.find(
+        (p) => p.channel === channel,
+      );
       return pref ? pref.enabled : true; // Default to enabled if no preference
     });
   }
@@ -137,7 +140,7 @@ export class FallbackChain {
    */
   getChain(
     channel: NotificationChannel,
-    config: ChannelConfig | undefined
+    config: ChannelConfig | undefined,
   ): NotificationChannel[] {
     if (!config || !config.fallbackChain) {
       return [channel]; // Single channel if no fallback
@@ -175,7 +178,7 @@ export class QuietHoursManager {
   async isInQuietHours(
     recipientId: string,
     prefs: RecipientPreferences | undefined,
-    priority: NotificationPriority
+    priority: NotificationPriority,
   ): Promise<boolean> {
     if (!prefs) {
       return false; // No preferences = always active
@@ -191,7 +194,9 @@ export class QuietHoursManager {
 
     // Check global quiet hours
     if (prefs.globalQuietHours && prefs.globalQuietHours.enabled) {
-      if (this.isCurrentlyInQuietHours(prefs.globalQuietHours, prefs.timezone)) {
+      if (
+        this.isCurrentlyInQuietHours(prefs.globalQuietHours, prefs.timezone)
+      ) {
         return true;
       }
     }
@@ -216,7 +221,7 @@ export class QuietHoursManager {
   async queueIfQuiet(
     recipientId: string,
     request: NotificationRequest,
-    isQuiet: boolean
+    isQuiet: boolean,
   ): Promise<boolean> {
     if (!isQuiet) {
       return false; // Not queued
@@ -249,7 +254,7 @@ export class QuietHoursManager {
    */
   private isCurrentlyInQuietHours(
     config: QuietHoursConfig,
-    timezone: string
+    timezone: string,
   ): boolean {
     const now = new Date();
     // Convert to target timezone (simplified - in production use date-fns/Intl)
@@ -274,9 +279,12 @@ export class DigestBatcher {
    */
   async shouldBatch(
     priority: NotificationPriority,
-    prefs: RecipientPreferences | undefined
+    prefs: RecipientPreferences | undefined,
   ): Promise<boolean> {
-    if (priority !== NotificationPriorityEnum.LOW && priority !== NotificationPriorityEnum.DIGEST) {
+    if (
+      priority !== NotificationPriorityEnum.LOW &&
+      priority !== NotificationPriorityEnum.DIGEST
+    ) {
       return false;
     }
 
@@ -292,7 +300,7 @@ export class DigestBatcher {
    */
   async addToDigest(
     recipientId: string,
-    request: NotificationRequest
+    request: NotificationRequest,
   ): Promise<void> {
     const queueKey = recipientId;
     const queue = this.digestQueues.get(queueKey) || {
@@ -328,7 +336,9 @@ export class DigestBatcher {
   /**
    * Force flush digest
    */
-  async flushDigest(recipientId: string): Promise<NotificationRequest[] | null> {
+  async flushDigest(
+    recipientId: string,
+  ): Promise<NotificationRequest[] | null> {
     const queue = this.digestQueues.get(recipientId);
     if (!queue) {
       return null;
@@ -358,7 +368,7 @@ export class DeliveryTracker {
    */
   async createReceipt(
     messageId: string,
-    channel: NotificationChannel
+    channel: NotificationChannel,
   ): Promise<DeliveryReceipt> {
     const receipt: DeliveryReceipt = {
       messageId,
@@ -383,7 +393,7 @@ export class DeliveryTracker {
     messageId: string,
     channel: NotificationChannel,
     status: DeliveryStatus,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
   ): Promise<void> {
     const key = messageId;
     const receipts = this.receipts.get(key) || [];
@@ -517,7 +527,7 @@ export class NotificationThrottler {
    */
   async isRateLimited(
     recipientId: string,
-    channel: NotificationChannel
+    channel: NotificationChannel,
   ): Promise<boolean> {
     const counts = this.limits.get(recipientId);
     if (!counts) {
@@ -535,9 +545,13 @@ export class NotificationThrottler {
    */
   async recordSend(
     recipientId: string,
-    channel: NotificationChannel
+    channel: NotificationChannel,
   ): Promise<void> {
-    const counts = this.limits.get(recipientId) || { email: 0, sms: 0, push: 0 };
+    const counts = this.limits.get(recipientId) || {
+      email: 0,
+      sms: 0,
+      push: 0,
+    };
     const channelKey = channel.toLowerCase() as keyof typeof counts;
     counts[channelKey]++;
     this.limits.set(recipientId, counts);
@@ -554,11 +568,9 @@ export class NotificationThrottler {
   /**
    * Set custom rate limit for channel
    */
-  setRateLimit(
-    channel: NotificationChannel,
-    limit: number
-  ): void {
-    const channelKey = channel.toLowerCase() as keyof typeof this.DEFAULT_LIMITS;
+  setRateLimit(channel: NotificationChannel, limit: number): void {
+    const channelKey =
+      channel.toLowerCase() as keyof typeof this.DEFAULT_LIMITS;
     this.DEFAULT_LIMITS[channelKey] = limit;
   }
 
@@ -566,11 +578,9 @@ export class NotificationThrottler {
    * Get current counts for recipient
    */
   async getCounts(
-    recipientId: string
+    recipientId: string,
   ): Promise<{ email: number; sms: number; push: number }> {
-    return (
-      this.limits.get(recipientId) || { email: 0, sms: 0, push: 0 }
-    );
+    return this.limits.get(recipientId) || { email: 0, sms: 0, push: 0 };
   }
 }
 
@@ -596,7 +606,7 @@ export class NotificationOrchestratorV2 {
     const validation = NotificationRequestSchema.safeParse(request);
     if (!validation.success) {
       throw new Error(
-        `Invalid notification request: ${validation.error.message}`
+        `Invalid notification request: ${validation.error.message}`,
       );
     }
 
@@ -608,7 +618,7 @@ export class NotificationOrchestratorV2 {
     // Check rate limits
     const throttled = await this.throttler.isRateLimited(
       validated.recipientId,
-      NotificationChannelEnum.EMAIL
+      NotificationChannelEnum.EMAIL,
     );
     if (throttled) {
       // Move to digest batcher
@@ -623,13 +633,13 @@ export class NotificationOrchestratorV2 {
     const isQuiet = await this.quietHoursManager.isInQuietHours(
       validated.recipientId,
       undefined, // Would fetch from DB in production
-      validated.priority
+      validated.priority,
     );
     if (isQuiet) {
       await this.quietHoursManager.queueIfQuiet(
         validated.recipientId,
         { ...validated, id: messageId },
-        true
+        true,
       );
       return;
     }
@@ -638,7 +648,7 @@ export class NotificationOrchestratorV2 {
     const channels = await this.channelRouter.routeChannels(
       validated.priority,
       undefined,
-      validated.channels
+      validated.channels,
     );
 
     // Create delivery receipts
@@ -659,9 +669,7 @@ export class NotificationOrchestratorV2 {
     // Validate input
     const validation = BatchNotificationRequestSchema.safeParse(request);
     if (!validation.success) {
-      throw new Error(
-        `Invalid batch request: ${validation.error.message}`
-      );
+      throw new Error(`Invalid batch request: ${validation.error.message}`);
     }
 
     const validated = validation.data;
@@ -689,7 +697,7 @@ export class NotificationOrchestratorV2 {
    * Get notification with all delivery statuses
    */
   async getNotification(
-    messageId: string
+    messageId: string,
   ): Promise<NotificationWithReceipts | null> {
     const receipts = await this.deliveryTracker.getReceipts(messageId);
     if (receipts.length === 0) {
@@ -720,7 +728,7 @@ export class NotificationOrchestratorV2 {
       await this.deliveryTracker.updateReceipt(
         messageId,
         receipt.channel,
-        DeliveryStatusEnum.READ
+        DeliveryStatusEnum.READ,
       );
     }
   }
@@ -760,7 +768,9 @@ export class NotificationOrchestratorV2 {
   /**
    * Get current throttle counts
    */
-  async getThrottleCounts(recipientId: string): Promise<{ email: number; sms: number; push: number }> {
+  async getThrottleCounts(
+    recipientId: string,
+  ): Promise<{ email: number; sms: number; push: number }> {
     return this.throttler.getCounts(recipientId);
   }
 

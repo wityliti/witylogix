@@ -26,13 +26,13 @@ export type {
   WebhookChange,
   WebhookChangeValue,
   WhatsAppApiResponse,
-} from './types';
+} from "./types";
 
-export { MessageStatus } from './types';
-export type { WebhookEvent } from './types';
+export { MessageStatus } from "./types";
+export type { WebhookEvent } from "./types";
 
 // Export client
-export { WhatsAppClient } from './client';
+export { WhatsAppClient } from "./client";
 
 // Export webhook handler
-export { WebhookHandler } from './webhook-handler';
+export { WebhookHandler } from "./webhook-handler";

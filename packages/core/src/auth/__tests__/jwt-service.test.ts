@@ -108,7 +108,9 @@ describe("JwtService", () => {
       const result = service.verifyAccessToken(token);
       expect(result.payload?.iat).toBeTruthy();
       expect(result.payload?.exp).toBeTruthy();
-      expect((result.payload?.exp || 0) > (result.payload?.iat || 0)).toBe(true);
+      expect((result.payload?.exp || 0) > (result.payload?.iat || 0)).toBe(
+        true,
+      );
     });
 
     it("should include correct issuer and audience", () => {
@@ -425,7 +427,10 @@ describe("JwtService", () => {
     });
 
     it("should handle large permission arrays", () => {
-      const largePermissions = Array.from({ length: 100 }, (_, i) => `perm:${i}`);
+      const largePermissions = Array.from(
+        { length: 100 },
+        (_, i) => `perm:${i}`,
+      );
       const token = service.generateAccessToken({
         userId: testUserId,
         orgId: testOrgId,
@@ -473,8 +478,12 @@ describe("JwtService", () => {
         mfaVerified: false,
       });
 
-      expect(service.verifyAccessToken(tokenTrue).payload?.mfaVerified).toBe(true);
-      expect(service.verifyAccessToken(tokenFalse).payload?.mfaVerified).toBe(false);
+      expect(service.verifyAccessToken(tokenTrue).payload?.mfaVerified).toBe(
+        true,
+      );
+      expect(service.verifyAccessToken(tokenFalse).payload?.mfaVerified).toBe(
+        false,
+      );
     });
   });
 

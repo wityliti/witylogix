@@ -53,7 +53,7 @@ describe("Valhalla Routing Client", () => {
       const routeRequest = {
         locations: [
           { lat: 40.7128, lon: -74.006 },
-          { lat: 40.7489, lon: -73.9680 },
+          { lat: 40.7489, lon: -73.968 },
         ],
         costing: "auto",
       };
@@ -77,7 +77,7 @@ describe("Valhalla Routing Client", () => {
       const routeRequest = {
         locations: [
           { lat: 40.7128, lon: -74.006 },
-          { lat: 40.7489, lon: -73.9680 },
+          { lat: 40.7489, lon: -73.968 },
           { lat: 40.7614, lon: -73.9776 },
         ],
         costing: "auto",
@@ -93,7 +93,7 @@ describe("Valhalla Routing Client", () => {
         const request = {
           locations: [
             { lat: 40.7128, lon: -74.006 },
-            { lat: 40.7489, lon: -73.9680 },
+            { lat: 40.7489, lon: -73.968 },
           ],
           costing: model,
         };
@@ -166,7 +166,7 @@ describe("Valhalla Routing Client", () => {
             data: {
               sources: [{ lat: 40.7128, lon: -74.006 }],
               targets: [
-                { lat: 40.7489, lon: -73.9680 },
+                { lat: 40.7489, lon: -73.968 },
                 { lat: 40.7614, lon: -73.9776 },
               ],
               matrix: [[1850, 2100]],
@@ -178,7 +178,7 @@ describe("Valhalla Routing Client", () => {
       const matrixRequest = {
         sources: [{ lat: 40.7128, lon: -74.006 }],
         targets: [
-          { lat: 40.7489, lon: -73.9680 },
+          { lat: 40.7489, lon: -73.968 },
           { lat: 40.7614, lon: -73.9776 },
         ],
       };
@@ -206,7 +206,7 @@ describe("Valhalla Routing Client", () => {
             data: {
               matched_points: [
                 { lat: 40.7128, lon: -74.006, edge_index: 0 },
-                { lat: 40.7489, lon: -73.9680, edge_index: 5 },
+                { lat: 40.7489, lon: -73.968, edge_index: 5 },
               ],
               confidence_score: 0.95,
             },
@@ -217,7 +217,7 @@ describe("Valhalla Routing Client", () => {
       const matchRequest = {
         shape: [
           { lat: 40.7128, lon: -74.006, time: 0 },
-          { lat: 40.7489, lon: -73.9680, time: 100 },
+          { lat: 40.7489, lon: -73.968, time: 100 },
         ],
       };
 
@@ -348,13 +348,10 @@ describe("VROOM VRP Client", () => {
         ],
       };
 
-      const result = await mockClient.fetch(
-        "https://vroom.example.com/solve",
-        {
-          method: "POST",
-          body: JSON.stringify(vrpRequest),
-        },
-      );
+      const result = await mockClient.fetch("https://vroom.example.com/solve", {
+        method: "POST",
+        body: JSON.stringify(vrpRequest),
+      });
 
       const data = await result.json();
       expect(result.status).toBe(200);
@@ -378,7 +375,7 @@ describe("VROOM VRP Client", () => {
         ],
         jobs: [
           { id: 0, location: [2.2945, 48.8582], delivery: [1] },
-          { id: 1, location: [2.2900, 48.8500], delivery: [1] },
+          { id: 1, location: [2.29, 48.85], delivery: [1] },
         ],
       };
 
@@ -431,7 +428,7 @@ describe("VROOM VRP Client", () => {
           {
             id: 0,
             pickup: { location: [2.2945, 48.8582], service: 300 },
-            delivery: { location: [2.2800, 48.8400], service: 300 },
+            delivery: { location: [2.28, 48.84], service: 300 },
           },
         ],
       };
@@ -748,7 +745,9 @@ describe("Routing Engine", () => {
         routific: 180,
       };
 
-      const fastest = Object.entries(latencies).sort(([, a], [, b]) => a - b)[0];
+      const fastest = Object.entries(latencies).sort(
+        ([, a], [, b]) => a - b,
+      )[0];
 
       expect(fastest[0]).toBe("valhalla");
       expect(fastest[1]).toBeLessThan(200);

@@ -35,7 +35,7 @@ import type { WorkflowEngine } from "@witylogix/framework";
  */
 export default fp(async function workflowRealtimePlugin(
   fastify: FastifyInstance,
-  opts: any
+  opts: any,
 ) {
   // Get Socket.io instance (must be registered before this plugin)
   const io = fastify.io;
@@ -47,7 +47,9 @@ export default fp(async function workflowRealtimePlugin(
   // Get workflow engine (must be available in context)
   const engine: WorkflowEngine | undefined = (fastify as any).workflowEngine;
   if (!engine) {
-    fastify.log.warn("Workflow engine not available, workflow realtime disabled");
+    fastify.log.warn(
+      "Workflow engine not available, workflow realtime disabled",
+    );
     return;
   }
 
@@ -136,11 +138,12 @@ export default fp(async function workflowRealtimePlugin(
           if (typeof callback === "function") {
             callback({
               success: false,
-              message: err instanceof Error ? err.message : "Subscription failed",
+              message:
+                err instanceof Error ? err.message : "Subscription failed",
             });
           }
         }
-      }
+      },
     );
 
     // ── Unsubscribe from workflow events ──
@@ -172,11 +175,12 @@ export default fp(async function workflowRealtimePlugin(
           if (typeof callback === "function") {
             callback({
               success: false,
-              message: err instanceof Error ? err.message : "Unsubscription failed",
+              message:
+                err instanceof Error ? err.message : "Unsubscription failed",
             });
           }
         }
-      }
+      },
     );
 
     // ── Cleanup on disconnect ──
@@ -198,7 +202,7 @@ export default fp(async function workflowRealtimePlugin(
    */
   const workflowEventListener = realtimeService.createEngineListener(
     tenantId || "unknown",
-    transactionId
+    transactionId,
   );
 
   // Note: In practice, this should be registered per-execution or per-request context
@@ -230,14 +234,16 @@ export default fp(async function workflowRealtimePlugin(
 export function registerWorkflowEventListener(
   fastify: FastifyInstance,
   tenantId: string,
-  transactionId?: string
+  transactionId?: string,
 ): void {
   const engine: WorkflowEngine | undefined = (fastify as any).workflowEngine;
-  const service: WorkflowRealtimeService | undefined =
-    (fastify as any).workflowRealtimeService;
+  const service: WorkflowRealtimeService | undefined = (fastify as any)
+    .workflowRealtimeService;
 
   if (!engine || !service) {
-    fastify.log.warn("Cannot register workflow event listener, service not available");
+    fastify.log.warn(
+      "Cannot register workflow event listener, service not available",
+    );
     return;
   }
 

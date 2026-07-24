@@ -4,24 +4,25 @@ Messaging integrations enable multi-channel notifications: SMS, email, push noti
 
 ## Supported Messaging Providers
 
-| Provider | Channels | Best For | Cost |
-|----------|----------|----------|------|
-| **Twilio** | SMS, Voice, WhatsApp | Global scale | $0.01-0.05/msg |
-| **SendGrid** | Email | Transactional email | $0.10/1000 |
-| **Firebase FCM** | Push, Notification | Mobile apps | Free, then $0.50+ |
-| **OneSignal** | Multi-channel | Push + email | $99-499/mo |
-| **Vonage** | SMS, Voice | Alternative to Twilio | Similar |
-| **Meta WhatsApp** | WhatsApp | Customer messaging | $0.01-0.05/msg |
-| **Mailgun** | Email | Developer-friendly | $0.50-1.50/1000 |
-| **AWS SNS** | SMS, Email, Push | AWS ecosystem | Variable |
-| **Slack API** | Chat | Team notifications | Free-$12.50/user |
-| **Telegram** | Chat | Bot notifications | Free |
-| **Resend** | Email | Modern email API | $0.00-20/1000 |
-| **Pushbullet** | Push | Simple notifications | $0.10/1000 |
+| Provider          | Channels             | Best For              | Cost              |
+| ----------------- | -------------------- | --------------------- | ----------------- |
+| **Twilio**        | SMS, Voice, WhatsApp | Global scale          | $0.01-0.05/msg    |
+| **SendGrid**      | Email                | Transactional email   | $0.10/1000        |
+| **Firebase FCM**  | Push, Notification   | Mobile apps           | Free, then $0.50+ |
+| **OneSignal**     | Multi-channel        | Push + email          | $99-499/mo        |
+| **Vonage**        | SMS, Voice           | Alternative to Twilio | Similar           |
+| **Meta WhatsApp** | WhatsApp             | Customer messaging    | $0.01-0.05/msg    |
+| **Mailgun**       | Email                | Developer-friendly    | $0.50-1.50/1000   |
+| **AWS SNS**       | SMS, Email, Push     | AWS ecosystem         | Variable          |
+| **Slack API**     | Chat                 | Team notifications    | Free-$12.50/user  |
+| **Telegram**      | Chat                 | Bot notifications     | Free              |
+| **Resend**        | Email                | Modern email API      | $0.00-20/1000     |
+| **Pushbullet**    | Push                 | Simple notifications  | $0.10/1000        |
 
 ## Use Cases
 
 ### 1. Shipment Creation
+
 Notify customer when order ships:
 
 ```javascript
@@ -39,6 +40,7 @@ await client.messaging.send({
 ```
 
 ### 2. Delivery Updates
+
 Real-time delivery status updates:
 
 ```javascript
@@ -57,6 +59,7 @@ await client.messaging.send({
 ```
 
 ### 3. Proof of Delivery
+
 Delivery confirmation with POD:
 
 ```javascript
@@ -75,6 +78,7 @@ await client.messaging.send({
 ```
 
 ### 4. Failed Delivery
+
 Alert customer of delivery issues:
 
 ```javascript
@@ -94,14 +98,17 @@ await client.messaging.send({
 ## Setup by Provider
 
 ### Twilio
+
 **Best for**: SMS, voice, WhatsApp at scale.
 
 #### 1. Get API Credentials
+
 - Twilio Console → Project Info
 - Copy Account SID & Auth Token
 - Create phone numbers for sending
 
 #### 2. Configure in Witylogix
+
 ```javascript
 const messaging = await client.integrations.create({
   provider: "twilio",
@@ -122,6 +129,7 @@ const messaging = await client.integrations.create({
 ```
 
 #### 3. Send Message
+
 ```javascript
 const message = await client.messaging.send({
   integration: "twilio",
@@ -132,14 +140,17 @@ const message = await client.messaging.send({
 ```
 
 ### SendGrid
+
 **Best for**: Transactional and marketing email.
 
 #### 1. Get API Key
+
 - SendGrid Settings → API Keys
 - Create new API key with restricted permissions
 - Copy the key (shown only once)
 
 #### 2. Configure in Witylogix
+
 ```javascript
 const messaging = await client.integrations.create({
   provider: "sendgrid",
@@ -156,6 +167,7 @@ const messaging = await client.integrations.create({
 ```
 
 #### 3. Send Email
+
 ```javascript
 const email = await client.messaging.send({
   integration: "sendgrid",
@@ -172,14 +184,17 @@ const email = await client.messaging.send({
 ```
 
 ### Firebase Cloud Messaging
+
 **Best for**: Mobile app push notifications.
 
 #### 1. Setup Firebase Project
+
 - Firebase Console → Create/select project
 - Project Settings → Service Accounts
 - Generate new private key (JSON)
 
 #### 2. Configure in Witylogix
+
 ```javascript
 const messaging = await client.integrations.create({
   provider: "firebase",
@@ -196,6 +211,7 @@ const messaging = await client.integrations.create({
 ```
 
 #### 3. Send Push Notification
+
 ```javascript
 const notification = await client.messaging.send({
   integration: "firebase",
@@ -219,13 +235,16 @@ const notification = await client.messaging.send({
 ```
 
 ### OneSignal
+
 **Best for**: Multi-channel campaigns.
 
 #### 1. Get API Credentials
+
 - OneSignal Dashboard → Settings
 - Copy App ID & REST API Key
 
 #### 2. Configure in Witylogix
+
 ```javascript
 const messaging = await client.integrations.create({
   provider: "onesignal",
@@ -240,6 +259,7 @@ const messaging = await client.integrations.create({
 ```
 
 ### Vonage (formerly Nexmo)
+
 **Similar to Twilio:**
 
 ```javascript
@@ -256,13 +276,16 @@ const messaging = await client.integrations.create({
 ```
 
 ### Slack API
+
 **Best for**: Internal team notifications.
 
 #### 1. Create Slack App
+
 - api.slack.com → Create New App
 - Copy Bot Token (starts with xoxb-)
 
 #### 2. Configure in Witylogix
+
 ```javascript
 const messaging = await client.integrations.create({
   provider: "slack",
@@ -277,6 +300,7 @@ const messaging = await client.integrations.create({
 ```
 
 #### 3. Send Notification
+
 ```javascript
 const notification = await client.messaging.send({
   integration: "slack",
@@ -296,14 +320,17 @@ const notification = await client.messaging.send({
 ```
 
 ### Telegram Bot API
+
 **Best for**: Lightweight notifications.
 
 #### 1. Create Telegram Bot
+
 - Message @BotFather on Telegram
 - Create new bot
 - Copy API Token
 
 #### 2. Configure in Witylogix
+
 ```javascript
 const messaging = await client.integrations.create({
   provider: "telegram",
@@ -317,6 +344,7 @@ const messaging = await client.integrations.create({
 ```
 
 #### 3. Send Message
+
 ```javascript
 const message = await client.messaging.send({
   integration: "telegram",
@@ -329,6 +357,7 @@ const message = await client.messaging.send({
 ## Message Templates
 
 ### Shipment Created
+
 ```mustache
 Hi {{customerName}},
 
@@ -344,6 +373,7 @@ Questions? Reply to this message.
 ```
 
 ### Driver Arriving Soon
+
 ```mustache
 {{customerName}}, {{driverName}} is {{eta}} away!
 
@@ -355,17 +385,21 @@ Open {{trackingUrl}} to see live tracking.
 ```
 
 ### Delivery Confirmed
+
 ```html
 <h2>Delivery Complete ✓</h2>
-<p>Your order #{{orderId}} was delivered on {{deliveryDate}} at {{deliveryTime}}.</p>
+<p>
+  Your order #{{orderId}} was delivered on {{deliveryDate}} at {{deliveryTime}}.
+</p>
 
 <p><strong>Proof of Delivery:</strong></p>
-<img src="{{podImage}}" alt="Signature" style="max-width: 300px;">
+<img src="{{podImage}}" alt="Signature" style="max-width: 300px;" />
 
 <p><a href="{{trackingUrl}}">View Full Details</a></p>
 ```
 
 ### Delivery Failed
+
 ```mustache
 Hi {{customerName}},
 
@@ -380,26 +414,27 @@ Need help? Contact support: {{supportUrl}}
 ## Scheduling & Timing
 
 ### Optimal Send Times
+
 ```javascript
 const sendTiming = {
   shipmentCreated: {
     channel: "sms",
-    delay: 0,          // Immediate
+    delay: 0, // Immediate
     priority: "high",
   },
   driverArriving: {
     channel: "sms",
-    delay: 0,          // Immediate (real-time)
+    delay: 0, // Immediate (real-time)
     priority: "high",
   },
   deliveryConfirmed: {
     channel: "email",
-    delay: 300000,     // 5 min (allows POD processing)
+    delay: 300000, // 5 min (allows POD processing)
     priority: "normal",
   },
   followUp: {
     channel: "email",
-    delay: 86400000,   // 24 hours
+    delay: 86400000, // 24 hours
     priority: "low",
   },
 };
@@ -412,15 +447,15 @@ Prevent over-messaging customers:
 ```javascript
 const frequencyCaps = {
   sms: {
-    perDay: 3,      // Max 3 SMS per day per customer
+    perDay: 3, // Max 3 SMS per day per customer
     perWeek: 10,
   },
   email: {
-    perDay: 5,      // Max 5 emails per day
+    perDay: 5, // Max 5 emails per day
     perWeek: 20,
   },
   push: {
-    perDay: 10,     // Max 10 push notifications
+    perDay: 10, // Max 10 push notifications
     perHour: 2,
   },
 };
@@ -529,12 +564,12 @@ const stats = await client.messaging.stats({
 
 ## Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Messages not sent | Invalid credentials | Verify API key/token |
-| High bounce rate | Bad phone/email data | Clean customer data |
-| Rate limited | Too many messages | Implement queuing |
-| Messages delayed | Provider overload | Add retry logic |
+| Issue               | Cause                     | Solution              |
+| ------------------- | ------------------------- | --------------------- |
+| Messages not sent   | Invalid credentials       | Verify API key/token  |
+| High bounce rate    | Bad phone/email data      | Clean customer data   |
+| Rate limited        | Too many messages         | Implement queuing     |
+| Messages delayed    | Provider overload         | Add retry logic       |
 | Opt-out not working | Unsubscribe not processed | Sync unsubscribe list |
 
 ## Next Steps

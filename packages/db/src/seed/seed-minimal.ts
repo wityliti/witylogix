@@ -148,10 +148,7 @@ async function main() {
     // Create API Key
     log(colors.blue, "○", "Creating API Key...");
     const key = `wl_live_${crypto.randomBytes(16).toString("hex")}`;
-    const keyHash = crypto
-      .createHash("sha256")
-      .update(key)
-      .digest("hex");
+    const keyHash = crypto.createHash("sha256").update(key).digest("hex");
 
     await db.apiKey.upsert({
       where: { id: crypto.randomUUID() },
@@ -247,18 +244,18 @@ async function main() {
           name: "Downtown",
           coordinates: [
             { lat: 40.7128, lng: -74.006 },
-            { lat: 40.7200, lng: -74.006 },
-            { lat: 40.7200, lng: -73.99 },
+            { lat: 40.72, lng: -74.006 },
+            { lat: 40.72, lng: -73.99 },
             { lat: 40.7128, lng: -73.99 },
           ],
         },
         {
           name: "Suburbs",
           coordinates: [
-            { lat: 40.7200, lng: -74.006 },
-            { lat: 40.7300, lng: -74.006 },
-            { lat: 40.7300, lng: -73.98 },
-            { lat: 40.7200, lng: -73.98 },
+            { lat: 40.72, lng: -74.006 },
+            { lat: 40.73, lng: -74.006 },
+            { lat: 40.73, lng: -73.98 },
+            { lat: 40.72, lng: -73.98 },
           ],
         },
       ];
@@ -306,7 +303,7 @@ ${colors.bright}Test Credentials:${colors.reset}
     log(
       colors.red,
       "✗",
-      `Seed failed: ${error instanceof Error ? error.message : String(error)}`
+      `Seed failed: ${error instanceof Error ? error.message : String(error)}`,
     );
     if (error instanceof Error) console.error(error.stack);
     process.exit(1);

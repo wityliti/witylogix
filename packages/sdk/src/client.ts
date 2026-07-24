@@ -2,13 +2,13 @@
  * Core HTTP client for the Witylogix API
  */
 
-import type { ClientConfig, RequestOptions, PaginatedResponse } from './types';
-import { ApiError, NetworkError, ConfigError, RateLimitError } from './errors';
+import type { ClientConfig, RequestOptions, PaginatedResponse } from "./types";
+import { ApiError, NetworkError, ConfigError, RateLimitError } from "./errors";
 
 /**
  * HTTP method type
  */
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 /**
  * Core WitylogixClient - handles all HTTP communication with the API
@@ -22,14 +22,14 @@ export class WitylogixClient {
 
   constructor(config: ClientConfig) {
     if (!config.baseUrl) {
-      throw new ConfigError('baseUrl is required in client configuration');
+      throw new ConfigError("baseUrl is required in client configuration");
     }
 
     if (!config.apiKey && !config.accessToken) {
-      throw new ConfigError('Either apiKey or accessToken must be provided');
+      throw new ConfigError("Either apiKey or accessToken must be provided");
     }
 
-    this.baseUrl = config.baseUrl.replace(/\/$/, ''); // Remove trailing slash
+    this.baseUrl = config.baseUrl.replace(/\/$/, ""); // Remove trailing slash
     this.apiKey = config.apiKey;
     this.accessToken = config.accessToken;
     this.timeout = config.timeout || 30000;
@@ -48,7 +48,7 @@ export class WitylogixClient {
       headers?: Record<string, string>;
       timeout?: number;
       retryAttempts?: number;
-    }
+    },
   ): Promise<T> {
     const url = this.buildUrl(path, options?.params);
     const headers = this.buildHeaders(options?.headers);
@@ -75,7 +75,7 @@ export class WitylogixClient {
       timeout: number;
       retryAttempts: number;
     },
-    attempt: number = 0
+    attempt: number = 0,
   ): Promise<T> {
     try {
       const controller = new AbortController();
@@ -92,7 +92,9 @@ export class WitylogixClient {
 
       // Handle rate limiting with Retry-After header
       if (response.status === 429) {
-        const retryAfter = this.parseRetryAfter(response.headers.get('Retry-After'));
+        const retryAfter = this.parseRetryAfter(
+          response.headers.get("Retry-After"),
+        );
 
         if (attempt < options.retryAttempts) {
           await this.sleep(retryAfter);
@@ -115,7 +117,7 @@ export class WitylogixClient {
         throw error;
       }
 
-      if (error instanceof DOMException && error.name === 'AbortError') {
+      if (error instanceof DOMException && error.name === "AbortError") {
         throw new NetworkError(`Request timeout after ${options.timeout}ms`);
       }
 
@@ -157,17 +159,19 @@ export class WitylogixClient {
   /**
    * Build authorization headers
    */
-  private buildHeaders(customHeaders?: Record<string, string>): Record<string, string> {
+  private buildHeaders(
+    customHeaders?: Record<string, string>,
+  ): Record<string, string> {
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
+      "Content-Type": "application/json",
+      Accept: "application/json",
       ...customHeaders,
     };
 
     if (this.accessToken) {
-      headers['Authorization'] = `Bearer ${this.accessToken}`;
+      headers["Authorization"] = `Bearer ${this.accessToken}`;
     } else if (this.apiKey) {
-      headers['X-API-Key'] = this.apiKey;
+      headers["X-API-Key"] = this.apiKey;
     }
 
     return headers;
@@ -198,9 +202,9 @@ export class WitylogixClient {
    * Parse JSON response
    */
   private async parseResponse<T>(response: Response): Promise<T> {
-    const contentType = response.headers.get('Content-Type');
+    const contentType = response.headers.get("Content-Type");
 
-    if (contentType?.includes('application/json')) {
+    if (contentType?.includes("application/json")) {
       return response.json() as Promise<T>;
     }
 
@@ -227,9 +231,9 @@ export class WitylogixClient {
   public async get<T>(
     path: string,
     params?: Record<string, any>,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<T> {
-    return this.request<T>('GET', path, {
+    return this.request<T>("GET", path, {
       params,
       headers: options?.headers,
       timeout: options?.timeout,
@@ -243,9 +247,9 @@ export class WitylogixClient {
   public async post<T>(
     path: string,
     data?: any,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<T> {
-    return this.request<T>('POST', path, {
+    return this.request<T>("POST", path, {
       data,
       headers: options?.headers,
       timeout: options?.timeout,
@@ -259,9 +263,9 @@ export class WitylogixClient {
   public async put<T>(
     path: string,
     data?: any,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<T> {
-    return this.request<T>('PUT', path, {
+    return this.request<T>("PUT", path, {
       data,
       headers: options?.headers,
       timeout: options?.timeout,
@@ -275,9 +279,9 @@ export class WitylogixClient {
   public async patch<T>(
     path: string,
     data?: any,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<T> {
-    return this.request<T>('PATCH', path, {
+    return this.request<T>("PATCH", path, {
       data,
       headers: options?.headers,
       timeout: options?.timeout,
@@ -288,11 +292,8 @@ export class WitylogixClient {
   /**
    * DELETE request
    */
-  public async delete<T>(
-    path: string,
-    options?: RequestOptions
-  ): Promise<T> {
-    return this.request<T>('DELETE', path, {
+  public async delete<T>(path: string, options?: RequestOptions): Promise<T> {
+    return this.request<T>("DELETE", path, {
       headers: options?.headers,
       timeout: options?.timeout,
       retryAttempts: options?.retryAttempts,

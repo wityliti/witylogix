@@ -24,17 +24,17 @@ describe("SecretScanner", () => {
 
   describe("AWS Key Detection", () => {
     it("should detect AWS access key", () => {
-      const result = scanner.scanString(
-        "AKIAIOSFODNN7EXAMPLE"
-      );
+      const result = scanner.scanString("AKIAIOSFODNN7EXAMPLE");
 
       expect(result.secretsFound).toBe(true);
-      expect(result.secrets.some((s) => s.type === "AWS Access Key")).toBe(true);
+      expect(result.secrets.some((s) => s.type === "AWS Access Key")).toBe(
+        true,
+      );
     });
 
     it("should detect AWS secret key pattern", () => {
       const result = scanner.scanString(
-        "aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+        "aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
       );
 
       expect(result.secretsFound).toBe(true);
@@ -45,7 +45,7 @@ describe("SecretScanner", () => {
   describe("GitHub Token Detection", () => {
     it("should detect GitHub personal access token", () => {
       const result = scanner.scanString(
-        "ghp_1234567890abcdefghijklmnopqrstuvwxyz12"
+        "ghp_1234567890abcdefghijklmnopqrstuvwxyz12",
       );
 
       expect(result.secretsFound).toBe(true);
@@ -56,7 +56,7 @@ describe("SecretScanner", () => {
   describe("Stripe Key Detection", () => {
     it("should detect Stripe secret key", () => {
       const result = scanner.scanString(
-        "sk_live_" + "FAKE0TEST0KEY0DO0NOT0USE012"
+        "sk_live_" + "FAKE0TEST0KEY0DO0NOT0USE012",
       );
 
       expect(result.secretsFound).toBe(true);
@@ -65,7 +65,7 @@ describe("SecretScanner", () => {
 
     it("should detect Stripe publishable key", () => {
       const result = scanner.scanString(
-        "pk_live_" + "FAKE0TEST0KEY0DO0NOT0USE012"
+        "pk_live_" + "FAKE0TEST0KEY0DO0NOT0USE012",
       );
 
       expect(result.secretsFound).toBe(true);
@@ -76,7 +76,7 @@ describe("SecretScanner", () => {
   describe("Database Credential Detection", () => {
     it("should detect MongoDB URI", () => {
       const result = scanner.scanString(
-        "mongodb://user:password@host:27017/db"
+        "mongodb://user:password@host:27017/db",
       );
 
       expect(result.secretsFound).toBe(true);
@@ -85,17 +85,17 @@ describe("SecretScanner", () => {
 
     it("should detect PostgreSQL URI", () => {
       const result = scanner.scanString(
-        "postgres://user:password@localhost/db"
+        "postgres://user:password@localhost/db",
       );
 
       expect(result.secretsFound).toBe(true);
-      expect(result.secrets.some((s) => s.type.includes("PostgreSQL"))).toBe(true);
+      expect(result.secrets.some((s) => s.type.includes("PostgreSQL"))).toBe(
+        true,
+      );
     });
 
     it("should detect MySQL URI", () => {
-      const result = scanner.scanString(
-        "mysql://user:password@localhost/db"
-      );
+      const result = scanner.scanString("mysql://user:password@localhost/db");
 
       expect(result.secretsFound).toBe(true);
       expect(result.secrets.some((s) => s.type.includes("MySQL"))).toBe(true);
@@ -104,18 +104,14 @@ describe("SecretScanner", () => {
 
   describe("Private Key Detection", () => {
     it("should detect RSA private key", () => {
-      const result = scanner.scanString(
-        "-----BEGIN RSA PRIVATE KEY-----"
-      );
+      const result = scanner.scanString("-----BEGIN RSA PRIVATE KEY-----");
 
       expect(result.secretsFound).toBe(true);
       expect(result.secrets.some((s) => s.type.includes("RSA"))).toBe(true);
     });
 
     it("should detect OpenSSH private key", () => {
-      const result = scanner.scanString(
-        "-----BEGIN OPENSSH PRIVATE KEY-----"
-      );
+      const result = scanner.scanString("-----BEGIN OPENSSH PRIVATE KEY-----");
 
       expect(result.secretsFound).toBe(true);
       expect(result.secrets.some((s) => s.type.includes("OpenSSH"))).toBe(true);
@@ -124,18 +120,16 @@ describe("SecretScanner", () => {
 
   describe("Password Detection", () => {
     it("should detect password parameter", () => {
-      const result = scanner.scanString(
-        'password="superSecretPassword"'
-      );
+      const result = scanner.scanString('password="superSecretPassword"');
 
       expect(result.secretsFound).toBe(true);
-      expect(result.secrets.some((s) => s.type.includes("Password"))).toBe(true);
+      expect(result.secrets.some((s) => s.type.includes("Password"))).toBe(
+        true,
+      );
     });
 
     it("should detect api_key parameter", () => {
-      const result = scanner.scanString(
-        "api_key=abcd1234efgh5678ijkl9012"
-      );
+      const result = scanner.scanString("api_key=abcd1234efgh5678ijkl9012");
 
       expect(result.secretsFound).toBe(true);
       expect(result.secrets.some((s) => s.type.includes("API Key"))).toBe(true);
@@ -145,7 +139,7 @@ describe("SecretScanner", () => {
   describe("JWT Token Detection", () => {
     it("should detect JWT token", () => {
       const result = scanner.scanString(
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U"
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U",
       );
 
       expect(result.secretsFound).toBe(true);
@@ -205,10 +199,7 @@ describe("SecretScanner", () => {
 
     it("should handle arrays in object", () => {
       const result = scanner.scanObject({
-        keys: [
-          "AKIAIOSFODNN7EXAMPLE",
-          "normal-key",
-        ],
+        keys: ["AKIAIOSFODNN7EXAMPLE", "normal-key"],
       });
 
       expect(result.secretsFound).toBe(true);
@@ -232,17 +223,14 @@ describe("SecretScanner", () => {
 
   describe("Redaction", () => {
     it("should redact AWS key", () => {
-      const redacted = scanner.redactString(
-        "Key is AKIAIOSFODNN7EXAMPLE here"
-      );
+      const redacted = scanner.redactString("Key is AKIAIOSFODNN7EXAMPLE here");
 
       expect(redacted).not.toContain("AKIAIOSFODNN7EXAMPLE");
       expect(redacted).toContain("[REDACTED");
     });
 
     it("should redact multiple secrets", () => {
-      const input =
-        "Password: secretPass123, Key: AKIAIOSFODNN7EXAMPLE";
+      const input = "Password: secretPass123, Key: AKIAIOSFODNN7EXAMPLE";
       const redacted = scanner.redactString(input);
 
       expect(redacted.match(/\[REDACTED/g)?.length).toBeGreaterThan(0);
@@ -256,7 +244,7 @@ describe("SecretScanner", () => {
         entropyDetection: true,
       });
       const result = scanner.scanString(
-        "randomVeryLongStringWith32CharsOfHighEntropy"
+        "randomVeryLongStringWith32CharsOfHighEntropy",
       );
 
       // May or may not detect based on exact entropy calculation
@@ -269,9 +257,13 @@ describe("SecretScanner", () => {
         mode: "alert",
         entropyDetection: false,
       });
-      const result = scanner.scanString("randomVeryLongStringWith32CharsOfHighEntropy");
+      const result = scanner.scanString(
+        "randomVeryLongStringWith32CharsOfHighEntropy",
+      );
 
-      expect(result.secrets.some((t) => t.type === "High Entropy String")).toBe(false);
+      expect(result.secrets.some((t) => t.type === "High Entropy String")).toBe(
+        false,
+      );
     });
   });
 
@@ -288,7 +280,7 @@ describe("SecretScanner", () => {
       });
 
       const result = scanner.scanString(
-        "custom_token_abcdef0123456789abcdef0123456789"
+        "custom_token_abcdef0123456789abcdef0123456789",
       );
 
       expect(result.secretsFound).toBe(true);
@@ -320,7 +312,7 @@ describe("SecretScanner", () => {
   describe("Safe Strings", () => {
     it("should not flag normal text as secret", () => {
       const result = scanner.scanString(
-        "This is a normal paragraph about authentication and passwords"
+        "This is a normal paragraph about authentication and passwords",
       );
 
       expect(result.secretsFound).toBe(false);
@@ -328,7 +320,7 @@ describe("SecretScanner", () => {
 
     it("should not flag example values", () => {
       const result = scanner.scanString(
-        "Use your API key like: sk_test_your_key_here"
+        "Use your API key like: sk_test_your_key_here",
       );
 
       // May or may not flag depending on pattern matching

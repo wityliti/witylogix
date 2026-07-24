@@ -180,22 +180,16 @@ describe("FirebaseFcmClient", () => {
         json: async () => ({
           success: 2,
           failure: 0,
-          results: [
-            { messageId: "msg-1" },
-            { messageId: "msg-2" },
-          ],
+          results: [{ messageId: "msg-1" }, { messageId: "msg-2" }],
         }),
       });
 
-      const response = await client.multicast(
-        ["token-1", "token-2"],
-        {
-          notification: {
-            title: "Multicast",
-            body: "Multiple devices",
-          },
-        }
-      );
+      const response = await client.multicast(["token-1", "token-2"], {
+        notification: {
+          title: "Multicast",
+          body: "Multiple devices",
+        },
+      });
 
       expect(response.successCount).toBe(2);
       expect(response.failureCount).toBe(0);
@@ -208,7 +202,7 @@ describe("FirebaseFcmClient", () => {
       await expect(
         client.multicast(tokens, {
           notification: { title: "Test", body: "Test" },
-        })
+        }),
       ).rejects.toThrow("Multicast limited to 500 tokens");
     });
   });
@@ -222,10 +216,7 @@ describe("FirebaseFcmClient", () => {
         }),
       });
 
-      const result = await client.subscribeToTopic(
-        ["token-1"],
-        "test-topic"
-      );
+      const result = await client.subscribeToTopic(["token-1"], "test-topic");
 
       expect(result.successCount).toBeGreaterThanOrEqual(0);
     });
@@ -240,7 +231,7 @@ describe("FirebaseFcmClient", () => {
 
       const result = await client.unsubscribeFromTopic(
         ["token-1"],
-        "test-topic"
+        "test-topic",
       );
 
       expect(result.successCount).toBeGreaterThanOrEqual(0);
@@ -271,7 +262,7 @@ describe("FirebaseFcmClient", () => {
       });
 
       await expect(
-        client.addToDeviceGroup("key-123", "test-group", ["token-3"])
+        client.addToDeviceGroup("key-123", "test-group", ["token-3"]),
       ).resolves.not.toThrow();
     });
 
@@ -282,7 +273,7 @@ describe("FirebaseFcmClient", () => {
       });
 
       await expect(
-        client.removeFromDeviceGroup("key-123", "test-group", ["token-1"])
+        client.removeFromDeviceGroup("key-123", "test-group", ["token-1"]),
       ).resolves.not.toThrow();
     });
   });

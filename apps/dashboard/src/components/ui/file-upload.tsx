@@ -1,11 +1,20 @@
 "use client";
 
-import { forwardRef, useRef, useState, type InputHTMLAttributes, type ReactNode } from "react";
+import {
+  forwardRef,
+  useRef,
+  useState,
+  type InputHTMLAttributes,
+  type ReactNode,
+} from "react";
 import { Upload, X, File, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
 
-export interface FileUploadProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "onChange"> {
+export interface FileUploadProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "type" | "onChange"
+> {
   accept?: string;
   maxSize?: number;
   multiple?: boolean;
@@ -28,7 +37,7 @@ const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
       children,
       ...props
     },
-    ref
+    ref,
   ) => {
     const inputRef = useRef<HTMLInputElement>(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -39,7 +48,9 @@ const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
     const validateFiles = (files: File[]): boolean => {
       for (const file of files) {
         if (maxSize && file.size > maxSize) {
-          setError(`File "${file.name}" exceeds maximum size of ${(maxSize / 1024 / 1024).toFixed(1)}MB`);
+          setError(
+            `File "${file.name}" exceeds maximum size of ${(maxSize / 1024 / 1024).toFixed(1)}MB`,
+          );
           return false;
         }
       }
@@ -141,10 +152,12 @@ const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
             "flex flex-col items-center justify-center gap-3",
             "transition-all duration-fast ease-default",
             "cursor-pointer",
-            disabled ? "opacity-50 cursor-not-allowed bg-wl-bg-surface" : "bg-wl-bg-overlay hover:border-wl-primary-400",
+            disabled
+              ? "opacity-50 cursor-not-allowed bg-wl-bg-surface"
+              : "bg-wl-bg-overlay hover:border-wl-primary-400",
             isDragging && !disabled
               ? "border-wl-primary-500 bg-wl-primary-500/5"
-              : "border-wl-border-default"
+              : "border-wl-border-default",
           )}
         >
           <Upload className="w-6 h-6 text-wl-text-secondary" />
@@ -206,7 +219,7 @@ const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 FileUpload.displayName = "FileUpload";

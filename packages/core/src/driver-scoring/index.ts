@@ -12,7 +12,7 @@ export type {
   DriverLeaderboardEntry,
   ScoringPeriod,
   LeaderboardResponse,
-} from './types';
+} from "./types";
 
 // Scoring Engine
 export {
@@ -25,20 +25,17 @@ export {
   determineTrend,
   calculateDriverScore,
   updateScoreWithTrend,
-} from './scoring-engine';
+} from "./scoring-engine";
 
 // Metrics Aggregation
 export {
   aggregateDriverMetrics,
   aggregateAllDrivers,
   getLeaderboard,
-} from './metrics-aggregator';
+} from "./metrics-aggregator";
 
 // Decay
-export {
-  calculateDecayFactor,
-  applyDecay,
-} from './decay';
+export { calculateDecayFactor, applyDecay } from "./decay";
 
 // AI Predictor
 export type {
@@ -46,11 +43,11 @@ export type {
   PredictedScore,
   Anomaly,
   SatisfactionPrediction,
-} from './ai-predictor';
+} from "./ai-predictor";
 
 export {
   extractFeatures,
   predictFutureScore,
   detectAnomalies,
   predictCustomerSatisfaction,
-} from './ai-predictor';
+} from "./ai-predictor";

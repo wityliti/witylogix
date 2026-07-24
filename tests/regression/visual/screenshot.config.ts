@@ -37,17 +37,17 @@ export const PIXEL_DIFF_THRESHOLD = 0.1;
  */
 export const VIEWPORTS: ViewportConfig[] = [
   {
-    name: 'mobile',
+    name: "mobile",
     width: 375,
     height: 667,
   },
   {
-    name: 'tablet',
+    name: "tablet",
     width: 768,
     height: 1024,
   },
   {
-    name: 'desktop',
+    name: "desktop",
     width: 1440,
     height: 900,
   },
@@ -59,38 +59,38 @@ export const VIEWPORTS: ViewportConfig[] = [
  */
 export const PAGES_TO_CAPTURE: PageConfig[] = [
   {
-    path: '/dashboard',
-    name: 'dashboard-home',
+    path: "/dashboard",
+    name: "dashboard-home",
     waitForSelector: '[data-testid="dashboard-container"]',
     delay: 1000, // Wait 1s for animations
   },
   {
-    path: '/orders',
-    name: 'orders-list',
+    path: "/orders",
+    name: "orders-list",
     waitForSelector: '[data-testid="orders-table"]',
     delay: 500,
   },
   {
-    path: '/orders/1',
-    name: 'order-detail',
+    path: "/orders/1",
+    name: "order-detail",
     waitForSelector: '[data-testid="order-detail-container"]',
     delay: 500,
   },
   {
-    path: '/drivers',
-    name: 'drivers-list',
+    path: "/drivers",
+    name: "drivers-list",
     waitForSelector: '[data-testid="drivers-table"]',
     delay: 500,
   },
   {
-    path: '/deliveries/map',
-    name: 'delivery-map',
+    path: "/deliveries/map",
+    name: "delivery-map",
     waitForSelector: '[data-testid="map-container"]',
     delay: 2000, // Maps need more time to render
   },
   {
-    path: '/settings',
-    name: 'settings-page',
+    path: "/settings",
+    name: "settings-page",
     waitForSelector: '[data-testid="settings-form"]',
     delay: 500,
   },
@@ -99,15 +99,17 @@ export const PAGES_TO_CAPTURE: PageConfig[] = [
 /**
  * Screenshot configuration builder
  */
-export function getScreenshotConfig(options?: Partial<ScreenshotConfig>): ScreenshotConfig {
+export function getScreenshotConfig(
+  options?: Partial<ScreenshotConfig>,
+): ScreenshotConfig {
   return {
     pixelDiffThreshold: PIXEL_DIFF_THRESHOLD,
     viewports: VIEWPORTS,
     pages: PAGES_TO_CAPTURE,
-    baselineDir: 'tests/regression/visual/baselines',
-    updateBaselines: process.env.UPDATE_BASELINES === 'true',
-    acceptBaselines: process.env.ACCEPT_BASELINES === 'true',
-    rejectBaselines: process.env.REJECT_BASELINES === 'true',
+    baselineDir: "tests/regression/visual/baselines",
+    updateBaselines: process.env.UPDATE_BASELINES === "true",
+    acceptBaselines: process.env.ACCEPT_BASELINES === "true",
+    rejectBaselines: process.env.REJECT_BASELINES === "true",
     ...options,
   };
 }
@@ -172,7 +174,9 @@ export interface AssertionOptions {
 /**
  * Get assertion options for screenshot comparison
  */
-export function getAssertionOptions(options?: Partial<AssertionOptions>): AssertionOptions {
+export function getAssertionOptions(
+  options?: Partial<AssertionOptions>,
+): AssertionOptions {
   return {
     threshold: PIXEL_DIFF_THRESHOLD,
     ignoreDynamicContent: false,
@@ -203,7 +207,7 @@ export const DYNAMIC_MASKS = {
  * Viewport selectors for snapshot testing by viewport
  */
 export const getViewportTag = (width: number, height: number): string => {
-  if (width <= 375) return '@visual-mobile';
-  if (width <= 768) return '@visual-tablet';
-  return '@visual-desktop';
+  if (width <= 375) return "@visual-mobile";
+  if (width <= 768) return "@visual-tablet";
+  return "@visual-desktop";
 };

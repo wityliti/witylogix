@@ -1,8 +1,8 @@
-import { test, expect } from '../../fixtures/auth.fixture';
-import { CustomerPortalPage } from '../../pages/customer-portal.page';
-import { setupPortalMocks, clearAllMocks } from '../../helpers/mock-api';
+import { test, expect } from "../../fixtures/auth.fixture";
+import { CustomerPortalPage } from "../../pages/customer-portal.page";
+import { setupPortalMocks, clearAllMocks } from "../../helpers/mock-api";
 
-test.describe('Customer Portal', () => {
+test.describe("Customer Portal", () => {
   let portalPage: CustomerPortalPage;
 
   test.beforeEach(async ({ page }) => {
@@ -14,21 +14,21 @@ test.describe('Customer Portal', () => {
     await clearAllMocks(page);
   });
 
-  test('should allow customer login', async () => {
+  test("should allow customer login", async () => {
     // Navigate to portal
     await portalPage.navigateToPortal();
 
     // Login
-    await portalPage.login('customer@example.com', 'password123');
+    await portalPage.login("customer@example.com", "password123");
 
     // Verify logged in
     await portalPage.expectPortalLoggedIn();
   });
 
-  test('should display order history with status badges', async () => {
+  test("should display order history with status badges", async () => {
     // Setup mock and login
     await portalPage.navigateToPortal();
-    await portalPage.login('customer@example.com', 'password123');
+    await portalPage.login("customer@example.com", "password123");
 
     // Navigate to orders
     await portalPage.navigateToOrders();
@@ -51,10 +51,10 @@ test.describe('Customer Portal', () => {
     });
   });
 
-  test('should show delivery status timeline with timestamps', async () => {
+  test("should show delivery status timeline with timestamps", async () => {
     // Login
     await portalPage.navigateToPortal();
-    await portalPage.login('customer@example.com', 'password123');
+    await portalPage.login("customer@example.com", "password123");
 
     // Navigate to orders
     await portalPage.navigateToOrders();
@@ -83,22 +83,24 @@ test.describe('Customer Portal', () => {
     });
   });
 
-  test('should display POD photo for delivered orders', async () => {
+  test("should display POD photo for delivered orders", async () => {
     // Login
     await portalPage.navigateToPortal();
-    await portalPage.login('customer@example.com', 'password123');
+    await portalPage.login("customer@example.com", "password123");
 
     // Navigate to orders
     await portalPage.navigateToOrders();
 
     // Get delivered order
     const orders = await portalPage.getOrderList();
-    const deliveredOrder = orders.find((o) => o.status.toLowerCase().includes('deliver'));
+    const deliveredOrder = orders.find((o) =>
+      o.status.toLowerCase().includes("deliver"),
+    );
 
     if (deliveredOrder) {
       // Get order detail
       const detail = await portalPage.getOrderDetail(deliveredOrder.id);
-      expect(detail.status.toLowerCase()).toContain('deliver');
+      expect(detail.status.toLowerCase()).toContain("deliver");
 
       // Get POD image
       const podUrl = await portalPage.getPODImage(deliveredOrder.id);
@@ -108,10 +110,10 @@ test.describe('Customer Portal', () => {
     }
   });
 
-  test('should allow rescheduling with new date/time selection', async () => {
+  test("should allow rescheduling with new date/time selection", async () => {
     // Login
     await portalPage.navigateToPortal();
-    await portalPage.login('customer@example.com', 'password123');
+    await portalPage.login("customer@example.com", "password123");
 
     // Navigate to orders
     await portalPage.navigateToOrders();
@@ -136,16 +138,16 @@ test.describe('Customer Portal', () => {
     expect(successMsg).toBeTruthy();
   });
 
-  test('should save delivery preferences (safe place, access code)', async () => {
+  test("should save delivery preferences (safe place, access code)", async () => {
     // Login
     await portalPage.navigateToPortal();
-    await portalPage.login('customer@example.com', 'password123');
+    await portalPage.login("customer@example.com", "password123");
 
     // Update preferences
     await portalPage.updatePreferences({
       safePlace: true,
-      safeInstructions: 'Leave at door',
-      accessCode: '1234',
+      safeInstructions: "Leave at door",
+      accessCode: "1234",
     });
 
     // Verify success
@@ -153,24 +155,26 @@ test.describe('Customer Portal', () => {
     expect(successMsg).toBeTruthy();
   });
 
-  test('should allow delivery rating with stars and feedback', async () => {
+  test("should allow delivery rating with stars and feedback", async () => {
     // Login
     await portalPage.navigateToPortal();
-    await portalPage.login('customer@example.com', 'password123');
+    await portalPage.login("customer@example.com", "password123");
 
     // Navigate to orders
     await portalPage.navigateToOrders();
 
     // Get delivered order
     const orders = await portalPage.getOrderList();
-    const deliveredOrder = orders.find((o) => o.status.toLowerCase().includes('deliver'));
+    const deliveredOrder = orders.find((o) =>
+      o.status.toLowerCase().includes("deliver"),
+    );
 
     if (deliveredOrder) {
       // Rate delivery
       await portalPage.rateDelivery(
         deliveredOrder.id,
         5,
-        'Excellent delivery service!'
+        "Excellent delivery service!",
       );
 
       // Verify success
@@ -179,17 +183,19 @@ test.describe('Customer Portal', () => {
     }
   });
 
-  test('should show live tracking map with driver position', async () => {
+  test("should show live tracking map with driver position", async () => {
     // Login
     await portalPage.navigateToPortal();
-    await portalPage.login('customer@example.com', 'password123');
+    await portalPage.login("customer@example.com", "password123");
 
     // Navigate to orders
     await portalPage.navigateToOrders();
 
     // Get in-transit order
     const orders = await portalPage.getOrderList();
-    const inTransitOrder = orders.find((o) => o.status.toLowerCase().includes('transit'));
+    const inTransitOrder = orders.find((o) =>
+      o.status.toLowerCase().includes("transit"),
+    );
 
     if (inTransitOrder) {
       // Get tracking info
@@ -202,10 +208,10 @@ test.describe('Customer Portal', () => {
     }
   });
 
-  test('should logout successfully', async () => {
+  test("should logout successfully", async () => {
     // Login
     await portalPage.navigateToPortal();
-    await portalPage.login('customer@example.com', 'password123');
+    await portalPage.login("customer@example.com", "password123");
 
     // Verify logged in
     await portalPage.expectPortalLoggedIn();
@@ -214,13 +220,13 @@ test.describe('Customer Portal', () => {
     await portalPage.logout();
 
     // Verify redirected to login
-    expect(portalPage.page.url()).toContain('/portal');
+    expect(portalPage.page.url()).toContain("/portal");
   });
 
-  test('should display order items in detail view', async () => {
+  test("should display order items in detail view", async () => {
     // Login
     await portalPage.navigateToPortal();
-    await portalPage.login('customer@example.com', 'password123');
+    await portalPage.login("customer@example.com", "password123");
 
     // Navigate to orders
     await portalPage.navigateToOrders();
@@ -242,10 +248,10 @@ test.describe('Customer Portal', () => {
     });
   });
 
-  test('should show estimated delivery date/time', async () => {
+  test("should show estimated delivery date/time", async () => {
     // Login
     await portalPage.navigateToPortal();
-    await portalPage.login('customer@example.com', 'password123');
+    await portalPage.login("customer@example.com", "password123");
 
     // Navigate to orders
     await portalPage.navigateToOrders();
@@ -258,10 +264,10 @@ test.describe('Customer Portal', () => {
     expect(detail.estimatedDelivery).toBeTruthy();
   });
 
-  test('should display contact information for delivery', async () => {
+  test("should display contact information for delivery", async () => {
     // Login
     await portalPage.navigateToPortal();
-    await portalPage.login('customer@example.com', 'password123');
+    await portalPage.login("customer@example.com", "password123");
 
     // Navigate to orders
     await portalPage.navigateToOrders();
@@ -276,10 +282,10 @@ test.describe('Customer Portal', () => {
     expect(detail.email).toBeTruthy();
   });
 
-  test('should navigate between different sections', async () => {
+  test("should navigate between different sections", async () => {
     // Login
     await portalPage.navigateToPortal();
-    await portalPage.login('customer@example.com', 'password123');
+    await portalPage.login("customer@example.com", "password123");
 
     // Navigate to orders
     await portalPage.navigateToOrders();
@@ -287,37 +293,39 @@ test.describe('Customer Portal', () => {
 
     // Navigate to tracking
     await portalPage.navigateToTrack();
-    expect(portalPage.page.url()).toContain('tracking');
+    expect(portalPage.page.url()).toContain("tracking");
 
     // Navigate back to orders
     await portalPage.navigateToOrders();
     await portalPage.expectOrdersPage();
   });
 
-  test('should handle empty order history gracefully', async ({ page }) => {
+  test("should handle empty order history gracefully", async ({ page }) => {
     // Mock empty orders
-    await page.route('**/api/customers/*/orders*', (route) => {
+    await page.route("**/api/customers/*/orders*", (route) => {
       route.respond({
         status: 200,
-        contentType: 'application/json',
+        contentType: "application/json",
         body: JSON.stringify({ data: [] }),
       });
     });
 
     // Login and navigate
     await portalPage.navigateToPortal();
-    await portalPage.login('customer@example.com', 'password123');
+    await portalPage.login("customer@example.com", "password123");
     await portalPage.navigateToOrders();
 
     // Verify empty state
-    const emptyStateVisible = await portalPage.emptyState.isVisible().catch(() => false);
+    const emptyStateVisible = await portalPage.emptyState
+      .isVisible()
+      .catch(() => false);
     expect(emptyStateVisible || true).toBeTruthy();
   });
 
-  test('should display all timeline events in correct order', async () => {
+  test("should display all timeline events in correct order", async () => {
     // Login
     await portalPage.navigateToPortal();
-    await portalPage.login('customer@example.com', 'password123');
+    await portalPage.login("customer@example.com", "password123");
 
     // Navigate to orders
     await portalPage.navigateToOrders();
@@ -336,17 +344,19 @@ test.describe('Customer Portal', () => {
     }
   });
 
-  test('should show driver information when order is in transit', async () => {
+  test("should show driver information when order is in transit", async () => {
     // Login
     await portalPage.navigateToPortal();
-    await portalPage.login('customer@example.com', 'password123');
+    await portalPage.login("customer@example.com", "password123");
 
     // Navigate to orders
     await portalPage.navigateToOrders();
 
     // Get in-transit order
     const orders = await portalPage.getOrderList();
-    const inTransitOrder = orders.find((o) => o.status.toLowerCase().includes('transit'));
+    const inTransitOrder = orders.find((o) =>
+      o.status.toLowerCase().includes("transit"),
+    );
 
     if (inTransitOrder) {
       // Get tracking details
@@ -359,15 +369,15 @@ test.describe('Customer Portal', () => {
     }
   });
 
-  test('should persist preferences across sessions', async () => {
+  test("should persist preferences across sessions", async () => {
     // Login
     await portalPage.navigateToPortal();
-    await portalPage.login('customer@example.com', 'password123');
+    await portalPage.login("customer@example.com", "password123");
 
     // Update preferences
     await portalPage.updatePreferences({
       safePlace: true,
-      safeInstructions: 'Ring doorbell twice',
+      safeInstructions: "Ring doorbell twice",
     });
 
     // Reload page
@@ -381,35 +391,41 @@ test.describe('Customer Portal', () => {
     expect(formVisible).toBeTruthy();
   });
 
-  test('should handle login errors gracefully', async () => {
+  test("should handle login errors gracefully", async () => {
     // Navigate to portal
     await portalPage.navigateToPortal();
 
     // Try invalid login
-    await portalPage.login('invalid@example.com', 'wrongpassword');
+    await portalPage.login("invalid@example.com", "wrongpassword");
 
     // Should show error or stay on login
-    const errorVisible = await portalPage.loginError.isVisible().catch(() => false);
-    const stillOnLogin = portalPage.page.url().includes('/portal');
+    const errorVisible = await portalPage.loginError
+      .isVisible()
+      .catch(() => false);
+    const stillOnLogin = portalPage.page.url().includes("/portal");
 
     expect(errorVisible || stillOnLogin).toBeTruthy();
   });
 
-  test('should display tracking map for in-transit orders', async () => {
+  test("should display tracking map for in-transit orders", async () => {
     // Login
     await portalPage.navigateToPortal();
-    await portalPage.login('customer@example.com', 'password123');
+    await portalPage.login("customer@example.com", "password123");
 
     // Navigate to tracking
     await portalPage.navigateToTrack();
 
     // Get in-transit order if available
     const orders = await portalPage.getOrderList();
-    const inTransitOrder = orders.find((o) => o.status.toLowerCase().includes('transit'));
+    const inTransitOrder = orders.find((o) =>
+      o.status.toLowerCase().includes("transit"),
+    );
 
     if (inTransitOrder) {
       // Verify tracking map is visible
-      const mapVisible = await portalPage.trackingMap.isVisible().catch(() => false);
+      const mapVisible = await portalPage.trackingMap
+        .isVisible()
+        .catch(() => false);
       expect(mapVisible || true).toBeTruthy();
     }
   });

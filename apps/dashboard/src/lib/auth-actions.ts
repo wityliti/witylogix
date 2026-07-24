@@ -151,9 +151,7 @@ async function setCookies(
 
 // ─── Login Action ───────────────────────────────────────────
 
-export async function loginAction(
-  formData: FormData,
-): Promise<ActionResponse> {
+export async function loginAction(formData: FormData): Promise<ActionResponse> {
   try {
     // Extract and parse form data
     const rawData = {

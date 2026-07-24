@@ -16,7 +16,7 @@
  * - Generic: X-Signature or X-Hub-Signature-256
  */
 
-import { createHmac, timingSafeEqual } from 'crypto';
+import { createHmac, timingSafeEqual } from "crypto";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -39,7 +39,9 @@ export interface VerificationResult {
  */
 export interface SignatureStrategy {
   /** Extract signature from headers */
-  extractSignature(headers: Record<string, string>): { signature: string; timestamp?: number } | null;
+  extractSignature(
+    headers: Record<string, string>,
+  ): { signature: string; timestamp?: number } | null;
   /** Compute expected signature */
   computeSignature(payload: string, timestamp?: number): string;
   /** Verify computed vs received signature */
@@ -76,11 +78,11 @@ export interface INonceStorage {
  * Common provider signature formats
  */
 export enum SignatureFormat {
-  STRIPE = 'stripe',
-  SHOPIFY = 'shopify',
-  EASYPOST = 'easypost',
-  GENERIC_SIGNATURE = 'generic_signature',
-  GENERIC_HUB_SIGNATURE = 'generic_hub_signature',
+  STRIPE = "stripe",
+  SHOPIFY = "shopify",
+  EASYPOST = "easypost",
+  GENERIC_SIGNATURE = "generic_signature",
+  GENERIC_HUB_SIGNATURE = "generic_hub_signature",
 }
 
 // ─── Signature Strategies ────────────────────────────────────────────
@@ -92,35 +94,36 @@ export enum SignatureFormat {
 class StripeSignatureStrategy implements SignatureStrategy {
   constructor(private signingSecret: string) {}
 
-  extractSignature(headers: Record<string, string>): { signature: string; timestamp?: number } | null {
-    const stripeSignature = headers['x-stripe-signature'];
+  extractSignature(
+    headers: Record<string, string>,
+  ): { signature: string; timestamp?: number } | null {
+    const stripeSignature = headers["x-stripe-signature"];
     if (!stripeSignature) return null;
 
-    const parts = stripeSignature.split(',').reduce<Record<string, string>>((acc, part) => {
-      const [key, value] = part.split('=');
-      acc[key] = value;
-      return acc;
-    }, {});
+    const parts = stripeSignature
+      .split(",")
+      .reduce<Record<string, string>>((acc, part) => {
+        const [key, value] = part.split("=");
+        acc[key] = value;
+        return acc;
+      }, {});
 
     return {
-      signature: parts.v1 || '',
-      timestamp: parseInt(parts.t || '0', 10),
+      signature: parts.v1 || "",
+      timestamp: parseInt(parts.t || "0", 10),
     };
   }
 
   computeSignature(payload: string, timestamp?: number): string {
     const signedContent = `${timestamp}.${payload}`;
-    return createHmac('sha256', this.signingSecret)
+    return createHmac("sha256", this.signingSecret)
       .update(signedContent)
-      .digest('hex');
+      .digest("hex");
   }
 
   verifySignature(computed: string, received: string): boolean {
     try {
-      return timingSafeEqual(
-        Buffer.from(computed),
-        Buffer.from(received),
-      );
+      return timingSafeEqual(Buffer.from(computed), Buffer.from(received));
     } catch {
       return false;
     }
@@ -134,8 +137,10 @@ class StripeSignatureStrategy implements SignatureStrategy {
 class ShopifySignatureStrategy implements SignatureStrategy {
   constructor(private signingSecret: string) {}
 
-  extractSignature(headers: Record<string, string>): { signature: string; timestamp?: number } | null {
-    const shopifySignature = headers['x-shopify-hmac-sha256'];
+  extractSignature(
+    headers: Record<string, string>,
+  ): { signature: string; timestamp?: number } | null {
+    const shopifySignature = headers["x-shopify-hmac-sha256"];
     if (!shopifySignature) return null;
 
     return {
@@ -144,17 +149,14 @@ class ShopifySignatureStrategy implements SignatureStrategy {
   }
 
   computeSignature(payload: string): string {
-    return createHmac('sha256', this.signingSecret)
-      .update(payload, 'utf8')
-      .digest('base64');
+    return createHmac("sha256", this.signingSecret)
+      .update(payload, "utf8")
+      .digest("base64");
   }
 
   verifySignature(computed: string, received: string): boolean {
     try {
-      return timingSafeEqual(
-        Buffer.from(computed),
-        Buffer.from(received),
-      );
+      return timingSafeEqual(Buffer.from(computed), Buffer.from(received));
     } catch {
       return false;
     }
@@ -168,25 +170,24 @@ class ShopifySignatureStrategy implements SignatureStrategy {
 class EasyPostSignatureStrategy implements SignatureStrategy {
   constructor(private signingSecret: string) {}
 
-  extractSignature(headers: Record<string, string>): { signature: string; timestamp?: number } | null {
-    const signature = headers['x-hmac-sha256'];
+  extractSignature(
+    headers: Record<string, string>,
+  ): { signature: string; timestamp?: number } | null {
+    const signature = headers["x-hmac-sha256"];
     if (!signature) return null;
 
     return { signature };
   }
 
   computeSignature(payload: string): string {
-    return createHmac('sha256', this.signingSecret)
-      .update(payload, 'utf8')
-      .digest('hex');
+    return createHmac("sha256", this.signingSecret)
+      .update(payload, "utf8")
+      .digest("hex");
   }
 
   verifySignature(computed: string, received: string): boolean {
     try {
-      return timingSafeEqual(
-        Buffer.from(computed),
-        Buffer.from(received),
-      );
+      return timingSafeEqual(Buffer.from(computed), Buffer.from(received));
     } catch {
       return false;
     }
@@ -200,25 +201,24 @@ class EasyPostSignatureStrategy implements SignatureStrategy {
 class GenericSignatureStrategy implements SignatureStrategy {
   constructor(private signingSecret: string) {}
 
-  extractSignature(headers: Record<string, string>): { signature: string; timestamp?: number } | null {
-    const signature = headers['x-signature'];
+  extractSignature(
+    headers: Record<string, string>,
+  ): { signature: string; timestamp?: number } | null {
+    const signature = headers["x-signature"];
     if (!signature) return null;
 
     return { signature };
   }
 
   computeSignature(payload: string): string {
-    return createHmac('sha256', this.signingSecret)
-      .update(payload, 'utf8')
-      .digest('hex');
+    return createHmac("sha256", this.signingSecret)
+      .update(payload, "utf8")
+      .digest("hex");
   }
 
   verifySignature(computed: string, received: string): boolean {
     try {
-      return timingSafeEqual(
-        Buffer.from(computed),
-        Buffer.from(received),
-      );
+      return timingSafeEqual(Buffer.from(computed), Buffer.from(received));
     } catch {
       return false;
     }
@@ -244,7 +244,9 @@ export class WebhookSignatureVerifier {
     if (config.strategy) {
       this.strategy = config.strategy;
     } else {
-      this.strategy = this.createStrategy(format ?? SignatureFormat.GENERIC_SIGNATURE);
+      this.strategy = this.createStrategy(
+        format ?? SignatureFormat.GENERIC_SIGNATURE,
+      );
     }
   }
 
@@ -261,7 +263,7 @@ export class WebhookSignatureVerifier {
     if (!extracted) {
       return {
         valid: false,
-        error: 'No signature found in headers',
+        error: "No signature found in headers",
       };
     }
 
@@ -297,7 +299,7 @@ export class WebhookSignatureVerifier {
       return {
         valid: false,
         timestamp: extracted.timestamp,
-        error: 'Signature verification failed',
+        error: "Signature verification failed",
         details: {
           received: `${extracted.signature.slice(0, 8)}...`,
           computed: `${computedSignature.slice(0, 8)}...`,
@@ -345,7 +347,7 @@ export class WebhookSignatureVerifier {
     if (!this.nonceStorage) {
       return {
         valid: false,
-        error: 'Replay protection enabled but no nonce storage configured',
+        error: "Replay protection enabled but no nonce storage configured",
       };
     }
 
@@ -353,8 +355,8 @@ export class WebhookSignatureVerifier {
     if (exists) {
       return {
         valid: false,
-        error: 'Nonce already seen (possible replay attack)',
-        details: { nonce: nonce.slice(0, 8) + '...' },
+        error: "Nonce already seen (possible replay attack)",
+        details: { nonce: nonce.slice(0, 8) + "..." },
       };
     }
 

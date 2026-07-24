@@ -73,9 +73,7 @@ export class QueryCache {
    * @param config.maxSize - Maximum cache entries (default 1000)
    * @param config.defaultTtl - Default TTL in seconds (default 300)
    */
-  constructor(
-    config: { maxSize?: number; defaultTtl?: number } = {}
-  ) {
+  constructor(config: { maxSize?: number; defaultTtl?: number } = {}) {
     this.maxSize = config.maxSize || 1000;
     this.defaultTtl = (config.defaultTtl || 300) * 1000; // Convert to ms
     this.initializeDefaultRules();
@@ -120,10 +118,7 @@ export class QueryCache {
     }
 
     // Check if within stale window (stale-while-revalidate)
-    if (
-      entry.staleUntil !== undefined &&
-      now < entry.staleUntil
-    ) {
+    if (entry.staleUntil !== undefined && now < entry.staleUntil) {
       entry.hits++;
       this.staleFetches++;
       return entry.data; // Return stale but valid data
@@ -148,7 +143,8 @@ export class QueryCache {
       this.evictLRU();
     }
 
-    const ttlMs = (ttl || this.defaultTtl) * (typeof ttl === "number" ? 1000 : 1);
+    const ttlMs =
+      (ttl || this.defaultTtl) * (typeof ttl === "number" ? 1000 : 1);
     const staleWindow = ttlMs * 1.5; // 50% longer for stale-while-revalidate
 
     this.cache.set(key, {
@@ -166,7 +162,10 @@ export class QueryCache {
    * @param table - Table name
    * @param operation - Operation type
    */
-  invalidate(table: string, operation: "INSERT" | "UPDATE" | "DELETE" = "ALL"): void {
+  invalidate(
+    table: string,
+    operation: "INSERT" | "UPDATE" | "DELETE" = "ALL",
+  ): void {
     const keysToDelete: string[] = [];
 
     this.cache.forEach((entry, key) => {
@@ -245,10 +244,7 @@ export class QueryCache {
    * @returns Normalized SQL
    */
   private normalizeSql(sql: string): string {
-    return sql
-      .replace(/\s+/g, " ")
-      .trim()
-      .toLowerCase();
+    return sql.replace(/\s+/g, " ").trim().toLowerCase();
   }
 
   /**
@@ -307,7 +303,7 @@ export class QueryCache {
   private matchesInvalidationRule(
     key: string,
     table: string,
-    operation: string
+    operation: string,
   ): boolean {
     for (const rule of this.invalidationRules) {
       if (rule.table !== table && rule.table !== "*") continue;

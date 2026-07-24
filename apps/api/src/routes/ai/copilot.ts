@@ -9,7 +9,10 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import { requireAuth } from "../../middleware/auth.js";
 import { tenantContext } from "../../middleware/tenant.js";
-import { nlFilterParser, type StructuredFilter } from "@witylogix/core/natural-language-filter";
+import {
+  nlFilterParser,
+  type StructuredFilter,
+} from "@witylogix/core/natural-language-filter";
 
 // ─── Zod Schema ─────────────────────────────────────────────
 
@@ -32,7 +35,10 @@ function buildDateWhere(filter: StructuredFilter): Record<string, unknown> {
   return {};
 }
 
-function buildDeliveryWhere(filter: StructuredFilter, shopId: string): Record<string, unknown> {
+function buildDeliveryWhere(
+  filter: StructuredFilter,
+  shopId: string,
+): Record<string, unknown> {
   const where: Record<string, unknown> = { shopId };
 
   if (filter.status) {
@@ -58,7 +64,10 @@ function buildDeliveryWhere(filter: StructuredFilter, shopId: string): Record<st
   return where;
 }
 
-function buildOrderWhere(filter: StructuredFilter, shopId: string): Record<string, unknown> {
+function buildOrderWhere(
+  filter: StructuredFilter,
+  shopId: string,
+): Record<string, unknown> {
   const where: Record<string, unknown> = { shopId };
 
   if (filter.status) {
@@ -80,7 +89,8 @@ function buildOrderWhere(filter: StructuredFilter, shopId: string): Record<strin
     if (filter.amount.gte !== undefined) amountWhere["gte"] = filter.amount.gte;
     if (filter.amount.lt !== undefined) amountWhere["lt"] = filter.amount.lt;
     if (filter.amount.lte !== undefined) amountWhere["lte"] = filter.amount.lte;
-    if (filter.amount.eq !== undefined) amountWhere["equals"] = filter.amount.eq;
+    if (filter.amount.eq !== undefined)
+      amountWhere["equals"] = filter.amount.eq;
     if (Object.keys(amountWhere).length > 0) {
       where["totalPrice"] = amountWhere;
     }
@@ -89,7 +99,9 @@ function buildOrderWhere(filter: StructuredFilter, shopId: string): Record<strin
   if (filter.fullTextFallback && filter.rawQuery) {
     where["OR"] = [
       { customerName: { contains: filter.rawQuery, mode: "insensitive" } },
-      { externalOrderNumber: { contains: filter.rawQuery, mode: "insensitive" } },
+      {
+        externalOrderNumber: { contains: filter.rawQuery, mode: "insensitive" },
+      },
       { city: { contains: filter.rawQuery, mode: "insensitive" } },
     ];
   }
@@ -97,7 +109,10 @@ function buildOrderWhere(filter: StructuredFilter, shopId: string): Record<strin
   return where;
 }
 
-function buildDriverWhere(filter: StructuredFilter, shopId: string): Record<string, unknown> {
+function buildDriverWhere(
+  filter: StructuredFilter,
+  shopId: string,
+): Record<string, unknown> {
   const where: Record<string, unknown> = { shopId };
 
   if (filter.status) {
@@ -125,7 +140,9 @@ async function copilotRoutes(fastify: FastifyInstance): Promise<void> {
     async (request: FastifyRequest, reply: FastifyReply) => {
       const parsed = queryBodySchema.safeParse(request.body);
       if (!parsed.success) {
-        return reply.status(400).send({ error: "Invalid request", details: parsed.error.flatten() });
+        return reply
+          .status(400)
+          .send({ error: "Invalid request", details: parsed.error.flatten() });
       }
 
       const { query, entityType } = parsed.data;
@@ -140,25 +157,37 @@ async function copilotRoutes(fastify: FastifyInstance): Promise<void> {
       if (entityType === "delivery") {
         const where = buildDeliveryWhere(filters, shopId);
         [results, total] = await Promise.all([
-          tenantDb.shipment.findMany({ where, take: 50, orderBy: { createdAt: "desc" } }),
+          tenantDb.shipment.findMany({
+            where,
+            take: 50,
+            orderBy: { createdAt: "desc" },
+          }),
           tenantDb.shipment.count({ where }),
         ]);
       } else if (entityType === "order") {
         const where = buildOrderWhere(filters, shopId);
         [results, total] = await Promise.all([
-          tenantDb.order.findMany({ where, take: 50, orderBy: { createdAt: "desc" } }),
+          tenantDb.order.findMany({
+            where,
+            take: 50,
+            orderBy: { createdAt: "desc" },
+          }),
           tenantDb.order.count({ where }),
         ]);
       } else if (entityType === "driver") {
         const where = buildDriverWhere(filters, shopId);
         [results, total] = await Promise.all([
-          tenantDb.driver.findMany({ where, take: 50, orderBy: { name: "asc" } }),
+          tenantDb.driver.findMany({
+            where,
+            take: 50,
+            orderBy: { name: "asc" },
+          }),
           tenantDb.driver.count({ where }),
         ]);
       }
 
       return reply.send({ filters, results, total });
-    }
+    },
   );
 }
 

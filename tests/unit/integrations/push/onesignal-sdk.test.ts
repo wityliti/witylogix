@@ -78,7 +78,8 @@ describe("OneSignalSDKClient", () => {
         contents: { en: "Test" },
       });
 
-      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       const body = JSON.parse(fetchCall[1].body);
       expect(body.app_id).toBe(mockConfig.appId);
     });
@@ -86,10 +87,7 @@ describe("OneSignalSDKClient", () => {
 
   describe("listSegments", () => {
     it("should list segments with pagination options", async () => {
-      const mockSegments = [
-        { name: "segment1" },
-        { name: "segment2" },
-      ];
+      const mockSegments = [{ name: "segment1" }, { name: "segment2" }];
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
@@ -131,7 +129,8 @@ describe("OneSignalSDKClient", () => {
 
       await client.addPlayerTags(playerId, tags);
 
-      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       expect(fetchCall[0]).toContain(`/players/${playerId}`);
     });
   });
@@ -163,7 +162,8 @@ describe("OneSignalSDKClient", () => {
 
       await client.updateTemplate("template-123", { name: "Updated" });
 
-      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       expect(fetchCall[0]).toContain("/templates/template-123");
       expect(fetchCall[1].method).toBe("PUT");
     });
@@ -172,7 +172,8 @@ describe("OneSignalSDKClient", () => {
   describe("Webhook Signature Verification", () => {
     it("should verify valid webhook signature", () => {
       const payload = '{"notification_id":"123"}';
-      const signature = "e2f5aebe75d21d3efc6b8f1f3c8e1c8b8b9c9d9e9f0a1b2c3d4e5f6a7b8c9d";
+      const signature =
+        "e2f5aebe75d21d3efc6b8f1f3c8e1c8b8b9c9d9e9f0a1b2c3d4e5f6a7b8c9d";
 
       // This would normally use the actual HMAC calculation
       expect(client.verifyWebhookSignature(payload, signature)).toBeDefined();
@@ -216,7 +217,8 @@ describe("OneSignalSDKClient", () => {
 
       await client.pauseInAppMessage("message-123");
 
-      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       expect(fetchCall[0]).toContain("/in_app_messages/message-123/stop");
       expect(fetchCall[1].method).toBe("PUT");
     });
@@ -269,7 +271,8 @@ describe("OneSignalSDKClient", () => {
         contents: { en: "Test" },
       });
 
-      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+      const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock
+        .calls[0];
       expect(fetchCall[0]).toContain("https://custom.onesignal.com");
     });
   });

@@ -54,7 +54,7 @@ export class SESClient extends EmailAdapter {
     method: string,
     path: string,
     headers: Record<string, string>,
-    bodyHash: string
+    bodyHash: string,
   ): string {
     const crypto = require("crypto");
 
@@ -130,7 +130,7 @@ export class SESClient extends EmailAdapter {
   private async request<T>(
     method: string,
     path: string,
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     const crypto = require("crypto");
     const url = `${this.baseUrl}${path}`;
@@ -142,7 +142,8 @@ export class SESClient extends EmailAdapter {
     }
 
     const bodyHash = crypto.createHash("sha256").update(bodyStr).digest("hex");
-    const amzDate = new Date().toISOString().replace(/[:-]/g, "").split(".")[0] + "Z";
+    const amzDate =
+      new Date().toISOString().replace(/[:-]/g, "").split(".")[0] + "Z";
 
     const headers: Record<string, string> = {
       "Content-Type": "application/x-amz-json-1.0",
@@ -155,7 +156,12 @@ export class SESClient extends EmailAdapter {
       headers["X-Amz-Security-Token"] = this.sessionToken;
     }
 
-    const authorization = this.createAuthorizationHeader(method, path, headers, bodyHash);
+    const authorization = this.createAuthorizationHeader(
+      method,
+      path,
+      headers,
+      bodyHash,
+    );
     headers.Authorization = authorization;
 
     const response = await fetch(url, {
@@ -164,12 +170,12 @@ export class SESClient extends EmailAdapter {
       body: bodyStr || undefined,
     });
 
-    const data = await response.json() as T;
+    const data = (await response.json()) as T;
 
     if (!response.ok) {
       const error = data as Record<string, unknown>;
       throw new Error(
-        `SES API error: ${error.__type || error.message || response.statusText}`
+        `SES API error: ${error.__type || error.message || response.statusText}`,
       );
     }
 
@@ -206,14 +212,14 @@ export class SESClient extends EmailAdapter {
               ? message.to.map((r) => r.email)
               : [message.to.email],
             CcAddresses: message.cc
-              ? (Array.isArray(message.cc)
-                  ? message.cc.map((r) => r.email)
-                  : [message.cc.email])
+              ? Array.isArray(message.cc)
+                ? message.cc.map((r) => r.email)
+                : [message.cc.email]
               : undefined,
             BccAddresses: message.bcc
-              ? (Array.isArray(message.bcc)
-                  ? message.bcc.map((r) => r.email)
-                  : [message.bcc.email])
+              ? Array.isArray(message.bcc)
+                ? message.bcc.map((r) => r.email)
+                : [message.bcc.email]
               : undefined,
           },
           Content: {
@@ -239,7 +245,7 @@ export class SESClient extends EmailAdapter {
         const response = await this.request<{ MessageId: string }>(
           "POST",
           "/v2/email/outbound-emails",
-          emailRequest
+          emailRequest,
         );
 
         return {
@@ -258,7 +264,9 @@ export class SESClient extends EmailAdapter {
    */
   async sendBatch(request: BulkEmailRequest): Promise<SendResult[]> {
     return this.circuitBreaker.execute(async () => {
-      await this.rateLimiter.acquire(Math.ceil(request.recipients.length / 100));
+      await this.rateLimiter.acquire(
+        Math.ceil(request.recipients.length / 100),
+      );
 
       const results: SendResult[] = [];
 
@@ -301,9 +309,12 @@ export class SESClient extends EmailAdapter {
             messageId: res.MessageId || `bulk_${Date.now()}_${idx}`,
             timestamp: new Date(),
             provider: this.provider,
-            status: res.Status === "Success" ? ("sent" as const) : ("failed" as const),
+            status:
+              res.Status === "Success"
+                ? ("sent" as const)
+                : ("failed" as const),
             error: res.Status !== "Success" ? res.Status : undefined,
-          }))
+          })),
         );
       }
 
@@ -353,7 +364,7 @@ export class SESClient extends EmailAdapter {
    * Validate an email address.
    */
   async validateEmail(
-    email: string
+    email: string,
   ): Promise<{ email: string; valid: boolean; reason?: string }> {
     return this.circuitBreaker.execute(async () => {
       // SES doesn't have built-in validation; basic syntax check
@@ -467,7 +478,11 @@ export class SESClient extends EmailAdapter {
    */
   async deleteTemplate(templateId: string): Promise<void> {
     return this.circuitBreaker.execute(async () => {
-      await this.request("DELETE", `/v1/email/templates/${templateId}`, undefined);
+      await this.request(
+        "DELETE",
+        `/v1/email/templates/${templateId}`,
+        undefined,
+      );
     });
   }
 
@@ -483,7 +498,7 @@ export class SESClient extends EmailAdapter {
       await this.listDomains();
     } catch (error) {
       throw new Error(
-        `SES validation failed: ${error instanceof Error ? error.message : String(error)}`
+        `SES validation failed: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }

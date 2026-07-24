@@ -30,7 +30,7 @@ export {
   type TrackingInfo,
   type CarrierCredentials,
   ShippingError,
-} from './shipping-types';
+} from "./shipping-types";
 
 // ============================================================================
 // Carrier Rate Engine Exports
@@ -42,16 +42,13 @@ export {
   RateRanker,
   ParallelRateFetcher,
   type RateCacheConfig,
-} from './carrier-rate-engine';
+} from "./carrier-rate-engine";
 
 // ============================================================================
 // Label Generator Exports
 // ============================================================================
 
-export {
-  LabelGenerator,
-  type BatchLabelResult,
-} from './label-generator';
+export { LabelGenerator, type BatchLabelResult } from "./label-generator";
 
 // ============================================================================
 // Shipment Tracker Exports
@@ -63,4 +60,4 @@ export {
   UnifiedTracker,
   type ETAResult,
   type TrackingSubscription,
-} from './shipment-tracker';
+} from "./shipment-tracker";

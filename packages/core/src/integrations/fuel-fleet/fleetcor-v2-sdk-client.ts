@@ -37,7 +37,7 @@ export class FleetcorAPIError extends Error {
     public code: string,
     message: string,
     public details?: Record<string, unknown>,
-    public requestId?: string
+    public requestId?: string,
   ) {
     super(message);
     this.name = "FleetcorAPIError";
@@ -73,7 +73,9 @@ export class Fleetcorv2SDKClient {
       throw new Error("Fleetcor SDK requires apiKey");
     }
     if (!this.config.clientId || !this.config.clientSecret) {
-      throw new Error("Fleetcor SDK requires clientId and clientSecret for OAuth2");
+      throw new Error(
+        "Fleetcor SDK requires clientId and clientSecret for OAuth2",
+      );
     }
     if (!this.config.tokenUrl) {
       throw new Error("Fleetcor SDK requires tokenUrl");
@@ -110,7 +112,7 @@ export class Fleetcorv2SDKClient {
       if (!response.ok) {
         throw new FleetcorAPIError(
           "AUTH_FAILED",
-          `Authentication failed: ${response.statusText}`
+          `Authentication failed: ${response.statusText}`,
         );
       }
 
@@ -134,7 +136,7 @@ export class Fleetcorv2SDKClient {
       this.failureCount += 1;
       throw new FleetcorAPIError(
         "AUTH_ERROR",
-        `Authentication failed: ${error instanceof Error ? error.message : String(error)}`
+        `Authentication failed: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -145,13 +147,17 @@ export class Fleetcorv2SDKClient {
   private async apiRequest<T>(
     method: string,
     endpoint: string,
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     await this.checkRateLimit();
     const token = await this.authenticate();
     const url = new URL(endpoint, this.config.baseUrl).toString();
 
-    for (let attempt = 0; attempt < (this.config.retryConfig?.maxAttempts || 3); attempt++) {
+    for (
+      let attempt = 0;
+      attempt < (this.config.retryConfig?.maxAttempts || 3);
+      attempt++
+    ) {
       try {
         const response = (await nodeFetch(url, {
           method,
@@ -173,7 +179,7 @@ export class Fleetcorv2SDKClient {
             errorData.code || `HTTP_${response.status}`,
             errorData.message || response.statusText,
             errorData.details,
-            errorData.requestId
+            errorData.requestId,
           );
         }
 
@@ -185,15 +191,17 @@ export class Fleetcorv2SDKClient {
           this.failureCount += 1;
           throw error;
         }
-        const delay = (this.config.retryConfig?.delayMs || 1000) * Math.pow(
-          this.config.retryConfig?.backoffMultiplier || 2,
-          attempt
-        );
+        const delay =
+          (this.config.retryConfig?.delayMs || 1000) *
+          Math.pow(this.config.retryConfig?.backoffMultiplier || 2, attempt);
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
 
-    throw new FleetcorAPIError("RETRY_EXHAUSTED", "All retry attempts exhausted");
+    throw new FleetcorAPIError(
+      "RETRY_EXHAUSTED",
+      "All retry attempts exhausted",
+    );
   }
 
   /**
@@ -212,7 +220,9 @@ export class Fleetcorv2SDKClient {
     const maxRequests = 600;
     if (this.requestCount >= maxRequests) {
       const retryAfter = Math.ceil((windowMs - elapsed) / 1000);
-      throw new Error(`Rate limit exceeded (600/min). Retry after ${retryAfter}s`);
+      throw new Error(
+        `Rate limit exceeded (600/min). Retry after ${retryAfter}s`,
+      );
     }
 
     this.requestCount += 1;
@@ -238,7 +248,9 @@ export class Fleetcorv2SDKClient {
   /**
    * Issue universal card (Fuelman, Fleet One, Comdata network)
    */
-  async issueUniversalCard(request: CardIssuanceRequest): Promise<{ cardId: string; cardNumber: string; networks: string[] }> {
+  async issueUniversalCard(
+    request: CardIssuanceRequest,
+  ): Promise<{ cardId: string; cardNumber: string; networks: string[] }> {
     return this.apiRequest("POST", "/api/v2/cards/universal/issue", {
       cardholderName: request.cardholderName,
       driverId: request.driverId,
@@ -256,8 +268,13 @@ export class Fleetcorv2SDKClient {
   /**
    * Activate universal card
    */
-  async activateUniversalCard(cardId: string): Promise<{ status: string; activatedAt: Date; networks: string[] }> {
-    return this.apiRequest("POST", `/api/v2/cards/universal/${cardId}/activate`);
+  async activateUniversalCard(
+    cardId: string,
+  ): Promise<{ status: string; activatedAt: Date; networks: string[] }> {
+    return this.apiRequest(
+      "POST",
+      `/api/v2/cards/universal/${cardId}/activate`,
+    );
   }
 
   /**
@@ -266,7 +283,7 @@ export class Fleetcorv2SDKClient {
   async suspendCard(
     cardId: string,
     reason?: string,
-    temporaryOverride?: { durationMinutes: number; limitAmount: number }
+    temporaryOverride?: { durationMinutes: number; limitAmount: number },
   ): Promise<{ status: string; suspendedAt: Date }> {
     return this.apiRequest("POST", `/api/v2/cards/${cardId}/suspend`, {
       reason,
@@ -277,8 +294,13 @@ export class Fleetcorv2SDKClient {
   /**
    * Terminate card
    */
-  async terminateCard(cardId: string, reason?: string): Promise<{ status: string; terminatedAt: Date }> {
-    return this.apiRequest("POST", `/api/v2/cards/${cardId}/terminate`, { reason });
+  async terminateCard(
+    cardId: string,
+    reason?: string,
+  ): Promise<{ status: string; terminatedAt: Date }> {
+    return this.apiRequest("POST", `/api/v2/cards/${cardId}/terminate`, {
+      reason,
+    });
   }
 
   /**
@@ -286,20 +308,23 @@ export class Fleetcorv2SDKClient {
    */
   async getRealTimeTransactions(
     limit?: number,
-    offset?: number
+    offset?: number,
   ): Promise<PaginatedResponse<RealTimeTransaction>> {
     const params = new URLSearchParams();
     if (limit) params.append("limit", String(limit));
     if (offset) params.append("offset", String(offset));
 
-    return this.apiRequest("GET", `/api/v2/transactions/realtime?${params.toString()}`);
+    return this.apiRequest(
+      "GET",
+      `/api/v2/transactions/realtime?${params.toString()}`,
+    );
   }
 
   /**
    * Query transactions in batch
    */
   async getTransactionsBatch(
-    criteria: TransactionSearchCriteria
+    criteria: TransactionSearchCriteria,
   ): Promise<PaginatedResponse<TransactionDetail>> {
     const params = new URLSearchParams();
     params.append("startDate", criteria.startDate.toISOString());
@@ -311,16 +336,22 @@ export class Fleetcorv2SDKClient {
     if (criteria.limit) params.append("limit", String(criteria.limit));
     if (criteria.offset) params.append("offset", String(criteria.offset));
 
-    return this.apiRequest("GET", `/api/v2/transactions/batch?${params.toString()}`);
+    return this.apiRequest(
+      "GET",
+      `/api/v2/transactions/batch?${params.toString()}`,
+    );
   }
 
   /**
    * Get transaction with Level 3 data and exception flagging
    */
   async getTransactionDetails(
-    transactionId: string
+    transactionId: string,
   ): Promise<TransactionDetail & { exceptionFlags: string[] }> {
-    return this.apiRequest("GET", `/api/v2/transactions/${transactionId}/details`);
+    return this.apiRequest(
+      "GET",
+      `/api/v2/transactions/${transactionId}/details`,
+    );
   }
 
   /**
@@ -329,16 +360,24 @@ export class Fleetcorv2SDKClient {
   async getVehicleMPGTracking(
     vehicleId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<{
     vehicleId: string;
     averageMPG: number;
     totalMiles: number;
     totalGallons: number;
-    mileageHistory: Array<{ date: Date; mileage: number; fuelPurchased: number; mpg: number }>;
+    mileageHistory: Array<{
+      date: Date;
+      mileage: number;
+      fuelPurchased: number;
+      mpg: number;
+    }>;
   }> {
     const params = `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`;
-    return this.apiRequest("GET", `/api/v2/analytics/vehicle/${vehicleId}/mpg${params}`);
+    return this.apiRequest(
+      "GET",
+      `/api/v2/analytics/vehicle/${vehicleId}/mpg${params}`,
+    );
   }
 
   /**
@@ -347,7 +386,7 @@ export class Fleetcorv2SDKClient {
   async estimateIdleFuelWaste(
     vehicleId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<{
     vehicleId: string;
     estimatedWastedGallons: number;
@@ -356,7 +395,10 @@ export class Fleetcorv2SDKClient {
     recommendations: string[];
   }> {
     const params = `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`;
-    return this.apiRequest("GET", `/api/v2/analytics/vehicle/${vehicleId}/idle-waste${params}`);
+    return this.apiRequest(
+      "GET",
+      `/api/v2/analytics/vehicle/${vehicleId}/idle-waste${params}`,
+    );
   }
 
   /**
@@ -365,7 +407,7 @@ export class Fleetcorv2SDKClient {
   async getFuelingEfficiencyScore(
     vehicleId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<{
     vehicleId: string;
     efficiencyScore: number;
@@ -374,7 +416,10 @@ export class Fleetcorv2SDKClient {
     recommendations: string[];
   }> {
     const params = `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`;
-    return this.apiRequest("GET", `/api/v2/analytics/vehicle/${vehicleId}/efficiency-score${params}`);
+    return this.apiRequest(
+      "GET",
+      `/api/v2/analytics/vehicle/${vehicleId}/efficiency-score${params}`,
+    );
   }
 
   /**
@@ -383,7 +428,7 @@ export class Fleetcorv2SDKClient {
   async findAuthorizedServiceLocations(
     latitude: number,
     longitude: number,
-    radiusKm: number = 50
+    radiusKm: number = 50,
   ): Promise<
     Array<{
       locationId: string;
@@ -405,7 +450,7 @@ export class Fleetcorv2SDKClient {
   async requestPreAuthorization(
     locationId: string,
     estimatedAmount: number,
-    serviceDescription?: string
+    serviceDescription?: string,
   ): Promise<{
     authorizationId: string;
     status: string;
@@ -425,7 +470,7 @@ export class Fleetcorv2SDKClient {
   async submitPOApproval(
     locationId: string,
     poNumber: string,
-    amount: number
+    amount: number,
   ): Promise<{ approvalId: string; status: string; poNumber: string }> {
     return this.apiRequest("POST", "/api/v2/maintenance/po-approval", {
       locationId,
@@ -438,7 +483,12 @@ export class Fleetcorv2SDKClient {
    * Get customizable SmartHub dashboards
    */
   async getSmartHubDashboards(): Promise<
-    Array<{ dashboardId: string; name: string; type: string; widgets: Array<{ id: string; type: string }> }>
+    Array<{
+      dashboardId: string;
+      name: string;
+      type: string;
+      widgets: Array<{ id: string; type: string }>;
+    }>
   > {
     return this.apiRequest("GET", "/api/v2/reporting/smarthub/dashboards");
   }
@@ -451,9 +501,18 @@ export class Fleetcorv2SDKClient {
     frequency: "daily" | "weekly" | "monthly";
     deliveryMethod: "email" | "sftp";
     deliveryEmail?: string;
-    sftpConfig?: { host: string; username: string; password: string; path: string };
+    sftpConfig?: {
+      host: string;
+      username: string;
+      password: string;
+      path: string;
+    };
   }): Promise<{ scheduleId: string; nextDeliveryDate: Date }> {
-    return this.apiRequest("POST", "/api/v2/reporting/schedule-delivery", params);
+    return this.apiRequest(
+      "POST",
+      "/api/v2/reporting/schedule-delivery",
+      params,
+    );
   }
 
   /**
@@ -472,11 +531,15 @@ export class Fleetcorv2SDKClient {
    */
   async enableStateExemption(
     cardId: string,
-    states: string[]
+    states: string[],
   ): Promise<{ cardId: string; exemptionStates: string[] }> {
-    return this.apiRequest("POST", `/api/v2/tax-exemption/card/${cardId}/enable`, {
-      states,
-    });
+    return this.apiRequest(
+      "POST",
+      `/api/v2/tax-exemption/card/${cardId}/enable`,
+      {
+        states,
+      },
+    );
   }
 
   /**
@@ -484,11 +547,19 @@ export class Fleetcorv2SDKClient {
    */
   async processFuelPurchaseWithExemption(
     transactionId: string,
-    exemptionState: string
-  ): Promise<{ transactionId: string; taxExemptionApplied: boolean; savingsAmount: number }> {
-    return this.apiRequest("POST", `/api/v2/transactions/${transactionId}/apply-exemption`, {
-      exemptionState,
-    });
+    exemptionState: string,
+  ): Promise<{
+    transactionId: string;
+    taxExemptionApplied: boolean;
+    savingsAmount: number;
+  }> {
+    return this.apiRequest(
+      "POST",
+      `/api/v2/transactions/${transactionId}/apply-exemption`,
+      {
+        exemptionState,
+      },
+    );
   }
 
   /**
@@ -496,7 +567,7 @@ export class Fleetcorv2SDKClient {
    */
   async subscribeWebhook(
     webhookUrl: string,
-    eventTypes: WebhookEventType[]
+    eventTypes: WebhookEventType[],
   ): Promise<{ webhookId: string; url: string; events: WebhookEventType[] }> {
     return this.apiRequest("POST", "/api/v2/webhooks/subscribe", {
       url: webhookUrl,
@@ -535,7 +606,12 @@ export class Fleetcorv2SDKClient {
     const uptime = now.getTime() - this.lastHealthCheck.getTime();
 
     return {
-      status: this.failureCount === 0 ? "healthy" : this.failureCount < 5 ? "degraded" : "unhealthy",
+      status:
+        this.failureCount === 0
+          ? "healthy"
+          : this.failureCount < 5
+            ? "degraded"
+            : "unhealthy",
       provider: "fleetcor_v2" as SDKProvider,
       lastChecked: now,
       circuitBreaker: {
@@ -555,14 +631,18 @@ export class Fleetcorv2SDKClient {
   /**
    * Generate custom report
    */
-  async generateReport(params: ReportingParams): Promise<{ reportId: string; status: string; downloadUrl?: string }> {
+  async generateReport(
+    params: ReportingParams,
+  ): Promise<{ reportId: string; status: string; downloadUrl?: string }> {
     return this.apiRequest("POST", "/api/v2/reporting/generate", params);
   }
 
   /**
    * Get report status
    */
-  async getReportStatus(reportId: string): Promise<{ reportId: string; status: string; downloadUrl?: string }> {
+  async getReportStatus(
+    reportId: string,
+  ): Promise<{ reportId: string; status: string; downloadUrl?: string }> {
     return this.apiRequest("GET", `/api/v2/reporting/${reportId}`);
   }
 }

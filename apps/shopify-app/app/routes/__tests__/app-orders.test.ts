@@ -171,7 +171,7 @@ const mockOrdersPageData: OrdersPageData = {
 };
 
 const mockRequest = (
-  url: string = "http://localhost:3000/orders?page=1&limit=20"
+  url: string = "http://localhost:3000/orders?page=1&limit=20",
 ) => ({
   url,
   method: "GET",
@@ -262,7 +262,7 @@ describe("Orders List Route", () => {
 
       expect(mockApiClient.get).toHaveBeenCalledWith(
         "/api/v4/orders",
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -295,7 +295,7 @@ describe("Orders List Route", () => {
       (createApiClient as any).mockReturnValue(mockApiClient);
 
       const deliveredOrders = mockOrders.filter(
-        (o) => o.status === "DELIVERED"
+        (o) => o.status === "DELIVERED",
       );
 
       mockApiClient.get.mockResolvedValueOnce({
@@ -308,15 +308,13 @@ describe("Orders List Route", () => {
       });
 
       expect(result.data.every((o: Order) => o.status === "DELIVERED")).toBe(
-        true
+        true,
       );
     });
 
     it("should filter orders by multiple statuses", () => {
       const statuses = ["DELIVERED", "OUT_FOR_DELIVERY"];
-      const filtered = mockOrders.filter((o) =>
-        statuses.includes(o.status)
-      );
+      const filtered = mockOrders.filter((o) => statuses.includes(o.status));
 
       expect(filtered).toHaveLength(2);
     });
@@ -375,7 +373,7 @@ describe("Orders List Route", () => {
       const dateTo = new Date("2024-03-09").toISOString();
 
       const filtered = mockOrders.filter(
-        (o) => o.createdAt >= dateFrom && o.createdAt <= dateTo
+        (o) => o.createdAt >= dateFrom && o.createdAt <= dateTo,
       );
 
       expect(filtered.length).toBeGreaterThan(0);
@@ -452,7 +450,7 @@ describe("Orders List Route", () => {
       (createApiClient as any).mockReturnValue(mockApiClient);
 
       const searchedOrders = mockOrders.filter((o) =>
-        o.shopifyOrderNumber?.includes("1001")
+        o.shopifyOrderNumber?.includes("1001"),
       );
 
       mockApiClient.get.mockResolvedValueOnce({
@@ -470,7 +468,7 @@ describe("Orders List Route", () => {
 
     it("should search orders by customer name", () => {
       const searched = mockOrders.filter((o) =>
-        o.customerName?.toLowerCase().includes("john")
+        o.customerName?.toLowerCase().includes("john"),
       );
 
       expect(searched).toHaveLength(1);
@@ -479,7 +477,7 @@ describe("Orders List Route", () => {
 
     it("should search orders by customer email", () => {
       const searched = mockOrders.filter((o) =>
-        o.customerEmail?.includes("jane@")
+        o.customerEmail?.includes("jane@"),
       );
 
       expect(searched).toHaveLength(1);
@@ -488,7 +486,7 @@ describe("Orders List Route", () => {
 
     it("should search orders by address", () => {
       const searched = mockOrders.filter((o) =>
-        o.addressLine1?.includes("Main")
+        o.addressLine1?.includes("Main"),
       );
 
       expect(searched).toHaveLength(1);
@@ -497,7 +495,7 @@ describe("Orders List Route", () => {
 
     it("should search orders by city", () => {
       const searched = mockOrders.filter((o) =>
-        o.city?.toLowerCase().includes("boston")
+        o.city?.toLowerCase().includes("boston"),
       );
 
       expect(searched).toHaveLength(1);
@@ -506,7 +504,7 @@ describe("Orders List Route", () => {
 
     it("should handle case-insensitive search", () => {
       const searched = mockOrders.filter((o) =>
-        o.customerName?.toLowerCase().includes("john")
+        o.customerName?.toLowerCase().includes("john"),
       );
 
       expect(searched).toHaveLength(1);
@@ -514,7 +512,7 @@ describe("Orders List Route", () => {
 
     it("should return empty results for no matches", () => {
       const searched = mockOrders.filter((o) =>
-        o.customerName?.includes("NonExistent")
+        o.customerName?.includes("NonExistent"),
       );
 
       expect(searched).toHaveLength(0);
@@ -541,7 +539,7 @@ describe("Orders List Route", () => {
 
       expect(mockApiClient.get).toHaveBeenCalledWith(
         "/api/v4/orders",
-        expect.objectContaining({ page: 2 })
+        expect.objectContaining({ page: 2 }),
       );
     });
 
@@ -564,12 +562,14 @@ describe("Orders List Route", () => {
 
       expect(mockApiClient.get).toHaveBeenCalledWith(
         "/api/v4/orders",
-        expect.objectContaining({ limit: 50 })
+        expect.objectContaining({ limit: 50 }),
       );
     });
 
     it("should calculate total pages", () => {
-      const totalPages = Math.ceil(mockOrdersPageData.meta.total / mockOrdersPageData.meta.limit);
+      const totalPages = Math.ceil(
+        mockOrdersPageData.meta.total / mockOrdersPageData.meta.limit,
+      );
 
       expect(totalPages).toBe(8);
       expect(mockOrdersPageData.meta.totalPages).toBe(8);
@@ -612,7 +612,7 @@ describe("Orders List Route", () => {
 
       expect(mockApiClient.get).toHaveBeenCalledWith(
         "/api/v4/orders",
-        expect.objectContaining({ page: 1 })
+        expect.objectContaining({ page: 1 }),
       );
     });
   });
@@ -689,7 +689,7 @@ describe("Orders List Route", () => {
 
     it("should include OUT_FOR_DELIVERY status", () => {
       const outForDelivery = mockOrders.filter(
-        (o) => o.status === "OUT_FOR_DELIVERY"
+        (o) => o.status === "OUT_FOR_DELIVERY",
       );
 
       expect(outForDelivery.length).toBeGreaterThan(0);
@@ -731,24 +731,20 @@ describe("Orders List Route", () => {
     });
 
     it("should support bulk status update", () => {
-      const selectedOrders = mockOrders.filter(
-        (o) => o.status === "PENDING"
-      );
+      const selectedOrders = mockOrders.filter((o) => o.status === "PENDING");
 
       expect(selectedOrders.length).toBeGreaterThan(0);
     });
 
     it("should support bulk label printing", () => {
-      const printable = mockOrders.filter(
-        (o) => o.status !== "CANCELLED"
-      );
+      const printable = mockOrders.filter((o) => o.status !== "CANCELLED");
 
       expect(printable.length).toBeGreaterThan(0);
     });
 
     it("should support bulk cancellation", () => {
       const cancellable = mockOrders.filter(
-        (o) => !["DELIVERED", "FAILED", "CANCELLED"].includes(o.status)
+        (o) => !["DELIVERED", "FAILED", "CANCELLED"].includes(o.status),
       );
 
       expect(cancellable.length).toBeGreaterThan(0);
@@ -855,7 +851,7 @@ describe("Orders List Route", () => {
 
     it("should validate session before loading", async () => {
       (authenticate.admin as any).mockRejectedValueOnce(
-        new Error("Invalid session")
+        new Error("Invalid session"),
       );
 
       try {

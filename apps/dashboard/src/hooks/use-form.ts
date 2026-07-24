@@ -135,21 +135,24 @@ export function useForm<T extends Record<string, unknown>>({
 
       return newErrors;
     },
-    [validationSchema, asyncValidate]
+    [validationSchema, asyncValidate],
   );
 
   /**
    * Validates a single field
    */
   const validateField = useCallback(
-    async (fieldName: string, fieldValue: unknown): Promise<string | undefined> => {
+    async (
+      fieldName: string,
+      fieldValue: unknown,
+    ): Promise<string | undefined> => {
       if (!validationSchema) return undefined;
 
       const testValues = { ...values, [fieldName]: fieldValue };
       const schemaErrors = validationSchema(testValues as T);
       return schemaErrors?.[fieldName];
     },
-    [values, validationSchema]
+    [values, validationSchema],
   );
 
   /**
@@ -179,7 +182,7 @@ export function useForm<T extends Record<string, unknown>>({
         }, 300);
       }
     },
-    [validationMode, validateField]
+    [validationMode, validateField],
   );
 
   /**
@@ -203,7 +206,7 @@ export function useForm<T extends Record<string, unknown>>({
         });
       }
     },
-    [validationMode, values, validateField]
+    [validationMode, values, validateField],
   );
 
   /**
@@ -221,7 +224,7 @@ export function useForm<T extends Record<string, unknown>>({
         isDirty: isDirty[fieldNameStr] ?? false,
       };
     },
-    [values, errors, touched, isDirty, handleFieldChange, handleFieldBlur]
+    [values, errors, touched, isDirty, handleFieldChange, handleFieldBlur],
   );
 
   /**
@@ -242,7 +245,7 @@ export function useForm<T extends Record<string, unknown>>({
     <K extends keyof T>(fieldName: K, value: T[K]) => {
       handleFieldChange(String(fieldName), value);
     },
-    [handleFieldChange]
+    [handleFieldChange],
   );
 
   /**
@@ -255,9 +258,12 @@ export function useForm<T extends Record<string, unknown>>({
   /**
    * Sets a field touched state
    */
-  const setFieldTouched = useCallback((fieldName: string, isTouched: boolean) => {
-    setTouched((prev) => ({ ...prev, [fieldName]: isTouched }));
-  }, []);
+  const setFieldTouched = useCallback(
+    (fieldName: string, isTouched: boolean) => {
+      setTouched((prev) => ({ ...prev, [fieldName]: isTouched }));
+    },
+    [],
+  );
 
   /**
    * Handles form submission
@@ -282,7 +288,7 @@ export function useForm<T extends Record<string, unknown>>({
         setIsSubmitting(false);
       }
     },
-    [values, validateForm, onSubmit]
+    [values, validateForm, onSubmit],
   );
 
   /**

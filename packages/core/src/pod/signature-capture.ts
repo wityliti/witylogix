@@ -8,8 +8,8 @@
  * - Support for canvas touch/mouse strokes
  */
 
-import sharp from 'sharp';
-import type { SignaturePOD, SignatureValidationResult } from './types.js';
+import sharp from "sharp";
+import type { SignaturePOD, SignatureValidationResult } from "./types.js";
 
 // ─── CONSTANTS ──────────────────────────────────────────────────
 
@@ -34,21 +34,21 @@ export class SignatureCaptureService {
   async processSignature(
     signatureData: any,
     signerName: string,
-    deliveryId: string
+    deliveryId: string,
   ): Promise<SignaturePOD> {
     // Validate inputs
     if (!signerName || signerName.trim().length === 0) {
-      throw new Error('Signer name is required');
+      throw new Error("Signer name is required");
     }
 
     if (!signatureData) {
-      throw new Error('Signature data is required');
+      throw new Error("Signature data is required");
     }
 
     // Validate signature
     const validation = this.validateSignature(signatureData);
     if (!validation.valid) {
-      throw new Error(`Invalid signature: ${validation.issues.join(', ')}`);
+      throw new Error(`Invalid signature: ${validation.issues.join(", ")}`);
     }
 
     // Store signature data (as SVG path or JSON)
@@ -58,12 +58,12 @@ export class SignatureCaptureService {
     const podRecord: SignaturePOD = {
       id: `pod-sig-${deliveryId}-${Date.now()}`,
       deliveryId,
-      method: 'signature',
+      method: "signature",
       signerName: signerName.trim(),
       signatureDataUrl,
       signatureKey: `deliveries/${deliveryId}/signatures/${Date.now()}.png`,
       signedAt: new Date(),
-      status: 'pending',
+      status: "pending",
     };
 
     return podRecord;
@@ -85,20 +85,20 @@ export class SignatureCaptureService {
       strokeColor?: string;
       strokeWidth?: number;
       backgroundColor?: string;
-    } = {}
+    } = {},
   ): Promise<Buffer> {
     const width = options.width || SIGNATURE_PAD_WIDTH;
     const height = options.height || SIGNATURE_PAD_HEIGHT;
-    const strokeColor = options.strokeColor || '#000000';
+    const strokeColor = options.strokeColor || "#000000";
     const strokeWidth = options.strokeWidth || 2;
-    const backgroundColor = options.backgroundColor || '#FFFFFF';
+    const backgroundColor = options.backgroundColor || "#FFFFFF";
 
     try {
       // Normalize signature data to SVG path
       const svgPath = this.normalizeToSVGPath(signatureData);
 
       if (!svgPath) {
-        throw new Error('Unable to convert signature data to SVG path');
+        throw new Error("Unable to convert signature data to SVG path");
       }
 
       // Create SVG with signature
@@ -117,14 +117,12 @@ export class SignatureCaptureService {
       `.trim();
 
       // Convert SVG to PNG using sharp
-      const pngBuffer = await sharp(Buffer.from(svg))
-        .png()
-        .toBuffer();
+      const pngBuffer = await sharp(Buffer.from(svg)).png().toBuffer();
 
       return pngBuffer;
     } catch (error) {
       throw new Error(
-        `Failed to render signature: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to render signature: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -141,7 +139,7 @@ export class SignatureCaptureService {
     const issues: string[] = [];
 
     if (!signatureData) {
-      issues.push('Signature data is empty');
+      issues.push("Signature data is empty");
       return { valid: false, issues };
     }
 
@@ -149,9 +147,9 @@ export class SignatureCaptureService {
     let hasStroke = false;
 
     // Handle SVG path string
-    if (typeof signatureData === 'string') {
+    if (typeof signatureData === "string") {
       if (!signatureData.trim().length) {
-        issues.push('SVG path is empty');
+        issues.push("SVG path is empty");
       } else {
         // Count approximate points from path
         pointCount = (signatureData.match(/[ML]/g) || []).length;
@@ -165,14 +163,14 @@ export class SignatureCaptureService {
 
       if (pointCount < MIN_STROKE_POINTS) {
         issues.push(
-          `Signature has too few points (${pointCount}). Minimum: ${MIN_STROKE_POINTS}`
+          `Signature has too few points (${pointCount}). Minimum: ${MIN_STROKE_POINTS}`,
         );
       }
 
       // Validate point structure
       for (let i = 0; i < Math.min(pointCount, 5); i++) {
         const point = signatureData[i];
-        if (typeof point !== 'object' || !('x' in point) || !('y' in point)) {
+        if (typeof point !== "object" || !("x" in point) || !("y" in point)) {
           issues.push(`Invalid point structure at index ${i}`);
           break;
         }
@@ -184,22 +182,22 @@ export class SignatureCaptureService {
       hasStroke = pointCount > 0;
 
       if (!hasStroke) {
-        issues.push('ImageData is empty');
+        issues.push("ImageData is empty");
       }
     }
     // Handle object with points/path
-    else if (typeof signatureData === 'object') {
+    else if (typeof signatureData === "object") {
       if (signatureData.points && Array.isArray(signatureData.points)) {
         pointCount = signatureData.points.length;
         if (pointCount < MIN_STROKE_POINTS) {
           issues.push(
-            `Signature has too few points (${pointCount}). Minimum: ${MIN_STROKE_POINTS}`
+            `Signature has too few points (${pointCount}). Minimum: ${MIN_STROKE_POINTS}`,
           );
         }
-      } else if (signatureData.path && typeof signatureData.path === 'string') {
+      } else if (signatureData.path && typeof signatureData.path === "string") {
         pointCount = (signatureData.path.match(/[ML]/g) || []).length;
       } else {
-        issues.push('Signature object missing points or path property');
+        issues.push("Signature object missing points or path property");
       }
     } else {
       issues.push(`Unknown signature data format: ${typeof signatureData}`);
@@ -221,19 +219,19 @@ export class SignatureCaptureService {
    * Converts various formats to JSON for consistent storage
    */
   private serializeSignatureData(data: any): string {
-    if (typeof data === 'string') {
-      return JSON.stringify({ type: 'svg_path', path: data });
+    if (typeof data === "string") {
+      return JSON.stringify({ type: "svg_path", path: data });
     }
 
     if (Array.isArray(data)) {
-      return JSON.stringify({ type: 'points', points: data });
+      return JSON.stringify({ type: "points", points: data });
     }
 
-    if (typeof data === 'object' && data !== null) {
-      return JSON.stringify({ type: data.type || 'object', ...data });
+    if (typeof data === "object" && data !== null) {
+      return JSON.stringify({ type: data.type || "object", ...data });
     }
 
-    return JSON.stringify({ type: 'unknown', data });
+    return JSON.stringify({ type: "unknown", data });
   }
 
   /**
@@ -244,7 +242,7 @@ export class SignatureCaptureService {
   private normalizeToSVGPath(data: any): string | null {
     try {
       // Already an SVG path
-      if (typeof data === 'string') {
+      if (typeof data === "string") {
         return data;
       }
 
@@ -259,7 +257,7 @@ export class SignatureCaptureService {
       }
 
       // Object with path string
-      if (data && data.path && typeof data.path === 'string') {
+      if (data && data.path && typeof data.path === "string") {
         return data.path;
       }
 
@@ -276,9 +274,11 @@ export class SignatureCaptureService {
    * - First point: M (move to)
    * - Subsequent points: L (line to) with optional cubic bezier
    */
-  private pointsToSVGPath(points: Array<{ x: number; y: number; t?: number }>): string {
+  private pointsToSVGPath(
+    points: Array<{ x: number; y: number; t?: number }>,
+  ): string {
     if (!points || points.length === 0) {
-      return '';
+      return "";
     }
 
     const path: string[] = [];
@@ -294,7 +294,7 @@ export class SignatureCaptureService {
       }
     });
 
-    return path.join(' ');
+    return path.join(" ");
   }
 }
 

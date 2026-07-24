@@ -56,10 +56,12 @@ const ADAPTER_REGISTRY: Map<PlatformSource, AdapterConstructor> = new Map();
  */
 export function registerAdapter(
   source: PlatformSource,
-  constructor: AdapterConstructor
+  constructor: AdapterConstructor,
 ): void {
   if (ADAPTER_REGISTRY.has(source)) {
-    console.warn(`[Platforms] Adapter for ${source} already registered, overwriting`);
+    console.warn(
+      `[Platforms] Adapter for ${source} already registered, overwriting`,
+    );
   }
 
   ADAPTER_REGISTRY.set(source, constructor);
@@ -102,11 +104,13 @@ const ADAPTER_CACHE: Map<PlatformSource, PlatformAdapter> = new Map();
  * const { products, nextCursor } = await adapter.fetchProducts(credentials);
  * ```
  */
-export async function getPlatformAdapter(source: PlatformSource): Promise<PlatformAdapter> {
+export async function getPlatformAdapter(
+  source: PlatformSource,
+): Promise<PlatformAdapter> {
   // Validate platform source
   if (!isPlatformSource(source)) {
     throw new Error(
-      `Invalid platform source: ${source}. Must be one of: ${Object.values(PlatformSource).join(", ")}`
+      `Invalid platform source: ${source}. Must be one of: ${Object.values(PlatformSource).join(", ")}`,
     );
   }
 
@@ -120,7 +124,7 @@ export async function getPlatformAdapter(source: PlatformSource): Promise<Platfo
   if (!constructor) {
     throw new Error(
       `No adapter registered for platform: ${source}. ` +
-      `Supported platforms: ${Array.from(ADAPTER_REGISTRY.keys()).join(", ")}`
+        `Supported platforms: ${Array.from(ADAPTER_REGISTRY.keys()).join(", ")}`,
     );
   }
 
@@ -130,7 +134,7 @@ export async function getPlatformAdapter(source: PlatformSource): Promise<Platfo
   // Validate adapter has correct source
   if (adapter.source !== source) {
     throw new Error(
-      `Adapter source mismatch: expected ${source}, got ${adapter.source}`
+      `Adapter source mismatch: expected ${source}, got ${adapter.source}`,
     );
   }
 
@@ -234,44 +238,32 @@ export async function initializePlatforms(): Promise<void> {
   // These are lazy-loaded to avoid circular dependencies
 
   // Shopify adapter
-  registerAdapter(
-    PlatformSource.SHOPIFY,
-    async () => {
-      const { ShopifyAdapter } = await import("./adapters/shopify");
-      return new ShopifyAdapter();
-    }
-  );
+  registerAdapter(PlatformSource.SHOPIFY, async () => {
+    const { ShopifyAdapter } = await import("./adapters/shopify");
+    return new ShopifyAdapter();
+  });
 
   // WooCommerce adapter
-  registerAdapter(
-    PlatformSource.WOOCOMMERCE,
-    async () => {
-      const { WooCommerceAdapter } = await import("./adapters/woocommerce");
-      return new WooCommerceAdapter();
-    }
-  );
+  registerAdapter(PlatformSource.WOOCOMMERCE, async () => {
+    const { WooCommerceAdapter } = await import("./adapters/woocommerce");
+    return new WooCommerceAdapter();
+  });
 
   // Magento adapter (placeholder, to be implemented)
-  registerAdapter(
-    PlatformSource.MAGENTO,
-    async () => {
-      const { MagentoAdapter } = await import("./adapters/magento");
-      return new MagentoAdapter();
-    }
-  );
+  registerAdapter(PlatformSource.MAGENTO, async () => {
+    const { MagentoAdapter } = await import("./adapters/magento");
+    return new MagentoAdapter();
+  });
 
   // Custom adapter (placeholder, to be implemented)
-  registerAdapter(
-    PlatformSource.CUSTOM,
-    async () => {
-      const { CustomAdapter } = await import("./adapters/custom");
-      return new CustomAdapter();
-    }
-  );
+  registerAdapter(PlatformSource.CUSTOM, async () => {
+    const { CustomAdapter } = await import("./adapters/custom");
+    return new CustomAdapter();
+  });
 
   console.log(
     `[Platforms] Initialized ${ADAPTER_REGISTRY.size} platform adapters: ` +
-    `${Array.from(ADAPTER_REGISTRY.keys()).join(", ")}`
+      `${Array.from(ADAPTER_REGISTRY.keys()).join(", ")}`,
   );
 }
 
@@ -322,7 +314,7 @@ export function getAdapterMetadata(source: PlatformSource): AdapterMetadata {
  */
 export function getAllAdapterMetadata(): AdapterMetadata[] {
   return Array.from(ADAPTER_REGISTRY.keys()).map((source) =>
-    getAdapterMetadata(source)
+    getAdapterMetadata(source),
   );
 }
 

@@ -6,17 +6,17 @@
 /**
  * Supported email providers
  */
-export type EmailProviderType = 'sendgrid' | 'smtp' | 'console';
+export type EmailProviderType = "sendgrid" | "smtp" | "console";
 
 /**
  * Email status enumeration
  */
 export enum EmailStatus {
-  PENDING = 'pending',
-  SENT = 'sent',
-  DELIVERED = 'delivered',
-  BOUNCED = 'bounced',
-  FAILED = 'failed',
+  PENDING = "pending",
+  SENT = "sent",
+  DELIVERED = "delivered",
+  BOUNCED = "bounced",
+  FAILED = "failed",
 }
 
 /**

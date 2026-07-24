@@ -14,7 +14,7 @@ import {
   TrackingEvent,
   ShipmentAddress,
   ShippingError,
-} from './shipping-types';
+} from "./shipping-types";
 
 // ============================================================================
 // Types
@@ -88,80 +88,307 @@ export class StatusMapper {
   /**
    * Status mappings by carrier
    */
-  private static readonly STATUS_MAPPINGS: Record<CarrierCode, StatusMapping[]> = {
+  private static readonly STATUS_MAPPINGS: Record<
+    CarrierCode,
+    StatusMapping[]
+  > = {
     [CarrierCode.EASYPOST]: [
-      { carrierStatus: 'unknown', mappedStatus: ShipmentStatus.PENDING, description: 'Unknown status' },
-      { carrierStatus: 'label_created', mappedStatus: ShipmentStatus.LABEL_CREATED, description: 'Label created' },
-      { carrierStatus: 'picked_up', mappedStatus: ShipmentStatus.PICKED_UP, description: 'Package picked up' },
-      { carrierStatus: 'in_transit', mappedStatus: ShipmentStatus.IN_TRANSIT, description: 'In transit' },
-      { carrierStatus: 'out_for_delivery', mappedStatus: ShipmentStatus.OUT_FOR_DELIVERY, description: 'Out for delivery' },
-      { carrierStatus: 'delivered', mappedStatus: ShipmentStatus.DELIVERED, description: 'Delivered' },
-      { carrierStatus: 'return_to_sender', mappedStatus: ShipmentStatus.RETURNED, description: 'Returned' },
+      {
+        carrierStatus: "unknown",
+        mappedStatus: ShipmentStatus.PENDING,
+        description: "Unknown status",
+      },
+      {
+        carrierStatus: "label_created",
+        mappedStatus: ShipmentStatus.LABEL_CREATED,
+        description: "Label created",
+      },
+      {
+        carrierStatus: "picked_up",
+        mappedStatus: ShipmentStatus.PICKED_UP,
+        description: "Package picked up",
+      },
+      {
+        carrierStatus: "in_transit",
+        mappedStatus: ShipmentStatus.IN_TRANSIT,
+        description: "In transit",
+      },
+      {
+        carrierStatus: "out_for_delivery",
+        mappedStatus: ShipmentStatus.OUT_FOR_DELIVERY,
+        description: "Out for delivery",
+      },
+      {
+        carrierStatus: "delivered",
+        mappedStatus: ShipmentStatus.DELIVERED,
+        description: "Delivered",
+      },
+      {
+        carrierStatus: "return_to_sender",
+        mappedStatus: ShipmentStatus.RETURNED,
+        description: "Returned",
+      },
     ],
     [CarrierCode.SHIPPO]: [
-      { carrierStatus: 'unknown', mappedStatus: ShipmentStatus.PENDING, description: 'Unknown status' },
-      { carrierStatus: 'label_created', mappedStatus: ShipmentStatus.LABEL_CREATED, description: 'Label created' },
-      { carrierStatus: 'picked_up', mappedStatus: ShipmentStatus.PICKED_UP, description: 'Picked up' },
-      { carrierStatus: 'in_transit', mappedStatus: ShipmentStatus.IN_TRANSIT, description: 'In transit' },
-      { carrierStatus: 'out_for_delivery', mappedStatus: ShipmentStatus.OUT_FOR_DELIVERY, description: 'Out for delivery' },
-      { carrierStatus: 'delivered', mappedStatus: ShipmentStatus.DELIVERED, description: 'Delivered' },
+      {
+        carrierStatus: "unknown",
+        mappedStatus: ShipmentStatus.PENDING,
+        description: "Unknown status",
+      },
+      {
+        carrierStatus: "label_created",
+        mappedStatus: ShipmentStatus.LABEL_CREATED,
+        description: "Label created",
+      },
+      {
+        carrierStatus: "picked_up",
+        mappedStatus: ShipmentStatus.PICKED_UP,
+        description: "Picked up",
+      },
+      {
+        carrierStatus: "in_transit",
+        mappedStatus: ShipmentStatus.IN_TRANSIT,
+        description: "In transit",
+      },
+      {
+        carrierStatus: "out_for_delivery",
+        mappedStatus: ShipmentStatus.OUT_FOR_DELIVERY,
+        description: "Out for delivery",
+      },
+      {
+        carrierStatus: "delivered",
+        mappedStatus: ShipmentStatus.DELIVERED,
+        description: "Delivered",
+      },
     ],
     [CarrierCode.SHIPSTATION]: [
-      { carrierStatus: 'pending', mappedStatus: ShipmentStatus.PENDING, description: 'Pending shipment' },
-      { carrierStatus: 'on_hold', mappedStatus: ShipmentStatus.PENDING, description: 'On hold' },
-      { carrierStatus: 'label_printed', mappedStatus: ShipmentStatus.LABEL_CREATED, description: 'Label printed' },
-      { carrierStatus: 'picked_up', mappedStatus: ShipmentStatus.PICKED_UP, description: 'Picked up' },
-      { carrierStatus: 'in_transit', mappedStatus: ShipmentStatus.IN_TRANSIT, description: 'In transit' },
-      { carrierStatus: 'delivered', mappedStatus: ShipmentStatus.DELIVERED, description: 'Delivered' },
-      { carrierStatus: 'cancelled', mappedStatus: ShipmentStatus.EXCEPTION, description: 'Cancelled' },
+      {
+        carrierStatus: "pending",
+        mappedStatus: ShipmentStatus.PENDING,
+        description: "Pending shipment",
+      },
+      {
+        carrierStatus: "on_hold",
+        mappedStatus: ShipmentStatus.PENDING,
+        description: "On hold",
+      },
+      {
+        carrierStatus: "label_printed",
+        mappedStatus: ShipmentStatus.LABEL_CREATED,
+        description: "Label printed",
+      },
+      {
+        carrierStatus: "picked_up",
+        mappedStatus: ShipmentStatus.PICKED_UP,
+        description: "Picked up",
+      },
+      {
+        carrierStatus: "in_transit",
+        mappedStatus: ShipmentStatus.IN_TRANSIT,
+        description: "In transit",
+      },
+      {
+        carrierStatus: "delivered",
+        mappedStatus: ShipmentStatus.DELIVERED,
+        description: "Delivered",
+      },
+      {
+        carrierStatus: "cancelled",
+        mappedStatus: ShipmentStatus.EXCEPTION,
+        description: "Cancelled",
+      },
     ],
     [CarrierCode.DHL]: [
-      { carrierStatus: 'shipped', mappedStatus: ShipmentStatus.PENDING, description: 'Shipped' },
-      { carrierStatus: 'label_created', mappedStatus: ShipmentStatus.LABEL_CREATED, description: 'Label created' },
-      { carrierStatus: 'picked_up', mappedStatus: ShipmentStatus.PICKED_UP, description: 'Picked up' },
-      { carrierStatus: 'in_transit', mappedStatus: ShipmentStatus.IN_TRANSIT, description: 'In transit' },
-      { carrierStatus: 'out_for_delivery', mappedStatus: ShipmentStatus.OUT_FOR_DELIVERY, description: 'Out for delivery' },
-      { carrierStatus: 'delivered', mappedStatus: ShipmentStatus.DELIVERED, description: 'Delivered' },
-      { carrierStatus: 'exception', mappedStatus: ShipmentStatus.EXCEPTION, description: 'Exception' },
+      {
+        carrierStatus: "shipped",
+        mappedStatus: ShipmentStatus.PENDING,
+        description: "Shipped",
+      },
+      {
+        carrierStatus: "label_created",
+        mappedStatus: ShipmentStatus.LABEL_CREATED,
+        description: "Label created",
+      },
+      {
+        carrierStatus: "picked_up",
+        mappedStatus: ShipmentStatus.PICKED_UP,
+        description: "Picked up",
+      },
+      {
+        carrierStatus: "in_transit",
+        mappedStatus: ShipmentStatus.IN_TRANSIT,
+        description: "In transit",
+      },
+      {
+        carrierStatus: "out_for_delivery",
+        mappedStatus: ShipmentStatus.OUT_FOR_DELIVERY,
+        description: "Out for delivery",
+      },
+      {
+        carrierStatus: "delivered",
+        mappedStatus: ShipmentStatus.DELIVERED,
+        description: "Delivered",
+      },
+      {
+        carrierStatus: "exception",
+        mappedStatus: ShipmentStatus.EXCEPTION,
+        description: "Exception",
+      },
     ],
     [CarrierCode.USPS]: [
-      { carrierStatus: 'pending', mappedStatus: ShipmentStatus.PENDING, description: 'Pending pickup' },
-      { carrierStatus: 'accepted', mappedStatus: ShipmentStatus.LABEL_CREATED, description: 'Accepted' },
-      { carrierStatus: 'picked_up', mappedStatus: ShipmentStatus.PICKED_UP, description: 'Picked up' },
-      { carrierStatus: 'in_transit', mappedStatus: ShipmentStatus.IN_TRANSIT, description: 'In transit' },
-      { carrierStatus: 'out_for_delivery', mappedStatus: ShipmentStatus.OUT_FOR_DELIVERY, description: 'Out for delivery' },
-      { carrierStatus: 'delivered', mappedStatus: ShipmentStatus.DELIVERED, description: 'Delivered' },
-      { carrierStatus: 'returned', mappedStatus: ShipmentStatus.RETURNED, description: 'Returned' },
+      {
+        carrierStatus: "pending",
+        mappedStatus: ShipmentStatus.PENDING,
+        description: "Pending pickup",
+      },
+      {
+        carrierStatus: "accepted",
+        mappedStatus: ShipmentStatus.LABEL_CREATED,
+        description: "Accepted",
+      },
+      {
+        carrierStatus: "picked_up",
+        mappedStatus: ShipmentStatus.PICKED_UP,
+        description: "Picked up",
+      },
+      {
+        carrierStatus: "in_transit",
+        mappedStatus: ShipmentStatus.IN_TRANSIT,
+        description: "In transit",
+      },
+      {
+        carrierStatus: "out_for_delivery",
+        mappedStatus: ShipmentStatus.OUT_FOR_DELIVERY,
+        description: "Out for delivery",
+      },
+      {
+        carrierStatus: "delivered",
+        mappedStatus: ShipmentStatus.DELIVERED,
+        description: "Delivered",
+      },
+      {
+        carrierStatus: "returned",
+        mappedStatus: ShipmentStatus.RETURNED,
+        description: "Returned",
+      },
     ],
     [CarrierCode.UPS]: [
-      { carrierStatus: 'pending', mappedStatus: ShipmentStatus.PENDING, description: 'Pending' },
-      { carrierStatus: 'label_created', mappedStatus: ShipmentStatus.LABEL_CREATED, description: 'Label created' },
-      { carrierStatus: 'picked_up', mappedStatus: ShipmentStatus.PICKED_UP, description: 'Picked up' },
-      { carrierStatus: 'in_transit', mappedStatus: ShipmentStatus.IN_TRANSIT, description: 'In transit' },
-      { carrierStatus: 'out_for_delivery', mappedStatus: ShipmentStatus.OUT_FOR_DELIVERY, description: 'Out for delivery' },
-      { carrierStatus: 'delivered', mappedStatus: ShipmentStatus.DELIVERED, description: 'Delivered' },
-      { carrierStatus: 'exception', mappedStatus: ShipmentStatus.EXCEPTION, description: 'Exception' },
+      {
+        carrierStatus: "pending",
+        mappedStatus: ShipmentStatus.PENDING,
+        description: "Pending",
+      },
+      {
+        carrierStatus: "label_created",
+        mappedStatus: ShipmentStatus.LABEL_CREATED,
+        description: "Label created",
+      },
+      {
+        carrierStatus: "picked_up",
+        mappedStatus: ShipmentStatus.PICKED_UP,
+        description: "Picked up",
+      },
+      {
+        carrierStatus: "in_transit",
+        mappedStatus: ShipmentStatus.IN_TRANSIT,
+        description: "In transit",
+      },
+      {
+        carrierStatus: "out_for_delivery",
+        mappedStatus: ShipmentStatus.OUT_FOR_DELIVERY,
+        description: "Out for delivery",
+      },
+      {
+        carrierStatus: "delivered",
+        mappedStatus: ShipmentStatus.DELIVERED,
+        description: "Delivered",
+      },
+      {
+        carrierStatus: "exception",
+        mappedStatus: ShipmentStatus.EXCEPTION,
+        description: "Exception",
+      },
     ],
     [CarrierCode.FEDEX]: [
-      { carrierStatus: 'pending', mappedStatus: ShipmentStatus.PENDING, description: 'Pending' },
-      { carrierStatus: 'label_created', mappedStatus: ShipmentStatus.LABEL_CREATED, description: 'Label created' },
-      { carrierStatus: 'picked_up', mappedStatus: ShipmentStatus.PICKED_UP, description: 'Picked up' },
-      { carrierStatus: 'in_transit', mappedStatus: ShipmentStatus.IN_TRANSIT, description: 'In transit' },
-      { carrierStatus: 'out_for_delivery', mappedStatus: ShipmentStatus.OUT_FOR_DELIVERY, description: 'Out for delivery' },
-      { carrierStatus: 'delivered', mappedStatus: ShipmentStatus.DELIVERED, description: 'Delivered' },
-      { carrierStatus: 'returned', mappedStatus: ShipmentStatus.RETURNED, description: 'Returned' },
+      {
+        carrierStatus: "pending",
+        mappedStatus: ShipmentStatus.PENDING,
+        description: "Pending",
+      },
+      {
+        carrierStatus: "label_created",
+        mappedStatus: ShipmentStatus.LABEL_CREATED,
+        description: "Label created",
+      },
+      {
+        carrierStatus: "picked_up",
+        mappedStatus: ShipmentStatus.PICKED_UP,
+        description: "Picked up",
+      },
+      {
+        carrierStatus: "in_transit",
+        mappedStatus: ShipmentStatus.IN_TRANSIT,
+        description: "In transit",
+      },
+      {
+        carrierStatus: "out_for_delivery",
+        mappedStatus: ShipmentStatus.OUT_FOR_DELIVERY,
+        description: "Out for delivery",
+      },
+      {
+        carrierStatus: "delivered",
+        mappedStatus: ShipmentStatus.DELIVERED,
+        description: "Delivered",
+      },
+      {
+        carrierStatus: "returned",
+        mappedStatus: ShipmentStatus.RETURNED,
+        description: "Returned",
+      },
     ],
     [CarrierCode.DOORDASH]: [
-      { carrierStatus: 'pending', mappedStatus: ShipmentStatus.PENDING, description: 'Pending' },
-      { carrierStatus: 'accepted', mappedStatus: ShipmentStatus.IN_TRANSIT, description: 'Accepted' },
-      { carrierStatus: 'pickedup', mappedStatus: ShipmentStatus.OUT_FOR_DELIVERY, description: 'Picked up' },
-      { carrierStatus: 'delivered', mappedStatus: ShipmentStatus.DELIVERED, description: 'Delivered' },
+      {
+        carrierStatus: "pending",
+        mappedStatus: ShipmentStatus.PENDING,
+        description: "Pending",
+      },
+      {
+        carrierStatus: "accepted",
+        mappedStatus: ShipmentStatus.IN_TRANSIT,
+        description: "Accepted",
+      },
+      {
+        carrierStatus: "pickedup",
+        mappedStatus: ShipmentStatus.OUT_FOR_DELIVERY,
+        description: "Picked up",
+      },
+      {
+        carrierStatus: "delivered",
+        mappedStatus: ShipmentStatus.DELIVERED,
+        description: "Delivered",
+      },
     ],
     [CarrierCode.UBER]: [
-      { carrierStatus: 'pending', mappedStatus: ShipmentStatus.PENDING, description: 'Pending' },
-      { carrierStatus: 'assigned', mappedStatus: ShipmentStatus.IN_TRANSIT, description: 'Driver assigned' },
-      { carrierStatus: 'picked_up', mappedStatus: ShipmentStatus.OUT_FOR_DELIVERY, description: 'Picked up' },
-      { carrierStatus: 'delivered', mappedStatus: ShipmentStatus.DELIVERED, description: 'Delivered' },
+      {
+        carrierStatus: "pending",
+        mappedStatus: ShipmentStatus.PENDING,
+        description: "Pending",
+      },
+      {
+        carrierStatus: "assigned",
+        mappedStatus: ShipmentStatus.IN_TRANSIT,
+        description: "Driver assigned",
+      },
+      {
+        carrierStatus: "picked_up",
+        mappedStatus: ShipmentStatus.OUT_FOR_DELIVERY,
+        description: "Picked up",
+      },
+      {
+        carrierStatus: "delivered",
+        mappedStatus: ShipmentStatus.DELIVERED,
+        description: "Delivered",
+      },
     ],
   };
 
@@ -171,7 +398,10 @@ export class StatusMapper {
    * @param carrierStatus - Carrier-specific status code
    * @returns Mapped ShipmentStatus
    */
-  static mapStatus(carrier: CarrierCode, carrierStatus: string): ShipmentStatus {
+  static mapStatus(
+    carrier: CarrierCode,
+    carrierStatus: string,
+  ): ShipmentStatus {
     const mappings = this.STATUS_MAPPINGS[carrier] ?? [];
 
     for (const mapping of mappings) {
@@ -199,7 +429,7 @@ export class StatusMapper {
       }
     }
 
-    return '';
+    return "";
   }
 }
 
@@ -220,17 +450,18 @@ export class ETACalculator {
   /**
    * Default delivery times by carrier (in days)
    */
-  private static readonly DEFAULT_DELIVERY_TIMES: Record<CarrierCode, number> = {
-    [CarrierCode.EASYPOST]: 3,
-    [CarrierCode.SHIPPO]: 3,
-    [CarrierCode.SHIPSTATION]: 3,
-    [CarrierCode.DHL]: 4,
-    [CarrierCode.USPS]: 4,
-    [CarrierCode.UPS]: 3,
-    [CarrierCode.FEDEX]: 2,
-    [CarrierCode.DOORDASH]: 1,
-    [CarrierCode.UBER]: 1,
-  };
+  private static readonly DEFAULT_DELIVERY_TIMES: Record<CarrierCode, number> =
+    {
+      [CarrierCode.EASYPOST]: 3,
+      [CarrierCode.SHIPPO]: 3,
+      [CarrierCode.SHIPSTATION]: 3,
+      [CarrierCode.DHL]: 4,
+      [CarrierCode.USPS]: 4,
+      [CarrierCode.UPS]: 3,
+      [CarrierCode.FEDEX]: 2,
+      [CarrierCode.DOORDASH]: 1,
+      [CarrierCode.UBER]: 1,
+    };
 
   /**
    * Calculate ETA for a shipment
@@ -246,7 +477,8 @@ export class ETACalculator {
     shipDate: Date,
     estimatedDays?: number,
   ): ETAResult {
-    const defaultDays = estimatedDays ?? this.DEFAULT_DELIVERY_TIMES[carrier] ?? 5;
+    const defaultDays =
+      estimatedDays ?? this.DEFAULT_DELIVERY_TIMES[carrier] ?? 5;
 
     // Calculate based on current status
     let remainingDays = defaultDays;
@@ -285,8 +517,15 @@ export class ETACalculator {
         break;
     }
 
-    const estimatedDeliveryDate = new Date(shipDate.getTime() + remainingDays * 24 * 60 * 60 * 1000);
-    const daysRemaining = Math.max(0, Math.ceil((estimatedDeliveryDate.getTime() - Date.now()) / (24 * 60 * 60 * 1000)));
+    const estimatedDeliveryDate = new Date(
+      shipDate.getTime() + remainingDays * 24 * 60 * 60 * 1000,
+    );
+    const daysRemaining = Math.max(
+      0,
+      Math.ceil(
+        (estimatedDeliveryDate.getTime() - Date.now()) / (24 * 60 * 60 * 1000),
+      ),
+    );
 
     return {
       estimatedDeliveryDate,
@@ -351,11 +590,14 @@ export class UnifiedTracker {
    * @param carrier - Carrier code
    * @returns Tracking information
    */
-  async trackShipment(trackingNumber: string, carrier: CarrierCode): Promise<TrackingInfo> {
+  async trackShipment(
+    trackingNumber: string,
+    carrier: CarrierCode,
+  ): Promise<TrackingInfo> {
     if (!trackingNumber) {
       throw new ShippingError(
-        'INVALID_TRACKING',
-        'Tracking number is required',
+        "INVALID_TRACKING",
+        "Tracking number is required",
         carrier,
       );
     }
@@ -376,7 +618,7 @@ export class UnifiedTracker {
 
     // In production, this would call the carrier's tracking API
     throw new ShippingError(
-      'CARRIER_NOT_IMPLEMENTED',
+      "CARRIER_NOT_IMPLEMENTED",
       `Tracking for ${carrier} not yet implemented`,
       carrier,
     );
@@ -388,11 +630,14 @@ export class UnifiedTracker {
    * @param webhookUrl - URL to POST updates to
    * @returns Subscription details
    */
-  subscribeToUpdates(trackingNumber: string, webhookUrl: string): TrackingSubscription {
+  subscribeToUpdates(
+    trackingNumber: string,
+    webhookUrl: string,
+  ): TrackingSubscription {
     if (!trackingNumber || !webhookUrl) {
       throw new ShippingError(
-        'INVALID_SUBSCRIPTION',
-        'Tracking number and webhook URL are required',
+        "INVALID_SUBSCRIPTION",
+        "Tracking number and webhook URL are required",
       );
     }
 
@@ -420,7 +665,7 @@ export class UnifiedTracker {
 
     if (!subscription) {
       throw new ShippingError(
-        'SUBSCRIPTION_NOT_FOUND',
+        "SUBSCRIPTION_NOT_FOUND",
         `Subscription ${subscriptionId} not found`,
       );
     }
@@ -438,7 +683,7 @@ export class UnifiedTracker {
   updateTracking(
     trackingNumber: string,
     carrier: CarrierCode,
-    event: Omit<TrackingEvent, 'timestamp'>,
+    event: Omit<TrackingEvent, "timestamp">,
   ): void {
     let tracking = this.trackingStore.get(trackingNumber);
 
@@ -446,7 +691,7 @@ export class UnifiedTracker {
       // Create new tracking record if doesn't exist
       tracking = {
         trackingNumber,
-        shipmentId: '',
+        shipmentId: "",
         carrier,
         status: event.status ?? ShipmentStatus.PENDING,
         events: [],

@@ -1,12 +1,12 @@
-'use client';
-import { useEffect } from 'react';
+"use client";
+import { useEffect } from "react";
 
 export interface OverlayState {
   heatmap: boolean;
   sla: boolean;
   openOrders: boolean;
   hubs: boolean;
-  window: '1h' | '24h' | '7d';
+  window: "1h" | "24h" | "7d";
 }
 
 export interface OverlayControlsProps {
@@ -14,13 +14,14 @@ export interface OverlayControlsProps {
   onChange: (v: OverlayState) => void;
 }
 
-const STORAGE_KEY = 'wl.zones.overlays';
+const STORAGE_KEY = "wl.zones.overlays";
 
 export function OverlayControls({ value, onChange }: OverlayControlsProps) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) onChange({ ...value, ...(JSON.parse(raw) as Partial<OverlayState>) });
+      if (raw)
+        onChange({ ...value, ...(JSON.parse(raw) as Partial<OverlayState>) });
     } catch {
       // ignore parse failures; fall back to props.
     }
@@ -44,19 +45,27 @@ export function OverlayControls({ value, onChange }: OverlayControlsProps) {
         type="checkbox"
         aria-label={label}
         checked={Boolean(value[k])}
-        onChange={(e) => update({ [k]: e.target.checked } as Partial<OverlayState>)}
+        onChange={(e) =>
+          update({ [k]: e.target.checked } as Partial<OverlayState>)
+        }
         className="accent-[var(--wl-primary-500)]"
       />
-      <span style={{ color: 'var(--wl-neutral-200)' }}>{label}</span>
+      <span style={{ color: "var(--wl-neutral-200)" }}>{label}</span>
     </label>
   );
 
   return (
     <div
       className="rounded-md border p-3 min-w-[180px] space-y-0.5"
-      style={{ background: 'var(--wl-bg-elevated)', borderColor: 'var(--wl-neutral-800)' }}
+      style={{
+        background: "var(--wl-bg-elevated)",
+        borderColor: "var(--wl-neutral-800)",
+      }}
     >
-      <div className="text-[10px] uppercase tracking-wide mb-2" style={{ color: 'var(--wl-neutral-500)' }}>
+      <div
+        className="text-[10px] uppercase tracking-wide mb-2"
+        style={{ color: "var(--wl-neutral-500)" }}
+      >
         Overlays
       </div>
       <Check k="heatmap" label="Heatmap" />
@@ -64,14 +73,20 @@ export function OverlayControls({ value, onChange }: OverlayControlsProps) {
       <Check k="openOrders" label="Open orders" />
       <Check k="hubs" label="Hubs" />
       <div className="mt-3 flex gap-1">
-        {(['1h', '24h', '7d'] as const).map((w) => (
+        {(["1h", "24h", "7d"] as const).map((w) => (
           <button
             key={w}
             onClick={() => update({ window: w })}
             className="px-2 py-0.5 rounded text-[11px]"
             style={{
-              background: value.window === w ? 'var(--wl-primary-700)' : 'var(--wl-bg-overlay)',
-              color: value.window === w ? 'var(--wl-neutral-50)' : 'var(--wl-neutral-300)',
+              background:
+                value.window === w
+                  ? "var(--wl-primary-700)"
+                  : "var(--wl-bg-overlay)",
+              color:
+                value.window === w
+                  ? "var(--wl-neutral-50)"
+                  : "var(--wl-neutral-300)",
             }}
           >
             {w}

@@ -26,14 +26,14 @@ The CORS configuration is environment-aware and restrictive:
   - Plus any origins in `CORS_ORIGINS` environment variable
 
 **Configuration in server.ts (lines 63-74):**
+
 ```typescript
 await app.register(cors, {
   origin: isDev()
     ? true
-    : [
-        config.SHOPIFY_APP_URL,
-        config.TRACKING_PAGE_URL,
-      ].filter(Boolean) as string[],
+    : ([config.SHOPIFY_APP_URL, config.TRACKING_PAGE_URL].filter(
+        Boolean,
+      ) as string[]),
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Request-ID"],
@@ -41,6 +41,7 @@ await app.register(cors, {
 ```
 
 **Recommendation:** In production, explicitly set `CORS_ORIGINS` env var:
+
 ```bash
 CORS_ORIGINS=https://app.witylogix.com,https://dashboard.witylogix.com
 ```
@@ -54,6 +55,7 @@ CORS_ORIGINS=https://app.witylogix.com,https://dashboard.witylogix.com
 ### Current Implementation
 
 **Files:**
+
 - `apps/api/src/middleware/rate-limiter.ts` (existing)
 - `apps/api/src/middleware/rate-limit-routes.ts` (NEW - per-route helpers)
 
@@ -106,16 +108,24 @@ Available preset limiters for specific endpoint types:
    - Use for: Service-to-service calls
 
 **Usage Example:**
-```typescript
-import { createRateLimiter, rateLimitStrict } from '@middleware/rate-limit-routes';
 
-app.post('/api/v4/auth/login',
+```typescript
+import {
+  createRateLimiter,
+  rateLimitStrict,
+} from "@middleware/rate-limit-routes";
+
+app.post(
+  "/api/v4/auth/login",
   { preHandler: createRateLimiter(rateLimitStrict()) },
-  async (request, reply) => { /* ... */ }
+  async (request, reply) => {
+    /* ... */
+  },
 );
 ```
 
 **Configurable via Environment:**
+
 ```bash
 RATE_LIMIT_WINDOW_MS=60000              # 1 minute
 RATE_LIMIT_MAX_REQUESTS=200             # Unauthenticated
@@ -124,6 +134,7 @@ RATE_LIMIT_STRICT_MAX=10                # Auth endpoints
 ```
 
 **Response Headers:**
+
 - `X-RateLimit-Limit`: Max requests per window
 - `X-RateLimit-Remaining`: Requests remaining
 - `X-RateLimit-Reset`: Unix timestamp when limit resets
@@ -138,6 +149,7 @@ RATE_LIMIT_STRICT_MAX=10                # Auth endpoints
 ### Current Implementation
 
 **Files:**
+
 - `apps/api/src/middleware/security-headers.ts` (NEW - enhanced)
 - `@fastify/helmet` plugin (existing)
 
@@ -146,6 +158,7 @@ RATE_LIMIT_STRICT_MAX=10                # Auth endpoints
 #### Standard Headers (via helmet)
 
 Applied automatically:
+
 - `X-Content-Type-Options: nosniff`
 - `X-XSS-Protection: 1; mode=block`
 - `Content-Security-Policy` (optional, disabled for Shopify iframe)
@@ -153,6 +166,7 @@ Applied automatically:
 #### Enhanced Headers (NEW - security-headers.ts)
 
 **Configuration:**
+
 ```bash
 ENABLE_HSTS=true                        # Enable HSTS in production
 HSTS_MAX_AGE=31536000                   # 1 year
@@ -162,17 +176,18 @@ ENABLE_FRAMEGUARD=true                  # Prevent clickjacking
 
 **Headers Applied:**
 
-| Header | Value | Purpose |
-|--------|-------|---------|
-| `X-Content-Type-Options` | `nosniff` | Prevent MIME sniffing attacks |
-| `X-Frame-Options` | `SAMEORIGIN` | Prevent clickjacking (if enabled) |
-| `X-XSS-Protection` | `1; mode=block` | Enable browser XSS filtering |
-| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | Force HTTPS (production only) |
-| `Referrer-Policy` | `strict-no-referrer` | Privacy - prevent referrer leakage |
-| `Permissions-Policy` | `geolocation=(), microphone=(), camera=(), ...` | Disable unnecessary browser features |
-| `Content-Security-Policy` | (optional) | Restrict resource loading |
+| Header                      | Value                                           | Purpose                              |
+| --------------------------- | ----------------------------------------------- | ------------------------------------ |
+| `X-Content-Type-Options`    | `nosniff`                                       | Prevent MIME sniffing attacks        |
+| `X-Frame-Options`           | `SAMEORIGIN`                                    | Prevent clickjacking (if enabled)    |
+| `X-XSS-Protection`          | `1; mode=block`                                 | Enable browser XSS filtering         |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains`           | Force HTTPS (production only)        |
+| `Referrer-Policy`           | `strict-no-referrer`                            | Privacy - prevent referrer leakage   |
+| `Permissions-Policy`        | `geolocation=(), microphone=(), camera=(), ...` | Disable unnecessary browser features |
+| `Content-Security-Policy`   | (optional)                                      | Restrict resource loading            |
 
 **CSP Policy (when enabled):**
+
 ```
 default-src 'self';
 script-src 'self' 'unsafe-inline' *.shopify.com;
@@ -220,6 +235,7 @@ frame-ancestors 'self' *.shopify.com;
    - Facilitates multi-tenant debugging
 
 **Log Format (JSON):**
+
 ```json
 {
   "requestId": "550e8400-e29b-41d4-a716-446655440000",
@@ -235,6 +251,7 @@ frame-ancestors 'self' *.shopify.com;
 ```
 
 **Hooks:**
+
 - `onRequest`: Initialize request ID and start timing
 - `onResponse`: Log completion with context
 
@@ -268,6 +285,7 @@ const shutdownTimeout = setTimeout(() => {
 ```
 
 **Configuration:**
+
 ```bash
 SHUTDOWN_TIMEOUT_MS=30000  # 30 seconds (configurable)
 ```
@@ -279,6 +297,7 @@ SHUTDOWN_TIMEOUT_MS=30000  # 30 seconds (configurable)
 - `unhandledRejection` (in production)
 
 **Error Handling:**
+
 - Each step wrapped in try-catch
 - Errors logged but non-blocking
 - Force exit after timeout
@@ -339,14 +358,15 @@ await app.register(errorHandlerPlugin);
 
 #### Endpoints:
 
-| Endpoint | Purpose | Response |
-|----------|---------|----------|
-| `GET /health` | Liveness probe | `{ status: "ok", timestamp }` |
-| `GET /ready` | Readiness probe | `{ status, checks: { database, redis } }` |
+| Endpoint      | Purpose         | Response                                  |
+| ------------- | --------------- | ----------------------------------------- |
+| `GET /health` | Liveness probe  | `{ status: "ok", timestamp }`             |
+| `GET /ready`  | Readiness probe | `{ status, checks: { database, redis } }` |
 
 #### Health Check Details:
 
 **`/health`** - Always responds if server is running
+
 ```json
 {
   "status": "ok",
@@ -355,6 +375,7 @@ await app.register(errorHandlerPlugin);
 ```
 
 **`/ready`** - Checks dependencies
+
 ```json
 {
   "status": "ready",
@@ -370,6 +391,7 @@ await app.register(errorHandlerPlugin);
 - Returns 503 if any check fails (e.g., database down)
 
 **Kubernetes Configuration:**
+
 ```yaml
 livenessProbe:
   httpGet:
@@ -440,16 +462,16 @@ JWT_SECRET=<64+ char random string>
 
 ## 9. Security Score
 
-| Category | Score | Notes |
-|----------|-------|-------|
-| CORS | 10/10 | ✅ No wildcard in production |
-| Rate Limiting | 10/10 | ✅ Multi-tier, configurable |
-| Security Headers | 9/10 | ✅ Comprehensive (CSP optional) |
-| Request Logging | 10/10 | ✅ Structured, redacted |
-| Graceful Shutdown | 10/10 | ✅ Timeout-protected |
-| Error Handling | 9/10 | ✅ Proper error mapping |
-| Middleware Order | 10/10 | ✅ Security-first |
-| **Overall** | **9.7/10** | **PRODUCTION-READY** |
+| Category          | Score      | Notes                           |
+| ----------------- | ---------- | ------------------------------- |
+| CORS              | 10/10      | ✅ No wildcard in production    |
+| Rate Limiting     | 10/10      | ✅ Multi-tier, configurable     |
+| Security Headers  | 9/10       | ✅ Comprehensive (CSP optional) |
+| Request Logging   | 10/10      | ✅ Structured, redacted         |
+| Graceful Shutdown | 10/10      | ✅ Timeout-protected            |
+| Error Handling    | 9/10       | ✅ Proper error mapping         |
+| Middleware Order  | 10/10      | ✅ Security-first               |
+| **Overall**       | **9.7/10** | **PRODUCTION-READY**            |
 
 ---
 
@@ -493,11 +515,13 @@ JWT_SECRET=<64+ char random string>
 ### Immediate (Before Production Deployment)
 
 1. **Configure CORS_ORIGINS**
+
    ```bash
    CORS_ORIGINS=https://app.witylogix.com,https://dashboard.witylogix.com
    ```
 
 2. **Set Strong JWT_SECRET**
+
    ```bash
    JWT_SECRET=$(openssl rand -base64 64)
    ```

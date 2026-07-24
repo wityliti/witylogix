@@ -14,7 +14,7 @@
  * - AlertingEngine: Rule-based alerting with escalation and acknowledgment
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from "events";
 import type {
   ProviderHealth,
   HealthStatus,
@@ -34,7 +34,7 @@ import type {
   EscalationPolicy,
   AlertAcknowledgment,
   AlertResolution,
-} from './health-types.js';
+} from "./health-types.js";
 
 // ─── TYPE DEFINITIONS ───────────────────────────────────────────────────────
 
@@ -93,7 +93,8 @@ interface ChannelConfig {
  */
 export class RealTimeHealthTracker extends EventEmitter {
   private healthStatus: Map<string, ProviderHealth> = new Map();
-  private healthSchedules: Map<string, ReturnType<typeof setInterval>> = new Map();
+  private healthSchedules: Map<string, ReturnType<typeof setInterval>> =
+    new Map();
   private healthHistory: HealthHistoryRecord[] = [];
   private readonly HISTORY_RETENTION_DAYS = 30;
   private checkFunctions: Map<string, () => Promise<HealthCheck>> = new Map();
@@ -103,7 +104,7 @@ export class RealTimeHealthTracker extends EventEmitter {
    */
   registerHealthCheck(
     providerId: string,
-    checkFn: () => Promise<HealthCheck>
+    checkFn: () => Promise<HealthCheck>,
   ): void {
     this.checkFunctions.set(providerId, checkFn);
   }
@@ -144,10 +145,10 @@ export class RealTimeHealthTracker extends EventEmitter {
    */
   private updateHealthStatus(providerId: string, check: HealthCheck): void {
     const current = this.healthStatus.get(providerId);
-    let newStatus: HealthStatus = 'healthy';
+    let newStatus: HealthStatus = "healthy";
 
     if (!check.success) {
-      newStatus = current?.status === 'down' ? 'down' : 'degraded';
+      newStatus = current?.status === "down" ? "down" : "degraded";
     }
 
     const updated: ProviderHealth = {
@@ -155,12 +156,17 @@ export class RealTimeHealthTracker extends EventEmitter {
       providerName: current?.providerName || providerId,
       status: newStatus,
       lastChecked: check.timestamp,
-      lastStatusChange: current?.status !== newStatus ? check.timestamp : current?.lastStatusChange || check.timestamp,
+      lastStatusChange:
+        current?.status !== newStatus
+          ? check.timestamp
+          : current?.lastStatusChange || check.timestamp,
       uptime: current?.uptime || 100,
       averageLatency: check.responseTime,
-      errorRate: check.success ? 0 : (current?.errorRate || 0),
+      errorRate: check.success ? 0 : current?.errorRate || 0,
       totalRequests: (current?.totalRequests || 0) + 1,
-      failedRequests: check.success ? current?.failedRequests || 0 : (current?.failedRequests || 0) + 1,
+      failedRequests: check.success
+        ? current?.failedRequests || 0
+        : (current?.failedRequests || 0) + 1,
       nextCheckTime: new Date(Date.now() + 60000), // next check in 1 min
       lastError: check.error,
     };
@@ -170,7 +176,12 @@ export class RealTimeHealthTracker extends EventEmitter {
     this.recordHistory(updated);
 
     if (oldStatus && oldStatus !== newStatus) {
-      this.emit('statusChange', { providerId, oldStatus, newStatus, timestamp: check.timestamp });
+      this.emit("statusChange", {
+        providerId,
+        oldStatus,
+        newStatus,
+        timestamp: check.timestamp,
+      });
     }
   }
 
@@ -179,14 +190,18 @@ export class RealTimeHealthTracker extends EventEmitter {
    */
   private updateHealthFromError(providerId: string, error: any): void {
     const current = this.healthStatus.get(providerId);
-    const newStatus: HealthStatus = current?.status === 'down' ? 'down' : 'degraded';
+    const newStatus: HealthStatus =
+      current?.status === "down" ? "down" : "degraded";
 
     const updated: ProviderHealth = {
       providerId,
       providerName: current?.providerName || providerId,
       status: newStatus,
       lastChecked: new Date(),
-      lastStatusChange: current?.status !== newStatus ? new Date() : current?.lastStatusChange || new Date(),
+      lastStatusChange:
+        current?.status !== newStatus
+          ? new Date()
+          : current?.lastStatusChange || new Date(),
       uptime: (current?.uptime || 100) * 0.95,
       averageLatency: current?.averageLatency || 0,
       errorRate: (current?.errorRate || 0) + 5,
@@ -201,7 +216,12 @@ export class RealTimeHealthTracker extends EventEmitter {
     this.recordHistory(updated);
 
     if (oldStatus && oldStatus !== newStatus) {
-      this.emit('statusChange', { providerId, oldStatus, newStatus, timestamp: new Date() });
+      this.emit("statusChange", {
+        providerId,
+        oldStatus,
+        newStatus,
+        timestamp: new Date(),
+      });
     }
   }
 
@@ -219,8 +239,12 @@ export class RealTimeHealthTracker extends EventEmitter {
     });
 
     // Prune old records beyond retention
-    const cutoffDate = new Date(Date.now() - this.HISTORY_RETENTION_DAYS * 24 * 60 * 60 * 1000);
-    this.healthHistory = this.healthHistory.filter((r: HealthHistoryRecord) => r.timestamp > cutoffDate);
+    const cutoffDate = new Date(
+      Date.now() - this.HISTORY_RETENTION_DAYS * 24 * 60 * 60 * 1000,
+    );
+    this.healthHistory = this.healthHistory.filter(
+      (r: HealthHistoryRecord) => r.timestamp > cutoffDate,
+    );
   }
 
   /**
@@ -228,22 +252,28 @@ export class RealTimeHealthTracker extends EventEmitter {
    */
   updateFromGatewayMetrics(
     providerId: string,
-    metrics: { latency: number; errorRate: number; requestCount: number }
+    metrics: { latency: number; errorRate: number; requestCount: number },
   ): void {
     const current = this.healthStatus.get(providerId);
-    const newStatus: HealthStatus = metrics.errorRate > 5 ? 'degraded' : 'healthy';
+    const newStatus: HealthStatus =
+      metrics.errorRate > 5 ? "degraded" : "healthy";
 
     const updated: ProviderHealth = {
       providerId,
       providerName: current?.providerName || providerId,
       status: newStatus,
       lastChecked: new Date(),
-      lastStatusChange: current?.status !== newStatus ? new Date() : current?.lastStatusChange || new Date(),
+      lastStatusChange:
+        current?.status !== newStatus
+          ? new Date()
+          : current?.lastStatusChange || new Date(),
       uptime: 100 - metrics.errorRate,
       averageLatency: metrics.latency,
       errorRate: metrics.errorRate,
       totalRequests: (current?.totalRequests || 0) + metrics.requestCount,
-      failedRequests: current?.failedRequests || Math.floor(metrics.requestCount * (metrics.errorRate / 100)),
+      failedRequests:
+        current?.failedRequests ||
+        Math.floor(metrics.requestCount * (metrics.errorRate / 100)),
       nextCheckTime: new Date(Date.now() + 60000),
     };
 
@@ -252,7 +282,12 @@ export class RealTimeHealthTracker extends EventEmitter {
     this.recordHistory(updated);
 
     if (oldStatus && oldStatus !== newStatus) {
-      this.emit('statusChange', { providerId, oldStatus, newStatus, timestamp: new Date() });
+      this.emit("statusChange", {
+        providerId,
+        oldStatus,
+        newStatus,
+        timestamp: new Date(),
+      });
     }
   }
 
@@ -267,7 +302,9 @@ export class RealTimeHealthTracker extends EventEmitter {
    * Get health history for a provider.
    */
   getHealthHistory(providerId: string): HealthHistoryRecord[] {
-    return this.healthHistory.filter((r: HealthHistoryRecord) => r.providerId === providerId);
+    return this.healthHistory.filter(
+      (r: HealthHistoryRecord) => r.providerId === providerId,
+    );
   }
 
   /**
@@ -311,7 +348,7 @@ export class SLAMonitor {
   calculateSLAReport(
     providerId: string,
     history: HealthHistoryRecord[],
-    period: 'daily' | 'weekly' | 'monthly'
+    period: "daily" | "weekly" | "monthly",
   ): SLAReport | undefined {
     const config = this.slaConfigs.get(providerId);
     if (!config) return undefined;
@@ -319,23 +356,44 @@ export class SLAMonitor {
     const now = new Date();
     const startDate = this.getPeriodStart(now, period);
     const filteredHistory = history.filter(
-      (h: HealthHistoryRecord) => h.timestamp >= startDate && h.timestamp <= now
+      (h: HealthHistoryRecord) =>
+        h.timestamp >= startDate && h.timestamp <= now,
     );
 
     if (filteredHistory.length === 0) {
       return undefined;
     }
 
-    const uptimeAchieved = (filteredHistory.filter((h: HealthHistoryRecord) => h.status === 'healthy').length / filteredHistory.length) * 100;
-    const errorRateAchieved = filteredHistory.reduce((sum: number, h: HealthHistoryRecord) => sum + h.errorRate, 0) / filteredHistory.length;
-    const latencyP95 = this.calculatePercentile(filteredHistory.map((h: HealthHistoryRecord) => h.latency), 95);
-    const latencyP99 = this.calculatePercentile(filteredHistory.map((h: HealthHistoryRecord) => h.latency), 99);
+    const uptimeAchieved =
+      (filteredHistory.filter(
+        (h: HealthHistoryRecord) => h.status === "healthy",
+      ).length /
+        filteredHistory.length) *
+      100;
+    const errorRateAchieved =
+      filteredHistory.reduce(
+        (sum: number, h: HealthHistoryRecord) => sum + h.errorRate,
+        0,
+      ) / filteredHistory.length;
+    const latencyP95 = this.calculatePercentile(
+      filteredHistory.map((h: HealthHistoryRecord) => h.latency),
+      95,
+    );
+    const latencyP99 = this.calculatePercentile(
+      filteredHistory.map((h: HealthHistoryRecord) => h.latency),
+      99,
+    );
 
     const uptimeMet = uptimeAchieved >= config.uptimeTarget;
     const latencyP95Met = latencyP95 <= config.latencyTargetP95;
     const latencyP99Met = latencyP99 <= config.latencyTargetP99;
     const errorRateMet = errorRateAchieved <= config.errorRateTarget;
-    const breachCount = [!uptimeMet, !latencyP95Met, !latencyP99Met, !errorRateMet].filter(Boolean).length;
+    const breachCount = [
+      !uptimeMet,
+      !latencyP95Met,
+      !latencyP99Met,
+      !errorRateMet,
+    ].filter(Boolean).length;
 
     const report: SLAReport = {
       providerId,
@@ -359,7 +417,10 @@ export class SLAMonitor {
     };
 
     if (report.breachCount > 0) {
-      report.creditAmount = this.calculateSLACredit(report.breachCount, config.severity);
+      report.creditAmount = this.calculateSLACredit(
+        report.breachCount,
+        config.severity,
+      );
       this.breachDetected.set(providerId, true);
     }
 
@@ -375,7 +436,8 @@ export class SLAMonitor {
    */
   private calculateSLACredit(breachCount: number, severity: string): number {
     const baseCredit = 5; // percentage
-    const multiplier = severity === 'critical' ? 3 : severity === 'high' ? 2 : 1;
+    const multiplier =
+      severity === "critical" ? 3 : severity === "high" ? 2 : 1;
     return baseCredit * breachCount * multiplier;
   }
 
@@ -393,12 +455,12 @@ export class SLAMonitor {
    */
   private getPeriodStart(date: Date, period: string): Date {
     const start = new Date(date);
-    if (period === 'daily') {
+    if (period === "daily") {
       start.setHours(0, 0, 0, 0);
-    } else if (period === 'weekly') {
+    } else if (period === "weekly") {
       start.setDate(start.getDate() - start.getDay());
       start.setHours(0, 0, 0, 0);
-    } else if (period === 'monthly') {
+    } else if (period === "monthly") {
       start.setDate(1);
       start.setHours(0, 0, 0, 0);
     }
@@ -408,7 +470,10 @@ export class SLAMonitor {
   /**
    * Get SLA report for a provider and period.
    */
-  getSLAReport(providerId: string, period: 'daily' | 'weekly' | 'monthly'): SLAReport | undefined {
+  getSLAReport(
+    providerId: string,
+    period: "daily" | "weekly" | "monthly",
+  ): SLAReport | undefined {
     const reports = this.slaReports.get(providerId) || [];
     return reports.find((r: SLAReport) => r.period === period);
   }
@@ -433,7 +498,12 @@ export class LatencyHistogram {
   /**
    * Record a latency measurement.
    */
-  recordLatency(providerId: string, endpoint: string, latency: number, timestamp: Date): void {
+  recordLatency(
+    providerId: string,
+    endpoint: string,
+    latency: number,
+    timestamp: Date,
+  ): void {
     const key = `${providerId}-${endpoint}`;
     const timestamps = this.requestTimestamps.get(key) || [];
     timestamps.push(timestamp.getTime());
@@ -446,7 +516,7 @@ export class LatencyHistogram {
   calculatePercentiles(
     providerId: string,
     endpoint: string,
-    window: LatencyTimeWindow
+    window: LatencyTimeWindow,
   ): LatencyBucket | undefined {
     const key = `${providerId}-${endpoint}`;
     const timestamps = this.requestTimestamps.get(key) || [];
@@ -468,7 +538,8 @@ export class LatencyHistogram {
       p999: this.getPercentile(sorted, 99.9),
       min: sorted[0] || 0,
       max: sorted[sorted.length - 1] || 0,
-      mean: latencies.reduce((a: number, b: number) => a + b, 0) / latencies.length,
+      mean:
+        latencies.reduce((a: number, b: number) => a + b, 0) / latencies.length,
       count: sorted.length,
     };
 
@@ -479,7 +550,11 @@ export class LatencyHistogram {
   /**
    * Get latency bucket for time window.
    */
-  getLatencyBucket(providerId: string, endpoint: string, window: LatencyTimeWindow): LatencyBucket | undefined {
+  getLatencyBucket(
+    providerId: string,
+    endpoint: string,
+    window: LatencyTimeWindow,
+  ): LatencyBucket | undefined {
     const key = `${providerId}-${endpoint}`;
     return this.latencyBuckets
       .filter((b: LatencyBucket) => b.endpoint === endpoint)
@@ -490,11 +565,15 @@ export class LatencyHistogram {
    * Identify slow requests (p99 + 2 std devs above baseline).
    */
   identifySlowRequests(providerId: string): string[] {
-    const buckets = this.latencyBuckets.filter((b: LatencyBucket) => b.timestamp);
+    const buckets = this.latencyBuckets.filter(
+      (b: LatencyBucket) => b.timestamp,
+    );
     const slowEndpoints: string[] = [];
 
     for (const bucket of buckets) {
-      const avgP99 = buckets.reduce((sum: number, b: LatencyBucket) => sum + b.p99, 0) / buckets.length;
+      const avgP99 =
+        buckets.reduce((sum: number, b: LatencyBucket) => sum + b.p99, 0) /
+        buckets.length;
       if (bucket.p99 > avgP99 * 1.5) {
         slowEndpoints.push(bucket.endpoint);
       }
@@ -516,9 +595,9 @@ export class LatencyHistogram {
    */
   private getWindowCutoff(window: LatencyTimeWindow): number {
     const now = Date.now();
-    if (window === '1min') return now - 60 * 1000;
-    if (window === '5min') return now - 5 * 60 * 1000;
-    if (window === '1hr') return now - 60 * 60 * 1000;
+    if (window === "1min") return now - 60 * 1000;
+    if (window === "5min") return now - 5 * 60 * 1000;
+    if (window === "1hr") return now - 60 * 60 * 1000;
     return now - 24 * 60 * 60 * 1000;
   }
 }
@@ -535,7 +614,11 @@ export class ErrorTrendAnalyzer {
   /**
    * Record an error occurrence.
    */
-  recordError(providerId: string, classification: ErrorClassification, timestamp: Date): void {
+  recordError(
+    providerId: string,
+    classification: ErrorClassification,
+    timestamp: Date,
+  ): void {
     const key = providerId;
     const trends = this.errorTrends.get(key) || [];
     trends.push({
@@ -544,7 +627,7 @@ export class ErrorTrendAnalyzer {
       classification,
       errorCount: 1,
       errorRate: 0,
-      trend: 'stable',
+      trend: "stable",
       percentageChange: 0,
     });
     this.errorTrends.set(key, trends);
@@ -559,22 +642,25 @@ export class ErrorTrendAnalyzer {
 
     const now = Date.now();
     const baselineStart = now - this.baselineWindow;
-    const currentWindow = trends.filter((t: ErrorTrendData) => t.timestamp.getTime() > baselineStart);
+    const currentWindow = trends.filter(
+      (t: ErrorTrendData) => t.timestamp.getTime() > baselineStart,
+    );
     const previousWindow = trends.filter(
       (t: ErrorTrendData) =>
         t.timestamp.getTime() > baselineStart - this.baselineWindow &&
-        t.timestamp.getTime() <= baselineStart
+        t.timestamp.getTime() <= baselineStart,
     );
 
     const currentRate = currentWindow.length;
     const previousRate = previousWindow.length || 1;
-    const percentageChange = ((currentRate - previousRate) / previousRate) * 100;
+    const percentageChange =
+      ((currentRate - previousRate) / previousRate) * 100;
 
-    let trendDirection: ErrorTrend = 'stable';
-    if (Math.abs(percentageChange) < 5) trendDirection = 'stable';
-    else if (percentageChange > 50) trendDirection = 'spike';
-    else if (percentageChange > 10) trendDirection = 'increasing';
-    else if (percentageChange < -10) trendDirection = 'decreasing';
+    let trendDirection: ErrorTrend = "stable";
+    if (Math.abs(percentageChange) < 5) trendDirection = "stable";
+    else if (percentageChange > 50) trendDirection = "spike";
+    else if (percentageChange > 10) trendDirection = "increasing";
+    else if (percentageChange < -10) trendDirection = "decreasing";
 
     const classification = this.getMostCommonClassification(currentWindow);
     const correlatedProviders = this.findCorrelatedProviders(providerId);
@@ -595,13 +681,19 @@ export class ErrorTrendAnalyzer {
   /**
    * Get most common error classification.
    */
-  private getMostCommonClassification(trends: ErrorTrendData[]): ErrorClassification {
+  private getMostCommonClassification(
+    trends: ErrorTrendData[],
+  ): ErrorClassification {
     const counts: Record<string, number> = {};
     for (const trend of trends) {
       counts[trend.classification] = (counts[trend.classification] || 0) + 1;
     }
     const entries = Object.entries(counts);
-    return (entries.sort((a: [string, number], b: [string, number]) => b[1] - a[1])[0]?.[0] as ErrorClassification) || 'unknown';
+    return (
+      (entries.sort(
+        (a: [string, number], b: [string, number]) => b[1] - a[1],
+      )[0]?.[0] as ErrorClassification) || "unknown"
+    );
   }
 
   /**
@@ -616,52 +708,57 @@ export class ErrorTrendAnalyzer {
   /**
    * Generate root cause hint based on classification and trend.
    */
-  private generateRootCauseHint(classification: ErrorClassification, trend: ErrorTrend): string {
+  private generateRootCauseHint(
+    classification: ErrorClassification,
+    trend: ErrorTrend,
+  ): string {
     const hints: Record<string, Record<string, string>> = {
       timeout: {
-        spike: 'Sudden latency spike detected. Check database or network health.',
-        increasing: 'Gradual timeout increase. Review resource utilization.',
-        stable: 'Consistent timeouts. Verify timeout configuration.',
-        decreasing: 'Timeout issue resolving.',
+        spike:
+          "Sudden latency spike detected. Check database or network health.",
+        increasing: "Gradual timeout increase. Review resource utilization.",
+        stable: "Consistent timeouts. Verify timeout configuration.",
+        decreasing: "Timeout issue resolving.",
       },
       auth: {
-        spike: 'Authentication service may be down. Check credentials.',
-        increasing: 'Token expiration or revocation rate increasing.',
-        stable: 'Persistent auth issues. Review credentials and permissions.',
-        decreasing: 'Authentication recovering.',
+        spike: "Authentication service may be down. Check credentials.",
+        increasing: "Token expiration or revocation rate increasing.",
+        stable: "Persistent auth issues. Review credentials and permissions.",
+        decreasing: "Authentication recovering.",
       },
       rate_limit: {
-        spike: 'Rate limit exceeded. Check request volume.',
-        increasing: 'Request volume increasing. Consider rate limit adjustment.',
-        stable: 'Consistently hitting rate limits.',
-        decreasing: 'Rate limiting issue resolving.',
+        spike: "Rate limit exceeded. Check request volume.",
+        increasing:
+          "Request volume increasing. Consider rate limit adjustment.",
+        stable: "Consistently hitting rate limits.",
+        decreasing: "Rate limiting issue resolving.",
       },
       server_error: {
-        spike: 'Server error spike. Check provider health dashboard.',
-        increasing: 'Server errors increasing. Monitor provider status.',
-        stable: 'Persistent server errors.',
-        decreasing: 'Server error trend improving.',
+        spike: "Server error spike. Check provider health dashboard.",
+        increasing: "Server errors increasing. Monitor provider status.",
+        stable: "Persistent server errors.",
+        decreasing: "Server error trend improving.",
       },
       client_error: {
-        spike: 'Sudden client errors. Check request validation.',
-        increasing: 'Client error rate increasing.',
-        stable: 'Consistent client errors.',
-        decreasing: 'Client error rate improving.',
+        spike: "Sudden client errors. Check request validation.",
+        increasing: "Client error rate increasing.",
+        stable: "Consistent client errors.",
+        decreasing: "Client error rate improving.",
       },
       network: {
-        spike: 'Network connectivity issue detected.',
-        increasing: 'Network reliability degrading.',
-        stable: 'Persistent network issues.',
-        decreasing: 'Network connectivity improving.',
+        spike: "Network connectivity issue detected.",
+        increasing: "Network reliability degrading.",
+        stable: "Persistent network issues.",
+        decreasing: "Network connectivity improving.",
       },
       unknown: {
-        spike: 'Unknown error spike.',
-        increasing: 'Error rate increasing.',
-        stable: 'Baseline error rate.',
-        decreasing: 'Error rate improving.',
+        spike: "Unknown error spike.",
+        increasing: "Error rate increasing.",
+        stable: "Baseline error rate.",
+        decreasing: "Error rate improving.",
       },
     };
-    return hints[classification]?.[trend] || 'Unknown issue detected.';
+    return hints[classification]?.[trend] || "Unknown issue detected.";
   }
 
   /**
@@ -686,7 +783,10 @@ export class DegradationDetector {
   /**
    * Compute baseline statistics from historical data.
    */
-  computeBaseline(providerId: string, history: HealthHistoryRecord[]): BaselineStats {
+  computeBaseline(
+    providerId: string,
+    history: HealthHistoryRecord[],
+  ): BaselineStats {
     const latencies = history.map((h: HealthHistoryRecord) => h.latency);
     const errorRates = history.map((h: HealthHistoryRecord) => h.errorRate);
     const volumes = history.map((h: HealthHistoryRecord) => history.length); // Simplified
@@ -719,16 +819,23 @@ export class DegradationDetector {
     providerId: string,
     currentLatency: number,
     currentErrorRate: number,
-    currentVolume: number
+    currentVolume: number,
   ): DegradationEvent | undefined {
     const baseline = this.baselineStats.get(providerId);
     if (!baseline) return undefined;
 
-    const latencyDeviation = (currentLatency - baseline.latency.mean) / baseline.latency.stdDev;
-    const errorRateDeviation = (currentErrorRate - baseline.errorRate.mean) / baseline.errorRate.stdDev;
-    const volumeDeviation = (currentVolume - baseline.volume.mean) / baseline.volume.stdDev;
+    const latencyDeviation =
+      (currentLatency - baseline.latency.mean) / baseline.latency.stdDev;
+    const errorRateDeviation =
+      (currentErrorRate - baseline.errorRate.mean) / baseline.errorRate.stdDev;
+    const volumeDeviation =
+      (currentVolume - baseline.volume.mean) / baseline.volume.stdDev;
 
-    const anomalyScore = (Math.abs(latencyDeviation) + Math.abs(errorRateDeviation) + Math.abs(volumeDeviation)) / 3;
+    const anomalyScore =
+      (Math.abs(latencyDeviation) +
+        Math.abs(errorRateDeviation) +
+        Math.abs(volumeDeviation)) /
+      3;
 
     if (anomalyScore > 2.5) {
       const severity = this.calculateSeverity(anomalyScore);
@@ -769,7 +876,9 @@ export class DegradationDetector {
       if (!lastEvent.recovered) {
         lastEvent.recovered = {
           timestamp: new Date(),
-          recoveryTime: Math.floor((Date.now() - lastEvent.timestamp.getTime()) / 60000),
+          recoveryTime: Math.floor(
+            (Date.now() - lastEvent.timestamp.getTime()) / 60000,
+          ),
         };
       }
     }
@@ -778,18 +887,22 @@ export class DegradationDetector {
   /**
    * Calculate severity from anomaly score.
    */
-  private calculateSeverity(score: number): 'critical' | 'high' | 'medium' | 'low' {
-    if (score > 8) return 'critical';
-    if (score > 5) return 'high';
-    if (score > 3) return 'medium';
-    return 'low';
+  private calculateSeverity(
+    score: number,
+  ): "critical" | "high" | "medium" | "low" {
+    if (score > 8) return "critical";
+    if (score > 5) return "high";
+    if (score > 3) return "medium";
+    return "low";
   }
 
   /**
    * Calculate mean of values.
    */
   private calculateMean(values: number[]): number {
-    return values.reduce((a: number, b: number) => a + b, 0) / (values.length || 1);
+    return (
+      values.reduce((a: number, b: number) => a + b, 0) / (values.length || 1)
+    );
   }
 
   /**
@@ -797,7 +910,11 @@ export class DegradationDetector {
    */
   private calculateStdDev(values: number[]): number {
     const mean = this.calculateMean(values);
-    const variance = values.reduce((sum: number, v: number) => sum + Math.pow(v - mean, 2), 0) / (values.length || 1);
+    const variance =
+      values.reduce(
+        (sum: number, v: number) => sum + Math.pow(v - mean, 2),
+        0,
+      ) / (values.length || 1);
     return Math.sqrt(variance);
   }
 
@@ -874,7 +991,7 @@ export class AlertingEngine extends EventEmitter {
       metric: String(rule.condition.metric),
       currentValue: value,
       threshold: rule.condition.threshold,
-      status: 'firing',
+      status: "firing",
       createdAt: new Date(),
       firedAt: new Date(),
       escalationLevel: 0,
@@ -882,7 +999,7 @@ export class AlertingEngine extends EventEmitter {
     };
 
     this.alerts.set(alertId, alert);
-    this.emit('alertFired', alert);
+    this.emit("alertFired", alert);
 
     // Send notifications
     for (const channel of rule.channels) {
@@ -895,17 +1012,17 @@ export class AlertingEngine extends EventEmitter {
    */
   private checkCondition(condition: any, value: number): boolean {
     switch (condition.operator) {
-      case '>':
+      case ">":
         return value > condition.threshold;
-      case '<':
+      case "<":
         return value < condition.threshold;
-      case '>=':
+      case ">=":
         return value >= condition.threshold;
-      case '<=':
+      case "<=":
         return value <= condition.threshold;
-      case '==':
+      case "==":
         return value === condition.threshold;
-      case '!=':
+      case "!=":
         return value !== condition.threshold;
       default:
         return false;
@@ -915,31 +1032,43 @@ export class AlertingEngine extends EventEmitter {
   /**
    * Send notification to a channel.
    */
-  private async sendNotification(alert: Alert, channel: AlertChannel): Promise<void> {
+  private async sendNotification(
+    alert: Alert,
+    channel: AlertChannel,
+  ): Promise<void> {
     const config = this.channelConfigs.get(channel);
     if (!config) return;
 
     try {
       switch (channel) {
-        case 'slack': {
+        case "slack": {
           if (config.config.slackWebhookUrl) {
-            await this.sendSlackNotification(alert, config.config.slackWebhookUrl);
+            await this.sendSlackNotification(
+              alert,
+              config.config.slackWebhookUrl,
+            );
           }
           break;
         }
-        case 'email': {
+        case "email": {
           if (config.config.emailAddresses) {
-            await this.sendEmailNotification(alert, config.config.emailAddresses);
+            await this.sendEmailNotification(
+              alert,
+              config.config.emailAddresses,
+            );
           }
           break;
         }
-        case 'pagerduty': {
+        case "pagerduty": {
           if (config.config.pagerDutyApiKey) {
-            await this.sendPagerDutyNotification(alert, config.config.pagerDutyApiKey);
+            await this.sendPagerDutyNotification(
+              alert,
+              config.config.pagerDutyApiKey,
+            );
           }
           break;
         }
-        case 'webhook': {
+        case "webhook": {
           if (config.config.webhookUrl) {
             await this.sendWebhookNotification(alert, config.config.webhookUrl);
           }
@@ -952,64 +1081,85 @@ export class AlertingEngine extends EventEmitter {
         alert_ref.notificationsSent.push(channel);
       }
     } catch (error) {
-      this.emit('notificationError', { channel, error });
+      this.emit("notificationError", { channel, error });
     }
   }
 
   /**
    * Send Slack notification.
    */
-  private async sendSlackNotification(alert: Alert, webhookUrl: string): Promise<void> {
+  private async sendSlackNotification(
+    alert: Alert,
+    webhookUrl: string,
+  ): Promise<void> {
     // Implementation would use fetch to send to Slack webhook
     const payload = {
       text: alert.title,
       attachments: [
         {
-          color: alert.severity === 'critical' ? 'danger' : 'warning',
+          color: alert.severity === "critical" ? "danger" : "warning",
           title: alert.title,
           text: alert.description,
           fields: [
-            { title: 'Severity', value: alert.severity, short: true },
-            { title: 'Current Value', value: String(alert.currentValue), short: true },
-            { title: 'Threshold', value: String(alert.threshold), short: true },
+            { title: "Severity", value: alert.severity, short: true },
+            {
+              title: "Current Value",
+              value: String(alert.currentValue),
+              short: true,
+            },
+            { title: "Threshold", value: String(alert.threshold), short: true },
           ],
         },
       ],
     };
     // await fetch(webhookUrl, { method: 'POST', body: JSON.stringify(payload) });
-    this.emit('notificationSent', { channel: 'slack', alert, payload });
+    this.emit("notificationSent", { channel: "slack", alert, payload });
   }
 
   /**
    * Send email notification.
    */
-  private async sendEmailNotification(alert: Alert, addresses: string[]): Promise<void> {
+  private async sendEmailNotification(
+    alert: Alert,
+    addresses: string[],
+  ): Promise<void> {
     // Implementation would use email service
     const message = `Alert: ${alert.title}\n\n${alert.description}\n\nSeverity: ${alert.severity}`;
-    this.emit('notificationSent', { channel: 'email', alert, message, recipients: addresses });
+    this.emit("notificationSent", {
+      channel: "email",
+      alert,
+      message,
+      recipients: addresses,
+    });
   }
 
   /**
    * Send PagerDuty notification.
    */
-  private async sendPagerDutyNotification(alert: Alert, apiKey: string): Promise<void> {
+  private async sendPagerDutyNotification(
+    alert: Alert,
+    apiKey: string,
+  ): Promise<void> {
     // Implementation would use PagerDuty API
     const event = {
-      routing_key: 'sk_live_' + apiKey.substring(0, 10),
-      event_action: 'trigger',
+      routing_key: "sk_live_" + apiKey.substring(0, 10),
+      event_action: "trigger",
       payload: {
         summary: alert.title,
         severity: alert.severity,
         source: alert.providerId,
       },
     };
-    this.emit('notificationSent', { channel: 'pagerduty', alert, event });
+    this.emit("notificationSent", { channel: "pagerduty", alert, event });
   }
 
   /**
    * Send webhook notification.
    */
-  private async sendWebhookNotification(alert: Alert, webhookUrl: string): Promise<void> {
+  private async sendWebhookNotification(
+    alert: Alert,
+    webhookUrl: string,
+  ): Promise<void> {
     const payload = {
       alertId: alert.alertId,
       ruleId: alert.ruleId,
@@ -1021,32 +1171,46 @@ export class AlertingEngine extends EventEmitter {
       firedAt: alert.firedAt.toISOString(),
     };
     // await fetch(webhookUrl, { method: 'POST', body: JSON.stringify(payload) });
-    this.emit('notificationSent', { channel: 'webhook', alert, payload });
+    this.emit("notificationSent", { channel: "webhook", alert, payload });
   }
 
   /**
    * Acknowledge an alert.
    */
-  acknowledgeAlert(alertId: string, acknowledgedBy: string, comment?: string): void {
+  acknowledgeAlert(
+    alertId: string,
+    acknowledgedBy: string,
+    comment?: string,
+  ): void {
     const alert = this.alerts.get(alertId);
     if (alert) {
-      alert.status = 'acknowledged';
+      alert.status = "acknowledged";
       alert.acknowledgedAt = new Date();
       alert.acknowledgedBy = acknowledgedBy;
-      this.emit('alertAcknowledged', { alertId, acknowledgedBy, comment });
+      this.emit("alertAcknowledged", { alertId, acknowledgedBy, comment });
     }
   }
 
   /**
    * Resolve an alert.
    */
-  resolveAlert(alertId: string, resolvedBy: string, rootCause?: string, actionsTaken?: string): void {
+  resolveAlert(
+    alertId: string,
+    resolvedBy: string,
+    rootCause?: string,
+    actionsTaken?: string,
+  ): void {
     const alert = this.alerts.get(alertId);
     if (alert) {
-      alert.status = 'resolved';
+      alert.status = "resolved";
       alert.resolvedAt = new Date();
       alert.resolvedBy = resolvedBy;
-      this.emit('alertResolved', { alertId, resolvedBy, rootCause, actionsTaken });
+      this.emit("alertResolved", {
+        alertId,
+        resolvedBy,
+        rootCause,
+        actionsTaken,
+      });
     }
   }
 
@@ -1062,7 +1226,7 @@ export class AlertingEngine extends EventEmitter {
    */
   getActiveAlerts(providerId: string): Alert[] {
     return Array.from(this.alerts.values()).filter(
-      (a: Alert) => a.providerId === providerId && a.status === 'firing'
+      (a: Alert) => a.providerId === providerId && a.status === "firing",
     );
   }
 }

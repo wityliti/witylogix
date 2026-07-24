@@ -69,7 +69,7 @@ const validateDeliveryCompletionStep: WorkflowStep<
 
   async invoke(
     input: ValidateDeliveryCompletionInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<ValidateDeliveryCompletionOutput>> {
     const logger = context.logger;
     logger?.info("Starting delivery completion validation", {
@@ -78,7 +78,7 @@ const validateDeliveryCompletionStep: WorkflowStep<
     });
 
     try {
-      const prisma = (context.prisma as any);
+      const prisma = context.prisma as any;
 
       // Fetch order with all required fields
       const order = await prisma.order.findUnique({
@@ -207,7 +207,7 @@ const verifyProofOfDeliveryStep: WorkflowStep<
 
   async invoke(
     input: VerifyProofOfDeliveryInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<VerifyProofOfDeliveryOutput>> {
     const logger = context.logger;
     logger?.info("Starting proof of delivery verification", {
@@ -227,7 +227,7 @@ const verifyProofOfDeliveryStep: WorkflowStep<
 
       if (!hasPhotos && !hasSignature && !hasCode) {
         errors.push(
-          "At least one proof of delivery method is required (photo, signature, or delivery code)"
+          "At least one proof of delivery method is required (photo, signature, or delivery code)",
         );
         return {
           success: false,
@@ -265,11 +265,11 @@ const verifyProofOfDeliveryStep: WorkflowStep<
         try {
           const buffer = Buffer.from(
             proofOfDelivery.signatureBase64!,
-            "base64"
+            "base64",
           );
           if (buffer.length < 100) {
             errors.push(
-              "Signature appears too small (< 100 bytes of decoded data)"
+              "Signature appears too small (< 100 bytes of decoded data)",
             );
           }
         } catch (e) {
@@ -289,7 +289,7 @@ const verifyProofOfDeliveryStep: WorkflowStep<
           errors.push(
             "Delivery code must be 4-6 digits (received: " +
               proofOfDelivery.deliveryCode +
-              ")"
+              ")",
           );
         } else {
           codeValid = true;
@@ -381,7 +381,7 @@ const updateDeliveryStatusStep: WorkflowStep<
 
   async invoke(
     input: UpdateDeliveryStatusInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<UpdateDeliveryStatusOutput>> {
     const logger = context.logger;
     logger?.info("Updating delivery status", {
@@ -390,7 +390,7 @@ const updateDeliveryStatusStep: WorkflowStep<
     });
 
     try {
-      const prisma = (context.prisma as any);
+      const prisma = context.prisma as any;
 
       // Fetch current order status for compensation
       const order = await prisma.order.findUnique({
@@ -466,7 +466,7 @@ const updateDeliveryStatusStep: WorkflowStep<
   // Compensation: Revert order status to OUT_FOR_DELIVERY
   async compensate(
     output: UpdateDeliveryStatusOutput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<void> {
     // Cast to any to resolve type mismatch - compensate receives output type
     const logger = context.logger;
@@ -476,7 +476,7 @@ const updateDeliveryStatusStep: WorkflowStep<
     });
 
     try {
-      const prisma = (context.prisma as any);
+      const prisma = context.prisma as any;
 
       // Revert order status
       await prisma.order.update({
@@ -530,13 +530,13 @@ const updateDriverStatusStep: WorkflowStep<
 
   async invoke(
     input: UpdateDriverStatusInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<UpdateDriverStatusOutput>> {
     const logger = context.logger;
     logger?.info("Updating driver status", { driverId: input.driverId });
 
     try {
-      const prisma = (context.prisma as any);
+      const prisma = context.prisma as any;
 
       // Fetch driver
       const driver = await prisma.driver.findUnique({
@@ -595,7 +595,7 @@ const updateDriverStatusStep: WorkflowStep<
   // Compensation: Revert driver status
   async compensate(
     output: UpdateDriverStatusOutput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<void> {
     // Cast to any to resolve type mismatch - compensate receives output type
     const logger = context.logger;
@@ -605,7 +605,7 @@ const updateDriverStatusStep: WorkflowStep<
     });
 
     try {
-      const prisma = (context.prisma as any);
+      const prisma = context.prisma as any;
 
       await prisma.driver.update({
         where: { id: output.driverId },
@@ -645,7 +645,7 @@ const processDeliveryMetricsStep: WorkflowStep<
 
   async invoke(
     input: ProcessDeliveryMetricsInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<ProcessDeliveryMetricsOutput>> {
     const logger = context.logger;
     logger?.info("Processing delivery metrics", { orderId: input.orderId });
@@ -655,12 +655,11 @@ const processDeliveryMetricsStep: WorkflowStep<
       const deliveryDurationMinutes = Math.round(
         (input.actualDeliveryTime.getTime() -
           input.estimatedDeliveryTime.getTime()) /
-          60000
+          60000,
       );
 
       // Determine if on-time
-      const isOnTime =
-        input.actualDeliveryTime <= input.estimatedDeliveryTime;
+      const isOnTime = input.actualDeliveryTime <= input.estimatedDeliveryTime;
       const onTimePercentage = isOnTime ? 100 : 0;
 
       logger?.info("Delivery metrics calculated", {
@@ -713,7 +712,7 @@ const triggerBillingStep: WorkflowStep<
 
   async invoke(
     input: TriggerBillingInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<TriggerBillingOutput>> {
     const logger = context.logger;
     logger?.info("Triggering billing", {
@@ -722,7 +721,7 @@ const triggerBillingStep: WorkflowStep<
     });
 
     try {
-      const prisma = (context.prisma as any);
+      const prisma = context.prisma as any;
 
       // Calculate billing amounts
       const totalPrice = Number(input.totalPrice);
@@ -785,7 +784,7 @@ const triggerBillingStep: WorkflowStep<
   // Compensation: Void billing record
   async compensate(
     output: TriggerBillingOutput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<void> {
     // Cast to any to resolve type mismatch - compensate receives output type
     const logger = context.logger;
@@ -794,7 +793,7 @@ const triggerBillingStep: WorkflowStep<
     });
 
     try {
-      const prisma = (context.prisma as any);
+      const prisma = context.prisma as any;
 
       // Mark transaction as failed/refunded
       await prisma.paymentTransaction.update({
@@ -833,7 +832,7 @@ const updateInventoryStep: WorkflowStep<
 
   async invoke(
     input: UpdateInventoryInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<UpdateInventoryOutput>> {
     const logger = context.logger;
     logger?.info("Updating inventory", {
@@ -842,7 +841,7 @@ const updateInventoryStep: WorkflowStep<
     });
 
     try {
-      const prisma = (context.prisma as any);
+      const prisma = context.prisma as any;
 
       // Fetch order with shipments and line items
       const order = await prisma.order.findUnique({
@@ -898,7 +897,7 @@ const updateInventoryStep: WorkflowStep<
   // Compensation: Revert inventory to reserved state
   async compensate(
     output: UpdateInventoryOutput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<void> {
     // Cast to any to resolve type mismatch - compensate receives output type
     const logger = context.logger;
@@ -937,7 +936,7 @@ const notifyCustomerStep: WorkflowStep<
 
   async invoke(
     input: NotifyCustomerInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<NotifyCustomerOutput>> {
     const logger = context.logger;
     logger?.info("Sending customer notification", {
@@ -1001,7 +1000,7 @@ const notifyMerchantStep: WorkflowStep<
 
   async invoke(
     input: NotifyMerchantInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<NotifyMerchantOutput>> {
     const logger = context.logger;
     logger?.info("Sending merchant notification", {
@@ -1060,11 +1059,12 @@ const archiveDeliveryDataStep: WorkflowStep<
   ArchiveDeliveryDataOutput
 > = {
   name: "archiveDeliveryData",
-  description: "Move real-time tracking data to cold storage, cleanup temp files",
+  description:
+    "Move real-time tracking data to cold storage, cleanup temp files",
 
   async invoke(
     input: ArchiveDeliveryDataInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<ArchiveDeliveryDataOutput>> {
     const logger = context.logger;
     logger?.info("Archiving delivery data", {
@@ -1127,7 +1127,7 @@ const emitDeliveryCompletedEventStep: WorkflowStep<
 
   async invoke(
     input: EmitDeliveryCompletedEventInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<EmitDeliveryCompletedEventOutput>> {
     const logger = context.logger;
     logger?.info("Emitting delivery completed event", {

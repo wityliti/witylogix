@@ -19,9 +19,7 @@ import {
   createWooCommerceClient,
   type WCClientConfig,
 } from "@witylogix/core/integrations/woocommerce";
-import {
-  WebhookConsumer,
-} from "@witylogix/core/integrations/woocommerce";
+import { WebhookConsumer } from "@witylogix/core/integrations/woocommerce";
 import { createCryptoService } from "@witylogix/core/encryption";
 import { requireAuth, requireRole } from "../../middleware/auth.js";
 import { tenantContext } from "../../middleware/tenant.js";
@@ -242,7 +240,10 @@ export default async function wooCommerceRoutes(
           try {
             await client.deleteWebhook(parseInt(webhook.wcWebhookId), true);
           } catch (error) {
-            app.log.error(`Failed to delete webhook ${webhook.wcWebhookId}`, error);
+            app.log.error(
+              `Failed to delete webhook ${webhook.wcWebhookId}`,
+              error,
+            );
           }
         }
 
@@ -308,7 +309,9 @@ export default async function wooCommerceRoutes(
 
         try {
           const client = createWooCommerceClient(config);
-          const systemStatus = await client.get<{ environment?: Record<string, unknown> }>("/system_status");
+          const systemStatus = await client.get<{
+            environment?: Record<string, unknown>;
+          }>("/system_status");
           isHealthy = true;
           storeInfo = systemStatus?.environment ?? null;
         } catch (error) {
@@ -427,7 +430,9 @@ export default async function wooCommerceRoutes(
         })();
 
         // Don't wait for sync to complete, return immediately
-        syncPromise.catch((error) => app.log.error("Background sync error", error));
+        syncPromise.catch((error) =>
+          app.log.error("Background sync error", error),
+        );
 
         return reply.send({
           message: "Sync initiated",
@@ -469,13 +474,12 @@ export default async function wooCommerceRoutes(
 
         for (const webhook of webhooks) {
           // Check for duplicate
-          const existingLog =
-            await prisma.wooCommerceWebhookLog.findFirst({
-              where: {
-                connectionId: webhook.connectionId,
-                deliveryId,
-              },
-            });
+          const existingLog = await prisma.wooCommerceWebhookLog.findFirst({
+            where: {
+              connectionId: webhook.connectionId,
+              deliveryId,
+            },
+          });
 
           if (existingLog) {
             return reply.send({ message: "Webhook already processed" });
@@ -495,7 +499,11 @@ export default async function wooCommerceRoutes(
               resource: payload.resource,
               event: payload.event,
               payload: payload.data as any,
-              signature: signature ? (Array.isArray(signature) ? signature[0] : signature) : null,
+              signature: signature
+                ? Array.isArray(signature)
+                  ? signature[0]
+                  : signature
+                : null,
               verified: verification.verified,
               status: verification.verified ? "pending" : "failed",
             },
@@ -510,8 +518,17 @@ export default async function wooCommerceRoutes(
 
           // Mark as processed
           await prisma.wooCommerceWebhookLog.update({
-            where: { deliveryId_connectionId: { deliveryId, connectionId: webhook.connectionId } },
-            data: { processed: true, status: "processed", processedAt: new Date() },
+            where: {
+              deliveryId_connectionId: {
+                deliveryId,
+                connectionId: webhook.connectionId,
+              },
+            },
+            data: {
+              processed: true,
+              status: "processed",
+              processedAt: new Date(),
+            },
           });
         }
 
@@ -530,54 +547,51 @@ export default async function wooCommerceRoutes(
 
   // ── GET /mapping — Field mapping configuration ───────────
 
-  app.get(
-    "/mapping",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      return reply.send({
-        orderFieldMapping: {
-          "wc.billing.first_name": "customer.firstName",
-          "wc.billing.last_name": "customer.lastName",
-          "wc.billing.email": "customer.email",
-          "wc.shipping.address_1": "deliveryAddress.street",
-          "wc.shipping.city": "deliveryAddress.city",
-          "wc.status": "status",
+  app.get("/mapping", async (request: FastifyRequest, reply: FastifyReply) => {
+    return reply.send({
+      orderFieldMapping: {
+        "wc.billing.first_name": "customer.firstName",
+        "wc.billing.last_name": "customer.lastName",
+        "wc.billing.email": "customer.email",
+        "wc.shipping.address_1": "deliveryAddress.street",
+        "wc.shipping.city": "deliveryAddress.city",
+        "wc.status": "status",
+      },
+      productFieldMapping: {
+        "wc.name": "name",
+        "wc.description": "description",
+        "wc.sku": "sku",
+        "wc.price": "pricing.price",
+        "wc.stock_quantity": "inventory.quantity",
+      },
+      customerFieldMapping: {
+        "wc.email": "email",
+        "wc.first_name": "firstName",
+        "wc.last_name": "lastName",
+        "wc.billing": "billingAddress",
+      },
+      statusMapping: {
+        wcToWl: {
+          pending: "pending",
+          processing: "confirmed",
+          "on-hold": "pending",
+          completed: "delivered",
+          cancelled: "cancelled",
+          refunded: "cancelled",
+          failed: "pending",
         },
-        productFieldMapping: {
-          "wc.name": "name",
-          "wc.description": "description",
-          "wc.sku": "sku",
-          "wc.price": "pricing.price",
-          "wc.stock_quantity": "inventory.quantity",
+        wlToWc: {
+          pending: "pending",
+          confirmed: "processing",
+          dispatched: "processing",
+          out_for_delivery: "processing",
+          delivered: "completed",
+          cancelled: "cancelled",
+          returned: "refunded",
         },
-        customerFieldMapping: {
-          "wc.email": "email",
-          "wc.first_name": "firstName",
-          "wc.last_name": "lastName",
-          "wc.billing": "billingAddress",
-        },
-        statusMapping: {
-          wcToWl: {
-            pending: "pending",
-            processing: "confirmed",
-            "on-hold": "pending",
-            completed: "delivered",
-            cancelled: "cancelled",
-            refunded: "cancelled",
-            failed: "pending",
-          },
-          wlToWc: {
-            pending: "pending",
-            confirmed: "processing",
-            dispatched: "processing",
-            out_for_delivery: "processing",
-            delivered: "completed",
-            cancelled: "cancelled",
-            returned: "refunded",
-          },
-        },
-      });
-    },
-  );
+      },
+    });
+  });
 
   // ── PUT /mapping — Update field mapping ─────────────────
 

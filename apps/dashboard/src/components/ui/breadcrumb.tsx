@@ -35,20 +35,21 @@ interface BreadcrumbSeparatorProps {
 const Breadcrumb = ({ children, className, items }: BreadcrumbProps) => {
   return (
     <nav
-      className={cn(
-        "flex items-center gap-2",
-        "text-sm",
-        className
-      )}
+      className={cn("flex items-center gap-2", "text-sm", className)}
       aria-label="Breadcrumb"
     >
       <ol className="flex items-center gap-2">
         {items
           ? items.map((item, idx) => (
               <li key={idx} className="flex items-center gap-2">
-                {idx > 0 && <ChevronRight className="w-3 h-3 text-wl-text-secondary" />}
+                {idx > 0 && (
+                  <ChevronRight className="w-3 h-3 text-wl-text-secondary" />
+                )}
                 {item.href ? (
-                  <a href={item.href} className="text-wl-text-secondary hover:text-wl-text-primary">
+                  <a
+                    href={item.href}
+                    className="text-wl-text-secondary hover:text-wl-text-primary"
+                  >
                     {item.label}
                   </a>
                 ) : (
@@ -65,7 +66,7 @@ const Breadcrumb = ({ children, className, items }: BreadcrumbProps) => {
 const BreadcrumbItem = ({
   children,
   isCurrentPage = false,
-  className
+  className,
 }: BreadcrumbItemProps) => {
   return (
     <li
@@ -73,7 +74,7 @@ const BreadcrumbItem = ({
         "flex items-center gap-2",
         isCurrentPage && "text-wl-text-primary font-medium",
         !isCurrentPage && "text-wl-text-secondary",
-        className
+        className,
       )}
       aria-current={isCurrentPage ? "page" : undefined}
     >
@@ -82,11 +83,7 @@ const BreadcrumbItem = ({
   );
 };
 
-const BreadcrumbLink = ({
-  href,
-  children,
-  className
-}: BreadcrumbLinkProps) => {
+const BreadcrumbLink = ({ href, children, className }: BreadcrumbLinkProps) => {
   return (
     <a
       href={href}
@@ -94,7 +91,7 @@ const BreadcrumbLink = ({
         "text-wl-primary-400 hover:text-wl-primary-300",
         "transition-colors duration-fast ease-default",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wl-primary-500",
-        className
+        className,
       )}
     >
       {children}
@@ -110,9 +107,4 @@ const BreadcrumbSeparator = ({ className }: BreadcrumbSeparatorProps) => {
   );
 };
 
-export {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-};
+export { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator };

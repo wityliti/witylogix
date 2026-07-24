@@ -1,4 +1,5 @@
 # Google Maps Native UI Components - Implementation Guide
+
 ## Sprint 4.6 - Gap G-09
 
 **Frontend Lead**: NK (Nikhil)
@@ -16,6 +17,7 @@ Comprehensive suite of Google Maps native UI components built for the Witylogix 
 ## Completed Components
 
 ### 1. **GoogleMapsProvider** ✓
+
 **File**: `/apps/dashboard/src/components/maps/google-maps-provider.tsx`
 
 - React Context provider for Google Maps API
@@ -27,6 +29,7 @@ Comprehensive suite of Google Maps native UI components built for the Witylogix 
 - Automatic script deduplication
 
 **Usage**:
+
 ```tsx
 <GoogleMapsProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}>
   <YourMapComponent />
@@ -36,6 +39,7 @@ Comprehensive suite of Google Maps native UI components built for the Witylogix 
 ---
 
 ### 2. **AddressAutocomplete** ✓
+
 **File**: `/apps/dashboard/src/components/maps/address-autocomplete.tsx`
 
 - Google Places Autocomplete input
@@ -50,12 +54,14 @@ Comprehensive suite of Google Maps native UI components built for the Witylogix 
 - Formatted address + lat/lng shown after selection
 
 **Key Features**:
+
 - Automatic viewport fitting on selection
 - Phone, website, and UTC offset in place details
 - Address component extraction
 - Responsive dropdown with max-height scrolling
 
 **Props**:
+
 ```tsx
 interface AddressAutocompleteProps {
   onSelect: (place: PlaceDetails) => void;
@@ -73,6 +79,7 @@ interface AddressAutocompleteProps {
 ---
 
 ### 3. **ZoneMapEditor** ✓
+
 **File**: `/apps/dashboard/src/components/maps/zone-map-editor.tsx`
 
 - Interactive Google Maps editor for delivery zones
@@ -88,6 +95,7 @@ interface AddressAutocompleteProps {
 - Zone overlap calculation (area + percentage)
 
 **Key Features**:
+
 - Real-time polygon drawing
 - Editable polygon vertices
 - Automatic bounds fitting
@@ -97,6 +105,7 @@ interface AddressAutocompleteProps {
 - Draggable zone manipulation
 
 **Props**:
+
 ```tsx
 interface ZoneMapEditorProps {
   zones: MapZone[];
@@ -115,6 +124,7 @@ Red, Blue, Green, Yellow, Purple, Pink, Orange, Teal, Indigo, Cyan, Lime, Slate
 ---
 
 ### 4. **RouteMapViewer** ✓
+
 **File**: `/apps/dashboard/src/components/maps/route-map-viewer.tsx`
 
 - Display planned delivery routes on maps
@@ -129,6 +139,7 @@ Red, Blue, Green, Yellow, Purple, Pink, Orange, Teal, Indigo, Cyan, Lime, Slate
 - Stop list with inline status badges
 
 **Key Features**:
+
 - Supports both GeoJSON LineString and timestamp-based paths
 - Fallback to stop-to-stop line if no polyline
 - Custom marker icons per status
@@ -138,6 +149,7 @@ Red, Blue, Green, Yellow, Purple, Pink, Orange, Teal, Indigo, Cyan, Lime, Slate
 - Real-time location updates
 
 **Props**:
+
 ```tsx
 interface RouteMapViewerProps {
   route: DeliveryRoute;
@@ -152,6 +164,7 @@ interface RouteMapViewerProps {
 ---
 
 ### 5. **DeliveryHeatmap** ✓
+
 **File**: `/apps/dashboard/src/components/maps/delivery-heatmap.tsx`
 
 - Google Maps heatmap layer visualization
@@ -167,6 +180,7 @@ interface RouteMapViewerProps {
 - Haversine distance calculation for clustering
 
 **Key Features**:
+
 - Dynamic weight calculation per mode
 - Adaptive max intensity based on data
 - Nearby point clustering (1km radius)
@@ -176,10 +190,11 @@ interface RouteMapViewerProps {
 - Responsive button layout
 
 **Props**:
+
 ```tsx
 interface DeliveryHeatmapProps {
   dataPoints: HeatmapDataPoint[];
-  mode: 'count' | 'time' | 'failures';
+  mode: "count" | "time" | "failures";
   timeRange: { start: string; end: string };
   onTimeRangeChange?: (range) => void;
   defaultCenter?: { lat: number; lng: number };
@@ -192,6 +207,7 @@ interface DeliveryHeatmapProps {
 ---
 
 ### 6. **PlaceSearch** ✓
+
 **File**: `/apps/dashboard/src/components/maps/place-search.tsx`
 
 - Google Places text search integration
@@ -204,6 +220,7 @@ interface DeliveryHeatmapProps {
 - Clear and search history clear
 
 **Key Features**:
+
 - Persistent search history across sessions
 - Distance calculation using geometry API
 - Category label display
@@ -213,10 +230,11 @@ interface DeliveryHeatmapProps {
 - Recent searches quick access
 
 **Props**:
+
 ```tsx
 interface PlaceSearchProps {
   onResultSelect: (place: PlaceSearchResult) => void;
-  categoryFilter?: 'addresses' | 'establishments' | 'geocode';
+  categoryFilter?: "addresses" | "establishments" | "geocode";
   mapCenter?: { lat: number; lng: number };
   searchRadius?: number;
   showRecentSearches?: boolean;
@@ -227,9 +245,11 @@ interface PlaceSearchProps {
 ---
 
 ### 7. **Types Module** ✓
+
 **File**: `/apps/dashboard/src/components/maps/types.ts`
 
 Comprehensive TypeScript interface definitions:
+
 - `PlacePrediction` - Autocomplete prediction
 - `PlaceDetails` - Complete place information
 - `MapZone` - Zone definition
@@ -248,9 +268,11 @@ All interfaces are fully documented with JSDoc comments.
 ---
 
 ### 8. **Index/Barrel Export** ✓
+
 **File**: `/apps/dashboard/src/components/maps/index.ts`
 
 Convenient exports for all components and types:
+
 ```tsx
 export { GoogleMapsProvider, useGoogleMaps } from './google-maps-provider';
 export { AddressAutocomplete } from './address-autocomplete';
@@ -264,23 +286,26 @@ export type { MapZone, DeliveryRoute, PlaceDetails, ... };
 ```
 
 **Usage**:
+
 ```tsx
 import {
   GoogleMapsProvider,
   AddressAutocomplete,
   ZoneMapEditor,
-  type MapZone
-} from '@/components/maps';
+  type MapZone,
+} from "@/components/maps";
 ```
 
 ---
 
 ### 9. **Settings Page** ✓
+
 **File**: `/apps/dashboard/src/app/(dashboard)/settings/maps/page.tsx`
 
 Complete Google Maps configuration page:
 
 **Features**:
+
 - API key input with masking
 - API key validation and testing
 - Connection test to Google Maps API
@@ -299,12 +324,13 @@ Complete Google Maps configuration page:
 - Google Cloud Console link
 
 **Settings Object**:
+
 ```tsx
 interface MapsSettings {
   apiKey: string;
   defaultCenter: { lat: number; lng: number };
   defaultZoom: number;
-  mapStyle: 'standard' | 'satellite' | 'terrain';
+  mapStyle: "standard" | "satellite" | "terrain";
   enableHeatmap: boolean;
   enableDrawing: boolean;
   enableTraffic: boolean;
@@ -318,6 +344,7 @@ interface MapsSettings {
 ### 10. **Test Files** ✓
 
 **Address Autocomplete Tests** (`address-autocomplete.test.tsx`):
+
 - Input rendering
 - Loading state
 - Predictions dropdown
@@ -327,6 +354,7 @@ interface MapsSettings {
 - Disabled state
 
 **Zone Editor Tests** (`zone-map-editor.test.tsx`):
+
 - Map container rendering
 - Zone list display
 - Zone selection
@@ -368,36 +396,39 @@ apps/dashboard/src/app/(dashboard)/settings/maps/
 ## Styling & Design
 
 ### Design System Integration
+
 - **Framework**: Tailwind CSS v3.4
 - **CSS Variables**: `--wl-*` custom properties
 - **Color Scheme**: Dark theme by default
 - **Utilities**: `cn()` from `@/lib/utils`
 
 ### Color Palette Usage
+
 ```tsx
 // Primary elements
-className="bg-wl-primary-500 text-wl-text-primary"
+className = "bg-wl-primary-500 text-wl-text-primary";
 
 // Status colors
-className="bg-wl-success-bg text-wl-success-400"  // Completed
-className="bg-wl-danger-bg text-wl-danger-400"    // Failed
-className="bg-wl-warning-bg text-wl-warning-400"  // Pending
+className = "bg-wl-success-bg text-wl-success-400"; // Completed
+className = "bg-wl-danger-bg text-wl-danger-400"; // Failed
+className = "bg-wl-warning-bg text-wl-warning-400"; // Pending
 
 // Backgrounds
-className="bg-wl-bg-surface"
-className="bg-wl-bg-overlay"
-className="bg-wl-bg-elevated"
+className = "bg-wl-bg-surface";
+className = "bg-wl-bg-overlay";
+className = "bg-wl-bg-elevated";
 
 // Borders
-className="border border-wl-border-default"
-className="border border-wl-border-strong"
+className = "border border-wl-border-default";
+className = "border border-wl-border-strong";
 
 // Text
-className="text-wl-text-primary"
-className="text-wl-text-secondary"
+className = "text-wl-text-primary";
+className = "text-wl-text-secondary";
 ```
 
 ### Button Variants
+
 ```tsx
 <Button variant="primary">Save</Button>    // Gradient primary
 <Button variant="secondary">Cancel</Button> // Outlined secondary
@@ -406,6 +437,7 @@ className="text-wl-text-secondary"
 ```
 
 ### Badge Variants
+
 ```tsx
 <Badge variant="default">New</Badge>
 <Badge variant="success">Completed</Badge>
@@ -420,6 +452,7 @@ className="text-wl-text-secondary"
 ## Integration Steps
 
 ### 1. Environment Setup
+
 ```bash
 # Install dependencies (should already be installed)
 npm install
@@ -429,9 +462,10 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_key_here
 ```
 
 ### 2. Wrap Application
+
 ```tsx
 // app/layout.tsx
-import { GoogleMapsProvider } from '@/components/maps';
+import { GoogleMapsProvider } from "@/components/maps";
 
 export default function RootLayout({ children }) {
   return (
@@ -439,7 +473,7 @@ export default function RootLayout({ children }) {
       <body>
         <GoogleMapsProvider
           apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
-          libraries={['places', 'drawing', 'visualization', 'geometry']}
+          libraries={["places", "drawing", "visualization", "geometry"]}
         >
           {children}
         </GoogleMapsProvider>
@@ -450,22 +484,18 @@ export default function RootLayout({ children }) {
 ```
 
 ### 3. Use Components
+
 ```tsx
-import { AddressAutocomplete, ZoneMapEditor } from '@/components/maps';
-import type { MapZone } from '@/components/maps';
+import { AddressAutocomplete, ZoneMapEditor } from "@/components/maps";
+import type { MapZone } from "@/components/maps";
 
 export default function DeliverySetup() {
   const [zones, setZones] = useState<MapZone[]>([]);
 
   return (
     <>
-      <AddressAutocomplete
-        onSelect={(place) => console.log(place)}
-      />
-      <ZoneMapEditor
-        zones={zones}
-        onZonesChange={setZones}
-      />
+      <AddressAutocomplete onSelect={(place) => console.log(place)} />
+      <ZoneMapEditor zones={zones} onZonesChange={setZones} />
     </>
   );
 }
@@ -476,6 +506,7 @@ export default function DeliverySetup() {
 ## API Integration Points
 
 ### Google Maps APIs Used
+
 1. **Maps JavaScript API** - Core mapping library
 2. **Places API** - Address autocomplete, place search, details
 3. **Geometry Library** - Distance calculations, containment checks
@@ -483,6 +514,7 @@ export default function DeliverySetup() {
 5. **Visualization Library** - Heatmap layer
 
 ### Required API Permissions
+
 - Maps JavaScript API
 - Places API (Places Autocomplete, Text Search, Place Details)
 - Maps SDK for JavaScript
@@ -513,11 +545,13 @@ export default function DeliverySetup() {
 ## Testing
 
 ### Run Tests
+
 ```bash
 npm run test
 ```
 
 ### Test Coverage
+
 - Unit tests for autocomplete component
 - Integration tests for zone editor
 - Mock Google Maps API for isolated testing
@@ -547,21 +581,25 @@ npm run test
 ## Troubleshooting
 
 ### Issue: "Maps JavaScript API is not loaded"
+
 - **Solution**: Ensure API key is set and maps library is available
 - Check browser console for script loading errors
 - Verify API key has Maps JavaScript API enabled
 
 ### Issue: Places Autocomplete not working
+
 - **Solution**: Enable Places API in Google Cloud Console
 - Verify API key restrictions don't block it
 - Check network tab for failing requests
 
 ### Issue: Drawing tools not visible
+
 - **Solution**: Ensure 'drawing' library is included in GoogleMapsProvider
 - Check for CSS conflicts hiding drawing controls
 - Verify map initialization completed
 
 ### Issue: Overlap detection not working
+
 - **Solution**: Ensure 'geometry' library is loaded
 - Verify zone vertices are valid LatLng objects
 - Check polygon containment algorithm (ray casting)

@@ -162,14 +162,14 @@ describe("Dashboard Route Loader", () => {
 
     it("should throw error if session is invalid or missing", async () => {
       (authenticate.admin as any).mockRejectedValue(
-        new Error("Invalid session")
+        new Error("Invalid session"),
       );
 
       await expect(
         loader({
           request: mockRequest() as LoaderFunctionArgs["request"],
           params: {},
-        } as LoaderFunctionArgs)
+        } as LoaderFunctionArgs),
       ).rejects.toThrow("Invalid session");
     });
   });
@@ -399,7 +399,7 @@ describe("Dashboard Route Loader", () => {
 
       expect(result.recentActivity[0].actor).toBeUndefined();
       expect(result.recentActivity[0].message).toBe(
-        "Automatic rebalancing completed"
+        "Automatic rebalancing completed",
       );
     });
 
@@ -745,7 +745,9 @@ describe("Dashboard Route Loader", () => {
       } as LoaderFunctionArgs)) as DashboardData;
 
       // Should handle gracefully - either undefined or empty array
-      expect(result.recentActivity === undefined || result.recentActivity === []).toBe(true);
+      expect(
+        result.recentActivity === undefined || result.recentActivity === [],
+      ).toBe(true);
     });
 
     it("should handle null session token gracefully", async () => {
@@ -803,7 +805,9 @@ describe("Dashboard Route Loader", () => {
         params: {},
       } as LoaderFunctionArgs)) as DashboardData;
 
-      expect(result.recentActivity[0].timestamp).toBe("2024-03-09T12:34:56.789Z");
+      expect(result.recentActivity[0].timestamp).toBe(
+        "2024-03-09T12:34:56.789Z",
+      );
     });
   });
 });

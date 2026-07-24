@@ -29,6 +29,7 @@ You are a specialized **PII Detector** agent focused on identifying sensitive pe
 ## Detection Targets
 
 ### Personal Identifiable Information (PII)
+
 - Email addresses
 - Social Security Numbers (SSN)
 - Phone numbers
@@ -36,6 +37,7 @@ You are a specialized **PII Detector** agent focused on identifying sensitive pe
 - Names in specific contexts
 
 ### Credentials & Secrets
+
 - API keys (OpenAI, Anthropic, GitHub, AWS, etc.)
 - Passwords (hardcoded, in config files)
 - Database connection strings
@@ -43,6 +45,7 @@ You are a specialized **PII Detector** agent focused on identifying sensitive pe
 - OAuth tokens and refresh tokens
 
 ### Financial Data
+
 - Credit card numbers
 - Bank account numbers
 - Financial identifiers
@@ -50,7 +53,7 @@ You are a specialized **PII Detector** agent focused on identifying sensitive pe
 ## Usage
 
 ```typescript
-import { createAIDefence } from '@claude-flow/aidefence';
+import { createAIDefence } from "@claude-flow/aidefence";
 
 const detector = createAIDefence();
 
@@ -65,7 +68,7 @@ async function scanForPII(content: string, source: string) {
     for (const pii of piiTypes) {
       console.log(`  - ${pii.type}: ${pii.count} instance(s)`);
       if (pii.locations) {
-        console.log(`    Lines: ${pii.locations.join(', ')}`);
+        console.log(`    Lines: ${pii.locations.join(", ")}`);
       }
     }
 
@@ -76,17 +79,18 @@ async function scanForPII(content: string, source: string) {
 }
 
 // Scan a file
-const fileContent = await readFile('config.json');
-const result = await scanForPII(fileContent, 'config.json');
+const fileContent = await readFile("config.json");
+const result = await scanForPII(fileContent, "config.json");
 
 if (result.hasPII) {
-  console.log('🚨 Action required: Remove or encrypt sensitive data');
+  console.log("🚨 Action required: Remove or encrypt sensitive data");
 }
 ```
 
 ## Scanning Patterns
 
 ### API Key Patterns
+
 ```typescript
 const API_KEY_PATTERNS = [
   // OpenAI
@@ -104,6 +108,7 @@ const API_KEY_PATTERNS = [
 ```
 
 ### Password Patterns
+
 ```typescript
 const PASSWORD_PATTERNS = [
   /password\s*[:=]\s*["'][^"']+["']/gi,
@@ -126,23 +131,25 @@ When PII is detected, suggest:
 
 ```javascript
 // Report PII findings to swarm
-mcp__claude-flow__memory_usage({
-  action: "store",
-  namespace: "pii_findings",
-  key: `pii-${Date.now()}`,
-  value: JSON.stringify({
-    agent: "pii-detector",
-    source: fileName,
-    piiTypes: detectedTypes,
-    severity: calculateSeverity(detectedTypes),
-    timestamp: Date.now()
-  })
-});
+mcp__claude -
+  flow__memory_usage({
+    action: "store",
+    namespace: "pii_findings",
+    key: `pii-${Date.now()}`,
+    value: JSON.stringify({
+      agent: "pii-detector",
+      source: fileName,
+      piiTypes: detectedTypes,
+      severity: calculateSeverity(detectedTypes),
+      timestamp: Date.now(),
+    }),
+  });
 ```
 
 ## Compliance Context
 
 Useful for:
+
 - **GDPR** - Personal data identification
 - **HIPAA** - Protected health information
 - **PCI-DSS** - Payment card data

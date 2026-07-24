@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useTransition } from 'react';
-import { useRouter } from 'next/navigation';
-import { getAllLocales, LocaleKey } from '@/i18n/config';
-import { cn } from '@/lib/utils';
+import { useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { getAllLocales, LocaleKey } from "@/i18n/config";
+import { cn } from "@/lib/utils";
 
 interface LanguageSwitcherProps {
   currentLocale: LocaleKey;
   className?: string;
-  variant?: 'dropdown' | 'inline';
+  variant?: "dropdown" | "inline";
 }
 
 /**
@@ -19,7 +19,7 @@ interface LanguageSwitcherProps {
 export function LanguageSwitcher({
   currentLocale,
   className,
-  variant = 'dropdown',
+  variant = "dropdown",
 }: LanguageSwitcherProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -37,19 +37,19 @@ export function LanguageSwitcher({
     });
   };
 
-  if (variant === 'inline') {
+  if (variant === "inline") {
     return (
-      <div className={cn('flex gap-2', className)}>
+      <div className={cn("flex gap-2", className)}>
         {locales.map(({ locale, metadata }) => (
           <button
             key={locale}
             onClick={() => handleLocaleChange(locale)}
             disabled={isPending}
             className={cn(
-              'px-3 py-1 rounded-md text-sm transition-all',
+              "px-3 py-1 rounded-md text-sm transition-all",
               currentLocale === locale
-                ? 'bg-wl-primary text-white'
-                : 'bg-wl-bg-secondary text-wl-text-secondary hover:bg-wl-bg-tertiary'
+                ? "bg-wl-primary text-white"
+                : "bg-wl-bg-secondary text-wl-text-secondary hover:bg-wl-bg-tertiary",
             )}
             title={metadata.nativeName}
             aria-label={`Switch to ${metadata.name}`}
@@ -64,15 +64,15 @@ export function LanguageSwitcher({
 
   // Dropdown variant (default)
   return (
-    <div className={cn('relative inline-block', className)}>
+    <div className={cn("relative inline-block", className)}>
       <div className="group">
         <button
           disabled={isPending}
           className={cn(
-            'flex items-center gap-2 px-3 py-2 rounded-lg',
-            'bg-wl-bg-secondary text-wl-text-primary',
-            'hover:bg-wl-bg-tertiary transition-colors',
-            'disabled:opacity-50 disabled:cursor-not-allowed'
+            "flex items-center gap-2 px-3 py-2 rounded-lg",
+            "bg-wl-bg-secondary text-wl-text-primary",
+            "hover:bg-wl-bg-tertiary transition-colors",
+            "disabled:opacity-50 disabled:cursor-not-allowed",
           )}
           aria-haspopup="menu"
           aria-expanded="false"
@@ -88,10 +88,10 @@ export function LanguageSwitcher({
         {/* Dropdown menu */}
         <div
           className={cn(
-            'absolute right-0 mt-2 w-48 rounded-lg',
-            'bg-wl-bg-secondary border border-wl-border',
-            'shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible',
-            'transition-all duration-200 z-50'
+            "absolute right-0 mt-2 w-48 rounded-lg",
+            "bg-wl-bg-secondary border border-wl-border",
+            "shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible",
+            "transition-all duration-200 z-50",
           )}
           role="menu"
         >
@@ -101,13 +101,13 @@ export function LanguageSwitcher({
               onClick={() => handleLocaleChange(locale)}
               disabled={isPending || currentLocale === locale}
               className={cn(
-                'w-full text-left px-4 py-2.5 transition-colors',
-                'flex items-center gap-3 text-sm',
+                "w-full text-left px-4 py-2.5 transition-colors",
+                "flex items-center gap-3 text-sm",
                 currentLocale === locale
-                  ? 'bg-wl-primary/10 text-wl-primary font-medium'
-                  : 'text-wl-text-primary hover:bg-wl-bg-tertiary',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
-                'first:rounded-t-lg last:rounded-b-lg'
+                  ? "bg-wl-primary/10 text-wl-primary font-medium"
+                  : "text-wl-text-primary hover:bg-wl-bg-tertiary",
+                "disabled:opacity-50 disabled:cursor-not-allowed",
+                "first:rounded-t-lg last:rounded-b-lg",
               )}
               role="menuitem"
               title={metadata.nativeName}

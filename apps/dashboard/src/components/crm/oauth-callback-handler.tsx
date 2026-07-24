@@ -17,7 +17,7 @@ export function OAuthCallbackHandler({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<"processing" | "success" | "error">(
-    "processing"
+    "processing",
   );
   const [message, setMessage] = useState("Processing OAuth callback...");
 
@@ -70,9 +70,11 @@ export function OAuthCallbackHandler({
 
         // Exchange authorization code for access token
         setMessage("Exchanging authorization code...");
-        const { connectionId } = await (await import("@/lib/api")).api.post<{ connectionId: string }>(
+        const { connectionId } = await (
+          await import("@/lib/api")
+        ).api.post<{ connectionId: string }>(
           "/api/v4/integrations/crm/oauth/callback",
-          { code, state, platformId }
+          { code, state, platformId },
         );
 
         // Clean up session storage
@@ -89,10 +91,13 @@ export function OAuthCallbackHandler({
 
         // Redirect to next step after brief delay
         setTimeout(() => {
-          router.push(`/dashboard/crm/connect?step=3&connection=${connectionId}`);
+          router.push(
+            `/dashboard/crm/connect?step=3&connection=${connectionId}`,
+          );
         }, 1500);
       } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : "OAuth callback failed";
+        const errorMsg =
+          err instanceof Error ? err.message : "OAuth callback failed";
         setMessage(errorMsg);
         setStatus("error");
         onError?.(errorMsg);
@@ -107,7 +112,7 @@ export function OAuthCallbackHandler({
       className={cn(
         "flex flex-col items-center justify-center",
         "min-h-screen",
-        "bg-wl-bg-root"
+        "bg-wl-bg-root",
       )}
     >
       <div className={cn("text-center", "space-y-6")}>
@@ -126,7 +131,7 @@ export function OAuthCallbackHandler({
               className={cn(
                 "w-16 h-16 mx-auto",
                 "bg-wl-success-500/20 rounded-full",
-                "flex items-center justify-center"
+                "flex items-center justify-center",
               )}
             >
               <svg
@@ -158,7 +163,7 @@ export function OAuthCallbackHandler({
               className={cn(
                 "w-16 h-16 mx-auto",
                 "bg-wl-danger-500/20 rounded-full",
-                "flex items-center justify-center"
+                "flex items-center justify-center",
               )}
             >
               <svg
@@ -177,9 +182,7 @@ export function OAuthCallbackHandler({
                 <line x1="9" y1="9" x2="15" y2="15"></line>
               </svg>
             </div>
-            <p className={cn("text-wl-danger-400", "text-base")}>
-              {message}
-            </p>
+            <p className={cn("text-wl-danger-400", "text-base")}>{message}</p>
             <button
               onClick={() => window.history.back()}
               className={cn(
@@ -187,7 +190,7 @@ export function OAuthCallbackHandler({
                 "px-4 py-2 rounded-md",
                 "bg-wl-primary-500 hover:bg-wl-primary-600",
                 "text-white font-medium",
-                "transition-colors duration-fast"
+                "transition-colors duration-fast",
               )}
             >
               Go Back

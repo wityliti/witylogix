@@ -60,7 +60,10 @@ export type StreamEvent =
   | { type: "geofence"; data: GeofenceEvent }
   | { type: "stale"; data: DeviceStreamStatus }
   | { type: "connection"; data: DeviceStreamStatus }
-  | { type: "error"; data: { vehicleId: string; provider: string; error: Error } };
+  | {
+      type: "error";
+      data: { vehicleId: string; provider: string; error: Error };
+    };
 
 /**
  * Telematics Stream Service
@@ -167,7 +170,10 @@ export class TelematicsStream extends EventEmitter {
   /**
    * Poll position for a vehicle
    */
-  private async pollPosition(vehicleId: string, providerName: string): Promise<void> {
+  private async pollPosition(
+    vehicleId: string,
+    providerName: string,
+  ): Promise<void> {
     const adapter = this.providers.get(providerName);
     if (!adapter) return;
 
@@ -212,7 +218,8 @@ export class TelematicsStream extends EventEmitter {
       const status = this.deviceStatus.get(statusKey);
       if (status) {
         status.connectionStatus = "error";
-        status.lastError = error instanceof Error ? error : new Error(String(error));
+        status.lastError =
+          error instanceof Error ? error : new Error(String(error));
         this.deviceStatus.set(statusKey, status);
       }
 
@@ -358,7 +365,9 @@ export class TelematicsStream extends EventEmitter {
       const xj = polygon[j].longitude;
       const yj = polygon[j].latitude;
 
-      const intersect = yi > lat !== yj > lat && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi;
+      const intersect =
+        yi > lat !== yj > lat &&
+        lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi;
       if (intersect) inside = !inside;
     }
     return inside;
@@ -379,7 +388,10 @@ export class TelematicsStream extends EventEmitter {
   /**
    * Get position from buffer
    */
-  getBufferedPosition(vehicleId: string, provider: string): BufferedPosition | null {
+  getBufferedPosition(
+    vehicleId: string,
+    provider: string,
+  ): BufferedPosition | null {
     const statusKey = `${provider}:${vehicleId}`;
     const buffer = this.positionBuffers.get(statusKey);
     return buffer && buffer.length > 0 ? buffer[0] : null;
@@ -405,7 +417,10 @@ export class TelematicsStream extends EventEmitter {
       id,
       center: shapeData.center as { latitude: number; longitude: number },
       radius: shapeData.radius as number,
-      polygon: shapeData.polygon as Array<{ latitude: number; longitude: number }>,
+      polygon: shapeData.polygon as Array<{
+        latitude: number;
+        longitude: number;
+      }>,
     });
   }
 
@@ -419,7 +434,10 @@ export class TelematicsStream extends EventEmitter {
   /**
    * Get device status
    */
-  getDeviceStatus(vehicleId: string, provider: string): DeviceStreamStatus | null {
+  getDeviceStatus(
+    vehicleId: string,
+    provider: string,
+  ): DeviceStreamStatus | null {
     const statusKey = `${provider}:${vehicleId}`;
     return this.deviceStatus.get(statusKey) || null;
   }
@@ -482,15 +500,21 @@ export class TelematicsStream extends EventEmitter {
     return {
       ...before,
       latitude: before.latitude + (after.latitude - before.latitude) * ratio,
-      longitude: before.longitude + (after.longitude - before.longitude) * ratio,
-      speed: before.speed && after.speed
-        ? {
-            value:
-              before.speed.value + (after.speed.value - before.speed.value) * ratio,
-            unit: before.speed.unit,
-          }
-        : before.speed,
-      heading: before.heading != null && after.heading != null ? this.interpolateHeading(before.heading, after.heading, ratio) : before.heading,
+      longitude:
+        before.longitude + (after.longitude - before.longitude) * ratio,
+      speed:
+        before.speed && after.speed
+          ? {
+              value:
+                before.speed.value +
+                (after.speed.value - before.speed.value) * ratio,
+              unit: before.speed.unit,
+            }
+          : before.speed,
+      heading:
+        before.heading != null && after.heading != null
+          ? this.interpolateHeading(before.heading, after.heading, ratio)
+          : before.heading,
       timestamp: targetTime,
       interpolated: true,
     };
@@ -499,7 +523,11 @@ export class TelematicsStream extends EventEmitter {
   /**
    * Interpolate heading (circular value)
    */
-  private interpolateHeading(heading1: number, heading2: number, ratio: number): number {
+  private interpolateHeading(
+    heading1: number,
+    heading2: number,
+    ratio: number,
+  ): number {
     let diff = heading2 - heading1;
     if (diff > 180) diff -= 360;
     if (diff < -180) diff += 360;

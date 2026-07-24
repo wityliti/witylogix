@@ -4,9 +4,9 @@
  */
 
 export enum DeliveryMethodType {
-  STANDARD = 'standard',
-  EXPRESS = 'express',
-  PICKUP = 'pickup',
+  STANDARD = "standard",
+  EXPRESS = "express",
+  PICKUP = "pickup",
 }
 
 export interface DeliveryMethod {

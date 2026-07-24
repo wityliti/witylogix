@@ -82,7 +82,7 @@ const WooCommerceOrderSchema = z.object({
       sku: z.string().optional(),
       price: z.string(),
       total: z.string(),
-    })
+    }),
   ),
   date_paid: z.string().optional().nullable(),
   payment_method: z.string().optional(),
@@ -111,27 +111,41 @@ const WooCommerceProductSchema = z.object({
   stock_quantity: z.number().optional().nullable(),
   stock_status: z.string().optional(),
   weight: z.string().optional(),
-  dimensions: z.object({
-    length: z.string().optional(),
-    width: z.string().optional(),
-    height: z.string().optional(),
-  }).optional(),
-  categories: z.array(z.object({
-    id: z.number(),
-    name: z.string(),
-    slug: z.string().optional(),
-  })).optional(),
-  tags: z.array(z.object({
-    id: z.number(),
-    name: z.string(),
-    slug: z.string().optional(),
-  })).optional(),
-  images: z.array(z.object({
-    id: z.number(),
-    src: z.string(),
-    name: z.string().optional(),
-    alt: z.string().optional(),
-  })).optional(),
+  dimensions: z
+    .object({
+      length: z.string().optional(),
+      width: z.string().optional(),
+      height: z.string().optional(),
+    })
+    .optional(),
+  categories: z
+    .array(
+      z.object({
+        id: z.number(),
+        name: z.string(),
+        slug: z.string().optional(),
+      }),
+    )
+    .optional(),
+  tags: z
+    .array(
+      z.object({
+        id: z.number(),
+        name: z.string(),
+        slug: z.string().optional(),
+      }),
+    )
+    .optional(),
+  images: z
+    .array(
+      z.object({
+        id: z.number(),
+        src: z.string(),
+        name: z.string().optional(),
+        alt: z.string().optional(),
+      }),
+    )
+    .optional(),
   attributes: z.array(z.any()).optional(),
   variations: z.array(z.number()).optional(),
   meta_data: z.array(z.any()).optional(),
@@ -145,9 +159,10 @@ const WooCommerceProductSchema = z.object({
  * Parse WooCommerce webhook topic to determine event type
  * Format: resource.action (e.g., "order.created", "product.updated")
  */
-function parseWebhookTopic(
-  topic: string
-): { resource: "order" | "product"; action: "created" | "updated" | "deleted" } | null {
+function parseWebhookTopic(topic: string): {
+  resource: "order" | "product";
+  action: "created" | "updated" | "deleted";
+} | null {
   const parts = topic.split(".");
   if (parts.length !== 2) return null;
 
@@ -170,7 +185,7 @@ function parseWebhookTopic(
 // ─── Route Plugin ────────────────────────────────────────
 
 export default async function wooCommerceWebhookRoutes(
-  fastify: FastifyInstance
+  fastify: FastifyInstance,
 ): Promise<void> {
   const adapter = new WooCommerceAdapter();
 
@@ -189,7 +204,9 @@ export default async function wooCommerceWebhookRoutes(
         const topic = request.headers["x-wc-webhook-topic"] as string;
 
         if (!topic) {
-          fastify.log.warn("WooCommerce webhook missing X-WC-Webhook-Topic header");
+          fastify.log.warn(
+            "WooCommerce webhook missing X-WC-Webhook-Topic header",
+          );
           return reply.code(200).send({ success: true });
         }
 
@@ -209,7 +226,7 @@ export default async function wooCommerceWebhookRoutes(
             topic,
             shop.id,
             action,
-            fastify
+            fastify,
           );
         } else if (resource === "product") {
           await handleProductWebhook(
@@ -217,25 +234,22 @@ export default async function wooCommerceWebhookRoutes(
             topic,
             shop.id,
             action,
-            fastify
+            fastify,
           );
         }
 
         fastify.log.info(
           { shopId: shop.id, topic, resource, action },
-          "WooCommerce webhook enqueued"
+          "WooCommerce webhook enqueued",
         );
 
         return reply.code(200).send({ success: true });
       } catch (error) {
-        fastify.log.error(
-          error,
-          "Error processing WooCommerce webhook"
-        );
+        fastify.log.error(error, "Error processing WooCommerce webhook");
         // Always return 200 to prevent webhook retries
         return reply.code(200).send({ success: true });
       }
-    }
+    },
   );
 }
 
@@ -247,7 +261,7 @@ async function handleOrderWebhook(
   topic: string,
   shopId: string,
   action: "created" | "updated" | "deleted",
-  fastify: any
+  fastify: any,
 ): Promise<void> {
   try {
     // Validate payload structure
@@ -265,7 +279,12 @@ async function handleOrderWebhook(
           db,
         );
         fastify.log.info(
-          { shopId, orderId: result.orderId, shipmentId: result.shipmentId, created: result.created },
+          {
+            shopId,
+            orderId: result.orderId,
+            shipmentId: result.shipmentId,
+            created: result.created,
+          },
           "WC order persisted",
         );
       }
@@ -294,7 +313,7 @@ async function handleOrderWebhook(
   } catch (error) {
     fastify.log.error(
       error,
-      `Failed to process WooCommerce order webhook: ${topic}`
+      `Failed to process WooCommerce order webhook: ${topic}`,
     );
     throw error;
   }
@@ -308,7 +327,7 @@ async function handleProductWebhook(
   topic: string,
   shopId: string,
   action: "created" | "updated" | "deleted",
-  fastify: any
+  fastify: any,
 ): Promise<void> {
   try {
     // Validate payload structure
@@ -338,7 +357,7 @@ async function handleProductWebhook(
   } catch (error) {
     fastify.log.error(
       error,
-      `Failed to process WooCommerce product webhook: ${topic}`
+      `Failed to process WooCommerce product webhook: ${topic}`,
     );
     throw error;
   }

@@ -58,7 +58,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       {
         id: "ticket-001",
         subject: "Integration Setup Help Needed",
-        description: "Having trouble setting up the Shopify integration with our system.",
+        description:
+          "Having trouble setting up the Shopify integration with our system.",
         status: "open",
         priority: "high",
         category: "Technical",
@@ -69,7 +70,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       {
         id: "ticket-002",
         subject: "API Rate Limit Issues",
-        description: "Experiencing rate limiting on API calls during peak hours.",
+        description:
+          "Experiencing rate limiting on API calls during peak hours.",
         status: "in_progress",
         priority: "urgent",
         category: "Technical",
@@ -80,7 +82,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       {
         id: "ticket-003",
         subject: "Billing Question",
-        description: "Can I upgrade my plan mid-month and pro-rata the charges?",
+        description:
+          "Can I upgrade my plan mid-month and pro-rata the charges?",
         status: "open",
         priority: "medium",
         category: "Billing",
@@ -91,7 +94,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       {
         id: "ticket-004",
         subject: "Feature Request: Bulk Export",
-        description: "Would love to see bulk export functionality for orders and shipments.",
+        description:
+          "Would love to see bulk export functionality for orders and shipments.",
         status: "resolved",
         priority: "low",
         category: "Feature Request",
@@ -102,7 +106,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       {
         id: "ticket-005",
         subject: "Dashboard Performance",
-        description: "Dashboard is loading slowly when viewing large order lists.",
+        description:
+          "Dashboard is loading slowly when viewing large order lists.",
         status: "in_progress",
         priority: "high",
         category: "Performance",
@@ -200,7 +205,10 @@ export default function SupportIndex() {
                   </BlockStack>
                 </Box>
               </InlineStack>
-              <Button variant="primary" onClick={() => setShowCreateModal(true)}>
+              <Button
+                variant="primary"
+                onClick={() => setShowCreateModal(true)}
+              >
                 Create Support Ticket
               </Button>
             </BlockStack>
@@ -293,9 +301,9 @@ export default function SupportIndex() {
                       What's the average response time for support tickets?
                     </Text>
                     <Text as="p" variant="bodySm">
-                      For urgent issues, we typically respond within 1 hour. High priority
-                      tickets usually get a response within 4 hours. Other priorities within
-                      24 hours.
+                      For urgent issues, we typically respond within 1 hour.
+                      High priority tickets usually get a response within 4
+                      hours. Other priorities within 24 hours.
                     </Text>
                   </BlockStack>
                 </Box>
@@ -306,8 +314,9 @@ export default function SupportIndex() {
                       How do I contact support directly?
                     </Text>
                     <Text as="p" variant="bodySm">
-                      You can create a support ticket here, email support@witylogix.com,
-                      or call us at 1-800-WITY-LOG (1-800-948-9564) for urgent issues.
+                      You can create a support ticket here, email
+                      support@witylogix.com, or call us at 1-800-WITY-LOG
+                      (1-800-948-9564) for urgent issues.
                     </Text>
                   </BlockStack>
                 </Box>
@@ -318,8 +327,9 @@ export default function SupportIndex() {
                       What documentation is available?
                     </Text>
                     <Text as="p" variant="bodySm">
-                      Check out our Knowledge Base and API Documentation in the help section.
-                      We also have video tutorials for common setup tasks.
+                      Check out our Knowledge Base and API Documentation in the
+                      help section. We also have video tutorials for common
+                      setup tasks.
                     </Text>
                   </BlockStack>
                 </Box>
@@ -409,7 +419,8 @@ export function ErrorBoundary() {
                 Error Loading Support Tickets
               </Text>
               <Text as="p" variant="bodySm">
-                We encountered an error while loading the support tickets. Please try refreshing the page.
+                We encountered an error while loading the support tickets.
+                Please try refreshing the page.
               </Text>
             </BlockStack>
           </Card>

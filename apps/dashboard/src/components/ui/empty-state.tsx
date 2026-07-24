@@ -25,7 +25,7 @@ export function EmptyState({
     <div
       className={cn(
         "flex flex-col items-center justify-center p-12 min-h-80 text-center",
-        className
+        className,
       )}
       style={style}
     >
@@ -46,11 +46,7 @@ export function EmptyState({
       )}
 
       {action && (
-        <Button
-          onClick={action.onClick}
-          variant="primary"
-          size="md"
-        >
+        <Button onClick={action.onClick} variant="primary" size="md">
           {action.label}
         </Button>
       )}

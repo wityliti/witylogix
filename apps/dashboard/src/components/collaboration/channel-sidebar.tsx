@@ -35,7 +35,7 @@ function groupChannels(channels: Channel[]): GroupedChannels {
       orders: [] as Channel[],
       drivers: [] as Channel[],
       alerts: [] as Channel[],
-    }
+    },
   );
 }
 
@@ -68,7 +68,7 @@ function ChannelItem({ channel, isActive, onSelect }: ChannelItemProps) {
         "flex items-center justify-between gap-2",
         isActive
           ? "bg-wl-primary-500/20 text-wl-primary-400"
-          : "text-wl-text-secondary hover:text-wl-text-primary hover:bg-wl-bg-overlay"
+          : "text-wl-text-secondary hover:text-wl-text-primary hover:bg-wl-bg-overlay",
       )}
     >
       <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -98,7 +98,7 @@ function DMItem({ dm, isActive, onSelect }: DMItemProps) {
         "flex items-center justify-between gap-2",
         isActive
           ? "bg-wl-primary-500/20 text-wl-primary-400"
-          : "text-wl-text-secondary hover:text-wl-text-primary hover:bg-wl-bg-overlay"
+          : "text-wl-text-secondary hover:text-wl-text-primary hover:bg-wl-bg-overlay",
       )}
     >
       <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -153,7 +153,7 @@ function ChannelCategory({
           "flex items-center justify-between gap-2",
           "text-xs font-semibold uppercase tracking-wider",
           "text-wl-text-tertiary hover:text-wl-text-secondary",
-          "hover:bg-wl-bg-overlay"
+          "hover:bg-wl-bg-overlay",
         )}
       >
         <div className="flex items-center gap-2">
@@ -201,9 +201,9 @@ export function ChannelSidebar({
   onSearch,
 }: ChannelSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [expandedCategories, setExpandedCategories] = useState<Set<Channel["category"]>>(
-    new Set(["general", "orders", "drivers", "alerts"])
-  );
+  const [expandedCategories, setExpandedCategories] = useState<
+    Set<Channel["category"]>
+  >(new Set(["general", "orders", "drivers", "alerts"]));
   const [showDMs, setShowDMs] = useState(true);
 
   const grouped = useMemo(() => groupChannels(channels), [channels]);
@@ -213,10 +213,18 @@ export function ChannelSidebar({
 
     const query = searchQuery.toLowerCase();
     return {
-      general: grouped.general.filter((ch) => ch.name.toLowerCase().includes(query)),
-      orders: grouped.orders.filter((ch) => ch.name.toLowerCase().includes(query)),
-      drivers: grouped.drivers.filter((ch) => ch.name.toLowerCase().includes(query)),
-      alerts: grouped.alerts.filter((ch) => ch.name.toLowerCase().includes(query)),
+      general: grouped.general.filter((ch) =>
+        ch.name.toLowerCase().includes(query),
+      ),
+      orders: grouped.orders.filter((ch) =>
+        ch.name.toLowerCase().includes(query),
+      ),
+      drivers: grouped.drivers.filter((ch) =>
+        ch.name.toLowerCase().includes(query),
+      ),
+      alerts: grouped.alerts.filter((ch) =>
+        ch.name.toLowerCase().includes(query),
+      ),
     };
   }, [grouped, searchQuery]);
 
@@ -224,7 +232,7 @@ export function ChannelSidebar({
     if (!searchQuery) return directMessages;
     const query = searchQuery.toLowerCase();
     return directMessages.filter((dm) =>
-      dm.userName.toLowerCase().includes(query)
+      dm.userName.toLowerCase().includes(query),
     );
   }, [directMessages, searchQuery]);
 
@@ -245,11 +253,17 @@ export function ChannelSidebar({
       setSearchQuery(query);
       onSearch?.(query);
     },
-    [onSearch]
+    [onSearch],
   );
 
-  const unreadChannelCount = channels.reduce((sum, ch) => sum + ch.unreadCount, 0);
-  const unreadDMCount = directMessages.reduce((sum, dm) => sum + dm.unreadCount, 0);
+  const unreadChannelCount = channels.reduce(
+    (sum, ch) => sum + ch.unreadCount,
+    0,
+  );
+  const unreadDMCount = directMessages.reduce(
+    (sum, dm) => sum + dm.unreadCount,
+    0,
+  );
 
   return (
     <div className="flex flex-col h-full w-64 bg-wl-bg-surface border-r border-wl-border-default">
@@ -271,7 +285,7 @@ export function ChannelSidebar({
             "text-wl-text-primary placeholder-wl-text-tertiary",
             "focus-visible:outline-none focus-visible:ring-2",
             "focus-visible:ring-wl-primary-500",
-            "transition-colors duration-fast"
+            "transition-colors duration-fast",
           )}
         />
       </div>
@@ -285,17 +299,19 @@ export function ChannelSidebar({
               Channels {unreadChannelCount > 0 && `(${unreadChannelCount})`}
             </h3>
             <div className="space-y-1">
-              {(["general", "orders", "drivers", "alerts"] as const).map((category) => (
-                <ChannelCategory
-                  key={category}
-                  category={category}
-                  channels={filteredChannels[category]}
-                  currentChannelId={currentChannelId}
-                  onSelectChannel={onSelectChannel}
-                  isOpen={expandedCategories.has(category)}
-                  onToggle={() => toggleCategory(category)}
-                />
-              ))}
+              {(["general", "orders", "drivers", "alerts"] as const).map(
+                (category) => (
+                  <ChannelCategory
+                    key={category}
+                    category={category}
+                    channels={filteredChannels[category]}
+                    currentChannelId={currentChannelId}
+                    onSelectChannel={onSelectChannel}
+                    isOpen={expandedCategories.has(category)}
+                    onToggle={() => toggleCategory(category)}
+                  />
+                ),
+              )}
             </div>
           </div>
 
@@ -319,7 +335,7 @@ export function ChannelSidebar({
               "flex items-center justify-between gap-2",
               "text-xs font-semibold uppercase tracking-wider",
               "text-wl-text-tertiary hover:text-wl-text-secondary",
-              "hover:bg-wl-bg-overlay"
+              "hover:bg-wl-bg-overlay",
             )}
           >
             <div className="flex items-center gap-2">

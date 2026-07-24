@@ -6,16 +6,39 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 interface DataImportWizardProps extends HTMLAttributes<HTMLDivElement> {
-  onDriverAdded?: (driver: { name: string; phone: string; email: string; vehicleType: string }) => void;
-  onVehicleAdded?: (vehicle: { make: string; model: string; year: number; plate: string; type: string }) => void;
+  onDriverAdded?: (driver: {
+    name: string;
+    phone: string;
+    email: string;
+    vehicleType: string;
+  }) => void;
+  onVehicleAdded?: (vehicle: {
+    make: string;
+    model: string;
+    year: number;
+    plate: string;
+    type: string;
+  }) => void;
   onCSVImported?: (file: File) => void;
   onSkip?: () => void;
 }
 
 const DataImportWizard = forwardRef<HTMLDivElement, DataImportWizardProps>(
-  ({ onDriverAdded, onVehicleAdded, onCSVImported, onSkip, className, ...props }, ref) => {
+  (
+    {
+      onDriverAdded,
+      onVehicleAdded,
+      onCSVImported,
+      onSkip,
+      className,
+      ...props
+    },
+    ref,
+  ) => {
     const [expandedCard, setExpandedCard] = useState<string | null>("driver");
-    const [completedCards, setCompletedCards] = useState<Set<string>>(new Set());
+    const [completedCards, setCompletedCards] = useState<Set<string>>(
+      new Set(),
+    );
 
     // Driver form state
     const [driverForm, setDriverForm] = useState({
@@ -75,7 +98,10 @@ const DataImportWizard = forwardRef<HTMLDivElement, DataImportWizardProps>(
       const reader = new FileReader();
       reader.onload = (e) => {
         const text = e.target?.result as string;
-        const lines = text.split("\n").slice(0, 3).filter((l) => l.trim());
+        const lines = text
+          .split("\n")
+          .slice(0, 3)
+          .filter((l) => l.trim());
         setCsvPreview(lines);
       };
       reader.readAsText(file);
@@ -100,14 +126,7 @@ const DataImportWizard = forwardRef<HTMLDivElement, DataImportWizardProps>(
     const isCompleted = (cardId: string) => completedCards.has(cardId);
 
     return (
-      <div
-        ref={ref}
-        className={cn(
-          "w-full space-y-3",
-          className
-        )}
-        {...props}
-      >
+      <div ref={ref} className={cn("w-full space-y-3", className)} {...props}>
         {/* Add Driver Card */}
         <div
           className={cn(
@@ -116,7 +135,7 @@ const DataImportWizard = forwardRef<HTMLDivElement, DataImportWizardProps>(
               ? "bg-wl-success-bg border-wl-success-500/30"
               : expandedCard === "driver"
                 ? "border-wl-primary-500 bg-wl-bg-overlay"
-                : "border-wl-border-subtle bg-wl-bg-overlay hover:border-wl-border-default"
+                : "border-wl-border-subtle bg-wl-bg-overlay hover:border-wl-border-default",
           )}
         >
           {/* Header */}
@@ -129,7 +148,10 @@ const DataImportWizard = forwardRef<HTMLDivElement, DataImportWizardProps>(
             <div className="flex items-center gap-3 flex-1">
               {isCompleted("driver") ? (
                 <div className="w-10 h-10 rounded-full bg-wl-success-500/20 flex items-center justify-center flex-shrink-0">
-                  <Check className="w-5 h-5 text-wl-success-400" strokeWidth={3} />
+                  <Check
+                    className="w-5 h-5 text-wl-success-400"
+                    strokeWidth={3}
+                  />
                 </div>
               ) : (
                 <Plus className="w-5 h-5 text-wl-primary-400 flex-shrink-0" />
@@ -149,7 +171,7 @@ const DataImportWizard = forwardRef<HTMLDivElement, DataImportWizardProps>(
               <ChevronDown
                 className={cn(
                   "w-4 h-4 text-wl-text-tertiary transition-transform flex-shrink-0",
-                  expandedCard === "driver" && "rotate-180"
+                  expandedCard === "driver" && "rotate-180",
                 )}
               />
             )}
@@ -218,7 +240,7 @@ const DataImportWizard = forwardRef<HTMLDivElement, DataImportWizardProps>(
               ? "bg-wl-success-bg border-wl-success-500/30"
               : expandedCard === "vehicle"
                 ? "border-wl-primary-500 bg-wl-bg-overlay"
-                : "border-wl-border-subtle bg-wl-bg-overlay hover:border-wl-border-default"
+                : "border-wl-border-subtle bg-wl-bg-overlay hover:border-wl-border-default",
           )}
         >
           {/* Header */}
@@ -231,7 +253,10 @@ const DataImportWizard = forwardRef<HTMLDivElement, DataImportWizardProps>(
             <div className="flex items-center gap-3 flex-1">
               {isCompleted("vehicle") ? (
                 <div className="w-10 h-10 rounded-full bg-wl-success-500/20 flex items-center justify-center flex-shrink-0">
-                  <Check className="w-5 h-5 text-wl-success-400" strokeWidth={3} />
+                  <Check
+                    className="w-5 h-5 text-wl-success-400"
+                    strokeWidth={3}
+                  />
                 </div>
               ) : (
                 <Truck className="w-5 h-5 text-wl-primary-400 flex-shrink-0" />
@@ -251,7 +276,7 @@ const DataImportWizard = forwardRef<HTMLDivElement, DataImportWizardProps>(
               <ChevronDown
                 className={cn(
                   "w-4 h-4 text-wl-text-tertiary transition-transform flex-shrink-0",
-                  expandedCard === "vehicle" && "rotate-180"
+                  expandedCard === "vehicle" && "rotate-180",
                 )}
               />
             )}
@@ -316,7 +341,9 @@ const DataImportWizard = forwardRef<HTMLDivElement, DataImportWizardProps>(
                 size="sm"
                 className="w-full"
                 onClick={handleAddVehicle}
-                disabled={!vehicleForm.make || !vehicleForm.model || !vehicleForm.plate}
+                disabled={
+                  !vehicleForm.make || !vehicleForm.model || !vehicleForm.plate
+                }
               >
                 Add Vehicle
               </Button>
@@ -332,7 +359,7 @@ const DataImportWizard = forwardRef<HTMLDivElement, DataImportWizardProps>(
               ? "bg-wl-success-bg border-wl-success-500/30"
               : expandedCard === "csv"
                 ? "border-wl-primary-500 bg-wl-bg-overlay"
-                : "border-wl-border-subtle bg-wl-bg-overlay hover:border-wl-border-default"
+                : "border-wl-border-subtle bg-wl-bg-overlay hover:border-wl-border-default",
           )}
         >
           {/* Header */}
@@ -345,7 +372,10 @@ const DataImportWizard = forwardRef<HTMLDivElement, DataImportWizardProps>(
             <div className="flex items-center gap-3 flex-1">
               {isCompleted("csv") ? (
                 <div className="w-10 h-10 rounded-full bg-wl-success-500/20 flex items-center justify-center flex-shrink-0">
-                  <Check className="w-5 h-5 text-wl-success-400" strokeWidth={3} />
+                  <Check
+                    className="w-5 h-5 text-wl-success-400"
+                    strokeWidth={3}
+                  />
                 </div>
               ) : (
                 <Upload className="w-5 h-5 text-wl-primary-400 flex-shrink-0" />
@@ -365,7 +395,7 @@ const DataImportWizard = forwardRef<HTMLDivElement, DataImportWizardProps>(
               <ChevronDown
                 className={cn(
                   "w-4 h-4 text-wl-text-tertiary transition-transform flex-shrink-0",
-                  expandedCard === "csv" && "rotate-180"
+                  expandedCard === "csv" && "rotate-180",
                 )}
               />
             )}
@@ -431,7 +461,7 @@ const DataImportWizard = forwardRef<HTMLDivElement, DataImportWizardProps>(
             "rounded-lg border overflow-hidden transition-all duration-base",
             isCompleted("skip")
               ? "bg-wl-border-subtle border-wl-border-default"
-              : "border-wl-border-subtle bg-wl-bg-overlay hover:border-wl-border-default"
+              : "border-wl-border-subtle bg-wl-bg-overlay hover:border-wl-border-default",
           )}
         >
           {/* Header */}
@@ -458,7 +488,7 @@ const DataImportWizard = forwardRef<HTMLDivElement, DataImportWizardProps>(
         </div>
       </div>
     );
-  }
+  },
 );
 
 DataImportWizard.displayName = "DataImportWizard";

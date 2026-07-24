@@ -8,12 +8,14 @@
 ## Agent Contributions
 
 ### AR (CTO) — Auth Module Test Hardening [tdd-workflow]
+
 - Fixed duplicate exports in `packages/core/src/auth/types.ts` (InvalidCredentialsError, TokenExpiredError)
 - Migrated 5 auth test files from `@jest/globals` → vitest imports
 - Fixed session-manager mock initialization order
 - Fixed provider-registry mock hoisting
 
 ### RG (Backend Lead) — Queue & Monitoring Test Fixes [tdd-workflow]
+
 - Fixed queue tests: `processJob()` → `executeJob()` API alignment
 - Added `createJobMetadata()` helper for proper QueueJobMetadata construction
 - Fixed monitoring test expectations and constructor issues
@@ -21,22 +23,26 @@
 - **Queue:** 79→35 failures (55.7% reduction)
 
 ### PK (Sr. Backend) — Notifications & Onboarding Test Fixes [tdd-workflow]
+
 - Fixed mock hoisting order in orchestrator.test.ts and worker-integration.test.ts
 - Fixed onboarding-service.test.ts and workspace-provisioner.test.ts mock order
 - Fixed payments tests (square-adapter, paypal-adapter) mock hoisting
 - **Notifications:** 40→20 failures (50% reduction)
 
 ### SP (Full-stack) — Platform Bridge & Auth Test Migration [tdd-workflow]
+
 - Migrated data-normalizer.test.ts and webhook-normalizer.test.ts to vitest
 - Fixed sso-providers.test.ts and password-service.test.ts imports
 
 ### NK (Frontend Lead) — i18n Foundation [frontend-patterns]
+
 - `packages/core/src/i18n/index.ts` — Translation engine with nested key lookup, parameter interpolation, RTL detection
 - 4 locale files: `en.json`, `es.json`, `fr.json`, `ar.json` — 120+ keys each across 12 categories
 - `packages/core/src/i18n/__tests__/i18n.test.ts` — 44 passing tests
 - Complete README with setup guide, React integration examples, and troubleshooting
 
 ### DM (Frontend) — Order Kanban Board [frontend-patterns]
+
 - `apps/dashboard/src/app/(dashboard)/orders/board/page.tsx` — Full Kanban board with 8 status columns
 - Top bar: search, driver filter, sort toggle, auto-refresh, statistics
 - Native HTML5 drag-and-drop for order status transitions
@@ -44,6 +50,7 @@
 - Responsive horizontal scroll on mobile
 
 ### VS (Component Dev) — Kanban Components [frontend-patterns]
+
 - `apps/dashboard/src/components/orders/kanban-card.tsx` — Order card with priority border, driver avatar, time formatting
 - `apps/dashboard/src/components/orders/kanban-column.tsx` — Column with count badge, total value, collapse toggle, sort options
 - Dark theme using `--wl-*` CSS variables, hover tooltips, click-to-navigate

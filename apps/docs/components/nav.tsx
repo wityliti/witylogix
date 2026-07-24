@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export function Nav() {
   const pathname = usePathname();
@@ -11,17 +11,17 @@ export function Nav() {
   useEffect(() => {
     // Check system preference or localStorage
     const isDarkMode =
-      localStorage.getItem('theme') === 'dark' ||
-      (!('theme' in localStorage) &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches);
+      localStorage.getItem("theme") === "dark" ||
+      (!("theme" in localStorage) &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches);
     setIsDark(isDarkMode);
   }, []);
 
   const toggleTheme = () => {
     const newDark = !isDark;
     setIsDark(newDark);
-    localStorage.setItem('theme', newDark ? 'dark' : 'light');
-    document.documentElement.classList.toggle('dark', newDark);
+    localStorage.setItem("theme", newDark ? "dark" : "light");
+    document.documentElement.classList.toggle("dark", newDark);
   };
 
   const isActive = (href: string) => pathname.startsWith(href);
@@ -30,11 +30,16 @@ export function Nav() {
     <nav className="sticky top-0 z-50 w-full border-b border-wl-border bg-wl-bg-primary/80 backdrop-blur-md">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+        <Link
+          href="/"
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+        >
           <div className="w-8 h-8 rounded-lg bg-wl-accent flex items-center justify-center">
             <span className="font-bold text-wl-bg-primary text-sm">W</span>
           </div>
-          <span className="font-bold text-wl-text hidden sm:inline">Witylogix</span>
+          <span className="font-bold text-wl-text hidden sm:inline">
+            Witylogix
+          </span>
         </Link>
 
         {/* Links */}
@@ -42,9 +47,9 @@ export function Nav() {
           <Link
             href="/docs"
             className={`text-sm font-medium transition-colors px-3 py-2 rounded-md ${
-              isActive('/docs')
-                ? 'text-wl-accent bg-wl-bg-secondary'
-                : 'text-wl-text-secondary hover:text-wl-text'
+              isActive("/docs")
+                ? "text-wl-accent bg-wl-bg-secondary"
+                : "text-wl-text-secondary hover:text-wl-text"
             }`}
           >
             Docs
@@ -52,9 +57,9 @@ export function Nav() {
           <Link
             href="/docs/api"
             className={`text-sm font-medium transition-colors px-3 py-2 rounded-md ${
-              isActive('/docs/api')
-                ? 'text-wl-accent bg-wl-bg-secondary'
-                : 'text-wl-text-secondary hover:text-wl-text'
+              isActive("/docs/api")
+                ? "text-wl-accent bg-wl-bg-secondary"
+                : "text-wl-text-secondary hover:text-wl-text"
             }`}
           >
             API
@@ -62,9 +67,9 @@ export function Nav() {
           <Link
             href="/docs/components"
             className={`text-sm font-medium transition-colors px-3 py-2 rounded-md ${
-              isActive('/docs/components')
-                ? 'text-wl-accent bg-wl-bg-secondary'
-                : 'text-wl-text-secondary hover:text-wl-text'
+              isActive("/docs/components")
+                ? "text-wl-accent bg-wl-bg-secondary"
+                : "text-wl-text-secondary hover:text-wl-text"
             }`}
           >
             Components
@@ -85,8 +90,8 @@ export function Nav() {
             className="hidden sm:flex items-center gap-2 px-3 py-2 text-sm font-medium text-wl-text-secondary bg-wl-bg-secondary rounded-md border border-wl-border hover:border-wl-border-light transition-colors"
             onClick={() => {
               // Trigger search modal
-              const event = new KeyboardEvent('keydown', {
-                key: 'k',
+              const event = new KeyboardEvent("keydown", {
+                key: "k",
                 ctrlKey: true,
               });
               window.dispatchEvent(event);

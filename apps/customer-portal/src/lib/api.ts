@@ -7,7 +7,7 @@
  * but client-side calls go direct via NEXT_PUBLIC_API_URL.
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 // ─── Response envelope types ─────────────────────────────────
 
@@ -35,32 +35,37 @@ export class ApiError extends Error {
     public readonly body?: unknown,
   ) {
     super(message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
   }
 }
 
 // ─── Token helpers ───────────────────────────────────────────
 
 function getAuthToken(): string | null {
-  if (typeof document === 'undefined') return null;
+  if (typeof document === "undefined") return null;
   return (
     document.cookie
-      .split('; ')
-      .find((c) => c.startsWith('portal-auth-token='))
-      ?.split('=')[1] ?? null
+      .split("; ")
+      .find((c) => c.startsWith("portal-auth-token="))
+      ?.split("=")[1] ?? null
   );
 }
 
-export function setAuthToken(token: string, maxAgeSeconds = 60 * 60 * 24 * 7): void {
-  if (typeof document === 'undefined') return;
+export function setAuthToken(
+  token: string,
+  maxAgeSeconds = 60 * 60 * 24 * 7,
+): void {
+  if (typeof document === "undefined") return;
   const secure =
-    typeof window !== 'undefined' && window.location.protocol === 'https:' ? '; Secure' : '';
+    typeof window !== "undefined" && window.location.protocol === "https:"
+      ? "; Secure"
+      : "";
   document.cookie = `portal-auth-token=${token}; path=/; max-age=${maxAgeSeconds}; SameSite=Lax${secure}`;
 }
 
 export function clearAuthToken(): void {
-  if (typeof document === 'undefined') return;
-  document.cookie = 'portal-auth-token=; path=/; max-age=0; SameSite=Lax';
+  if (typeof document === "undefined") return;
+  document.cookie = "portal-auth-token=; path=/; max-age=0; SameSite=Lax";
 }
 
 // ─── Core fetch wrapper ──────────────────────────────────────
@@ -75,22 +80,24 @@ export function setUnauthorizedHandler(fn: () => void): void {
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE}${path}`;
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
     ...(options.headers as Record<string, string>),
   };
 
   const token = getAuthToken();
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    headers["Authorization"] = `Bearer ${token}`;
   }
 
   const controller = !options.signal ? new AbortController() : null;
-  const timeoutId = controller ? setTimeout(() => controller.abort(), 30_000) : null;
+  const timeoutId = controller
+    ? setTimeout(() => controller.abort(), 30_000)
+    : null;
 
   const res = await fetch(url, {
     ...options,
     headers,
-    credentials: 'include',
+    credentials: "include",
     signal: options.signal ?? controller?.signal,
   });
 
@@ -98,13 +105,14 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
   if (res.status === 401) {
     onUnauthorized?.();
-    throw new ApiError(401, 'Session expired. Please log in again.');
+    throw new ApiError(401, "Session expired. Please log in again.");
   }
 
   if (!res.ok) {
     const body = await res.json().catch(() => null);
     const message =
-      (body as { message?: string } | null)?.message ?? `API ${res.status}: ${res.statusText}`;
+      (body as { message?: string } | null)?.message ??
+      `API ${res.status}: ${res.statusText}`;
     throw new ApiError(res.status, message, body);
   }
 
@@ -117,25 +125,26 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 // ─── Public API surface ──────────────────────────────────────
 
 export const api = {
-  get: <T>(path: string, options?: RequestInit) => request<T>(path, { method: 'GET', ...options }),
+  get: <T>(path: string, options?: RequestInit) =>
+    request<T>(path, { method: "GET", ...options }),
   post: <T>(path: string, body?: unknown, options?: RequestInit) =>
     request<T>(path, {
-      method: 'POST',
+      method: "POST",
       body: body !== undefined ? JSON.stringify(body) : undefined,
       ...options,
     }),
   patch: <T>(path: string, body?: unknown, options?: RequestInit) =>
     request<T>(path, {
-      method: 'PATCH',
+      method: "PATCH",
       body: body !== undefined ? JSON.stringify(body) : undefined,
       ...options,
     }),
   put: <T>(path: string, body?: unknown, options?: RequestInit) =>
     request<T>(path, {
-      method: 'PUT',
+      method: "PUT",
       body: body !== undefined ? JSON.stringify(body) : undefined,
       ...options,
     }),
   delete: <T>(path: string, options?: RequestInit) =>
-    request<T>(path, { method: 'DELETE', ...options }),
+    request<T>(path, { method: "DELETE", ...options }),
 };

@@ -12,7 +12,11 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { createRbacEngine, ROLE_HIERARCHY, DEFAULT_ROLE_PERMISSIONS } from "../rbac-engine.js";
+import {
+  createRbacEngine,
+  ROLE_HIERARCHY,
+  DEFAULT_ROLE_PERMISSIONS,
+} from "../rbac-engine.js";
 import type { RbacEngine } from "../rbac-engine.js";
 import type { PermissionContext } from "../rbac-engine.js";
 import { PermissionDeniedError } from "../types.js";
@@ -44,7 +48,9 @@ describe("RbacEngine", () => {
         permissions: [],
       };
 
-      expect(() => engine.checkPermission(context, "shipments", "read")).not.toThrow();
+      expect(() =>
+        engine.checkPermission(context, "shipments", "read"),
+      ).not.toThrow();
     });
 
     it("should deny viewer from creating shipments", () => {
@@ -55,9 +61,9 @@ describe("RbacEngine", () => {
         permissions: [],
       };
 
-      expect(() => engine.checkPermission(context, "shipments", "create")).toThrow(
-        PermissionDeniedError,
-      );
+      expect(() =>
+        engine.checkPermission(context, "shipments", "create"),
+      ).toThrow(PermissionDeniedError);
     });
 
     it("should allow member to create shipments", () => {
@@ -68,7 +74,9 @@ describe("RbacEngine", () => {
         permissions: [],
       };
 
-      expect(() => engine.checkPermission(context, "shipments", "create")).not.toThrow();
+      expect(() =>
+        engine.checkPermission(context, "shipments", "create"),
+      ).not.toThrow();
     });
 
     it("should allow admin to perform org operations", () => {
@@ -79,8 +87,12 @@ describe("RbacEngine", () => {
         permissions: [],
       };
 
-      expect(() => engine.checkPermission(context, "org", "read")).not.toThrow();
-      expect(() => engine.checkPermission(context, "org", "update")).not.toThrow();
+      expect(() =>
+        engine.checkPermission(context, "org", "read"),
+      ).not.toThrow();
+      expect(() =>
+        engine.checkPermission(context, "org", "update"),
+      ).not.toThrow();
     });
 
     it("should allow owner to perform all operations", () => {
@@ -91,9 +103,15 @@ describe("RbacEngine", () => {
         permissions: [],
       };
 
-      expect(() => engine.checkPermission(context, "billing", "read")).not.toThrow();
-      expect(() => engine.checkPermission(context, "settings", "update")).not.toThrow();
-      expect(() => engine.checkPermission(context, "users", "delete")).not.toThrow();
+      expect(() =>
+        engine.checkPermission(context, "billing", "read"),
+      ).not.toThrow();
+      expect(() =>
+        engine.checkPermission(context, "settings", "update"),
+      ).not.toThrow();
+      expect(() =>
+        engine.checkPermission(context, "users", "delete"),
+      ).not.toThrow();
     });
 
     it("should return true on successful permission check", () => {
@@ -521,7 +539,9 @@ describe("RbacEngine", () => {
       expect(engine.hasPermission(adminContext, "org:update")).toBe(true);
 
       // Member can create but not manage org
-      expect(engine.hasPermission(memberContext, "shipments:create")).toBe(true);
+      expect(engine.hasPermission(memberContext, "shipments:create")).toBe(
+        true,
+      );
       expect(engine.hasPermission(memberContext, "org:update")).toBe(false);
     });
 
@@ -545,7 +565,9 @@ describe("RbacEngine", () => {
       };
 
       // Still has it from ADMIN role - in real scenario, use different role
-      expect(engine.hasPermission(restrictedContext, "shipments:delete")).toBe(true);
+      expect(engine.hasPermission(restrictedContext, "shipments:delete")).toBe(
+        true,
+      );
     });
   });
 });

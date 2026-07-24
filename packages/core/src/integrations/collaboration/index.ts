@@ -29,7 +29,7 @@ export type {
   MessageTemplate,
   CrossPlatformPresence,
   CollaborationHubConfig,
-} from './types';
+} from "./types";
 
 // Unified SDK Types
 export {
@@ -38,7 +38,7 @@ export {
   unifiedMessageSchema,
   unifiedChannelSchema,
   unifiedUserSchema,
-} from './collaboration-sdk-types';
+} from "./collaboration-sdk-types";
 export type {
   UnifiedMessage,
   UnifiedChannel,
@@ -54,10 +54,10 @@ export type {
   CollaborationSDKConfig,
   PaginatedResult,
   OperationResult,
-} from './collaboration-sdk-types';
+} from "./collaboration-sdk-types";
 
 // SDK Clients
-export { SlackSDKClient } from './slack-sdk-client';
+export { SlackSDKClient } from "./slack-sdk-client";
 export type {
   SlackOAuth2Token,
   SlackMessage,
@@ -67,9 +67,9 @@ export type {
   SlackEvent,
   SlackAttachment,
   SlackBlockElement,
-} from './slack-sdk-client';
+} from "./slack-sdk-client";
 
-export { TeamsSDKClient } from './teams-sdk-client';
+export { TeamsSDKClient } from "./teams-sdk-client";
 export type {
   TeamsOAuth2Token,
   TeamsTeam,
@@ -83,15 +83,15 @@ export type {
   TeamsSubscription,
   TeamsChangeNotification,
   TeamsAdaptiveCard,
-} from './teams-sdk-client';
+} from "./teams-sdk-client";
 
 // Base Adapter
-export { CollaborationAdapter } from './collaboration-adapter';
+export { CollaborationAdapter } from "./collaboration-adapter";
 
 // Platform Adapters
-export { SlackClient } from './slack-client';
-export { TeamsClient } from './teams-client';
-export { PusherClient } from './pusher-client';
+export { SlackClient } from "./slack-client";
+export { TeamsClient } from "./teams-client";
+export { PusherClient } from "./pusher-client";
 
 // Hub
-export { CollaborationHub } from './collaboration-hub';
+export { CollaborationHub } from "./collaboration-hub";

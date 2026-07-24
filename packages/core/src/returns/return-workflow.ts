@@ -355,14 +355,10 @@ export async function registerReturnWorkflows(
 ): Promise<void> {
   try {
     // Subscribe to return.requested
-    await eventBus.subscribe(
-      "return.requested" as any,
-      onReturnRequested,
-      {
-        consumerGroup: "return-workflow-service",
-        tags: ["return", "lifecycle"],
-      },
-    );
+    await eventBus.subscribe("return.requested" as any, onReturnRequested, {
+      consumerGroup: "return-workflow-service",
+      tags: ["return", "lifecycle"],
+    });
     console.log("[ReturnWorkflow] Registered handler for return.requested");
   } catch (error) {
     console.error(
@@ -373,14 +369,10 @@ export async function registerReturnWorkflows(
 
   try {
     // Subscribe to return.approved
-    await eventBus.subscribe(
-      "return.approved" as any,
-      onReturnApproved,
-      {
-        consumerGroup: "return-workflow-service",
-        tags: ["return", "lifecycle"],
-      },
-    );
+    await eventBus.subscribe("return.approved" as any, onReturnApproved, {
+      consumerGroup: "return-workflow-service",
+      tags: ["return", "lifecycle"],
+    });
     console.log("[ReturnWorkflow] Registered handler for return.approved");
   } catch (error) {
     console.error(
@@ -391,14 +383,10 @@ export async function registerReturnWorkflows(
 
   try {
     // Subscribe to return.rejected
-    await eventBus.subscribe(
-      "return.rejected" as any,
-      onReturnRejected,
-      {
-        consumerGroup: "return-workflow-service",
-        tags: ["return", "lifecycle"],
-      },
-    );
+    await eventBus.subscribe("return.rejected" as any, onReturnRejected, {
+      consumerGroup: "return-workflow-service",
+      tags: ["return", "lifecycle"],
+    });
     console.log("[ReturnWorkflow] Registered handler for return.rejected");
   } catch (error) {
     console.error(
@@ -409,14 +397,10 @@ export async function registerReturnWorkflows(
 
   try {
     // Subscribe to return.received
-    await eventBus.subscribe(
-      "return.received" as any,
-      onReturnReceived,
-      {
-        consumerGroup: "return-workflow-service",
-        tags: ["return", "lifecycle"],
-      },
-    );
+    await eventBus.subscribe("return.received" as any, onReturnReceived, {
+      consumerGroup: "return-workflow-service",
+      tags: ["return", "lifecycle"],
+    });
     console.log("[ReturnWorkflow] Registered handler for return.received");
   } catch (error) {
     console.error(
@@ -427,14 +411,10 @@ export async function registerReturnWorkflows(
 
   try {
     // Subscribe to return.inspected
-    await eventBus.subscribe(
-      "return.inspected" as any,
-      onReturnInspected,
-      {
-        consumerGroup: "return-workflow-service",
-        tags: ["return", "lifecycle"],
-      },
-    );
+    await eventBus.subscribe("return.inspected" as any, onReturnInspected, {
+      consumerGroup: "return-workflow-service",
+      tags: ["return", "lifecycle"],
+    });
     console.log("[ReturnWorkflow] Registered handler for return.inspected");
   } catch (error) {
     console.error(
@@ -445,14 +425,10 @@ export async function registerReturnWorkflows(
 
   try {
     // Subscribe to return.refunded
-    await eventBus.subscribe(
-      "return.refunded" as any,
-      onReturnRefunded,
-      {
-        consumerGroup: "return-workflow-service",
-        tags: ["return", "lifecycle"],
-      },
-    );
+    await eventBus.subscribe("return.refunded" as any, onReturnRefunded, {
+      consumerGroup: "return-workflow-service",
+      tags: ["return", "lifecycle"],
+    });
     console.log("[ReturnWorkflow] Registered handler for return.refunded");
   } catch (error) {
     console.error(

@@ -1,8 +1,8 @@
-import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { DEFAULT_CONFIG_FILENAME, loadConfig } from './config.js';
-import { resolveProvider } from './provider.js';
-import type { Context, Logger } from './types.js';
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
+import { DEFAULT_CONFIG_FILENAME, loadConfig } from "./config.js";
+import { resolveProvider } from "./provider.js";
+import type { Context, Logger } from "./types.js";
 
 export interface RunnerOptions {
   cwd?: string;
@@ -17,7 +17,7 @@ export class NoConfigError extends Error {
       `No ${DEFAULT_CONFIG_FILENAME} found at ${cwd}. ` +
         `Run \`bench init <name>\` first, or cd into an existing installation.`,
     );
-    this.name = 'NoConfigError';
+    this.name = "NoConfigError";
   }
 }
 
@@ -45,7 +45,10 @@ export async function buildContext(opts: RunnerOptions = {}): Promise<Context> {
 }
 
 export async function withProvider<T>(
-  action: (ctx: Context, provider: Awaited<ReturnType<typeof resolveProvider>>) => Promise<T>,
+  action: (
+    ctx: Context,
+    provider: Awaited<ReturnType<typeof resolveProvider>>,
+  ) => Promise<T>,
   opts: RunnerOptions = {},
 ): Promise<T> {
   const ctx = await buildContext(opts);

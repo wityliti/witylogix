@@ -15,7 +15,7 @@
 export interface DrugInteraction {
   drug1: string;
   drug2: string;
-  severity: 'contraindicated' | 'major' | 'moderate' | 'minor';
+  severity: "contraindicated" | "major" | "moderate" | "minor";
   mechanism: string;
   alternatives: string[];
   managementStrategy: string;
@@ -25,7 +25,7 @@ export interface AllergyAlert {
   allergen: string;
   reportedAllergy: string;
   crossReactivity: boolean;
-  severity: 'mild' | 'moderate' | 'severe' | 'anaphylaxis';
+  severity: "mild" | "moderate" | "severe" | "anaphylaxis";
   manifestations: string[];
   overrideReasons?: string;
 }
@@ -36,7 +36,7 @@ export interface ClinicalRule {
   guideline: string;
   condition: string;
   recommendation: string;
-  evidence: 'strong' | 'moderate' | 'weak';
+  evidence: "strong" | "moderate" | "weak";
   applicabilityChecks: string[];
   actions: string[];
 }
@@ -47,9 +47,9 @@ export interface LabResult {
   unit: string;
   refRangeMin?: number;
   refRangeMax?: number;
-  interpretation: 'low' | 'normal' | 'high' | 'critical';
-  flag?: 'L' | 'H' | 'C' | null;
-  trend?: 'increasing' | 'stable' | 'decreasing';
+  interpretation: "low" | "normal" | "high" | "critical";
+  flag?: "L" | "H" | "C" | null;
+  trend?: "increasing" | "stable" | "decreasing";
 }
 
 export interface DiagnosisSuggestion {
@@ -65,7 +65,7 @@ export interface DiagnosisSuggestion {
 export interface RiskScore {
   scoreName: string;
   score: number;
-  riskCategory: 'low' | 'intermediate' | 'high' | 'very_high';
+  riskCategory: "low" | "intermediate" | "high" | "very_high";
   riskPercentage?: number;
   interpretation: string;
   components: Map<string, number>;
@@ -75,38 +75,60 @@ export interface RiskScore {
 
 export class DrugInteractionChecker {
   private interactionDatabase: Map<string, DrugInteraction[]> = new Map([
-    ['warfarin+aspirin', [{
-      drug1: 'warfarin',
-      drug2: 'aspirin',
-      severity: 'major',
-      mechanism: 'Increased bleeding risk due to antiplatelet effect',
-      alternatives: ['acetaminophen', 'topical NSAIDs'],
-      managementStrategy: 'Use lowest effective dose, monitor INR closely',
-    }]],
-    ['metformin+contrast', [{
-      drug1: 'metformin',
-      drug2: 'iodinated contrast',
-      severity: 'major',
-      mechanism: 'Risk of contrast-induced nephropathy and lactic acidosis',
-      alternatives: ['non-contrast imaging', 'CO2 angiography'],
-      managementStrategy: 'Hold metformin 48h post-contrast if eGFR <60',
-    }]],
-    ['ssri+maoi', [{
-      drug1: 'SSRI',
-      drug2: 'MAOI',
-      severity: 'contraindicated',
-      mechanism: 'Serotonin syndrome risk',
-      alternatives: ['tricyclic antidepressants', 'alternative SSRIs'],
-      managementStrategy: 'Minimum 14 day washout required; consider switching class',
-    }]],
-    ['lisinopril+potassium', [{
-      drug1: 'ACE inhibitor',
-      drug2: 'potassium supplement',
-      severity: 'major',
-      mechanism: 'Hyperkalemia risk',
-      alternatives: ['diuretic', 'low-sodium diet'],
-      managementStrategy: 'Monitor K+ levels; check baseline renal function',
-    }]],
+    [
+      "warfarin+aspirin",
+      [
+        {
+          drug1: "warfarin",
+          drug2: "aspirin",
+          severity: "major",
+          mechanism: "Increased bleeding risk due to antiplatelet effect",
+          alternatives: ["acetaminophen", "topical NSAIDs"],
+          managementStrategy: "Use lowest effective dose, monitor INR closely",
+        },
+      ],
+    ],
+    [
+      "metformin+contrast",
+      [
+        {
+          drug1: "metformin",
+          drug2: "iodinated contrast",
+          severity: "major",
+          mechanism: "Risk of contrast-induced nephropathy and lactic acidosis",
+          alternatives: ["non-contrast imaging", "CO2 angiography"],
+          managementStrategy: "Hold metformin 48h post-contrast if eGFR <60",
+        },
+      ],
+    ],
+    [
+      "ssri+maoi",
+      [
+        {
+          drug1: "SSRI",
+          drug2: "MAOI",
+          severity: "contraindicated",
+          mechanism: "Serotonin syndrome risk",
+          alternatives: ["tricyclic antidepressants", "alternative SSRIs"],
+          managementStrategy:
+            "Minimum 14 day washout required; consider switching class",
+        },
+      ],
+    ],
+    [
+      "lisinopril+potassium",
+      [
+        {
+          drug1: "ACE inhibitor",
+          drug2: "potassium supplement",
+          severity: "major",
+          mechanism: "Hyperkalemia risk",
+          alternatives: ["diuretic", "low-sodium diet"],
+          managementStrategy:
+            "Monitor K+ levels; check baseline renal function",
+        },
+      ],
+    ],
   ]);
 
   checkInteraction(drug1: string, drug2: string): DrugInteraction | null {
@@ -127,20 +149,30 @@ export class DrugInteractionChecker {
     return interactions[0];
   }
 
-  private detectGenericInteraction(drug1: string, drug2: string): DrugInteraction | null {
-    const anticoagulants = ['warfarin', 'apixaban', 'rivaroxaban', 'dabigatran'];
-    const nsaids = ['ibuprofen', 'naproxen', 'indomethacin', 'diclofenac'];
-    const acei = ['lisinopril', 'enalapril', 'ramipril', 'perindopril'];
-    const potassiumSparing = ['spironolactone', 'amiloride', 'potassium'];
+  private detectGenericInteraction(
+    drug1: string,
+    drug2: string,
+  ): DrugInteraction | null {
+    const anticoagulants = [
+      "warfarin",
+      "apixaban",
+      "rivaroxaban",
+      "dabigatran",
+    ];
+    const nsaids = ["ibuprofen", "naproxen", "indomethacin", "diclofenac"];
+    const acei = ["lisinopril", "enalapril", "ramipril", "perindopril"];
+    const potassiumSparing = ["spironolactone", "amiloride", "potassium"];
 
     if (anticoagulants.includes(drug1) && nsaids.includes(drug2)) {
       return {
         drug1,
         drug2,
-        severity: 'major',
-        mechanism: 'NSAIDs may inhibit anticoagulation and increase GI bleed risk',
-        alternatives: ['acetaminophen', 'topical agents'],
-        managementStrategy: 'Use lowest dose NSAID with PPI coverage if necessary',
+        severity: "major",
+        mechanism:
+          "NSAIDs may inhibit anticoagulation and increase GI bleed risk",
+        alternatives: ["acetaminophen", "topical agents"],
+        managementStrategy:
+          "Use lowest dose NSAID with PPI coverage if necessary",
       };
     }
 
@@ -148,10 +180,10 @@ export class DrugInteractionChecker {
       return {
         drug1,
         drug2,
-        severity: 'major',
-        mechanism: 'Increased hyperkalemia risk',
-        alternatives: ['alternative antihypertensive', 'dietary modification'],
-        managementStrategy: 'Monitor potassium levels regularly',
+        severity: "major",
+        mechanism: "Increased hyperkalemia risk",
+        alternatives: ["alternative antihypertensive", "dietary modification"],
+        managementStrategy: "Monitor potassium levels regularly",
       };
     }
 
@@ -163,14 +195,17 @@ export class DrugInteractionChecker {
 
 export class AllergyAlertEngine {
   private crossReactivityMap: Map<string, string[]> = new Map([
-    ['penicillin', ['ampicillin', 'amoxicillin', 'cephalosporins']],
-    ['sulfonamides', ['loop diuretics', 'thiazide diuretics', 'acetazolamide']],
-    ['nsaids', ['ibuprofen', 'naproxen', 'indomethacin', 'ketorolac']],
-    ['tree nuts', ['peanuts', 'shellfish']],
-    ['shellfish', ['iodine contrast', 'tree nuts']],
+    ["penicillin", ["ampicillin", "amoxicillin", "cephalosporins"]],
+    ["sulfonamides", ["loop diuretics", "thiazide diuretics", "acetazolamide"]],
+    ["nsaids", ["ibuprofen", "naproxen", "indomethacin", "ketorolac"]],
+    ["tree nuts", ["peanuts", "shellfish"]],
+    ["shellfish", ["iodine contrast", "tree nuts"]],
   ]);
 
-  checkAllergyAlert(reportedAllergy: string, proposedMedication: string): AllergyAlert | null {
+  checkAllergyAlert(
+    reportedAllergy: string,
+    proposedMedication: string,
+  ): AllergyAlert | null {
     const allergy = reportedAllergy.toLowerCase();
     const medication = proposedMedication.toLowerCase();
 
@@ -200,37 +235,55 @@ export class AllergyAlertEngine {
 
   private isCrossReactive(allergy: string, medication: string): boolean {
     const related = this.crossReactivityMap.get(allergy) || [];
-    return related.some((r) => medication.includes(r.toLowerCase()) || r.toLowerCase().includes(medication));
+    return related.some(
+      (r) =>
+        medication.includes(r.toLowerCase()) ||
+        r.toLowerCase().includes(medication),
+    );
   }
 
-  private assessSeverity(allergen: string, isCrossReactive = false): AllergyAlert['severity'] {
+  private assessSeverity(
+    allergen: string,
+    isCrossReactive = false,
+  ): AllergyAlert["severity"] {
     const severeAllergens = [
-      'penicillin', 'cephalosporin', 'anaphylaxis', 'anaphylactic',
-      'iodine', 'contrast', 'shellfish', 'peanut',
+      "penicillin",
+      "cephalosporin",
+      "anaphylaxis",
+      "anaphylactic",
+      "iodine",
+      "contrast",
+      "shellfish",
+      "peanut",
     ];
 
     const isSevere = severeAllergens.some((s) => allergen.includes(s));
 
     if (isSevere) {
-      return isCrossReactive ? 'severe' : 'anaphylaxis';
+      return isCrossReactive ? "severe" : "anaphylaxis";
     }
 
-    return isCrossReactive ? 'moderate' : 'mild';
+    return isCrossReactive ? "moderate" : "mild";
   }
 
   private getManifestations(allergen: string): string[] {
     const manifestationMap: Record<string, string[]> = {
-      penicillin: ['rash', 'itching', 'anaphylaxis', 'Stevens-Johnson syndrome'],
-      nsaid: ['rash', 'GI upset', 'angioedema', 'anaphylaxis'],
-      shellfish: ['hives', 'angioedema', 'anaphylaxis', 'respiratory distress'],
-      iodine: ['flushing', 'metal taste', 'anaphylaxis', 'nephropathy'],
+      penicillin: [
+        "rash",
+        "itching",
+        "anaphylaxis",
+        "Stevens-Johnson syndrome",
+      ],
+      nsaid: ["rash", "GI upset", "angioedema", "anaphylaxis"],
+      shellfish: ["hives", "angioedema", "anaphylaxis", "respiratory distress"],
+      iodine: ["flushing", "metal taste", "anaphylaxis", "nephropathy"],
     };
 
     for (const [key, values] of Object.entries(manifestationMap)) {
       if (allergen.includes(key)) return values;
     }
 
-    return ['rash', 'itching', 'swelling'];
+    return ["rash", "itching", "swelling"];
   }
 }
 
@@ -239,69 +292,113 @@ export class AllergyAlertEngine {
 export class ClinicalRuleEngine {
   private rules: ClinicalRule[] = [
     {
-      ruleId: 'dm_001',
-      name: 'Diabetes Management - Type 2',
-      guideline: 'ADA Standards of Care 2024',
-      condition: 'Type 2 Diabetes Mellitus',
-      recommendation: 'Target HbA1c <7% for most patients; start metformin if not contraindicated',
-      evidence: 'strong',
-      applicabilityChecks: ['eGFR > 30', 'no active infection', 'GI tolerance acceptable'],
-      actions: ['Initiate metformin', 'Check HbA1c quarterly', 'Refer to endocrinology if uncontrolled'],
+      ruleId: "dm_001",
+      name: "Diabetes Management - Type 2",
+      guideline: "ADA Standards of Care 2024",
+      condition: "Type 2 Diabetes Mellitus",
+      recommendation:
+        "Target HbA1c <7% for most patients; start metformin if not contraindicated",
+      evidence: "strong",
+      applicabilityChecks: [
+        "eGFR > 30",
+        "no active infection",
+        "GI tolerance acceptable",
+      ],
+      actions: [
+        "Initiate metformin",
+        "Check HbA1c quarterly",
+        "Refer to endocrinology if uncontrolled",
+      ],
     },
     {
-      ruleId: 'sepsis_001',
-      name: 'Early Sepsis Recognition',
-      guideline: 'Surviving Sepsis Campaign 2021',
-      condition: 'Suspected Sepsis (≥2 SIRS criteria + suspected infection)',
-      recommendation: 'Obtain lactate, blood cultures; initiate broad-spectrum antibiotics within 1 hour',
-      evidence: 'strong',
-      applicabilityChecks: ['Fever or hypothermia', 'Tachycardia', 'Tachypnea', 'Known/suspected infection'],
-      actions: ['Draw lactate/cultures', 'Start empiric antibiotics', 'Start IV fluids', 'Recheck lactate in 3h'],
+      ruleId: "sepsis_001",
+      name: "Early Sepsis Recognition",
+      guideline: "Surviving Sepsis Campaign 2021",
+      condition: "Suspected Sepsis (≥2 SIRS criteria + suspected infection)",
+      recommendation:
+        "Obtain lactate, blood cultures; initiate broad-spectrum antibiotics within 1 hour",
+      evidence: "strong",
+      applicabilityChecks: [
+        "Fever or hypothermia",
+        "Tachycardia",
+        "Tachypnea",
+        "Known/suspected infection",
+      ],
+      actions: [
+        "Draw lactate/cultures",
+        "Start empiric antibiotics",
+        "Start IV fluids",
+        "Recheck lactate in 3h",
+      ],
     },
     {
-      ruleId: 'vte_001',
-      name: 'VTE Prophylaxis',
-      guideline: 'ACCP Guidelines 2023',
-      condition: 'Hospitalized patient, high VTE risk',
-      recommendation: 'Initiate pharmacologic and mechanical prophylaxis',
-      evidence: 'strong',
-      applicabilityChecks: ['Immobile', 'Post-operative', 'Cancer patient', 'Recent trauma'],
-      actions: ['Assess bleeding risk', 'Consider LMWH or heparin', 'Use sequential compression devices', 'Early mobilization'],
+      ruleId: "vte_001",
+      name: "VTE Prophylaxis",
+      guideline: "ACCP Guidelines 2023",
+      condition: "Hospitalized patient, high VTE risk",
+      recommendation: "Initiate pharmacologic and mechanical prophylaxis",
+      evidence: "strong",
+      applicabilityChecks: [
+        "Immobile",
+        "Post-operative",
+        "Cancer patient",
+        "Recent trauma",
+      ],
+      actions: [
+        "Assess bleeding risk",
+        "Consider LMWH or heparin",
+        "Use sequential compression devices",
+        "Early mobilization",
+      ],
     },
     {
-      ruleId: 'fall_001',
-      name: 'Fall Risk Mitigation',
-      guideline: 'Hospital Fall Prevention Protocol',
-      condition: 'High fall risk (score ≥4)',
-      recommendation: 'Implement fall prevention bundle',
-      evidence: 'moderate',
-      applicabilityChecks: ['Age >65', 'Polypharmacy', 'Cognitive impairment', 'Recent fall'],
-      actions: ['Place near nurse station', 'Use bed alarm', 'Non-slip socks', 'Educate patient/family'],
+      ruleId: "fall_001",
+      name: "Fall Risk Mitigation",
+      guideline: "Hospital Fall Prevention Protocol",
+      condition: "High fall risk (score ≥4)",
+      recommendation: "Implement fall prevention bundle",
+      evidence: "moderate",
+      applicabilityChecks: [
+        "Age >65",
+        "Polypharmacy",
+        "Cognitive impairment",
+        "Recent fall",
+      ],
+      actions: [
+        "Place near nurse station",
+        "Use bed alarm",
+        "Non-slip socks",
+        "Educate patient/family",
+      ],
     },
   ];
 
   getRulesForCondition(condition: string): ClinicalRule[] {
-    return this.rules.filter((rule) =>
-      rule.condition.toLowerCase().includes(condition.toLowerCase()) ||
-      rule.name.toLowerCase().includes(condition.toLowerCase())
+    return this.rules.filter(
+      (rule) =>
+        rule.condition.toLowerCase().includes(condition.toLowerCase()) ||
+        rule.name.toLowerCase().includes(condition.toLowerCase()),
     );
   }
 
-  evaluateRuleApplicability(rule: ClinicalRule, patientData: Record<string, any>): boolean {
+  evaluateRuleApplicability(
+    rule: ClinicalRule,
+    patientData: Record<string, any>,
+  ): boolean {
     return rule.applicabilityChecks.every((check) => {
       const checkLower = check.toLowerCase();
 
-      if (checkLower.includes('egfr')) {
-        const value = parseFloat(checkLower.match(/\d+/)?.[0] || '0');
+      if (checkLower.includes("egfr")) {
+        const value = parseFloat(checkLower.match(/\d+/)?.[0] || "0");
         return (patientData.eGFR || 0) > value;
       }
 
-      if (checkLower.includes('age')) {
-        const value = parseFloat(checkLower.match(/\d+/)?.[0] || '0');
+      if (checkLower.includes("age")) {
+        const value = parseFloat(checkLower.match(/\d+/)?.[0] || "0");
         return (patientData.age || 0) >= value;
       }
 
-      return patientData[checkLower.replace(/\s+/g, '_')] === true;
+      return patientData[checkLower.replace(/\s+/g, "_")] === true;
     });
   }
 }
@@ -343,25 +440,25 @@ export class LabResultInterpreter {
     value: number,
     unit: string,
     ageYears?: number,
-    isMale?: boolean
+    isMale?: boolean,
   ): LabResult {
     const normRefRange = this.getReferenceRange(testName, ageYears, isMale);
 
-    let interpretation: LabResult['interpretation'];
-    let flag: LabResult['flag'] | null = null;
+    let interpretation: LabResult["interpretation"];
+    let flag: LabResult["flag"] | null = null;
 
     const critical = this.isCriticalValue(testName, value);
     if (critical) {
-      interpretation = 'critical';
-      flag = value < (normRefRange.min || 0) ? 'L' : 'H';
+      interpretation = "critical";
+      flag = value < (normRefRange.min || 0) ? "L" : "H";
     } else if (value < (normRefRange.min || 0)) {
-      interpretation = 'low';
-      flag = 'L';
+      interpretation = "low";
+      flag = "L";
     } else if (value > (normRefRange.max || 999)) {
-      interpretation = 'high';
-      flag = 'H';
+      interpretation = "high";
+      flag = "H";
     } else {
-      interpretation = 'normal';
+      interpretation = "normal";
     }
 
     return {
@@ -378,22 +475,22 @@ export class LabResultInterpreter {
   private getReferenceRange(
     testName: string,
     ageYears?: number,
-    isMale?: boolean
+    isMale?: boolean,
   ): { min?: number; max?: number } {
     const ranges = this.referenceRanges[testName.toLowerCase()] || {};
 
-    if (testName.toLowerCase() === 'hemoglobin') {
-      const category = isMale ? 'adult_male' : 'adult_female';
+    if (testName.toLowerCase() === "hemoglobin") {
+      const category = isMale ? "adult_male" : "adult_female";
       return ranges[category] || { min: 12, max: 16 };
     }
 
-    if (testName.toLowerCase() === 'creatinine') {
-      const category = isMale ? 'adult_male' : 'adult_female';
+    if (testName.toLowerCase() === "creatinine") {
+      const category = isMale ? "adult_male" : "adult_female";
       return ranges[category] || { min: 0.6, max: 1.2 };
     }
 
-    if (ranges['all']) {
-      return ranges['all'];
+    if (ranges["all"]) {
+      return ranges["all"];
     }
 
     return { min: 0, max: 1000 };
@@ -402,16 +499,16 @@ export class LabResultInterpreter {
   private isCriticalValue(testName: string, value: number): boolean {
     const testLower = testName.toLowerCase();
 
-    if (testLower.includes('potassium')) {
+    if (testLower.includes("potassium")) {
       return value < 2.5 || value > 6.5;
     }
-    if (testLower.includes('glucose')) {
+    if (testLower.includes("glucose")) {
       return value < 50 || value > 400;
     }
-    if (testLower.includes('sodium')) {
+    if (testLower.includes("sodium")) {
       return value < 120 || value > 160;
     }
-    if (testLower.includes('hemoglobin')) {
+    if (testLower.includes("hemoglobin")) {
       return value < 7 || value > 20;
     }
 
@@ -421,31 +518,43 @@ export class LabResultInterpreter {
   interpretPanel(
     results: LabResult[],
     ageYears?: number,
-    isMale?: boolean
-  ): { results: LabResult[]; panelInterpretation: string; recommendations: string[] } {
+    isMale?: boolean,
+  ): {
+    results: LabResult[];
+    panelInterpretation: string;
+    recommendations: string[];
+  } {
     const interpreted = results.map((r) =>
-      this.interpretLab(r.testName, r.value, r.unit, ageYears, isMale)
+      this.interpretLab(r.testName, r.value, r.unit, ageYears, isMale),
     );
 
-    const criticalCount = interpreted.filter((r) => r.interpretation === 'critical').length;
-    const abnormalCount = interpreted.filter((r) => r.interpretation !== 'normal').length;
+    const criticalCount = interpreted.filter(
+      (r) => r.interpretation === "critical",
+    ).length;
+    const abnormalCount = interpreted.filter(
+      (r) => r.interpretation !== "normal",
+    ).length;
 
     const recommendations: string[] = [];
 
     if (criticalCount > 0) {
-      recommendations.push('CRITICAL VALUES DETECTED - Notify provider immediately');
+      recommendations.push(
+        "CRITICAL VALUES DETECTED - Notify provider immediately",
+      );
     }
 
     if (abnormalCount > 2) {
-      recommendations.push('Multiple abnormalities - consider systemic process');
+      recommendations.push(
+        "Multiple abnormalities - consider systemic process",
+      );
     }
 
     const summary =
       criticalCount > 0
-        ? 'CRITICAL RESULTS'
+        ? "CRITICAL RESULTS"
         : abnormalCount > 0
-          ? 'Abnormal panel'
-          : 'Normal results';
+          ? "Abnormal panel"
+          : "Normal results";
 
     return {
       results: interpreted,
@@ -458,31 +567,41 @@ export class LabResultInterpreter {
 // ─── DIAGNOSIS SUGGESTER ────────────────────────────────────────────────────
 
 export class DiagnosisSuggester {
-  private symptomMap: Record<string, Array<{ condition: string; icd: string; likelihood: number }>> = {
-    'chest pain': [
-      { condition: 'Acute Coronary Syndrome', icd: 'I20-I25', likelihood: 0.35 },
-      { condition: 'Pulmonary Embolism', icd: 'I26', likelihood: 0.2 },
-      { condition: 'Aortic Dissection', icd: 'I71', likelihood: 0.08 },
-      { condition: 'Pneumonia', icd: 'J12-J18', likelihood: 0.15 },
-      { condition: 'Musculoskeletal Pain', icd: 'M79.1', likelihood: 0.22 },
+  private symptomMap: Record<
+    string,
+    Array<{ condition: string; icd: string; likelihood: number }>
+  > = {
+    "chest pain": [
+      {
+        condition: "Acute Coronary Syndrome",
+        icd: "I20-I25",
+        likelihood: 0.35,
+      },
+      { condition: "Pulmonary Embolism", icd: "I26", likelihood: 0.2 },
+      { condition: "Aortic Dissection", icd: "I71", likelihood: 0.08 },
+      { condition: "Pneumonia", icd: "J12-J18", likelihood: 0.15 },
+      { condition: "Musculoskeletal Pain", icd: "M79.1", likelihood: 0.22 },
     ],
-    'shortness of breath': [
-      { condition: 'Pneumonia', icd: 'J12-J18', likelihood: 0.25 },
-      { condition: 'Pulmonary Embolism', icd: 'I26', likelihood: 0.2 },
-      { condition: 'Heart Failure', icd: 'I50', likelihood: 0.25 },
-      { condition: 'Asthma', icd: 'J45', likelihood: 0.15 },
-      { condition: 'COPD exacerbation', icd: 'J44', likelihood: 0.15 },
+    "shortness of breath": [
+      { condition: "Pneumonia", icd: "J12-J18", likelihood: 0.25 },
+      { condition: "Pulmonary Embolism", icd: "I26", likelihood: 0.2 },
+      { condition: "Heart Failure", icd: "I50", likelihood: 0.25 },
+      { condition: "Asthma", icd: "J45", likelihood: 0.15 },
+      { condition: "COPD exacerbation", icd: "J44", likelihood: 0.15 },
     ],
-    'fever': [
-      { condition: 'Infection/Sepsis', icd: 'A00-B99', likelihood: 0.4 },
-      { condition: 'Inflammatory condition', icd: 'M05-M36', likelihood: 0.3 },
-      { condition: 'Malignancy', icd: 'C00-D49', likelihood: 0.15 },
-      { condition: 'Drug reaction', icd: 'T80-T88', likelihood: 0.1 },
-      { condition: 'Heat stroke', icd: 'T67', likelihood: 0.05 },
+    fever: [
+      { condition: "Infection/Sepsis", icd: "A00-B99", likelihood: 0.4 },
+      { condition: "Inflammatory condition", icd: "M05-M36", likelihood: 0.3 },
+      { condition: "Malignancy", icd: "C00-D49", likelihood: 0.15 },
+      { condition: "Drug reaction", icd: "T80-T88", likelihood: 0.1 },
+      { condition: "Heat stroke", icd: "T67", likelihood: 0.05 },
     ],
   };
 
-  suggestDiagnoses(symptoms: string[], patientData?: Record<string, any>): DiagnosisSuggestion[] {
+  suggestDiagnoses(
+    symptoms: string[],
+    patientData?: Record<string, any>,
+  ): DiagnosisSuggestion[] {
     const suggestionMap: Record<string, DiagnosisSuggestion> = {};
 
     symptoms.forEach((symptom) => {
@@ -503,7 +622,7 @@ export class DiagnosisSuggester {
         } else {
           suggestionMap[cand.condition].likelihood = Math.min(
             1,
-            suggestionMap[cand.condition].likelihood + cand.likelihood * 0.1
+            suggestionMap[cand.condition].likelihood + cand.likelihood * 0.1,
           );
           suggestionMap[cand.condition].supportingEvidence.push(symptom);
         }
@@ -519,38 +638,51 @@ export class DiagnosisSuggester {
 
   private getRedFlags(condition: string): string[] {
     const redFlagMap: Record<string, string[]> = {
-      'Acute Coronary Syndrome': ['Hypotension', 'Cardiogenic shock', 'Arrhythmia'],
-      'Pulmonary Embolism': ['Hypoxia <90%', 'Hemodynamic instability', 'RV dysfunction on Echo'],
-      'Sepsis': ['Lactate >4', 'Altered mental status', 'MAP <65'],
-      'Stroke': ['Onset >4.5h', 'Intracranial hemorrhage', 'Seizure'],
+      "Acute Coronary Syndrome": [
+        "Hypotension",
+        "Cardiogenic shock",
+        "Arrhythmia",
+      ],
+      "Pulmonary Embolism": [
+        "Hypoxia <90%",
+        "Hemodynamic instability",
+        "RV dysfunction on Echo",
+      ],
+      Sepsis: ["Lactate >4", "Altered mental status", "MAP <65"],
+      Stroke: ["Onset >4.5h", "Intracranial hemorrhage", "Seizure"],
     };
 
-    return redFlagMap[condition] || ['Monitor closely'];
+    return redFlagMap[condition] || ["Monitor closely"];
   }
 
   private getNextSteps(condition: string): string[] {
     const stepsMap: Record<string, string[]> = {
-      'Acute Coronary Syndrome': [
-        'EKG within 10 min',
-        'Troponin (serial at 0, 3, 6h)',
-        'Cardiology consult',
-        'Consider cath lab activation',
+      "Acute Coronary Syndrome": [
+        "EKG within 10 min",
+        "Troponin (serial at 0, 3, 6h)",
+        "Cardiology consult",
+        "Consider cath lab activation",
       ],
-      'Pulmonary Embolism': [
-        'D-dimer if low clinical suspicion',
-        'CT angiography',
-        'Anticoagulation (if not contraindicated)',
-        'Vascular surgery consult if massive PE',
+      "Pulmonary Embolism": [
+        "D-dimer if low clinical suspicion",
+        "CT angiography",
+        "Anticoagulation (if not contraindicated)",
+        "Vascular surgery consult if massive PE",
       ],
-      'Pneumonia': [
-        'Chest X-ray',
-        'Sputum culture',
-        'Start empiric antibiotics',
-        'Respiratory support if needed',
+      Pneumonia: [
+        "Chest X-ray",
+        "Sputum culture",
+        "Start empiric antibiotics",
+        "Respiratory support if needed",
       ],
     };
 
-    return stepsMap[condition] || ['Further evaluation needed', 'Specialist consultation'];
+    return (
+      stepsMap[condition] || [
+        "Further evaluation needed",
+        "Specialist consultation",
+      ]
+    );
   }
 }
 
@@ -564,24 +696,32 @@ export class RiskStratifier {
     hdl: number,
     sbp: number,
     smoker: boolean,
-    diabetic: boolean
+    diabetic: boolean,
   ): RiskScore {
-    const points = this.framinghamPoints(age, isMale, ldl, hdl, sbp, smoker, diabetic);
+    const points = this.framinghamPoints(
+      age,
+      isMale,
+      ldl,
+      hdl,
+      sbp,
+      smoker,
+      diabetic,
+    );
     const riskPercent = this.framinghamRiskPercent(points, isMale);
 
     return {
-      scoreName: 'Framingham 10-Year Cardiac Risk',
+      scoreName: "Framingham 10-Year Cardiac Risk",
       score: Math.round(riskPercent),
-      riskCategory: this.categorizeRisk(riskPercent, 'framingham'),
+      riskCategory: this.categorizeRisk(riskPercent, "framingham"),
       riskPercentage: riskPercent,
       interpretation: this.interpretFraminghamRisk(riskPercent),
       components: new Map([
-        ['Age', age],
-        ['Total Cholesterol', ldl],
-        ['HDL', hdl],
-        ['SBP', sbp],
-        ['Smoking', smoker ? 1 : 0],
-        ['Diabetes', diabetic ? 1 : 0],
+        ["Age", age],
+        ["Total Cholesterol", ldl],
+        ["HDL", hdl],
+        ["SBP", sbp],
+        ["Smoking", smoker ? 1 : 0],
+        ["Diabetes", diabetic ? 1 : 0],
       ]),
     };
   }
@@ -589,29 +729,40 @@ export class RiskStratifier {
   calculateASCVDRisk(
     age: number,
     isMale: boolean,
-    race: 'white' | 'black' | 'other',
+    race: "white" | "black" | "other",
     tc: number,
     ldl: number,
     hdl: number,
     sbp: number,
     treated: boolean,
     smoker: boolean,
-    diabetic: boolean
+    diabetic: boolean,
   ): RiskScore {
-    const risk = this.ascvdCalculation(age, isMale, race, tc, ldl, hdl, sbp, treated, smoker, diabetic);
+    const risk = this.ascvdCalculation(
+      age,
+      isMale,
+      race,
+      tc,
+      ldl,
+      hdl,
+      sbp,
+      treated,
+      smoker,
+      diabetic,
+    );
 
     return {
-      scoreName: 'ASCVD 10-Year Risk',
+      scoreName: "ASCVD 10-Year Risk",
       score: Math.round(risk),
-      riskCategory: this.categorizeRisk(risk, 'ascvd'),
+      riskCategory: this.categorizeRisk(risk, "ascvd"),
       riskPercentage: risk,
       interpretation: this.interpretASCVDRisk(risk),
       components: new Map([
-        ['Age', age],
-        ['Total Cholesterol', tc],
-        ['LDL', ldl],
-        ['HDL', hdl],
-        ['SBP', sbp],
+        ["Age", age],
+        ["Total Cholesterol", tc],
+        ["LDL", ldl],
+        ["HDL", hdl],
+        ["SBP", sbp],
       ]),
     };
   }
@@ -623,7 +774,7 @@ export class RiskStratifier {
     o2Sat: number,
     dvtSigns: boolean,
     heartFailure: boolean,
-    hvitPattern: boolean
+    hvitPattern: boolean,
   ): RiskScore {
     let score = clinicalSuspicion * 3;
 
@@ -639,14 +790,14 @@ export class RiskStratifier {
     return {
       scoreName: "Wells PE Prediction Rule",
       score: Math.round(score * 2) / 2,
-      riskCategory: this.categorizeRisk(risk, 'wells'),
+      riskCategory: this.categorizeRisk(risk, "wells"),
       riskPercentage: risk,
       interpretation: `PE probability: ${risk.toFixed(1)}%`,
       components: new Map([
-        ['Suspicion', clinicalSuspicion],
-        ['Tachycardia', hr > 100 ? 1 : 0],
-        ['Hypoxia', o2Sat < 95 ? 1 : 0],
-        ['DVT Signs', dvtSigns ? 1 : 0],
+        ["Suspicion", clinicalSuspicion],
+        ["Tachycardia", hr > 100 ? 1 : 0],
+        ["Hypoxia", o2Sat < 95 ? 1 : 0],
+        ["DVT Signs", dvtSigns ? 1 : 0],
       ]),
     };
   }
@@ -659,7 +810,7 @@ export class RiskStratifier {
     vte: boolean,
     bleeding: number,
     isMale: boolean,
-    vascular: boolean
+    vascular: boolean,
   ): RiskScore {
     let score = 0;
 
@@ -673,19 +824,19 @@ export class RiskStratifier {
     if (!isMale) score++;
 
     return {
-      scoreName: 'CHADS2-VASc Stroke Risk (AFib)',
+      scoreName: "CHADS2-VASc Stroke Risk (AFib)",
       score,
-      riskCategory: this.categorizeRisk(score, 'chads2'),
+      riskCategory: this.categorizeRisk(score, "chads2"),
       riskPercentage: undefined,
       interpretation: this.interpretCHADS2VASc(score),
       components: new Map([
-        ['CHF', chf ? 1 : 0],
-        ['Hypertension', hypertension ? 1 : 0],
-        ['Age ≥75', age >= 75 ? 2 : 0],
-        ['Age 65-74', age >= 65 && age < 75 ? 1 : 0],
-        ['Stroke/TIA/Thromboembolism', stroke ? 2 : 0],
-        ['Vascular Disease', vascular ? 1 : 0],
-        ['Female', !isMale ? 1 : 0],
+        ["CHF", chf ? 1 : 0],
+        ["Hypertension", hypertension ? 1 : 0],
+        ["Age ≥75", age >= 75 ? 2 : 0],
+        ["Age 65-74", age >= 65 && age < 75 ? 1 : 0],
+        ["Stroke/TIA/Thromboembolism", stroke ? 2 : 0],
+        ["Vascular Disease", vascular ? 1 : 0],
+        ["Female", !isMale ? 1 : 0],
       ]),
     };
   }
@@ -697,7 +848,7 @@ export class RiskStratifier {
     hdl: number,
     sbp: number,
     smoker: boolean,
-    diabetic: boolean
+    diabetic: boolean,
   ): number {
     let points = 0;
 
@@ -761,15 +912,17 @@ export class RiskStratifier {
     sbp: number,
     treated: boolean,
     smoker: boolean,
-    diabetic: boolean
+    diabetic: boolean,
   ): number {
-    return 3.6 +
-      (age * 0.08) +
-      (tc * 0.02) -
-      (hdl * 0.03) +
-      (sbp * 0.01) +
+    return (
+      3.6 +
+      age * 0.08 +
+      tc * 0.02 -
+      hdl * 0.03 +
+      sbp * 0.01 +
       (smoker ? 0.5 : 0) +
-      (diabetic ? 0.5 : 0);
+      (diabetic ? 0.5 : 0)
+    );
   }
 
   private wellsToRiskPercent(score: number): number {
@@ -781,50 +934,50 @@ export class RiskStratifier {
 
   private categorizeRisk(
     value: number,
-    scoreType: string
-  ): 'low' | 'intermediate' | 'high' | 'very_high' {
-    if (scoreType === 'framingham') {
-      if (value < 10) return 'low';
-      if (value < 20) return 'intermediate';
-      return 'high';
+    scoreType: string,
+  ): "low" | "intermediate" | "high" | "very_high" {
+    if (scoreType === "framingham") {
+      if (value < 10) return "low";
+      if (value < 20) return "intermediate";
+      return "high";
     }
-    if (scoreType === 'ascvd') {
-      if (value < 5) return 'low';
-      if (value < 7.5) return 'intermediate';
-      return 'high';
+    if (scoreType === "ascvd") {
+      if (value < 5) return "low";
+      if (value < 7.5) return "intermediate";
+      return "high";
     }
-    if (scoreType === 'wells') {
-      if (value < 2) return 'low';
-      if (value < 6) return 'intermediate';
-      if (value < 11) return 'high';
-      return 'very_high';
+    if (scoreType === "wells") {
+      if (value < 2) return "low";
+      if (value < 6) return "intermediate";
+      if (value < 11) return "high";
+      return "very_high";
     }
-    if (scoreType === 'chads2') {
-      if (value === 0) return 'low';
-      if (value === 1) return 'intermediate';
-      if (value <= 3) return 'high';
-      return 'very_high';
+    if (scoreType === "chads2") {
+      if (value === 0) return "low";
+      if (value === 1) return "intermediate";
+      if (value <= 3) return "high";
+      return "very_high";
     }
-    return 'intermediate';
+    return "intermediate";
   }
 
   private interpretFraminghamRisk(risk: number): string {
-    if (risk < 10) return 'Low risk: Continue current preventive measures';
-    if (risk < 20) return 'Intermediate risk: Consider statin therapy';
-    return 'High risk: Aggressive risk factor modification and consider intensive therapy';
+    if (risk < 10) return "Low risk: Continue current preventive measures";
+    if (risk < 20) return "Intermediate risk: Consider statin therapy";
+    return "High risk: Aggressive risk factor modification and consider intensive therapy";
   }
 
   private interpretASCVDRisk(risk: number): string {
-    if (risk < 5) return 'Low 10-year ASCVD risk';
-    if (risk < 7.5) return 'Intermediate 10-year ASCVD risk: Consider statin';
-    return 'High 10-year ASCVD risk: Recommend statin therapy';
+    if (risk < 5) return "Low 10-year ASCVD risk";
+    if (risk < 7.5) return "Intermediate 10-year ASCVD risk: Consider statin";
+    return "High 10-year ASCVD risk: Recommend statin therapy";
   }
 
   private interpretCHADS2VASc(score: number): string {
-    if (score === 0) return 'Low stroke risk: No anticoagulation needed';
-    if (score === 1) return 'Low-intermediate risk: Consider anticoagulation';
-    if (score <= 3) return 'High risk: Anticoagulation recommended';
-    return 'Very high risk: Anticoagulation strongly recommended';
+    if (score === 0) return "Low stroke risk: No anticoagulation needed";
+    if (score === 1) return "Low-intermediate risk: Consider anticoagulation";
+    if (score <= 3) return "High risk: Anticoagulation recommended";
+    return "Very high risk: Anticoagulation strongly recommended";
   }
 }
 
@@ -850,14 +1003,20 @@ export function createClinicalDecisionSupport() {
       const interactions: DrugInteraction[] = [];
       for (let i = 0; i < medications.length; i++) {
         for (let j = i + 1; j < medications.length; j++) {
-          const interaction = drugChecker.checkInteraction(medications[i], medications[j]);
+          const interaction = drugChecker.checkInteraction(
+            medications[i],
+            medications[j],
+          );
           if (interaction) interactions.push(interaction);
         }
       }
       return interactions;
     },
 
-    checkAllergyConflicts(allergies: string[], proposedMeds: string[]): AllergyAlert[] {
+    checkAllergyConflicts(
+      allergies: string[],
+      proposedMeds: string[],
+    ): AllergyAlert[] {
       const alerts: AllergyAlert[] = [];
       allergies.forEach((allergy) => {
         proposedMeds.forEach((med) => {

@@ -4,11 +4,7 @@
  * variations, inventory, images, and categories
  */
 
-import type {
-  WCProduct,
-  WCProductVariation,
-  WCProductImage,
-} from "./types.js";
+import type { WCProduct, WCProductVariation, WCProductImage } from "./types.js";
 
 /**
  * WooCommerce Product Sync Service
@@ -29,7 +25,9 @@ export class ProductSyncService {
       pricing: {
         price: parseFloat(wcProduct.price),
         regularPrice: parseFloat(wcProduct.regular_price),
-        salePrice: wcProduct.sale_price ? parseFloat(wcProduct.sale_price) : null,
+        salePrice: wcProduct.sale_price
+          ? parseFloat(wcProduct.sale_price)
+          : null,
         onSale: wcProduct.on_sale,
         currency: "USD", // Would be configurable
       },
@@ -41,9 +39,15 @@ export class ProductSyncService {
       },
       dimensions: {
         weight: wcProduct.weight ? parseFloat(wcProduct.weight) : null,
-        length: wcProduct.dimensions.length ? parseFloat(wcProduct.dimensions.length) : null,
-        width: wcProduct.dimensions.width ? parseFloat(wcProduct.dimensions.width) : null,
-        height: wcProduct.dimensions.height ? parseFloat(wcProduct.dimensions.height) : null,
+        length: wcProduct.dimensions.length
+          ? parseFloat(wcProduct.dimensions.length)
+          : null,
+        width: wcProduct.dimensions.width
+          ? parseFloat(wcProduct.dimensions.width)
+          : null,
+        height: wcProduct.dimensions.height
+          ? parseFloat(wcProduct.dimensions.height)
+          : null,
       },
       categories: wcProduct.categories.map((cat) => ({
         id: cat.id.toString(),
@@ -57,7 +61,8 @@ export class ProductSyncService {
       })),
       images: this.syncImages(wcProduct.images),
       attributes: this.syncAttributes(wcProduct.attributes),
-      variations: wcProduct.variations.length > 0 ? wcProduct.variations : undefined,
+      variations:
+        wcProduct.variations.length > 0 ? wcProduct.variations : undefined,
       metadata: {
         wcProductId: wcProduct.id,
         virtual: wcProduct.virtual,
@@ -75,7 +80,9 @@ export class ProductSyncService {
   /**
    * Sync product from Witylogix to WooCommerce
    */
-  static syncProductToWC(wlProduct: Record<string, unknown>): Partial<WCProduct> {
+  static syncProductToWC(
+    wlProduct: Record<string, unknown>,
+  ): Partial<WCProduct> {
     const pricing = wlProduct.pricing as Record<string, unknown>;
     const inventory = wlProduct.inventory as Record<string, unknown>;
 
@@ -85,12 +92,19 @@ export class ProductSyncService {
       short_description: (wlProduct.shortDescription as string) || "",
       sku: (wlProduct.sku as string) || "",
       price: pricing?.price ? pricing.price.toString() : "0",
-      regular_price: pricing?.regularPrice ? pricing.regularPrice.toString() : "0",
+      regular_price: pricing?.regularPrice
+        ? pricing.regularPrice.toString()
+        : "0",
       sale_price: pricing?.salePrice ? pricing.salePrice.toString() : "",
       status: (wlProduct.status as string) === "active" ? "publish" : "draft",
-      stock_quantity: inventory?.quantity ? parseInt(inventory.quantity.toString()) : 0,
-      manage_stock: inventory?.managed as boolean || false,
-      stock_status: ((inventory?.status as string) || "instock") as "instock" | "outofstock" | "onbackorder",
+      stock_quantity: inventory?.quantity
+        ? parseInt(inventory.quantity.toString())
+        : 0,
+      manage_stock: (inventory?.managed as boolean) || false,
+      stock_status: ((inventory?.status as string) || "instock") as
+        | "instock"
+        | "outofstock"
+        | "onbackorder",
     };
   }
 
@@ -112,7 +126,9 @@ export class ProductSyncService {
       pricing: {
         price: parseFloat(variation.price),
         regularPrice: parseFloat(variation.regular_price),
-        salePrice: variation.sale_price ? parseFloat(variation.sale_price) : null,
+        salePrice: variation.sale_price
+          ? parseFloat(variation.sale_price)
+          : null,
         onSale: variation.on_sale,
       },
       inventory: {

@@ -1,13 +1,20 @@
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { useApiList } from '@/hooks/use-api';
-import { AlertCircle, Users, Clock, FileText, CheckCircle2, Shield } from 'lucide-react';
+import { cn } from "@/lib/utils";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { useApiList } from "@/hooks/use-api";
+import {
+  AlertCircle,
+  Users,
+  Clock,
+  FileText,
+  CheckCircle2,
+  Shield,
+} from "lucide-react";
 
 interface KPICard {
   label: string;
@@ -31,20 +38,24 @@ function KPICardComponent({ card }: { card: KPICard }) {
       <CardContent className="pt-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <p className="text-sm font-medium text-gray-400 mb-2">{card.label}</p>
+            <p className="text-sm font-medium text-gray-400 mb-2">
+              {card.label}
+            </p>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-white">{card.value}</span>
+              <span className="text-3xl font-bold text-white">
+                {card.value}
+              </span>
               {card.unit && (
                 <span className="text-sm text-gray-400">{card.unit}</span>
               )}
             </div>
             {card.trend && (
               <div className="mt-2 text-xs">
-                <span className={cn(
-                  card.trend === "up"
-                    ? "text-emerald-400"
-                    : "text-amber-400"
-                )}>
+                <span
+                  className={cn(
+                    card.trend === "up" ? "text-emerald-400" : "text-amber-400",
+                  )}
+                >
                   {card.trend === "up" ? "↑" : "↓"} {card.trendValue || "0%"}
                 </span>
               </div>
@@ -75,19 +86,27 @@ function ComplianceStatusCard({ compliance }: { compliance: Compliance }) {
         </div>
         <div className="flex items-center justify-between p-3 bg-wl-bg-elevated rounded-lg">
           <span className="text-sm text-gray-400">Encryption</span>
-          <Badge variant={compliance?.encryptionEnabled ? "success" : "warning"}>
+          <Badge
+            variant={compliance?.encryptionEnabled ? "success" : "warning"}
+          >
             {compliance?.encryptionEnabled ? "Enabled" : "Disabled"}
           </Badge>
         </div>
         <div className="flex items-center justify-between p-3 bg-wl-bg-elevated rounded-lg">
           <span className="text-sm text-gray-400">Audit Logging</span>
-          <Badge variant={compliance?.auditLoggingEnabled ? "success" : "warning"}>
+          <Badge
+            variant={compliance?.auditLoggingEnabled ? "success" : "warning"}
+          >
             {compliance?.auditLoggingEnabled ? "Enabled" : "Disabled"}
           </Badge>
         </div>
         <div className="flex items-center justify-between p-3 bg-wl-bg-elevated rounded-lg">
           <span className="text-sm text-gray-400">Access Controls</span>
-          <Badge variant={compliance?.accessControlsConfigured ? "success" : "warning"}>
+          <Badge
+            variant={
+              compliance?.accessControlsConfigured ? "success" : "warning"
+            }
+          >
             {compliance?.accessControlsConfigured ? "Configured" : "Pending"}
           </Badge>
         </div>
@@ -121,14 +140,22 @@ function RecentRecordsCard({ patients }: { patients: LocalPatient[] }) {
                   <p className="text-sm font-medium text-white">
                     {patient.firstName} {patient.lastName}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">MRN: {patient.mrn}</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    MRN: {patient.mrn}
+                  </p>
                 </div>
-                <Badge variant={patient.status === "ACTIVE" ? "success" : "default"}>
+                <Badge
+                  variant={patient.status === "ACTIVE" ? "success" : "default"}
+                >
                   {patient.status}
                 </Badge>
               </div>
               <div className="flex gap-3 text-xs text-gray-400">
-                <span>Age: {new Date().getFullYear() - new Date(patient.dateOfBirth).getFullYear()}</span>
+                <span>
+                  Age:{" "}
+                  {new Date().getFullYear() -
+                    new Date(patient.dateOfBirth).getFullYear()}
+                </span>
                 <span>•</span>
                 <span>Conditions: {patient.activeConditionsCount}</span>
                 <span>•</span>
@@ -141,7 +168,6 @@ function RecentRecordsCard({ patients }: { patients: LocalPatient[] }) {
     </Card>
   );
 }
-
 
 interface LocalPatient {
   id: string;
@@ -163,7 +189,12 @@ interface Compliance {
 }
 
 export default function HealthcarePage() {
-  const { items: patients, loading, error, refetch } = useApiList<LocalPatient>('/api/v4/customers?type=patient');
+  const {
+    items: patients,
+    loading,
+    error,
+    refetch,
+  } = useApiList<LocalPatient>("/api/v4/customers?type=patient");
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
@@ -191,12 +222,14 @@ export default function HealthcarePage() {
       {/* Header with Action */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">Healthcare Dashboard</h1>
-          <p className="text-sm text-gray-400 mt-1">Patient management and clinical oversight</p>
+          <h1 className="text-3xl font-bold text-white">
+            Healthcare Dashboard
+          </h1>
+          <p className="text-sm text-gray-400 mt-1">
+            Patient management and clinical oversight
+          </p>
         </div>
-        <Button variant="primary">
-          + Add Patient
-        </Button>
+        <Button variant="primary">+ Add Patient</Button>
       </div>
 
       {/* KPI Cards */}
@@ -220,7 +253,9 @@ export default function HealthcarePage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
-            <p className="text-sm font-medium text-gray-400 mb-2">Avg. Patient Age</p>
+            <p className="text-sm font-medium text-gray-400 mb-2">
+              Avg. Patient Age
+            </p>
             <p className="text-3xl font-bold text-white">
               {Math.round(
                 patients.reduce(
@@ -228,8 +263,8 @@ export default function HealthcarePage() {
                     sum +
                     (new Date().getFullYear() -
                       new Date(p.dateOfBirth).getFullYear()),
-                  0
-                ) / (patients.length || 1)
+                  0,
+                ) / (patients.length || 1),
               )}
             </p>
             <p className="text-xs text-gray-500 mt-2">Across all patients</p>
@@ -237,16 +272,22 @@ export default function HealthcarePage() {
         </Card>
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
-            <p className="text-sm font-medium text-gray-400 mb-2">System Status</p>
+            <p className="text-sm font-medium text-gray-400 mb-2">
+              System Status
+            </p>
             <p className="text-3xl font-bold text-emerald-400">Operational</p>
             <p className="text-xs text-gray-500 mt-2">All systems normal</p>
           </CardContent>
         </Card>
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
-            <p className="text-sm font-medium text-gray-400 mb-2">Data Backup</p>
+            <p className="text-sm font-medium text-gray-400 mb-2">
+              Data Backup
+            </p>
             <p className="text-3xl font-bold text-white">Completed</p>
-            <p className="text-xs text-gray-500 mt-2">Last run: Today 11:00 PM</p>
+            <p className="text-xs text-gray-500 mt-2">
+              Last run: Today 11:00 PM
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -257,10 +298,13 @@ export default function HealthcarePage() {
           <div className="flex gap-3">
             <Shield className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-blue-400 mb-1">HIPAA Compliance Notice</p>
+              <p className="text-sm font-medium text-blue-400 mb-1">
+                HIPAA Compliance Notice
+              </p>
               <p className="text-sm text-gray-400">
-                All patient information is encrypted and access is logged for audit purposes.
-                Ensure you follow proper procedures when accessing and handling patient records.
+                All patient information is encrypted and access is logged for
+                audit purposes. Ensure you follow proper procedures when
+                accessing and handling patient records.
               </p>
             </div>
           </div>

@@ -2,7 +2,11 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { DriverTrackingConsumer } from "../consumers/driver-tracking";
-import type { QueueJobPayload, QueueJobMetadata, ConsumerConfig } from "../types";
+import type {
+  QueueJobPayload,
+  QueueJobMetadata,
+  ConsumerConfig,
+} from "../types";
 
 /**
  * Integration test suite for driver tracking consumer
@@ -99,11 +103,21 @@ describe("DriverTrackingConsumer", () => {
   describe("Location Update Processing", () => {
     it("should process driver location update with valid coordinates", async () => {
       const job = makeDriverJob({
-        payload: { latitude: 37.7749, longitude: -122.4194, accuracy: 5, speed: 15.5, heading: 45, timestamp: Date.now() },
+        payload: {
+          latitude: 37.7749,
+          longitude: -122.4194,
+          accuracy: 5,
+          speed: 15.5,
+          heading: 45,
+          timestamp: Date.now(),
+        },
       });
 
       mockPrisma.driver.update.mockResolvedValueOnce({ id: "driver_123" });
-      mockPrisma.driverLocation.create.mockResolvedValueOnce({ id: "loc_1", driverId: "driver_123" });
+      mockPrisma.driverLocation.create.mockResolvedValueOnce({
+        id: "loc_1",
+        driverId: "driver_123",
+      });
 
       const result = await consumer.executeJob(job);
 
@@ -120,7 +134,14 @@ describe("DriverTrackingConsumer", () => {
 
     it("should reject coordinates with invalid latitude", async () => {
       const job = makeDriverJob({
-        payload: { latitude: 91, longitude: -122.4194, heading: 0, speed: 0, accuracy: 5, timestamp: Date.now() },
+        payload: {
+          latitude: 91,
+          longitude: -122.4194,
+          heading: 0,
+          speed: 0,
+          accuracy: 5,
+          timestamp: Date.now(),
+        },
       });
 
       const result = await consumer.executeJob(job);
@@ -130,7 +151,14 @@ describe("DriverTrackingConsumer", () => {
 
     it("should reject coordinates with invalid longitude", async () => {
       const job = makeDriverJob({
-        payload: { latitude: 37.7749, longitude: 181, heading: 0, speed: 0, accuracy: 5, timestamp: Date.now() },
+        payload: {
+          latitude: 37.7749,
+          longitude: 181,
+          heading: 0,
+          speed: 0,
+          accuracy: 5,
+          timestamp: Date.now(),
+        },
       });
 
       const result = await consumer.executeJob(job);
@@ -162,7 +190,9 @@ describe("DriverTrackingConsumer", () => {
     it("should handle database error during position update gracefully", async () => {
       const job = makeDriverJob();
 
-      mockPrisma.driver.update.mockRejectedValueOnce(new Error("database connection lost"));
+      mockPrisma.driver.update.mockRejectedValueOnce(
+        new Error("database connection lost"),
+      );
 
       const result = await consumer.executeJob(job);
       expect(result.success).toBe(false);
@@ -173,7 +203,14 @@ describe("DriverTrackingConsumer", () => {
     it("should update driver position in database", async () => {
       const timestamp = Date.now();
       const job = makeDriverJob({
-        payload: { latitude: 37.7749, longitude: -122.4194, heading: 90, speed: 25, accuracy: 5, timestamp },
+        payload: {
+          latitude: 37.7749,
+          longitude: -122.4194,
+          heading: 90,
+          speed: 25,
+          accuracy: 5,
+          timestamp,
+        },
       });
 
       mockPrisma.driver.update.mockResolvedValueOnce({});
@@ -194,7 +231,14 @@ describe("DriverTrackingConsumer", () => {
 
     it("should store location history record", async () => {
       const job = makeDriverJob({
-        payload: { latitude: 40.7128, longitude: -74.006, heading: 0, speed: 0, accuracy: 10, timestamp: Date.now() },
+        payload: {
+          latitude: 40.7128,
+          longitude: -74.006,
+          heading: 0,
+          speed: 0,
+          accuracy: 10,
+          timestamp: Date.now(),
+        },
       });
 
       mockPrisma.driver.update.mockResolvedValueOnce({});
@@ -214,7 +258,9 @@ describe("DriverTrackingConsumer", () => {
     it("should handle Redis/database failures gracefully", async () => {
       const job = makeDriverJob();
 
-      mockPrisma.driver.update.mockRejectedValueOnce(new Error("database connection lost"));
+      mockPrisma.driver.update.mockRejectedValueOnce(
+        new Error("database connection lost"),
+      );
 
       const result = await consumer.executeJob(job);
       expect(result.success).toBe(false);
@@ -224,7 +270,14 @@ describe("DriverTrackingConsumer", () => {
   describe("Event Emission with Coordinates", () => {
     it("should emit driver.location_updated event with coordinates", async () => {
       const job = makeDriverJob({
-        payload: { latitude: 37.7749, longitude: -122.4194, heading: 90, speed: 25.5, accuracy: 5, timestamp: Date.now() },
+        payload: {
+          latitude: 37.7749,
+          longitude: -122.4194,
+          heading: 90,
+          speed: 25.5,
+          accuracy: 5,
+          timestamp: Date.now(),
+        },
       });
 
       mockPrisma.driver.update.mockResolvedValueOnce({});
@@ -242,13 +295,20 @@ describe("DriverTrackingConsumer", () => {
         }),
         expect.objectContaining({
           tenantId: "company_123",
-        })
+        }),
       );
     });
 
     it("should emit event with high precision coordinates", async () => {
       const job = makeDriverJob({
-        payload: { latitude: 37.77494836, longitude: -122.41941234, heading: 0, speed: 0, accuracy: 2, timestamp: Date.now() },
+        payload: {
+          latitude: 37.77494836,
+          longitude: -122.41941234,
+          heading: 0,
+          speed: 0,
+          accuracy: 2,
+          timestamp: Date.now(),
+        },
       });
 
       mockPrisma.driver.update.mockResolvedValueOnce({});
@@ -262,7 +322,7 @@ describe("DriverTrackingConsumer", () => {
           latitude: 37.77494836,
           longitude: -122.41941234,
         }),
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -297,7 +357,9 @@ describe("DriverTrackingConsumer", () => {
 
       mockPrisma.driver.update.mockResolvedValueOnce({});
       mockPrisma.driverLocation.create.mockResolvedValueOnce({ id: "loc_1" });
-      mockPrisma.restrictedArea.findFirst.mockResolvedValueOnce({ id: "restricted_1" });
+      mockPrisma.restrictedArea.findFirst.mockResolvedValueOnce({
+        id: "restricted_1",
+      });
 
       const result = await consumer.executeJob(job);
 
@@ -332,7 +394,7 @@ describe("DriverTrackingConsumer", () => {
       expect(mockPrisma.order.findUnique).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: "order_123" },
-        })
+        }),
       );
       expect(result.success).toBe(true);
     });
@@ -350,14 +412,14 @@ describe("DriverTrackingConsumer", () => {
             accuracy: 5,
             timestamp: Date.now() + i * 1000,
           },
-        })
+        }),
       );
 
       mockPrisma.driver.update.mockResolvedValue({});
       mockPrisma.driverLocation.create.mockResolvedValue({ id: "loc_1" });
 
       const results = await Promise.all(
-        jobs.map((job) => consumer.executeJob(job))
+        jobs.map((job) => consumer.executeJob(job)),
       );
 
       expect(results.every((r) => r.success)).toBe(true);
@@ -375,7 +437,14 @@ describe("DriverTrackingConsumer", () => {
         mockPrisma.driverLocation.create.mockResolvedValueOnce({ id: "loc_1" });
 
         const job = makeDriverJob({
-          payload: { latitude: 37.7749, longitude: -122.4194, heading: 0, speed: 0, accuracy, timestamp: Date.now() },
+          payload: {
+            latitude: 37.7749,
+            longitude: -122.4194,
+            heading: 0,
+            speed: 0,
+            accuracy,
+            timestamp: Date.now(),
+          },
         });
 
         const result = await consumer.executeJob(job);

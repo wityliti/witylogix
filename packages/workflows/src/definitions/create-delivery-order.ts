@@ -40,7 +40,8 @@ import type {
 } from "./create-delivery-order.types";
 
 // Replace uuid module with inline generator
-const generateId = () => `wf_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+const generateId = () =>
+  `wf_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 const uuidv4 = generateId;
 
 // Replace missing imports with local implementations
@@ -80,7 +81,11 @@ interface WorkflowContext {
 interface Logger {
   info(msg: string, data?: Record<string, unknown>): void;
   warn(msg: string, data?: Record<string, unknown>): void;
-  error(msg: string, error?: Error | string, data?: Record<string, unknown>): void;
+  error(
+    msg: string,
+    error?: Error | string,
+    data?: Record<string, unknown>,
+  ): void;
 }
 
 /**
@@ -90,7 +95,11 @@ interface Logger {
 interface WorkflowStep {
   name: string;
   invoke: (ctx: WorkflowContext, input: any) => Promise<any>;
-  compensate?: (ctx: WorkflowContext, input: any, compensation: CompensationContext) => Promise<void>;
+  compensate?: (
+    ctx: WorkflowContext,
+    input: any,
+    compensation: CompensationContext,
+  ) => Promise<void>;
 }
 
 /**
@@ -118,8 +127,16 @@ class ConsoleLogger implements Logger {
     console.warn(`[${this.prefix}] ${msg}`, data ? JSON.stringify(data) : "");
   }
 
-  error(msg: string, error?: Error | string, data?: Record<string, unknown>): void {
-    console.error(`[${this.prefix}] ${msg}`, error, data ? JSON.stringify(data) : "");
+  error(
+    msg: string,
+    error?: Error | string,
+    data?: Record<string, unknown>,
+  ): void {
+    console.error(
+      `[${this.prefix}] ${msg}`,
+      error,
+      data ? JSON.stringify(data) : "",
+    );
   }
 }
 
@@ -134,7 +151,10 @@ class ConsoleLogger implements Logger {
  */
 const validateOrderStep: WorkflowStep = {
   name: "validateOrder",
-  invoke: async (ctx: WorkflowContext, input: CreateDeliveryOrderInput): Promise<ValidateOrderOutput> => {
+  invoke: async (
+    ctx: WorkflowContext,
+    input: CreateDeliveryOrderInput,
+  ): Promise<ValidateOrderOutput> => {
     const startTime = Date.now();
     ctx.logger.info("Starting order validation", { shopId: ctx.shopId });
 
@@ -153,13 +173,19 @@ const validateOrderStep: WorkflowStep = {
     }
 
     // Validate delivery address
-    if (!input.deliveryAddressLine1 || input.deliveryAddressLine1.trim().length === 0) {
+    if (
+      !input.deliveryAddressLine1 ||
+      input.deliveryAddressLine1.trim().length === 0
+    ) {
       errors.push("Delivery address line 1 is required");
     }
     if (!input.deliveryCity || input.deliveryCity.trim().length === 0) {
       errors.push("Delivery city is required");
     }
-    if (!input.deliveryPostalCode || input.deliveryPostalCode.trim().length === 0) {
+    if (
+      !input.deliveryPostalCode ||
+      input.deliveryPostalCode.trim().length === 0
+    ) {
       errors.push("Delivery postal code is required");
     }
 
@@ -223,10 +249,16 @@ const geocodeAddressesStep: WorkflowStep = {
   name: "geocodeAddresses",
   invoke: async (
     ctx: WorkflowContext,
-    input: { pickupLocationId: string; deliveryAddress: any; validatedInput: ValidateOrderOutput }
+    input: {
+      pickupLocationId: string;
+      deliveryAddress: any;
+      validatedInput: ValidateOrderOutput;
+    },
   ): Promise<GeocodeAddressesOutput> => {
     const startTime = Date.now();
-    ctx.logger.info("Starting address geocoding", { pickupLocationId: input.pickupLocationId });
+    ctx.logger.info("Starting address geocoding", {
+      pickupLocationId: input.pickupLocationId,
+    });
 
     // In production, this would call an external geocoding service (Google Maps, Mapbox, etc.)
     // For now, we simulate geocoding with realistic coordinate ranges
@@ -249,7 +281,10 @@ const geocodeAddressesStep: WorkflowStep = {
     const deliveryCoordinates = simulateGeocode(input.deliveryAddress);
 
     // Calculate distance using Haversine formula
-    const distanceKm = calculateHaversineDistance(pickupCoordinates, deliveryCoordinates);
+    const distanceKm = calculateHaversineDistance(
+      pickupCoordinates,
+      deliveryCoordinates,
+    );
 
     ctx.logger.info("Address geocoding completed", {
       pickupCoordinates,
@@ -280,7 +315,7 @@ const calculateShippingRateStep: WorkflowStep = {
       totalWeight: number;
       deliveryCoordinates: any;
       validatedInput: CreateDeliveryOrderInput;
-    }
+    },
   ): Promise<CalculatedShippingRate> => {
     const startTime = Date.now();
     ctx.logger.info("Starting shipping rate calculation", {
@@ -368,7 +403,7 @@ const createOrderRecordStep: WorkflowStep = {
       validatedInput: CreateDeliveryOrderInput;
       geocodedDeliveryLocation: any;
       shippingRate: CalculatedShippingRate;
-    }
+    },
   ): Promise<CreateOrderRecordOutput> => {
     const startTime = Date.now();
     ctx.logger.info("Creating order record", { shopId: ctx.shopId });
@@ -402,7 +437,7 @@ const createOrderRecordStep: WorkflowStep = {
               longitude: input.geocodedDeliveryLocation.longitude,
               accuracy: input.geocodedDeliveryLocation.accuracy,
               formattedAddress: input.geocodedDeliveryLocation.formattedAddress,
-            })
+            }),
           ),
 
           // Order value
@@ -415,7 +450,9 @@ const createOrderRecordStep: WorkflowStep = {
           trackingToken,
           tags: input.validatedInput.tags || [],
           notes: input.validatedInput.notes || null,
-          metadata: JSON.parse(JSON.stringify(input.validatedInput.metadata || {})),
+          metadata: JSON.parse(
+            JSON.stringify(input.validatedInput.metadata || {}),
+          ),
 
           // Timestamps
           createdAt: new Date(),
@@ -442,10 +479,16 @@ const createOrderRecordStep: WorkflowStep = {
   },
 
   // Compensation: Soft-delete or cancel the order on failure
-  compensate: async (ctx: WorkflowContext, input: any, compensation: CompensationContext) => {
+  compensate: async (
+    ctx: WorkflowContext,
+    input: any,
+    compensation: CompensationContext,
+  ) => {
     if (!compensation.orderId) return;
 
-    ctx.logger.info("Compensating: Canceling order", { orderId: compensation.orderId });
+    ctx.logger.info("Compensating: Canceling order", {
+      orderId: compensation.orderId,
+    });
 
     try {
       await (ctx.tenantDb as any).order.update({
@@ -456,9 +499,14 @@ const createOrderRecordStep: WorkflowStep = {
         },
       });
 
-      ctx.logger.info("Order cancelled (compensation)", { orderId: compensation.orderId });
+      ctx.logger.info("Order cancelled (compensation)", {
+        orderId: compensation.orderId,
+      });
     } catch (error) {
-      ctx.logger.error("Failed to compensate createOrderRecord", error as Error);
+      ctx.logger.error(
+        "Failed to compensate createOrderRecord",
+        error as Error,
+      );
     }
   },
 };
@@ -476,7 +524,7 @@ const assignDeliveryZoneStep: WorkflowStep = {
       orderId: string;
       deliveryCoordinates: any;
       orderInput: CreateDeliveryOrderInput;
-    }
+    },
   ): Promise<AssignDeliveryZoneOutput> => {
     const startTime = Date.now();
     ctx.logger.info("Assigning delivery zone", { orderId: input.orderId });
@@ -503,8 +551,16 @@ const assignDeliveryZoneStep: WorkflowStep = {
             boundary: JSON.parse(
               JSON.stringify({
                 type: "Polygon",
-                coordinates: [[[-74.0, 40.7], [-73.9, 40.7], [-73.9, 40.8], [-74.0, 40.8], [-74.0, 40.7]]],
-              })
+                coordinates: [
+                  [
+                    [-74.0, 40.7],
+                    [-73.9, 40.7],
+                    [-73.9, 40.8],
+                    [-74.0, 40.8],
+                    [-74.0, 40.7],
+                  ],
+                ],
+              }),
             ),
             baseRate: 5.0,
             perKmRate: 0.5,
@@ -525,7 +581,7 @@ const assignDeliveryZoneStep: WorkflowStep = {
             JSON.stringify({
               deliveryZoneId: assignedZone.id,
               deliveryZoneName: assignedZone.name,
-            })
+            }),
           ),
         },
       });
@@ -554,10 +610,16 @@ const assignDeliveryZoneStep: WorkflowStep = {
   },
 
   // Compensation: Remove zone assignment
-  compensate: async (ctx: WorkflowContext, input: any, compensation: CompensationContext) => {
+  compensate: async (
+    ctx: WorkflowContext,
+    input: any,
+    compensation: CompensationContext,
+  ) => {
     if (!compensation.orderId) return;
 
-    ctx.logger.info("Compensating: Removing zone assignment", { orderId: compensation.orderId });
+    ctx.logger.info("Compensating: Removing zone assignment", {
+      orderId: compensation.orderId,
+    });
 
     try {
       await (ctx.tenantDb as any).order.update({
@@ -569,7 +631,10 @@ const assignDeliveryZoneStep: WorkflowStep = {
 
       ctx.logger.info("Zone assignment removed (compensation)");
     } catch (error) {
-      ctx.logger.error("Failed to compensate assignDeliveryZone", error as Error);
+      ctx.logger.error(
+        "Failed to compensate assignDeliveryZone",
+        error as Error,
+      );
     }
   },
 };
@@ -587,7 +652,7 @@ const checkInventoryAvailabilityStep: WorkflowStep = {
       locationId: string;
       items: any[];
       validatedInput: CreateDeliveryOrderInput;
-    }
+    },
   ): Promise<CheckInventoryAvailabilityOutput> => {
     const startTime = Date.now();
     ctx.logger.info("Checking inventory availability", {
@@ -601,7 +666,9 @@ const checkInventoryAvailabilityStep: WorkflowStep = {
 
       for (const item of input.items) {
         // Query inventory item at location
-        const inventoryItem = await (ctx.tenantDb as any).inventoryItem.findFirst({
+        const inventoryItem = await (
+          ctx.tenantDb as any
+        ).inventoryItem.findFirst({
           where: {
             shopId: ctx.shopId,
             productId: item.productId,
@@ -624,7 +691,9 @@ const checkInventoryAvailabilityStep: WorkflowStep = {
             isAvailable: true,
           });
         } else {
-          unavailableItems.push(`${item.productId} (requested: ${item.quantity}, available: ${availableQuantity})`);
+          unavailableItems.push(
+            `${item.productId} (requested: ${item.quantity}, available: ${availableQuantity})`,
+          );
         }
       }
 
@@ -646,7 +715,10 @@ const checkInventoryAvailabilityStep: WorkflowStep = {
         canProceed,
       };
     } catch (error) {
-      ctx.logger.error("Failed to check inventory availability", error as Error);
+      ctx.logger.error(
+        "Failed to check inventory availability",
+        error as Error,
+      );
       throw new Error(`Inventory check failed: ${error}`);
     }
   },
@@ -666,10 +738,13 @@ const reserveInventoryStep: WorkflowStep = {
       orderId: string;
       items: any[];
       validatedInput: CreateDeliveryOrderInput;
-    }
+    },
   ): Promise<ReserveInventoryOutput> => {
     const startTime = Date.now();
-    ctx.logger.info("Reserving inventory", { orderId: input.orderId, itemCount: input.items.length });
+    ctx.logger.info("Reserving inventory", {
+      orderId: input.orderId,
+      itemCount: input.items.length,
+    });
 
     try {
       const reservationId = `res_${uuidv4().slice(0, 12)}`;
@@ -678,7 +753,9 @@ const reserveInventoryStep: WorkflowStep = {
 
       // Reserve each item
       for (const item of input.items) {
-        const inventoryItem = await (ctx.tenantDb as any).inventoryItem.findFirst({
+        const inventoryItem = await (
+          ctx.tenantDb as any
+        ).inventoryItem.findFirst({
           where: {
             shopId: ctx.shopId,
             productId: item.productId,
@@ -733,7 +810,11 @@ const reserveInventoryStep: WorkflowStep = {
   },
 
   // Compensation: Release reserved inventory
-  compensate: async (ctx: WorkflowContext, input: any, compensation: CompensationContext) => {
+  compensate: async (
+    ctx: WorkflowContext,
+    input: any,
+    compensation: CompensationContext,
+  ) => {
     if (!compensation.inventoryToRelease) return;
 
     ctx.logger.info("Compensating: Releasing reserved inventory");
@@ -742,7 +823,9 @@ const reserveInventoryStep: WorkflowStep = {
       const { locationId, items } = compensation.inventoryToRelease;
 
       for (const item of items) {
-        const inventoryItem = await (ctx.tenantDb as any).inventoryItem.findFirst({
+        const inventoryItem = await (
+          ctx.tenantDb as any
+        ).inventoryItem.findFirst({
           where: {
             shopId: ctx.shopId,
             productId: item.productId,
@@ -755,7 +838,10 @@ const reserveInventoryStep: WorkflowStep = {
           await (ctx.tenantDb as any).inventoryItem.update({
             where: { id: inventoryItem.id },
             data: {
-              reservedQuantity: Math.max(0, inventoryItem.reservedQuantity - item.quantity),
+              reservedQuantity: Math.max(
+                0,
+                inventoryItem.reservedQuantity - item.quantity,
+              ),
             },
           });
 
@@ -796,10 +882,13 @@ const sendOrderConfirmationStep: WorkflowStep = {
       estimatedDeliveryDate: Date;
       totalPrice: number;
       validatedInput: CreateDeliveryOrderInput;
-    }
+    },
   ): Promise<SendOrderConfirmationOutput> => {
     const startTime = Date.now();
-    ctx.logger.info("Sending order confirmation", { orderId: input.orderId, customerEmail: input.customerEmail });
+    ctx.logger.info("Sending order confirmation", {
+      orderId: input.orderId,
+      customerEmail: input.customerEmail,
+    });
 
     let confirmationEmailSent = false;
     let confirmationSmsSent = false;
@@ -823,16 +912,24 @@ const sendOrderConfirmationStep: WorkflowStep = {
         });
         confirmationEmailSent = true;
       } catch (emailError) {
-        ctx.logger.warn("Email confirmation failed (non-critical)", emailError as Error);
+        ctx.logger.warn(
+          "Email confirmation failed (non-critical)",
+          emailError as Error,
+        );
       }
 
       // SMS confirmation (graceful failure allowed)
       try {
         // In production, would use an SMS service (Twilio, etc.)
-        ctx.logger.info("SMS confirmation would be sent to", { phone: input.customerPhone });
+        ctx.logger.info("SMS confirmation would be sent to", {
+          phone: input.customerPhone,
+        });
         confirmationSmsSent = true;
       } catch (smsError) {
-        ctx.logger.warn("SMS confirmation failed (non-critical)", smsError as Error);
+        ctx.logger.warn(
+          "SMS confirmation failed (non-critical)",
+          smsError as Error,
+        );
       }
 
       ctx.logger.info("Order confirmation sent", {
@@ -848,7 +945,10 @@ const sendOrderConfirmationStep: WorkflowStep = {
         sentAt: new Date(),
       };
     } catch (error) {
-      ctx.logger.warn("Order confirmation step had errors (non-critical)", error as Error);
+      ctx.logger.warn(
+        "Order confirmation step had errors (non-critical)",
+        error as Error,
+      );
       // Don't throw — allow order creation to proceed even if notifications fail
       return {
         confirmationEmailSent,
@@ -874,7 +974,7 @@ const emitOrderCreatedEventStep: WorkflowStep = {
       validatedInput: CreateDeliveryOrderInput;
       assignedZone: any;
       shippingRate: CalculatedShippingRate;
-    }
+    },
   ): Promise<EmitOrderCreatedEventOutput> => {
     const startTime = Date.now();
     ctx.logger.info("Emitting order created event", { orderId: input.orderId });
@@ -889,7 +989,10 @@ const emitOrderCreatedEventStep: WorkflowStep = {
         totalPrice: Number(input.validatedInput.totalPrice),
         itemCount: input.validatedInput.items.length,
         deliveryZoneId: input.assignedZone.zoneId,
-        estimatedDeliveryDate: new Date(Date.now() + input.shippingRate.estimatedDeliveryDays * 24 * 60 * 60 * 1000),
+        estimatedDeliveryDate: new Date(
+          Date.now() +
+            input.shippingRate.estimatedDeliveryDays * 24 * 60 * 60 * 1000,
+        ),
         createdAt: new Date(),
         metadata: input.validatedInput.metadata || {},
       };
@@ -897,7 +1000,9 @@ const emitOrderCreatedEventStep: WorkflowStep = {
       // Emit via event bus
       await eventBus.emit(TriggerEvent.ORDER_CREATED, event);
 
-      const subscriberCount = eventBus.getHandlerCount(TriggerEvent.ORDER_CREATED);
+      const subscriberCount = eventBus.getHandlerCount(
+        TriggerEvent.ORDER_CREATED,
+      );
 
       ctx.logger.info("Order created event emitted", {
         orderId: input.orderId,
@@ -911,7 +1016,10 @@ const emitOrderCreatedEventStep: WorkflowStep = {
         emittedAt: new Date(),
       };
     } catch (error) {
-      ctx.logger.warn("Failed to emit order created event (non-critical)", error as Error);
+      ctx.logger.warn(
+        "Failed to emit order created event (non-critical)",
+        error as Error,
+      );
       // Don't throw — event emission should not fail the entire workflow
       return {
         eventEmitted: false,
@@ -968,14 +1076,15 @@ export const createDeliveryOrderWorkflowDef: WorkflowDefinition = {
  */
 export async function executeCreateDeliveryOrderWorkflow(
   input: CreateDeliveryOrderInput,
-  context: Partial<WorkflowContext> = {}
+  context: Partial<WorkflowContext> = {},
 ): Promise<CreateDeliveryOrderOutput> {
   const workflowStartTime = Date.now();
   const shopId = input.shopId;
   const userId = input.userId || context.userId || "system";
   const tenantDb = context.tenantDb || forTenant(shopId);
 
-  const logger = context.logger || new ConsoleLogger("CreateDeliveryOrderWorkflow");
+  const logger =
+    context.logger || new ConsoleLogger("CreateDeliveryOrderWorkflow");
   const compensation: CompensationContext = {};
 
   logger.info("Starting workflow", { shopId, userId, orderId: "pending" });
@@ -995,23 +1104,28 @@ export async function executeCreateDeliveryOrderWorkflow(
     // STEP 1: Validate
     accumulator.validatedInput = await validateOrderStep.invoke(ctx, input);
     if (!accumulator.validatedInput.isValid) {
-      throw new Error(`Order validation failed: ${accumulator.validatedInput.errors.join(", ")}`);
+      throw new Error(
+        `Order validation failed: ${accumulator.validatedInput.errors.join(", ")}`,
+      );
     }
     logger.info("Step 1 complete: validateOrder");
 
     // STEP 2: Geocode
-    accumulator.geocodedDeliveryLocation = await geocodeAddressesStep.invoke(ctx, {
-      pickupLocationId: input.pickupLocationId,
-      deliveryAddress: {
-        line1: input.deliveryAddressLine1,
-        line2: input.deliveryAddressLine2,
-        city: input.deliveryCity,
-        province: input.deliveryProvince,
-        postalCode: input.deliveryPostalCode,
-        country: input.deliveryCountry,
+    accumulator.geocodedDeliveryLocation = await geocodeAddressesStep.invoke(
+      ctx,
+      {
+        pickupLocationId: input.pickupLocationId,
+        deliveryAddress: {
+          line1: input.deliveryAddressLine1,
+          line2: input.deliveryAddressLine2,
+          city: input.deliveryCity,
+          province: input.deliveryProvince,
+          postalCode: input.deliveryPostalCode,
+          country: input.deliveryCountry,
+        },
+        validatedInput: accumulator.validatedInput,
       },
-      validatedInput: accumulator.validatedInput,
-    });
+    );
     logger.info("Step 2 complete: geocodeAddresses", {
       distance: accumulator.geocodedDeliveryLocation.distanceKm,
     });
@@ -1020,7 +1134,8 @@ export async function executeCreateDeliveryOrderWorkflow(
     accumulator.shippingRate = await calculateShippingRateStep.invoke(ctx, {
       distanceKm: accumulator.geocodedDeliveryLocation.distanceKm,
       totalWeight: Number(input.totalWeight),
-      deliveryCoordinates: accumulator.geocodedDeliveryLocation.deliveryCoordinates,
+      deliveryCoordinates:
+        accumulator.geocodedDeliveryLocation.deliveryCoordinates,
       validatedInput: input,
     });
     logger.info("Step 3 complete: calculateShippingRate", {
@@ -1030,28 +1145,39 @@ export async function executeCreateDeliveryOrderWorkflow(
     // STEP 4: Create order
     accumulator.orderRecord = await createOrderRecordStep.invoke(ctx, {
       validatedInput: input,
-      geocodedDeliveryLocation: accumulator.geocodedDeliveryLocation.deliveryCoordinates,
+      geocodedDeliveryLocation:
+        accumulator.geocodedDeliveryLocation.deliveryCoordinates,
       shippingRate: accumulator.shippingRate,
     });
     compensation.orderId = accumulator.orderRecord.orderId;
-    logger.info("Step 4 complete: createOrderRecord", { orderId: accumulator.orderRecord.orderId });
+    logger.info("Step 4 complete: createOrderRecord", {
+      orderId: accumulator.orderRecord.orderId,
+    });
 
     // STEP 5: Assign zone
     accumulator.assignedZone = await assignDeliveryZoneStep.invoke(ctx, {
       orderId: accumulator.orderRecord.orderId,
-      deliveryCoordinates: accumulator.geocodedDeliveryLocation.deliveryCoordinates,
+      deliveryCoordinates:
+        accumulator.geocodedDeliveryLocation.deliveryCoordinates,
       orderInput: input,
     });
-    logger.info("Step 5 complete: assignDeliveryZone", { zone: accumulator.assignedZone.assignedZone.zoneName });
+    logger.info("Step 5 complete: assignDeliveryZone", {
+      zone: accumulator.assignedZone.assignedZone.zoneName,
+    });
 
     // STEP 6: Check inventory
-    accumulator.inventoryCheck = await checkInventoryAvailabilityStep.invoke(ctx, {
-      locationId: input.pickupLocationId,
-      items: input.items,
-      validatedInput: input,
-    });
+    accumulator.inventoryCheck = await checkInventoryAvailabilityStep.invoke(
+      ctx,
+      {
+        locationId: input.pickupLocationId,
+        items: input.items,
+        validatedInput: input,
+      },
+    );
     if (!accumulator.inventoryCheck.canProceed) {
-      throw new Error(`Inventory not available: ${accumulator.inventoryCheck.inventoryCheck.unavailableItems.join(", ")}`);
+      throw new Error(
+        `Inventory not available: ${accumulator.inventoryCheck.inventoryCheck.unavailableItems.join(", ")}`,
+      );
     }
     logger.info("Step 6 complete: checkInventoryAvailability");
 
@@ -1071,7 +1197,8 @@ export async function executeCreateDeliveryOrderWorkflow(
 
     // STEP 8: Send confirmation (non-critical)
     const estimatedDeliveryDate = new Date(
-      Date.now() + accumulator.shippingRate.estimatedDeliveryDays * 24 * 60 * 60 * 1000
+      Date.now() +
+        accumulator.shippingRate.estimatedDeliveryDays * 24 * 60 * 60 * 1000,
     );
     accumulator.confirmationSent = await sendOrderConfirmationStep.invoke(ctx, {
       orderId: accumulator.orderRecord.orderId,
@@ -1101,7 +1228,8 @@ export async function executeCreateDeliveryOrderWorkflow(
       orderId: accumulator.orderRecord!.orderId,
       status: accumulator.orderRecord!.status,
       trackingToken: accumulator.orderRecord!.trackingToken,
-      geocodedDeliveryLocation: accumulator.geocodedDeliveryLocation!.deliveryCoordinates,
+      geocodedDeliveryLocation:
+        accumulator.geocodedDeliveryLocation!.deliveryCoordinates,
       shippingRate: accumulator.shippingRate!,
       assignedZone: accumulator.assignedZone!.assignedZone,
       inventoryReservationId: accumulator.inventoryReservation!.reservationId,
@@ -1129,7 +1257,10 @@ export async function executeCreateDeliveryOrderWorkflow(
 
     return output;
   } catch (error) {
-    logger.error("Workflow failed, executing compensation chain", error as Error);
+    logger.error(
+      "Workflow failed, executing compensation chain",
+      error as Error,
+    );
 
     // Execute compensation chain in reverse order
     const compensationSteps = [
@@ -1151,7 +1282,7 @@ export async function executeCreateDeliveryOrderWorkflow(
               metadata: context.metadata || {},
             },
             input,
-            compensation
+            compensation,
           );
           logger.info(`Compensation executed: ${name}`);
         }
@@ -1161,7 +1292,10 @@ export async function executeCreateDeliveryOrderWorkflow(
     }
 
     const totalDurationMs = Date.now() - workflowStartTime;
-    logger.error("Workflow aborted", error as Error, { totalDurationMs, compensation });
+    logger.error("Workflow aborted", error as Error, {
+      totalDurationMs,
+      compensation,
+    });
 
     throw error;
   }
@@ -1176,7 +1310,7 @@ export async function executeCreateDeliveryOrderWorkflow(
  */
 function calculateHaversineDistance(
   coord1: { latitude: number; longitude: number },
-  coord2: { latitude: number; longitude: number }
+  coord2: { latitude: number; longitude: number },
 ): number {
   const R = 6371; // Earth's radius in kilometers
   const dLat = ((coord2.latitude - coord1.latitude) * Math.PI) / 180;

@@ -22,7 +22,12 @@ export type BackupType = "full" | "incremental";
 /**
  * Backup status
  */
-export type BackupStatus = "pending" | "in_progress" | "completed" | "verified" | "failed";
+export type BackupStatus =
+  | "pending"
+  | "in_progress"
+  | "completed"
+  | "verified"
+  | "failed";
 
 /**
  * Backup metadata
@@ -64,7 +69,8 @@ export class BackupService {
   private backups: Map<string, BackupMetadata> = new Map();
   private readonly config: BackupServiceConfig;
   private fullBackupSchedule: ReturnType<typeof setInterval> | null = null;
-  private incrementalBackupSchedule: ReturnType<typeof setInterval> | null = null;
+  private incrementalBackupSchedule: ReturnType<typeof setInterval> | null =
+    null;
   private auditLog: Array<{
     timestamp: Date;
     action: string;
@@ -139,7 +145,7 @@ export class BackupService {
     const backupId = `full-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date();
     const retentionUntil = new Date(
-      now.getTime() + this.config.retentionDays * 24 * 60 * 60 * 1000
+      now.getTime() + this.config.retentionDays * 24 * 60 * 60 * 1000,
     );
 
     const backup: BackupMetadata = {
@@ -175,7 +181,9 @@ export class BackupService {
       // Verify backup
       backup.verificationResult = await this.verifyBackup(backupId);
 
-      backup.status = backup.verificationResult.passed ? "verified" : "completed";
+      backup.status = backup.verificationResult.passed
+        ? "verified"
+        : "completed";
       backup.completedAt = new Date();
 
       this.logAudit("full_backup_completed", backupId, {
@@ -207,7 +215,7 @@ export class BackupService {
     const backupId = `incremental-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date();
     const retentionUntil = new Date(
-      now.getTime() + this.config.retentionDays * 24 * 60 * 60 * 1000
+      now.getTime() + this.config.retentionDays * 24 * 60 * 60 * 1000,
     );
 
     const backup: BackupMetadata = {
@@ -259,7 +267,9 @@ export class BackupService {
   /**
    * Restore from a specific backup
    */
-  async restoreFromBackup(backupId: string): Promise<{ success: boolean; duration: number }> {
+  async restoreFromBackup(
+    backupId: string,
+  ): Promise<{ success: boolean; duration: number }> {
     const backup = this.backups.get(backupId);
     if (!backup) {
       throw new Error(`Backup not found: ${backupId}`);
@@ -303,7 +313,9 @@ export class BackupService {
     }
 
     const now = new Date();
-    const start = new Date(now.getTime() - this.config.pitRWindowHours * 60 * 60 * 1000);
+    const start = new Date(
+      now.getTime() - this.config.pitRWindowHours * 60 * 60 * 1000,
+    );
 
     return { start, end: now };
   }
@@ -409,7 +421,7 @@ export class BackupService {
 
   private async simulateBackupProcess(
     backup: BackupMetadata,
-    incremental: boolean = false
+    incremental: boolean = false,
   ): Promise<void> {
     // Simulate backup taking time
     const delay = incremental ? 100 : 500;
@@ -423,7 +435,7 @@ export class BackupService {
 
   private async simulateRestoreProcess(
     _backup: BackupMetadata,
-    _isTest: boolean = false
+    _isTest: boolean = false,
   ): Promise<void> {
     // Simulate restore taking time
     const delay = _isTest ? 200 : 1000;
@@ -437,7 +449,7 @@ export class BackupService {
 
   private async uploadBackup(
     backupId: string,
-    backup: BackupMetadata
+    backup: BackupMetadata,
   ): Promise<string> {
     // Stub for S3/GCS upload
     if (this.config.s3Bucket) {
@@ -469,7 +481,7 @@ export class BackupService {
   private logAudit(
     action: string,
     backupId: string | "system",
-    details: Record<string, any>
+    details: Record<string, any>,
   ): void {
     this.auditLog.push({
       timestamp: new Date(),
@@ -489,7 +501,7 @@ export class BackupService {
  * Factory function to create a backup service
  */
 export function createBackupService(
-  config?: Partial<BackupServiceConfig>
+  config?: Partial<BackupServiceConfig>,
 ): BackupService {
   return new BackupService({
     retentionDays: 30,

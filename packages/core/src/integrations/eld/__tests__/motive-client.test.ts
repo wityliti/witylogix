@@ -39,7 +39,7 @@ describe("MotiveELDClient", () => {
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
         new Response(JSON.stringify({ account: { id: "acc_123" } }), {
           status: 200,
-        })
+        }),
       );
 
       await expect(client.initialize()).resolves.not.toThrow();
@@ -50,17 +50,17 @@ describe("MotiveELDClient", () => {
       const invalidClient = new MotiveELDClient(invalidConfig);
 
       expect(() => invalidClient.initialize()).rejects.toThrow(
-        "Motive API key is required"
+        "Motive API key is required",
       );
     });
 
     it("should throw error if API connection fails", async () => {
       vi.spyOn(global, "fetch").mockRejectedValueOnce(
-        new Error("Connection refused")
+        new Error("Connection refused"),
       );
 
       await expect(client.initialize()).rejects.toThrow(
-        "Failed to initialize Motive"
+        "Failed to initialize Motive",
       );
     });
   });
@@ -70,7 +70,7 @@ describe("MotiveELDClient", () => {
       vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(JSON.stringify({ account: { id: "acc_123" } }), {
           status: 200,
-        })
+        }),
       );
     });
 
@@ -93,7 +93,7 @@ describe("MotiveELDClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockLogs), { status: 200 })
+        new Response(JSON.stringify(mockLogs), { status: 200 }),
       );
 
       const startDate = new Date("2026-03-12");
@@ -108,13 +108,13 @@ describe("MotiveELDClient", () => {
 
     it("should return empty array if no logs found", async () => {
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify({ logs: [] }), { status: 200 })
+        new Response(JSON.stringify({ logs: [] }), { status: 200 }),
       );
 
       const logs = await client.getDriverLogs(
         "driver_1",
         new Date("2026-03-12"),
-        new Date("2026-03-13")
+        new Date("2026-03-13"),
       );
 
       expect(logs).toHaveLength(0);
@@ -147,13 +147,13 @@ describe("MotiveELDClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockLogs), { status: 200 })
+        new Response(JSON.stringify(mockLogs), { status: 200 }),
       );
 
       const logs = await client.getDriverLogs(
         "driver_1",
         new Date("2026-03-12"),
-        new Date("2026-03-13")
+        new Date("2026-03-13"),
       );
 
       expect(logs[0].dutyStatus).toBe("on-duty");
@@ -166,7 +166,7 @@ describe("MotiveELDClient", () => {
       vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(JSON.stringify({ account: { id: "acc_123" } }), {
           status: 200,
-        })
+        }),
       );
     });
 
@@ -201,10 +201,10 @@ describe("MotiveELDClient", () => {
       // Chain both mocks on a single spy — the second vi.spyOn overwrites the first
       const fetchSpy = vi.spyOn(global, "fetch");
       fetchSpy.mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDriver), { status: 200 })
+        new Response(JSON.stringify(mockDriver), { status: 200 }),
       );
       fetchSpy.mockResolvedValueOnce(
-        new Response(JSON.stringify(hosSummary), { status: 200 })
+        new Response(JSON.stringify(hosSummary), { status: 200 }),
       );
 
       const status = await client.getDutyStatus("driver_1");
@@ -216,7 +216,7 @@ describe("MotiveELDClient", () => {
 
     it("should set duty status to new value", async () => {
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify({ success: true }), { status: 200 })
+        new Response(JSON.stringify({ success: true }), { status: 200 }),
       );
 
       const mockDriver = {
@@ -233,11 +233,11 @@ describe("MotiveELDClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDriver), { status: 200 })
+        new Response(JSON.stringify(mockDriver), { status: 200 }),
       );
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify({ hoursWorked11: 5 }), { status: 200 })
+        new Response(JSON.stringify({ hoursWorked11: 5 }), { status: 200 }),
       );
 
       const newStatus = await client.setDutyStatus("driver_1", "on-duty");
@@ -264,7 +264,7 @@ describe("MotiveELDClient", () => {
       vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(JSON.stringify({ account: { id: "acc_123" } }), {
           status: 200,
-        })
+        }),
       );
     });
 
@@ -288,7 +288,7 @@ describe("MotiveELDClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockViolations), { status: 200 })
+        new Response(JSON.stringify(mockViolations), { status: 200 }),
       );
 
       const violations = await client.getViolations("driver_1");
@@ -300,7 +300,7 @@ describe("MotiveELDClient", () => {
 
     it("should return empty array if no violations", async () => {
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify({ violations: [] }), { status: 200 })
+        new Response(JSON.stringify({ violations: [] }), { status: 200 }),
       );
 
       const violations = await client.getViolations("driver_1");
@@ -318,7 +318,10 @@ describe("MotiveELDClient", () => {
             description: "11-hour violation",
             severity: "critical",
             detectedAt: "2026-03-12T10:00:00Z",
-            timeRange: { start: "2026-03-12T08:00:00Z", end: "2026-03-12T19:30:00Z" },
+            timeRange: {
+              start: "2026-03-12T08:00:00Z",
+              end: "2026-03-12T19:30:00Z",
+            },
             acknowledged: false,
           },
           {
@@ -328,14 +331,17 @@ describe("MotiveELDClient", () => {
             description: "30-minute break violation",
             severity: "error",
             detectedAt: "2026-03-12T10:00:00Z",
-            timeRange: { start: "2026-03-12T08:00:00Z", end: "2026-03-12T16:30:00Z" },
+            timeRange: {
+              start: "2026-03-12T08:00:00Z",
+              end: "2026-03-12T16:30:00Z",
+            },
             acknowledged: false,
           },
         ],
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockViolations), { status: 200 })
+        new Response(JSON.stringify(mockViolations), { status: 200 }),
       );
 
       const violations = await client.getViolations("driver_1");
@@ -350,7 +356,7 @@ describe("MotiveELDClient", () => {
       vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(JSON.stringify({ account: { id: "acc_123" } }), {
           status: 200,
-        })
+        }),
       );
     });
 
@@ -377,7 +383,7 @@ describe("MotiveELDClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockVehicle), { status: 200 })
+        new Response(JSON.stringify(mockVehicle), { status: 200 }),
       );
 
       const vehicle = await client.getVehicle("vehicle_1");
@@ -412,12 +418,12 @@ describe("MotiveELDClient", () => {
       const fetchSpy = vi.spyOn(global, "fetch");
       // First call: list vehicles
       fetchSpy.mockResolvedValueOnce(
-        new Response(JSON.stringify(mockVehicles), { status: 200 })
+        new Response(JSON.stringify(mockVehicles), { status: 200 }),
       );
       // Individual vehicle requests
       for (const v of mockVehicles.vehicles) {
         fetchSpy.mockResolvedValueOnce(
-          new Response(JSON.stringify(v), { status: 200 })
+          new Response(JSON.stringify(v), { status: 200 }),
         );
       }
 
@@ -432,7 +438,7 @@ describe("MotiveELDClient", () => {
       vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(JSON.stringify({ account: { id: "acc_123" } }), {
           status: 200,
-        })
+        }),
       );
     });
 
@@ -449,7 +455,7 @@ describe("MotiveELDClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDVIR), { status: 200 })
+        new Response(JSON.stringify(mockDVIR), { status: 200 }),
       );
 
       const dvir = await client.submitDVIR({
@@ -482,7 +488,7 @@ describe("MotiveELDClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDVIRs), { status: 200 })
+        new Response(JSON.stringify(mockDVIRs), { status: 200 }),
       );
 
       const dvirs = await client.getDVIRs("vehicle_1");
@@ -511,7 +517,7 @@ describe("MotiveELDClient", () => {
       };
 
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response(JSON.stringify(mockDVIR), { status: 200 })
+        new Response(JSON.stringify(mockDVIR), { status: 200 }),
       );
 
       const dvir = await client.submitDVIR({
@@ -539,7 +545,7 @@ describe("MotiveELDClient", () => {
       vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(JSON.stringify({ account: { id: "acc_123" } }), {
           status: 200,
-        })
+        }),
       );
     });
 
@@ -565,7 +571,11 @@ describe("MotiveELDClient", () => {
         type: "dvir-submitted" as const,
         accountId: "acc_123",
         timestamp: new Date(),
-        payload: { driverId: "driver_1", vehicleId: "vehicle_1", dvirId: "dvir_1" },
+        payload: {
+          driverId: "driver_1",
+          vehicleId: "vehicle_1",
+          dvirId: "dvir_1",
+        },
       };
 
       await expect(client.handleWebhook(event)).resolves.not.toThrow();
@@ -581,7 +591,7 @@ describe("MotiveELDClient", () => {
       vi.spyOn(global, "fetch").mockResolvedValueOnce(
         new Response(JSON.stringify({ account: { id: "acc_123" } }), {
           status: 200,
-        })
+        }),
       );
 
       const result = await client.healthCheck();
@@ -591,7 +601,7 @@ describe("MotiveELDClient", () => {
 
     it("should return false if API is unhealthy", async () => {
       vi.spyOn(global, "fetch").mockRejectedValue(
-        new Error("Connection timeout")
+        new Error("Connection timeout"),
       );
 
       const result = await client.healthCheck();

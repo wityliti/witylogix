@@ -22,7 +22,11 @@ import {
   type DeliveryRequest,
   type SLAConfig,
 } from "../../../packages/core/src/integrations/couriers/index.js";
-import type { CourierQuote, PackageSpec, LocationInfo } from "../../../packages/core/src/integrations/couriers/types.js";
+import type {
+  CourierQuote,
+  PackageSpec,
+  LocationInfo,
+} from "../../../packages/core/src/integrations/couriers/types.js";
 
 // ─── Test Fixtures ─────────────────────────────────────────────────────────
 
@@ -34,7 +38,7 @@ const PICKUP: LocationInfo = {
 };
 
 const DROPOFF: LocationInfo = {
-  latitude: 40.7580,
+  latitude: 40.758,
   longitude: -73.9855,
   address: "456 Park Ave, New York, NY",
   name: "Customer",
@@ -75,7 +79,10 @@ class TestCourierProvider implements ICourierProvider {
     };
   }
 
-  async canServiceArea(_pickup: LocationInfo, _dropoff: LocationInfo): Promise<boolean> {
+  async canServiceArea(
+    _pickup: LocationInfo,
+    _dropoff: LocationInfo,
+  ): Promise<boolean> {
     return this.healthy;
   }
 
@@ -91,9 +98,18 @@ describe("SmartRouter (live integration)", () => {
 
   beforeEach(() => {
     router = new SmartRouter();
-    router.registerProvider("fastcourier", new TestCourierProvider("fastcourier", 8.5, 20));
-    router.registerProvider("cheapcourier", new TestCourierProvider("cheapcourier", 4.0, 45));
-    router.registerProvider("premium", new TestCourierProvider("premium", 15.0, 12, 10));
+    router.registerProvider(
+      "fastcourier",
+      new TestCourierProvider("fastcourier", 8.5, 20),
+    );
+    router.registerProvider(
+      "cheapcourier",
+      new TestCourierProvider("cheapcourier", 4.0, 45),
+    );
+    router.registerProvider(
+      "premium",
+      new TestCourierProvider("premium", 15.0, 12, 10),
+    );
   });
 
   it("routes a delivery and returns ranked options with the cheapest/fastest tradeoff", async () => {
@@ -141,23 +157,37 @@ describe("SmartRouter (live integration)", () => {
   });
 
   it("excludes offline providers", async () => {
-    router.registerProvider("broken", new TestCourierProvider("broken", 5.0, 30, 0, false));
-    const result = await router.routeDelivery({ pickup: PICKUP, dropoff: DROPOFF });
+    router.registerProvider(
+      "broken",
+      new TestCourierProvider("broken", 5.0, 30, 0, false),
+    );
+    const result = await router.routeDelivery({
+      pickup: PICKUP,
+      dropoff: DROPOFF,
+    });
 
     const brokenOpt = result.options.find((o) => o.provider === "broken");
     expect(brokenOpt?.isViable).toBe(false);
   });
 
   it("prioritizes speed when requested", async () => {
-    const result = await router.routeDelivery({ pickup: PICKUP, dropoff: DROPOFF }, { prioritizeSpeed: true });
+    const result = await router.routeDelivery(
+      { pickup: PICKUP, dropoff: DROPOFF },
+      { prioritizeSpeed: true },
+    );
     const viable = result.options.filter((o) => o.isViable);
     if (viable.length > 1) {
-      expect(viable[0].quote.estimatedMinutes).toBeLessThanOrEqual(viable[1].quote.estimatedMinutes);
+      expect(viable[0].quote.estimatedMinutes).toBeLessThanOrEqual(
+        viable[1].quote.estimatedMinutes,
+      );
     }
   });
 
   it("prioritizes cost when requested", async () => {
-    const result = await router.routeDelivery({ pickup: PICKUP, dropoff: DROPOFF }, { prioritizeCost: true });
+    const result = await router.routeDelivery(
+      { pickup: PICKUP, dropoff: DROPOFF },
+      { prioritizeCost: true },
+    );
     const viable = result.options.filter((o) => o.isViable);
     if (viable.length > 1) {
       expect(viable[0].quote.price).toBeLessThanOrEqual(viable[1].quote.price);
@@ -179,7 +209,10 @@ describe("SmartRouter (live integration)", () => {
 
   it("returns empty options gracefully when no providers registered", async () => {
     const emptyRouter = new SmartRouter();
-    const result = await emptyRouter.routeDelivery({ pickup: PICKUP, dropoff: DROPOFF });
+    const result = await emptyRouter.routeDelivery({
+      pickup: PICKUP,
+      dropoff: DROPOFF,
+    });
 
     expect(result.options).toHaveLength(0);
     expect(result.recommended).toBeNull();
@@ -250,7 +283,9 @@ describe("SLAEnforcer (live integration)", () => {
     });
 
     expect(result.compliant).toBe(false);
-    const pickupBreach = result.breaches.find((b) => b.metric === "pickup_time");
+    const pickupBreach = result.breaches.find(
+      (b) => b.metric === "pickup_time",
+    );
     expect(pickupBreach).toBeDefined();
     expect(result.penaltyAmount).toBeGreaterThan(0);
     // 20 min × $0.50/min = $10
@@ -310,7 +345,9 @@ describe("SLAEnforcer (live integration)", () => {
     }
 
     const report = enforcer.getComplianceReport(PARTNER_ID, 30);
-    expect(["warning", "under_review", "suspended"]).toContain(report.escalationStatus);
+    expect(["warning", "under_review", "suspended"]).toContain(
+      report.escalationStatus,
+    );
   });
 });
 
@@ -377,9 +414,18 @@ describe("CostOptimizer (live integration)", () => {
   beforeEach(() => {
     optimizer = new CostOptimizer();
     router = new SmartRouter();
-    router.registerProvider("courier-a", new TestCourierProvider("courier-a", 8.0, 30));
-    router.registerProvider("courier-b", new TestCourierProvider("courier-b", 5.0, 50));
-    router.registerProvider("courier-c", new TestCourierProvider("courier-c", 12.0, 15));
+    router.registerProvider(
+      "courier-a",
+      new TestCourierProvider("courier-a", 8.0, 30),
+    );
+    router.registerProvider(
+      "courier-b",
+      new TestCourierProvider("courier-b", 5.0, 50),
+    );
+    router.registerProvider(
+      "courier-c",
+      new TestCourierProvider("courier-c", 12.0, 15),
+    );
   });
 
   it("identifies cheapest option and computes potential savings", async () => {
@@ -392,7 +438,9 @@ describe("CostOptimizer (live integration)", () => {
     const comparison = optimizer.compareCosts(delivery, result.options);
 
     expect(comparison.cheapest).toBeDefined();
-    expect(comparison.cheapest.effectiveCost).toBeLessThanOrEqual(comparison.averageCost);
+    expect(comparison.cheapest.effectiveCost).toBeLessThanOrEqual(
+      comparison.averageCost,
+    );
     expect(comparison.potentialSavings.vsAverage).toBeGreaterThanOrEqual(0);
   });
 
@@ -409,7 +457,10 @@ describe("CostOptimizer (live integration)", () => {
       routingResults.set(d.orderId!, { options: r.options });
     }
 
-    const batchResult = optimizer.optimizeBatchCost(deliveries, routingResults as any);
+    const batchResult = optimizer.optimizeBatchCost(
+      deliveries,
+      routingResults as any,
+    );
 
     expect(batchResult.assignments.length).toBeGreaterThan(0);
     expect(batchResult.summary.ifRoutedIndividually).toBeGreaterThan(0);

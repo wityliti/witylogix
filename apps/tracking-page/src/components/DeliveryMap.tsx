@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 interface DeliveryMapProps {
   deliveryAddress?: string;
@@ -7,8 +7,8 @@ interface DeliveryMapProps {
 }
 
 const DeliveryMap: React.FC<DeliveryMapProps> = ({
-  deliveryAddress = '123 Main St, New York, NY 10001',
-  eta = '2:30 PM',
+  deliveryAddress = "123 Main St, New York, NY 10001",
+  eta = "2:30 PM",
   onShareLocation,
 }) => {
   const [shareLocation, setShareLocation] = useState(false);
@@ -36,8 +36,14 @@ const DeliveryMap: React.FC<DeliveryMapProps> = ({
         {/* Map background */}
         <defs>
           <linearGradient id="mapGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style={{ stopColor: '#f0f4f8', stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: '#e8eef5', stopOpacity: 1 }} />
+            <stop
+              offset="0%"
+              style={{ stopColor: "#f0f4f8", stopOpacity: 1 }}
+            />
+            <stop
+              offset="100%"
+              style={{ stopColor: "#e8eef5", stopOpacity: 1 }}
+            />
           </linearGradient>
 
           {/* Pulse animation */}
@@ -89,8 +95,20 @@ const DeliveryMap: React.FC<DeliveryMapProps> = ({
         />
 
         {/* Distance markers along route */}
-        <circle cx={driverX + 80} cy={driverY + 30} r="3" fill="#005bd3" opacity="0.5" />
-        <circle cx={driverX + 160} cy={driverY + 70} r="3" fill="#005bd3" opacity="0.5" />
+        <circle
+          cx={driverX + 80}
+          cy={driverY + 30}
+          r="3"
+          fill="#005bd3"
+          opacity="0.5"
+        />
+        <circle
+          cx={driverX + 160}
+          cy={driverY + 70}
+          r="3"
+          fill="#005bd3"
+          opacity="0.5"
+        />
 
         {/* Driver location pin - with pulse effect */}
         <circle cx={driverX} cy={driverY} r="8" fill="#dc2626" opacity="0.3" />
@@ -101,7 +119,14 @@ const DeliveryMap: React.FC<DeliveryMapProps> = ({
           fill="#dc2626"
           className="driver-pulse"
         />
-        <circle cx={driverX} cy={driverY} r="5" fill="white" stroke="#dc2626" strokeWidth="2" />
+        <circle
+          cx={driverX}
+          cy={driverY}
+          r="5"
+          fill="white"
+          stroke="#dc2626"
+          strokeWidth="2"
+        />
         <text
           x={driverX}
           y={driverY - 18}
@@ -175,7 +200,7 @@ const DeliveryMap: React.FC<DeliveryMapProps> = ({
             }}
           >
             <span style={styles.shareIcon}>📍</span>
-            {shareLocation ? 'Location Shared' : 'Share Location'}
+            {shareLocation ? "Location Shared" : "Share Location"}
           </button>
         </div>
       </div>
@@ -207,145 +232,145 @@ const DeliveryMap: React.FC<DeliveryMapProps> = ({
 
 const styles = {
   container: {
-    borderRadius: '12px',
-    overflow: 'hidden',
-    marginBottom: '24px',
+    borderRadius: "12px",
+    overflow: "hidden",
+    marginBottom: "24px",
   } as React.CSSProperties,
   mapContainer: {
-    position: 'relative',
-    background: 'white',
-    borderRadius: '12px',
-    overflow: 'hidden',
-    height: '350px',
-    border: '1px solid #e5e7eb',
+    position: "relative",
+    background: "white",
+    borderRadius: "12px",
+    overflow: "hidden",
+    height: "350px",
+    border: "1px solid #e5e7eb",
   } as React.CSSProperties,
   svg: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   } as React.CSSProperties,
   etaCard: {
-    position: 'absolute',
-    top: '16px',
-    right: '16px',
-    background: 'white',
-    borderRadius: '8px',
-    boxShadow: '0 2px 12px rgba(0, 0, 0, 0.1)',
-    padding: '16px',
-    minWidth: '160px',
+    position: "absolute",
+    top: "16px",
+    right: "16px",
+    background: "white",
+    borderRadius: "8px",
+    boxShadow: "0 2px 12px rgba(0, 0, 0, 0.1)",
+    padding: "16px",
+    minWidth: "160px",
     zIndex: 10,
   } as React.CSSProperties,
   etaContent: {
-    textAlign: 'center',
+    textAlign: "center",
   } as React.CSSProperties,
   etaLabel: {
-    fontSize: '11px',
-    fontWeight: '600',
-    color: '#999',
-    textTransform: 'uppercase',
-    margin: '0 0 6px 0',
+    fontSize: "11px",
+    fontWeight: "600",
+    color: "#999",
+    textTransform: "uppercase",
+    margin: "0 0 6px 0",
   } as React.CSSProperties,
   etaTime: {
-    fontSize: '22px',
-    fontWeight: '700',
-    color: '#005bd3',
-    margin: '0 0 2px 0',
+    fontSize: "22px",
+    fontWeight: "700",
+    color: "#005bd3",
+    margin: "0 0 2px 0",
   } as React.CSSProperties,
   etaSubtext: {
-    fontSize: '12px',
-    color: '#666',
-    margin: '0',
+    fontSize: "12px",
+    color: "#666",
+    margin: "0",
   } as React.CSSProperties,
   zoomControls: {
-    position: 'absolute',
-    bottom: '16px',
-    right: '16px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
+    position: "absolute",
+    bottom: "16px",
+    right: "16px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
     zIndex: 10,
   } as React.CSSProperties,
   zoomButton: {
-    width: '36px',
-    height: '36px',
-    borderRadius: '6px',
-    border: '1px solid #e5e7eb',
-    background: 'white',
-    cursor: 'pointer',
-    fontSize: '18px',
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    transition: 'all 0.2s',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+    width: "36px",
+    height: "36px",
+    borderRadius: "6px",
+    border: "1px solid #e5e7eb",
+    background: "white",
+    cursor: "pointer",
+    fontSize: "18px",
+    fontWeight: "bold",
+    color: "#1a1a1a",
+    transition: "all 0.2s",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
   } as React.CSSProperties,
   shareControl: {
-    position: 'absolute',
-    bottom: '16px',
-    left: '16px',
+    position: "absolute",
+    bottom: "16px",
+    left: "16px",
     zIndex: 10,
   } as React.CSSProperties,
   shareButton: {
-    padding: '10px 16px',
-    borderRadius: '6px',
-    border: '1px solid #e5e7eb',
-    background: 'white',
-    cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: '600',
-    color: '#1a1a1a',
-    transition: 'all 0.2s',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+    padding: "10px 16px",
+    borderRadius: "6px",
+    border: "1px solid #e5e7eb",
+    background: "white",
+    cursor: "pointer",
+    fontSize: "13px",
+    fontWeight: "600",
+    color: "#1a1a1a",
+    transition: "all 0.2s",
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
   } as React.CSSProperties,
   shareButtonActive: {
-    background: '#dcfce7',
-    color: '#166534',
-    borderColor: '#86efac',
+    background: "#dcfce7",
+    color: "#166534",
+    borderColor: "#86efac",
   } as React.CSSProperties,
   shareIcon: {
-    fontSize: '14px',
+    fontSize: "14px",
   } as React.CSSProperties,
   addressContainer: {
-    background: 'white',
-    padding: '24px',
+    background: "white",
+    padding: "24px",
   } as React.CSSProperties,
   addressSection: {
-    marginBottom: '24px',
+    marginBottom: "24px",
   } as React.CSSProperties,
   addressTitle: {
-    fontSize: '14px',
-    fontWeight: '700',
-    color: '#1a1a1a',
-    margin: '0 0 8px 0',
+    fontSize: "14px",
+    fontWeight: "700",
+    color: "#1a1a1a",
+    margin: "0 0 8px 0",
   } as React.CSSProperties,
   address: {
-    fontSize: '14px',
-    color: '#333',
-    margin: '0 0 4px 0',
-    fontWeight: '500',
+    fontSize: "14px",
+    color: "#333",
+    margin: "0 0 4px 0",
+    fontWeight: "500",
   } as React.CSSProperties,
   addressNote: {
-    fontSize: '12px',
-    color: '#999',
-    margin: '0',
+    fontSize: "12px",
+    color: "#999",
+    margin: "0",
   } as React.CSSProperties,
   instructionsSection: {
-    paddingTop: '24px',
-    borderTop: '1px solid #e5e7eb',
+    paddingTop: "24px",
+    borderTop: "1px solid #e5e7eb",
   } as React.CSSProperties,
   instructionsTitle: {
-    fontSize: '14px',
-    fontWeight: '700',
-    color: '#1a1a1a',
-    margin: '0 0 12px 0',
+    fontSize: "14px",
+    fontWeight: "700",
+    color: "#1a1a1a",
+    margin: "0 0 12px 0",
   } as React.CSSProperties,
   instructionsList: {
-    fontSize: '13px',
-    color: '#666',
-    margin: '0',
-    paddingLeft: '20px',
-    lineHeight: '1.6',
+    fontSize: "13px",
+    color: "#666",
+    margin: "0",
+    paddingLeft: "20px",
+    lineHeight: "1.6",
   } as React.CSSProperties,
 };
 

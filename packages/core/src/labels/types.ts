@@ -11,7 +11,12 @@ export interface LabelData {
   // Package
   weight: number;
   weightUnit: "kg" | "lb" | "g" | "oz";
-  dimensions?: { length: number; width: number; height: number; unit: "cm" | "in" };
+  dimensions?: {
+    length: number;
+    width: number;
+    height: number;
+    unit: "cm" | "in";
+  };
 
   // Shipment
   shipDate: Date;

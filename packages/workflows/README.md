@@ -56,6 +56,7 @@ packages/workflows/
 ### Validation Pipeline
 
 #### `validateOrderStep`
+
 Validates order data integrity before processing.
 
 **Input**: Order details (items, addresses, customer info)
@@ -65,19 +66,23 @@ Validates order data integrity before processing.
 ```typescript
 import { validateOrderStep } from "@witylogix/workflows/steps";
 
-const result = await validateOrderStep.invoke({
-  orderId: "order_123",
-  addressLine1: "123 Main St",
-  city: "New York",
-  postalCode: "10001",
-  country: "US",
-  itemCount: 3,
-}, context);
+const result = await validateOrderStep.invoke(
+  {
+    orderId: "order_123",
+    addressLine1: "123 Main St",
+    city: "New York",
+    postalCode: "10001",
+    country: "US",
+    itemCount: 3,
+  },
+  context,
+);
 ```
 
 ### Geocoding Pipeline
 
 #### `geocodeAddressStep`
+
 Geocodes pickup and delivery addresses to lat/lng coordinates.
 
 **Input**: Pickup + delivery addresses
@@ -87,10 +92,17 @@ Geocodes pickup and delivery addresses to lat/lng coordinates.
 ```typescript
 import { geocodeAddressStep } from "@witylogix/workflows/steps";
 
-const result = await geocodeAddressStep.invoke({
-  pickupAddress: { /* ... */ },
-  deliveryAddress: { /* ... */ },
-}, context);
+const result = await geocodeAddressStep.invoke(
+  {
+    pickupAddress: {
+      /* ... */
+    },
+    deliveryAddress: {
+      /* ... */
+    },
+  },
+  context,
+);
 
 // Returns: { distanceKm, routeDurationMinutes }
 ```
@@ -98,6 +110,7 @@ const result = await geocodeAddressStep.invoke({
 ### Pricing Pipeline
 
 #### `calculateRateStep`
+
 Calculates shipping rate based on distance, weight, zone, and surcharges.
 
 **Input**: Distance, weight, zone, time slot
@@ -107,13 +120,16 @@ Calculates shipping rate based on distance, weight, zone, and surcharges.
 ```typescript
 import { calculateRateStep } from "@witylogix/workflows/steps";
 
-const result = await calculateRateStep.invoke({
-  distanceKm: 12.5,
-  weightKg: 5,
-  zoneId: "zone_123",
-  itemCount: 3,
-  deliveryDate: new Date(),
-}, context);
+const result = await calculateRateStep.invoke(
+  {
+    distanceKm: 12.5,
+    weightKg: 5,
+    zoneId: "zone_123",
+    itemCount: 3,
+    deliveryDate: new Date(),
+  },
+  context,
+);
 
 // Returns: { baseRate, distanceCharge, weightCharge, totalRate, rateBreakdown }
 ```
@@ -121,6 +137,7 @@ const result = await calculateRateStep.invoke({
 ### Zone & Driver Assignment
 
 #### `assignZoneStep`
+
 Assigns delivery zone based on geocoded address.
 
 **Input**: Delivery coordinates, shop ID
@@ -130,14 +147,18 @@ Assigns delivery zone based on geocoded address.
 ```typescript
 import { assignZoneStep } from "@witylogix/workflows/steps";
 
-const result = await assignZoneStep.invoke({
-  deliveryLat: 40.7128,
-  deliveryLng: -74.0060,
-  shopId: "shop_123",
-}, context);
+const result = await assignZoneStep.invoke(
+  {
+    deliveryLat: 40.7128,
+    deliveryLng: -74.006,
+    shopId: "shop_123",
+  },
+  context,
+);
 ```
 
 #### `findAvailableDriversStep`
+
 Queries for available drivers near pickup location.
 
 **Input**: Pickup coordinates, shop ID
@@ -147,20 +168,25 @@ Queries for available drivers near pickup location.
 ```typescript
 import { findAvailableDriversStep } from "@witylogix/workflows/steps";
 
-const result = await findAvailableDriversStep.invoke({
-  pickupLat: 40.7128,
-  pickupLng: -74.0060,
-  shopId: "shop_123",
-  maxDistance: 15, // km
-}, context);
+const result = await findAvailableDriversStep.invoke(
+  {
+    pickupLat: 40.7128,
+    pickupLng: -74.006,
+    shopId: "shop_123",
+    maxDistance: 15, // km
+  },
+  context,
+);
 
 // Returns: { driverCandidates: [...], totalAvailable: N }
 ```
 
 #### `optimizeAssignmentStep`
+
 Selects best driver using multi-factor scoring algorithm.
 
 **Factors**:
+
 - Distance to pickup (40% weight)
 - Vehicle capacity (30% weight)
 - Vehicle type suitability (30% weight)
@@ -183,6 +209,7 @@ const result = await optimizeAssignmentStep.invoke({
 ```
 
 #### `assignDriverRecordStep`
+
 Creates driver assignment in database (updates order).
 
 **Input**: Driver ID, order ID
@@ -192,16 +219,20 @@ Creates driver assignment in database (updates order).
 ```typescript
 import { assignDriverRecordStep } from "@witylogix/workflows/steps";
 
-const result = await assignDriverRecordStep.invoke({
-  driverId: "driver_123",
-  orderId: "order_123",
-  shopId: "shop_123",
-}, context);
+const result = await assignDriverRecordStep.invoke(
+  {
+    driverId: "driver_123",
+    orderId: "order_123",
+    shopId: "shop_123",
+  },
+  context,
+);
 ```
 
 ### Order Creation
 
 #### `createOrderRecordStep`
+
 Creates order record in database with validated/geocoded data.
 
 **Input**: Full order details (addresses, items, pricing)
@@ -211,14 +242,17 @@ Creates order record in database with validated/geocoded data.
 ```typescript
 import { createOrderRecordStep } from "@witylogix/workflows/steps";
 
-const result = await createOrderRecordStep.invoke({
-  shopId: "shop_123",
-  shopifyOrderId: "gid://shopify/Order/123",
-  customerName: "John Doe",
-  addressLine1: "123 Main St",
-  city: "New York",
-  // ... full order data
-}, context);
+const result = await createOrderRecordStep.invoke(
+  {
+    shopId: "shop_123",
+    shopifyOrderId: "gid://shopify/Order/123",
+    customerName: "John Doe",
+    addressLine1: "123 Main St",
+    city: "New York",
+    // ... full order data
+  },
+  context,
+);
 
 // Returns: { orderId, trackingToken, status: "PENDING" }
 ```
@@ -226,9 +260,11 @@ const result = await createOrderRecordStep.invoke({
 ### Delivery Completion
 
 #### `verifyProofOfDeliveryStep`
+
 Validates proof of delivery (photos, signature, code).
 
 **Validations**:
+
 - At least 1 photo required
 - Valid photo URLs
 - Valid delivery coordinates
@@ -241,19 +277,24 @@ Validates proof of delivery (photos, signature, code).
 ```typescript
 import { verifyProofOfDeliveryStep } from "@witylogix/workflows/steps";
 
-const result = await verifyProofOfDeliveryStep.invoke({
-  orderId: "order_123",
-  photoUrls: ["https://...", "https://..."],
-  recipientName: "John Doe",
-  deliveryLat: 40.7128,
-  deliveryLng: -74.0060,
-}, context);
+const result = await verifyProofOfDeliveryStep.invoke(
+  {
+    orderId: "order_123",
+    photoUrls: ["https://...", "https://..."],
+    recipientName: "John Doe",
+    deliveryLat: 40.7128,
+    deliveryLng: -74.006,
+  },
+  context,
+);
 ```
 
 #### `updateDeliveryStatusStep`
+
 Updates order/shipment delivery status with validation.
 
 **Valid Transitions**:
+
 - PENDING → ACCEPTED, CANCELLED
 - ACCEPTED → ASSIGNED, CANCELLED
 - ASSIGNED → PICKED_UP, CANCELLED
@@ -269,23 +310,28 @@ Updates order/shipment delivery status with validation.
 ```typescript
 import { updateDeliveryStatusStep } from "@witylogix/workflows/steps";
 
-const result = await updateDeliveryStatusStep.invoke({
-  orderId: "order_123",
-  newStatus: "DELIVERED",
-  podData: {
-    photoUrls: ["https://..."],
-    recipientName: "John Doe",
-    deliveryLocation: { lat: 40.7128, lng: -74.0060 },
+const result = await updateDeliveryStatusStep.invoke(
+  {
+    orderId: "order_123",
+    newStatus: "DELIVERED",
+    podData: {
+      photoUrls: ["https://..."],
+      recipientName: "John Doe",
+      deliveryLocation: { lat: 40.7128, lng: -74.006 },
+    },
   },
-}, context);
+  context,
+);
 ```
 
 ### Billing
 
 #### `triggerBillingStep`
+
 Creates billing record for completed delivery.
 
 **Calculates**:
+
 - Shipping cost
 - COD amount (if applicable)
 - Insurance amount
@@ -298,13 +344,16 @@ Creates billing record for completed delivery.
 ```typescript
 import { triggerBillingStep } from "@witylogix/workflows/steps";
 
-const result = await triggerBillingStep.invoke({
-  orderId: "order_123",
-  shopId: "shop_123",
-  shippingCost: 25.00,
-  codAmount: 100.00,
-  insuranceAmount: 2.50,
-}, context);
+const result = await triggerBillingStep.invoke(
+  {
+    orderId: "order_123",
+    shopId: "shop_123",
+    shippingCost: 25.0,
+    codAmount: 100.0,
+    insuranceAmount: 2.5,
+  },
+  context,
+);
 
 // Returns: { billingId, totalAmount: 127.50 }
 ```
@@ -312,9 +361,11 @@ const result = await triggerBillingStep.invoke({
 ### Notifications
 
 #### `sendNotificationStep`
+
 Sends notifications via email, SMS, and/or push.
 
 **Features**:
+
 - Multi-channel support (EMAIL, SMS, PUSH)
 - Template-based messaging
 - Automatic recipient lookup from order/driver
@@ -327,16 +378,19 @@ Sends notifications via email, SMS, and/or push.
 ```typescript
 import { sendNotificationStep } from "@witylogix/workflows/steps";
 
-const result = await sendNotificationStep.invoke({
-  orderId: "order_123",
-  recipientType: "CUSTOMER",
-  channels: ["EMAIL", "SMS"],
-  templateKey: "DELIVERY_ARRIVED",
-  templateData: {
-    driverName: "John",
-    estimatedArrival: "2:30 PM",
+const result = await sendNotificationStep.invoke(
+  {
+    orderId: "order_123",
+    recipientType: "CUSTOMER",
+    channels: ["EMAIL", "SMS"],
+    templateKey: "DELIVERY_ARRIVED",
+    templateData: {
+      driverName: "John",
+      estimatedArrival: "2:30 PM",
+    },
   },
-}, context);
+  context,
+);
 
 // Returns: { notificationLogs: [...], successful: 2, failed: 0 }
 ```
@@ -346,43 +400,52 @@ const result = await sendNotificationStep.invoke({
 Three main workflows are composed from these steps:
 
 ### 1. Order Acceptance Workflow (OAW)
+
 **Trigger**: Shopify `order.created` webhook
 
 **Steps**:
+
 1. `validateOrderStep` — Validate order data
 2. `geocodeAddressStep` — Geocode delivery address
 3. `calculateRateStep` — Calculate shipping rate
 4. `createOrderRecordStep` — Create order in DB
 
 **Compensation Chain** (on failure):
+
 - Undo: `createOrderRecordStep` → cancel order
 
 **Timeout**: 30 seconds
 
 ### 2. Driver Assignment Workflow (DAW)
+
 **Trigger**: Manual dispatch or scheduled batch job
 
 **Steps**:
+
 1. `assignZoneStep` — Assign delivery zone
 2. `findAvailableDriversStep` — Find nearby drivers
 3. `optimizeAssignmentStep` — Score and select best driver
 4. `assignDriverRecordStep` — Create assignment in DB
 
 **Compensation Chain** (on failure):
+
 - Undo: `assignDriverRecordStep` → unassign driver
 
 **Timeout**: 15 seconds
 
 ### 3. Delivery Completion Workflow (DCW)
+
 **Trigger**: Driver submits POD or app auto-marks delivery
 
 **Steps**:
+
 1. `verifyProofOfDeliveryStep` — Validate POD
 2. `updateDeliveryStatusStep` — Update order status
 3. `triggerBillingStep` — Create billing record
 4. `sendNotificationStep` — Notify customer
 
 **Compensation Chain** (on failure):
+
 - Undo: `triggerBillingStep` → void billing
 - Undo: `updateDeliveryStatusStep` → revert status
 
@@ -411,34 +474,50 @@ const context: WorkflowContext = {
 };
 
 // Execute steps in sequence
-const validationResult = await validateOrderStep.invoke({
-  orderId: "order_123",
-  addressLine1: "123 Main St",
-  city: "New York",
-  // ... validation input
-}, context);
+const validationResult = await validateOrderStep.invoke(
+  {
+    orderId: "order_123",
+    addressLine1: "123 Main St",
+    city: "New York",
+    // ... validation input
+  },
+  context,
+);
 
 if (!validationResult.success) {
   console.error("Validation failed:", validationResult.error);
   return;
 }
 
-const geocodingResult = await geocodeAddressStep.invoke({
-  pickupAddress: { /* ... */ },
-  deliveryAddress: { /* ... */ },
-}, context);
+const geocodingResult = await geocodeAddressStep.invoke(
+  {
+    pickupAddress: {
+      /* ... */
+    },
+    deliveryAddress: {
+      /* ... */
+    },
+  },
+  context,
+);
 
-const ratingResult = await calculateRateStep.invoke({
-  distanceKm: geocodingResult.data!.distanceKm,
-  zoneId: "zone_123",
-  // ... rating input
-}, context);
+const ratingResult = await calculateRateStep.invoke(
+  {
+    distanceKm: geocodingResult.data!.distanceKm,
+    zoneId: "zone_123",
+    // ... rating input
+  },
+  context,
+);
 
-const orderResult = await createOrderRecordStep.invoke({
-  shopId,
-  shopifyOrderId: "gid://shopify/Order/123",
-  // ... order data
-}, context);
+const orderResult = await createOrderRecordStep.invoke(
+  {
+    shopId,
+    shopifyOrderId: "gid://shopify/Order/123",
+    // ... order data
+  },
+  context,
+);
 
 if (orderResult.success) {
   console.log("Order created:", orderResult.data?.orderId);
@@ -450,11 +529,14 @@ if (orderResult.success) {
 ```typescript
 // If any step fails, compensation runs automatically
 try {
-  const results = await executeWorkflow([
-    step1,
-    step2,
-    step3, // <- fails here
-  ], context);
+  const results = await executeWorkflow(
+    [
+      step1,
+      step2,
+      step3, // <- fails here
+    ],
+    context,
+  );
 
   // On failure, compensation chain runs in reverse:
   // step3.compensate() [skipped, never completed]
@@ -501,25 +583,31 @@ import { validateOrderStep } from "@witylogix/workflows/steps";
 
 describe("validateOrderStep", () => {
   it("should validate valid orders", async () => {
-    const result = await validateOrderStep.invoke({
-      orderId: "123",
-      addressLine1: "123 Main St",
-      city: "New York",
-      postalCode: "10001",
-      country: "US",
-      itemCount: 1,
-    }, mockContext);
+    const result = await validateOrderStep.invoke(
+      {
+        orderId: "123",
+        addressLine1: "123 Main St",
+        city: "New York",
+        postalCode: "10001",
+        country: "US",
+        itemCount: 1,
+      },
+      mockContext,
+    );
 
     expect(result.success).toBe(true);
     expect(result.data?.isValid).toBe(true);
   });
 
   it("should reject invalid addresses", async () => {
-    const result = await validateOrderStep.invoke({
-      orderId: "123",
-      addressLine1: "",
-      // ...
-    }, mockContext);
+    const result = await validateOrderStep.invoke(
+      {
+        orderId: "123",
+        addressLine1: "",
+        // ...
+      },
+      mockContext,
+    );
 
     expect(result.success).toBe(false);
     expect(result.code).toBe("INVALID_ADDRESS");

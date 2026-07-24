@@ -95,7 +95,7 @@ class CircuitBreaker {
         this.state = "half_open";
       } else {
         throw new Error(
-          `Circuit breaker is open. Reset in ${this.resetTimeout - timeSinceLastFailure}ms`
+          `Circuit breaker is open. Reset in ${this.resetTimeout - timeSinceLastFailure}ms`,
         );
       }
     }
@@ -156,14 +156,23 @@ export abstract class ESignatureAdapter implements ESignatureAdapterInterface {
    */
   async initialize(config: ESignatureConfig): Promise<void> {
     this.config = config;
-    this.rateLimiter = new RateLimiter(config.rateLimit || 100, (config.rateLimit || 100) / 10);
+    this.rateLimiter = new RateLimiter(
+      config.rateLimit || 100,
+      (config.rateLimit || 100) / 10,
+    );
     this.circuitBreaker = new CircuitBreaker(
       config.circuitBreakerThreshold || 5,
-      60000
+      60000,
     );
 
-    if (config.authType === "oauth2" && !config.refreshToken && !config.clientSecret) {
-      throw new Error(`${this.providerName}: OAuth2 requires clientId, clientSecret, and refreshToken`);
+    if (
+      config.authType === "oauth2" &&
+      !config.refreshToken &&
+      !config.clientSecret
+    ) {
+      throw new Error(
+        `${this.providerName}: OAuth2 requires clientId, clientSecret, and refreshToken`,
+      );
     }
 
     await this.verifyCredentials();
@@ -173,7 +182,11 @@ export abstract class ESignatureAdapter implements ESignatureAdapterInterface {
    * Get or refresh OAuth2 access token.
    */
   protected async getAccessToken(): Promise<string> {
-    if (this.accessToken && this.tokenExpiresAt && Date.now() < this.tokenExpiresAt - 60000) {
+    if (
+      this.accessToken &&
+      this.tokenExpiresAt &&
+      Date.now() < this.tokenExpiresAt - 60000
+    ) {
       return this.accessToken;
     }
 
@@ -192,7 +205,9 @@ export abstract class ESignatureAdapter implements ESignatureAdapterInterface {
    * Refresh OAuth2 token (must be implemented by subclass).
    */
   async refreshToken(): Promise<void> {
-    throw new Error(`${this.providerName}: refreshToken must be implemented by subclass`);
+    throw new Error(
+      `${this.providerName}: refreshToken must be implemented by subclass`,
+    );
   }
 
   /**
@@ -200,7 +215,7 @@ export abstract class ESignatureAdapter implements ESignatureAdapterInterface {
    */
   protected setAccessToken(token: string, expiresInSeconds: number): void {
     this.accessToken = token;
-    this.tokenExpiresAt = Date.now() + (expiresInSeconds * 1000);
+    this.tokenExpiresAt = Date.now() + expiresInSeconds * 1000;
   }
 
   /**
@@ -267,7 +282,9 @@ export abstract class ESignatureAdapter implements ESignatureAdapterInterface {
       field.height <= 0 ||
       field.height > 100
     ) {
-      throw new Error("Field coordinates and dimensions must be valid percentages");
+      throw new Error(
+        "Field coordinates and dimensions must be valid percentages",
+      );
     }
   }
 
@@ -280,8 +297,12 @@ export abstract class ESignatureAdapter implements ESignatureAdapterInterface {
     fields: SigningField[];
   } {
     // Sort documents and signers by order
-    const sortedDocuments = [...envelope.documents].sort((a, b) => a.order - b.order);
-    const sortedSigners = [...envelope.signers].sort((a, b) => a.order - b.order);
+    const sortedDocuments = [...envelope.documents].sort(
+      (a, b) => a.order - b.order,
+    );
+    const sortedSigners = [...envelope.signers].sort(
+      (a, b) => a.order - b.order,
+    );
 
     // Validate all components
     sortedDocuments.forEach((doc) => this.validateDocument(doc));
@@ -292,7 +313,9 @@ export abstract class ESignatureAdapter implements ESignatureAdapterInterface {
     const signerEmails = new Set(sortedSigners.map((s) => s.email));
     for (const field of envelope.fields) {
       if (!signerEmails.has(field.signerEmail)) {
-        throw new Error(`Field references unknown signer: ${field.signerEmail}`);
+        throw new Error(
+          `Field references unknown signer: ${field.signerEmail}`,
+        );
       }
     }
 
@@ -308,14 +331,17 @@ export abstract class ESignatureAdapter implements ESignatureAdapterInterface {
    */
   protected resolveTemplateVariables(
     envelope: Envelope,
-    variables: Record<string, string>
+    variables: Record<string, string>,
   ): Envelope {
     const updated = JSON.parse(JSON.stringify(envelope));
 
     // Replace in message and subject
     if (updated.message) {
       Object.entries(variables).forEach(([key, value]) => {
-        updated.message = updated.message.replace(new RegExp(`{{${key}}}`, "g"), value);
+        updated.message = updated.message.replace(
+          new RegExp(`{{${key}}}`, "g"),
+          value,
+        );
       });
     }
 
@@ -324,12 +350,18 @@ export abstract class ESignatureAdapter implements ESignatureAdapterInterface {
       const updated = { ...field };
       if (updated.value) {
         Object.entries(variables).forEach(([key, value]) => {
-          updated.value = updated.value?.replace(new RegExp(`{{${key}}}`, "g"), value);
+          updated.value = updated.value?.replace(
+            new RegExp(`{{${key}}}`, "g"),
+            value,
+          );
         });
       }
       if (updated.label) {
         Object.entries(variables).forEach(([key, value]) => {
-          updated.label = updated.label?.replace(new RegExp(`{{${key}}}`, "g"), value);
+          updated.label = updated.label?.replace(
+            new RegExp(`{{${key}}}`, "g"),
+            value,
+          );
         });
       }
       return updated;
@@ -345,7 +377,7 @@ export abstract class ESignatureAdapter implements ESignatureAdapterInterface {
     percentageX: number,
     percentageY: number,
     pageWidth: number = 612, // Standard letter width
-    pageHeight: number = 792 // Standard letter height
+    pageHeight: number = 792, // Standard letter height
   ): { x: number; y: number } {
     return {
       x: (percentageX / 100) * pageWidth,
@@ -360,7 +392,7 @@ export abstract class ESignatureAdapter implements ESignatureAdapterInterface {
     percentageWidth: number,
     percentageHeight: number,
     pageWidth: number = 612,
-    pageHeight: number = 792
+    pageHeight: number = 792,
   ): { width: number; height: number } {
     return {
       width: (percentageWidth / 100) * pageWidth,
@@ -407,7 +439,10 @@ export abstract class ESignatureAdapter implements ESignatureAdapterInterface {
     fromDate?: Date;
     toDate?: Date;
   }): Promise<{ envelopes: Envelope[]; total: number }>;
-  abstract resendEnvelope(envelopeId: string, signerEmails?: string[]): Promise<void>;
+  abstract resendEnvelope(
+    envelopeId: string,
+    signerEmails?: string[],
+  ): Promise<void>;
   abstract listTemplates(options?: {
     limit?: number;
     offset?: number;
@@ -415,25 +450,28 @@ export abstract class ESignatureAdapter implements ESignatureAdapterInterface {
   abstract getTemplate(templateId: string): Promise<Template>;
   abstract createEnvelopeFromTemplate(
     templateId: string,
-    envelope: Partial<Envelope>
+    envelope: Partial<Envelope>,
   ): Promise<EnvelopeResult>;
   abstract downloadDocument(
     envelopeId: string,
-    documentId: string
+    documentId: string,
   ): Promise<DocumentDownloadResult>;
   abstract downloadEnvelopeDocuments(
-    envelopeId: string
+    envelopeId: string,
   ): Promise<{ content: string; mimeType: string; fileName: string }>;
   abstract getEmbeddedSigningUrl(
     envelopeId: string,
     signerEmail: string,
-    returnUrl: string
+    returnUrl: string,
   ): Promise<EmbedSigningResult>;
-  abstract markDocumentViewed(envelopeId: string, signerEmail: string): Promise<void>;
+  abstract markDocumentViewed(
+    envelopeId: string,
+    signerEmail: string,
+  ): Promise<void>;
   abstract getEnvelopeEvents(envelopeId: string): Promise<SigningEvent[]>;
   abstract parseWebhookEvent(
     payload: Record<string, unknown>,
-    headers: Record<string, string>
+    headers: Record<string, string>,
   ): Promise<ESignatureWebhookEvent>;
   abstract verifyWebhookSignature(payload: string, signature: string): boolean;
   abstract healthCheck(): Promise<{ healthy: boolean; message: string }>;

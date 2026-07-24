@@ -5,6 +5,7 @@ Complete implementation of the Invoice Engine (started in sprint 4.6) and QuickB
 ## Overview
 
 This implementation provides a production-ready invoicing system with:
+
 - Advanced billing rules engine for flexible charge calculations
 - Professional invoice email delivery system
 - Seamless QuickBooks Online and Xero integration
@@ -16,7 +17,9 @@ This implementation provides a production-ready invoicing system with:
 ### 1. Core Invoicing
 
 #### Billing Rules Engine (`packages/core/src/invoicing/billing-rules.ts`)
+
 Configurable billing rules system supporting multiple billing models:
+
 - **Per-Delivery**: Fixed charge per delivery
 - **Per-Mile**: Distance-based pricing with tiered rates
 - **Per-Hour**: Time-based billing
@@ -25,6 +28,7 @@ Configurable billing rules system supporting multiple billing models:
 - **Flat-Rate**: Fixed pricing
 
 **Key Features:**
+
 - Tiered pricing support for volume discounts
 - Conditional and fixed surcharges
 - Minimum and maximum charge limits
@@ -34,28 +38,36 @@ Configurable billing rules system supporting multiple billing models:
 - Combined rules (e.g., base + per-mile + surcharge)
 
 **Usage:**
+
 ```typescript
-import { BillingRuleEngine, createBillingRule, createSurcharge } from '@witylogix/core/invoicing';
+import {
+  BillingRuleEngine,
+  createBillingRule,
+  createSurcharge,
+} from "@witylogix/core/invoicing";
 
 const engine = new BillingRuleEngine();
-const rule = createBillingRule('rule_1', 'tenant_1', 'Per Mile', 'per-mile', {
+const rule = createBillingRule("rule_1", "tenant_1", "Per Mile", "per-mile", {
   unitRate: 2.5,
-  surcharges: [createSurcharge('Fuel', 10, 'percentage')],
+  surcharges: [createSurcharge("Fuel", 10, "percentage")],
 });
 
 const items = engine.evaluateRules(context, [rule]);
 ```
 
 #### Invoice Email Service (`packages/core/src/invoicing/invoice-email.ts`)
+
 Professional HTML email templates with integrated company branding:
 
 **Functions:**
+
 - `buildInvoiceEmail(data)` - Generate invoice HTML email
 - `buildPaymentReminderEmail(data)` - Payment reminder (7/14/30+ days overdue)
 - `buildPaymentReceiptEmail(data)` - Payment confirmation
 - `sendInvoiceEmail()`, `sendPaymentReminderEmail()`, `sendPaymentReceiptEmail()` - Send via notification service
 
 **Features:**
+
 - Responsive HTML design
 - Dark theme support
 - Styled tables for line items, discounts, taxes
@@ -66,7 +78,9 @@ Professional HTML email templates with integrated company branding:
 ### 2. Accounting Integration
 
 #### Types (`packages/core/src/integrations/accounting/types.ts`)
+
 Comprehensive TypeScript interfaces for accounting operations:
+
 - `AccountingConnection` - OAuth connection details
 - `SyncRecord` - Sync operation log
 - `QuickBooksInvoice` - QB format mapping
@@ -75,9 +89,11 @@ Comprehensive TypeScript interfaces for accounting operations:
 - `AccountingError` - Error definitions
 
 #### QuickBooks Adapter (`packages/core/src/integrations/accounting/quickbooks-adapter.ts`)
+
 Full OAuth2 integration with Intuit QuickBooks Online API:
 
 **Features:**
+
 - OAuth2 authorization flow
 - Token refresh handling
 - Invoice creation/sync
@@ -88,24 +104,30 @@ Full OAuth2 integration with Intuit QuickBooks Online API:
 - Error handling with retry logic
 
 **Usage:**
+
 ```typescript
-import { QuickBooksAdapter, createQuickBooksConfig } from '@witylogix/core/integrations/accounting';
+import {
+  QuickBooksAdapter,
+  createQuickBooksConfig,
+} from "@witylogix/core/integrations/accounting";
 
 const config = createQuickBooksConfig(
   process.env.QB_CLIENT_ID,
   process.env.QB_CLIENT_SECRET,
-  'http://localhost:3000/callback',
-  'production'
+  "http://localhost:3000/callback",
+  "production",
 );
 
 const adapter = new QuickBooksAdapter(config);
-const authUrl = adapter.getAuthorizationUrl('state_123');
+const authUrl = adapter.getAuthorizationUrl("state_123");
 ```
 
 #### Xero Adapter (`packages/core/src/integrations/accounting/xero-adapter.ts`)
+
 Full OAuth2 integration with Xero Accounting API:
 
 **Features:**
+
 - OAuth2 authorization flow with tenant selection
 - Token refresh handling
 - Invoice creation/sync
@@ -116,14 +138,18 @@ Full OAuth2 integration with Xero Accounting API:
 - Rate limit tracking (60 req/min)
 
 **Usage:**
+
 ```typescript
-import { XeroAdapter, createXeroConfig } from '@witylogix/core/integrations/accounting';
+import {
+  XeroAdapter,
+  createXeroConfig,
+} from "@witylogix/core/integrations/accounting";
 
 const config = createXeroConfig(
   process.env.XERO_CLIENT_ID,
   process.env.XERO_CLIENT_SECRET,
-  'http://localhost:3000/callback',
-  'production'
+  "http://localhost:3000/callback",
+  "production",
 );
 
 const adapter = new XeroAdapter(config);
@@ -131,9 +157,11 @@ const result = await adapter.authenticate(authCode);
 ```
 
 #### Accounting Sync Service (`packages/core/src/integrations/accounting/accounting-sync.ts`)
+
 Unified sync service managing all accounting operations:
 
 **Features:**
+
 - Provider registry pattern
 - Idempotent sync with deduplication
 - Automatic retry with exponential backoff
@@ -142,14 +170,15 @@ Unified sync service managing all accounting operations:
 - Failed sync retry mechanism
 
 **Usage:**
+
 ```typescript
-import { AccountingSyncService } from '@witylogix/core/integrations/accounting';
+import { AccountingSyncService } from "@witylogix/core/integrations/accounting";
 
 const syncService = new AccountingSyncService(prisma);
-syncService.registerAdapter('quickbooks', qbAdapter);
-syncService.registerAdapter('xero', xeroAdapter);
+syncService.registerAdapter("quickbooks", qbAdapter);
+syncService.registerAdapter("xero", xeroAdapter);
 
-const syncRecord = await syncService.syncInvoice(invoice, 'quickbooks', {
+const syncRecord = await syncService.syncInvoice(invoice, "quickbooks", {
   force: true,
   autoRetry: true,
   maxRetries: 3,
@@ -159,6 +188,7 @@ const syncRecord = await syncService.syncInvoice(invoice, 'quickbooks', {
 ### 3. API Routes
 
 #### Accounting Routes (`apps/api/src/routes/accounting/accounting.ts`)
+
 8 comprehensive endpoints for accounting integration:
 
 1. **POST `/accounting/connect/:provider`** - Initiate OAuth flow
@@ -171,6 +201,7 @@ const syncRecord = await syncService.syncInvoice(invoice, 'quickbooks', {
 8. **POST `/accounting/reconcile`** - Reconcile accounts
 
 **Features:**
+
 - Zod schema validation
 - Tenant isolation
 - OAuth state verification
@@ -182,9 +213,11 @@ const syncRecord = await syncService.syncInvoice(invoice, 'quickbooks', {
 ### 4. Dashboard Settings
 
 #### Accounting Settings Page (`apps/dashboard/src/app/(dashboard)/settings/accounting/page.tsx`)
+
 Full-featured React component for accounting configuration:
 
 **Features:**
+
 - OAuth connection UI for QB and Xero
 - Connection status cards with sync statistics
 - Auto-sync toggle and frequency selection
@@ -197,7 +230,9 @@ Full-featured React component for accounting configuration:
 ## Test Coverage
 
 ### Billing Rules Tests (`packages/core/src/invoicing/__tests__/billing-rules.test.ts`)
+
 25+ test cases covering:
+
 - Per-delivery, per-mile, per-hour, per-kg billing
 - Tiered pricing
 - Surcharges (percentage and fixed)
@@ -210,7 +245,9 @@ Full-featured React component for accounting configuration:
 - Real-world scenarios
 
 ### QuickBooks Adapter Tests (`packages/core/src/integrations/accounting/__tests__/quickbooks-adapter.test.ts`)
+
 20+ test cases covering:
+
 - OAuth authorization flow
 - Token authentication and refresh
 - Invoice creation and mapping
@@ -223,7 +260,9 @@ Full-featured React component for accounting configuration:
 - Configuration (sandbox/production)
 
 ### Xero Adapter Tests (`packages/core/src/integrations/accounting/__tests__/xero-adapter.test.ts`)
+
 20+ test cases covering:
+
 - OAuth authorization flow with tenant selection
 - Token authentication and refresh
 - Invoice creation and mapping
@@ -241,10 +280,12 @@ Full-featured React component for accounting configuration:
 The following areas require actual integration with external services (marked with `// INTEGRATION:` comments):
 
 ### OAuth Implementation
+
 - **QuickBooks**: Exchange auth code for token at `POST https://oauth.platform.intuit.com/oauth2/tokens/bearer`
 - **Xero**: Exchange auth code for token at `POST https://identity.xero.com/connect/token`
 
 ### API Calls
+
 - **QuickBooks**:
   - `POST /v2/company/{realmId}/invoice` - Create invoice
   - `POST /v2/company/{realmId}/payment` - Record payment
@@ -257,6 +298,7 @@ The following areas require actual integration with external services (marked wi
   - `GET /v2/TaxRates` - Get tax rates
 
 ### Email Delivery
+
 - `sendInvoiceEmail()`, `sendPaymentReminderEmail()`, `sendPaymentReceiptEmail()` functions integrate with your notification service (currently stubs logging to console)
 
 ## Environment Variables Required
@@ -322,20 +364,22 @@ model AccountingSyncRecord {
 ## Architecture Patterns
 
 ### Provider Registry Pattern
+
 ```typescript
 const syncService = new AccountingSyncService(prisma);
-syncService.registerAdapter('quickbooks', qbAdapter);
-syncService.registerAdapter('xero', xeroAdapter);
+syncService.registerAdapter("quickbooks", qbAdapter);
+syncService.registerAdapter("xero", xeroAdapter);
 
 // Now supports any registered provider
-await syncService.syncInvoice(invoice, 'quickbooks');
-await syncService.syncInvoice(invoice, 'xero');
+await syncService.syncInvoice(invoice, "quickbooks");
+await syncService.syncInvoice(invoice, "xero");
 ```
 
 ### Error Handling with Retry
+
 ```typescript
 try {
-  await syncService.syncInvoice(invoice, 'quickbooks', {
+  await syncService.syncInvoice(invoice, "quickbooks", {
     autoRetry: true,
     maxRetries: 3,
     retryDelayMs: 5000,
@@ -419,16 +463,21 @@ apps/dashboard/src/app/(dashboard)/settings/accounting/
 
 ```typescript
 // In your app initialization
-import { QuickBooksAdapter, XeroAdapter, AccountingSyncService } from '@witylogix/core/integrations/accounting';
+import {
+  QuickBooksAdapter,
+  XeroAdapter,
+  AccountingSyncService,
+} from "@witylogix/core/integrations/accounting";
 
 const syncService = new AccountingSyncService(prisma);
-syncService.registerAdapter('quickbooks', new QuickBooksAdapter(qbConfig));
-syncService.registerAdapter('xero', new XeroAdapter(xeroConfig));
+syncService.registerAdapter("quickbooks", new QuickBooksAdapter(qbConfig));
+syncService.registerAdapter("xero", new XeroAdapter(xeroConfig));
 ```
 
 ## Support
 
 For questions or issues with this implementation:
+
 1. Check the inline code documentation
 2. Review test cases for usage examples
 3. Consult the architecture patterns section above

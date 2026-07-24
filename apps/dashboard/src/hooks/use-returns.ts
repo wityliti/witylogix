@@ -1,16 +1,24 @@
-'use client';
+"use client";
 
-import { useApiMutation, useApiList, useApiQuery, ApiFilters, UseApiQueryResult, UseApiMutationResult, UseApiListResult } from './use-api';
+import {
+  useApiMutation,
+  useApiList,
+  useApiQuery,
+  ApiFilters,
+  UseApiQueryResult,
+  UseApiMutationResult,
+  UseApiListResult,
+} from "./use-api";
 
 export enum ReturnStatus {
-  INITIATED = 'initiated',
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
-  PICKED_UP = 'picked_up',
-  IN_TRANSIT = 'in_transit',
-  RECEIVED = 'received',
-  INSPECTED = 'inspected',
-  REFUNDED = 'refunded',
+  INITIATED = "initiated",
+  APPROVED = "approved",
+  REJECTED = "rejected",
+  PICKED_UP = "picked_up",
+  IN_TRANSIT = "in_transit",
+  RECEIVED = "received",
+  INSPECTED = "inspected",
+  REFUNDED = "refunded",
 }
 
 export interface ReturnItem {
@@ -49,7 +57,7 @@ export interface Return {
   totalRefundAmount?: number;
   refundAmount?: number;
   restockingFee?: number;
-  refundStatus?: 'pending' | 'processed' | 'failed';
+  refundStatus?: "pending" | "processed" | "failed";
   refundDate?: string;
   shippingLabelUrl?: string | null;
   trackingNumber?: string | null;
@@ -89,7 +97,7 @@ export interface ReturnFilters extends ApiFilters {
 }
 
 export function useReturns(filters?: ReturnFilters): UseApiListResult<Return> {
-  return useApiList<Return>('/api/v4/returns', filters);
+  return useApiList<Return>("/api/v4/returns", filters);
 }
 
 export function useReturn(id: string | null): UseApiQueryResult<Return> {
@@ -97,25 +105,25 @@ export function useReturn(id: string | null): UseApiQueryResult<Return> {
 }
 
 export function useApproveReturn(id: string): UseApiMutationResult<Return> {
-  return useApiMutation<Return>('POST', `/api/v4/returns/${id}/approve`);
+  return useApiMutation<Return>("POST", `/api/v4/returns/${id}/approve`);
 }
 
 export function useRejectReturn(id: string): UseApiMutationResult<Return> {
-  return useApiMutation<Return>('POST', `/api/v4/returns/${id}/reject`);
+  return useApiMutation<Return>("POST", `/api/v4/returns/${id}/reject`);
 }
 
 export function useReceiveReturn(id: string): UseApiMutationResult<Return> {
-  return useApiMutation<Return>('POST', `/api/v4/returns/${id}/receive`);
+  return useApiMutation<Return>("POST", `/api/v4/returns/${id}/receive`);
 }
 
 export function useInspectReturn(id: string): UseApiMutationResult<Return> {
-  return useApiMutation<Return>('POST', `/api/v4/returns/${id}/inspect`);
+  return useApiMutation<Return>("POST", `/api/v4/returns/${id}/inspect`);
 }
 
 export function useProcessRefund(id: string): UseApiMutationResult<Return> {
-  return useApiMutation<Return>('POST', `/api/v4/returns/${id}/refund`);
+  return useApiMutation<Return>("POST", `/api/v4/returns/${id}/refund`);
 }
 
 export function useReturnStats(): UseApiQueryResult<ReturnStats> {
-  return useApiQuery<ReturnStats>('/api/v4/returns/stats');
+  return useApiQuery<ReturnStats>("/api/v4/returns/stats");
 }

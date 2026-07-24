@@ -1,13 +1,24 @@
-'use client';
+"use client";
 
-import { useCallback, useState } from 'react';
-import { api } from '@/lib/api';
-import { useApiList, useApiQuery, ApiFilters, UseApiListResult, UseApiQueryResult } from './use-api';
+import { useCallback, useState } from "react";
+import { api } from "@/lib/api";
+import {
+  useApiList,
+  useApiQuery,
+  ApiFilters,
+  UseApiListResult,
+  UseApiQueryResult,
+} from "./use-api";
 
 /**
  * Transaction status enum
  */
-export type TransactionStatus = "completed" | "pending" | "refunded" | "cancelled" | "failed";
+export type TransactionStatus =
+  | "completed"
+  | "pending"
+  | "refunded"
+  | "cancelled"
+  | "failed";
 export type PaymentMethod = "cash" | "card" | "mobile" | "check" | "gift_card";
 
 /**
@@ -106,27 +117,37 @@ export interface TopSellingItem {
 }
 
 export function usePOSOverview(): UseApiQueryResult<POSOverview> {
-  return useApiQuery<POSOverview>('/api/v4/pos/overview');
+  return useApiQuery<POSOverview>("/api/v4/pos/overview");
 }
 
-export function useTransactions(filters?: ApiFilters): UseApiListResult<Transaction> {
-  return useApiList<Transaction>('/api/v4/pos/transactions', filters);
+export function useTransactions(
+  filters?: ApiFilters,
+): UseApiListResult<Transaction> {
+  return useApiList<Transaction>("/api/v4/pos/transactions", filters);
 }
 
-export function useTransactionDetail(id: string | null): UseApiQueryResult<Transaction> {
+export function useTransactionDetail(
+  id: string | null,
+): UseApiQueryResult<Transaction> {
   return useApiQuery<Transaction>(id ? `/api/v4/pos/transactions/${id}` : null);
 }
 
-export function useTerminals(filters?: ApiFilters): UseApiListResult<POSTerminal> {
-  return useApiList<POSTerminal>('/api/v4/pos/terminals', filters);
+export function useTerminals(
+  filters?: ApiFilters,
+): UseApiListResult<POSTerminal> {
+  return useApiList<POSTerminal>("/api/v4/pos/terminals", filters);
 }
 
-export function useSalesTrends(filters?: ApiFilters): UseApiListResult<SalesTrend> {
-  return useApiList<SalesTrend>('/api/v4/pos/sales-trends', filters);
+export function useSalesTrends(
+  filters?: ApiFilters,
+): UseApiListResult<SalesTrend> {
+  return useApiList<SalesTrend>("/api/v4/pos/sales-trends", filters);
 }
 
-export function useTopSellingItems(filters?: ApiFilters): UseApiListResult<TopSellingItem> {
-  return useApiList<TopSellingItem>('/api/v4/pos/top-items', filters);
+export function useTopSellingItems(
+  filters?: ApiFilters,
+): UseApiListResult<TopSellingItem> {
+  return useApiList<TopSellingItem>("/api/v4/pos/top-items", filters);
 }
 
 export interface RefundResult {
@@ -138,23 +159,26 @@ export function useRefundTransaction() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const refund = useCallback(async (transactionId: string, reason: string, amount?: number) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await api.post<{ data: RefundResult }>(
-        `/api/v4/pos/transactions/${transactionId}/refund`,
-        { reason, amount }
-      );
-      return result;
-    } catch (err) {
-      const e = err instanceof Error ? err : new Error(String(err));
-      setError(e);
-      throw e;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const refund = useCallback(
+    async (transactionId: string, reason: string, amount?: number) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await api.post<{ data: RefundResult }>(
+          `/api/v4/pos/transactions/${transactionId}/refund`,
+          { reason, amount },
+        );
+        return result;
+      } catch (err) {
+        const e = err instanceof Error ? err : new Error(String(err));
+        setError(e);
+        throw e;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
   return { refund, loading, error };
 }
@@ -166,11 +190,13 @@ export function useExportTransactions() {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (filters?.search) params.set('search', String(filters.search));
-      if (filters?.status) params.set('status', String(filters.status));
-      const query = params.toString() ? `?${params.toString()}` : '';
+      if (filters?.search) params.set("search", String(filters.search));
+      if (filters?.status) params.set("status", String(filters.status));
+      const query = params.toString() ? `?${params.toString()}` : "";
       // Fetch all transactions for export
-      const result = await api.get<{ data: Transaction[] }>(`/api/v4/pos/transactions${query}&limit=1000`);
+      const result = await api.get<{ data: Transaction[] }>(
+        `/api/v4/pos/transactions${query}&limit=1000`,
+      );
       return result;
     } finally {
       setLoading(false);

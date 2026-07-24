@@ -1,17 +1,24 @@
-import type { Command } from 'commander';
-import pc from 'picocolors';
+import type { Command } from "commander";
+import pc from "picocolors";
 import {
   buildContext,
   backup as backupOps,
   NoConfigError,
-} from '@witylogix/bench-core';
+} from "@witylogix/bench-core";
 
 export function registerBackupCommand(program: Command): void {
   program
-    .command('backup')
-    .description('Back up the installation (DB + config; optionally blobs)')
-    .option('--to <path>', 'destination archive path (default: ./backups/<name>-<ts>.wbak)')
-    .option('--include-blobs', 'snapshot referenced object-storage blobs (T15)', false)
+    .command("backup")
+    .description("Back up the installation (DB + config; optionally blobs)")
+    .option(
+      "--to <path>",
+      "destination archive path (default: ./backups/<name>-<ts>.wbak)",
+    )
+    .option(
+      "--include-blobs",
+      "snapshot referenced object-storage blobs (T15)",
+      false,
+    )
     .action(async (opts: { to?: string; includeBlobs: boolean }) => {
       const globals = program.opts<{ json: boolean; dryRun: boolean }>();
       try {
@@ -22,7 +29,7 @@ export function registerBackupCommand(program: Command): void {
         if (opts.includeBlobs) {
           process.stderr.write(
             pc.yellow(
-              '⚠ --include-blobs not yet implemented (T15) — blob snapshot skipped, DB + config only.\n',
+              "⚠ --include-blobs not yet implemented (T15) — blob snapshot skipped, DB + config only.\n",
             ),
           );
         }

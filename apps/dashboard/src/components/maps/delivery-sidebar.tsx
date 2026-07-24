@@ -130,15 +130,9 @@ export function DeliverySidebar({
   };
 
   return (
-    <div className={cn(
-      "flex flex-col h-full",
-      "bg-wl-bg-surface"
-    )}>
+    <div className={cn("flex flex-col h-full", "bg-wl-bg-surface")}>
       {/* Header */}
-      <div className={cn(
-        "p-4 border-b border-wl-border-default",
-        "space-y-3"
-      )}>
+      <div className={cn("p-4 border-b border-wl-border-default", "space-y-3")}>
         <h2 className="font-semibold text-wl-text-primary">
           Active Deliveries
         </h2>
@@ -156,7 +150,7 @@ export function DeliverySidebar({
               "bg-wl-bg-overlay border border-wl-border-default",
               "text-sm text-wl-text-primary placeholder-wl-text-secondary",
               "rounded-md focus:outline-none focus:border-wl-primary-400",
-              "transition-colors"
+              "transition-colors",
             )}
           />
         </div>
@@ -173,7 +167,7 @@ export function DeliverySidebar({
                   "transition-all duration-200",
                   filter === filterOption
                     ? "bg-wl-primary-500/20 text-wl-primary-400"
-                    : "text-wl-text-secondary hover:bg-wl-bg-overlay"
+                    : "text-wl-text-secondary hover:bg-wl-bg-overlay",
                 )}
               >
                 {filterOption === "all"
@@ -184,7 +178,7 @@ export function DeliverySidebar({
                       ? "Delivering"
                       : "Completed"}
               </button>
-            )
+            ),
           )}
         </div>
 
@@ -198,7 +192,7 @@ export function DeliverySidebar({
               "flex-1 px-2 py-1.5 text-xs",
               "bg-wl-bg-overlay border border-wl-border-default",
               "text-wl-text-primary rounded",
-              "focus:outline-none focus:border-wl-primary-400"
+              "focus:outline-none focus:border-wl-primary-400",
             )}
           >
             <option value="eta">Sort by ETA</option>
@@ -209,15 +203,19 @@ export function DeliverySidebar({
       </div>
 
       {/* Deliveries List */}
-      <div className={cn(
-        "flex-1 overflow-y-auto",
-        "divide-y divide-wl-border-default"
-      )}>
+      <div
+        className={cn(
+          "flex-1 overflow-y-auto",
+          "divide-y divide-wl-border-default",
+        )}
+      >
         {sortedDeliveries.length === 0 ? (
-          <div className={cn(
-            "p-6 text-center",
-            "flex flex-col items-center justify-center h-full"
-          )}>
+          <div
+            className={cn(
+              "p-6 text-center",
+              "flex flex-col items-center justify-center h-full",
+            )}
+          >
             <div className="w-10 h-10 rounded-lg bg-wl-bg-overlay mb-3 flex items-center justify-center">
               <Truck className="w-5 h-5 text-wl-text-secondary" />
             </div>
@@ -235,7 +233,7 @@ export function DeliverySidebar({
                 "hover:bg-wl-bg-overlay",
                 selectedDeliveryId === delivery.id
                   ? "bg-wl-primary-500/10 border-l-2 border-wl-primary-500"
-                  : ""
+                  : "",
               )}
             >
               {/* Order Header */}
@@ -262,7 +260,8 @@ export function DeliverySidebar({
               {/* Driver Info */}
               {delivery.driverId && (
                 <p className="text-xs text-wl-text-secondary mb-3">
-                  <span className="font-medium">Driver:</span> (ID: {delivery.driverId})
+                  <span className="font-medium">Driver:</span> (ID:{" "}
+                  {delivery.driverId})
                 </p>
               )}
 
@@ -271,25 +270,25 @@ export function DeliverySidebar({
                 <div className="flex items-center gap-1 text-xs text-wl-text-secondary mb-3">
                   <Clock className="w-3 h-3" />
                   <span>
-                    {Math.ceil(
-                      (delivery.eta.getTime() - Date.now()) / 60000
-                    )}{" "}
+                    {Math.ceil((delivery.eta.getTime() - Date.now()) / 60000)}{" "}
                     minutes
                   </span>
                 </div>
               )}
 
               {/* Progress Bar */}
-              <div className={cn(
-                "w-full h-1.5 rounded-full overflow-hidden",
-                "bg-wl-bg-surface"
-              )}>
+              <div
+                className={cn(
+                  "w-full h-1.5 rounded-full overflow-hidden",
+                  "bg-wl-bg-surface",
+                )}
+              >
                 <div
                   className={cn(
                     "h-full rounded-full transition-all duration-500",
                     delivery.status === "completed"
                       ? "bg-wl-success-500"
-                      : "bg-wl-primary-500"
+                      : "bg-wl-primary-500",
                   )}
                   style={{ width: `${Math.min(delivery.progress, 100)}%` }}
                 />
@@ -306,10 +305,12 @@ export function DeliverySidebar({
 
       {/* Footer Info */}
       {sortedDeliveries.length > 0 && (
-        <div className={cn(
-          "p-3 border-t border-wl-border-default",
-          "bg-wl-bg-overlay text-xs text-wl-text-secondary text-center"
-        )}>
+        <div
+          className={cn(
+            "p-3 border-t border-wl-border-default",
+            "bg-wl-bg-overlay text-xs text-wl-text-secondary text-center",
+          )}
+        >
           {sortedDeliveries.length} of {deliveries.length} deliveries
         </div>
       )}

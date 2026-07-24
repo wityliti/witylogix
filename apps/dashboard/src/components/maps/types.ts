@@ -3,7 +3,7 @@
  * Type definitions for all maps components
  */
 
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
 /**
  * Google Places Autocomplete prediction
@@ -96,7 +96,7 @@ export interface RouteStop {
     start: string; // ISO string
     end: string; // ISO string
   };
-  status: 'pending' | 'completed' | 'failed' | 'skipped';
+  status: "pending" | "completed" | "failed" | "skipped";
   notes?: string;
   deliveryProof?: {
     timestamp: string;
@@ -114,7 +114,7 @@ export interface DeliveryRoute {
   driverName?: string;
   stops: RouteStop[];
   plannedPath?: {
-    type: 'Polygon' | 'LineString';
+    type: "Polygon" | "LineString";
     coordinates: Array<[number, number]> | Array<Array<[number, number]>>;
   };
   actualPath?: Array<{ lat: number; lng: number; timestamp: string }>;
@@ -127,7 +127,7 @@ export interface DeliveryRoute {
     lng: number;
     timestamp: string;
   };
-  status: 'planning' | 'in_progress' | 'completed' | 'cancelled';
+  status: "planning" | "in_progress" | "completed" | "cancelled";
 }
 
 /**
@@ -158,7 +158,7 @@ export interface HeatmapDataPoint {
  */
 export interface DeliveryHeatmapProps {
   dataPoints: HeatmapDataPoint[];
-  mode: 'count' | 'time' | 'failures';
+  mode: "count" | "time" | "failures";
   timeRange: {
     start: string; // ISO string
     end: string; // ISO string
@@ -188,7 +188,7 @@ export interface PlaceSearchResult {
  */
 export interface PlaceSearchProps {
   onResultSelect: (place: PlaceSearchResult) => void;
-  categoryFilter?: 'addresses' | 'establishments' | 'geocode';
+  categoryFilter?: "addresses" | "establishments" | "geocode";
   mapCenter?: { lat: number; lng: number };
   searchRadius?: number;
   showRecentSearches?: boolean;
@@ -211,7 +211,7 @@ export interface GoogleMapsContextValue {
 export interface GoogleMapsProviderProps {
   children: ReactNode;
   apiKey: string;
-  libraries?: Array<'places' | 'drawing' | 'visualization' | 'geometry'>;
+  libraries?: Array<"places" | "drawing" | "visualization" | "geometry">;
 }
 
 /**
@@ -221,7 +221,7 @@ export interface MapsSettings {
   apiKey: string;
   defaultCenter: { lat: number; lng: number };
   defaultZoom: number;
-  mapStyle: 'standard' | 'satellite' | 'terrain';
+  mapStyle: "standard" | "satellite" | "terrain";
   enableHeatmap: boolean;
   enableDrawing: boolean;
   enableTraffic: boolean;
@@ -233,7 +233,7 @@ export interface MapsSettings {
  * GeoJSON feature for zone import/export
  */
 export interface GeoJSONZoneFeature {
-  type: 'Feature';
+  type: "Feature";
   properties: {
     name: string;
     color?: string;
@@ -242,8 +242,10 @@ export interface GeoJSONZoneFeature {
     [key: string]: any;
   };
   geometry: {
-    type: 'Polygon' | 'MultiPolygon';
-    coordinates: Array<Array<[number, number]>> | Array<Array<Array<[number, number]>>>;
+    type: "Polygon" | "MultiPolygon";
+    coordinates:
+      | Array<Array<[number, number]>>
+      | Array<Array<Array<[number, number]>>>;
   };
 }
 
@@ -251,7 +253,7 @@ export interface GeoJSONZoneFeature {
  * GeoJSON Feature Collection for zone collection
  */
 export interface GeoJSONZoneCollection {
-  type: 'FeatureCollection';
+  type: "FeatureCollection";
   features: GeoJSONZoneFeature[];
 }
 
@@ -268,7 +270,14 @@ export interface ZoneOverlapResult {
 /**
  * Drawing tool mode
  */
-export type DrawingMode = 'none' | 'polygon' | 'rectangle' | 'circle' | 'polyline' | 'edit' | 'delete';
+export type DrawingMode =
+  | "none"
+  | "polygon"
+  | "rectangle"
+  | "circle"
+  | "polyline"
+  | "edit"
+  | "delete";
 
 /**
  * Color preset

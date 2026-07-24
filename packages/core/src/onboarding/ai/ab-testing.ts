@@ -9,7 +9,12 @@
  * - Pre-defined common experiments
  */
 
-import { ABTestExperiment, ABTestVariant, ABTestResults, ABTestVariantStats } from "./types";
+import {
+  ABTestExperiment,
+  ABTestVariant,
+  ABTestResults,
+  ABTestVariantStats,
+} from "./types";
 
 /**
  * A/B Test Manager for experiment lifecycle.
@@ -19,7 +24,10 @@ export class ABTestManager {
   private variantAssignments: Map<string, Map<string, string>> = new Map(); // experimentName -> userId -> variantId
   private conversions: Map<string, Map<string, number>> = new Map(); // experimentName -> variantId -> count
   private trials: Map<string, Map<string, number>> = new Map(); // experimentName -> variantId -> count
-  private conversionData: Map<string, Array<{ userId: string; variantId: string; metric: number }>> = new Map();
+  private conversionData: Map<
+    string,
+    Array<{ userId: string; variantId: string; metric: number }>
+  > = new Map();
 
   /**
    * Create a new A/B test experiment.
@@ -28,7 +36,11 @@ export class ABTestManager {
    * @param description - Human-readable description
    * @param variants - Array of variant definitions
    */
-  createExperiment(name: string, description: string, variants: ABTestVariant[]): void {
+  createExperiment(
+    name: string,
+    description: string,
+    variants: ABTestVariant[],
+  ): void {
     if (this.experiments.has(name)) {
       throw new Error(`Experiment ${name} already exists`);
     }
@@ -75,10 +87,12 @@ export class ABTestManager {
     // Return existing assignment if user already has one
     if (assignments.has(userId)) {
       const variantId = assignments.get(userId)!;
-      this.trials.get(experimentName)?.set(
-        variantId,
-        (this.trials.get(experimentName)?.get(variantId) ?? 0) + 1,
-      );
+      this.trials
+        .get(experimentName)
+        ?.set(
+          variantId,
+          (this.trials.get(experimentName)?.get(variantId) ?? 0) + 1,
+        );
       return variantId;
     }
 
@@ -87,10 +101,12 @@ export class ABTestManager {
     assignments.set(userId, variantId);
 
     // Track trial
-    this.trials.get(experimentName)?.set(
-      variantId,
-      (this.trials.get(experimentName)?.get(variantId) ?? 0) + 1,
-    );
+    this.trials
+      .get(experimentName)
+      ?.set(
+        variantId,
+        (this.trials.get(experimentName)?.get(variantId) ?? 0) + 1,
+      );
 
     return variantId;
   }
@@ -102,7 +118,11 @@ export class ABTestManager {
    * @param experimentName - Experiment name
    * @param metric - Metric value (e.g., completion time)
    */
-  trackConversion(userId: string, experimentName: string, metric: number = 1): void {
+  trackConversion(
+    userId: string,
+    experimentName: string,
+    metric: number = 1,
+  ): void {
     const assignments = this.variantAssignments.get(experimentName);
     if (!assignments) {
       throw new Error(`Experiment ${experimentName} not found`);
@@ -116,10 +136,12 @@ export class ABTestManager {
     }
 
     // Track conversion
-    this.conversions.get(experimentName)?.set(
-      variantId,
-      (this.conversions.get(experimentName)?.get(variantId) ?? 0) + 1,
-    );
+    this.conversions
+      .get(experimentName)
+      ?.set(
+        variantId,
+        (this.conversions.get(experimentName)?.get(variantId) ?? 0) + 1,
+      );
 
     // Track detailed data for analysis
     this.conversionData
@@ -142,25 +164,26 @@ export class ABTestManager {
     const conversions = this.conversions.get(experimentName) || new Map();
     const trials = this.trials.get(experimentName) || new Map();
 
-    const variants: ABTestVariantStats[] = experiment.variants.map((variant) => ({
-      variantId: variant.id,
-      variantName: variant.name,
-      conversions: conversions.get(variant.id) ?? 0,
-      trials: trials.get(variant.id) ?? 0,
-      conversionRate:
-        (trials.get(variant.id) ?? 0) > 0
-          ? (conversions.get(variant.id) ?? 0) /
-            (trials.get(variant.id) ?? 0)
-          : 0,
-      averageTimeMinutes: this.calculateAverageMetric(
-        experimentName,
-        variant.id,
-      ),
-      confidence: this.calculateConfidence(
-        conversions.get(variant.id) ?? 0,
-        trials.get(variant.id) ?? 0,
-      ),
-    }));
+    const variants: ABTestVariantStats[] = experiment.variants.map(
+      (variant) => ({
+        variantId: variant.id,
+        variantName: variant.name,
+        conversions: conversions.get(variant.id) ?? 0,
+        trials: trials.get(variant.id) ?? 0,
+        conversionRate:
+          (trials.get(variant.id) ?? 0) > 0
+            ? (conversions.get(variant.id) ?? 0) / (trials.get(variant.id) ?? 0)
+            : 0,
+        averageTimeMinutes: this.calculateAverageMetric(
+          experimentName,
+          variant.id,
+        ),
+        confidence: this.calculateConfidence(
+          conversions.get(variant.id) ?? 0,
+          trials.get(variant.id) ?? 0,
+        ),
+      }),
+    );
 
     // Determine winner (highest conversion rate with sufficient trials)
     let winner: string | undefined;
@@ -209,7 +232,9 @@ export class ABTestManager {
    * Get all active experiments.
    */
   getActiveExperiments(): ABTestExperiment[] {
-    return Array.from(this.experiments.values()).filter((e) => e.status === "active");
+    return Array.from(this.experiments.values()).filter(
+      (e) => e.status === "active",
+    );
   }
 
   /**
@@ -223,7 +248,10 @@ export class ABTestManager {
    * Deterministically select variant based on user hash.
    * Respects variant weights.
    */
-  private selectVariantByHash(userId: string, variants: ABTestVariant[]): string {
+  private selectVariantByHash(
+    userId: string,
+    variants: ABTestVariant[],
+  ): string {
     // Simple hash function
     let hash = 0;
     for (let i = 0; i < userId.length; i++) {
@@ -248,7 +276,10 @@ export class ABTestManager {
   /**
    * Calculate average metric (e.g., time) for a variant.
    */
-  private calculateAverageMetric(experimentName: string, variantId: string): number | undefined {
+  private calculateAverageMetric(
+    experimentName: string,
+    variantId: string,
+  ): number | undefined {
     const data = this.conversionData.get(experimentName) ?? [];
     const variantData = data.filter((d) => d.variantId === variantId);
 
@@ -274,7 +305,9 @@ export class ABTestManager {
   /**
    * Calculate statistical significance (simplified).
    */
-  private calculateStatisticalSignificance(variants: ABTestVariantStats[]): number {
+  private calculateStatisticalSignificance(
+    variants: ABTestVariantStats[],
+  ): number {
     if (variants.length < 2) return 0;
 
     const minTrials = Math.min(...variants.map((v) => v.trials));

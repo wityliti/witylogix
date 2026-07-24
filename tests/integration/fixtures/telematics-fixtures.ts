@@ -14,35 +14,35 @@ import type {
   GeotabDeviceStatusInfo,
   GeotabFaultData,
   GeotabExceptionEvent,
-} from '../../../packages/core/src/integrations/telematics/types.js';
+} from "../../../packages/core/src/integrations/telematics/types.js";
 
 // ─── SAMSARA FIXTURES ────────────────────────────────────────────────────
 
 export const mockSamsaraVehicle: SamsaraVehicle = {
-  id: 'vehicle_123',
-  name: 'Delivery Van A',
-  externalIds: [{ externalIdType: 'FLEET_ID', value: 'FLEET_001' }],
+  id: "vehicle_123",
+  name: "Delivery Van A",
+  externalIds: [{ externalIdType: "FLEET_ID", value: "FLEET_001" }],
   staticFields: {
-    vin: '1HGBH41JXMN109186',
-    licensePlate: 'CA-12345',
-    make: 'Honda',
-    model: 'Odyssey',
+    vin: "1HGBH41JXMN109186",
+    licensePlate: "CA-12345",
+    make: "Honda",
+    model: "Odyssey",
     year: 2022,
   },
-  onboardingTagIds: ['tag_001'],
+  onboardingTagIds: ["tag_001"],
 };
 
 export const mockSamsaraVehicles: SamsaraVehicle[] = [
   mockSamsaraVehicle,
   {
-    id: 'vehicle_456',
-    name: 'Delivery Van B',
-    externalIds: [{ externalIdType: 'FLEET_ID', value: 'FLEET_002' }],
+    id: "vehicle_456",
+    name: "Delivery Van B",
+    externalIds: [{ externalIdType: "FLEET_ID", value: "FLEET_002" }],
     staticFields: {
-      vin: '5TDZZKRH2LS123456',
-      licensePlate: 'CA-54321',
-      make: 'Toyota',
-      model: 'Sienna',
+      vin: "5TDZZKRH2LS123456",
+      licensePlate: "CA-54321",
+      make: "Toyota",
+      model: "Sienna",
       year: 2023,
     },
   },
@@ -54,13 +54,13 @@ export const mockSamsaraVehiclesResponse = {
 };
 
 export const mockSamsaraLocation: SamsaraLocation = {
-  id: 'location_123',
-  vehicleId: 'vehicle_123',
+  id: "location_123",
+  vehicleId: "vehicle_123",
   latitude: 37.7749,
   longitude: -122.4194,
   speedMph: 35.5,
   heading: 180,
-  time: '2024-03-11T14:30:00Z',
+  time: "2024-03-11T14:30:00Z",
   accuracy: 5.0,
 };
 
@@ -69,20 +69,20 @@ export const mockSamsaraLocationResponse = {
 };
 
 export const mockSamsaraStats: SamsaraStats = {
-  engineState: 'RUNNING',
+  engineState: "RUNNING",
   odometer: { miles: 125430.5 },
   faultCodes: [
     {
-      id: 'fault_001',
+      id: "fault_001",
       spnId: 1234,
       fmiId: 5,
-      description: 'Engine Coolant Temperature High',
+      description: "Engine Coolant Temperature High",
     },
     {
-      id: 'fault_002',
+      id: "fault_002",
       spnId: 5678,
       fmiId: 2,
-      description: 'DPF Regeneration Required',
+      description: "DPF Regeneration Required",
     },
   ],
 };
@@ -92,35 +92,35 @@ export const mockSamsaraDiagnosticsResponse = {
 };
 
 export const mockSamsaraSafetyEvent: SamsaraSafetyEvent = {
-  id: 'event_123',
-  vehicleId: 'vehicle_123',
-  driverId: 'driver_456',
-  eventType: 'safetyEvent',
-  eventSubType: 'harshAcceleration',
-  severity: 'warning',
+  id: "event_123",
+  vehicleId: "vehicle_123",
+  driverId: "driver_456",
+  eventType: "safetyEvent",
+  eventSubType: "harshAcceleration",
+  severity: "warning",
   latitude: 37.7749,
   longitude: -122.4194,
   speed: 45.2,
   speedLimit: 55,
-  timestamp: '2024-03-11T14:20:00Z',
-  description: 'Harsh acceleration detected',
+  timestamp: "2024-03-11T14:20:00Z",
+  description: "Harsh acceleration detected",
 };
 
 export const mockSamsaraSafetyEvents: SamsaraSafetyEvent[] = [
   mockSamsaraSafetyEvent,
   {
-    id: 'event_124',
-    vehicleId: 'vehicle_123',
-    driverId: 'driver_456',
-    eventType: 'safetyEvent',
-    eventSubType: 'harshBraking',
-    severity: 'critical',
+    id: "event_124",
+    vehicleId: "vehicle_123",
+    driverId: "driver_456",
+    eventType: "safetyEvent",
+    eventSubType: "harshBraking",
+    severity: "critical",
     latitude: 37.7749,
     longitude: -122.4194,
     speed: 32.5,
     speedLimit: 55,
-    timestamp: '2024-03-11T14:15:00Z',
-    description: 'Harsh braking detected',
+    timestamp: "2024-03-11T14:15:00Z",
+    description: "Harsh braking detected",
   },
 ];
 
@@ -130,8 +130,8 @@ export const mockSamsaraBehaviorEventsResponse = {
 };
 
 export const mockSamsaraFuel: SamsaraFuel & { id: string } = {
-  id: 'vehicle_123',
-  vehicleId: 'vehicle_123',
+  id: "vehicle_123",
+  vehicleId: "vehicle_123",
   fuelPercentageRemaining: 65.5,
 };
 
@@ -141,148 +141,148 @@ export const mockSamsaraFuelResponse = {
 
 export const mockSamsaraWebhookResponse = {
   data: {
-    id: 'webhook_789',
-    url: 'https://example.com/webhooks/samsara',
-    eventTypes: ['location.created', 'location.updated'],
+    id: "webhook_789",
+    url: "https://example.com/webhooks/samsara",
+    eventTypes: ["location.created", "location.updated"],
   },
 };
 
 // ─── GEOTAB FIXTURES ────────────────────────────────────────────────────
 
 export const mockGeotabDevice: GeotabDevice = {
-  id: 'device_999',
-  name: 'Driver01-Device',
-  vin: '2HGCV52639H537355',
-  licensePlate: 'NY-98765',
-  make: 'Toyota',
-  model: 'Camry',
+  id: "device_999",
+  name: "Driver01-Device",
+  vin: "2HGCV52639H537355",
+  licensePlate: "NY-98765",
+  make: "Toyota",
+  model: "Camry",
   modelYear: 2021,
-  deviceType: 'GO9',
-  status: 'Active',
+  deviceType: "GO9",
+  status: "Active",
 };
 
 export const mockGeotabDevices: GeotabDevice[] = [
   mockGeotabDevice,
   {
-    id: 'device_888',
-    name: 'Driver02-Device',
-    vin: '5TDJKRFH4LS123456',
-    licensePlate: 'NY-87654',
-    make: 'Honda',
-    model: 'Accord',
+    id: "device_888",
+    name: "Driver02-Device",
+    vin: "5TDJKRFH4LS123456",
+    licensePlate: "NY-87654",
+    make: "Honda",
+    model: "Accord",
     modelYear: 2022,
-    deviceType: 'GO9',
-    status: 'Active',
+    deviceType: "GO9",
+    status: "Active",
   },
 ];
 
 export const mockGeotabDeviceStatusInfo: GeotabDeviceStatusInfo = {
-  device: { id: 'device_999' },
+  device: { id: "device_999" },
   latitude: 40.7128,
-  longitude: -74.0060,
+  longitude: -74.006,
   speed: 28.5,
   bearing: 90,
-  dateTime: '2024-03-11T14:30:00Z',
+  dateTime: "2024-03-11T14:30:00Z",
 };
 
 export const mockGeotabDeviceStatusInfos: GeotabDeviceStatusInfo[] = [
   mockGeotabDeviceStatusInfo,
   {
-    device: { id: 'device_888' },
+    device: { id: "device_888" },
     latitude: 40.7228,
-    longitude: -74.0160,
+    longitude: -74.016,
     speed: 0,
     bearing: 0,
-    dateTime: '2024-03-11T14:25:00Z',
+    dateTime: "2024-03-11T14:25:00Z",
   },
 ];
 
 export const mockGeotabFaultData: GeotabFaultData = {
-  device: { id: 'device_999' },
-  id: 'fault_geotab_001',
-  code: 'P0101',
-  description: 'Mass Air Flow (MAF) Sensor Range/Performance',
-  dateTime: '2024-03-11T10:15:00Z',
+  device: { id: "device_999" },
+  id: "fault_geotab_001",
+  code: "P0101",
+  description: "Mass Air Flow (MAF) Sensor Range/Performance",
+  dateTime: "2024-03-11T10:15:00Z",
   dismissDateTime: undefined,
 };
 
 export const mockGeotabFaultDatas: GeotabFaultData[] = [
   mockGeotabFaultData,
   {
-    device: { id: 'device_999' },
-    id: 'fault_geotab_002',
-    code: 'P0102',
-    description: 'Mass Air Flow (MAF) Sensor Circuit Low Input',
-    dateTime: '2024-03-11T09:30:00Z',
-    dismissDateTime: '2024-03-11T10:00:00Z',
+    device: { id: "device_999" },
+    id: "fault_geotab_002",
+    code: "P0102",
+    description: "Mass Air Flow (MAF) Sensor Circuit Low Input",
+    dateTime: "2024-03-11T09:30:00Z",
+    dismissDateTime: "2024-03-11T10:00:00Z",
   },
 ];
 
 export const mockGeotabExceptionEvent: GeotabExceptionEvent = {
-  id: 'exception_123',
-  device: { id: 'device_999' },
-  driver: { id: 'driver_789' },
-  type: 'speeding',
-  exceptionType: 'SpeedingEvent',
-  severity: 'warning',
+  id: "exception_123",
+  device: { id: "device_999" },
+  driver: { id: "driver_789" },
+  type: "speeding",
+  exceptionType: "SpeedingEvent",
+  severity: "warning",
   latitude: 40.7128,
-  longitude: -74.0060,
+  longitude: -74.006,
   speed: 65.5,
   speedZone: { postedSpeed: 55 },
-  dateTime: '2024-03-11T14:20:00Z',
-  activeFrom: '2024-03-11T14:20:00Z',
-  activeTo: '2024-03-11T14:21:00Z',
+  dateTime: "2024-03-11T14:20:00Z",
+  activeFrom: "2024-03-11T14:20:00Z",
+  activeTo: "2024-03-11T14:21:00Z",
 };
 
 export const mockGeotabExceptionEvents: GeotabExceptionEvent[] = [
   mockGeotabExceptionEvent,
   {
-    id: 'exception_124',
-    device: { id: 'device_999' },
-    driver: { id: 'driver_789' },
-    type: 'harsh_braking',
-    exceptionType: 'HarshBrakingEvent',
-    severity: 'critical',
+    id: "exception_124",
+    device: { id: "device_999" },
+    driver: { id: "driver_789" },
+    type: "harsh_braking",
+    exceptionType: "HarshBrakingEvent",
+    severity: "critical",
     latitude: 40.7128,
-    longitude: -74.0060,
+    longitude: -74.006,
     speed: 32.5,
-    dateTime: '2024-03-11T14:15:00Z',
-    activeFrom: '2024-03-11T14:15:00Z',
-    activeTo: '2024-03-11T14:15:30Z',
+    dateTime: "2024-03-11T14:15:00Z",
+    activeFrom: "2024-03-11T14:15:00Z",
+    activeTo: "2024-03-11T14:15:30Z",
   },
 ];
 
-export const mockGeotabSessionId = 'GX3b=vP6W1S3k9Q2r8T5y7u4i';
+export const mockGeotabSessionId = "GX3b=vP6W1S3k9Q2r8T5y7u4i";
 
 // ─── ERROR RESPONSE FIXTURES ────────────────────────────────────────────────────
 
 export const mockSamsaraUnauthorizedResponse = {
-  code: 'INVALID_TOKEN',
-  message: 'Invalid or expired authentication token',
+  code: "INVALID_TOKEN",
+  message: "Invalid or expired authentication token",
 };
 
 export const mockSamsaraRateLimitResponse = {
-  code: 'RATE_LIMIT_EXCEEDED',
-  message: 'Too many requests. Please try again later.',
+  code: "RATE_LIMIT_EXCEEDED",
+  message: "Too many requests. Please try again later.",
 };
 
-export const mockSamsaraTimeoutError = new Error('Request timeout');
-mockSamsaraTimeoutError.name = 'AbortError';
+export const mockSamsaraTimeoutError = new Error("Request timeout");
+mockSamsaraTimeoutError.name = "AbortError";
 
 export const mockGeotabAuthErrorResponse = {
-  jsonrpc: '2.0',
+  jsonrpc: "2.0",
   error: {
     code: -32000,
-    message: 'Invalid login details',
+    message: "Invalid login details",
   },
   id: 1,
 };
 
 export const mockGeotabRpcErrorResponse = {
-  jsonrpc: '2.0',
+  jsonrpc: "2.0",
   error: {
     code: -32002,
-    message: 'Server error. Method failed.',
+    message: "Server error. Method failed.",
   },
   id: 1,
 };
@@ -295,7 +295,7 @@ export const mockSamsaraAuthSuccessResponse = {
 };
 
 export const mockGeotabAuthSuccessResponse = {
-  jsonrpc: '2.0',
+  jsonrpc: "2.0",
   result: mockGeotabSessionId,
   id: 1,
 };
@@ -327,39 +327,39 @@ export const mockEmptyEventsResponse = {
 // ─── EDGE CASE FIXTURES ────────────────────────────────────────────────────
 
 export const mockSamsaraVehicleWithoutVin: SamsaraVehicle = {
-  id: 'vehicle_no_vin',
-  name: 'Generic Vehicle',
+  id: "vehicle_no_vin",
+  name: "Generic Vehicle",
   externalIds: [],
   staticFields: {
-    licensePlate: 'XX-00000',
-    make: 'Unknown',
-    model: 'Unknown',
+    licensePlate: "XX-00000",
+    make: "Unknown",
+    model: "Unknown",
   },
 };
 
 export const mockSamsaraLocationWithoutGPS: SamsaraLocation = {
-  id: 'location_no_gps',
-  vehicleId: 'vehicle_123',
+  id: "location_no_gps",
+  vehicleId: "vehicle_123",
   latitude: 0,
   longitude: 0,
   speedMph: 0,
   heading: 0,
-  time: '2024-03-11T14:30:00Z',
+  time: "2024-03-11T14:30:00Z",
 };
 
 export const mockSamsaraStatsNoDiagnostics: SamsaraStats = {
-  engineState: 'OFF',
+  engineState: "OFF",
   odometer: { miles: 100000 },
 };
 
 export const mockSamsaraFuelNoData: SamsaraFuel & { id: string } = {
-  id: 'vehicle_no_fuel',
-  vehicleId: 'vehicle_no_fuel',
+  id: "vehicle_no_fuel",
+  vehicleId: "vehicle_no_fuel",
 };
 
 export const mockGeotabDeviceWithoutVin: GeotabDevice = {
-  id: 'device_no_vin',
-  name: 'Anonymous Device',
-  deviceType: 'GO9',
-  status: 'Active',
+  id: "device_no_vin",
+  name: "Anonymous Device",
+  deviceType: "GO9",
+  status: "Active",
 };

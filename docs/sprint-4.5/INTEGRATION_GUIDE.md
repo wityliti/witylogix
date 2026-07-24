@@ -227,6 +227,7 @@ model PickupOrder {
 Get available delivery slots for a specific date.
 
 **Response:**
+
 ```json
 {
   "slots": [
@@ -252,6 +253,7 @@ Get available delivery slots for a specific date.
 Reserve a delivery slot.
 
 **Request Body:**
+
 ```json
 {
   "slotId": "slot-123",
@@ -263,6 +265,7 @@ Reserve a delivery slot.
 ```
 
 **Response:**
+
 ```json
 {
   "slotId": "slot-123",
@@ -278,6 +281,7 @@ Reserve a delivery slot.
 Get delivery rates for a zipcode.
 
 **Response:**
+
 ```json
 {
   "zone": "Zone 1",
@@ -292,6 +296,7 @@ Get delivery rates for a zipcode.
 Geocode an address.
 
 **Response:**
+
 ```json
 {
   "address": "123 Main St, City, State 12345",
@@ -308,6 +313,7 @@ Geocode an address.
 Check service availability.
 
 **Response:**
+
 ```json
 {
   "available": true
@@ -333,6 +339,7 @@ Get directions with waypoints.
 Initiate OAuth2 flow.
 
 **Request Body:**
+
 ```json
 {
   "shopId": "shop-123",
@@ -341,6 +348,7 @@ Initiate OAuth2 flow.
 ```
 
 **Response:**
+
 ```json
 {
   "authUrl": "https://accounts.google.com/...",
@@ -357,6 +365,7 @@ OAuth2 callback (redirects to dashboard on success).
 Sync pickup orders to calendar.
 
 **Request Body:**
+
 ```json
 {
   "locationId": "loc-123",
@@ -366,6 +375,7 @@ Sync pickup orders to calendar.
 ```
 
 **Response:**
+
 ```json
 {
   "synced": 10,
@@ -380,6 +390,7 @@ Sync pickup orders to calendar.
 Validate if address is in service zone.
 
 **Request Body:**
+
 ```json
 {
   "address": "123 Main St, City",
@@ -388,6 +399,7 @@ Validate if address is in service zone.
 ```
 
 **Response:**
+
 ```json
 {
   "address": "123 Main St, City, State 12345",
@@ -404,48 +416,51 @@ Validate if address is in service zone.
 ### Using the WitylogixAPI Client
 
 ```typescript
-import { WitylogixAPI, initializeAPIClient } from '@witylogix/checkout-ui/api/witylogix-api';
+import {
+  WitylogixAPI,
+  initializeAPIClient,
+} from "@witylogix/checkout-ui/api/witylogix-api";
 
 // Initialize
-const api = await initializeAPIClient('myshop.myshopify.com');
+const api = await initializeAPIClient("myshop.myshopify.com");
 
 // Fetch slots
-const slots = await api.fetchSlots('2024-03-15', 'myshop.myshopify.com');
+const slots = await api.fetchSlots("2024-03-15", "myshop.myshopify.com");
 
 // Fetch rates
-const rates = await api.fetchRates('12345');
+const rates = await api.fetchRates("12345");
 
 // Reserve slot
-const reservation = await api.reserveSlot('slot-123', 'cart-456');
+const reservation = await api.reserveSlot("slot-123", "cart-456");
 
 // Geocode address
-const geocoded = await api.geocodeAddress('123 Main St');
+const geocoded = await api.geocodeAddress("123 Main St");
 
 // Check availability
-const available = await api.checkServiceAvailability('12345');
+const available = await api.checkServiceAvailability("12345");
 ```
 
 ### Using Google Maps Service
 
 ```typescript
-import { createGoogleMapsService } from '@witylogix/core/integrations/google';
+import { createGoogleMapsService } from "@witylogix/core/integrations/google";
 
 const mapsService = createGoogleMapsService(process.env.GOOGLE_MAPS_API_KEY);
 
 // Geocode
-const result = await mapsService.geocodeAddress('123 Main St');
+const result = await mapsService.geocodeAddress("123 Main St");
 
 // Calculate distance
 const distance = await mapsService.calculateDistance(
   { lat: 40.7128, lng: -74.006 },
-  { lat: 40.7580, lng: -73.9855 }
+  { lat: 40.758, lng: -73.9855 },
 );
 
 // Get directions
 const directions = await mapsService.getDirections(
-  '123 Main St',
-  '456 Park Ave',
-  ['789 Broadway']
+  "123 Main St",
+  "456 Park Ave",
+  ["789 Broadway"],
 );
 
 // Detect zone
@@ -458,47 +473,47 @@ const inZone = mapsService.isPointInZone(40.7128, -74.006, zone);
 ### Using Google Calendar Service
 
 ```typescript
-import { createGoogleCalendarService } from '@witylogix/core/integrations/google';
+import { createGoogleCalendarService } from "@witylogix/core/integrations/google";
 
 const calendarService = createGoogleCalendarService({
   clientId: process.env.GOOGLE_OAUTH_CLIENT_ID,
   clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
-  redirectUri: 'http://localhost:3000/callback',
-  scopes: ['https://www.googleapis.com/auth/calendar'],
+  redirectUri: "http://localhost:3000/callback",
+  scopes: ["https://www.googleapis.com/auth/calendar"],
 });
 
 // Set token (from OAuth2 flow)
 calendarService.setToken({
-  accessToken: 'access-token',
-  refreshToken: 'refresh-token',
+  accessToken: "access-token",
+  refreshToken: "refresh-token",
   expiresAt: Date.now() + 3600000,
-  tokenType: 'Bearer',
+  tokenType: "Bearer",
 });
 
 // Create event
 const event = await calendarService.createOrderEvent({
-  orderId: 'order-123',
-  customerName: 'John Doe',
-  deliveryAddress: '123 Main St',
-  deliveryDate: '2024-03-15T10:00:00Z',
-  phoneNumber: '555-0123',
+  orderId: "order-123",
+  customerName: "John Doe",
+  deliveryAddress: "123 Main St",
+  deliveryDate: "2024-03-15T10:00:00Z",
+  phoneNumber: "555-0123",
 });
 
 // Sync pickup orders
 const result = await calendarService.syncPickupOrders(
-  'location-123',
-  { startDate: '2024-03-15', endDate: '2024-03-20' },
-  orders
+  "location-123",
+  { startDate: "2024-03-15", endDate: "2024-03-20" },
+  orders,
 );
 
 // Delete event
-await calendarService.deleteOrderEvent('event-123');
+await calendarService.deleteOrderEvent("event-123");
 ```
 
 ### Using Zone Visualizer
 
 ```typescript
-import { createZoneVisualizerService } from '@witylogix/core/integrations/google';
+import { createZoneVisualizerService } from "@witylogix/core/integrations/google";
 
 const visualizer = createZoneVisualizerService();
 
@@ -515,7 +530,7 @@ const stats = visualizer.calculateZoneCoverage(zones);
 const mapUrl = visualizer.generateZoneMapUrl(
   zones,
   { latitude: 40.7128, longitude: -74.006 },
-  process.env.GOOGLE_MAPS_API_KEY
+  process.env.GOOGLE_MAPS_API_KEY,
 );
 
 // Simplify boundaries
@@ -528,15 +543,16 @@ All services include comprehensive error handling:
 
 ```typescript
 try {
-  const result = await mapsService.geocodeAddress('invalid address');
+  const result = await mapsService.geocodeAddress("invalid address");
 } catch (error) {
   if (error instanceof Error) {
-    console.error('Geocoding failed:', error.message);
+    console.error("Geocoding failed:", error.message);
   }
 }
 ```
 
 Common errors:
+
 - Invalid input validation (zod)
 - API rate limiting
 - Network errors
@@ -566,6 +582,7 @@ npm run test -- packages/core/src/integrations/google/__tests__
 ```
 
 Test coverage includes:
+
 - Maps service (geocoding, distance, zone detection)
 - Calendar service (OAuth2, events, sync)
 - Input validation
@@ -621,6 +638,7 @@ Test coverage includes:
 ## Support
 
 For issues or questions, refer to:
+
 - Witylogix documentation: `/docs`
 - API documentation: `/apps/api/docs`
 - GitHub issues: Issues tab

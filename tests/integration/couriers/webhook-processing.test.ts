@@ -98,7 +98,9 @@ class WebhookService {
       courierName: deliveryData.driver
         ? `${deliveryData.driver.first_name} ${deliveryData.driver.last_name}`
         : undefined,
-      completedAt: deliveryData.delivered_at ? new Date(deliveryData.delivered_at) : undefined,
+      completedAt: deliveryData.delivered_at
+        ? new Date(deliveryData.delivered_at)
+        : undefined,
       metadata: {
         trackingUrl: deliveryData.tracking_url,
       },
@@ -192,7 +194,8 @@ class WebhookService {
     if (!payload.id) errors.push("Missing webhook ID");
     if (!payload.type) errors.push("Missing event type");
     if (!payload.timestamp) errors.push("Missing timestamp");
-    if (!payload.data || typeof payload.data !== "object") errors.push("Missing or invalid data");
+    if (!payload.data || typeof payload.data !== "object")
+      errors.push("Missing or invalid data");
 
     return {
       valid: errors.length === 0,
@@ -252,7 +255,10 @@ describe("Courier Webhook Processing Integration Tests", () => {
         .update(payload)
         .digest("base64");
 
-      const verified = service.verifyOnfleetSignature(payload, `sha256=${signature}`);
+      const verified = service.verifyOnfleetSignature(
+        payload,
+        `sha256=${signature}`,
+      );
       expect(verified).toBe(true);
     });
 
@@ -260,7 +266,10 @@ describe("Courier Webhook Processing Integration Tests", () => {
       const payload = '{"id":"task_123","state":2}';
       const invalidSignature = "sha256=invalid_signature";
 
-      const verified = service.verifyOnfleetSignature(payload, invalidSignature);
+      const verified = service.verifyOnfleetSignature(
+        payload,
+        invalidSignature,
+      );
       expect(verified).toBe(false);
     });
 
@@ -272,7 +281,10 @@ describe("Courier Webhook Processing Integration Tests", () => {
         .digest("base64");
 
       const tamperedPayload = '{"id":"task_456","state":2}';
-      const verified = service.verifyOnfleetSignature(tamperedPayload, `sha256=${signature}`);
+      const verified = service.verifyOnfleetSignature(
+        tamperedPayload,
+        `sha256=${signature}`,
+      );
 
       expect(verified).toBe(false);
     });
@@ -286,7 +298,10 @@ describe("Courier Webhook Processing Integration Tests", () => {
         .update(payload)
         .digest("hex");
 
-      const verified = service.verifyStuartSignature(payload, `hmac-sha256=${signature}`);
+      const verified = service.verifyStuartSignature(
+        payload,
+        `hmac-sha256=${signature}`,
+      );
       expect(verified).toBe(true);
     });
 
@@ -307,7 +322,10 @@ describe("Courier Webhook Processing Integration Tests", () => {
         .update(payload)
         .digest("hex");
 
-      const verified = service.verifyUberDirectSignature(payload, `signature=${signature}`);
+      const verified = service.verifyUberDirectSignature(
+        payload,
+        `signature=${signature}`,
+      );
       expect(verified).toBe(true);
     });
 
@@ -315,7 +333,10 @@ describe("Courier Webhook Processing Integration Tests", () => {
       const payload = '{"delivery_id":"uber_123","status":"completed"}';
       const invalidSignature = "signature=invalid_signature";
 
-      const verified = service.verifyUberDirectSignature(payload, invalidSignature);
+      const verified = service.verifyUberDirectSignature(
+        payload,
+        invalidSignature,
+      );
       expect(verified).toBe(false);
     });
   });
@@ -544,7 +565,7 @@ describe("Courier Webhook Processing Integration Tests", () => {
 
     it("should handle concurrent webhook processing", () => {
       const events = Array.from({ length: 10 }, () =>
-        fixtures.createOnfleetTaskCompletedEvent()
+        fixtures.createOnfleetTaskCompletedEvent(),
       );
 
       const results = events.map((e) => service.processWebhook(e as any));

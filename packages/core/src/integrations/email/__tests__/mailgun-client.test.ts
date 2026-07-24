@@ -14,7 +14,11 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { MailgunClient } from "../mailgun-client.js";
-import type { EmailMessage, EmailAdapterConfig, BulkEmailRequest } from "../types.js";
+import type {
+  EmailMessage,
+  EmailAdapterConfig,
+  BulkEmailRequest,
+} from "../types.js";
 
 describe("MailgunClient", () => {
   let client: MailgunClient;
@@ -39,12 +43,16 @@ describe("MailgunClient", () => {
 
     it("should throw error if apiKey is missing", () => {
       const invalidConfig = { tenantId: "test.mailgun.org" };
-      expect(() => new MailgunClient(invalidConfig as EmailAdapterConfig)).toThrow();
+      expect(
+        () => new MailgunClient(invalidConfig as EmailAdapterConfig),
+      ).toThrow();
     });
 
     it("should throw error if tenantId (domain) is missing", () => {
       const invalidConfig = { apiKey: "key" };
-      expect(() => new MailgunClient(invalidConfig as EmailAdapterConfig)).toThrow();
+      expect(
+        () => new MailgunClient(invalidConfig as EmailAdapterConfig),
+      ).toThrow();
     });
   });
 
@@ -451,7 +459,8 @@ describe("MailgunClient", () => {
     it("should verify valid webhook signature", () => {
       const timestamp = "1234567890";
       const token = "test-token";
-      const signature = "52c582138706552cc4aaf48401dc3d183cbe7b56b5e5eae57924ee2a5ee65a41"; // Mock signature
+      const signature =
+        "52c582138706552cc4aaf48401dc3d183cbe7b56b5e5eae57924ee2a5ee65a41"; // Mock signature
 
       // Note: This test would require mocking crypto module
       // In real implementation, you would test the actual HMAC validation
@@ -480,7 +489,7 @@ describe("MailgunClient", () => {
 
     it("should return false for unhealthy client", async () => {
       vi.spyOn(client as any, "request").mockRejectedValueOnce(
-        new Error("API Error")
+        new Error("API Error"),
       );
 
       const healthy = await client.healthCheck();
@@ -499,7 +508,9 @@ describe("MailgunClient", () => {
 
       (client as any).addToSuppressionList("bounced@example.com", entry);
 
-      const suppressed = (client as any).isEmailSuppressed("bounced@example.com");
+      const suppressed = (client as any).isEmailSuppressed(
+        "bounced@example.com",
+      );
 
       expect(suppressed).toBeDefined();
       expect(suppressed.type).toBe("bounce");
@@ -527,7 +538,9 @@ describe("MailgunClient", () => {
 
       client.removeSuppression("bounced@example.com");
 
-      const suppressed = (client as any).isEmailSuppressed("bounced@example.com");
+      const suppressed = (client as any).isEmailSuppressed(
+        "bounced@example.com",
+      );
 
       expect(suppressed).toBeUndefined();
     });

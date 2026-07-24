@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useCallback, useMemo, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import type { WizardStep, SyncConfig } from './types';
-import { DEFAULT_SYNC_CONFIG, DEFAULT_SYNC_SCHEDULE } from './constants';
+import { useCallback, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import type { WizardStep, SyncConfig } from "./types";
+import { DEFAULT_SYNC_CONFIG, DEFAULT_SYNC_SCHEDULE } from "./constants";
 
 export function useWizardState() {
   const router = useRouter();
@@ -11,7 +11,7 @@ export function useWizardState() {
 
   // Wizard state
   const [activeStep, setActiveStep] = useState(
-    parseInt(searchParams.get('step') || '1')
+    parseInt(searchParams.get("step") || "1"),
   );
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
 
@@ -26,15 +26,12 @@ export function useWizardState() {
   const [syncSchedule, setSyncSchedule] = useState(DEFAULT_SYNC_SCHEDULE);
 
   // Handle step change with accessibility checks
-  const handleStepChange = useCallback(
-    (step: number, steps: WizardStep[]) => {
-      const stepDef = steps.find((s) => s.id === step);
-      if (stepDef?.isAccessible) {
-        setActiveStep(step);
-      }
-    },
-    []
-  );
+  const handleStepChange = useCallback((step: number, steps: WizardStep[]) => {
+    const stepDef = steps.find((s) => s.id === step);
+    if (stepDef?.isAccessible) {
+      setActiveStep(step);
+    }
+  }, []);
 
   // Next/Previous navigation
   const handleNext = useCallback(
@@ -45,7 +42,7 @@ export function useWizardState() {
         handleStepChange(newStep, steps);
       }
     },
-    [activeStep, handleStepChange]
+    [activeStep, handleStepChange],
   );
 
   const handlePrevious = useCallback(
@@ -54,7 +51,7 @@ export function useWizardState() {
         handleStepChange(activeStep - 1, steps);
       }
     },
-    [activeStep, handleStepChange]
+    [activeStep, handleStepChange],
   );
 
   // Handle platform selection
@@ -63,16 +60,13 @@ export function useWizardState() {
   }, []);
 
   // Handle sync configuration
-  const handleUpdateSyncConfig = useCallback(
-    (config: Partial<SyncConfig>) => {
-      setSyncConfig((prev) => ({ ...prev, ...config }));
-    },
-    []
-  );
+  const handleUpdateSyncConfig = useCallback((config: Partial<SyncConfig>) => {
+    setSyncConfig((prev) => ({ ...prev, ...config }));
+  }, []);
 
   // Handle test connection
   const handleTestConnection = useCallback(async () => {
-    setTestResults({ success: true, message: 'Connection test successful!' });
+    setTestResults({ success: true, message: "Connection test successful!" });
   }, []);
 
   // Handle activation
@@ -80,7 +74,7 @@ export function useWizardState() {
     setCompletedSteps((prev) => new Set([...prev, 5]));
     // In a real implementation, make API call to activate
     setTimeout(() => {
-      router.push('/dashboard/crm');
+      router.push("/dashboard/crm");
     }, 1500);
   }, [router]);
 

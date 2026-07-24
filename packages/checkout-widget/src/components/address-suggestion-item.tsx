@@ -21,12 +21,15 @@ const highlightMatch = (text: string, matchedText: string): ReactNode => {
   const parts = text.split(new RegExp(`(${matchedText})`, "gi"));
   return parts.map((part, index) =>
     part.toLowerCase() === matchedText.toLowerCase() ? (
-      <span key={index} className="font-semibold text-wl-primary-600 dark:text-wl-primary-400">
+      <span
+        key={index}
+        className="font-semibold text-wl-primary-600 dark:text-wl-primary-400"
+      >
         {part}
       </span>
     ) : (
       <span key={index}>{part}</span>
-    )
+    ),
   );
 };
 
@@ -49,7 +52,7 @@ export function AddressSuggestionItem({
         "hover:bg-wl-bg-secondary hover:border-wl-primary-500 transition-all",
         "disabled:opacity-50 disabled:cursor-not-allowed",
         !isDeliverable && "opacity-60",
-        className
+        className,
       )}
       disabled={!isDeliverable}
       aria-label={`${address}, ${city}, ${state} ${zipcode}${zoneName ? `, ${zoneName}` : ""}`}

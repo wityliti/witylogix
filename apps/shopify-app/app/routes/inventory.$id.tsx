@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router";
 import {
   Page,
   Layout,
@@ -12,7 +12,7 @@ import {
   Text,
   DataTable,
   Badge,
-} from '@shopify/polaris';
+} from "@shopify/polaris";
 
 interface InventoryItem {
   id: string;
@@ -33,24 +33,26 @@ export default function InventoryDetail() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [inventory, setInventory] = useState<InventoryItem | null>(null);
-  const [adjustmentQuantity, setAdjustmentQuantity] = useState('');
-  const [adjustmentType, setAdjustmentType] = useState<'increase' | 'decrease'>('increase');
-  const [adjustmentReason, setAdjustmentReason] = useState('');
+  const [adjustmentQuantity, setAdjustmentQuantity] = useState("");
+  const [adjustmentType, setAdjustmentType] = useState<"increase" | "decrease">(
+    "increase",
+  );
+  const [adjustmentReason, setAdjustmentReason] = useState("");
 
   useEffect(() => {
     setLoading(true);
     const mockInventory: InventoryItem = {
-      id: id || '1',
-      productTitle: 'Classic T-Shirt',
-      variantTitle: 'Blue - Size M',
-      sku: 'TSH-001-BLU-M',
-      barcode: '123456789012',
+      id: id || "1",
+      productTitle: "Classic T-Shirt",
+      variantTitle: "Blue - Size M",
+      sku: "TSH-001-BLU-M",
+      barcode: "123456789012",
       quantity: 245,
       reorderPoint: 50,
       reorderQuantity: 100,
-      supplier: 'Supplier ABC',
-      lastRestockDate: '2026-02-28T10:00:00Z',
-      location: 'Warehouse A - Rack 3',
+      supplier: "Supplier ABC",
+      lastRestockDate: "2026-02-28T10:00:00Z",
+      location: "Warehouse A - Rack 3",
     };
     setTimeout(() => {
       setInventory(mockInventory);
@@ -76,19 +78,23 @@ export default function InventoryDetail() {
 
   const handleAdjustment = () => {
     if (adjustmentQuantity && adjustmentReason) {
-      console.log('Adjustment:', {
+      console.log("Adjustment:", {
         type: adjustmentType,
         quantity: adjustmentQuantity,
         reason: adjustmentReason,
       });
-      setAdjustmentQuantity('');
-      setAdjustmentReason('');
-      setAdjustmentType('increase');
+      setAdjustmentQuantity("");
+      setAdjustmentReason("");
+      setAdjustmentType("increase");
     }
   };
 
   return (
-    <Page title={inventory.productTitle} subtitle={inventory.variantTitle} backAction={{ onAction: () => navigate('/app/inventory') }}>
+    <Page
+      title={inventory.productTitle}
+      subtitle={inventory.variantTitle}
+      backAction={{ onAction: () => navigate("/app/inventory") }}
+    >
       <Layout>
         <Layout.Section>
           <Card>
@@ -98,16 +104,28 @@ export default function InventoryDetail() {
               </Text>
               <InlineStack align="space-between">
                 <BlockStack gap="100">
-                  <Text as="span" variant="bodySm">SKU:</Text>
-                  <Text as="p" variant="headingMd">{inventory.sku}</Text>
+                  <Text as="span" variant="bodySm">
+                    SKU:
+                  </Text>
+                  <Text as="p" variant="headingMd">
+                    {inventory.sku}
+                  </Text>
                 </BlockStack>
                 <BlockStack gap="100">
-                  <Text as="span" variant="bodySm">Quantity on Hand:</Text>
-                  <Text as="p" variant="headingMd">{inventory.quantity}</Text>
+                  <Text as="span" variant="bodySm">
+                    Quantity on Hand:
+                  </Text>
+                  <Text as="p" variant="headingMd">
+                    {inventory.quantity}
+                  </Text>
                 </BlockStack>
                 <BlockStack gap="100">
-                  <Text as="span" variant="bodySm">Location:</Text>
-                  <Text as="p" variant="bodyMd">{inventory.location}</Text>
+                  <Text as="span" variant="bodySm">
+                    Location:
+                  </Text>
+                  <Text as="p" variant="bodyMd">
+                    {inventory.location}
+                  </Text>
                 </BlockStack>
               </InlineStack>
             </BlockStack>
@@ -124,14 +142,18 @@ export default function InventoryDetail() {
                 <BlockStack gap="400">
                   <div>
                     <Button
-                      variant={adjustmentType === 'increase' ? 'primary' : 'secondary'}
-                      onClick={() => setAdjustmentType('increase')}
+                      variant={
+                        adjustmentType === "increase" ? "primary" : "secondary"
+                      }
+                      onClick={() => setAdjustmentType("increase")}
                     >
                       Increase Stock
                     </Button>
                     <Button
-                      variant={adjustmentType === 'decrease' ? 'primary' : 'secondary'}
-                      onClick={() => setAdjustmentType('decrease')}
+                      variant={
+                        adjustmentType === "decrease" ? "primary" : "secondary"
+                      }
+                      onClick={() => setAdjustmentType("decrease")}
                     >
                       Decrease Stock
                     </Button>
@@ -229,12 +251,12 @@ export default function InventoryDetail() {
                 Movement History
               </Text>
               <DataTable
-                columnContentTypes={['text', 'numeric', 'text', 'text']}
-                headings={['Type', 'Quantity', 'Reason', 'Date']}
+                columnContentTypes={["text", "numeric", "text", "text"]}
+                headings={["Type", "Quantity", "Reason", "Date"]}
                 rows={[
-                  ['Restock', '100', 'Regular reorder', '2026-02-28'],
-                  ['Adjustment', '-5', 'Damaged items', '2026-02-25'],
-                  ['Transfer', '25', 'Location A to B', '2026-02-20'],
+                  ["Restock", "100", "Regular reorder", "2026-02-28"],
+                  ["Adjustment", "-5", "Damaged items", "2026-02-25"],
+                  ["Transfer", "25", "Location A to B", "2026-02-20"],
                 ]}
               />
             </BlockStack>

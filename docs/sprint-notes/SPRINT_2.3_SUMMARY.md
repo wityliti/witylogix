@@ -12,6 +12,7 @@
 ## Overview
 
 Complete production-ready CI/CD pipeline and Docker containerization for the Witylogix platform using:
+
 - **GitHub Actions** for continuous integration and deployment
 - **Docker** for application containerization (multi-stage builds)
 - **Docker Compose** for local development and service orchestration
@@ -24,9 +25,11 @@ Complete production-ready CI/CD pipeline and Docker containerization for the Wit
 ### 1. Docker Configuration (5 files)
 
 #### Dockerfile.api (70 lines)
+
 **Purpose:** Multi-stage build for Fastify 5 backend API
 
 **Key Features:**
+
 - Stage 1: Base image with Node 20 Alpine + pnpm 9.15.0
 - Stage 2: Dependencies installation (frozen-lockfile)
 - Stage 3: Build stage with Prisma client generation
@@ -35,6 +38,7 @@ Complete production-ready CI/CD pipeline and Docker containerization for the Wit
 - Exposed port: 3001
 
 **Build optimization:**
+
 - Separates dependency layer from build layer for better caching
 - Only copies necessary workspace packages (db, types, validators, core)
 - Prisma client generation before TypeScript compilation
@@ -43,9 +47,11 @@ Complete production-ready CI/CD pipeline and Docker containerization for the Wit
 ---
 
 #### Dockerfile.dashboard (63 lines)
+
 **Purpose:** Multi-stage build for Next.js 15 admin dashboard
 
 **Key Features:**
+
 - Stage 1: Dependencies installation
 - Stage 2: Next.js build with standalone output
 - Stage 3: Production runtime (node server)
@@ -54,6 +60,7 @@ Complete production-ready CI/CD pipeline and Docker containerization for the Wit
 - Minimal dependencies (standalone mode)
 
 **Optimization:**
+
 - Standalone output: self-contained Node.js runtime
 - No need for separate Node.js for production
 - ~150-200MB final image size
@@ -61,9 +68,11 @@ Complete production-ready CI/CD pipeline and Docker containerization for the Wit
 ---
 
 #### Dockerfile.shopify-app (63 lines)
+
 **Purpose:** Multi-stage build for Shopify integration app (React Router + Vite)
 
 **Key Features:**
+
 - Stage 1: Dependencies installation
 - Stage 2: Vite static build
 - Stage 3: Production (serve static files)
@@ -72,41 +81,46 @@ Complete production-ready CI/CD pipeline and Docker containerization for the Wit
 - Exposed port: 5173
 
 **Optimization:**
+
 - Static file serving only (no Node.js runtime needed)
 - ~100-150MB final image size
 
 ---
 
 #### .dockerignore (21 lines)
+
 **Purpose:** Optimize Docker build context by excluding unnecessary files
 
 **Excludes:**
+
 - Dependencies: node_modules, pnpm-lock.yaml
 - Build artifacts: dist, .next, .turbo
 - Version control: .git, .gitignore
-- Documentation: *.md, README, LICENSE
-- Secrets: .env* files (critical security measure)
+- Documentation: \*.md, README, LICENSE
+- Secrets: .env\* files (critical security measure)
 - IDE/OS files: .vscode, .idea, .DS_Store
 - Logs and test coverage
 
 ---
 
 #### docker-compose.yml (215 lines)
+
 **Purpose:** Production-ready orchestration of all services
 
 **Services Defined:**
 
-| Service | Image | Port | Health Check | Purpose |
-|---------|-------|------|--------------|---------|
-| postgres | postgis:16-3.4-alpine | 5432 | pg_isready | Database + GIS |
-| redis | redis:7-alpine | 6379 | redis-cli ping | Cache, queue |
-| api | Dockerfile.api | 3001 | /health | Fastify backend |
-| dashboard | Dockerfile.dashboard | 3000 | GET / | Next.js admin |
-| shopify-app | Dockerfile.shopify-app | 3002 | GET / | Shopify app |
-| bull-board | deadly0/bull-board:latest | 3100 | none | Job dashboard |
-| osrm | osrm/osrm-backend:latest | 5000 | none | Route engine |
+| Service     | Image                     | Port | Health Check   | Purpose         |
+| ----------- | ------------------------- | ---- | -------------- | --------------- |
+| postgres    | postgis:16-3.4-alpine     | 5432 | pg_isready     | Database + GIS  |
+| redis       | redis:7-alpine            | 6379 | redis-cli ping | Cache, queue    |
+| api         | Dockerfile.api            | 3001 | /health        | Fastify backend |
+| dashboard   | Dockerfile.dashboard      | 3000 | GET /          | Next.js admin   |
+| shopify-app | Dockerfile.shopify-app    | 3002 | GET /          | Shopify app     |
+| bull-board  | deadly0/bull-board:latest | 3100 | none           | Job dashboard   |
+| osrm        | osrm/osrm-backend:latest  | 5000 | none           | Route engine    |
 
 **Features:**
+
 - Health checks on all critical services
 - Persistent volumes: postgres_data, redis_data
 - Service dependencies and startup ordering
@@ -116,6 +130,7 @@ Complete production-ready CI/CD pipeline and Docker containerization for the Wit
 - Ready for development and testing
 
 **Service Dependencies:**
+
 ```
 api → postgres (healthy)
 api → redis (healthy)
@@ -128,9 +143,11 @@ osrm → (no dependencies, phase2 profile)
 ---
 
 #### docker-compose.dev.yml (72 lines)
+
 **Purpose:** Development overrides for hot-reload and debugging
 
 **Override Capabilities:**
+
 - API: Uses `pnpm --filter @witylogix/api dev` (tsx watch)
 - Dashboard: Uses `pnpm --filter @witylogix/dashboard dev` (Next.js dev)
 - Volume mounts for source code hot-reload
@@ -139,6 +156,7 @@ osrm → (no dependencies, phase2 profile)
 - Postgres with query logging
 
 **Usage:**
+
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 ```
@@ -148,9 +166,11 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 ### 2. GitHub Actions Workflows (2 files)
 
 #### .github/workflows/ci.yml (248 lines)
+
 **Purpose:** Continuous Integration Pipeline
 
 **Triggers:**
+
 - Push to main branch
 - All pull requests
 - Concurrency: Cancels in-progress for same PR
@@ -183,11 +203,13 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 **Total CI Runtime:** ~15-20 minutes
 
 **Caching Strategy:**
+
 - pnpm store: Dependencies (~/1.5GB)
 - Turbo cache: Build artifacts
 - Next.js cache: Page/component builds
 
 **Benefits:**
+
 - Parallel job execution (lint, typecheck, test, build)
 - Smart caching reduces subsequent runs to ~5-8 minutes
 - Prevents merging broken code to main
@@ -196,9 +218,11 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 ---
 
 #### .github/workflows/deploy.yml (195 lines)
+
 **Purpose:** Continuous Deployment Pipeline
 
 **Triggers:**
+
 - Push to main (after CI passes)
 - Can trigger via workflow_run
 - Concurrency: No cancellation (prevents interrupted deployments)
@@ -210,42 +234,45 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up
      - `ghcr.io/owner/witylogix/api:latest`
      - `ghcr.io/owner/witylogix/dashboard:latest`
      - `ghcr.io/owner/witylogix/shopify-app:latest`
-   
    - Tagging strategy:
      - `sha-<hash>`: For rollback/debugging
      - `main`: Branch name
      - `latest`: Only for main branch
-   
    - Registry: GitHub Container Registry (ghcr.io)
    - BuildX: Uses Docker layer caching
    - Permissions: packages:write, contents:read
 
 2. **Deploy to Environment** - Time varies
    - 4 options (choose 1):
-   
+
    **Option A: Kubernetes** (Recommended for production)
+
    ```bash
    kubectl set image deployment/witylogix-api \
      api=ghcr.io/.../api:latest --namespace=production
    ```
-   
+
    **Option B: Fly.io** (Quick setup)
+
    ```bash
    flyctl deploy --image ghcr.io/.../api:latest
    ```
-   
+
    **Option C: Railway** (Easiest, auto-detect docker-compose.yml)
+
    ```bash
    railway deploy --force
    ```
-   
+
    **Option D: Custom Script** (For special deployments)
+
    ```bash
    bash scripts/deploy.sh
    ```
 
 **Image Registry:**
 All images pushed to GitHub Container Registry (ghcr.io) with tags for:
+
 - Version tracking (git SHA)
 - Branch identification
 - Quick rollback capability
@@ -255,6 +282,7 @@ All images pushed to GitHub Container Registry (ghcr.io) with tags for:
 ### 3. API Health Check Routes (1 file)
 
 #### apps/api/src/routes/health.ts (217 lines)
+
 **Purpose:** Production-grade health check endpoints for monitoring and orchestration
 
 **Endpoints:**
@@ -264,8 +292,9 @@ All images pushed to GitHub Container Registry (ghcr.io) with tags for:
    - Status code: 200 OK (if process is alive)
    - Use case: Kubernetes livenessProbe
    - Logging: Silent (no log noise)
-   
+
    **Response:**
+
    ```json
    {
      "status": "ok",
@@ -281,8 +310,9 @@ All images pushed to GitHub Container Registry (ghcr.io) with tags for:
    - Checks: Database, Redis connectivity
    - Use case: Kubernetes readinessProbe, load balancer decisions
    - Logging: Silent
-   
+
    **Response (Ready):**
+
    ```json
    {
      "ready": true,
@@ -293,8 +323,9 @@ All images pushed to GitHub Container Registry (ghcr.io) with tags for:
      "timestamp": "2026-03-06T10:30:45.123Z"
    }
    ```
-   
+
    **Response (Not Ready):**
+
    ```json
    {
      "ready": false,
@@ -305,6 +336,7 @@ All images pushed to GitHub Container Registry (ghcr.io) with tags for:
      "timestamp": "2026-03-06T10:30:45.123Z"
    }
    ```
+
    Status code: 503 Service Unavailable
 
 3. **GET /health/deep (Deep Health Check)**
@@ -313,8 +345,9 @@ All images pushed to GitHub Container Registry (ghcr.io) with tags for:
    - Status code: 200 (healthy) or 503 (degraded)
    - Use case: Monitoring dashboards, alerting systems
    - Logging: Silent
-   
+
    **Response:**
+
    ```json
    {
      "status": "ok" | "degraded" | "unhealthy",
@@ -340,6 +373,7 @@ All images pushed to GitHub Container Registry (ghcr.io) with tags for:
    ```
 
 **Kubernetes Integration Example:**
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -349,21 +383,21 @@ spec:
   template:
     spec:
       containers:
-      - name: api
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 3001
-          initialDelaySeconds: 40
-          periodSeconds: 10
-          failureThreshold: 3
-        readinessProbe:
-          httpGet:
-            path: /health/ready
-            port: 3001
-          initialDelaySeconds: 30
-          periodSeconds: 5
-          failureThreshold: 2
+        - name: api
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 40
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 3001
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            failureThreshold: 2
 ```
 
 ---
@@ -371,7 +405,9 @@ spec:
 ### 4. Documentation (3 files)
 
 #### CICD.md (1,100+ lines)
+
 **Comprehensive documentation covering:**
+
 - Architecture overview with diagrams
 - Detailed file descriptions
 - Docker configuration explanations
@@ -385,6 +421,7 @@ spec:
 - References and next steps
 
 **Key sections:**
+
 - Multi-stage Docker build optimization
 - CI/CD pipeline flow
 - Service dependencies and health checks
@@ -395,7 +432,9 @@ spec:
 ---
 
 #### CICD_QUICK_REFERENCE.md (~300 lines)
+
 **Quick lookup guide with:**
+
 - File checklist
 - Service summary table
 - CI workflow overview
@@ -408,6 +447,7 @@ spec:
 - Next steps for team
 
 **Use this when:**
+
 - Quick command reference needed
 - Checking deployment status
 - Basic troubleshooting
@@ -416,9 +456,11 @@ spec:
 ---
 
 #### INTEGRATION_GUIDE.md (250+ lines)
+
 **Step-by-step integration instructions:**
 
 10 integration steps:
+
 1. Register health routes in API
 2. Configure Next.js standalone output
 3. Test Docker build locally
@@ -431,6 +473,7 @@ spec:
 10. Production checklist
 
 **Plus:**
+
 - Kubernetes deployment example
 - Fly.io setup
 - Railway integration
@@ -488,6 +531,7 @@ spec:
 ## Key Achievements
 
 ### 1. Production-Ready Docker Images
+
 - Multi-stage builds reducing image size by ~70%
 - Optimized layer caching for faster builds
 - Health checks for orchestration
@@ -495,6 +539,7 @@ spec:
 - Support for 3 different application types
 
 ### 2. Comprehensive CI/CD Pipeline
+
 - 4-stage CI: Lint → Type → Test → Build
 - Automated testing with real services (Postgres, Redis)
 - Smart caching reduces CI time by ~60%
@@ -502,6 +547,7 @@ spec:
 - Multiple deployment target options
 
 ### 3. Developer Experience
+
 - Hot-reload development environment
 - Docker Compose for local development
 - Clear error messages and logging
@@ -509,6 +555,7 @@ spec:
 - Easy local testing
 
 ### 4. Operational Excellence
+
 - 3 health check endpoints (liveness, readiness, deep)
 - Kubernetes-ready with probe examples
 - Monitoring and troubleshooting guides
@@ -516,6 +563,7 @@ spec:
 - Clear deployment documentation
 
 ### 5. Security
+
 - No environment secrets in images
 - Secrets stored in GitHub Actions
 - Health checks isolated (silent logging)
@@ -527,17 +575,20 @@ spec:
 ## Integration Checklist
 
 ### Immediate (Before first run)
+
 - [ ] Register health routes in `apps/api/src/server.ts`
 - [ ] Ensure `apps/dashboard/next.config.ts` has `output: 'standalone'`
 - [ ] Test Docker builds locally: `docker compose build`
 
 ### Before CI/CD goes live
+
 - [ ] Set GitHub Actions secrets (POSTGRES_PASSWORD, JWT_SECRET, etc.)
 - [ ] Test CI pipeline with PR
 - [ ] Test deployment pipeline
 - [ ] Choose deployment target (K8s, Fly.io, Railway, custom)
 
 ### For production
+
 - [ ] Configure chosen deployment platform
 - [ ] Setup monitoring and alerts
 - [ ] Document runbooks
@@ -549,17 +600,20 @@ spec:
 ## Performance Metrics
 
 ### Build Times
+
 - **Local Docker build:** 5-10 minutes (initial), 1-2 minutes (cached)
 - **GitHub Actions CI:** ~15-20 minutes (first run), ~8-10 minutes (cached)
 - **Docker image push:** 2-5 minutes (ghcr.io)
 - **Deployment:** Depends on platform (K8s: 2-5 minutes)
 
 ### Image Sizes (Compressed)
+
 - **API:** ~200-300MB
 - **Dashboard:** ~150-200MB
 - **Shopify App:** ~100-150MB
 
 ### Runtime Performance
+
 - **Health check:** ~1-2ms (liveness)
 - **Ready check:** ~10-50ms (dependencies)
 - **Deep health:** ~20-100ms (full metrics)
@@ -569,6 +623,7 @@ spec:
 ## Security Considerations
 
 ### Implemented
+
 - No secrets in Docker images (.dockerignore excludes .env)
 - Environment variables for sensitive config
 - Health checks bypass logging (silent)
@@ -576,6 +631,7 @@ spec:
 - Image versioning for audit trail
 
 ### Recommended
+
 - Image scanning (Trivy, Snyk)
 - Dependency updates (Dependabot)
 - Non-root user in production Dockerfile
@@ -630,6 +686,7 @@ Total: 12 files, ~3,200 lines
 ## Support & Questions
 
 **Documentation hierarchy:**
+
 1. **Quick questions?** → CICD_QUICK_REFERENCE.md
 2. **How do I set up?** → INTEGRATION_GUIDE.md
 3. **Deep dive needed?** → CICD.md
@@ -647,6 +704,7 @@ Total: 12 files, ~3,200 lines
 **Sprint 2.3 CI/CD Pipeline & Docker Configuration: COMPLETE**
 
 All requirements met:
+
 - 3 production-ready Dockerfiles with multi-stage builds
 - Comprehensive docker-compose setup
 - CI pipeline with lint, type-check, test, build jobs

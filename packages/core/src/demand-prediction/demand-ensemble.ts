@@ -12,33 +12,33 @@ import type {
   PredictionExplanation,
   EnsembleConfig,
   ModelPrediction,
-} from './types';
+} from "./types";
 
 import {
   decomposeMultiSeasonal,
   forecastMultiSeasonal,
   getSeasonalityStrength,
-} from './models/seasonal-decomposition';
+} from "./models/seasonal-decomposition";
 
 import {
   trainZoneRegression,
   predictWithRegression,
   extractFeatures,
   RegressionFeatures,
-} from './models/zone-regression';
+} from "./models/zone-regression";
 
 import {
   findSimilarDays,
   predictFromPatterns,
   matchHolidayPattern,
   getClusterAverageFallback,
-} from './models/pattern-matcher';
+} from "./models/pattern-matcher";
 
 import {
   detectAnomaly,
   initializeStatistics,
   CUSUMDetector,
-} from './models/anomaly-detector';
+} from "./models/anomaly-detector";
 
 /**
  * Zone data cache
@@ -59,16 +59,19 @@ export class DemandEnsemble {
   private modelWeights: Record<string, number>;
   private config: EnsembleConfig;
   private lastReweightDate: Date = new Date();
-  private modelAccuracyHistory: Map<string, Array<{ mae: number; timestamp: Date }>> = new Map();
+  private modelAccuracyHistory: Map<
+    string,
+    Array<{ mae: number; timestamp: Date }>
+  > = new Map();
 
   constructor(config?: Partial<EnsembleConfig>) {
     this.config = {
-      enabled_models: ['seasonal', 'regression', 'pattern', 'baseline'],
+      enabled_models: ["seasonal", "regression", "pattern", "baseline"],
       initial_weights: {
         seasonal: 0.35,
         regression: 0.35,
-        pattern: 0.20,
-        baseline: 0.10,
+        pattern: 0.2,
+        baseline: 0.1,
       },
       reweight_interval_hours: 24,
       min_weight: 0.05,
@@ -84,9 +87,12 @@ export class DemandEnsemble {
   /**
    * Train ensemble on historical data
    */
-  async train(zoneId: string, historicalData: HistoricalDemand[]): Promise<void> {
+  async train(
+    zoneId: string,
+    historicalData: HistoricalDemand[],
+  ): Promise<void> {
     if (historicalData.length < 30) {
-      throw new Error('Insufficient historical data for training');
+      throw new Error("Insufficient historical data for training");
     }
 
     // Multi-seasonal decomposition
@@ -98,7 +104,7 @@ export class DemandEnsemble {
 
     // Initialize metrics
     const metrics: ModelMetrics = {
-      modelName: 'ensemble',
+      modelName: "ensemble",
       mae: 0,
       rmse: 0,
       mape: 0,
@@ -124,7 +130,7 @@ export class DemandEnsemble {
   async predict(
     zoneId: string,
     targetDate: Date,
-    granularity: 'hourly' | 'slot' | 'daily' = 'hourly',
+    granularity: "hourly" | "slot" | "daily" = "hourly",
   ): Promise<DemandPrediction> {
     const cache = this.zoneCache.get(zoneId);
     if (!cache) {
@@ -135,25 +141,25 @@ export class DemandEnsemble {
     const predictions: ModelPrediction[] = [];
 
     // 1. Seasonal decomposition
-    if (this.config.enabled_models.includes('seasonal')) {
+    if (this.config.enabled_models.includes("seasonal")) {
       const seasonal = await this.predictSeasonal(cache, targetDate);
       predictions.push(seasonal);
     }
 
     // 2. Zone regression
-    if (this.config.enabled_models.includes('regression')) {
+    if (this.config.enabled_models.includes("regression")) {
       const regression = await this.predictRegression(cache, targetDate);
       predictions.push(regression);
     }
 
     // 3. Pattern matching
-    if (this.config.enabled_models.includes('pattern')) {
+    if (this.config.enabled_models.includes("pattern")) {
       const pattern = await this.predictPattern(cache, targetDate);
       predictions.push(pattern);
     }
 
     // 4. Baseline (historical average)
-    if (this.config.enabled_models.includes('baseline')) {
+    if (this.config.enabled_models.includes("baseline")) {
       const baseline = this.predictBaseline(cache, targetDate);
       predictions.push(baseline);
     }
@@ -162,10 +168,18 @@ export class DemandEnsemble {
     const combined = this.ensemblePredictions(predictions, zoneId);
 
     // Detect anomalies
-    const anomalies = this.detectAnomaliesInPrediction(cache, targetDate, combined);
+    const anomalies = this.detectAnomaliesInPrediction(
+      cache,
+      targetDate,
+      combined,
+    );
 
     // Generate explanation
-    const explanation = this.generateExplanation(predictions, combined, anomalies);
+    const explanation = this.generateExplanation(
+      predictions,
+      combined,
+      anomalies,
+    );
 
     return {
       zoneId,
@@ -185,24 +199,34 @@ export class DemandEnsemble {
   /**
    * Predict using seasonal decomposition
    */
-  private async predictSeasonal(cache: ZoneCache, targetDate: Date): Promise<ModelPrediction> {
+  private async predictSeasonal(
+    cache: ZoneCache,
+    targetDate: Date,
+  ): Promise<ModelPrediction> {
     const { seasonalDecomposition } = cache;
     const horizon = 24; // hourly
 
-    const forecast = forecastMultiSeasonal(seasonalDecomposition, horizon, [24, 168]);
+    const forecast = forecastMultiSeasonal(
+      seasonalDecomposition,
+      horizon,
+      [24, 168],
+    );
 
     // Average across periods for confidence
-    const avgPred = forecast.predictions.reduce((a, b) => a + b, 0) / forecast.predictions.length;
-    const variance = forecast.predictions.reduce(
-      (sum, p) => sum + Math.pow(p - avgPred, 2),
-      0,
-    ) / forecast.predictions.length;
+    const avgPred =
+      forecast.predictions.reduce((a, b) => a + b, 0) /
+      forecast.predictions.length;
+    const variance =
+      forecast.predictions.reduce(
+        (sum, p) => sum + Math.pow(p - avgPred, 2),
+        0,
+      ) / forecast.predictions.length;
     const stdDev = Math.sqrt(variance);
 
     const confidence = Math.exp(-stdDev / (avgPred || 1));
 
     return {
-      modelName: 'seasonal',
+      modelName: "seasonal",
       predictions: forecast.predictions,
       confidence,
       lower_bound: forecast.lower,
@@ -215,7 +239,10 @@ export class DemandEnsemble {
   /**
    * Predict using zone regression
    */
-  private async predictRegression(cache: ZoneCache, targetDate: Date): Promise<ModelPrediction> {
+  private async predictRegression(
+    cache: ZoneCache,
+    targetDate: Date,
+  ): Promise<ModelPrediction> {
     const { zoneCharacteristics, historicalData } = cache;
     const predictions: number[] = [];
     const lowerBounds: number[] = [];
@@ -248,7 +275,7 @@ export class DemandEnsemble {
     const confidence = 0.8; // Regression tends to be stable
 
     return {
-      modelName: 'regression',
+      modelName: "regression",
       predictions,
       confidence,
       lower_bound: lowerBounds,
@@ -259,7 +286,10 @@ export class DemandEnsemble {
   /**
    * Predict using pattern matching
    */
-  private async predictPattern(cache: ZoneCache, targetDate: Date): Promise<ModelPrediction> {
+  private async predictPattern(
+    cache: ZoneCache,
+    targetDate: Date,
+  ): Promise<ModelPrediction> {
     const { historicalData } = cache;
     const predictions: number[] = [];
     const confidences: number[] = [];
@@ -269,16 +299,21 @@ export class DemandEnsemble {
       timestamp.setHours(hour);
 
       const hourData = historicalData.filter((d) => d.hour === hour);
-      const patterns = findSimilarDays(timestamp, {
-        dayOfWeek: timestamp.getDay(),
-        hour,
-        holiday: targetDate.getDay() === 0 || targetDate.getDay() === 6 ? 1 : 0,
-        weather: 0,
-        eventType: 'none',
-        trend: 0,
-        seasonal_hour: 0,
-        seasonal_day: 0,
-      }, historicalData);
+      const patterns = findSimilarDays(
+        timestamp,
+        {
+          dayOfWeek: timestamp.getDay(),
+          hour,
+          holiday:
+            targetDate.getDay() === 0 || targetDate.getDay() === 6 ? 1 : 0,
+          weather: 0,
+          eventType: "none",
+          trend: 0,
+          seasonal_hour: 0,
+          seasonal_day: 0,
+        },
+        historicalData,
+      );
 
       if (patterns.length > 0) {
         const pred = predictFromPatterns(patterns);
@@ -286,7 +321,11 @@ export class DemandEnsemble {
         confidences.push(pred.confidence);
       } else {
         // Fallback
-        const fallback = getClusterAverageFallback(historicalData, targetDate.getDay(), hour);
+        const fallback = getClusterAverageFallback(
+          historicalData,
+          targetDate.getDay(),
+          hour,
+        );
         predictions.push(fallback);
         confidences.push(0.3);
       }
@@ -300,7 +339,7 @@ export class DemandEnsemble {
     const upperBounds = predictions.map((p) => p * 1.2);
 
     return {
-      modelName: 'pattern',
+      modelName: "pattern",
       predictions,
       confidence: avgConfidence,
       lower_bound: lowerBounds,
@@ -317,12 +356,15 @@ export class DemandEnsemble {
 
     for (let hour = 0; hour < 24; hour++) {
       const hourData = historicalData.filter((d) => d.hour === hour);
-      const avg = hourData.length > 0 ? hourData.reduce((s, d) => s + d.value, 0) / hourData.length : 0;
+      const avg =
+        hourData.length > 0
+          ? hourData.reduce((s, d) => s + d.value, 0) / hourData.length
+          : 0;
       predictions.push(avg);
     }
 
     return {
-      modelName: 'baseline',
+      modelName: "baseline",
       predictions,
       confidence: 0.6,
       lower_bound: predictions.map((p) => p * 0.9),
@@ -344,7 +386,13 @@ export class DemandEnsemble {
     p50: number[];
   } {
     if (predictions.length === 0) {
-      return { predictions: [], confidence: 0, lower_bound: [], upper_bound: [], p50: [] };
+      return {
+        predictions: [],
+        confidence: 0,
+        lower_bound: [],
+        upper_bound: [],
+        p50: [],
+      };
     }
 
     const horizonLength = predictions[0].predictions.length;
@@ -356,7 +404,11 @@ export class DemandEnsemble {
     let totalWeight = 0;
 
     for (const pred of predictions) {
-      const weight = this.getModelWeight(pred.modelName, zoneId, pred.confidence);
+      const weight = this.getModelWeight(
+        pred.modelName,
+        zoneId,
+        pred.confidence,
+      );
 
       for (let i = 0; i < horizonLength; i++) {
         ensemblePred[i] += pred.predictions[i] * weight;
@@ -379,7 +431,8 @@ export class DemandEnsemble {
 
     // Average confidence across models
     const avgConfidence =
-      predictions.reduce((sum, p) => sum + p.confidence, 0) / predictions.length;
+      predictions.reduce((sum, p) => sum + p.confidence, 0) /
+      predictions.length;
 
     return {
       predictions: ensemblePred,
@@ -404,15 +457,21 @@ export class DemandEnsemble {
       weight *= confidence;
     }
 
-    return Math.max(this.config.min_weight, Math.min(this.config.max_weight, weight));
+    return Math.max(
+      this.config.min_weight,
+      Math.min(this.config.max_weight, weight),
+    );
   }
 
   /**
    * Find dominant model by weight
    */
-  private findDominantModel(predictions: ModelPrediction[], weights: Record<string, number>): string {
+  private findDominantModel(
+    predictions: ModelPrediction[],
+    weights: Record<string, number>,
+  ): string {
     let maxWeight = 0;
-    let dominant = '';
+    let dominant = "";
 
     for (const pred of predictions) {
       const weight = weights[pred.modelName] || 0;
@@ -422,7 +481,7 @@ export class DemandEnsemble {
       }
     }
 
-    return dominant || 'ensemble';
+    return dominant || "ensemble";
   }
 
   /**
@@ -452,7 +511,8 @@ export class DemandEnsemble {
     let maxPred = 0;
 
     for (const pred of predictions) {
-      const avgPred = pred.predictions.reduce((a, b) => a + b, 0) / pred.predictions.length;
+      const avgPred =
+        pred.predictions.reduce((a, b) => a + b, 0) / pred.predictions.length;
       modelContributions[pred.modelName] = avgPred;
       maxPred = Math.max(maxPred, avgPred);
     }
@@ -468,7 +528,8 @@ export class DemandEnsemble {
     return {
       primary_factors: primaryFactors,
       model_contributions: modelContributions,
-      confidence_rationale: 'Ensemble average across seasonal, regression, and pattern models',
+      confidence_rationale:
+        "Ensemble average across seasonal, regression, and pattern models",
       anomalies_detected: anomalies,
     };
   }
@@ -518,11 +579,15 @@ export class DemandEnsemble {
     for (const model of this.config.enabled_models) {
       const history = this.modelAccuracyHistory.get(model) || [];
       const recentHistory = history.filter(
-        (h) => (new Date().getTime() - h.timestamp.getTime()) / (1000 * 60 * 60) < 24,
+        (h) =>
+          (new Date().getTime() - h.timestamp.getTime()) / (1000 * 60 * 60) <
+          24,
       );
 
       if (recentHistory.length > 0) {
-        const avgMAE = recentHistory.reduce((sum, h) => sum + h.mae, 0) / recentHistory.length;
+        const avgMAE =
+          recentHistory.reduce((sum, h) => sum + h.mae, 0) /
+          recentHistory.length;
         accuracies[model] = 1 / (1 + avgMAE); // Higher accuracy = lower MAE
       } else {
         accuracies[model] = this.modelWeights[model] || 0.25;

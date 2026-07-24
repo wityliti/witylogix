@@ -71,7 +71,7 @@ describe("E2E Order to Delivery Workflow", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(order), { status: 201 })
+        new Response(JSON.stringify(order), { status: 201 }),
       );
 
       expect(order.status).toBe("created");
@@ -79,7 +79,7 @@ describe("E2E Order to Delivery Workflow", () => {
       // Step 2: Warehouse receives order
       const warehouseOrder = { ...order, status: "received_warehouse" };
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(warehouseOrder), { status: 200 })
+        new Response(JSON.stringify(warehouseOrder), { status: 200 }),
       );
 
       expect(warehouseOrder.status).toBe("received_warehouse");
@@ -93,7 +93,7 @@ describe("E2E Order to Delivery Workflow", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(pickEvent), { status: 200 })
+        new Response(JSON.stringify(pickEvent), { status: 200 }),
       );
 
       expect(pickEvent.status).toBe("completed");
@@ -108,7 +108,7 @@ describe("E2E Order to Delivery Workflow", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(shipment), { status: 201 })
+        new Response(JSON.stringify(shipment), { status: 201 }),
       );
 
       expect(shipment.carrier).toBe("UPS");
@@ -121,7 +121,7 @@ describe("E2E Order to Delivery Workflow", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(deliveryStatus), { status: 200 })
+        new Response(JSON.stringify(deliveryStatus), { status: 200 }),
       );
 
       expect(deliveryStatus.status).toBe("delivered");
@@ -135,7 +135,7 @@ describe("E2E Order to Delivery Workflow", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(invoice), { status: 201 })
+        new Response(JSON.stringify(invoice), { status: 201 }),
       );
 
       expect(invoice.status).toBe("sent");
@@ -153,7 +153,7 @@ describe("E2E Order to Delivery Workflow", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(order), { status: 201 })
+        new Response(JSON.stringify(order), { status: 201 }),
       );
 
       expect(order.items).toHaveLength(2);
@@ -168,7 +168,7 @@ describe("E2E Order to Delivery Workflow", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(shipment1), { status: 201 })
+        new Response(JSON.stringify(shipment1), { status: 201 }),
       );
 
       // Ship from warehouse 2
@@ -181,7 +181,7 @@ describe("E2E Order to Delivery Workflow", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(shipment2), { status: 201 })
+        new Response(JSON.stringify(shipment2), { status: 201 }),
       );
 
       expect(mockFetch).toBeDefined();
@@ -196,7 +196,7 @@ describe("E2E Order to Delivery Workflow", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(order), { status: 200 })
+        new Response(JSON.stringify(order), { status: 200 }),
       );
 
       expect(order.status).toBe("cancelled");
@@ -209,7 +209,7 @@ describe("E2E Order to Delivery Workflow", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(refund), { status: 200 })
+        new Response(JSON.stringify(refund), { status: 200 }),
       );
 
       expect(refund.status).toBe("processed");
@@ -224,7 +224,7 @@ describe("E2E Order to Delivery Workflow", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(order), { status: 201 })
+        new Response(JSON.stringify(order), { status: 201 }),
       );
 
       const slaTracking = {
@@ -237,7 +237,7 @@ describe("E2E Order to Delivery Workflow", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(slaTracking), { status: 200 })
+        new Response(JSON.stringify(slaTracking), { status: 200 }),
       );
 
       expect(slaTracking.slaStatus).toBe("on_track");
@@ -255,7 +255,7 @@ describe("E2E Order to Delivery Workflow", () => {
       ];
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(statusUpdates), { status: 200 })
+        new Response(JSON.stringify(statusUpdates), { status: 200 }),
       );
 
       expect(statusUpdates).toHaveLength(5);
@@ -289,7 +289,7 @@ describe("E2E Healthcare Delivery Workflow", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(prescription), { status: 201 })
+        new Response(JSON.stringify(prescription), { status: 201 }),
       );
 
       expect(prescription.status).toBe("received");
@@ -302,7 +302,7 @@ describe("E2E Healthcare Delivery Workflow", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(verification), { status: 200 })
+        new Response(JSON.stringify(verification), { status: 200 }),
       );
 
       expect(verification.status).toBe("verified");
@@ -315,7 +315,7 @@ describe("E2E Healthcare Delivery Workflow", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(fulfillment), { status: 200 })
+        new Response(JSON.stringify(fulfillment), { status: 200 }),
       );
 
       expect(fulfillment.status).toBe("fulfilled");
@@ -329,7 +329,7 @@ describe("E2E Healthcare Delivery Workflow", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(shipment), { status: 201 })
+        new Response(JSON.stringify(shipment), { status: 201 }),
       );
 
       expect(shipment.trackingNumber).toBeDefined();
@@ -342,7 +342,7 @@ describe("E2E Healthcare Delivery Workflow", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(delivery), { status: 200 })
+        new Response(JSON.stringify(delivery), { status: 200 }),
       );
 
       expect(delivery.status).toBe("delivered");
@@ -356,7 +356,7 @@ describe("E2E Healthcare Delivery Workflow", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(pod), { status: 200 })
+        new Response(JSON.stringify(pod), { status: 200 }),
       );
 
       expect(pod.recordedInEHR).toBe(true);
@@ -390,7 +390,7 @@ describe("E2E Healthcare Delivery Workflow", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(auditLog), { status: 200 })
+        new Response(JSON.stringify(auditLog), { status: 200 }),
       );
 
       expect(auditLog.events).toHaveLength(4);
@@ -421,14 +421,14 @@ describe("E2E Multi-Provider Failover Cascade", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(order), { status: 201 })
+        new Response(JSON.stringify(order), { status: 201 }),
       );
 
       // Primary provider fails
       mockFetch.mockResolvedValueOnce(
         new Response(JSON.stringify({ error: "Primary provider down" }), {
           status: 503,
-        })
+        }),
       );
 
       // Failover to secondary provider
@@ -441,7 +441,7 @@ describe("E2E Multi-Provider Failover Cascade", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(failoverResult), { status: 200 })
+        new Response(JSON.stringify(failoverResult), { status: 200 }),
       );
 
       expect(failoverResult.failoverProvider).toBe("warehouse_central");
@@ -455,7 +455,7 @@ describe("E2E Multi-Provider Failover Cascade", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(fulfillment), { status: 200 })
+        new Response(JSON.stringify(fulfillment), { status: 200 }),
       );
 
       expect(fulfillment.status).toBe("shipped");
@@ -482,7 +482,7 @@ describe("E2E Multi-Provider Failover Cascade", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(cascadeResult), { status: 200 })
+        new Response(JSON.stringify(cascadeResult), { status: 200 }),
       );
 
       expect(cascadeResult.orderCompletedSuccessfully).toBe(true);
@@ -500,7 +500,7 @@ describe("E2E Multi-Provider Failover Cascade", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(recovery), { status: 200 })
+        new Response(JSON.stringify(recovery), { status: 200 }),
       );
 
       expect(recovery.primaryRecovered).toBe(true);
@@ -519,7 +519,7 @@ describe("E2E Multi-Provider Failover Cascade", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(slaImpact), { status: 200 })
+        new Response(JSON.stringify(slaImpact), { status: 200 }),
       );
 
       expect(slaImpact.adjustedSLA).toBeGreaterThan(slaImpact.originalSLA);
@@ -552,7 +552,7 @@ describe("Integration Registry Validation", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(providerRegistry), { status: 200 })
+        new Response(JSON.stringify(providerRegistry), { status: 200 }),
       );
 
       expect(providerRegistry.totalProviders).toBe(124);
@@ -584,7 +584,7 @@ describe("Integration Registry Validation", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(capabilityMatrix), { status: 200 })
+        new Response(JSON.stringify(capabilityMatrix), { status: 200 }),
       );
 
       expect(capabilityMatrix.providers).toHaveLength(2);
@@ -604,7 +604,7 @@ describe("Integration Registry Validation", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(authValidation), { status: 200 })
+        new Response(JSON.stringify(authValidation), { status: 200 }),
       );
 
       expect(authValidation.allAuthMethodsSupported).toBe(true);
@@ -630,7 +630,7 @@ describe("Integration Registry Validation", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(statusConsistency), { status: 200 })
+        new Response(JSON.stringify(statusConsistency), { status: 200 }),
       );
 
       expect(statusConsistency.allConsistent).toBe(true);
@@ -651,7 +651,7 @@ describe("Integration Registry Validation", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(rateLimitValidation), { status: 200 })
+        new Response(JSON.stringify(rateLimitValidation), { status: 200 }),
       );
 
       expect(rateLimitValidation.providersExceededLimit).toBe(0);
@@ -680,7 +680,7 @@ describe("Integration Registry Validation", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(mappingConsistency), { status: 200 })
+        new Response(JSON.stringify(mappingConsistency), { status: 200 }),
       );
 
       expect(mappingConsistency.consistencyPercent).toBeGreaterThan(99);
@@ -697,7 +697,7 @@ describe("Integration Registry Validation", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(webhookValidation), { status: 200 })
+        new Response(JSON.stringify(webhookValidation), { status: 200 }),
       );
 
       expect(webhookValidation.failingWebhooks).toBe(0);
@@ -714,7 +714,7 @@ describe("Integration Registry Validation", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(credentialRotation), { status: 200 })
+        new Response(JSON.stringify(credentialRotation), { status: 200 }),
       );
 
       expect(credentialRotation.overdueRotation).toBeLessThan(5);
@@ -734,7 +734,7 @@ describe("Integration Registry Validation", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(syncValidation), { status: 200 })
+        new Response(JSON.stringify(syncValidation), { status: 200 }),
       );
 
       expect(syncValidation.allWithinSLA).toBe(true);
@@ -751,7 +751,7 @@ describe("Integration Registry Validation", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(versionConsistency), { status: 200 })
+        new Response(JSON.stringify(versionConsistency), { status: 200 }),
       );
 
       expect(versionConsistency.consistencyPercent).toBeGreaterThan(90);
@@ -777,19 +777,39 @@ describe("Comprehensive System Integration", () => {
       workflowId: "comprehensive_e2e_001",
       stages: [
         { stage: "ecommerce_order", provider: "shopify", status: "completed" },
-        { stage: "inventory_allocation", provider: "manhattan", status: "completed" },
-        { stage: "warehouse_fulfillment", provider: "bodies_labor_data", status: "completed" },
+        {
+          stage: "inventory_allocation",
+          provider: "manhattan",
+          status: "completed",
+        },
+        {
+          stage: "warehouse_fulfillment",
+          provider: "bodies_labor_data",
+          status: "completed",
+        },
         { stage: "freight_movement", provider: "dat", status: "completed" },
-        { stage: "last_mile_delivery", provider: "onfleet", status: "completed" },
-        { stage: "invoice_generation", provider: "quickbooks", status: "completed" },
-        { stage: "analytics_reporting", provider: "tableau", status: "completed" },
+        {
+          stage: "last_mile_delivery",
+          provider: "onfleet",
+          status: "completed",
+        },
+        {
+          stage: "invoice_generation",
+          provider: "quickbooks",
+          status: "completed",
+        },
+        {
+          stage: "analytics_reporting",
+          provider: "tableau",
+          status: "completed",
+        },
       ],
       totalDuration: 48,
       completionPercent: 100,
     };
 
     mockFetch.mockResolvedValueOnce(
-      new Response(JSON.stringify(workflow), { status: 200 })
+      new Response(JSON.stringify(workflow), { status: 200 }),
     );
 
     expect(workflow.stages).toHaveLength(7);
@@ -826,7 +846,7 @@ describe("Comprehensive System Integration", () => {
     };
 
     mockFetch.mockResolvedValueOnce(
-      new Response(JSON.stringify(healthReport), { status: 200 })
+      new Response(JSON.stringify(healthReport), { status: 200 }),
     );
 
     expect(healthReport.overall_health).toBe("healthy");

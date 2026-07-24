@@ -15,7 +15,11 @@ export interface DispatchFilterBarProps {
   className?: string;
 }
 
-const statusOptions: Array<{ value: OrderStatus; label: string; icon: string }> = [
+const statusOptions: Array<{
+  value: OrderStatus;
+  label: string;
+  icon: string;
+}> = [
   { value: "all", label: "All Orders", icon: "📦" },
   { value: "pending", label: "Pending", icon: "⏳" },
   { value: "in-transit", label: "In Transit", icon: "🚚" },
@@ -71,7 +75,7 @@ export function DispatchFilterBar({
     <div
       className={cn(
         "space-y-3 p-4 bg-wl-bg-secondary rounded-lg border border-wl-border-subtle",
-        className
+        className,
       )}
     >
       {/* Search bar */}
@@ -86,7 +90,7 @@ export function DispatchFilterBar({
             "bg-wl-bg-primary border border-wl-border-default",
             "text-wl-text-primary placeholder:text-wl-text-tertiary",
             "focus:outline-none focus:ring-2 focus:ring-wl-primary-500 focus:border-transparent",
-            "transition-all duration-200"
+            "transition-all duration-200",
           )}
           aria-label="Search orders"
         />
@@ -100,13 +104,15 @@ export function DispatchFilterBar({
         {/* Status filter */}
         <div className="relative">
           <button
-            onClick={() => setExpandedSection(expandedSection === "status" ? null : "status")}
+            onClick={() =>
+              setExpandedSection(expandedSection === "status" ? null : "status")
+            }
             className={cn(
               "px-3 py-2 rounded-lg text-sm font-medium",
               "bg-wl-bg-primary border border-wl-border-default",
               "text-wl-text-secondary hover:text-wl-text-primary",
               "transition-all duration-200",
-              expandedSection === "status" && "ring-2 ring-wl-primary-500"
+              expandedSection === "status" && "ring-2 ring-wl-primary-500",
             )}
             aria-haspopup="menu"
             aria-expanded={expandedSection === "status"}
@@ -127,7 +133,8 @@ export function DispatchFilterBar({
                     "w-full text-left px-4 py-2.5 text-sm",
                     "border-b border-wl-border-subtle last:border-b-0",
                     "hover:bg-wl-bg-secondary transition-colors",
-                    selectedStatus === option.value && "bg-wl-primary-100 dark:bg-wl-primary-900"
+                    selectedStatus === option.value &&
+                      "bg-wl-primary-100 dark:bg-wl-primary-900",
                   )}
                 >
                   <span className="mr-2">{option.icon}</span>
@@ -141,13 +148,15 @@ export function DispatchFilterBar({
         {/* Sort option */}
         <div className="relative">
           <button
-            onClick={() => setExpandedSection(expandedSection === "sort" ? null : "sort")}
+            onClick={() =>
+              setExpandedSection(expandedSection === "sort" ? null : "sort")
+            }
             className={cn(
               "px-3 py-2 rounded-lg text-sm font-medium",
               "bg-wl-bg-primary border border-wl-border-default",
               "text-wl-text-secondary hover:text-wl-text-primary",
               "transition-all duration-200",
-              expandedSection === "sort" && "ring-2 ring-wl-primary-500"
+              expandedSection === "sort" && "ring-2 ring-wl-primary-500",
             )}
             aria-haspopup="menu"
             aria-expanded={expandedSection === "sort"}
@@ -168,7 +177,8 @@ export function DispatchFilterBar({
                     "w-full text-left px-4 py-2.5 text-sm",
                     "border-b border-wl-border-subtle last:border-b-0",
                     "hover:bg-wl-bg-secondary transition-colors",
-                    selectedSort === option.value && "bg-wl-primary-100 dark:bg-wl-primary-900"
+                    selectedSort === option.value &&
+                      "bg-wl-primary-100 dark:bg-wl-primary-900",
                   )}
                 >
                   <span className="mr-2">{option.icon}</span>
@@ -190,7 +200,7 @@ export function DispatchFilterBar({
                 "transition-all duration-200",
                 selectedView === option.value
                   ? "bg-wl-primary-500 text-white shadow-sm"
-                  : "text-wl-text-secondary hover:text-wl-text-primary"
+                  : "text-wl-text-secondary hover:text-wl-text-primary",
               )}
               aria-pressed={selectedView === option.value}
               title={option.label}

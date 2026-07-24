@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useMemo, useCallback } from 'react';
-import dynamic from 'next/dynamic';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ErrorState } from '@/components/ui/error-state';
-import { Skeleton } from '@/components/ui/loading-skeleton';
-import { useApiList } from '@/hooks/use-api';
+import { useState, useMemo, useCallback } from "react";
+import dynamic from "next/dynamic";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ErrorState } from "@/components/ui/error-state";
+import { Skeleton } from "@/components/ui/loading-skeleton";
+import { useApiList } from "@/hooks/use-api";
 import {
   Package,
   Truck,
@@ -19,9 +19,9 @@ import {
   X,
   MapPin,
   Clock,
-} from 'lucide-react';
-import type { OrderPinStatus } from '@/components/map/order-layer';
-import type { DriverStatus } from '@/components/map/driver-layer';
+} from "lucide-react";
+import type { OrderPinStatus } from "@/components/map/order-layer";
+import type { DriverStatus } from "@/components/map/driver-layer";
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -64,33 +64,35 @@ interface SelectedDriver extends ApiDriver {}
 interface SelectedRoute extends ApiRoute {}
 
 type SelectedItem =
-  | { type: 'order'; item: SelectedOrder }
-  | { type: 'driver'; item: SelectedDriver }
-  | { type: 'route'; item: SelectedRoute }
+  | { type: "order"; item: SelectedOrder }
+  | { type: "driver"; item: SelectedDriver }
+  | { type: "route"; item: SelectedRoute }
   | null;
 
 // ── Status normalizers ───────────────────────────────────────────
 
 function toOrderPinStatus(status: string): OrderPinStatus {
   const s = status.toUpperCase();
-  if (s === 'PENDING' || s === 'CONFIRMED') return 'pending';
-  if (s === 'ASSIGNED') return 'assigned';
-  if (s === 'IN_TRANSIT' || s === 'IN_PROGRESS' || s === 'OUT_FOR_DELIVERY') return 'in_transit';
-  if (s === 'CANCELLED' || s === 'FAILED' || s === 'RETURNED') return 'delayed';
-  return 'pending';
+  if (s === "PENDING" || s === "CONFIRMED") return "pending";
+  if (s === "ASSIGNED") return "assigned";
+  if (s === "IN_TRANSIT" || s === "IN_PROGRESS" || s === "OUT_FOR_DELIVERY")
+    return "in_transit";
+  if (s === "CANCELLED" || s === "FAILED" || s === "RETURNED") return "delayed";
+  return "pending";
 }
 
 function toDriverStatus(status: string): DriverStatus {
   const s = status.toUpperCase();
-  if (s === 'AVAILABLE' || s === 'ACTIVE') return 'available';
-  if (s === 'ON_ROUTE' || s === 'ON_DELIVERY' || s === 'DELIVERING') return 'busy';
-  if (s === 'ON_BREAK') return 'break';
-  return 'offline';
+  if (s === "AVAILABLE" || s === "ACTIVE") return "available";
+  if (s === "ON_ROUTE" || s === "ON_DELIVERY" || s === "DELIVERING")
+    return "busy";
+  if (s === "ON_BREAK") return "break";
+  return "offline";
 }
 
 // ── Dynamic map import (SSR disabled for MapLibre) ───────────────
 
-const LiveMap = dynamic(() => import('./components/map-view'), {
+const LiveMap = dynamic(() => import("./components/map-view"), {
   ssr: false,
   loading: () => (
     <div className="flex-1 bg-wl-bg-sunken flex items-center justify-center">
@@ -123,22 +125,24 @@ function LayerButton({
     <button
       onClick={onClick}
       className={cn(
-        'flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all',
+        "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all",
         active
-          ? 'bg-white/[0.08] text-white'
-          : 'text-white/40 hover:text-white/60 hover:bg-white/[0.04]',
+          ? "bg-white/[0.08] text-white"
+          : "text-white/40 hover:text-white/60 hover:bg-white/[0.04]",
       )}
     >
       <div
         className="w-2 h-2 rounded-full flex-shrink-0"
-        style={{ backgroundColor: active ? color : 'rgba(255,255,255,0.15)' }}
+        style={{ backgroundColor: active ? color : "rgba(255,255,255,0.15)" }}
       />
       <Icon className="w-3.5 h-3.5 flex-shrink-0" />
       <span className="flex-1 text-left">{label}</span>
       <span
         className={cn(
-          'text-xs font-mono px-1.5 py-0.5 rounded',
-          active ? 'bg-white/10 text-white/70' : 'bg-white/[0.05] text-white/25',
+          "text-xs font-mono px-1.5 py-0.5 rounded",
+          active
+            ? "bg-white/10 text-white/70"
+            : "bg-white/[0.05] text-white/25",
         )}
       >
         {count}
@@ -149,13 +153,23 @@ function LayerButton({
 
 // ── Status badge helpers ─────────────────────────────────────────
 
-function statusBadgeVariant(status: string): 'success' | 'warning' | 'danger' | 'info' | 'default' {
+function statusBadgeVariant(
+  status: string,
+): "success" | "warning" | "danger" | "info" | "default" {
   const s = status.toUpperCase();
-  if (s === 'DELIVERED' || s === 'COMPLETED' || s === 'AVAILABLE') return 'success';
-  if (s === 'IN_TRANSIT' || s === 'IN_PROGRESS' || s === 'ON_ROUTE' || s === 'ON_DELIVERY') return 'info';
-  if (s === 'PENDING' || s === 'CONFIRMED' || s === 'ASSIGNED') return 'warning';
-  if (s === 'CANCELLED' || s === 'FAILED' || s === 'ON_BREAK') return 'danger';
-  return 'default';
+  if (s === "DELIVERED" || s === "COMPLETED" || s === "AVAILABLE")
+    return "success";
+  if (
+    s === "IN_TRANSIT" ||
+    s === "IN_PROGRESS" ||
+    s === "ON_ROUTE" ||
+    s === "ON_DELIVERY"
+  )
+    return "info";
+  if (s === "PENDING" || s === "CONFIRMED" || s === "ASSIGNED")
+    return "warning";
+  if (s === "CANCELLED" || s === "FAILED" || s === "ON_BREAK") return "danger";
+  return "default";
 }
 
 // ── Detail panel ─────────────────────────────────────────────────
@@ -171,14 +185,21 @@ function DetailPanel({
     <div className="border-t border-white/[0.06] p-4 space-y-3">
       <div className="flex items-center justify-between">
         <span className="text-xs font-semibold text-white/50 uppercase tracking-wider">
-          {selected.type === 'order' ? 'Order' : selected.type === 'driver' ? 'Driver' : 'Route'}
+          {selected.type === "order"
+            ? "Order"
+            : selected.type === "driver"
+              ? "Driver"
+              : "Route"}
         </span>
-        <button onClick={onClose} className="text-white/30 hover:text-white/60 transition-colors">
+        <button
+          onClick={onClose}
+          className="text-white/30 hover:text-white/60 transition-colors"
+        >
           <X className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      {selected.type === 'order' && (
+      {selected.type === "order" && (
         <div className="space-y-2">
           <div className="text-sm font-semibold text-white truncate">
             {selected.item.externalOrderNumber ?? selected.item.id.slice(0, 8)}
@@ -192,11 +213,18 @@ function DetailPanel({
           {selected.item.addressLine1 && (
             <div className="flex items-start gap-1.5 text-xs text-white/50">
               <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
-              <span>{[selected.item.addressLine1, selected.item.city].filter(Boolean).join(', ')}</span>
+              <span>
+                {[selected.item.addressLine1, selected.item.city]
+                  .filter(Boolean)
+                  .join(", ")}
+              </span>
             </div>
           )}
-          <Badge variant={statusBadgeVariant(selected.item.status)} className="text-[10px]">
-            {selected.item.status.replace(/_/g, ' ')}
+          <Badge
+            variant={statusBadgeVariant(selected.item.status)}
+            className="text-[10px]"
+          >
+            {selected.item.status.replace(/_/g, " ")}
           </Badge>
           {selected.item.totalAmount != null && (
             <div className="text-xs font-mono text-white/50">
@@ -206,16 +234,24 @@ function DetailPanel({
         </div>
       )}
 
-      {selected.type === 'driver' && (
+      {selected.type === "driver" && (
         <div className="space-y-2">
-          <div className="text-sm font-semibold text-white">{selected.item.name}</div>
-          <Badge variant={statusBadgeVariant(selected.item.status)} className="text-[10px]">
-            {selected.item.status.replace(/_/g, ' ')}
+          <div className="text-sm font-semibold text-white">
+            {selected.item.name}
+          </div>
+          <Badge
+            variant={statusBadgeVariant(selected.item.status)}
+            className="text-[10px]"
+          >
+            {selected.item.status.replace(/_/g, " ")}
           </Badge>
           {selected.item.vehicleType && (
             <div className="flex items-center gap-1.5 text-xs text-white/50">
               <Truck className="w-3 h-3" />
-              <span>{selected.item.vehicleType} · {selected.item.vehiclePlate ?? '—'}</span>
+              <span>
+                {selected.item.vehicleType} ·{" "}
+                {selected.item.vehiclePlate ?? "—"}
+              </span>
             </div>
           )}
           {selected.item.activeDeliveries != null && (
@@ -232,13 +268,16 @@ function DetailPanel({
         </div>
       )}
 
-      {selected.type === 'route' && (
+      {selected.type === "route" && (
         <div className="space-y-2">
           <div className="text-sm font-semibold text-white truncate">
             {selected.item.name ?? selected.item.id.slice(0, 8)}
           </div>
-          <Badge variant={statusBadgeVariant(selected.item.status)} className="text-[10px]">
-            {selected.item.status.replace(/_/g, ' ')}
+          <Badge
+            variant={statusBadgeVariant(selected.item.status)}
+            className="text-[10px]"
+          >
+            {selected.item.status.replace(/_/g, " ")}
           </Badge>
           {selected.item.driver?.name && (
             <div className="flex items-center gap-1.5 text-xs text-white/50">
@@ -273,24 +312,26 @@ export default function MapPage() {
     loading: ordersLoading,
     error: ordersError,
     refetch: refetchOrders,
-  } = useApiList<ApiOrder>('/api/v4/orders', { limit: 100 });
+  } = useApiList<ApiOrder>("/api/v4/orders", { limit: 100 });
 
   const {
     items: rawDrivers,
     loading: driversLoading,
     error: driversError,
     refetch: refetchDrivers,
-  } = useApiList<ApiDriver>('/api/v4/dispatch/drivers', { limit: 100 });
+  } = useApiList<ApiDriver>("/api/v4/dispatch/drivers", { limit: 100 });
 
   const {
     items: rawRoutes,
     loading: routesLoading,
     error: routesError,
     refetch: refetchRoutes,
-  } = useApiList<ApiRoute>('/api/v4/routes', { limit: 50 });
+  } = useApiList<ApiRoute>("/api/v4/routes", { limit: 50 });
 
-  const loading = ordersLoading || driversLoading || (showRoutes && routesLoading);
-  const error = ordersError || driversError || (showRoutes ? routesError : null);
+  const loading =
+    ordersLoading || driversLoading || (showRoutes && routesLoading);
+  const error =
+    ordersError || driversError || (showRoutes ? routesError : null);
 
   // ── Normalise orders ─────────────────────────────────────────
   const orders = useMemo(
@@ -300,12 +341,12 @@ export default function MapPage() {
         .map((o) => ({
           id: o.id,
           orderNumber: o.externalOrderNumber ?? o.id.slice(-8),
-          customerName: o.customerName ?? '',
-          address: [o.addressLine1, o.city].filter(Boolean).join(', '),
+          customerName: o.customerName ?? "",
+          address: [o.addressLine1, o.city].filter(Boolean).join(", "),
           status: toOrderPinStatus(o.status),
           lat: o.deliveryLat!,
           lng: o.deliveryLng!,
-          priority: undefined as 'low' | 'medium' | 'high' | undefined,
+          priority: undefined as "low" | "medium" | "high" | undefined,
         })),
     [rawOrders],
   );
@@ -331,7 +372,8 @@ export default function MapPage() {
   const allCoords = useMemo(() => {
     const pts: { lat: number; lng: number }[] = [];
     if (showOrders) orders.forEach((o) => pts.push({ lat: o.lat, lng: o.lng }));
-    if (showDrivers) drivers.forEach((d) => pts.push({ lat: d.lat, lng: d.lng }));
+    if (showDrivers)
+      drivers.forEach((d) => pts.push({ lat: d.lat, lng: d.lng }));
     return pts;
   }, [showOrders, showDrivers, orders, drivers]);
 
@@ -339,7 +381,7 @@ export default function MapPage() {
   const handleOrderClick = useCallback(
     (id: string) => {
       const raw = rawOrders.find((o) => o.id === id);
-      if (raw) setSelected({ type: 'order', item: raw });
+      if (raw) setSelected({ type: "order", item: raw });
     },
     [rawOrders],
   );
@@ -347,7 +389,7 @@ export default function MapPage() {
   const handleDriverClick = useCallback(
     (id: string) => {
       const raw = rawDrivers.find((d) => d.id === id);
-      if (raw) setSelected({ type: 'driver', item: raw });
+      if (raw) setSelected({ type: "driver", item: raw });
     },
     [rawDrivers],
   );
@@ -361,14 +403,17 @@ export default function MapPage() {
   // ── Stats strip ──────────────────────────────────────────────
   const ordersWithLoc = rawOrders.filter((o) => o.deliveryLat != null).length;
   const driversOnline = rawDrivers.filter((d) => {
-    const s = d.status?.toUpperCase() ?? '';
-    return s === 'AVAILABLE' || s === 'ON_ROUTE' || s === 'ON_DELIVERY';
+    const s = d.status?.toUpperCase() ?? "";
+    return s === "AVAILABLE" || s === "ON_ROUTE" || s === "ON_DELIVERY";
   }).length;
 
   if (error) {
     return (
       <div className="h-screen flex items-center justify-center bg-wl-bg-root">
-        <ErrorState message={error.message ?? 'Failed to load map data'} onRetry={handleRefresh} />
+        <ErrorState
+          message={error.message ?? "Failed to load map data"}
+          onRetry={handleRefresh}
+        />
       </div>
     );
   }
@@ -381,8 +426,10 @@ export default function MapPage() {
           orders={showOrders ? orders : []}
           drivers={showDrivers ? drivers : []}
           allCoords={allCoords}
-          selectedOrderId={selected?.type === 'order' ? selected.item.id : null}
-          selectedDriverId={selected?.type === 'driver' ? selected.item.id : null}
+          selectedOrderId={selected?.type === "order" ? selected.item.id : null}
+          selectedDriverId={
+            selected?.type === "driver" ? selected.item.id : null
+          }
           onOrderClick={handleOrderClick}
           onDriverClick={handleDriverClick}
         />
@@ -401,24 +448,31 @@ export default function MapPage() {
         <button
           onClick={() => setSidebarOpen((v) => !v)}
           className="absolute top-4 right-4 z-20 flex items-center justify-center w-8 h-8 rounded-lg bg-wl-bg-surface/90 border border-white/[0.08] text-white/50 hover:text-white/80 hover:border-white/20 transition-all"
-          aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+          aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
         >
-          {sidebarOpen ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+          {sidebarOpen ? (
+            <ChevronRight className="w-4 h-4" />
+          ) : (
+            <ChevronLeft className="w-4 h-4" />
+          )}
         </button>
 
         {/* No-location note for orders */}
-        {!loading && ordersWithLoc === 0 && rawOrders.length > 0 && showOrders && (
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 px-4 py-2 bg-wl-bg-surface/95 border border-white/[0.08] rounded-full text-xs text-white/40">
-            Orders exist but have no geocoded delivery locations yet
-          </div>
-        )}
+        {!loading &&
+          ordersWithLoc === 0 &&
+          rawOrders.length > 0 &&
+          showOrders && (
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 px-4 py-2 bg-wl-bg-surface/95 border border-white/[0.08] rounded-full text-xs text-white/40">
+              Orders exist but have no geocoded delivery locations yet
+            </div>
+          )}
       </div>
 
       {/* ── Sidebar ──────────────────────────────────────────── */}
       <div
         className={cn(
-          'flex flex-col bg-wl-bg-sunken border-l border-white/[0.06] transition-all duration-300 overflow-hidden',
-          sidebarOpen ? 'w-72' : 'w-0',
+          "flex flex-col bg-wl-bg-sunken border-l border-white/[0.06] transition-all duration-300 overflow-hidden",
+          sidebarOpen ? "w-72" : "w-0",
         )}
       >
         {/* Header */}
@@ -426,14 +480,18 @@ export default function MapPage() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Layers className="w-4 h-4 text-white/40" />
-              <span className="text-sm font-semibold text-white">Map Layers</span>
+              <span className="text-sm font-semibold text-white">
+                Map Layers
+              </span>
             </div>
             <button
               onClick={handleRefresh}
               className="text-white/30 hover:text-white/60 transition-colors"
               title="Refresh"
             >
-              <RefreshCw className={cn('w-3.5 h-3.5', loading && 'animate-spin')} />
+              <RefreshCw
+                className={cn("w-3.5 h-3.5", loading && "animate-spin")}
+              />
             </button>
           </div>
 
@@ -469,14 +527,16 @@ export default function MapPage() {
         {/* Stats */}
         <div className="flex-none grid grid-cols-2 gap-px bg-white/[0.04] border-b border-white/[0.06]">
           {[
-            { label: 'On map', value: orders.length + drivers.length },
-            { label: 'Drivers online', value: driversOnline },
-            { label: 'Orders mapped', value: ordersWithLoc },
-            { label: 'Total orders', value: rawOrders.length },
+            { label: "On map", value: orders.length + drivers.length },
+            { label: "Drivers online", value: driversOnline },
+            { label: "Orders mapped", value: ordersWithLoc },
+            { label: "Total orders", value: rawOrders.length },
           ].map(({ label, value }) => (
             <div key={label} className="bg-wl-bg-sunken px-3 py-2.5">
               <div className="text-[10px] text-white/30 mb-0.5">{label}</div>
-              <div className="text-base font-bold font-mono text-white/80">{loading ? '—' : value}</div>
+              <div className="text-base font-bold font-mono text-white/80">
+                {loading ? "—" : value}
+              </div>
             </div>
           ))}
         </div>
@@ -502,26 +562,32 @@ export default function MapPage() {
                       key={o.id}
                       onClick={() => handleOrderClick(o.id)}
                       className={cn(
-                        'w-full text-left px-4 py-2.5 flex items-center gap-2.5 hover:bg-white/[0.03] transition-colors border-b border-white/[0.03]',
-                        selected?.type === 'order' && selected.item.id === o.id && 'bg-white/[0.05]',
+                        "w-full text-left px-4 py-2.5 flex items-center gap-2.5 hover:bg-white/[0.03] transition-colors border-b border-white/[0.03]",
+                        selected?.type === "order" &&
+                          selected.item.id === o.id &&
+                          "bg-white/[0.05]",
                       )}
                     >
                       <div
                         className="w-2 h-2 rounded-full flex-shrink-0"
                         style={{
                           backgroundColor:
-                            o.status === 'in_transit'
-                              ? '#10b981'
-                              : o.status === 'assigned'
-                              ? '#f5a623'
-                              : o.status === 'delayed'
-                              ? '#ef4444'
-                              : '#60a5fa',
+                            o.status === "in_transit"
+                              ? "#10b981"
+                              : o.status === "assigned"
+                                ? "#f5a623"
+                                : o.status === "delayed"
+                                  ? "#ef4444"
+                                  : "#60a5fa",
                         }}
                       />
                       <div className="min-w-0 flex-1">
-                        <div className="text-xs font-medium text-white/80 truncate">{o.orderNumber}</div>
-                        <div className="text-[10px] text-white/30 truncate">{o.address || o.customerName}</div>
+                        <div className="text-xs font-medium text-white/80 truncate">
+                          {o.orderNumber}
+                        </div>
+                        <div className="text-[10px] text-white/30 truncate">
+                          {o.address || o.customerName}
+                        </div>
                       </div>
                     </button>
                   ))}
@@ -544,27 +610,31 @@ export default function MapPage() {
                       key={d.id}
                       onClick={() => handleDriverClick(d.id)}
                       className={cn(
-                        'w-full text-left px-4 py-2.5 flex items-center gap-2.5 hover:bg-white/[0.03] transition-colors border-b border-white/[0.03]',
-                        selected?.type === 'driver' && selected.item.id === d.id && 'bg-white/[0.05]',
+                        "w-full text-left px-4 py-2.5 flex items-center gap-2.5 hover:bg-white/[0.03] transition-colors border-b border-white/[0.03]",
+                        selected?.type === "driver" &&
+                          selected.item.id === d.id &&
+                          "bg-white/[0.05]",
                       )}
                     >
                       <div
                         className="w-2 h-2 rounded-full flex-shrink-0"
                         style={{
                           backgroundColor:
-                            d.status === 'available'
-                              ? '#10b981'
-                              : d.status === 'busy'
-                              ? '#f59e0b'
-                              : d.status === 'break'
-                              ? '#a78bfa'
-                              : '#6b7280',
+                            d.status === "available"
+                              ? "#10b981"
+                              : d.status === "busy"
+                                ? "#f59e0b"
+                                : d.status === "break"
+                                  ? "#a78bfa"
+                                  : "#6b7280",
                         }}
                       />
                       <div className="min-w-0 flex-1">
-                        <div className="text-xs font-medium text-white/80 truncate">{d.name}</div>
+                        <div className="text-xs font-medium text-white/80 truncate">
+                          {d.name}
+                        </div>
                         <div className="text-[10px] text-white/30 capitalize">
-                          {d.status.replace(/_/g, ' ')}
+                          {d.status.replace(/_/g, " ")}
                         </div>
                       </div>
                     </button>
@@ -576,7 +646,9 @@ export default function MapPage() {
               {orders.length === 0 && drivers.length === 0 && !loading && (
                 <div className="flex flex-col items-center justify-center h-32 text-center px-4">
                   <MapPin className="w-6 h-6 text-white/20 mb-2" />
-                  <p className="text-xs text-white/30">No located items to display</p>
+                  <p className="text-xs text-white/30">
+                    No located items to display
+                  </p>
                   <p className="text-[10px] text-white/20 mt-1">
                     Locations appear once orders/drivers are geocoded
                   </p>

@@ -2,8 +2,8 @@
  * Out for Delivery Email Template
  */
 
-import { DeliveryEmailData } from '../types';
-import { baseLayout } from './base-layout';
+import { DeliveryEmailData } from "../types";
+import { baseLayout } from "./base-layout";
 
 export function outForDeliveryTemplate(data: DeliveryEmailData): string {
   const content = `

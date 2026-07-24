@@ -160,10 +160,7 @@ export class DriverBehaviorScorer {
    */
   scoreDriver(metrics: DriverBehaviorMetrics): DriverBehaviorScore {
     // Each metric normalized 0-100, higher is better
-    const accelerationScore = Math.max(
-      0,
-      100 - metrics.hardAccelerations * 5
-    );
+    const accelerationScore = Math.max(0, 100 - metrics.hardAccelerations * 5);
     const brakingScore = Math.max(0, 100 - metrics.hardBrakings * 4);
     const idleScore = Math.max(0, 100 - metrics.idleTimePercent * 2);
     const speedScore = 100 - Math.abs(metrics.speedViolations) * 3;
@@ -181,21 +178,26 @@ export class DriverBehaviorScorer {
 
     const recommendations: string[] = [];
     if (accelerationScore < 70)
-      recommendations.push("Reduce hard acceleration; gradual speed increase improves fuel economy");
+      recommendations.push(
+        "Reduce hard acceleration; gradual speed increase improves fuel economy",
+      );
     if (brakingScore < 70)
       recommendations.push("Use smoother braking; anticipate stops earlier");
     if (idleScore < 70)
       recommendations.push(
-        "Reduce idle time; turn off engine during extended stops"
+        "Reduce idle time; turn off engine during extended stops",
       );
     if (speedScore < 70)
-      recommendations.push("Maintain posted speed limits; excessive speed reduces fuel efficiency");
+      recommendations.push(
+        "Maintain posted speed limits; excessive speed reduces fuel efficiency",
+      );
     if (routeScore < 80)
-      recommendations.push("Follow planned route; detours increase fuel consumption");
+      recommendations.push(
+        "Follow planned route; detours increase fuel consumption",
+      );
 
     // Estimate fuel economy improvement potential
-    const improvementPotential =
-      (100 - overallScore * 100) * 0.15; // Up to 15% improvement
+    const improvementPotential = (100 - overallScore * 100) * 0.15; // Up to 15% improvement
 
     return {
       driverId: metrics.driverId,
@@ -215,9 +217,7 @@ export class DriverBehaviorScorer {
   /**
    * Recommend driver coaching interventions
    */
-  recommendCoaching(
-    score: DriverBehaviorScore
-  ): Array<{
+  recommendCoaching(score: DriverBehaviorScore): Array<{
     priority: "high" | "medium" | "low";
     focus: string;
     estimatedImpact: number; // % MPG improvement
@@ -258,7 +258,11 @@ export class DriverBehaviorScorer {
     }
 
     return coaching.sort((a, b) => {
-      const priorityOrder: Record<"high" | "medium" | "low", number> = { high: 0, medium: 1, low: 2 };
+      const priorityOrder: Record<"high" | "medium" | "low", number> = {
+        high: 0,
+        medium: 1,
+        low: 2,
+      };
       return (
         priorityOrder[a.priority] - priorityOrder[b.priority] ||
         b.estimatedImpact - a.estimatedImpact
@@ -278,7 +282,7 @@ export class VehicleFuelProfile {
       mpg: number;
       distance: number;
     }>,
-    windowSamples: number = 10
+    windowSamples: number = 10,
   ): number {
     if (samples.length === 0) return 0;
 
@@ -293,13 +297,11 @@ export class VehicleFuelProfile {
   /**
    * Detect degradation trend in fuel economy
    */
-  calculateDegradationTrend(
-    profile: VehicleFuelProfile
-  ): number {
+  calculateDegradationTrend(profile: VehicleFuelProfile): number {
     if (profile.fuelSamples.length < 5) return 0;
 
     const sortedSamples = [...profile.fuelSamples].sort(
-      (a, b) => a.date.getTime() - b.date.getTime()
+      (a, b) => a.date.getTime() - b.date.getTime(),
     );
 
     // Calculate trend using simple linear regression
@@ -314,7 +316,7 @@ export class VehicleFuelProfile {
 
     const numerator = x.reduce(
       (sum, xi, i) => sum + (xi - xMean) * (y[i] - yMean),
-      0
+      0,
     );
     const denominator = x.reduce((sum, xi) => sum + Math.pow(xi - xMean, 2), 0);
 
@@ -337,13 +339,13 @@ export class VehicleFuelProfile {
 
     if (current < baseline * 0.85) {
       anomalies.push(
-        `Fuel economy 15% below baseline (${current} vs ${baseline} MPG)`
+        `Fuel economy 15% below baseline (${current} vs ${baseline} MPG)`,
       );
     }
 
     if (profile.degradationTrend < -3) {
       anomalies.push(
-        `Rapid fuel economy degradation detected (${profile.degradationTrend}% per 10k miles)`
+        `Rapid fuel economy degradation detected (${profile.degradationTrend}% per 10k miles)`,
       );
     }
 
@@ -351,19 +353,19 @@ export class VehicleFuelProfile {
     if (profile.fuelSamples.length >= 10) {
       const recentAvg = this.calculateCurrentMpg(
         profile.fuelSamples.map((s) => ({ mpg: s.mpg, distance: s.distance })),
-        5
+        5,
       );
       const olderAvg = this.calculateCurrentMpg(
         profile.fuelSamples.slice(0, -5).map((s) => ({
           mpg: s.mpg,
           distance: s.distance,
         })),
-        5
+        5,
       );
 
       if (recentAvg < olderAvg * 0.9) {
         anomalies.push(
-          `Recent decline in fuel economy (${recentAvg} vs ${olderAvg} MPG average)`
+          `Recent decline in fuel economy (${recentAvg} vs ${olderAvg} MPG average)`,
         );
       }
     }
@@ -396,7 +398,7 @@ export class RouteFuelOptimizer {
   optimizeRoute(
     originalRoute: RouteSegment[],
     currentMpg: number,
-    currentFuelPrice: number
+    currentFuelPrice: number,
   ): FuelOptimizedRoute {
     // Simple optimization: flag high-elevation and high-speed segments
     const optimizedRoute = originalRoute.map((segment) => {
@@ -414,7 +416,7 @@ export class RouteFuelOptimizer {
     // Calculate baseline fuel consumption
     const baselineFuel = originalRoute.reduce(
       (sum, seg) => sum + seg.distance / currentMpg,
-      0
+      0,
     );
     const baselineCost = baselineFuel * currentFuelPrice;
 
@@ -449,11 +451,11 @@ export class FuelStopPlanner {
     stop: FuelStop,
     avgPrice: number,
     tankCapacity: number,
-    currentFuel: number
+    currentFuel: number,
   ): FuelStop {
     const priceScore = Math.max(
       0,
-      100 - Math.abs(stop.pricePerLiter - avgPrice) * 20
+      100 - Math.abs(stop.pricePerLiter - avgPrice) * 20,
     );
     const detourScore = Math.max(0, 100 - stop.distanceFromRoute * 5);
     const qualityBonus = {
@@ -480,7 +482,7 @@ export class FuelStopPlanner {
     availableStops: FuelStop[],
     tankCapacity: number,
     currentFuel: number,
-    fuelReserve: number = 10 // liters safety reserve
+    fuelReserve: number = 10, // liters safety reserve
   ): FuelStopPlan {
     // Calculate fuel consumption
     const fuelNeeded = (routeDistance / currentMpg) * 3.785; // Convert to liters
@@ -490,28 +492,33 @@ export class FuelStopPlanner {
     const stops: FuelStop[] = [];
     let totalDetourKm = 0;
     let totalCost = 0;
-    let avgPrice = availableStops.length > 0
-      ? availableStops.reduce((sum, s) => sum + s.pricePerLiter, 0) / availableStops.length
-      : FUEL_PRICE_AVG;
+    let avgPrice =
+      availableStops.length > 0
+        ? availableStops.reduce((sum, s) => sum + s.pricePerLiter, 0) /
+          availableStops.length
+        : FUEL_PRICE_AVG;
 
     if (requiredCapacity > tankCapacity) {
       // Need multiple stops
       const stopsNeeded = Math.ceil(requiredCapacity / tankCapacity);
 
       const scoredStops = availableStops
-        .map((stop) => this.scoreFuelStop(stop, avgPrice, tankCapacity, currentFuel))
+        .map((stop) =>
+          this.scoreFuelStop(stop, avgPrice, tankCapacity, currentFuel),
+        )
         .sort((a, b) => b.score - a.score)
         .slice(0, stopsNeeded);
 
       scoredStops.forEach((stop) => {
         stops.push(stop);
         totalDetourKm += stop.distanceFromRoute;
-        totalCost += (tankCapacity * 0.8) * stop.pricePerLiter; // Fill 80% of tank
+        totalCost += tankCapacity * 0.8 * stop.pricePerLiter; // Fill 80% of tank
       });
     }
 
     const totalDetourMinutes = totalDetourKm * 1.5; // Assume 40 km/h on detours
-    const estimatedFuelSavings = totalDetourKm / currentMpg * 3.785 * avgPrice;
+    const estimatedFuelSavings =
+      (totalDetourKm / currentMpg) * 3.785 * avgPrice;
 
     return {
       vehicleId: "vehicle-id",
@@ -535,7 +542,7 @@ export class FleetFuelBenchmark {
   generateBenchmarkReport(
     vehicles: VehicleFuelProfile[],
     drivers: DriverBehaviorScore[],
-    period: "daily" | "weekly" | "monthly"
+    period: "daily" | "weekly" | "monthly",
   ): FleetBenchmarkReport {
     const mpgValues = vehicles.map((v) => ({
       entityId: v.vehicleId,
@@ -551,7 +558,9 @@ export class FleetFuelBenchmark {
       .slice(0, Math.max(3, Math.floor(sorted.length * 0.25)))
       .map((v) => ({
         ...v,
-        percentAboveAverage: Math.round(((v.mpg - fleetAverage) / fleetAverage) * 100),
+        percentAboveAverage: Math.round(
+          ((v.mpg - fleetAverage) / fleetAverage) * 100,
+        ),
       }));
 
     const bottomPerformers = sorted
@@ -560,7 +569,7 @@ export class FleetFuelBenchmark {
       .map((v) => ({
         ...v,
         percentBelowAverage: Math.round(
-          ((fleetAverage - v.mpg) / fleetAverage) * 100
+          ((fleetAverage - v.mpg) / fleetAverage) * 100,
         ),
       }));
 
@@ -569,7 +578,7 @@ export class FleetFuelBenchmark {
     const bottom25Percent = sorted.slice(-Math.floor(sorted.length * 0.25));
     const improvementMpg = bottom25Percent.reduce(
       (sum, v) => sum + (medianMpg - v.mpg),
-      0
+      0,
     );
 
     return {
@@ -595,7 +604,7 @@ export class SavingsCalculator {
     currentMpg: number,
     improvedMpg: number,
     fuelPrice: number,
-    vehicles: number = 1
+    vehicles: number = 1,
   ): FuelSavingsCalculation {
     const totalMiles = miles * vehicles;
 
@@ -607,7 +616,8 @@ export class SavingsCalculator {
 
     const gallonsSaved = baselineGallons - improvedGallons;
     const costSaved = baselineCost - improvedCost;
-    const percentMpgImprovement = ((improvedMpg - currentMpg) / currentMpg) * 100;
+    const percentMpgImprovement =
+      ((improvedMpg - currentMpg) / currentMpg) * 100;
 
     return {
       baselineScenario: {

@@ -56,7 +56,9 @@ export class RouteOptimizer {
    *   constraints: { respectTimeWindows: true, minimizeVehicles: true }
    * });
    */
-  public async optimize(request: RouteOptimizationRequest): Promise<RouteOptimizationResult> {
+  public async optimize(
+    request: RouteOptimizationRequest,
+  ): Promise<RouteOptimizationResult> {
     const startTime = performance.now();
 
     // Validate request
@@ -77,7 +79,7 @@ export class RouteOptimizer {
       request.vehicleCount,
       request.constraints,
       distanceMatrix,
-      algorithmName
+      algorithmName,
     );
 
     // Identify assigned and unassigned stops
@@ -88,7 +90,9 @@ export class RouteOptimizer {
       }
     }
 
-    const unassignedStops = request.stops.filter((s) => !assignedStopIds.has(s.id));
+    const unassignedStops = request.stops.filter(
+      (s) => !assignedStopIds.has(s.id),
+    );
 
     // Calculate metrics
     const metrics = this.calculateMetrics(routes, request.stops);
@@ -125,7 +129,7 @@ export class RouteOptimizer {
     vehicleCount: number,
     constraints: RouteOptimizationRequest["constraints"],
     distanceMatrix: DistanceMatrix,
-    algorithm: string
+    algorithm: string,
   ): Promise<OptimizedRoute[]> {
     switch (algorithm) {
       case "nearest-neighbor":
@@ -134,7 +138,7 @@ export class RouteOptimizer {
           stops,
           vehicleCount,
           constraints,
-          distanceMatrix
+          distanceMatrix,
         );
 
       case "nearest-neighbor-2opt":
@@ -143,7 +147,7 @@ export class RouteOptimizer {
           stops,
           vehicleCount,
           constraints,
-          distanceMatrix
+          distanceMatrix,
         );
 
       case "savings":
@@ -152,7 +156,7 @@ export class RouteOptimizer {
           stops,
           vehicleCount,
           constraints,
-          distanceMatrix
+          distanceMatrix,
         );
 
       default:
@@ -171,7 +175,7 @@ export class RouteOptimizer {
     stops: Stop[],
     vehicleCount: number,
     constraints: RouteOptimizationRequest["constraints"],
-    distanceMatrix: DistanceMatrix
+    distanceMatrix: DistanceMatrix,
   ): OptimizedRoute[] {
     // Sort by priority (higher priority first)
     const sortedStops = [...stops].sort((a, b) => b.priority - a.priority);
@@ -179,14 +183,18 @@ export class RouteOptimizer {
     const routes: OptimizedRoute[] = [];
     const assigned = new Set<string>();
 
-    for (let v = 0; v < vehicleCount && assigned.size < sortedStops.length; v++) {
+    for (
+      let v = 0;
+      v < vehicleCount && assigned.size < sortedStops.length;
+      v++
+    ) {
       const route = this.buildNearestNeighborRoute(
         depot,
         sortedStops,
         assigned,
         constraints,
         distanceMatrix,
-        `route-${v}`
+        `route-${v}`,
       );
 
       if (route.stops.length > 0) {
@@ -210,7 +218,7 @@ export class RouteOptimizer {
     stops: Stop[],
     vehicleCount: number,
     constraints: RouteOptimizationRequest["constraints"],
-    distanceMatrix: DistanceMatrix
+    distanceMatrix: DistanceMatrix,
   ): OptimizedRoute[] {
     // Get initial solution
     let routes = this.nearestNeighborAlgorithm(
@@ -218,7 +226,7 @@ export class RouteOptimizer {
       stops,
       vehicleCount,
       constraints,
-      distanceMatrix
+      distanceMatrix,
     );
 
     // Apply 2-opt improvement
@@ -237,11 +245,11 @@ export class RouteOptimizer {
     stops: Stop[],
     vehicleCount: number,
     constraints: RouteOptimizationRequest["constraints"],
-    distanceMatrix: DistanceMatrix
+    distanceMatrix: DistanceMatrix,
   ): OptimizedRoute[] {
     // Start with each stop as its own route
     const routes: OptimizedRoute[] = stops.map((stop, idx) =>
-      this.createSingleStopRoute(depot, stop, `route-${idx}`, distanceMatrix)
+      this.createSingleStopRoute(depot, stop, `route-${idx}`, distanceMatrix),
     );
 
     // Compute savings and merge routes
@@ -253,16 +261,22 @@ export class RouteOptimizer {
 
     for (const { stopI, stopJ, saving } of sortedSavings) {
       const routeI = Array.from(routeMap.values()).find((r) =>
-        r.stops.some((s) => s.id === stopI)
+        r.stops.some((s) => s.id === stopI),
       );
       const routeJ = Array.from(routeMap.values()).find((r) =>
-        r.stops.some((s) => s.id === stopJ)
+        r.stops.some((s) => s.id === stopJ),
       );
 
       if (!routeI || !routeJ || routeI.id === routeJ.id) continue;
 
       // Try to merge routes
-      const merged = this.tryMergeRoutes(depot, routeI, routeJ, constraints, distanceMatrix);
+      const merged = this.tryMergeRoutes(
+        depot,
+        routeI,
+        routeJ,
+        constraints,
+        distanceMatrix,
+      );
       if (merged) {
         routeMap.delete(routeI.id);
         routeMap.delete(routeJ.id);
@@ -287,7 +301,7 @@ export class RouteOptimizer {
     assigned: Set<string>,
     constraints: RouteOptimizationRequest["constraints"],
     distanceMatrix: DistanceMatrix,
-    routeId: string
+    routeId: string,
   ): OptimizedRoute {
     const routeStops: OptimizedStop[] = [];
     const routeViolations: string[] = [];
@@ -327,7 +341,9 @@ export class RouteOptimizer {
       const stop = stops[nextIdx];
       const stopIdx = nextIdx + 1;
       const travelSeconds = distanceMatrix.durations[current][stopIdx];
-      const rawArrivalTime = new Date(currentTime.getTime() + travelSeconds * 1000);
+      const rawArrivalTime = new Date(
+        currentTime.getTime() + travelSeconds * 1000,
+      );
 
       // ── Time-window check ───────────────────────────────────
       let effectiveArrivalTime = rawArrivalTime;
@@ -339,16 +355,23 @@ export class RouteOptimizer {
           if (constraints.respectTimeWindows) {
             // Exclude this stop from the current route and try the next nearest
             timeWindowSkipped.add(stop.id);
-            routeViolations.push(`Stop ${stop.id}: late arrival (time window closed)`);
+            routeViolations.push(
+              `Stop ${stop.id}: late arrival (time window closed)`,
+            );
             continue;
           }
           // Soft constraint: include but flag the violation
-          const minutesOff = (rawArrivalTime.getTime() - stop.timeWindow.end.getTime()) / 60000;
+          const minutesOff =
+            (rawArrivalTime.getTime() - stop.timeWindow.end.getTime()) / 60000;
           stopViolation = { type: "late", minutesOff: Math.round(minutesOff) };
-          routeViolations.push(`Stop ${stop.id}: late by ${Math.round(minutesOff)} min`);
+          routeViolations.push(
+            `Stop ${stop.id}: late by ${Math.round(minutesOff)} min`,
+          );
         } else if (rawArrivalTime < stop.timeWindow.start) {
           // Early arrival — driver waits until the window opens
-          const minutesOff = (stop.timeWindow.start.getTime() - rawArrivalTime.getTime()) / 60000;
+          const minutesOff =
+            (stop.timeWindow.start.getTime() - rawArrivalTime.getTime()) /
+            60000;
           effectiveArrivalTime = new Date(stop.timeWindow.start);
           stopViolation = { type: "early", minutesOff: Math.round(minutesOff) };
         }
@@ -357,16 +380,22 @@ export class RouteOptimizer {
       // ── Capacity check ──────────────────────────────────────
       const newWeight = totalWeight + (stop.weight || 0);
       const newVolume = totalVolume + (stop.volume || 0);
-      if (constraints.vehicleCapacityWeight && newWeight > constraints.vehicleCapacityWeight) {
+      if (
+        constraints.vehicleCapacityWeight &&
+        newWeight > constraints.vehicleCapacityWeight
+      ) {
         break;
       }
-      if (constraints.vehicleCapacityVolume && newVolume > constraints.vehicleCapacityVolume) {
+      if (
+        constraints.vehicleCapacityVolume &&
+        newVolume > constraints.vehicleCapacityVolume
+      ) {
         break;
       }
 
       // ── Build optimized stop ────────────────────────────────
       const departureTime = new Date(
-        effectiveArrivalTime.getTime() + stop.serviceDuration * 60 * 1000
+        effectiveArrivalTime.getTime() + stop.serviceDuration * 60 * 1000,
       );
 
       const eta = calculateETAFromMatrix(
@@ -374,7 +403,7 @@ export class RouteOptimizer {
         stopIdx,
         currentTime,
         stop.serviceDuration,
-        distanceMatrix
+        distanceMatrix,
       );
 
       const optimizedStop: OptimizedStop = {
@@ -382,7 +411,8 @@ export class RouteOptimizer {
         arrivalTime: effectiveArrivalTime,
         departureTime,
         eta,
-        cumulativeDistance: totalDistance + distanceMatrix.distances[current][stopIdx],
+        cumulativeDistance:
+          totalDistance + distanceMatrix.distances[current][stopIdx],
         sequenceNumber: routeStops.length,
         ...(stopViolation ? { timeWindowViolation: stopViolation } : {}),
       };
@@ -392,7 +422,7 @@ export class RouteOptimizer {
       // Duration accounts for travel + any waiting at early window + service time
       const waitSeconds = Math.max(
         0,
-        (effectiveArrivalTime.getTime() - rawArrivalTime.getTime()) / 1000
+        (effectiveArrivalTime.getTime() - rawArrivalTime.getTime()) / 1000,
       );
       totalDuration += travelSeconds + waitSeconds + stop.serviceDuration * 60;
       totalWeight = newWeight;
@@ -407,10 +437,14 @@ export class RouteOptimizer {
     totalDistance += returnDistance;
     totalDuration += returnDuration;
 
-    const completionTime = new Date(currentTime.getTime() + returnDuration * 1000);
+    const completionTime = new Date(
+      currentTime.getTime() + returnDuration * 1000,
+    );
     const departureTime = new Date();
 
-    const timeWindowViolationCount = routeStops.filter((s) => s.timeWindowViolation?.type === "late").length;
+    const timeWindowViolationCount = routeStops.filter(
+      (s) => s.timeWindowViolation?.type === "late",
+    ).length;
 
     return {
       id: routeId,
@@ -426,7 +460,8 @@ export class RouteOptimizer {
         routeStops.length > 0
           ? (totalWeight / (constraints.vehicleCapacityWeight || 100)) * 100
           : 0,
-      isFeasible: timeWindowViolationCount === 0 && routeViolations.length === 0,
+      isFeasible:
+        timeWindowViolationCount === 0 && routeViolations.length === 0,
       violations: routeViolations,
     };
   }
@@ -437,7 +472,7 @@ export class RouteOptimizer {
   private apply2OptImprovement(
     depot: GeoPoint,
     routes: OptimizedRoute[],
-    distanceMatrix: DistanceMatrix
+    distanceMatrix: DistanceMatrix,
   ): OptimizedRoute[] {
     // Simplified 2-opt: try swapping adjacent stops
     for (const route of routes) {
@@ -466,13 +501,19 @@ export class RouteOptimizer {
   /**
    * Calculate total distance of a route.
    */
-  private routeDistance(route: OptimizedRoute, distanceMatrix: DistanceMatrix, depot: GeoPoint): number {
+  private routeDistance(
+    route: OptimizedRoute,
+    distanceMatrix: DistanceMatrix,
+    depot: GeoPoint,
+  ): number {
     let total = 0;
     let current = 0; // Depot index
 
     for (const stop of route.stops) {
       const stopIdx = distanceMatrix.points.findIndex(
-        (p) => p.latitude === stop.location.latitude && p.longitude === stop.location.longitude
+        (p) =>
+          p.latitude === stop.location.latitude &&
+          p.longitude === stop.location.longitude,
       );
       if (stopIdx !== -1) {
         total += distanceMatrix.distances[current][stopIdx];
@@ -492,16 +533,28 @@ export class RouteOptimizer {
     depot: GeoPoint,
     stop: Stop,
     routeId: string,
-    distanceMatrix: DistanceMatrix
+    distanceMatrix: DistanceMatrix,
   ): OptimizedRoute {
     const stopIdx = distanceMatrix.points.findIndex(
-      (p) => p.latitude === stop.location.latitude && p.longitude === stop.location.longitude
+      (p) =>
+        p.latitude === stop.location.latitude &&
+        p.longitude === stop.location.longitude,
     );
 
-    const arrivalTime = new Date(Date.now() + distanceMatrix.durations[0][stopIdx] * 1000);
-    const departureTime = new Date(arrivalTime.getTime() + stop.serviceDuration * 60 * 1000);
+    const arrivalTime = new Date(
+      Date.now() + distanceMatrix.durations[0][stopIdx] * 1000,
+    );
+    const departureTime = new Date(
+      arrivalTime.getTime() + stop.serviceDuration * 60 * 1000,
+    );
 
-    const eta = calculateETAFromMatrix(0, stopIdx, new Date(), stop.serviceDuration, distanceMatrix);
+    const eta = calculateETAFromMatrix(
+      0,
+      stopIdx,
+      new Date(),
+      stop.serviceDuration,
+      distanceMatrix,
+    );
 
     const optimizedStop: OptimizedStop = {
       ...stop,
@@ -518,8 +571,13 @@ export class RouteOptimizer {
       stops: [optimizedStop],
       departureTime: new Date(),
       completionTime: departureTime,
-      totalDistance: distanceMatrix.distances[0][stopIdx] + distanceMatrix.distances[stopIdx][0],
-      totalDuration: distanceMatrix.durations[0][stopIdx] + stop.serviceDuration * 60 + distanceMatrix.durations[stopIdx][0],
+      totalDistance:
+        distanceMatrix.distances[0][stopIdx] +
+        distanceMatrix.distances[stopIdx][0],
+      totalDuration:
+        distanceMatrix.durations[0][stopIdx] +
+        stop.serviceDuration * 60 +
+        distanceMatrix.durations[stopIdx][0],
       totalWeight: stop.weight || 0,
       totalVolume: stop.volume || 0,
       utilizationPercentage: 10,
@@ -534,7 +592,7 @@ export class RouteOptimizer {
   private computeSavings(
     depot: GeoPoint,
     stops: Stop[],
-    distanceMatrix: DistanceMatrix
+    distanceMatrix: DistanceMatrix,
   ): Array<{ stopI: string; stopJ: string; saving: number }> {
     const savings: Array<{ stopI: string; stopJ: string; saving: number }> = [];
 
@@ -563,16 +621,22 @@ export class RouteOptimizer {
     route1: OptimizedRoute,
     route2: OptimizedRoute,
     constraints: RouteOptimizationRequest["constraints"],
-    distanceMatrix: DistanceMatrix
+    distanceMatrix: DistanceMatrix,
   ): OptimizedRoute | null {
     const mergedWeight = route1.totalWeight + route2.totalWeight;
     const mergedVolume = route1.totalVolume + route2.totalVolume;
 
     // Check capacity constraints before merging
-    if (constraints.vehicleCapacityWeight && mergedWeight > constraints.vehicleCapacityWeight) {
+    if (
+      constraints.vehicleCapacityWeight &&
+      mergedWeight > constraints.vehicleCapacityWeight
+    ) {
       return null;
     }
-    if (constraints.vehicleCapacityVolume && mergedVolume > constraints.vehicleCapacityVolume) {
+    if (
+      constraints.vehicleCapacityVolume &&
+      mergedVolume > constraints.vehicleCapacityVolume
+    ) {
       return null;
     }
 
@@ -597,7 +661,9 @@ export class RouteOptimizer {
       totalVolume: mergedVolume,
       totalDistance: route1.totalDistance + route2.totalDistance,
       totalDuration: route1.totalDuration + route2.totalDuration,
-      completionTime: new Date(route1.completionTime.getTime() + route2.totalDuration * 1000),
+      completionTime: new Date(
+        route1.completionTime.getTime() + route2.totalDuration * 1000,
+      ),
       isFeasible: mergedViolations.length === 0,
       violations: mergedViolations,
     };
@@ -627,7 +693,7 @@ export class RouteOptimizer {
    */
   private calculateMetrics(
     routes: OptimizedRoute[],
-    allStops: Stop[]
+    allStops: Stop[],
   ): RouteOptimizationResult["metrics"] {
     const assignedStopIds = new Set<string>();
     let totalDistance = 0;
@@ -649,7 +715,8 @@ export class RouteOptimizer {
       stopsUncovered: allStops.length - assignedStopIds.size,
       averageUtilization:
         routes.length > 0
-          ? routes.reduce((sum, r) => sum + r.utilizationPercentage, 0) / routes.length
+          ? routes.reduce((sum, r) => sum + r.utilizationPercentage, 0) /
+            routes.length
           : 0,
     };
   }
@@ -657,7 +724,9 @@ export class RouteOptimizer {
   /**
    * Count constraint violations across all routes.
    */
-  private countViolations(routes: OptimizedRoute[]): RouteOptimizationResult["violations"] {
+  private countViolations(
+    routes: OptimizedRoute[],
+  ): RouteOptimizationResult["violations"] {
     const violations = {
       timeWindow: 0,
       capacity: 0,
@@ -668,11 +737,17 @@ export class RouteOptimizer {
     for (const route of routes) {
       // Count per-stop time window violations (late arrivals are hard violations)
       violations.timeWindow += route.stops.filter(
-        (s) => (s as OptimizedStop).timeWindowViolation?.type === "late"
+        (s) => (s as OptimizedStop).timeWindowViolation?.type === "late",
       ).length;
-      violations.capacity += route.violations.filter((v) => v.includes("capacity")).length;
-      violations.skillMatch += route.violations.filter((v) => v.includes("skill")).length;
-      violations.maxStops += route.violations.filter((v) => v.includes("stops")).length;
+      violations.capacity += route.violations.filter((v) =>
+        v.includes("capacity"),
+      ).length;
+      violations.skillMatch += route.violations.filter((v) =>
+        v.includes("skill"),
+      ).length;
+      violations.maxStops += route.violations.filter((v) =>
+        v.includes("stops"),
+      ).length;
     }
 
     return violations;

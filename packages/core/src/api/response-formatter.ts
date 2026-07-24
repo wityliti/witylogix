@@ -130,7 +130,7 @@ export class ApiResponse {
   error(
     code: ApiErrorCode | string,
     message: string,
-    details?: ErrorDetail[]
+    details?: ErrorDetail[],
   ): ErrorResponse {
     const statusCode = this.getStatusCode(code as ApiErrorCode);
 
@@ -158,10 +158,7 @@ export class ApiResponse {
    * Get HTTP status code for error.
    */
   getStatusCodeForError(code: string): number {
-    return (
-      ERROR_STATUS_MAP[code as ApiErrorCode] ||
-      500
-    );
+    return ERROR_STATUS_MAP[code as ApiErrorCode] || 500;
   }
 
   /**
@@ -169,21 +166,17 @@ export class ApiResponse {
    */
   validationError(
     message: string,
-    fieldErrors: Record<string, string | string[]>
+    fieldErrors: Record<string, string | string[]>,
   ): ErrorResponse {
     const details: ErrorDetail[] = Object.entries(fieldErrors).map(
       ([field, messages]) => ({
         field,
         message: Array.isArray(messages) ? messages.join(", ") : messages,
         code: "FIELD_VALIDATION_ERROR",
-      })
+      }),
     );
 
-    return this.error(
-      ApiErrorCode.VALIDATION_ERROR,
-      message,
-      details
-    );
+    return this.error(ApiErrorCode.VALIDATION_ERROR, message, details);
   }
 
   /**
@@ -194,7 +187,7 @@ export class ApiResponse {
     page: number,
     limit: number,
     total: number,
-    metadata?: any
+    metadata?: any,
   ): SuccessResponse<T[]> {
     return this.success(data, {
       pagination: {
@@ -220,7 +213,7 @@ export class ApiResponse {
       startCursor?: string;
       endCursor?: string;
     },
-    metadata?: any
+    metadata?: any,
   ): SuccessResponse<T[]> {
     return this.success(data, {
       pageInfo,
@@ -235,7 +228,7 @@ export class ApiResponse {
     rel: string,
     href: string,
     method?: string,
-    title?: string
+    title?: string,
   ): HateoasLink {
     return {
       rel,
@@ -264,7 +257,7 @@ export class ApiResponse {
       page?: number;
       limit?: number;
       links?: HateoasLink[];
-    }
+    },
   ): SuccessResponse<T[]> {
     const response = this.success(items, {
       count: items.length,
@@ -281,7 +274,10 @@ export class ApiResponse {
   /**
    * Format created response (201 Created).
    */
-  created<T>(data: T, location?: string): SuccessResponse<T> & { statusCode: number } {
+  created<T>(
+    data: T,
+    location?: string,
+  ): SuccessResponse<T> & { statusCode: number } {
     const response = this.success(data) as any;
     response.statusCode = 201;
     if (location) {
@@ -301,9 +297,4 @@ export class ApiResponse {
   }
 }
 
-export type {
-  SuccessResponse,
-  ErrorResponse,
-  ErrorDetail,
-  HateoasLink,
-};
+export type { SuccessResponse, ErrorResponse, ErrorDetail, HateoasLink };

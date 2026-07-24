@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Search, Home, ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { useEffect, useState } from "react";
+import { Search, Home, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 /**
  * Dashboard 404 Not Found page
@@ -22,8 +22,8 @@ export default function DashboardNotFound() {
         {/* Animated illustration */}
         <div
           className={cn(
-            'mb-8 flex justify-center transition-all duration-700',
-            isAnimated ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+            "mb-8 flex justify-center transition-all duration-700",
+            isAnimated ? "opacity-100 scale-100" : "opacity-0 scale-95",
           )}
         >
           <svg
@@ -62,8 +62,8 @@ export default function DashboardNotFound() {
               fontWeight="bold"
               fill="var(--wl-primary-500)"
               className={cn(
-                'transition-all duration-500',
-                isAnimated ? 'animate-bounce' : ''
+                "transition-all duration-500",
+                isAnimated ? "animate-bounce" : "",
               )}
             >
               ?
@@ -74,28 +74,32 @@ export default function DashboardNotFound() {
         {/* Content */}
         <div
           className={cn(
-            'text-center transition-all duration-700 delay-200',
-            isAnimated ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            "text-center transition-all duration-700 delay-200",
+            isAnimated
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-4",
           )}
         >
-          <h1 className="mb-2 text-4xl font-bold text-wl-text-primary">
-            404
-          </h1>
+          <h1 className="mb-2 text-4xl font-bold text-wl-text-primary">404</h1>
           <h2 className="mb-2 text-xl font-semibold text-wl-text-primary">
             Page Not Found
           </h2>
           <p className="mb-6 text-wl-text-secondary">
-            The dashboard page you're looking for doesn't exist or has been moved.
+            The dashboard page you're looking for doesn't exist or has been
+            moved.
           </p>
 
           {/* Search suggestion */}
           <div className="mb-8 rounded-lg border border-wl-border-subtle bg-wl-bg-surface p-4">
             <div className="mb-3 flex items-center gap-2 text-wl-text-secondary">
               <Search className="h-4 w-4" />
-              <span className="text-sm font-medium">Looking for a feature?</span>
+              <span className="text-sm font-medium">
+                Looking for a feature?
+              </span>
             </div>
             <p className="text-xs text-wl-text-tertiary">
-              Use the sidebar menu or command palette (Cmd+K) to find what you need.
+              Use the sidebar menu or command palette (Cmd+K) to find what you
+              need.
             </p>
           </div>
 
@@ -104,7 +108,7 @@ export default function DashboardNotFound() {
             <Button
               variant="primary"
               size="md"
-              onClick={() => (window.location.href = '/dashboard')}
+              onClick={() => (window.location.href = "/dashboard")}
               className="w-full"
             >
               <Home className="h-4 w-4" />
@@ -124,7 +128,7 @@ export default function DashboardNotFound() {
 
         {/* Footer info */}
         <div className="mt-8 text-center text-xs text-wl-text-tertiary">
-          Need help? Contact{' '}
+          Need help? Contact{" "}
           <a
             href="mailto:support@witylogix.com"
             className="text-wl-primary-500 transition-colors hover:text-wl-primary-400"

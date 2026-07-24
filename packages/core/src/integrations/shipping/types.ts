@@ -330,7 +330,7 @@ export interface IShippingAdapter {
    */
   createShipment(
     request: ShipmentRequest,
-    rateId: string
+    rateId: string,
   ): Promise<ShipmentLabel>;
 
   /**

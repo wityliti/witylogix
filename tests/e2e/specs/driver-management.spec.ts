@@ -1,8 +1,8 @@
-import { test, expect } from '../fixtures/auth.fixture';
-import { DashboardPage } from '../pages/dashboard.page';
-import { DriversPage } from '../pages/drivers.page';
+import { test, expect } from "../fixtures/auth.fixture";
+import { DashboardPage } from "../pages/dashboard.page";
+import { DriversPage } from "../pages/drivers.page";
 
-test.describe('Driver Management', () => {
+test.describe("Driver Management", () => {
   let driversPage: DriversPage;
 
   test.beforeEach(async ({ adminPage }) => {
@@ -10,7 +10,7 @@ test.describe('Driver Management', () => {
     await driversPage.navigateToList();
   });
 
-  test('should view driver list with pagination', async ({ adminPage }) => {
+  test("should view driver list with pagination", async ({ adminPage }) => {
     driversPage = new DriversPage(adminPage);
 
     // Navigate to drivers page
@@ -33,7 +33,9 @@ test.describe('Driver Management', () => {
     }
   });
 
-  test('should filter drivers by availability status', async ({ adminPage }) => {
+  test("should filter drivers by availability status", async ({
+    adminPage,
+  }) => {
     driversPage = new DriversPage(adminPage);
 
     // Navigate to drivers page
@@ -44,7 +46,7 @@ test.describe('Driver Management', () => {
     const initialCount = allDrivers.length;
 
     // Filter by AVAILABLE
-    await driversPage.filterByAvailability('available');
+    await driversPage.filterByAvailability("available");
 
     // Get filtered drivers
     const availableDrivers = await driversPage.getAllDrivers();
@@ -53,21 +55,21 @@ test.describe('Driver Management', () => {
     expect(availableDrivers.length).toBeLessThanOrEqual(initialCount);
   });
 
-  test('should filter drivers by UNAVAILABLE status', async ({ adminPage }) => {
+  test("should filter drivers by UNAVAILABLE status", async ({ adminPage }) => {
     driversPage = new DriversPage(adminPage);
 
     // Navigate to drivers page
     await driversPage.navigateToList();
 
     // Filter by UNAVAILABLE
-    await driversPage.filterByAvailability('unavailable');
+    await driversPage.filterByAvailability("unavailable");
 
     // Verify filter result
     const drivers = await driversPage.getAllDrivers();
     expect(drivers).toBeTruthy();
   });
 
-  test('should search for driver by name', async ({ adminPage }) => {
+  test("should search for driver by name", async ({ adminPage }) => {
     driversPage = new DriversPage(adminPage);
 
     // Get all drivers first
@@ -84,7 +86,7 @@ test.describe('Driver Management', () => {
     }
   });
 
-  test('should view driver status', async ({ adminPage }) => {
+  test("should view driver status", async ({ adminPage }) => {
     driversPage = new DriversPage(adminPage);
 
     // Navigate to drivers page
@@ -101,11 +103,15 @@ test.describe('Driver Management', () => {
 
       // Verify status is displayed and not empty
       expect(status).toBeTruthy();
-      expect(['AVAILABLE', 'UNAVAILABLE', 'BUSY', 'OFFLINE'].some((s) => status.includes(s))).toBeTruthy();
+      expect(
+        ["AVAILABLE", "UNAVAILABLE", "BUSY", "OFFLINE"].some((s) =>
+          status.includes(s),
+        ),
+      ).toBeTruthy();
     }
   });
 
-  test('should update driver status', async ({ adminPage }) => {
+  test("should update driver status", async ({ adminPage }) => {
     driversPage = new DriversPage(adminPage);
 
     // Navigate to drivers page
@@ -119,7 +125,9 @@ test.describe('Driver Management', () => {
       const initialStatus = drivers[0].status;
 
       // Get a different status to update to
-      const newStatus = initialStatus.includes('AVAILABLE') ? 'UNAVAILABLE' : 'AVAILABLE';
+      const newStatus = initialStatus.includes("AVAILABLE")
+        ? "UNAVAILABLE"
+        : "AVAILABLE";
 
       // Update driver status
       await driversPage.updateDriverStatus(driverName, newStatus);
@@ -132,7 +140,7 @@ test.describe('Driver Management', () => {
     }
   });
 
-  test('should view driver details', async ({ adminPage }) => {
+  test("should view driver details", async ({ adminPage }) => {
     driversPage = new DriversPage(adminPage);
 
     // Navigate to drivers page
@@ -153,7 +161,7 @@ test.describe('Driver Management', () => {
     }
   });
 
-  test('should view driver routes', async ({ adminPage }) => {
+  test("should view driver routes", async ({ adminPage }) => {
     driversPage = new DriversPage(adminPage);
 
     // Navigate to drivers page
@@ -169,7 +177,9 @@ test.describe('Driver Management', () => {
       await driversPage.openDriverDetails(driverName);
 
       // Look for routes section
-      const routesSection = adminPage.locator('[data-testid="routes"], section:has-text("Route")');
+      const routesSection = adminPage.locator(
+        '[data-testid="routes"], section:has-text("Route")',
+      );
 
       // If routes section exists, verify it's displayed
       if (await routesSection.isVisible().catch(() => false)) {
@@ -178,7 +188,7 @@ test.describe('Driver Management', () => {
     }
   });
 
-  test('should assign driver to shipment', async ({ adminPage }) => {
+  test("should assign driver to shipment", async ({ adminPage }) => {
     driversPage = new DriversPage(adminPage);
 
     // Navigate to drivers page
@@ -198,7 +208,7 @@ test.describe('Driver Management', () => {
     }
   });
 
-  test('should display driver contacts correctly', async ({ adminPage }) => {
+  test("should display driver contacts correctly", async ({ adminPage }) => {
     driversPage = new DriversPage(adminPage);
 
     // Navigate to drivers page
@@ -214,8 +224,12 @@ test.describe('Driver Management', () => {
       await driversPage.openDriverDetails(driverName);
 
       // Look for contact information
-      const phoneElement = adminPage.locator('[data-testid="driver-phone"], .phone');
-      const emailElement = adminPage.locator('[data-testid="driver-email"], .email');
+      const phoneElement = adminPage.locator(
+        '[data-testid="driver-phone"], .phone',
+      );
+      const emailElement = adminPage.locator(
+        '[data-testid="driver-email"], .email',
+      );
 
       // Verify at least one contact method is displayed
       const hasPhone = await phoneElement.isVisible().catch(() => false);
@@ -225,7 +239,7 @@ test.describe('Driver Management', () => {
     }
   });
 
-  test('should show driver performance metrics', async ({ adminPage }) => {
+  test("should show driver performance metrics", async ({ adminPage }) => {
     driversPage = new DriversPage(adminPage);
 
     // Navigate to drivers page
@@ -241,19 +255,25 @@ test.describe('Driver Management', () => {
       await driversPage.openDriverDetails(driverName);
 
       // Look for performance metrics
-      const metricsSection = adminPage.locator('[data-testid="performance"], section:has-text("Performance")');
+      const metricsSection = adminPage.locator(
+        '[data-testid="performance"], section:has-text("Performance")',
+      );
 
       // If metrics section exists, verify it's displayed
       if (await metricsSection.isVisible().catch(() => false)) {
         await expect(metricsSection).toBeVisible();
 
         // Look for specific metrics like deliveries, rating, etc
-        const deliveriesMetric = adminPage.locator('[data-testid="total-deliveries"], text="Deliveries"');
-        const ratingMetric = adminPage.locator('[data-testid="rating"], text="Rating"');
+        const deliveriesMetric = adminPage.locator(
+          '[data-testid="total-deliveries"], text="Deliveries"',
+        );
+        const ratingMetric = adminPage.locator(
+          '[data-testid="rating"], text="Rating"',
+        );
 
         expect(
           (await deliveriesMetric.isVisible().catch(() => false)) ||
-          (await ratingMetric.isVisible().catch(() => false))
+            (await ratingMetric.isVisible().catch(() => false)),
         ).toBeTruthy();
       }
     }

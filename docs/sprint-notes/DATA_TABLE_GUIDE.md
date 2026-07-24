@@ -40,9 +40,7 @@ const columns: ColumnDef<User>[] = [
     id: "status",
     header: "Status",
     accessorKey: "status",
-    cell: (value) => (
-      <span className={`status-${value}`}>{value}</span>
-    ),
+    cell: (value) => <span className={`status-${value}`}>{value}</span>,
   },
 ];
 
@@ -187,7 +185,7 @@ function LargeUsersList() {
       height={600}
       onLoadMore={async () => {
         const newItems = await fetchMoreUsers();
-        setItems(prev => [...prev, ...newItems]);
+        setItems((prev) => [...prev, ...newItems]);
       }}
       isLoadingMore={isLoading}
     />
@@ -234,7 +232,7 @@ import { DataTableToolbar } from "@/components/ui";
 
 function TableWithToolbar() {
   const [visibleColumns, setVisibleColumns] = useState<Set<string>>(
-    new Set(["name", "email", "status"])
+    new Set(["name", "email", "status"]),
   );
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -314,14 +312,8 @@ function TablePage() {
 
   return (
     <>
-      <DataTable
-        columns={columns}
-        data={data}
-        onSort={handleSort}
-      />
-      <button onClick={resetToDefaults}>
-        Reset to Defaults
-      </button>
+      <DataTable columns={columns} data={data} onSort={handleSort} />
+      <button onClick={resetToDefaults}>Reset to Defaults</button>
     </>
   );
 }
@@ -356,13 +348,9 @@ import {
 function ExportExample() {
   const handleExport = async (format: "csv" | "json") => {
     if (selectedIds.length > 0) {
-      exportSelectedRows(
-        data,
-        selectedIds,
-        columns,
-        format,
-        { filename: "users-export.csv" }
-      );
+      exportSelectedRows(data, selectedIds, columns, format, {
+        filename: "users-export.csv",
+      });
     } else {
       if (format === "csv") {
         exportAsCSV(data, columns, { filename: "all-users.csv" });
@@ -429,14 +417,17 @@ export function OrdersPage() {
   const [pageSize, setPageSize] = useState(25);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { preferences, updateVisibleColumns, updatePageSize: savePageSize } =
-    useTablePreferences("orders-table", [
-      "orderNumber",
-      "customer",
-      "amount",
-      "status",
-      "date",
-    ]);
+  const {
+    preferences,
+    updateVisibleColumns,
+    updatePageSize: savePageSize,
+  } = useTablePreferences("orders-table", [
+    "orderNumber",
+    "customer",
+    "amount",
+    "status",
+    "date",
+  ]);
 
   const columns: ColumnDef<Order>[] = [
     {
@@ -566,11 +557,13 @@ export function OrdersPage() {
 ## Testing
 
 Run tests with:
+
 ```bash
 npm test -- data-table.test.tsx
 ```
 
 Test coverage includes:
+
 - Column sorting (asc/desc/clear)
 - Row selection (single/all/indeterminate)
 - Pagination

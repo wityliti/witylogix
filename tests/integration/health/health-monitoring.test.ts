@@ -45,18 +45,12 @@ class HealthMonitoringSystem {
     this.baselineMetrics.set(providerId, createBaselineMetrics(providerId));
   }
 
-  configureSLA(
-    providerId: string,
-    config: any
-  ): void {
+  configureSLA(providerId: string, config: any): void {
     const slaConfig = createSLAConfig(providerId, config);
     this.slaConfigs.set(providerId, slaConfig);
   }
 
-  scheduleHealthCheck(
-    providerId: string,
-    intervalMs: number = 30000
-  ): void {
+  scheduleHealthCheck(providerId: string, intervalMs: number = 30000): void {
     const schedule = createHealthCheckSchedule(providerId);
     schedule.interval = intervalMs;
     this.schedules.set(providerId, schedule);
@@ -65,15 +59,13 @@ class HealthMonitoringSystem {
   performHealthCheck(
     providerId: string,
     statusCode: number = 200,
-    latencies: number[] = [100, 150, 200]
+    latencies: number[] = [100, 150, 200],
   ): HealthCheckResult {
     const result: HealthCheckResult = {
       providerId,
       timestamp: new Date(),
       statusCode,
-      responseTime:
-        latencies.reduce((a, b) => a + b, 0) /
-        latencies.length,
+      responseTime: latencies.reduce((a, b) => a + b, 0) / latencies.length,
       latencies,
       errorCount: statusCode >= 400 ? 1 : 0,
       successCount: statusCode < 400 ? 1 : 0,
@@ -82,8 +74,7 @@ class HealthMonitoringSystem {
     this.checkResults.push(result);
 
     // Track latencies
-    const histogram =
-      this.latencyHistograms.get(providerId) || [];
+    const histogram = this.latencyHistograms.get(providerId) || [];
     histogram.push(...latencies);
     this.latencyHistograms.set(providerId, histogram);
 
@@ -95,7 +86,7 @@ class HealthMonitoringSystem {
 
   private updateProviderHealth(
     providerId: string,
-    result: HealthCheckResult
+    result: HealthCheckResult,
   ): void {
     const provider = this.providers.get(providerId);
     if (!provider) return;
@@ -104,14 +95,10 @@ class HealthMonitoringSystem {
     provider.responseTime = result.responseTime;
 
     const allResults = this.checkResults.filter(
-      (r) => r.providerId === providerId
+      (r) => r.providerId === providerId,
     );
-    const successCount = allResults.filter(
-      (r) => r.statusCode < 400
-    ).length;
-    const failureCount = allResults.filter(
-      (r) => r.statusCode >= 400
-    ).length;
+    const successCount = allResults.filter((r) => r.statusCode < 400).length;
+    const failureCount = allResults.filter((r) => r.statusCode >= 400).length;
 
     const total = successCount + failureCount;
     provider.uptime = (successCount / total) * 100;
@@ -160,9 +147,7 @@ class HealthMonitoringSystem {
     return this.providers.get(providerId);
   }
 
-  getLatencyHistogram(
-    providerId: string
-  ): {
+  getLatencyHistogram(providerId: string): {
     p50: number;
     p75: number;
     p95: number;
@@ -171,8 +156,7 @@ class HealthMonitoringSystem {
     avg: number;
     count: number;
   } {
-    const latencies =
-      this.latencyHistograms.get(providerId) || [];
+    const latencies = this.latencyHistograms.get(providerId) || [];
 
     if (latencies.length === 0) {
       return { p50: 0, p75: 0, p95: 0, p99: 0, max: 0, avg: 0, count: 0 };
@@ -185,8 +169,7 @@ class HealthMonitoringSystem {
       return sorted[Math.max(0, index)];
     };
 
-    const avg =
-      sorted.reduce((a, b) => a + b, 0) / sorted.length;
+    const avg = sorted.reduce((a, b) => a + b, 0) / sorted.length;
 
     return {
       p50: percentile(50),
@@ -201,39 +184,28 @@ class HealthMonitoringSystem {
 
   getCheckResults(
     providerId: string,
-    limit: number = 100
+    limit: number = 100,
   ): HealthCheckResult[] {
     return this.checkResults
       .filter((r) => r.providerId === providerId)
       .slice(-limit);
   }
 
-  getSLABreaches(
-    providerId: string
-  ): any[] {
-    return this.breaches.filter(
-      (b) => b.providerId === providerId
-    );
+  getSLABreaches(providerId: string): any[] {
+    return this.breaches.filter((b) => b.providerId === providerId);
   }
 
-  calculateUptime(
-    providerId: string,
-    windowMs: number = 86400000
-  ): number {
+  calculateUptime(providerId: string, windowMs: number = 86400000): number {
     const now = Date.now();
     const cutoff = now - windowMs;
 
     const recentResults = this.checkResults.filter(
-      (r) =>
-        r.providerId === providerId &&
-        r.timestamp.getTime() > cutoff
+      (r) => r.providerId === providerId && r.timestamp.getTime() > cutoff,
     );
 
     if (recentResults.length === 0) return 100;
 
-    const successful = recentResults.filter(
-      (r) => r.statusCode < 400
-    ).length;
+    const successful = recentResults.filter((r) => r.statusCode < 400).length;
 
     return (successful / recentResults.length) * 100;
   }
@@ -245,7 +217,7 @@ class HealthMonitoringSystem {
   passiveHealthDetection(
     providerId: string,
     failedRequests: number,
-    totalRequests: number
+    totalRequests: number,
   ): void {
     const errorRate = (failedRequests / totalRequests) * 100;
 
@@ -291,9 +263,7 @@ describe("Health Monitoring", () => {
 
       const health = system.getProviderHealth("paypal");
 
-      expect(
-        ["healthy", "degraded", "unhealthy"]
-      ).toContain(health.status);
+      expect(["healthy", "degraded", "unhealthy"]).toContain(health.status);
     });
 
     it("should update provider uptime", () => {
@@ -421,11 +391,7 @@ describe("Health Monitoring", () => {
         maxResponseTime: 200,
       });
 
-      system.performHealthCheck(
-        "paypal",
-        200,
-        Array(20).fill(5000)
-      ); // Very slow
+      system.performHealthCheck("paypal", 200, Array(20).fill(5000)); // Very slow
 
       const breaches = system.getSLABreaches("paypal");
 
@@ -467,9 +433,7 @@ describe("Health Monitoring", () => {
     it("should calculate percentiles", () => {
       system.registerProvider("paypal");
 
-      const latencies = [
-        50, 75, 100, 125, 150, 200, 250, 300, 500, 1000,
-      ];
+      const latencies = [50, 75, 100, 125, 150, 200, 250, 300, 500, 1000];
       system.performHealthCheck("paypal", 200, latencies);
 
       const histogram = system.getLatencyHistogram("paypal");
@@ -482,9 +446,7 @@ describe("Health Monitoring", () => {
     it("should track max latency", () => {
       system.registerProvider("square");
 
-      system.performHealthCheck("square", 200, [
-        100, 200, 500, 1000,
-      ]);
+      system.performHealthCheck("square", 200, [100, 200, 500, 1000]);
 
       const histogram = system.getLatencyHistogram("square");
 

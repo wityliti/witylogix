@@ -5,7 +5,7 @@
  * Implements webhook verification using HMAC-SHA256
  */
 
-import { createHmac, createHash } from 'crypto';
+import { createHmac, createHash } from "crypto";
 import type {
   PaymentIntent,
   Subscription,
@@ -18,19 +18,24 @@ import type {
   RateLimitInfo,
   SubscriptionItem,
   InvoiceLineItem,
-} from './payment-sdk-types';
+} from "./payment-sdk-types";
 import {
   type PaymentStatus,
   type InvoiceStatus,
   type RefundStatus,
   type RefundReason,
-} from './payment-sdk-types';
+} from "./payment-sdk-types";
 
 /**
  * Stripe-specific error types mapped from SDK
  */
 interface StripeErrorResponse {
-  type: 'invalid_request_error' | 'api_error' | 'authentication_error' | 'card_error' | 'rate_limit_error';
+  type:
+    | "invalid_request_error"
+    | "api_error"
+    | "authentication_error"
+    | "card_error"
+    | "rate_limit_error";
   code?: string;
   message: string;
   charge?: string;
@@ -45,13 +50,18 @@ interface StripeErrorResponse {
 class StripePaymentError extends Error implements PaymentError {
   code: string;
   statusCode?: number;
-  provider: 'stripe' = 'stripe';
+  provider: "stripe" = "stripe";
   retryable: boolean;
   originalError?: Error;
 
-  constructor(message: string, code: string, statusCode?: number, retryable: boolean = false) {
+  constructor(
+    message: string,
+    code: string,
+    statusCode?: number,
+    retryable: boolean = false,
+  ) {
     super(message);
-    this.name = 'StripePaymentError';
+    this.name = "StripePaymentError";
     this.code = code;
     this.statusCode = statusCode;
     this.retryable = retryable;
@@ -85,16 +95,22 @@ export class StripeClient {
 
   constructor(config: StripeConfig) {
     if (!config.apiKey) {
-      throw new StripePaymentError('Stripe API key is required', 'missing_api_key', 400);
+      throw new StripePaymentError(
+        "Stripe API key is required",
+        "missing_api_key",
+        400,
+      );
     }
 
     this.apiKey = config.apiKey;
     this.config = config;
-    this.apiVersion = config.apiVersion || '2023-10-16';
+    this.apiVersion = config.apiVersion || "2023-10-16";
     this.maxNetworkRetries = config.maxNetworkRetries || 3;
     this.timeout = config.timeout || 30000;
     this.apiBaseUrl =
-      config.environment === 'live' ? 'https://api.stripe.com/v1' : 'https://api.stripe.com/v1';
+      config.environment === "live"
+        ? "https://api.stripe.com/v1"
+        : "https://api.stripe.com/v1";
   }
 
   /**
@@ -113,9 +129,10 @@ export class StripeClient {
       receiptEmail?: string;
       confirm?: boolean;
       offSession?: boolean;
-    }
+    },
   ): Promise<PaymentIntent> {
-    const idempotencyKey = options?.idempotencyKey || this.generateIdempotencyKey();
+    const idempotencyKey =
+      options?.idempotencyKey || this.generateIdempotencyKey();
     const cacheKey = `createPaymentIntent:${idempotencyKey}`;
 
     // Check cache first
@@ -126,22 +143,29 @@ export class StripeClient {
     const payload = {
       amount: Math.round(amount), // Convert to cents if needed
       currency: currency.toLowerCase(),
-      confirmation_method: 'automatic',
+      confirmation_method: "automatic",
       ...(options?.customerId && { customer: options.customerId }),
       ...(options?.paymentMethodId && {
         payment_method: options.paymentMethodId,
         confirm: true,
       }),
       ...(options?.description && { description: options.description }),
-      ...(options?.statementDescriptor && { statement_descriptor: options.statementDescriptor }),
+      ...(options?.statementDescriptor && {
+        statement_descriptor: options.statementDescriptor,
+      }),
       ...(options?.receiptEmail && { receipt_email: options.receiptEmail }),
       ...(options?.metadata && { metadata: options.metadata }),
       ...(options?.offSession && { off_session: true }),
     };
 
-    const response = await this.makeRequest('POST', '/payment_intents', payload, {
-      idempotencyKey,
-    });
+    const response = await this.makeRequest(
+      "POST",
+      "/payment_intents",
+      payload,
+      {
+        idempotencyKey,
+      },
+    );
 
     const intent = this.mapStripePaymentIntent(response);
 
@@ -160,7 +184,7 @@ export class StripeClient {
     options?: {
       returnUrl?: string;
       idempotencyKey?: string;
-    }
+    },
   ): Promise<PaymentIntent> {
     const payload: Record<string, any> = {};
 
@@ -173,10 +197,10 @@ export class StripeClient {
     }
 
     const response = await this.makeRequest(
-      'POST',
+      "POST",
       `/payment_intents/${paymentIntentId}/confirm`,
       payload,
-      { idempotencyKey: options?.idempotencyKey }
+      { idempotencyKey: options?.idempotencyKey },
     );
 
     return this.mapStripePaymentIntent(response);
@@ -190,7 +214,7 @@ export class StripeClient {
     amount?: number,
     options?: {
       idempotencyKey?: string;
-    }
+    },
   ): Promise<PaymentIntent> {
     const payload: Record<string, any> = {};
 
@@ -199,10 +223,10 @@ export class StripeClient {
     }
 
     const response = await this.makeRequest(
-      'POST',
+      "POST",
       `/payment_intents/${paymentIntentId}/capture`,
       payload,
-      { idempotencyKey: options?.idempotencyKey }
+      { idempotencyKey: options?.idempotencyKey },
     );
 
     return this.mapStripePaymentIntent(response);
@@ -214,9 +238,13 @@ export class StripeClient {
   async cancelPaymentIntent(
     paymentIntentId: string,
     options?: {
-      cancellationReason?: 'duplicate' | 'fraudulent' | 'requested_by_customer' | 'abandoned';
+      cancellationReason?:
+        | "duplicate"
+        | "fraudulent"
+        | "requested_by_customer"
+        | "abandoned";
       idempotencyKey?: string;
-    }
+    },
   ): Promise<PaymentIntent> {
     const payload: Record<string, any> = {};
 
@@ -225,10 +253,10 @@ export class StripeClient {
     }
 
     const response = await this.makeRequest(
-      'POST',
+      "POST",
       `/payment_intents/${paymentIntentId}/cancel`,
       payload,
-      { idempotencyKey: options?.idempotencyKey }
+      { idempotencyKey: options?.idempotencyKey },
     );
 
     return this.mapStripePaymentIntent(response);
@@ -238,7 +266,10 @@ export class StripeClient {
    * Retrieve a payment intent
    */
   async getPaymentIntent(paymentIntentId: string): Promise<PaymentIntent> {
-    const response = await this.makeRequest('GET', `/payment_intents/${paymentIntentId}`);
+    const response = await this.makeRequest(
+      "GET",
+      `/payment_intents/${paymentIntentId}`,
+    );
     return this.mapStripePaymentIntent(response);
   }
 
@@ -251,29 +282,42 @@ export class StripeClient {
     options?: {
       description?: string;
       metadata?: Record<string, any>;
-      paymentBehavior?: 'default_incomplete' | 'default_incomplete_and_send_email' | 'allow_incomplete' | 'error_if_incomplete';
-      collectionMethod?: 'charge_automatically' | 'send_invoice';
+      paymentBehavior?:
+        | "default_incomplete"
+        | "default_incomplete_and_send_email"
+        | "allow_incomplete"
+        | "error_if_incomplete";
+      collectionMethod?: "charge_automatically" | "send_invoice";
       daysUntilDue?: number;
       idempotencyKey?: string;
       trialPeriodDays?: number;
       billingCycleAnchor?: number;
-    }
+    },
   ): Promise<Subscription> {
-    const idempotencyKey = options?.idempotencyKey || this.generateIdempotencyKey();
+    const idempotencyKey =
+      options?.idempotencyKey || this.generateIdempotencyKey();
 
     const payload = {
       customer: customerId,
       items: priceIds.map((priceId) => ({ price: priceId })),
       ...(options?.description && { description: options.description }),
       ...(options?.metadata && { metadata: options.metadata }),
-      ...(options?.paymentBehavior && { payment_behavior: options.paymentBehavior }),
-      ...(options?.collectionMethod && { collection_method: options.collectionMethod }),
+      ...(options?.paymentBehavior && {
+        payment_behavior: options.paymentBehavior,
+      }),
+      ...(options?.collectionMethod && {
+        collection_method: options.collectionMethod,
+      }),
       ...(options?.daysUntilDue && { days_until_due: options.daysUntilDue }),
-      ...(options?.trialPeriodDays && { trial_period_days: options.trialPeriodDays }),
-      ...(options?.billingCycleAnchor && { billing_cycle_anchor: options.billingCycleAnchor }),
+      ...(options?.trialPeriodDays && {
+        trial_period_days: options.trialPeriodDays,
+      }),
+      ...(options?.billingCycleAnchor && {
+        billing_cycle_anchor: options.billingCycleAnchor,
+      }),
     };
 
-    const response = await this.makeRequest('POST', '/subscriptions', payload, {
+    const response = await this.makeRequest("POST", "/subscriptions", payload, {
       idempotencyKey,
     });
 
@@ -294,7 +338,7 @@ export class StripeClient {
       defaultPaymentMethod?: string;
       offSession?: boolean;
     },
-    idempotencyKey?: string
+    idempotencyKey?: string,
   ): Promise<Subscription> {
     const payload: Record<string, any> = {};
 
@@ -323,10 +367,10 @@ export class StripeClient {
     }
 
     const response = await this.makeRequest(
-      'POST',
+      "POST",
       `/subscriptions/${subscriptionId}`,
       payload,
-      { idempotencyKey }
+      { idempotencyKey },
     );
 
     return this.mapStripeSubscription(response);
@@ -340,12 +384,16 @@ export class StripeClient {
     options?: {
       atPeriodEnd?: boolean;
       cancellationDetails?: {
-        reason?: 'cancellation_requested' | 'account_closed' | 'account_unhappy' | 'other';
+        reason?:
+          | "cancellation_requested"
+          | "account_closed"
+          | "account_unhappy"
+          | "other";
         feedback?: string;
         comment?: string;
       };
       idempotencyKey?: string;
-    }
+    },
   ): Promise<Subscription> {
     const payload: Record<string, any> = {};
 
@@ -354,10 +402,10 @@ export class StripeClient {
     } else {
       // Immediate cancellation
       const response = await this.makeRequest(
-        'DELETE',
+        "DELETE",
         `/subscriptions/${subscriptionId}`,
         {},
-        { idempotencyKey: options?.idempotencyKey }
+        { idempotencyKey: options?.idempotencyKey },
       );
       return this.mapStripeSubscription(response);
     }
@@ -367,10 +415,10 @@ export class StripeClient {
     }
 
     const response = await this.makeRequest(
-      'POST',
+      "POST",
       `/subscriptions/${subscriptionId}`,
       payload,
-      { idempotencyKey: options?.idempotencyKey }
+      { idempotencyKey: options?.idempotencyKey },
     );
 
     return this.mapStripeSubscription(response);
@@ -382,9 +430,9 @@ export class StripeClient {
   async resumeSubscription(
     subscriptionId: string,
     options?: {
-      prorationBehavior?: 'create_prorations' | 'none' | 'always_invoice';
+      prorationBehavior?: "create_prorations" | "none" | "always_invoice";
       idempotencyKey?: string;
-    }
+    },
   ): Promise<Subscription> {
     const payload: Record<string, any> = {
       cancel_at_period_end: false,
@@ -395,10 +443,10 @@ export class StripeClient {
     }
 
     const response = await this.makeRequest(
-      'POST',
+      "POST",
       `/subscriptions/${subscriptionId}`,
       payload,
-      { idempotencyKey: options?.idempotencyKey }
+      { idempotencyKey: options?.idempotencyKey },
     );
 
     return this.mapStripeSubscription(response);
@@ -414,9 +462,9 @@ export class StripeClient {
       customFields?: Array<{ name: string; value: string }>;
       daysUntilDue?: number;
       metadata?: Record<string, any>;
-      collectionMethod?: 'charge_automatically' | 'send_invoice';
+      collectionMethod?: "charge_automatically" | "send_invoice";
       idempotencyKey?: string;
-    }
+    },
   ): Promise<Invoice> {
     const payload = {
       customer: customerId,
@@ -424,10 +472,12 @@ export class StripeClient {
       ...(options?.customFields && { custom_fields: options.customFields }),
       ...(options?.daysUntilDue && { days_until_due: options.daysUntilDue }),
       ...(options?.metadata && { metadata: options.metadata }),
-      ...(options?.collectionMethod && { collection_method: options.collectionMethod }),
+      ...(options?.collectionMethod && {
+        collection_method: options.collectionMethod,
+      }),
     };
 
-    const response = await this.makeRequest('POST', '/invoices', payload, {
+    const response = await this.makeRequest("POST", "/invoices", payload, {
       idempotencyKey: options?.idempotencyKey,
     });
 
@@ -437,12 +487,15 @@ export class StripeClient {
   /**
    * Send an invoice
    */
-  async sendInvoice(invoiceId: string, idempotencyKey?: string): Promise<Invoice> {
+  async sendInvoice(
+    invoiceId: string,
+    idempotencyKey?: string,
+  ): Promise<Invoice> {
     const response = await this.makeRequest(
-      'POST',
+      "POST",
       `/invoices/${invoiceId}/send`,
       {},
-      { idempotencyKey }
+      { idempotencyKey },
     );
 
     return this.mapStripeInvoice(response);
@@ -451,12 +504,15 @@ export class StripeClient {
   /**
    * Void an invoice
    */
-  async voidInvoice(invoiceId: string, idempotencyKey?: string): Promise<Invoice> {
+  async voidInvoice(
+    invoiceId: string,
+    idempotencyKey?: string,
+  ): Promise<Invoice> {
     const response = await this.makeRequest(
-      'POST',
+      "POST",
       `/invoices/${invoiceId}/void`,
       {},
-      { idempotencyKey }
+      { idempotencyKey },
     );
 
     return this.mapStripeInvoice(response);
@@ -465,12 +521,15 @@ export class StripeClient {
   /**
    * Mark an invoice as paid
    */
-  async markInvoicePaid(invoiceId: string, idempotencyKey?: string): Promise<Invoice> {
+  async markInvoicePaid(
+    invoiceId: string,
+    idempotencyKey?: string,
+  ): Promise<Invoice> {
     const response = await this.makeRequest(
-      'POST',
+      "POST",
       `/invoices/${invoiceId}/mark_paid`,
       {},
-      { idempotencyKey }
+      { idempotencyKey },
     );
 
     return this.mapStripeInvoice(response);
@@ -480,28 +539,26 @@ export class StripeClient {
    * Retrieve an invoice
    */
   async getInvoice(invoiceId: string): Promise<Invoice> {
-    const response = await this.makeRequest('GET', `/invoices/${invoiceId}`);
+    const response = await this.makeRequest("GET", `/invoices/${invoiceId}`);
     return this.mapStripeInvoice(response);
   }
 
   /**
    * Create a checkout session
    */
-  async createCheckoutSession(
-    options: {
-      lineItems: Array<{ price: string; quantity: number }>;
-      mode: 'payment' | 'setup' | 'subscription';
-      successUrl: string;
-      cancelUrl: string;
-      customerId?: string;
-      customerEmail?: string;
-      metadata?: Record<string, any>;
-      billingAddressCollection?: 'auto' | 'required';
-      paymentMethodTypes?: string[];
-      locale?: string;
-      idempotencyKey?: string;
-    }
-  ): Promise<CheckoutSession> {
+  async createCheckoutSession(options: {
+    lineItems: Array<{ price: string; quantity: number }>;
+    mode: "payment" | "setup" | "subscription";
+    successUrl: string;
+    cancelUrl: string;
+    customerId?: string;
+    customerEmail?: string;
+    metadata?: Record<string, any>;
+    billingAddressCollection?: "auto" | "required";
+    paymentMethodTypes?: string[];
+    locale?: string;
+    idempotencyKey?: string;
+  }): Promise<CheckoutSession> {
     const payload = {
       line_items: options.lineItems,
       mode: options.mode,
@@ -513,13 +570,20 @@ export class StripeClient {
       ...(options.billingAddressCollection && {
         billing_address_collection: options.billingAddressCollection,
       }),
-      ...(options.paymentMethodTypes && { payment_method_types: options.paymentMethodTypes }),
+      ...(options.paymentMethodTypes && {
+        payment_method_types: options.paymentMethodTypes,
+      }),
       ...(options.locale && { locale: options.locale }),
     };
 
-    const response = await this.makeRequest('POST', '/checkout/sessions', payload, {
-      idempotencyKey: options.idempotencyKey,
-    });
+    const response = await this.makeRequest(
+      "POST",
+      "/checkout/sessions",
+      payload,
+      {
+        idempotencyKey: options.idempotencyKey,
+      },
+    );
 
     return this.mapStripeCheckoutSession(response);
   }
@@ -528,19 +592,25 @@ export class StripeClient {
    * Retrieve a checkout session
    */
   async getCheckoutSession(sessionId: string): Promise<CheckoutSession> {
-    const response = await this.makeRequest('GET', `/checkout/sessions/${sessionId}`);
+    const response = await this.makeRequest(
+      "GET",
+      `/checkout/sessions/${sessionId}`,
+    );
     return this.mapStripeCheckoutSession(response);
   }
 
   /**
    * Expire a checkout session
    */
-  async expireCheckoutSession(sessionId: string, idempotencyKey?: string): Promise<CheckoutSession> {
+  async expireCheckoutSession(
+    sessionId: string,
+    idempotencyKey?: string,
+  ): Promise<CheckoutSession> {
     const response = await this.makeRequest(
-      'POST',
+      "POST",
       `/checkout/sessions/${sessionId}/expire`,
       {},
-      { idempotencyKey }
+      { idempotencyKey },
     );
 
     return this.mapStripeCheckoutSession(response);
@@ -553,10 +623,15 @@ export class StripeClient {
     chargeId: string,
     options?: {
       amount?: number;
-      reason?: 'duplicate' | 'fraudulent' | 'requested_by_customer' | 'expired_uncaptured_charge' | 'general';
+      reason?:
+        | "duplicate"
+        | "fraudulent"
+        | "requested_by_customer"
+        | "expired_uncaptured_charge"
+        | "general";
       metadata?: Record<string, any>;
       idempotencyKey?: string;
-    }
+    },
   ): Promise<Refund> {
     const payload: Record<string, any> = {
       charge: chargeId,
@@ -565,7 +640,7 @@ export class StripeClient {
       ...(options?.metadata && { metadata: options.metadata }),
     };
 
-    const response = await this.makeRequest('POST', '/refunds', payload, {
+    const response = await this.makeRequest("POST", "/refunds", payload, {
       idempotencyKey: options?.idempotencyKey,
     });
 
@@ -576,7 +651,7 @@ export class StripeClient {
    * Retrieve a refund
    */
   async getRefund(refundId: string): Promise<Refund> {
-    const response = await this.makeRequest('GET', `/refunds/${refundId}`);
+    const response = await this.makeRequest("GET", `/refunds/${refundId}`);
     return this.mapStripeRefund(response);
   }
 
@@ -591,21 +666,26 @@ export class StripeClient {
     const params = new URLSearchParams();
 
     if (options?.chargeId) {
-      params.append('charge', options.chargeId);
+      params.append("charge", options.chargeId);
     }
 
     if (options?.limit) {
-      params.append('limit', Math.min(options.limit, 100).toString());
+      params.append("limit", Math.min(options.limit, 100).toString());
     }
 
     if (options?.startingAfter) {
-      params.append('starting_after', options.startingAfter);
+      params.append("starting_after", options.startingAfter);
     }
 
-    const response = await this.makeRequest('GET', `/refunds?${params.toString()}`);
+    const response = await this.makeRequest(
+      "GET",
+      `/refunds?${params.toString()}`,
+    );
 
     return {
-      refunds: (response.data || []).map((refund: any) => this.mapStripeRefund(refund)),
+      refunds: (response.data || []).map((refund: any) =>
+        this.mapStripeRefund(refund),
+      ),
       hasMore: response.has_more || false,
     };
   }
@@ -614,12 +694,16 @@ export class StripeClient {
    * Verify webhook signature using HMAC-SHA256
    * Pattern: stripe.webhooks.constructEvent
    */
-  verifyWebhookSignature(body: string | Buffer, signature: string, secret: string): boolean {
+  verifyWebhookSignature(
+    body: string | Buffer,
+    signature: string,
+    secret: string,
+  ): boolean {
     try {
-      const bodyStr = typeof body === 'string' ? body : body.toString('utf-8');
-      const expectedSignature = createHmac('sha256', secret)
-        .update(bodyStr, 'utf8')
-        .digest('hex');
+      const bodyStr = typeof body === "string" ? body : body.toString("utf-8");
+      const expectedSignature = createHmac("sha256", secret)
+        .update(bodyStr, "utf8")
+        .digest("hex");
 
       return expectedSignature === signature;
     } catch (error) {
@@ -633,22 +717,22 @@ export class StripeClient {
   parseWebhookEvent(
     event: Record<string, any>,
     signature: string,
-    secret: string
+    secret: string,
   ): WitylogixPaymentEvent | null {
     try {
       // Verify signature first
       const eventStr = JSON.stringify(event);
       if (!this.verifyWebhookSignature(eventStr, signature, secret)) {
         throw new StripePaymentError(
-          'Invalid webhook signature',
-          'signature_verification_failed',
-          401
+          "Invalid webhook signature",
+          "signature_verification_failed",
+          401,
         );
       }
 
       return this.normalizeStripeWebhookEvent(event);
     } catch (error) {
-      console.error('Error parsing webhook event:', error);
+      console.error("Error parsing webhook event:", error);
       return null;
     }
   }
@@ -660,20 +744,20 @@ export class StripeClient {
     method: string,
     endpoint: string,
     payload?: Record<string, any>,
-    options?: { idempotencyKey?: string }
+    options?: { idempotencyKey?: string },
   ): Promise<any> {
     // Apply rate limiting
     await this.applyRateLimit();
 
     const url = `${this.apiBaseUrl}${endpoint}`;
     const headers: Record<string, string> = {
-      'Authorization': `Bearer ${this.apiKey}`,
-      'User-Agent': `Witylogix-Stripe/1.0`,
-      'Stripe-Version': this.apiVersion,
+      Authorization: `Bearer ${this.apiKey}`,
+      "User-Agent": `Witylogix-Stripe/1.0`,
+      "Stripe-Version": this.apiVersion,
     };
 
     if (options?.idempotencyKey) {
-      headers['Idempotency-Key'] = options.idempotencyKey;
+      headers["Idempotency-Key"] = options.idempotencyKey;
     }
 
     let attempt = 0;
@@ -690,11 +774,11 @@ export class StripeClient {
           signal: abortCtrl.signal,
         };
 
-        if (method !== 'GET' && payload) {
+        if (method !== "GET" && payload) {
           const params = new URLSearchParams();
           this.flattenPayload(payload, params);
           fetchOptions.body = params.toString();
-          headers['Content-Type'] = 'application/x-www-form-urlencoded';
+          headers["Content-Type"] = "application/x-www-form-urlencoded";
         }
 
         let response: Response;
@@ -705,8 +789,8 @@ export class StripeClient {
         }
 
         // Extract rate limit info from headers
-        const rateLimitHeader = response.headers.get('stripe-limit-remaining');
-        const rateLimitResetHeader = response.headers.get('stripe-limit-reset');
+        const rateLimitHeader = response.headers.get("stripe-limit-remaining");
+        const rateLimitResetHeader = response.headers.get("stripe-limit-reset");
 
         if (rateLimitHeader && rateLimitResetHeader) {
           this.rateLimitInfo = {
@@ -718,7 +802,9 @@ export class StripeClient {
         }
 
         if (!response.ok) {
-          const errorData = (await response.json()) as { error?: StripeErrorResponse };
+          const errorData = (await response.json()) as {
+            error?: StripeErrorResponse;
+          };
           const stripeError = errorData.error ?? ({} as StripeErrorResponse);
 
           const isRetryable =
@@ -730,7 +816,7 @@ export class StripeClient {
             stripeError.message || `HTTP ${response.status}`,
             stripeError.code || `http_${response.status}`,
             response.status,
-            isRetryable
+            isRetryable,
           );
         }
 
@@ -751,7 +837,15 @@ export class StripeClient {
       }
     }
 
-    throw lastError || new StripePaymentError('Request failed after retries', 'network_error', undefined, false);
+    throw (
+      lastError ||
+      new StripePaymentError(
+        "Request failed after retries",
+        "network_error",
+        undefined,
+        false,
+      )
+    );
   }
 
   /**
@@ -762,7 +856,7 @@ export class StripeClient {
 
     // Remove old timestamps outside the window
     this.requestsInWindow = this.requestsInWindow.filter(
-      (timestamp) => now - timestamp < this.RATE_LIMIT_WINDOW
+      (timestamp) => now - timestamp < this.RATE_LIMIT_WINDOW,
     );
 
     // If at limit, wait for the oldest request to exit the window
@@ -775,7 +869,7 @@ export class StripeClient {
       }
 
       this.requestsInWindow = this.requestsInWindow.filter(
-        (timestamp) => Date.now() - timestamp < this.RATE_LIMIT_WINDOW
+        (timestamp) => Date.now() - timestamp < this.RATE_LIMIT_WINDOW,
       );
     }
 
@@ -785,19 +879,23 @@ export class StripeClient {
   /**
    * Flatten nested payload for form-urlencoded
    */
-  private flattenPayload(obj: Record<string, any>, params: URLSearchParams, prefix = ''): void {
+  private flattenPayload(
+    obj: Record<string, any>,
+    params: URLSearchParams,
+    prefix = "",
+  ): void {
     for (const [key, value] of Object.entries(obj)) {
       const fullKey = prefix ? `${prefix}[${key}]` : key;
 
       if (Array.isArray(value)) {
         value.forEach((item, index) => {
-          if (typeof item === 'object' && item !== null) {
+          if (typeof item === "object" && item !== null) {
             this.flattenPayload(item, params, `${fullKey}[${index}]`);
           } else {
             params.append(`${fullKey}[${index}]`, String(item));
           }
         });
-      } else if (typeof value === 'object' && value !== null) {
+      } else if (typeof value === "object" && value !== null) {
         this.flattenPayload(value, params, fullKey);
       } else if (value !== null && value !== undefined) {
         params.append(fullKey, String(value));
@@ -810,22 +908,22 @@ export class StripeClient {
    */
   private mapStripePaymentIntent(stripeIntent: any): PaymentIntent {
     const statusMap: Record<string, PaymentStatus> = {
-      requires_payment_method: 'pending',
-      requires_confirmation: 'pending',
-      requires_action: 'pending',
-      processing: 'processing',
-      succeeded: 'succeeded',
-      requires_capture: 'pending',
-      canceled: 'canceled',
+      requires_payment_method: "pending",
+      requires_confirmation: "pending",
+      requires_action: "pending",
+      processing: "processing",
+      succeeded: "succeeded",
+      requires_capture: "pending",
+      canceled: "canceled",
     };
 
     return {
       id: stripeIntent.id,
       externalId: stripeIntent.id,
-      provider: 'stripe',
+      provider: "stripe",
       amount: stripeIntent.amount,
       currency: stripeIntent.currency.toUpperCase(),
-      status: statusMap[stripeIntent.status] || ('pending' as PaymentStatus),
+      status: statusMap[stripeIntent.status] || ("pending" as PaymentStatus),
       customerId: stripeIntent.customer || undefined,
       orderId: stripeIntent.metadata?.orderId,
       description: stripeIntent.description,
@@ -855,22 +953,22 @@ export class StripeClient {
    */
   private mapStripeSubscription(stripeSub: any): Subscription {
     const statusMap: Record<string, any> = {
-      trialing: 'active',
-      active: 'active',
-      past_due: 'past_due',
-      canceled: 'canceled',
-      unpaid: 'past_due',
-      incomplete: 'pending',
-      incomplete_expired: 'canceled',
-      paused: 'suspended',
+      trialing: "active",
+      active: "active",
+      past_due: "past_due",
+      canceled: "canceled",
+      unpaid: "past_due",
+      incomplete: "pending",
+      incomplete_expired: "canceled",
+      paused: "suspended",
     };
 
     return {
       id: stripeSub.id,
       externalId: stripeSub.id,
-      provider: 'stripe',
+      provider: "stripe",
       customerId: stripeSub.customer,
-      status: statusMap[stripeSub.status] || 'active',
+      status: statusMap[stripeSub.status] || "active",
       items: (stripeSub.items?.data || []).map((item: any) => ({
         id: item.id,
         externalId: item.id,
@@ -881,9 +979,15 @@ export class StripeClient {
       })),
       currentPeriodStart: new Date(stripeSub.current_period_start * 1000),
       currentPeriodEnd: new Date(stripeSub.current_period_end * 1000),
-      cancelAt: stripeSub.cancel_at ? new Date(stripeSub.cancel_at * 1000) : undefined,
-      canceledAt: stripeSub.canceled_at ? new Date(stripeSub.canceled_at * 1000) : undefined,
-      endedAt: stripeSub.ended_at ? new Date(stripeSub.ended_at * 1000) : undefined,
+      cancelAt: stripeSub.cancel_at
+        ? new Date(stripeSub.cancel_at * 1000)
+        : undefined,
+      canceledAt: stripeSub.canceled_at
+        ? new Date(stripeSub.canceled_at * 1000)
+        : undefined,
+      endedAt: stripeSub.ended_at
+        ? new Date(stripeSub.ended_at * 1000)
+        : undefined,
       nextBillingDate: stripeSub.next_pending_invoice_item_invoice
         ? new Date(stripeSub.next_pending_invoice_item_invoice * 1000)
         : undefined,
@@ -894,7 +998,11 @@ export class StripeClient {
       updatedAt: new Date(stripeSub.updated * 1000),
       latestInvoiceId: stripeSub.latest_invoice,
       pauseCollection: stripeSub.pause_collection
-        ? { resumesAt: stripeSub.pause_collection.resumes_at ? new Date(stripeSub.pause_collection.resumes_at * 1000) : undefined }
+        ? {
+            resumesAt: stripeSub.pause_collection.resumes_at
+              ? new Date(stripeSub.pause_collection.resumes_at * 1000)
+              : undefined,
+          }
         : undefined,
     };
   }
@@ -904,28 +1012,34 @@ export class StripeClient {
    */
   private mapStripeInvoice(stripeInvoice: any): Invoice {
     const statusMap: Record<string, InvoiceStatus> = {
-      draft: 'draft',
-      open: 'open',
-      paid: 'paid',
-      void: 'void',
-      uncollectible: 'uncollectible',
-      scheduled: 'scheduled',
+      draft: "draft",
+      open: "open",
+      paid: "paid",
+      void: "void",
+      uncollectible: "uncollectible",
+      scheduled: "scheduled",
     };
 
     return {
       id: stripeInvoice.id,
       externalId: stripeInvoice.id,
-      provider: 'stripe',
+      provider: "stripe",
       customerId: stripeInvoice.customer,
       subscriptionId: stripeInvoice.subscription,
       amount: stripeInvoice.total,
       amountPaid: stripeInvoice.amount_paid,
       amountDue: stripeInvoice.amount_due,
       currency: stripeInvoice.currency.toUpperCase(),
-      status: statusMap[stripeInvoice.status] || ('open' as InvoiceStatus),
-      dueDate: stripeInvoice.due_date ? new Date(stripeInvoice.due_date * 1000) : undefined,
-      paidAt: stripeInvoice.paid_at ? new Date(stripeInvoice.paid_at * 1000) : undefined,
-      voidedAt: stripeInvoice.voided_at ? new Date(stripeInvoice.voided_at * 1000) : undefined,
+      status: statusMap[stripeInvoice.status] || ("open" as InvoiceStatus),
+      dueDate: stripeInvoice.due_date
+        ? new Date(stripeInvoice.due_date * 1000)
+        : undefined,
+      paidAt: stripeInvoice.paid_at
+        ? new Date(stripeInvoice.paid_at * 1000)
+        : undefined,
+      voidedAt: stripeInvoice.voided_at
+        ? new Date(stripeInvoice.voided_at * 1000)
+        : undefined,
       description: stripeInvoice.description,
       metadata: stripeInvoice.metadata || {},
       hostedInvoiceUrl: stripeInvoice.hosted_invoice_url,
@@ -936,7 +1050,7 @@ export class StripeClient {
       lines: (stripeInvoice.lines?.data || []).map((line: any) => ({
         id: line.id,
         externalId: line.id,
-        description: line.description || '',
+        description: line.description || "",
         amount: line.amount,
         quantity: line.quantity,
         unitAmount: line.unit_amount,
@@ -961,29 +1075,29 @@ export class StripeClient {
    */
   private mapStripeRefund(stripeRefund: any): Refund {
     const statusMap: Record<string, RefundStatus> = {
-      succeeded: 'succeeded',
-      failed: 'failed',
-      canceled: 'canceled',
-      pending: 'pending',
+      succeeded: "succeeded",
+      failed: "failed",
+      canceled: "canceled",
+      pending: "pending",
     };
 
     const reasonMap: Record<string, RefundReason> = {
-      duplicate: 'duplicate',
-      fraudulent: 'fraudulent',
-      requested_by_customer: 'requested_by_customer',
-      expired_uncaptured_charge: 'expired_uncaptured_charge',
-      general: 'general',
+      duplicate: "duplicate",
+      fraudulent: "fraudulent",
+      requested_by_customer: "requested_by_customer",
+      expired_uncaptured_charge: "expired_uncaptured_charge",
+      general: "general",
     };
 
     return {
       id: stripeRefund.id,
       externalId: stripeRefund.id,
-      provider: 'stripe',
+      provider: "stripe",
       chargeId: stripeRefund.charge,
       amount: stripeRefund.amount,
       currency: stripeRefund.currency.toUpperCase(),
-      status: statusMap[stripeRefund.status] || ('pending' as RefundStatus),
-      reason: reasonMap[stripeRefund.reason] || ('general' as RefundReason),
+      status: statusMap[stripeRefund.status] || ("pending" as RefundStatus),
+      reason: reasonMap[stripeRefund.reason] || ("general" as RefundReason),
       metadata: stripeRefund.metadata || {},
       description: stripeRefund.description,
       createdAt: new Date(stripeRefund.created * 1000),
@@ -997,20 +1111,20 @@ export class StripeClient {
    * Map Stripe checkout session to unified format
    */
   private mapStripeCheckoutSession(stripeSession: any): CheckoutSession {
-    const statusMap: Record<string, 'open' | 'complete' | 'expired'> = {
-      open: 'open',
-      complete: 'complete',
-      expired: 'expired',
+    const statusMap: Record<string, "open" | "complete" | "expired"> = {
+      open: "open",
+      complete: "complete",
+      expired: "expired",
     };
 
     return {
       id: stripeSession.id,
       externalId: stripeSession.id,
-      provider: 'stripe',
+      provider: "stripe",
       customerId: stripeSession.customer,
       mode: stripeSession.mode,
       paymentStatus: stripeSession.payment_status,
-      status: statusMap[stripeSession.status] || 'open',
+      status: statusMap[stripeSession.status] || "open",
       clientSecret: stripeSession.client_secret,
       url: stripeSession.url,
       successUrl: stripeSession.success_url,
@@ -1030,85 +1144,91 @@ export class StripeClient {
         ? new Date(stripeSession.completed_at * 1000)
         : undefined,
       customerEmail: stripeSession.customer_email,
-      billingAddressCollection: stripeSession.billing_address_collection === 'required',
+      billingAddressCollection:
+        stripeSession.billing_address_collection === "required",
     };
   }
 
   /**
    * Normalize Stripe webhook event to unified format
    */
-  private normalizeStripeWebhookEvent(event: Record<string, any>): WitylogixPaymentEvent {
+  private normalizeStripeWebhookEvent(
+    event: Record<string, any>,
+  ): WitylogixPaymentEvent {
     const eventTypeMap: Record<string, any> = {
-      'payment_intent.succeeded': {
-        type: 'payment.completed',
-        resourceType: 'payment_intent',
+      "payment_intent.succeeded": {
+        type: "payment.completed",
+        resourceType: "payment_intent",
       },
-      'payment_intent.payment_failed': {
-        type: 'payment.failed',
-        resourceType: 'payment_intent',
+      "payment_intent.payment_failed": {
+        type: "payment.failed",
+        resourceType: "payment_intent",
       },
-      'charge.refunded': {
-        type: 'refund.completed',
-        resourceType: 'refund',
+      "charge.refunded": {
+        type: "refund.completed",
+        resourceType: "refund",
       },
-      'charge.dispute.created': {
-        type: 'dispute.opened',
-        resourceType: 'dispute',
+      "charge.dispute.created": {
+        type: "dispute.opened",
+        resourceType: "dispute",
       },
-      'charge.dispute.closed': {
-        type: 'dispute.closed',
-        resourceType: 'dispute',
+      "charge.dispute.closed": {
+        type: "dispute.closed",
+        resourceType: "dispute",
       },
-      'invoice.paid': {
-        type: 'invoice.paid',
-        resourceType: 'invoice',
+      "invoice.paid": {
+        type: "invoice.paid",
+        resourceType: "invoice",
       },
-      'invoice.payment_failed': {
-        type: 'invoice.payment_failed',
-        resourceType: 'invoice',
+      "invoice.payment_failed": {
+        type: "invoice.payment_failed",
+        resourceType: "invoice",
       },
-      'customer.subscription.created': {
-        type: 'subscription.created',
-        resourceType: 'subscription',
+      "customer.subscription.created": {
+        type: "subscription.created",
+        resourceType: "subscription",
       },
-      'customer.subscription.updated': {
-        type: 'subscription.updated',
-        resourceType: 'subscription',
+      "customer.subscription.updated": {
+        type: "subscription.updated",
+        resourceType: "subscription",
       },
-      'customer.subscription.deleted': {
-        type: 'subscription.canceled',
-        resourceType: 'subscription',
+      "customer.subscription.deleted": {
+        type: "subscription.canceled",
+        resourceType: "subscription",
       },
-      'checkout.session.completed': {
-        type: 'checkout.completed',
-        resourceType: 'checkout_session',
+      "checkout.session.completed": {
+        type: "checkout.completed",
+        resourceType: "checkout_session",
       },
     };
 
     const mapping = eventTypeMap[event.type] || {
       type: event.type,
-      resourceType: 'payment_intent',
+      resourceType: "payment_intent",
     };
 
     const data: any = {};
-    if (event.data?.object?.object === 'payment_intent') {
+    if (event.data?.object?.object === "payment_intent") {
       data.paymentIntent = this.mapStripePaymentIntent(event.data.object);
-    } else if (event.data?.object?.object === 'subscription') {
+    } else if (event.data?.object?.object === "subscription") {
       data.subscription = this.mapStripeSubscription(event.data.object);
-    } else if (event.data?.object?.object === 'invoice') {
+    } else if (event.data?.object?.object === "invoice") {
       data.invoice = this.mapStripeInvoice(event.data.object);
-    } else if (event.data?.object?.object === 'charge' && event.type.includes('refund')) {
+    } else if (
+      event.data?.object?.object === "charge" &&
+      event.type.includes("refund")
+    ) {
       data.refund = this.mapStripeRefund(event.data.object);
     }
 
     return {
       id: `${event.id}-${Date.now()}`,
       timestamp: new Date(),
-      provider: 'stripe',
+      provider: "stripe",
       externalEventId: event.id,
       type: mapping.type,
       resourceType: mapping.resourceType,
-      resourceId: event.data?.object?.id || '',
+      resourceId: event.data?.object?.id || "",
       data,
       rawEvent: event,
       verified: true,
@@ -1120,9 +1240,9 @@ export class StripeClient {
    * Generate idempotency key
    */
   private generateIdempotencyKey(): string {
-    return `sk_test_${createHash('sha256')
+    return `sk_test_${createHash("sha256")
       .update(`${Date.now()}-${Math.random()}`)
-      .digest('hex')
+      .digest("hex")
       .substring(0, 32)}`;
   }
 

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { getLeaflet, getMapById } from './wl-map';
+import { useEffect, useRef } from "react";
+import { getLeaflet, getMapById } from "./wl-map";
 
 export interface ZoneForMap {
   id: string;
@@ -20,12 +20,23 @@ interface ZonePolygonLayerProps {
 }
 
 const ZONE_PALETTE = [
-  '#818cf8', '#34d399', '#fbbf24', '#f472b6',
-  '#60a5fa', '#a78bfa', '#2dd4bf', '#fb923c',
-  '#c084fc', '#4ade80', '#facc15', '#f87171',
+  "#818cf8",
+  "#34d399",
+  "#fbbf24",
+  "#f472b6",
+  "#60a5fa",
+  "#a78bfa",
+  "#2dd4bf",
+  "#fb923c",
+  "#c084fc",
+  "#4ade80",
+  "#facc15",
+  "#f87171",
 ];
 
-function centroid(pts: { latitude: number; longitude: number }[]): [number, number] {
+function centroid(
+  pts: { latitude: number; longitude: number }[],
+): [number, number] {
   const sumLat = pts.reduce((s, p) => s + p.latitude, 0);
   const sumLng = pts.reduce((s, p) => s + p.longitude, 0);
   return [sumLat / pts.length, sumLng / pts.length];
@@ -70,7 +81,7 @@ export function ZonePolygonLayer({
               <span style="color:#94a3b8">Per km</span>
               <span style="color:#e2e8f0;font-weight:600;text-align:right">$${Number(zone.perKmRate).toFixed(2)}</span>
               <span style="color:#94a3b8">Status</span>
-              <span style="color:${zone.isActive ? '#34d399' : '#f87171'};font-weight:600;text-align:right">${zone.isActive ? 'Active' : 'Inactive'}</span>
+              <span style="color:${zone.isActive ? "#34d399" : "#f87171"};font-weight:600;text-align:right">${zone.isActive ? "Active" : "Inactive"}</span>
             </div>
           </div>`;
 
@@ -88,7 +99,7 @@ export function ZonePolygonLayer({
             opacity: 0.7,
           }).bindPopup(popupHtml);
 
-          polygon.on('click', () => onZoneClick?.(zone.id));
+          polygon.on("click", () => onZoneClick?.(zone.id));
           polygon.addTo(map);
           layersRef.current.push(polygon);
 
@@ -99,7 +110,10 @@ export function ZonePolygonLayer({
           // (zones without boundaries are shown as faint rings)
           const mapCenter = map.getCenter();
           const jitter = (i - zones.length / 2) * 0.05;
-          const pos: [number, number] = [mapCenter.lat + jitter, mapCenter.lng + jitter * 0.7];
+          const pos: [number, number] = [
+            mapCenter.lat + jitter,
+            mapCenter.lng + jitter * 0.7,
+          ];
 
           const circle = L.circle(pos, {
             radius: 8000,
@@ -108,17 +122,17 @@ export function ZonePolygonLayer({
             fillOpacity: opacity * 0.5,
             weight: 1,
             opacity: 0.4,
-            dashArray: '4 4',
+            dashArray: "4 4",
           }).bindPopup(popupHtml);
 
-          circle.on('click', () => onZoneClick?.(zone.id));
+          circle.on("click", () => onZoneClick?.(zone.id));
           circle.addTo(map);
           layersRef.current.push(circle);
         }
 
         // Zone label
         const labelIcon = L.divIcon({
-          className: '',
+          className: "",
           html: `<span style="
             display:inline-block;
             background:rgba(10,10,20,.88);
@@ -144,7 +158,10 @@ export function ZonePolygonLayer({
                 map.getCenter().lng + (i - zones.length / 2) * 0.035,
               ];
 
-        const label = L.marker(labelPos, { icon: labelIcon, interactive: false });
+        const label = L.marker(labelPos, {
+          icon: labelIcon,
+          interactive: false,
+        });
         label.addTo(map);
         layersRef.current.push(label);
       });
@@ -158,7 +175,8 @@ export function ZonePolygonLayer({
       alive = false;
       getLeaflet().then(() => {
         const map = getMapById(mapId);
-        if (map) (layersRef.current as any[]).forEach((l) => map.removeLayer(l));
+        if (map)
+          (layersRef.current as any[]).forEach((l) => map.removeLayer(l));
         layersRef.current = [];
       });
     };

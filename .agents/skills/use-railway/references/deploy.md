@@ -101,16 +101,16 @@ Common reasons to override: wrong package manager detected, multiple build targe
 
 Control Railpack behavior by setting these as service variables:
 
-| Variable | Purpose |
-|---|---|
-| `RAILPACK_NODE_VERSION` | Pin Node.js version (e.g., `20`, `22.1.0`) |
-| `RAILPACK_PYTHON_VERSION` | Pin Python version (e.g., `3.12`) |
-| `RAILPACK_GO_BIN` | Go binary name to build |
-| `RAILPACK_STATIC_FILE_ROOT` | Directory for static site output (e.g., `dist`, `build`) |
-| `RAILPACK_SPA_OUTPUT_DIR` | SPA output directory with client-side routing support |
-| `RAILPACK_PACKAGES` | Additional system packages for the build |
-| `RAILPACK_BUILD_APT_PACKAGES` | Apt packages available during build only |
-| `RAILPACK_DEPLOY_APT_PACKAGES` | Apt packages available at runtime only |
+| Variable                       | Purpose                                                  |
+| ------------------------------ | -------------------------------------------------------- |
+| `RAILPACK_NODE_VERSION`        | Pin Node.js version (e.g., `20`, `22.1.0`)               |
+| `RAILPACK_PYTHON_VERSION`      | Pin Python version (e.g., `3.12`)                        |
+| `RAILPACK_GO_BIN`              | Go binary name to build                                  |
+| `RAILPACK_STATIC_FILE_ROOT`    | Directory for static site output (e.g., `dist`, `build`) |
+| `RAILPACK_SPA_OUTPUT_DIR`      | SPA output directory with client-side routing support    |
+| `RAILPACK_PACKAGES`            | Additional system packages for the build                 |
+| `RAILPACK_BUILD_APT_PACKAGES`  | Apt packages available during build only                 |
+| `RAILPACK_DEPLOY_APT_PACKAGES` | Apt packages available at runtime only                   |
 
 For full Railpack documentation including language-specific detection, config files, and framework support: https://railpack.com/llms.txt
 

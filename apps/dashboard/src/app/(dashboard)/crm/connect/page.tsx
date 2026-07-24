@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { Wizard, WizardNav, WizardContent } from './_components/wizard';
-import { StepSelectPlatform } from './_components/step-select-platform';
-import { StepOAuth } from './_components/step-oauth';
-import { StepConfigureSync } from './_components/step-configure-sync';
-import { StepTestConnection } from './_components/step-test-connection';
-import { StepReviewActivate } from './_components/step-review-activate';
-import { useWizardState } from './_components/use-wizard-state';
-import { useWizardSteps } from './_components/use-wizard-steps';
-import { useOAuthHandler } from './_components/use-oauth-handler';
-import { CRM_PLATFORMS } from './_components/constants';
+import { useRouter } from "next/navigation";
+import { Wizard, WizardNav, WizardContent } from "./_components/wizard";
+import { StepSelectPlatform } from "./_components/step-select-platform";
+import { StepOAuth } from "./_components/step-oauth";
+import { StepConfigureSync } from "./_components/step-configure-sync";
+import { StepTestConnection } from "./_components/step-test-connection";
+import { StepReviewActivate } from "./_components/step-review-activate";
+import { useWizardState } from "./_components/use-wizard-state";
+import { useWizardSteps } from "./_components/use-wizard-steps";
+import { useOAuthHandler } from "./_components/use-oauth-handler";
+import { CRM_PLATFORMS } from "./_components/constants";
 
 export default function CrmConnectPage() {
   const router = useRouter();
@@ -42,7 +42,7 @@ export default function CrmConnectPage() {
   });
 
   const handleCancelPlatform = () => {
-    router.push('/dashboard/crm');
+    router.push("/dashboard/crm");
   };
 
   const handleOAuthClick = () => {
@@ -58,7 +58,10 @@ export default function CrmConnectPage() {
   };
 
   return (
-    <Wizard activeStep={activeStep} onStepChange={(step) => handleStepChange(step, steps)}>
+    <Wizard
+      activeStep={activeStep}
+      onStepChange={(step) => handleStepChange(step, steps)}
+    >
       <WizardNav
         steps={steps}
         activeStep={activeStep}

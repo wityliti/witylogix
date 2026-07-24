@@ -34,7 +34,9 @@ describe("SecurityHeadersMiddleware", () => {
 
     it("should generate Referrer-Policy", () => {
       const headers = middleware.getHeaders();
-      expect(headers["Referrer-Policy"]).toBe("strict-origin-when-cross-origin");
+      expect(headers["Referrer-Policy"]).toBe(
+        "strict-origin-when-cross-origin",
+      );
     });
 
     it("should generate Permissions-Policy", () => {
@@ -57,7 +59,9 @@ describe("SecurityHeadersMiddleware", () => {
 
     it("should include includeSubDomains", () => {
       const headers = middleware.getHeaders();
-      expect(headers["Strict-Transport-Security"]).toContain("includeSubDomains");
+      expect(headers["Strict-Transport-Security"]).toContain(
+        "includeSubDomains",
+      );
     });
 
     it("should include preload when enabled", () => {
@@ -137,7 +141,9 @@ describe("SecurityHeadersMiddleware", () => {
         cacheControl: "no-cache, no-store, must-revalidate",
       });
       const headers = custom.getHeaders();
-      expect(headers["Cache-Control"]).toBe("no-cache, no-store, must-revalidate");
+      expect(headers["Cache-Control"]).toBe(
+        "no-cache, no-store, must-revalidate",
+      );
     });
   });
 
@@ -215,7 +221,9 @@ describe("SecurityHeadersMiddleware", () => {
     it("should toggle includeSubDomains", () => {
       middleware.updateHstsConfig({ includeSubDomains: false });
       const headers = middleware.getHeaders();
-      expect(headers["Strict-Transport-Security"]).not.toContain("includeSubDomains");
+      expect(headers["Strict-Transport-Security"]).not.toContain(
+        "includeSubDomains",
+      );
     });
 
     it("should enable preload", () => {

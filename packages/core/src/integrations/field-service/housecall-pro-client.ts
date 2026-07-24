@@ -4,7 +4,7 @@
  * API key authentication
  */
 
-import { AbstractFieldServiceAdapter } from './field-service-adapter.js';
+import { AbstractFieldServiceAdapter } from "./field-service-adapter.js";
 import type {
   Job,
   WorkOrder,
@@ -17,7 +17,7 @@ import type {
   PaginationParams,
   PaginatedResult,
   FieldServiceBatchResult,
-} from './types.js';
+} from "./types.js";
 
 interface HCPJobData {
   job_id: number;
@@ -125,17 +125,17 @@ interface HCPCustomerData {
  */
 export class HouseCallProClient extends AbstractFieldServiceAdapter {
   private apiKey: string;
-  private apiUrl: string = 'https://api.housecallpro.com/v2';
+  private apiUrl: string = "https://api.housecallpro.com/v2";
 
   /**
    * Initialize HouseCall Pro client
    */
   constructor(connection: FieldServiceConnection) {
-    super('housecall-pro', connection);
+    super("housecall-pro", connection);
 
     const { apiKey } = connection.credentials;
     if (!apiKey) {
-      throw new Error('Missing HouseCall Pro credentials: apiKey');
+      throw new Error("Missing HouseCall Pro credentials: apiKey");
     }
 
     this.apiKey = apiKey;
@@ -146,7 +146,7 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
    */
   async healthCheck(): Promise<boolean> {
     try {
-      await this.request('GET', '/customers?limit=1');
+      await this.request("GET", "/customers?limit=1");
       return true;
     } catch {
       return false;
@@ -162,8 +162,8 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
     body?: unknown,
   ): Promise<any> {
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${this.apiKey}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${this.apiKey}`,
       ...this.connection.config.customHeaders,
     };
 
@@ -177,7 +177,7 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
     if (!response.ok) {
       throw this.createOperationError(
         `HouseCall Pro API error: ${response.statusText}`,
-        'API_ERROR',
+        "API_ERROR",
         response.status,
         response.status >= 500 || response.status === 429,
       );
@@ -199,7 +199,7 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
         job_name: job.title,
         job_description: job.description,
         job_priority: job.priority,
-        job_date: job.scheduledStart?.toISOString().split('T')[0],
+        job_date: job.scheduledStart?.toISOString().split("T")[0],
         address: job.location.address,
         city: job.location.city,
         state: job.location.state,
@@ -208,7 +208,7 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
         notes: job.notes,
       };
 
-      const response = await this.request('POST', '/jobs', data);
+      const response = await this.request("POST", "/jobs", data);
       return this.mapJobFromProvider(response);
     });
   }
@@ -218,7 +218,7 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
    */
   async getJob(jobId: string): Promise<Job> {
     return this.executeWithRetry(async () => {
-      const response = await this.request('GET', `/jobs/${jobId}`);
+      const response = await this.request("GET", `/jobs/${jobId}`);
       return this.mapJobFromProvider(response);
     });
   }
@@ -236,7 +236,7 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
       if (updates.status) data.job_status = updates.status;
       if (updates.notes) data.notes = updates.notes;
 
-      const response = await this.request('PATCH', `/jobs/${jobId}`, data);
+      const response = await this.request("PATCH", `/jobs/${jobId}`, data);
       return this.mapJobFromProvider(response);
     });
   }
@@ -246,7 +246,7 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
    */
   async deleteJob(jobId: string): Promise<void> {
     return this.executeWithRetry(async () => {
-      await this.request('DELETE', `/jobs/${jobId}`);
+      await this.request("DELETE", `/jobs/${jobId}`);
     });
   }
 
@@ -256,11 +256,11 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
   async listJobs(params?: PaginationParams): Promise<PaginatedResult<Job>> {
     return this.executeWithRetry(async () => {
       const queryParams = new URLSearchParams({
-        limit: ((params?.limit) || 50).toString(),
-        offset: ((params?.offset) || 0).toString(),
+        limit: (params?.limit || 50).toString(),
+        offset: (params?.offset || 0).toString(),
       });
 
-      const response = await this.request('GET', `/jobs?${queryParams}`);
+      const response = await this.request("GET", `/jobs?${queryParams}`);
       const items = (response.jobs || []).map((item: HCPJobData) =>
         this.mapJobFromProvider(item),
       );
@@ -286,8 +286,8 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
         customerId: workOrder.jobId,
         title: workOrder.description,
         description: workOrder.description,
-        location: { address: '', city: '', postalCode: '', country: '' },
-        status: 'scheduled',
+        location: { address: "", city: "", postalCode: "", country: "" },
+        status: "scheduled",
         priority: workOrder.priority,
       });
 
@@ -315,8 +315,8 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
         externalId: job.externalId,
         workOrderNumber: job.jobNumber,
         jobId: job.customerId,
-        status: 'in_progress',
-        description: job.description || '',
+        status: "in_progress",
+        description: job.description || "",
         priority: job.priority,
         createdAt: job.createdAt,
       };
@@ -326,7 +326,10 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
   /**
    * Update work order
    */
-  async updateWorkOrder(workOrderId: string, updates: Partial<WorkOrder>): Promise<WorkOrder> {
+  async updateWorkOrder(
+    workOrderId: string,
+    updates: Partial<WorkOrder>,
+  ): Promise<WorkOrder> {
     return this.executeWithRetry(async () => {
       const job = await this.updateJob(workOrderId, updates as Partial<Job>);
       return {
@@ -334,8 +337,8 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
         externalId: job.externalId,
         workOrderNumber: job.jobNumber,
         jobId: job.customerId,
-        status: updates.status || 'in_progress',
-        description: updates.description || '',
+        status: updates.status || "in_progress",
+        description: updates.description || "",
         priority: updates.priority || job.priority,
         createdAt: job.createdAt,
       };
@@ -345,7 +348,9 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
   /**
    * List work orders
    */
-  async listWorkOrders(params?: PaginationParams): Promise<PaginatedResult<WorkOrder>> {
+  async listWorkOrders(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<WorkOrder>> {
     return this.executeWithRetry(async () => {
       const result = await this.listJobs(params);
       return {
@@ -355,8 +360,8 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
           externalId: job.externalId,
           workOrderNumber: job.jobNumber,
           jobId: job.customerId,
-          status: 'in_progress' as const,
-          description: job.description || '',
+          status: "in_progress" as const,
+          description: job.description || "",
           priority: job.priority,
           createdAt: job.createdAt,
         })),
@@ -371,7 +376,10 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
    */
   async getTechnician(technicianId: string): Promise<Technician> {
     return this.executeWithRetry(async () => {
-      const response = await this.request('GET', `/technicians/${technicianId}`);
+      const response = await this.request(
+        "GET",
+        `/technicians/${technicianId}`,
+      );
       return this.mapTechnicianFromProvider(response);
     });
   }
@@ -379,16 +387,18 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
   /**
    * List technicians
    */
-  async listTechnicians(params?: PaginationParams): Promise<PaginatedResult<Technician>> {
+  async listTechnicians(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<Technician>> {
     return this.executeWithRetry(async () => {
       const queryParams = new URLSearchParams({
-        limit: ((params?.limit) || 50).toString(),
-        offset: ((params?.offset) || 0).toString(),
+        limit: (params?.limit || 50).toString(),
+        offset: (params?.offset || 0).toString(),
       });
 
-      const response = await this.request('GET', `/technicians?${queryParams}`);
-      const items = (response.technicians || []).map((item: HCPTechnicianData) =>
-        this.mapTechnicianFromProvider(item),
+      const response = await this.request("GET", `/technicians?${queryParams}`);
+      const items = (response.technicians || []).map(
+        (item: HCPTechnicianData) => this.mapTechnicianFromProvider(item),
       );
 
       return {
@@ -403,10 +413,17 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
   /**
    * Update technician availability
    */
-  async updateTechnicianAvailability(technicianId: string, status: string): Promise<Technician> {
+  async updateTechnicianAvailability(
+    technicianId: string,
+    status: string,
+  ): Promise<Technician> {
     return this.executeWithRetry(async () => {
       const data = { status };
-      const response = await this.request('PATCH', `/technicians/${technicianId}`, data);
+      const response = await this.request(
+        "PATCH",
+        `/technicians/${technicianId}`,
+        data,
+      );
       return this.mapTechnicianFromProvider(response);
     });
   }
@@ -416,7 +433,10 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
    */
   async getTechnicianLocation(technicianId: string): Promise<any> {
     return this.executeWithRetry(async () => {
-      const response = await this.request('GET', `/technicians/${technicianId}/location`);
+      const response = await this.request(
+        "GET",
+        `/technicians/${technicianId}/location`,
+      );
       return {
         latitude: response.latitude,
         longitude: response.longitude,
@@ -435,12 +455,12 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
     return this.executeWithRetry(async () => {
       const data = {
         tech_id: schedule.technician,
-        start_date: schedule.dateStart.toISOString().split('T')[0],
-        end_date: schedule.dateEnd.toISOString().split('T')[0],
+        start_date: schedule.dateStart.toISOString().split("T")[0],
+        end_date: schedule.dateEnd.toISOString().split("T")[0],
         type: schedule.type,
       };
 
-      const response = await this.request('POST', '/schedules', data);
+      const response = await this.request("POST", "/schedules", data);
       return response;
     });
   }
@@ -456,11 +476,14 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
     return this.executeWithRetry(async () => {
       const queryParams = new URLSearchParams({
         tech_id: technicianId,
-        start_date: startDate.toISOString().split('T')[0],
-        end_date: endDate.toISOString().split('T')[0],
+        start_date: startDate.toISOString().split("T")[0],
+        end_date: endDate.toISOString().split("T")[0],
       });
 
-      const response = await this.request('GET', `/availability-slots?${queryParams}`);
+      const response = await this.request(
+        "GET",
+        `/availability-slots?${queryParams}`,
+      );
       return (response.slots || []).map((slot: any) => ({
         start: new Date(slot.start_time),
         end: new Date(slot.end_time),
@@ -471,14 +494,18 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
   /**
    * Schedule job for technician
    */
-  async scheduleJob(jobId: string, technicianId: string, start: Date): Promise<Job> {
+  async scheduleJob(
+    jobId: string,
+    technicianId: string,
+    start: Date,
+  ): Promise<Job> {
     return this.executeWithRetry(async () => {
       const data = {
         assigned_to: technicianId,
-        job_date: start.toISOString().split('T')[0],
+        job_date: start.toISOString().split("T")[0],
       };
 
-      const response = await this.request('PATCH', `/jobs/${jobId}`, data);
+      const response = await this.request("PATCH", `/jobs/${jobId}`, data);
       return this.mapJobFromProvider(response);
     });
   }
@@ -490,7 +517,7 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
    */
   async getEquipment(equipmentId: string): Promise<any> {
     return this.executeWithRetry(async () => {
-      const response = await this.request('GET', `/equipment/${equipmentId}`);
+      const response = await this.request("GET", `/equipment/${equipmentId}`);
       return response;
     });
   }
@@ -498,14 +525,16 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
   /**
    * List equipment
    */
-  async listEquipment(params?: PaginationParams): Promise<PaginatedResult<any>> {
+  async listEquipment(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<any>> {
     return this.executeWithRetry(async () => {
       const queryParams = new URLSearchParams({
-        limit: ((params?.limit) || 50).toString(),
-        offset: ((params?.offset) || 0).toString(),
+        limit: (params?.limit || 50).toString(),
+        offset: (params?.offset || 0).toString(),
       });
 
-      const response = await this.request('GET', `/equipment?${queryParams}`);
+      const response = await this.request("GET", `/equipment?${queryParams}`);
       return {
         items: response.equipment || [],
         total: response.total_count || 0,
@@ -520,7 +549,10 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
    */
   async getEquipmentServiceHistory(equipmentId: string): Promise<any[]> {
     return this.executeWithRetry(async () => {
-      const response = await this.request('GET', `/equipment/${equipmentId}/service-history`);
+      const response = await this.request(
+        "GET",
+        `/equipment/${equipmentId}/service-history`,
+      );
       return response.history || [];
     });
   }
@@ -545,10 +577,11 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
         state: customer.primaryAddress.state,
         zip_code: customer.primaryAddress.postalCode,
         country: customer.primaryAddress.country,
-        customer_type: customer.type === 'residential' ? 'Residential' : 'Commercial',
+        customer_type:
+          customer.type === "residential" ? "Residential" : "Commercial",
       };
 
-      const response = await this.request('POST', '/customers', data);
+      const response = await this.request("POST", "/customers", data);
       return this.mapCustomerFromProvider(response);
     });
   }
@@ -558,7 +591,7 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
    */
   async getCustomer(customerId: string): Promise<CustomerRecord> {
     return this.executeWithRetry(async () => {
-      const response = await this.request('GET', `/customers/${customerId}`);
+      const response = await this.request("GET", `/customers/${customerId}`);
       return this.mapCustomerFromProvider(response);
     });
   }
@@ -566,14 +599,21 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
   /**
    * Update customer
    */
-  async updateCustomer(customerId: string, updates: Partial<CustomerRecord>): Promise<CustomerRecord> {
+  async updateCustomer(
+    customerId: string,
+    updates: Partial<CustomerRecord>,
+  ): Promise<CustomerRecord> {
     return this.executeWithRetry(async () => {
       const data: Record<string, unknown> = {};
       if (updates.email) data.email = updates.email;
       if (updates.phone) data.phone = updates.phone;
       if (updates.mobile) data.mobile = updates.mobile;
 
-      const response = await this.request('PATCH', `/customers/${customerId}`, data);
+      const response = await this.request(
+        "PATCH",
+        `/customers/${customerId}`,
+        data,
+      );
       return this.mapCustomerFromProvider(response);
     });
   }
@@ -581,14 +621,16 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
   /**
    * List customers
    */
-  async listCustomers(params?: PaginationParams): Promise<PaginatedResult<CustomerRecord>> {
+  async listCustomers(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<CustomerRecord>> {
     return this.executeWithRetry(async () => {
       const queryParams = new URLSearchParams({
-        limit: ((params?.limit) || 50).toString(),
-        offset: ((params?.offset) || 0).toString(),
+        limit: (params?.limit || 50).toString(),
+        offset: (params?.offset || 0).toString(),
       });
 
-      const response = await this.request('GET', `/customers?${queryParams}`);
+      const response = await this.request("GET", `/customers?${queryParams}`);
       const items = (response.customers || []).map((item: HCPCustomerData) =>
         this.mapCustomerFromProvider(item),
       );
@@ -619,7 +661,7 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
         notes: estimate.notes,
       };
 
-      const response = await this.request('POST', '/estimates', data);
+      const response = await this.request("POST", "/estimates", data);
       return this.mapEstimateFromProvider(response);
     });
   }
@@ -629,7 +671,7 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
    */
   async getEstimate(estimateId: string): Promise<Estimate> {
     return this.executeWithRetry(async () => {
-      const response = await this.request('GET', `/estimates/${estimateId}`);
+      const response = await this.request("GET", `/estimates/${estimateId}`);
       return this.mapEstimateFromProvider(response);
     });
   }
@@ -649,7 +691,7 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
         notes: invoice.notes,
       };
 
-      const response = await this.request('POST', '/invoices', data);
+      const response = await this.request("POST", "/invoices", data);
       return this.mapInvoiceFromProvider(response);
     });
   }
@@ -659,7 +701,7 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
    */
   async getInvoice(invoiceId: string): Promise<Invoice> {
     return this.executeWithRetry(async () => {
-      const response = await this.request('GET', `/invoices/${invoiceId}`);
+      const response = await this.request("GET", `/invoices/${invoiceId}`);
       return this.mapInvoiceFromProvider(response);
     });
   }
@@ -667,14 +709,16 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
   /**
    * List invoices
    */
-  async listInvoices(params?: PaginationParams): Promise<PaginatedResult<Invoice>> {
+  async listInvoices(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<Invoice>> {
     return this.executeWithRetry(async () => {
       const queryParams = new URLSearchParams({
-        limit: ((params?.limit) || 50).toString(),
-        offset: ((params?.offset) || 0).toString(),
+        limit: (params?.limit || 50).toString(),
+        offset: (params?.offset || 0).toString(),
       });
 
-      const response = await this.request('GET', `/invoices?${queryParams}`);
+      const response = await this.request("GET", `/invoices?${queryParams}`);
       const items = (response.invoices || []).map((item: HCPInvoiceData) =>
         this.mapInvoiceFromProvider(item),
       );
@@ -691,7 +735,11 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
   /**
    * Record invoice payment
    */
-  async recordPayment(invoiceId: string, amount: number, method: string): Promise<Invoice> {
+  async recordPayment(
+    invoiceId: string,
+    amount: number,
+    method: string,
+  ): Promise<Invoice> {
     return this.executeWithRetry(async () => {
       const data = {
         invoice_id: invoiceId,
@@ -700,7 +748,7 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
         payment_date: new Date().toISOString(),
       };
 
-      await this.request('POST', '/payments', data);
+      await this.request("POST", "/payments", data);
       return this.getInvoice(invoiceId);
     });
   }
@@ -710,20 +758,22 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
   /**
    * Create dispatch assignment
    */
-  async createDispatchAssignment(assignment: DispatchAssignment): Promise<DispatchAssignment> {
+  async createDispatchAssignment(
+    assignment: DispatchAssignment,
+  ): Promise<DispatchAssignment> {
     return this.executeWithRetry(async () => {
       const data = {
         job_id: assignment.jobId,
         tech_id: assignment.technicianId,
       };
 
-      const response = await this.request('POST', '/dispatch', data);
+      const response = await this.request("POST", "/dispatch", data);
       return {
         id: response.dispatch_id,
         externalId: response.dispatch_id,
         jobId: response.job_id,
         technicianId: response.tech_id,
-        status: 'assigned',
+        status: "assigned",
         assignedAt: new Date(),
         priority: assignment.priority,
       };
@@ -733,9 +783,11 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
   /**
    * Get dispatch assignment
    */
-  async getDispatchAssignment(assignmentId: string): Promise<DispatchAssignment> {
+  async getDispatchAssignment(
+    assignmentId: string,
+  ): Promise<DispatchAssignment> {
     return this.executeWithRetry(async () => {
-      const response = await this.request('GET', `/dispatch/${assignmentId}`);
+      const response = await this.request("GET", `/dispatch/${assignmentId}`);
       return {
         id: response.dispatch_id,
         externalId: response.dispatch_id,
@@ -743,7 +795,7 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
         technicianId: response.tech_id,
         status: response.status,
         assignedAt: new Date(response.assigned_date),
-        priority: 'high',
+        priority: "high",
       };
     });
   }
@@ -759,7 +811,11 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
       const data: Record<string, unknown> = {};
       if (updates.status) data.status = updates.status;
 
-      const response = await this.request('PATCH', `/dispatch/${assignmentId}`, data);
+      const response = await this.request(
+        "PATCH",
+        `/dispatch/${assignmentId}`,
+        data,
+      );
       return this.getDispatchAssignment(response.dispatch_id);
     });
   }
@@ -769,7 +825,7 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
    */
   async cancelDispatchAssignment(assignmentId: string): Promise<void> {
     return this.executeWithRetry(async () => {
-      await this.request('DELETE', `/dispatch/${assignmentId}`);
+      await this.request("DELETE", `/dispatch/${assignmentId}`);
     });
   }
 
@@ -793,19 +849,19 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
     };
 
     results.forEach((result, index) => {
-      if (result.status === 'fulfilled') {
+      if (result.status === "fulfilled") {
         batchResult.successful++;
         batchResult.results.push({
-          recordId: jobs[index]!.id || '',
+          recordId: jobs[index]!.id || "",
           externalId: result.value.externalId,
-          status: 'success',
+          status: "success",
           data: result.value,
         });
       } else {
         batchResult.failed++;
         batchResult.results.push({
-          recordId: jobs[index]!.id || '',
-          status: 'failed',
+          recordId: jobs[index]!.id || "",
+          status: "failed",
           error: (result.reason as any).message,
         });
       }
@@ -834,19 +890,19 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
     };
 
     results.forEach((result, index) => {
-      if (result.status === 'fulfilled') {
+      if (result.status === "fulfilled") {
         batchResult.successful++;
         batchResult.results.push({
           recordId: updates[index]!.jobId,
           externalId: result.value.externalId,
-          status: 'success',
+          status: "success",
           data: result.value,
         });
       } else {
         batchResult.failed++;
         batchResult.results.push({
           recordId: updates[index]!.jobId,
-          status: 'failed',
+          status: "failed",
           error: (result.reason as any).message,
         });
       }
@@ -871,8 +927,8 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
       customerPhone: data.customer_phone,
       title: data.job_name,
       description: data.job_description,
-      status: (data.job_status.toLowerCase() as any) || 'scheduled',
-      priority: (data.job_priority.toLowerCase() as any) || 'medium',
+      status: (data.job_status.toLowerCase() as any) || "scheduled",
+      priority: (data.job_priority.toLowerCase() as any) || "medium",
       scheduledStart: data.job_date ? new Date(data.job_date) : undefined,
       location: {
         address: data.address,
@@ -899,15 +955,16 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
       email: data.email,
       phone: data.phone,
       mobile: data.mobile,
-      status: (data.status.toLowerCase() as any) || 'available',
+      status: (data.status.toLowerCase() as any) || "available",
       skills: data.skills || [],
-      currentLocation: data.current_location_lat && data.current_location_lng
-        ? {
-            latitude: data.current_location_lat,
-            longitude: data.current_location_lng,
-            timestamp: new Date(),
-          }
-        : undefined,
+      currentLocation:
+        data.current_location_lat && data.current_location_lng
+          ? {
+              latitude: data.current_location_lat,
+              longitude: data.current_location_lng,
+              timestamp: new Date(),
+            }
+          : undefined,
       currentJobId: data.current_job_id?.toString(),
       rating: data.avg_rating,
     };
@@ -934,8 +991,8 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
         postalCode: data.zip_code,
         country: data.country,
       },
-      type: data.customer_type === 'Residential' ? 'residential' : 'commercial',
-      status: (data.status.toLowerCase() as any) || 'active',
+      type: data.customer_type === "Residential" ? "residential" : "commercial",
+      status: (data.status.toLowerCase() as any) || "active",
     };
   }
 
@@ -950,10 +1007,16 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
       customerId: data.customer_id.toString(),
       customerName: data.customer_name,
       jobId: data.job_id?.toString(),
-      status: (data.estimate_status.toLowerCase() as any) || 'draft',
+      status: (data.estimate_status.toLowerCase() as any) || "draft",
       issueDate: new Date(data.created_date),
-      expiryDate: data.expiration_date ? new Date(data.expiration_date) : undefined,
-      lineItems: (data.line_items || []).map((item) => ({ ...item, unitPrice: item.unit_price, total: item.quantity * item.unit_price })),
+      expiryDate: data.expiration_date
+        ? new Date(data.expiration_date)
+        : undefined,
+      lineItems: (data.line_items || []).map((item) => ({
+        ...item,
+        unitPrice: item.unit_price,
+        total: item.quantity * item.unit_price,
+      })),
       subtotal: data.total_price * 0.9,
       total: data.total_price,
       notes: data.notes,
@@ -973,14 +1036,18 @@ export class HouseCallProClient extends AbstractFieldServiceAdapter {
       customerId: data.customer_id.toString(),
       customerName: data.customer_name,
       jobIds: data.job_ids?.map(String),
-      status: (data.invoice_status.toLowerCase() as any) || 'draft',
+      status: (data.invoice_status.toLowerCase() as any) || "draft",
       invoiceDate: new Date(data.created_date),
       dueDate: new Date(data.due_date),
-      lineItems: (data.line_items || []).map((item) => ({ ...item, unitPrice: item.unit_price, total: item.quantity * item.unit_price })),
+      lineItems: (data.line_items || []).map((item) => ({
+        ...item,
+        unitPrice: item.unit_price,
+        total: item.quantity * item.unit_price,
+      })),
       subtotal: data.total_price * 0.9,
       total: data.total_price,
       amountPaid: data.amount_paid,
-      amountDue: (data.total_price - (data.amount_paid || 0)),
+      amountDue: data.total_price - (data.amount_paid || 0),
       notes: data.notes,
       sentAt: data.sent_date ? new Date(data.sent_date) : undefined,
     };

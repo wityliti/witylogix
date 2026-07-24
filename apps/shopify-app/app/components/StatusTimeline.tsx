@@ -29,7 +29,10 @@ interface StatusTimelineProps {
   loading?: boolean;
 }
 
-export function StatusTimeline({ events, loading = false }: StatusTimelineProps) {
+export function StatusTimeline({
+  events,
+  loading = false,
+}: StatusTimelineProps) {
   if (loading) {
     return (
       <Card>

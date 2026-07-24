@@ -197,7 +197,7 @@ export class AzugaELDClient extends ELDAdapter {
 
     try {
       await this.executeWithRetry(() =>
-        this.makeRequest<{ status: string }>("GET", "/me")
+        this.makeRequest<{ status: string }>("GET", "/me"),
       );
       this.logEvent({
         type: "diagnostic-event",
@@ -214,7 +214,7 @@ export class AzugaELDClient extends ELDAdapter {
   async getDriverLogs(
     driverId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<ELDDriverLog[]> {
     const response = await this.executeWithRetry(() =>
       this.makeRequest<{ data: AzugaEldLog[] }>(
@@ -223,8 +223,8 @@ export class AzugaELDClient extends ELDAdapter {
         {
           startTime: startDate.toISOString(),
           endTime: endDate.toISOString(),
-        }
-      )
+        },
+      ),
     );
 
     return response.data.map((log, idx) => ({
@@ -252,7 +252,7 @@ export class AzugaELDClient extends ELDAdapter {
    */
   async getDutyStatus(driverId: string): Promise<ELDDutyStatus> {
     const driver = await this.executeWithRetry(() =>
-      this.makeRequest<AzugaDriver>("GET", `/drivers/${driverId}`)
+      this.makeRequest<AzugaDriver>("GET", `/drivers/${driverId}`),
     );
 
     return {
@@ -268,8 +268,14 @@ export class AzugaELDClient extends ELDAdapter {
             address: driver.currentLocation.address,
           }
         : undefined,
-      availableHoursDriving: Math.max(0, 11 - (driver.hosStatus?.hoursWorked11 || 0)),
-      availableHoursOnDuty: Math.max(0, 14 - (driver.hosStatus?.hoursWorked14 || 0)),
+      availableHoursDriving: Math.max(
+        0,
+        11 - (driver.hosStatus?.hoursWorked11 || 0),
+      ),
+      availableHoursOnDuty: Math.max(
+        0,
+        14 - (driver.hosStatus?.hoursWorked14 || 0),
+      ),
       createdAt: new Date(),
     };
   }
@@ -280,7 +286,7 @@ export class AzugaELDClient extends ELDAdapter {
   async setDutyStatus(
     driverId: string,
     status: DutyStatus,
-    location?: { latitude: number; longitude: number }
+    location?: { latitude: number; longitude: number },
   ): Promise<ELDDutyStatus> {
     const payload = {
       status: this.mapDutyStatusReverse(status),
@@ -293,8 +299,8 @@ export class AzugaELDClient extends ELDAdapter {
         "PUT",
         `/drivers/${driverId}/duty-status`,
         null,
-        payload
-      )
+        payload,
+      ),
     );
 
     this.logEvent({
@@ -311,7 +317,7 @@ export class AzugaELDClient extends ELDAdapter {
    */
   async getViolations(
     driverId: string,
-    days: number = 30
+    days: number = 30,
   ): Promise<ELDViolation[]> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -320,8 +326,8 @@ export class AzugaELDClient extends ELDAdapter {
       this.makeRequest<{ data: AzugaViolation[] }>(
         "GET",
         `/drivers/${driverId}/violations`,
-        { startDate: startDate.toISOString() }
-      )
+        { startDate: startDate.toISOString() },
+      ),
     );
 
     return response.data.map((v) => ({
@@ -348,7 +354,7 @@ export class AzugaELDClient extends ELDAdapter {
    */
   async getVehicle(vehicleId: string): Promise<ELDVehicle> {
     const vehicle = await this.executeWithRetry(() =>
-      this.makeRequest<AzugaVehicle>("GET", `/vehicles/${vehicleId}`)
+      this.makeRequest<AzugaVehicle>("GET", `/vehicles/${vehicleId}`),
     );
 
     return {
@@ -361,7 +367,9 @@ export class AzugaELDClient extends ELDAdapter {
       year: vehicle.year,
       group: undefined,
       odometerMiles: vehicle.odometer,
-      fuelType: (vehicle.fuelType as "diesel" | "gasoline" | "electric" | "hybrid") || undefined,
+      fuelType:
+        (vehicle.fuelType as "diesel" | "gasoline" | "electric" | "hybrid") ||
+        undefined,
       capacityLbs: vehicle.gvwrWeightLbs,
       currentLocation: vehicle.currentLocation
         ? {
@@ -380,7 +388,9 @@ export class AzugaELDClient extends ELDAdapter {
         ? new Date(vehicle.maintenanceStatus.nextServiceDue)
         : undefined,
       maintenanceStatus:
-        (vehicle.maintenanceStatus?.issues?.length || 0) > 0 ? "pending" : "good",
+        (vehicle.maintenanceStatus?.issues?.length || 0) > 0
+          ? "pending"
+          : "good",
       createdAt: new Date(vehicle.createdAt),
       updatedAt: new Date(vehicle.updatedAt),
     };
@@ -391,12 +401,10 @@ export class AzugaELDClient extends ELDAdapter {
    */
   async getVehicles(): Promise<ELDVehicle[]> {
     const response = await this.executeWithRetry(() =>
-      this.makeRequest<{ data: AzugaVehicle[] }>("GET", "/vehicles")
+      this.makeRequest<{ data: AzugaVehicle[] }>("GET", "/vehicles"),
     );
 
-    return Promise.all(
-      response.data.map((v) => this.getVehicle(v.id))
-    );
+    return Promise.all(response.data.map((v) => this.getVehicle(v.id)));
   }
 
   /**
@@ -408,11 +416,12 @@ export class AzugaELDClient extends ELDAdapter {
       vehicleId: dvir.vehicleId,
       type: dvir.type === "pre-trip" ? "pretrip" : "posttrip",
       status: dvir.condition,
-      checklist: dvir.defects?.map((d) => ({
-        item: d.component,
-        status: d.severity,
-        comments: d.description,
-      })) || [],
+      checklist:
+        dvir.defects?.map((d) => ({
+          item: d.component,
+          status: d.severity,
+          comments: d.description,
+        })) || [],
     };
 
     const result = await this.executeWithRetry(() =>
@@ -420,8 +429,8 @@ export class AzugaELDClient extends ELDAdapter {
         "POST",
         `/vehicles/${dvir.vehicleId}/dvir`,
         null,
-        payload
-      )
+        payload,
+      ),
     );
 
     this.logEvent({
@@ -460,8 +469,8 @@ export class AzugaELDClient extends ELDAdapter {
       this.makeRequest<{ data: AzugaDVIR[] }>(
         "GET",
         `/vehicles/${vehicleId}/dvirs`,
-        { startDate: startDate.toISOString() }
-      )
+        { startDate: startDate.toISOString() },
+      ),
     );
 
     return response.data.map((d) => ({
@@ -523,7 +532,7 @@ export class AzugaELDClient extends ELDAdapter {
   async healthCheck(): Promise<boolean> {
     try {
       await this.executeWithRetry(() =>
-        this.makeRequest<{ status: string }>("GET", "/me")
+        this.makeRequest<{ status: string }>("GET", "/me"),
       );
       return true;
     } catch {
@@ -540,7 +549,7 @@ export class AzugaELDClient extends ELDAdapter {
     method: string,
     path: string,
     params?: Record<string, unknown> | null,
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     const url = new URL(`${this.baseUrl}${path}`);
 
@@ -563,7 +572,7 @@ export class AzugaELDClient extends ELDAdapter {
 
     if (!response.ok) {
       throw new Error(
-        `Azuga API error: ${response.status} ${response.statusText}`
+        `Azuga API error: ${response.status} ${response.statusText}`,
       );
     }
 

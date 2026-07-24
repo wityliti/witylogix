@@ -23,8 +23,13 @@ import {
  * Daily sales, transaction feed, top items, terminal status
  */
 
-const terminalStatusVariant = (status: string): "success" | "warning" | "info" | "primary" | "default" | "danger" => {
-  const map: Record<string, "success" | "warning" | "info" | "primary" | "default" | "danger"> = {
+const terminalStatusVariant = (
+  status: string,
+): "success" | "warning" | "info" | "primary" | "default" | "danger" => {
+  const map: Record<
+    string,
+    "success" | "warning" | "info" | "primary" | "default" | "danger"
+  > = {
     online: "success",
     offline: "default",
     error: "danger",
@@ -32,8 +37,13 @@ const terminalStatusVariant = (status: string): "success" | "warning" | "info" |
   return (map[status] as any) || "default";
 };
 
-const txnStatusVariant = (status: TransactionStatus): "success" | "warning" | "info" | "primary" | "default" | "danger" => {
-  const map: Record<TransactionStatus, "success" | "warning" | "info" | "primary" | "default" | "danger"> = {
+const txnStatusVariant = (
+  status: TransactionStatus,
+): "success" | "warning" | "info" | "primary" | "default" | "danger" => {
+  const map: Record<
+    TransactionStatus,
+    "success" | "warning" | "info" | "primary" | "default" | "danger"
+  > = {
     completed: "success",
     pending: "info",
     refunded: "warning",
@@ -59,7 +69,12 @@ const DEFAULT_OVERVIEW: POSOverview = {
 };
 
 export default function POSPage() {
-  const { data: overviewData, loading: overviewLoading, error: overviewError, refetch: refetchOverview } = usePOSOverview();
+  const {
+    data: overviewData,
+    loading: overviewLoading,
+    error: overviewError,
+    refetch: refetchOverview,
+  } = usePOSOverview();
   const { items: liveTransactions, loading: txnLoading } = useTransactions();
   const { items: terminals, loading: terminalsLoading } = useTerminals();
   const { items: topItems } = useTopSellingItems();
@@ -68,7 +83,10 @@ export default function POSPage() {
   const overview = overviewData ?? DEFAULT_OVERVIEW;
 
   if (loading) return <LoadingSkeleton />;
-  if (overviewError) return <ErrorState message={overviewError.message} onRetry={refetchOverview} />;
+  if (overviewError)
+    return (
+      <ErrorState message={overviewError.message} onRetry={refetchOverview} />
+    );
 
   const [selectedTerminal, setSelectedTerminal] = useState<string | null>(null);
   const [period, setPeriod] = useState<"daily" | "weekly" | "monthly">("daily");
@@ -77,19 +95,37 @@ export default function POSPage() {
   const recentTransactions = useMemo(
     () =>
       [...liveTransactions]
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .sort(
+          (a, b) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+        )
         .slice(0, 10),
-    [liveTransactions]
+    [liveTransactions],
   );
 
   // Calculate payment breakdown percentages
   const paymentBreakdownPercentages = useMemo(() => {
-    const total = Object.values(overview.paymentBreakdown).reduce((a: number, b: number) => a + b, 0);
+    const total = Object.values(overview.paymentBreakdown).reduce(
+      (a: number, b: number) => a + b,
+      0,
+    );
     return {
-      cash: total > 0 ? ((overview.paymentBreakdown.cash / total) * 100).toFixed(1) : "0",
-      card: total > 0 ? ((overview.paymentBreakdown.card / total) * 100).toFixed(1) : "0",
-      mobile: total > 0 ? ((overview.paymentBreakdown.mobile / total) * 100).toFixed(1) : "0",
-      other: total > 0 ? ((overview.paymentBreakdown.other / total) * 100).toFixed(1) : "0",
+      cash:
+        total > 0
+          ? ((overview.paymentBreakdown.cash / total) * 100).toFixed(1)
+          : "0",
+      card:
+        total > 0
+          ? ((overview.paymentBreakdown.card / total) * 100).toFixed(1)
+          : "0",
+      mobile:
+        total > 0
+          ? ((overview.paymentBreakdown.mobile / total) * 100).toFixed(1)
+          : "0",
+      other:
+        total > 0
+          ? ((overview.paymentBreakdown.other / total) * 100).toFixed(1)
+          : "0",
     };
   }, [overview.paymentBreakdown]);
 
@@ -98,7 +134,11 @@ export default function POSPage() {
       <Header
         title="POS Dashboard"
         subtitle={`${overview.transactionCount} transactions · ${terminals.filter((t) => t.status === "online").length}/${terminals.length} terminals online`}
-        actions={<Button variant="primary" size="md">+ New Sale</Button>}
+        actions={
+          <Button variant="primary" size="md">
+            + New Sale
+          </Button>
+        }
       />
 
       <div className="p-6 space-y-6 bg-wl-bg-root min-h-[calc(100vh-var(--header-height))]">
@@ -144,7 +184,9 @@ export default function POSPage() {
                 <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{paymentMethodIcon.cash}</span>
-                    <span className="text-sm font-medium text-gray-400">Cash</span>
+                    <span className="text-sm font-medium text-gray-400">
+                      Cash
+                    </span>
                   </div>
                   <span className="text-sm font-bold text-white">
                     {paymentBreakdownPercentages.cash}%
@@ -166,7 +208,9 @@ export default function POSPage() {
                 <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{paymentMethodIcon.card}</span>
-                    <span className="text-sm font-medium text-gray-400">Card</span>
+                    <span className="text-sm font-medium text-gray-400">
+                      Card
+                    </span>
                   </div>
                   <span className="text-sm font-bold text-white">
                     {paymentBreakdownPercentages.card}%
@@ -188,7 +232,9 @@ export default function POSPage() {
                 <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{paymentMethodIcon.mobile}</span>
-                    <span className="text-sm font-medium text-gray-400">Mobile</span>
+                    <span className="text-sm font-medium text-gray-400">
+                      Mobile
+                    </span>
                   </div>
                   <span className="text-sm font-bold text-white">
                     {paymentBreakdownPercentages.mobile}%
@@ -211,7 +257,9 @@ export default function POSPage() {
                   <div className="flex justify-between items-center mb-2">
                     <div className="flex items-center gap-2">
                       <span className="text-lg">💳</span>
-                      <span className="text-sm font-medium text-gray-400">Other</span>
+                      <span className="text-sm font-medium text-gray-400">
+                        Other
+                      </span>
                     </div>
                     <span className="text-sm font-bold text-white">
                       {paymentBreakdownPercentages.other}%
@@ -250,7 +298,7 @@ export default function POSPage() {
                         key={txn.id}
                         className={cn(
                           "p-3 bg-wl-bg-elevated rounded-md border-l-4 border-blue-500 hover:bg-wl-bg-elevated transition-colors opacity-0",
-                          "cursor-pointer"
+                          "cursor-pointer",
                         )}
                         style={{
                           animation: `wl-fade-in var(--wl-duration-default) var(--wl-ease-default) ${idx * 50}ms forwards`,
@@ -267,7 +315,11 @@ export default function POSPage() {
                               </span>
                             </div>
                             <div className="text-xs text-gray-400">
-                              {txn.terminalName} • {new Date(txn.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                              {txn.terminalName} •{" "}
+                              {new Date(txn.timestamp).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
                             </div>
                           </div>
 
@@ -275,7 +327,10 @@ export default function POSPage() {
                             <div className="text-sm font-bold text-emerald-400">
                               ${txn.amount.toFixed(2)}
                             </div>
-                            <Badge variant={txnStatusVariant(txn.status)} className="mt-1">
+                            <Badge
+                              variant={txnStatusVariant(txn.status)}
+                              className="mt-1"
+                            >
                               {txn.status}
                             </Badge>
                           </div>
@@ -283,7 +338,8 @@ export default function POSPage() {
 
                         {txn.items.length > 0 && (
                           <div className="text-xs text-gray-400 pl-6">
-                            {txn.items.length} item{txn.items.length !== 1 ? "s" : ""}
+                            {txn.items.length} item
+                            {txn.items.length !== 1 ? "s" : ""}
                           </div>
                         )}
                       </div>
@@ -320,9 +376,14 @@ export default function POSPage() {
                 </thead>
                 <tbody className="divide-y divide-[#1e1e2e]">
                   {topItems.map((item, idx) => (
-                    <tr key={item.id} className="hover:bg-wl-bg-elevated transition-colors">
+                    <tr
+                      key={item.id}
+                      className="hover:bg-wl-bg-elevated transition-colors"
+                    >
                       <td className="px-4 py-3">
-                        <div className="text-white font-medium">{item.name}</div>
+                        <div className="text-white font-medium">
+                          {item.name}
+                        </div>
                         <div className="text-xs text-gray-500">{item.sku}</div>
                       </td>
                       <td className="px-4 py-3 text-gray-400 font-mono">
@@ -353,7 +414,7 @@ export default function POSPage() {
                     "p-3 bg-wl-bg-elevated rounded-md border transition-colors cursor-pointer opacity-0",
                     selectedTerminal === terminal.id
                       ? "border-blue-500 bg-wl-bg-elevated"
-                      : "border-wl-border-default hover:border-wl-border-strong"
+                      : "border-wl-border-default hover:border-wl-border-strong",
                   )}
                   style={{
                     animation: `wl-fade-in var(--wl-duration-default) var(--wl-ease-default) ${idx * 50}ms forwards`,

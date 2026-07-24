@@ -77,9 +77,7 @@ export default function NotificationsPage() {
   }, [notifications, activeTab, selectedCategory]);
 
   // Calculate counts
-  const readCount = notifications.filter(
-    (n) => n.status === "READ"
-  ).length;
+  const readCount = notifications.filter((n) => n.status === "READ").length;
   const allCount = notifications.length;
 
   // Tab configuration
@@ -104,9 +102,7 @@ export default function NotificationsPage() {
     if (selectedNotifications.size === filteredNotifications.length) {
       setSelectedNotifications(new Set());
     } else {
-      setSelectedNotifications(
-        new Set(filteredNotifications.map((n) => n.id))
-      );
+      setSelectedNotifications(new Set(filteredNotifications.map((n) => n.id)));
     }
   }, [filteredNotifications, selectedNotifications]);
 
@@ -150,13 +146,19 @@ export default function NotificationsPage() {
           subtitle="Manage and view all your notifications"
           actions={
             <Link href="/notifications/preferences">
-              <Button variant="secondary" size="sm">Preferences</Button>
+              <Button variant="secondary" size="sm">
+                Preferences
+              </Button>
             </Link>
           }
         />
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <ErrorState
-            message={error instanceof Error ? error.message : "Failed to load notifications"}
+            message={
+              error instanceof Error
+                ? error.message
+                : "Failed to load notifications"
+            }
             onRetry={() => window.location.reload()}
           />
         </main>
@@ -172,11 +174,7 @@ export default function NotificationsPage() {
         actions={
           <div className="flex items-center gap-2">
             {unreadCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={markAllAsRead}
-              >
+              <Button variant="ghost" size="sm" onClick={markAllAsRead}>
                 <Check className="w-4 h-4 mr-1" />
                 Mark All Read
               </Button>
@@ -213,7 +211,7 @@ export default function NotificationsPage() {
                   "border cursor-pointer",
                   selectedCategory === cat.id
                     ? "border-blue-500 bg-blue-500/20 text-blue-400"
-                    : "border-wl-border-default text-gray-400 hover:border-wl-border-strong"
+                    : "border-wl-border-default text-gray-400 hover:border-wl-border-strong",
                 )}
               >
                 {cat.label}
@@ -237,11 +235,7 @@ export default function NotificationsPage() {
                     <Check className="w-4 h-4 mr-1" />
                     Mark as Read
                   </Button>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={handleBulkDelete}
-                  >
+                  <Button variant="danger" size="sm" onClick={handleBulkDelete}>
                     <Trash2 className="w-4 h-4 mr-1" />
                     Delete
                   </Button>
@@ -256,14 +250,20 @@ export default function NotificationsPage() {
               {error ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <Bell className="w-12 h-12 text-red-500 mb-3" />
-                  <p className="text-red-400 font-medium">Failed to load notifications</p>
-                  <p className="text-gray-500 text-sm mt-1">Check your connection and try again</p>
+                  <p className="text-red-400 font-medium">
+                    Failed to load notifications
+                  </p>
+                  <p className="text-gray-500 text-sm mt-1">
+                    Check your connection and try again
+                  </p>
                 </div>
               ) : filteredNotifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <Bell className="w-12 h-12 text-gray-400 mb-3" />
                   <p className="text-gray-400">
-                    {isLoading ? "Loading notifications…" : "No notifications to display"}
+                    {isLoading
+                      ? "Loading notifications…"
+                      : "No notifications to display"}
                   </p>
                 </div>
               ) : (
@@ -301,14 +301,12 @@ export default function NotificationsPage() {
                             "hover:bg-wl-bg-elevated cursor-pointer transition-colors",
                             isSelected && "bg-wl-bg-elevated",
                             notif.status === "UNREAD" &&
-                              "bg-blue-500/5 border-l-2 border-blue-500"
+                              "bg-blue-500/5 border-l-2 border-blue-500",
                           )}
                         >
                           <Checkbox
                             checked={isSelected}
-                            onChange={() =>
-                              handleToggleNotification(notif.id)
-                            }
+                            onChange={() => handleToggleNotification(notif.id)}
                           />
 
                           {/* Read/Unread Indicator */}
@@ -327,9 +325,7 @@ export default function NotificationsPage() {
                           <div
                             className="flex-1 cursor-pointer"
                             onClick={() =>
-                              setExpandedId(
-                                isExpanded ? null : notif.id
-                              )
+                              setExpandedId(isExpanded ? null : notif.id)
                             }
                           >
                             <div className="font-medium text-white">
@@ -342,10 +338,7 @@ export default function NotificationsPage() {
 
                           {/* Category Badge */}
                           <div className="w-24">
-                            <Badge
-                              variant="info"
-                              className="text-xs"
-                            >
+                            <Badge variant="info" className="text-xs">
                               {notif.category}
                             </Badge>
                           </div>
@@ -359,7 +352,7 @@ export default function NotificationsPage() {
                           <ChevronDown
                             className={cn(
                               "w-4 h-4 text-gray-500 transition-transform",
-                              isExpanded && "rotate-180"
+                              isExpanded && "rotate-180",
                             )}
                           />
                         </div>
@@ -397,9 +390,7 @@ export default function NotificationsPage() {
                                     Timestamp
                                   </p>
                                   <p className="text-sm text-gray-400">
-                                    {new Date(
-                                      notif.timestamp
-                                    ).toLocaleString()}
+                                    {new Date(notif.timestamp).toLocaleString()}
                                   </p>
                                 </div>
                               </div>
@@ -419,9 +410,7 @@ export default function NotificationsPage() {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() =>
-                                      markAsRead(notif.id)
-                                    }
+                                    onClick={() => markAsRead(notif.id)}
                                   >
                                     Mark as Read
                                   </Button>
@@ -429,9 +418,7 @@ export default function NotificationsPage() {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() =>
-                                      markAsUnread(notif.id)
-                                    }
+                                    onClick={() => markAsUnread(notif.id)}
                                   >
                                     Mark as Unread
                                   </Button>
@@ -439,9 +426,7 @@ export default function NotificationsPage() {
                                 <Button
                                   variant="danger"
                                   size="sm"
-                                  onClick={() =>
-                                    deleteNotification(notif.id)
-                                  }
+                                  onClick={() => deleteNotification(notif.id)}
                                 >
                                   Delete
                                 </Button>

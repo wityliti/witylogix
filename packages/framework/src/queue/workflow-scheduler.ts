@@ -58,7 +58,7 @@ export class WorkflowScheduler extends EventEmitter {
     workflowName: string,
     input: unknown,
     cron: string,
-    options?: { timezone?: string; limit?: number; active?: boolean }
+    options?: { timezone?: string; limit?: number; active?: boolean },
   ): Promise<void> {
     if (this.schedules.has(name)) {
       throw new Error(`Schedule "${name}" already exists`);
@@ -76,7 +76,12 @@ export class WorkflowScheduler extends EventEmitter {
       timesRun: 0,
     };
     this.schedules.set(name, schedule);
-    this.emit("schedule:created", { name, workflowName, cron, timestamp: new Date() });
+    this.emit("schedule:created", {
+      name,
+      workflowName,
+      cron,
+      timestamp: new Date(),
+    });
     console.log(`[WorkflowScheduler] Scheduled "${name}" (${cron})`);
     if (this._isRunning && schedule.active !== false) {
       this.scheduleWorkflow(name, schedule);
@@ -92,12 +97,19 @@ export class WorkflowScheduler extends EventEmitter {
       this.timers.delete(name);
     }
     this.schedules.delete(name);
-    this.emit("schedule:deleted", { name, workflowName: schedule.workflowName, timestamp: new Date() });
+    this.emit("schedule:deleted", {
+      name,
+      workflowName: schedule.workflowName,
+      timestamp: new Date(),
+    });
     console.log(`[WorkflowScheduler] Unscheduled "${name}"`);
     return true;
   }
 
-  async update(name: string, updates: Partial<Pick<ScheduledWorkflow, "input" | "cron" | "active">>): Promise<boolean> {
+  async update(
+    name: string,
+    updates: Partial<Pick<ScheduledWorkflow, "input" | "cron" | "active">>,
+  ): Promise<boolean> {
     const schedule = this.schedules.get(name);
     if (!schedule) return false;
     if (updates.input !== undefined) schedule.input = updates.input;
@@ -160,12 +172,16 @@ export class WorkflowScheduler extends EventEmitter {
           await this.unschedule(name);
           return;
         }
-        const jobId = await this.queue.enqueue(schedule.workflowName, schedule.input, {
-          userId: "system",
-          tenantId: "system",
-          transactionId: `scheduled_${name}_${Date.now()}`,
-          metadata: { scheduleName: name, scheduledExecution: true },
-        });
+        const jobId = await this.queue.enqueue(
+          schedule.workflowName,
+          schedule.input,
+          {
+            userId: "system",
+            tenantId: "system",
+            transactionId: `scheduled_${name}_${Date.now()}`,
+            metadata: { scheduleName: name, scheduledExecution: true },
+          },
+        );
         schedule.lastRunAt = new Date();
         schedule.timesRun++;
         this.emit("schedule:executed", {
@@ -175,11 +191,17 @@ export class WorkflowScheduler extends EventEmitter {
           timesRun: schedule.timesRun,
           timestamp: new Date(),
         });
-        console.log(`[WorkflowScheduler] Executed "${name}" (run ${schedule.timesRun}): job ${jobId}`);
+        console.log(
+          `[WorkflowScheduler] Executed "${name}" (run ${schedule.timesRun}): job ${jobId}`,
+        );
         this.scheduleWorkflow(name, schedule);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        this.emit("schedule:error", { name, error: message, timestamp: new Date() });
+        this.emit("schedule:error", {
+          name,
+          error: message,
+          timestamp: new Date(),
+        });
         console.error(`[WorkflowScheduler] Error executing "${name}":`, error);
         this.scheduleWorkflow(name, schedule);
       }

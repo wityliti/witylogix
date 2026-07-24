@@ -1,12 +1,10 @@
-'use client';
+"use client";
 
 export function ColorsSection() {
   return (
     <div className="space-y-12">
       <div>
-        <h2 className="text-2xl font-bold text-white mb-2">
-          Color Palette
-        </h2>
+        <h2 className="text-2xl font-bold text-white mb-2">Color Palette</h2>
         <p className="text-gray-300 mb-8">
           Design tokens for colors used throughout the platform. Dark theme with
           amber primary color for logistics warmth.
@@ -35,12 +33,8 @@ export function ColorsSection() {
                     className="w-full h-24 rounded-md mb-2 border border-[#1e1e2e]"
                     style={{ backgroundColor: color.hex }}
                   />
-                  <p className="text-xs font-mono text-gray-300">
-                    {color.hex}
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    {color.token}
-                  </p>
+                  <p className="text-xs font-mono text-gray-300">{color.hex}</p>
+                  <p className="text-xs text-gray-400">{color.token}</p>
                 </div>
               ))}
             </div>
@@ -56,15 +50,9 @@ export function ColorsSection() {
                   className="w-full h-32 rounded-md mb-2 border border-[#1e1e2e]"
                   style={{ backgroundColor: "#34d399" }}
                 />
-                <p className="text-sm font-semibold text-white">
-                  Success
-                </p>
-                <p className="text-xs font-mono text-gray-300">
-                  #34d399
-                </p>
-                <p className="text-xs text-gray-400">
-                  --emerald-500
-                </p>
+                <p className="text-sm font-semibold text-white">Success</p>
+                <p className="text-xs font-mono text-gray-300">#34d399</p>
+                <p className="text-xs text-gray-400">--emerald-500</p>
               </div>
 
               <div>
@@ -72,15 +60,9 @@ export function ColorsSection() {
                   className="w-full h-32 rounded-md mb-2 border border-[#1e1e2e]"
                   style={{ backgroundColor: "#fbbf24" }}
                 />
-                <p className="text-sm font-semibold text-white">
-                  Warning
-                </p>
-                <p className="text-xs font-mono text-gray-300">
-                  #fbbf24
-                </p>
-                <p className="text-xs text-gray-400">
-                  --amber-500
-                </p>
+                <p className="text-sm font-semibold text-white">Warning</p>
+                <p className="text-xs font-mono text-gray-300">#fbbf24</p>
+                <p className="text-xs text-gray-400">--amber-500</p>
               </div>
 
               <div>
@@ -88,15 +70,9 @@ export function ColorsSection() {
                   className="w-full h-32 rounded-md mb-2 border border-[#1e1e2e]"
                   style={{ backgroundColor: "#f87171" }}
                 />
-                <p className="text-sm font-semibold text-white">
-                  Danger
-                </p>
-                <p className="text-xs font-mono text-gray-300">
-                  #f87171
-                </p>
-                <p className="text-xs text-gray-400">
-                  --red-500
-                </p>
+                <p className="text-sm font-semibold text-white">Danger</p>
+                <p className="text-xs font-mono text-gray-300">#f87171</p>
+                <p className="text-xs text-gray-400">--red-500</p>
               </div>
 
               <div>
@@ -104,15 +80,9 @@ export function ColorsSection() {
                   className="w-full h-32 rounded-md mb-2 border border-[#1e1e2e]"
                   style={{ backgroundColor: "#60a5fa" }}
                 />
-                <p className="text-sm font-semibold text-white">
-                  Info
-                </p>
-                <p className="text-xs font-mono text-gray-300">
-                  #60a5fa
-                </p>
-                <p className="text-xs text-gray-400">
-                  --blue-500
-                </p>
+                <p className="text-sm font-semibold text-white">Info</p>
+                <p className="text-xs font-mono text-gray-300">#60a5fa</p>
+                <p className="text-xs text-gray-400">--blue-500</p>
               </div>
             </div>
           </div>
@@ -138,9 +108,7 @@ export function ColorsSection() {
                   <p className="text-sm font-semibold text-white">
                     {color.name}
                   </p>
-                  <p className="text-xs font-mono text-gray-300">
-                    {color.hex}
-                  </p>
+                  <p className="text-xs font-mono text-gray-300">{color.hex}</p>
                 </div>
               ))}
             </div>

@@ -21,7 +21,7 @@
  * Rate Limit: 20 requests per second
  */
 
-import { createHmac, timingSafeEqual } from 'crypto';
+import { createHmac, timingSafeEqual } from "crypto";
 
 import type {
   EasyPostAddress,
@@ -38,7 +38,7 @@ import type {
   EasyPostError,
   CarrierAccount,
   ScanForm,
-} from './easypost-types.js';
+} from "./easypost-types.js";
 
 // ─── Types ──────────────────────────────────────────────────────────────
 
@@ -86,7 +86,9 @@ interface IIntegrationGateway {
   put<T>(providerId: string, path: string, body?: unknown): Promise<T>;
   patch<T>(providerId: string, path: string, body?: unknown): Promise<T>;
   delete<T>(providerId: string, path: string): Promise<T>;
-  getRateLimitStatus(providerId: string): { remaining: number; resetAt: Date } | null;
+  getRateLimitStatus(
+    providerId: string,
+  ): { remaining: number; resetAt: Date } | null;
 }
 
 // ─── EasyPost SDK Client ────────────────────────────────────────────────
@@ -103,7 +105,7 @@ interface IIntegrationGateway {
 export class EasyPostSdkClient {
   private config: EasyPostSdkConfig;
   private gateway: IIntegrationGateway;
-  private baseUrl: string = 'https://api.easypost.com/v2';
+  private baseUrl: string = "https://api.easypost.com/v2";
   private requestCount = 0;
   private windowStartTime = Date.now();
   private readonly MAX_REQUESTS_PER_SECOND = 20;
@@ -116,10 +118,12 @@ export class EasyPostSdkClient {
      * @param data Address data
      * @returns Created address
      */
-    create: async (data: Partial<EasyPostAddress>): Promise<EasyPostAddress> => {
-      return this.post<{ address: EasyPostAddress }>('/addresses', { address: data }).then(
-        (r) => r.address,
-      );
+    create: async (
+      data: Partial<EasyPostAddress>,
+    ): Promise<EasyPostAddress> => {
+      return this.post<{ address: EasyPostAddress }>("/addresses", {
+        address: data,
+      }).then((r) => r.address);
     },
 
     /**
@@ -141,7 +145,9 @@ export class EasyPostSdkClient {
      * @returns Address details
      */
     get: async (id: string): Promise<EasyPostAddress> => {
-      return this.get<{ address: EasyPostAddress }>(`/addresses/${id}`).then((r) => r.address);
+      return this.get<{ address: EasyPostAddress }>(`/addresses/${id}`).then(
+        (r) => r.address,
+      );
     },
 
     /**
@@ -149,7 +155,9 @@ export class EasyPostSdkClient {
      * @param data Address data
      * @returns Address with residential flag
      */
-    detectResidential: async (data: Partial<EasyPostAddress>): Promise<boolean> => {
+    detectResidential: async (
+      data: Partial<EasyPostAddress>,
+    ): Promise<boolean> => {
       const verified = await this.addresses.verify(data);
       return verified.address.residential ?? false;
     },
@@ -163,9 +171,9 @@ export class EasyPostSdkClient {
      * @returns Created parcel
      */
     create: async (data: Partial<EasyPostParcel>): Promise<EasyPostParcel> => {
-      return this.post<{ parcel: EasyPostParcel }>('/parcels', { parcel: data }).then(
-        (r) => r.parcel,
-      );
+      return this.post<{ parcel: EasyPostParcel }>("/parcels", {
+        parcel: data,
+      }).then((r) => r.parcel);
     },
 
     /**
@@ -174,7 +182,9 @@ export class EasyPostSdkClient {
      * @returns Parcel details
      */
     get: async (id: string): Promise<EasyPostParcel> => {
-      return this.get<{ parcel: EasyPostParcel }>(`/parcels/${id}`).then((r) => r.parcel);
+      return this.get<{ parcel: EasyPostParcel }>(`/parcels/${id}`).then(
+        (r) => r.parcel,
+      );
     },
   };
 
@@ -185,8 +195,10 @@ export class EasyPostSdkClient {
      * @param data Shipment data
      * @returns Created shipment with rates
      */
-    create: async (data: Partial<EasyPostShipment>): Promise<EasyPostShipment> => {
-      return this.post<{ shipment: EasyPostShipment }>('/shipments', {
+    create: async (
+      data: Partial<EasyPostShipment>,
+    ): Promise<EasyPostShipment> => {
+      return this.post<{ shipment: EasyPostShipment }>("/shipments", {
         shipment: data,
       }).then((r) => r.shipment);
     },
@@ -219,9 +231,10 @@ export class EasyPostSdkClient {
      * @returns Updated shipment
      */
     refund: async (id: string): Promise<EasyPostShipment> => {
-      return this.post<{ shipment: EasyPostShipment }>(`/shipments/${id}/refund`, {}).then(
-        (r) => r.shipment,
-      );
+      return this.post<{ shipment: EasyPostShipment }>(
+        `/shipments/${id}/refund`,
+        {},
+      ).then((r) => r.shipment);
     },
 
     /**
@@ -260,10 +273,16 @@ export class EasyPostSdkClient {
       service?: string,
     ): EasyPostRate[] => {
       return rates.filter((rate) => {
-        if (carrier && !rate.carrier.toLowerCase().includes(carrier.toLowerCase())) {
+        if (
+          carrier &&
+          !rate.carrier.toLowerCase().includes(carrier.toLowerCase())
+        ) {
           return false;
         }
-        if (service && !rate.service.toLowerCase().includes(service.toLowerCase())) {
+        if (
+          service &&
+          !rate.service.toLowerCase().includes(service.toLowerCase())
+        ) {
           return false;
         }
         return true;
@@ -301,14 +320,14 @@ export class EasyPostSdkClient {
      * @returns Created label
      */
     buy: async (rateId: string): Promise<EasyPostLabel> => {
-      const rate = await this.get<{ rate: EasyPostRate }>(`/rates/${rateId}`).then(
-        (r) => r.rate,
-      );
+      const rate = await this.get<{ rate: EasyPostRate }>(
+        `/rates/${rateId}`,
+      ).then((r) => r.rate);
       // Note: In EasyPost, buying happens via shipment endpoint
       // This is a convenience method
       const shipmentId = (rate as any).shipment_id;
       if (!shipmentId) {
-        throw new Error('Rate does not have associated shipment');
+        throw new Error("Rate does not have associated shipment");
       }
       const shipment = await this.shipments.buyRate(shipmentId, rateId);
       return this.labels.normalize(shipment);
@@ -330,9 +349,12 @@ export class EasyPostSdkClient {
      * @param format Target format (PDF, PNG, ZPL, EPL2)
      * @returns Label URL with specified format
      */
-    convertFormat: async (labelId: string, format: 'PDF' | 'PNG' | 'ZPL' | 'EPL2'): Promise<string> => {
+    convertFormat: async (
+      labelId: string,
+      format: "PDF" | "PNG" | "ZPL" | "EPL2",
+    ): Promise<string> => {
       const label = await this.labels.get(labelId);
-      const baseUrl = label.label_url || '';
+      const baseUrl = label.label_url || "";
       const params = new URLSearchParams({ filetype: format.toLowerCase() });
       return `${baseUrl}?${params.toString()}`;
     },
@@ -345,8 +367,10 @@ export class EasyPostSdkClient {
       return {
         id: shipment.id,
         tracking_code: shipment.tracking_code,
-        label_url: shipment.postage_label?.url || '',
-        label_format: (shipment.postage_label?.fileformat || 'pdf').toUpperCase() as 'PDF' | 'PNG' | 'ZPL' | 'EPL2',
+        label_url: shipment.postage_label?.url || "",
+        label_format: (
+          shipment.postage_label?.fileformat || "pdf"
+        ).toUpperCase() as "PDF" | "PNG" | "ZPL" | "EPL2",
         created_at: shipment.created_at,
       };
     },
@@ -360,14 +384,17 @@ export class EasyPostSdkClient {
      * @param carrier Optional carrier name
      * @returns Created tracker
      */
-    create: async (trackingCode: string, carrier?: string): Promise<EasyPostTracker> => {
+    create: async (
+      trackingCode: string,
+      carrier?: string,
+    ): Promise<EasyPostTracker> => {
       const payload: Record<string, unknown> = { tracking_code: trackingCode };
       if (carrier) {
         payload.carrier = carrier;
       }
-      return this.post<{ tracker: EasyPostTracker }>('/trackers', { tracker: payload }).then(
-        (r) => r.tracker,
-      );
+      return this.post<{ tracker: EasyPostTracker }>("/trackers", {
+        tracker: payload,
+      }).then((r) => r.tracker);
     },
 
     /**
@@ -376,9 +403,9 @@ export class EasyPostSdkClient {
      * @returns Tracker details with checkpoints
      */
     get: async (trackingCode: string): Promise<EasyPostTracker> => {
-      return this.get<{ tracker: EasyPostTracker }>(`/trackers/${trackingCode}`).then(
-        (r) => r.tracker,
-      );
+      return this.get<{ tracker: EasyPostTracker }>(
+        `/trackers/${trackingCode}`,
+      ).then((r) => r.tracker);
     },
 
     /**
@@ -386,8 +413,10 @@ export class EasyPostSdkClient {
      * @param url Webhook URL (must be HTTPS)
      * @returns Webhook configuration
      */
-    registerWebhook: async (url: string): Promise<{ id: string; url: string }> => {
-      return this.post<{ webhook: { id: string; url: string } }>('/webhooks', {
+    registerWebhook: async (
+      url: string,
+    ): Promise<{ id: string; url: string }> => {
+      return this.post<{ webhook: { id: string; url: string } }>("/webhooks", {
         webhook: { url },
       }).then((r) => r.webhook);
     },
@@ -405,7 +434,9 @@ export class EasyPostSdkClient {
       shipmentId: string,
       amount: number,
     ): Promise<{ id: string; amount: string; provider: string }> => {
-      return this.post<{ insurance: { id: string; amount: string; provider: string } }>(
+      return this.post<{
+        insurance: { id: string; amount: string; provider: string };
+      }>(
         `/shipments/${shipmentId}/insure`,
         { amount: amount / 100 }, // Convert cents to dollars
       ).then((r) => r.insurance);
@@ -423,13 +454,16 @@ export class EasyPostSdkClient {
       claimAmount: number,
       description: string,
     ): Promise<{ claim_code: string; status: string }> => {
-      return this.post<{ claim: { claim_code: string; status: string } }>('/claims', {
-        claim: {
-          tracking_code: trackingCode,
-          amount: claimAmount / 100,
-          description,
+      return this.post<{ claim: { claim_code: string; status: string } }>(
+        "/claims",
+        {
+          claim: {
+            tracking_code: trackingCode,
+            amount: claimAmount / 100,
+            description,
+          },
         },
-      }).then((r) => r.claim);
+      ).then((r) => r.claim);
     },
   };
 
@@ -442,9 +476,9 @@ export class EasyPostSdkClient {
      */
     create: async (shipmentIds: string[]): Promise<EasyPostBatch> => {
       if (shipmentIds.length > 10000) {
-        throw new Error('Batch cannot contain more than 10,000 shipments');
+        throw new Error("Batch cannot contain more than 10,000 shipments");
       }
-      return this.post<{ batch: EasyPostBatch }>('/batches', {
+      return this.post<{ batch: EasyPostBatch }>("/batches", {
         batch: {
           shipments: shipmentIds.map((id) => ({ id })),
         },
@@ -457,9 +491,10 @@ export class EasyPostSdkClient {
      * @returns Updated batch
      */
     buy: async (batchId: string): Promise<EasyPostBatch> => {
-      return this.post<{ batch: EasyPostBatch }>(`/batches/${batchId}/buy`, {}).then(
-        (r) => r.batch,
-      );
+      return this.post<{ batch: EasyPostBatch }>(
+        `/batches/${batchId}/buy`,
+        {},
+      ).then((r) => r.batch);
     },
 
     /**
@@ -468,9 +503,10 @@ export class EasyPostSdkClient {
      * @returns Scan form details
      */
     generateScanForm: async (batchId: string): Promise<ScanForm> => {
-      return this.post<{ scan_form: ScanForm }>(`/batches/${batchId}/scan_form`, {}).then(
-        (r) => r.scan_form,
-      );
+      return this.post<{ scan_form: ScanForm }>(
+        `/batches/${batchId}/scan_form`,
+        {},
+      ).then((r) => r.scan_form);
     },
 
     /**
@@ -479,7 +515,9 @@ export class EasyPostSdkClient {
      * @returns Batch details
      */
     get: async (id: string): Promise<EasyPostBatch> => {
-      return this.get<{ batch: EasyPostBatch }>(`/batches/${id}`).then((r) => r.batch);
+      return this.get<{ batch: EasyPostBatch }>(`/batches/${id}`).then(
+        (r) => r.batch,
+      );
     },
   };
 
@@ -490,10 +528,15 @@ export class EasyPostSdkClient {
      * @param data Customs info data
      * @returns Created customs info
      */
-    create: async (data: Partial<EasyPostCustomsInfo>): Promise<EasyPostCustomsInfo> => {
-      return this.post<{ customs_info: EasyPostCustomsInfo }>('/customs_infos', {
-        customs_info: data,
-      }).then((r) => r.customs_info);
+    create: async (
+      data: Partial<EasyPostCustomsInfo>,
+    ): Promise<EasyPostCustomsInfo> => {
+      return this.post<{ customs_info: EasyPostCustomsInfo }>(
+        "/customs_infos",
+        {
+          customs_info: data,
+        },
+      ).then((r) => r.customs_info);
     },
 
     /**
@@ -501,10 +544,15 @@ export class EasyPostSdkClient {
      * @param data Customs item data
      * @returns Created item
      */
-    createItem: async (data: Partial<EasyPostCustomsItem>): Promise<EasyPostCustomsItem> => {
-      return this.post<{ customs_item: EasyPostCustomsItem }>('/customs_items', {
-        customs_item: data,
-      }).then((r) => r.customs_item);
+    createItem: async (
+      data: Partial<EasyPostCustomsItem>,
+    ): Promise<EasyPostCustomsItem> => {
+      return this.post<{ customs_item: EasyPostCustomsItem }>(
+        "/customs_items",
+        {
+          customs_item: data,
+        },
+      ).then((r) => r.customs_item);
     },
 
     /**
@@ -513,9 +561,9 @@ export class EasyPostSdkClient {
      * @returns Customs info details
      */
     get: async (id: string): Promise<EasyPostCustomsInfo> => {
-      return this.get<{ customs_info: EasyPostCustomsInfo }>(`/customs_infos/${id}`).then(
-        (r) => r.customs_info,
-      );
+      return this.get<{ customs_info: EasyPostCustomsInfo }>(
+        `/customs_infos/${id}`,
+      ).then((r) => r.customs_info);
     },
   };
 
@@ -527,19 +575,26 @@ export class EasyPostSdkClient {
      * @param signature HMAC signature from X-Webhook-Signature header
      * @returns True if signature is valid
      */
-    verifySignature: (payload: string | unknown, signature: string): boolean => {
+    verifySignature: (
+      payload: string | unknown,
+      signature: string,
+    ): boolean => {
       if (!this.config.webhookSecret) {
-        console.warn('Webhook secret not configured');
+        console.warn("Webhook secret not configured");
         return false;
       }
 
-      const payloadStr = typeof payload === 'string' ? payload : JSON.stringify(payload);
-      const hmac = createHmac('sha256', this.config.webhookSecret);
+      const payloadStr =
+        typeof payload === "string" ? payload : JSON.stringify(payload);
+      const hmac = createHmac("sha256", this.config.webhookSecret);
       hmac.update(payloadStr);
-      const expectedSignature = hmac.digest('hex');
+      const expectedSignature = hmac.digest("hex");
 
       try {
-        return timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature));
+        return timingSafeEqual(
+          Buffer.from(signature),
+          Buffer.from(expectedSignature),
+        );
       } catch {
         return false;
       }
@@ -551,19 +606,22 @@ export class EasyPostSdkClient {
      * @param signature HMAC signature
      * @returns Parsed event or null if invalid
      */
-    parse: (payload: unknown, signature?: string): EasyPostWebhookEvent | null => {
+    parse: (
+      payload: unknown,
+      signature?: string,
+    ): EasyPostWebhookEvent | null => {
       if (signature && !this.webhooks.verifySignature(payload, signature)) {
-        throw new Error('Invalid webhook signature');
+        throw new Error("Invalid webhook signature");
       }
 
-      if (typeof payload !== 'object' || payload === null) {
+      if (typeof payload !== "object" || payload === null) {
         return null;
       }
 
       const data = payload as Record<string, unknown>;
       return {
-        id: String(data.id || ''),
-        description: String(data.description || ''),
+        id: String(data.id || ""),
+        description: String(data.description || ""),
         result: data.result as Record<string, unknown> | undefined,
         created_at: String(data.created_at || new Date().toISOString()),
       };
@@ -580,7 +638,7 @@ export class EasyPostSdkClient {
     this.gateway = gateway;
 
     // Validate API key format
-    const keyPrefix = this.config.testMode ? 'sk_test_' : 'sk_prod_';
+    const keyPrefix = this.config.testMode ? "sk_test_" : "sk_prod_";
     if (!config.apiKey.startsWith(keyPrefix)) {
       console.warn(
         `API key does not match expected mode. Expected prefix: ${keyPrefix}, got: ${config.apiKey.substring(0, 8)}`,
@@ -594,10 +652,10 @@ export class EasyPostSdkClient {
    */
   async validateConfig(): Promise<boolean> {
     try {
-      const user = await this.get<{ user: { id: string } }>('/user');
+      const user = await this.get<{ user: { id: string } }>("/user");
       return !!user.user?.id;
     } catch (error) {
-      console.error('Failed to validate EasyPost config:', error);
+      console.error("Failed to validate EasyPost config:", error);
       return false;
     }
   }
@@ -607,7 +665,7 @@ export class EasyPostSdkClient {
    * @returns Rate limit info or null if not available
    */
   getRateLimitInfo(): RateLimitInfo | null {
-    const status = this.gateway.getRateLimitStatus('easypost');
+    const status = this.gateway.getRateLimitStatus("easypost");
     if (!status) {
       return null;
     }
@@ -633,7 +691,7 @@ export class EasyPostSdkClient {
    * @internal
    */
   private async get<T>(path: string): Promise<T> {
-    return this.gateway.get<T>('easypost', path);
+    return this.gateway.get<T>("easypost", path);
   }
 
   /**
@@ -641,7 +699,7 @@ export class EasyPostSdkClient {
    * @internal
    */
   private async post<T>(path: string, body?: unknown): Promise<T> {
-    return this.gateway.post<T>('easypost', path, body);
+    return this.gateway.post<T>("easypost", path, body);
   }
 
   /**
@@ -649,7 +707,7 @@ export class EasyPostSdkClient {
    * @internal
    */
   private async put<T>(path: string, body?: unknown): Promise<T> {
-    return this.gateway.put<T>('easypost', path, body);
+    return this.gateway.put<T>("easypost", path, body);
   }
 
   /**
@@ -657,7 +715,7 @@ export class EasyPostSdkClient {
    * @internal
    */
   private async patch<T>(path: string, body?: unknown): Promise<T> {
-    return this.gateway.patch<T>('easypost', path, body);
+    return this.gateway.patch<T>("easypost", path, body);
   }
 
   /**
@@ -665,6 +723,6 @@ export class EasyPostSdkClient {
    * @internal
    */
   private async delete<T>(path: string): Promise<T> {
-    return this.gateway.delete<T>('easypost', path);
+    return this.gateway.delete<T>("easypost", path);
   }
 }

@@ -68,7 +68,9 @@ describe("Zone Profile Types", () => {
 
     expect(features.zoneId).toBeDefined();
     expect(features.populationDensity).toBeGreaterThan(0);
-    expect(features.residentialRatio + features.commercialRatio).toBeLessThanOrEqual(1);
+    expect(
+      features.residentialRatio + features.commercialRatio,
+    ).toBeLessThanOrEqual(1);
   });
 });
 
@@ -106,7 +108,7 @@ describe("Event Features Types", () => {
     };
 
     expect(["clear", "rain", "snow", "fog", "cloudy", "extreme"]).toContain(
-      events.weatherCondition
+      events.weatherCondition,
     );
     expect(events.promotionIntensity).toBeGreaterThanOrEqual(0);
     expect(events.promotionIntensity).toBeLessThanOrEqual(10);
@@ -205,7 +207,9 @@ describe("Demand Forecast Types", () => {
     };
 
     expect(response.zoneId).toBeDefined();
-    expect(response.summary.peakVolume).toBeGreaterThan(response.summary.lowVolume);
+    expect(response.summary.peakVolume).toBeGreaterThan(
+      response.summary.lowVolume,
+    );
   });
 });
 
@@ -257,7 +261,7 @@ describe("Capacity Recommendation Types", () => {
     };
 
     expect(response.totalCapacityRecommended).toBeGreaterThanOrEqual(
-      response.totalCurrentCapacity || 0
+      response.totalCurrentCapacity || 0,
     );
   });
 });
@@ -278,9 +282,13 @@ describe("Anomaly Detection Types", () => {
       createdAt: new Date(),
     };
 
-    expect(["spike", "drop", "trend_shift", "seasonal_break", "outlier"]).toContain(
-      anomaly.anomalyType
-    );
+    expect([
+      "spike",
+      "drop",
+      "trend_shift",
+      "seasonal_break",
+      "outlier",
+    ]).toContain(anomaly.anomalyType);
     expect(anomaly.severity).toBeGreaterThanOrEqual(0);
     expect(anomaly.severity).toBeLessThanOrEqual(1);
   });
@@ -300,8 +308,12 @@ describe("Anomaly Detection Types", () => {
       },
     };
 
-    expect(response.summary.highSeverity).toBeLessThanOrEqual(response.summary.totalDetected);
-    expect(response.summary.investigated).toBeLessThanOrEqual(response.summary.totalDetected);
+    expect(response.summary.highSeverity).toBeLessThanOrEqual(
+      response.summary.totalDetected,
+    );
+    expect(response.summary.investigated).toBeLessThanOrEqual(
+      response.summary.totalDetected,
+    );
   });
 });
 
@@ -350,7 +362,7 @@ describe("Model Performance Types", () => {
 describe("Service Interface Types", () => {
   it("should define IFeatureStore interface methods", () => {
     const iface: IFeatureStore = {
-      snapshot: async () => ({} as any),
+      snapshot: async () => ({}) as any,
       getRecent: async () => [],
       getZoneProfile: async () => null,
       updateZoneProfile: async () => {},
@@ -365,10 +377,10 @@ describe("Service Interface Types", () => {
   it("should define IDemandPredictor interface methods", () => {
     const iface: IDemandPredictor = {
       forecast: async () => [],
-      recommendCapacity: async () => ({} as any),
+      recommendCapacity: async () => ({}) as any,
       detectAnomalies: async () => [],
-      getPerformance: async () => ({} as any),
-      retrain: async () => ({} as any),
+      getPerformance: async () => ({}) as any,
+      retrain: async () => ({}) as any,
     };
 
     expect(typeof iface.forecast).toBe("function");
@@ -397,7 +409,8 @@ describe("Configuration Types", () => {
       maxForecastHorizonDays: 14,
     };
 
-    const weightSum = config.seasonalWeight + config.regressionWeight + config.dayOfWeekWeight;
+    const weightSum =
+      config.seasonalWeight + config.regressionWeight + config.dayOfWeekWeight;
     expect(Math.abs(weightSum - 1.0)).toBeLessThan(0.01);
     expect(config.safetyFactor).toBeGreaterThan(1);
     expect(config.deliveriesPerSlot).toBeGreaterThan(0);

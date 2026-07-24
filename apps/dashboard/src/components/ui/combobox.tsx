@@ -1,6 +1,13 @@
 "use client";
 
-import { forwardRef, useState, useRef, useEffect, type InputHTMLAttributes, type ReactNode } from "react";
+import {
+  forwardRef,
+  useState,
+  useRef,
+  useEffect,
+  type InputHTMLAttributes,
+  type ReactNode,
+} from "react";
 import { Search, X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
@@ -10,7 +17,10 @@ interface ComboboxOption {
   label: string;
 }
 
-interface ComboboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> {
+interface ComboboxProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "value" | "onChange"
+> {
   options: ComboboxOption[];
   value?: string;
   onChange?: (value: string) => void;
@@ -21,12 +31,15 @@ interface ComboboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "val
   disabled?: boolean;
 }
 
-const fuzzySearch = (query: string, options: ComboboxOption[]): ComboboxOption[] => {
+const fuzzySearch = (
+  query: string,
+  options: ComboboxOption[],
+): ComboboxOption[] => {
   if (!query) return options;
 
   const queryLower = query.toLowerCase();
   return options.filter((option) =>
-    option.label.toLowerCase().includes(queryLower)
+    option.label.toLowerCase().includes(queryLower),
   );
 };
 
@@ -44,7 +57,7 @@ const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
@@ -57,13 +70,17 @@ const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(
 
     useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
-        if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        if (
+          containerRef.current &&
+          !containerRef.current.contains(event.target as Node)
+        ) {
           setIsOpen(false);
         }
       };
 
       document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -76,7 +93,7 @@ const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(
             setIsOpen(true);
           } else {
             setHighlightedIndex((prev) =>
-              prev < filteredOptions.length - 1 ? prev + 1 : prev
+              prev < filteredOptions.length - 1 ? prev + 1 : prev,
             );
           }
           break;
@@ -142,7 +159,7 @@ const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(
               "transition-all duration-fast ease-default",
               "border-wl-border-default focus:border-wl-primary-500",
               "disabled:opacity-60 disabled:cursor-not-allowed",
-              className
+              className,
             )}
             {...props}
           />
@@ -179,7 +196,8 @@ const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(
                         highlightedIndex === index
                           ? "bg-wl-primary-500/20 text-wl-primary-400"
                           : "text-wl-text-primary hover:bg-wl-bg-overlay",
-                        value === option.value && "font-semibold text-wl-primary-400"
+                        value === option.value &&
+                          "font-semibold text-wl-primary-400",
                       )}
                       onMouseEnter={() => setHighlightedIndex(index)}
                     >
@@ -197,7 +215,7 @@ const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 Combobox.displayName = "Combobox";

@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { ChevronDown, ChevronUp, Check, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { ChevronDown, ChevronUp, Check, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 // ─── Types ───────────────────────────────────────────────────
 
-export type ContactPref = 'call' | 'sms' | 'whatsapp';
+export type ContactPref = "call" | "sms" | "whatsapp";
 
 export interface DeliveryPreferences {
   instructions?: string | null;
@@ -38,22 +38,22 @@ interface ManageDeliveryPanelProps {
 // ─── Constants ───────────────────────────────────────────────
 
 const INSTRUCTION_OPTIONS = [
-  'Leave at door',
-  'Ring bell',
-  'Call on arrival',
-  'Leave with neighbour',
+  "Leave at door",
+  "Ring bell",
+  "Call on arrival",
+  "Leave with neighbour",
 ];
 
 const CONTACT_OPTIONS: { value: ContactPref; label: string }[] = [
-  { value: 'call', label: 'Phone Call' },
-  { value: 'sms', label: 'SMS' },
-  { value: 'whatsapp', label: 'WhatsApp' },
+  { value: "call", label: "Phone Call" },
+  { value: "sms", label: "SMS" },
+  { value: "whatsapp", label: "WhatsApp" },
 ];
 
 // Instructions are editable until driver marks "arrived"
-const INSTRUCTIONS_LOCKED_STATUSES = ['ARRIVED', 'DELIVERED'];
+const INSTRUCTIONS_LOCKED_STATUSES = ["ARRIVED", "DELIVERED"];
 // Reschedule locked once driver is dispatched
-const RESCHEDULE_LOCKED_STATUSES = ['OUT_FOR_DELIVERY', 'ARRIVED', 'DELIVERED'];
+const RESCHEDULE_LOCKED_STATUSES = ["OUT_FOR_DELIVERY", "ARRIVED", "DELIVERED"];
 
 // ─── Component ───────────────────────────────────────────────
 
@@ -70,17 +70,23 @@ export function ManageDeliveryPanel({
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [instructions, setInstructions] = useState(initialPreferences?.instructions ?? '');
-  const [dropoffNote, setDropoffNote] = useState(initialPreferences?.dropoffNote ?? '');
+  const [instructions, setInstructions] = useState(
+    initialPreferences?.instructions ?? "",
+  );
+  const [dropoffNote, setDropoffNote] = useState(
+    initialPreferences?.dropoffNote ?? "",
+  );
   const [contactPref, setContactPref] = useState<ContactPref | null>(
-    (initialPreferences?.contactPref as ContactPref) ?? null
+    (initialPreferences?.contactPref as ContactPref) ?? null,
   );
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(
-    initialPreferences?.timeSlotId ?? null
+    initialPreferences?.timeSlotId ?? null,
   );
 
-  const instructionsLocked = INSTRUCTIONS_LOCKED_STATUSES.includes(deliveryStatus);
-  const rescheduleLocked = slotsLocked || RESCHEDULE_LOCKED_STATUSES.includes(deliveryStatus);
+  const instructionsLocked =
+    INSTRUCTIONS_LOCKED_STATUSES.includes(deliveryStatus);
+  const rescheduleLocked =
+    slotsLocked || RESCHEDULE_LOCKED_STATUSES.includes(deliveryStatus);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -94,22 +100,25 @@ export function ManageDeliveryPanel({
     };
 
     try {
-      const res = await fetch(`/api/v4/tracking/token/${trackingToken}/preferences`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch(
+        `/api/v4/tracking/token/${trackingToken}/preferences`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        throw new Error(body?.message ?? 'Failed to save preferences');
+        throw new Error(body?.message ?? "Failed to save preferences");
       }
 
       setSaveSuccess(true);
       onSave?.(payload);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setIsSaving(false);
     }
@@ -138,7 +147,9 @@ export function ManageDeliveryPanel({
             <p className="text-sm font-medium text-wl-text-secondary mb-2">
               Delivery Instructions
               {instructionsLocked && (
-                <span className="ml-2 text-wl-text-tertiary text-xs">(locked — driver has arrived)</span>
+                <span className="ml-2 text-wl-text-tertiary text-xs">
+                  (locked — driver has arrived)
+                </span>
               )}
             </p>
             <div className="flex flex-wrap gap-2 mb-3">
@@ -147,14 +158,13 @@ export function ManageDeliveryPanel({
                   key={opt}
                   disabled={instructionsLocked}
                   onClick={() =>
-                    setInstructions((prev) =>
-                      prev === opt ? '' : opt
-                    )
+                    setInstructions((prev) => (prev === opt ? "" : opt))
                   }
                   className={cn(
-                    'btn btn-ghost text-sm',
-                    instructions === opt && 'bg-wl-bg-elevated border border-wl-primary-500',
-                    instructionsLocked && 'opacity-50 cursor-not-allowed'
+                    "btn btn-ghost text-sm",
+                    instructions === opt &&
+                      "bg-wl-bg-elevated border border-wl-primary-500",
+                    instructionsLocked && "opacity-50 cursor-not-allowed",
                   )}
                 >
                   {opt}
@@ -168,8 +178,8 @@ export function ManageDeliveryPanel({
               placeholder="Add a custom note for the driver…"
               maxLength={500}
               className={cn(
-                'input resize-none h-20 w-full text-sm',
-                instructionsLocked && 'opacity-50 cursor-not-allowed'
+                "input resize-none h-20 w-full text-sm",
+                instructionsLocked && "opacity-50 cursor-not-allowed",
               )}
             />
           </div>
@@ -186,8 +196,8 @@ export function ManageDeliveryPanel({
               placeholder="e.g., Leave in blue box by gate, or text description of safe spot…"
               maxLength={500}
               className={cn(
-                'input resize-none h-20 w-full text-sm',
-                instructionsLocked && 'opacity-50 cursor-not-allowed'
+                "input resize-none h-20 w-full text-sm",
+                instructionsLocked && "opacity-50 cursor-not-allowed",
               )}
             />
           </div>
@@ -201,10 +211,13 @@ export function ManageDeliveryPanel({
               {CONTACT_OPTIONS.map(({ value, label }) => (
                 <button
                   key={value}
-                  onClick={() => setContactPref((prev) => (prev === value ? null : value))}
+                  onClick={() =>
+                    setContactPref((prev) => (prev === value ? null : value))
+                  }
                   className={cn(
-                    'btn btn-ghost text-sm',
-                    contactPref === value && 'bg-wl-bg-elevated border border-wl-primary-500'
+                    "btn btn-ghost text-sm",
+                    contactPref === value &&
+                      "bg-wl-bg-elevated border border-wl-primary-500",
                   )}
                 >
                   {label}
@@ -218,26 +231,35 @@ export function ManageDeliveryPanel({
             <p className="text-sm font-medium text-wl-text-secondary mb-2">
               Reschedule Delivery
               {rescheduleLocked && (
-                <span className="ml-2 text-wl-text-tertiary text-xs">(locked — driver en route)</span>
+                <span className="ml-2 text-wl-text-tertiary text-xs">
+                  (locked — driver en route)
+                </span>
               )}
             </p>
             {rescheduleLocked ? (
               <p className="text-sm text-wl-text-tertiary">
-                Rescheduling is no longer available once the driver is on the way.
+                Rescheduling is no longer available once the driver is on the
+                way.
               </p>
             ) : availableSlots.length === 0 ? (
-              <p className="text-sm text-wl-text-tertiary">No time slots available for rescheduling.</p>
+              <p className="text-sm text-wl-text-tertiary">
+                No time slots available for rescheduling.
+              </p>
             ) : (
               <div className="grid grid-cols-2 gap-2">
                 {availableSlots.map((slot) => (
                   <button
                     key={slot.id}
-                    onClick={() => setSelectedSlotId((prev) => (prev === slot.id ? null : slot.id))}
+                    onClick={() =>
+                      setSelectedSlotId((prev) =>
+                        prev === slot.id ? null : slot.id,
+                      )
+                    }
                     className={cn(
-                      'section-card text-center font-medium text-sm mono transition-all',
+                      "section-card text-center font-medium text-sm mono transition-all",
                       selectedSlotId === slot.id
-                        ? 'border-wl-primary-500 bg-wl-bg-elevated text-wl-primary-400'
-                        : 'text-wl-text-primary hover:border-wl-primary-500/50'
+                        ? "border-wl-primary-500 bg-wl-bg-elevated text-wl-primary-400"
+                        : "text-wl-text-primary hover:border-wl-primary-500/50",
                     )}
                   >
                     <p className="font-semibold">{slot.name}</p>
@@ -268,8 +290,9 @@ export function ManageDeliveryPanel({
             onClick={handleSave}
             disabled={isSaving || instructionsLocked}
             className={cn(
-              'btn btn-primary w-full sm:w-auto',
-              (isSaving || instructionsLocked) && 'opacity-50 cursor-not-allowed'
+              "btn btn-primary w-full sm:w-auto",
+              (isSaving || instructionsLocked) &&
+                "opacity-50 cursor-not-allowed",
             )}
           >
             {isSaving ? (
@@ -278,7 +301,7 @@ export function ManageDeliveryPanel({
                 Saving…
               </>
             ) : (
-              'Save Preferences'
+              "Save Preferences"
             )}
           </button>
         </div>

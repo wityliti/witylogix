@@ -124,7 +124,9 @@ export function SupplyChainFlow({
     }
   };
 
-  const getStatusVariant = (status: NodeStatus): "success" | "warning" | "danger" => {
+  const getStatusVariant = (
+    status: NodeStatus,
+  ): "success" | "warning" | "danger" => {
     switch (status) {
       case "active":
         return "success";
@@ -141,11 +143,20 @@ export function SupplyChainFlow({
   };
 
   return (
-    <div className={cn("flex flex-col gap-4 bg-wl-bg-surface p-6 rounded-lg border border-wl-border-subtle", className)}>
+    <div
+      className={cn(
+        "flex flex-col gap-4 bg-wl-bg-surface p-6 rounded-lg border border-wl-border-subtle",
+        className,
+      )}
+    >
       {/* Title */}
       <div>
-        <h3 className="text-base font-semibold text-wl-text-primary mb-1">Supply Chain Flow</h3>
-        <p className="text-xs text-wl-text-secondary">Real-time pipeline visualization and throughput metrics</p>
+        <h3 className="text-base font-semibold text-wl-text-primary mb-1">
+          Supply Chain Flow
+        </h3>
+        <p className="text-xs text-wl-text-secondary">
+          Real-time pipeline visualization and throughput metrics
+        </p>
       </div>
 
       {/* Flow diagram */}
@@ -161,28 +172,36 @@ export function SupplyChainFlow({
                   "hover:border-wl-border-strong hover:shadow-md",
                   expandedNode === node.id
                     ? "border-wl-primary-500 bg-wl-primary-500/10 shadow-md"
-                    : "border-wl-border-subtle bg-wl-bg-overlay"
+                    : "border-wl-border-subtle bg-wl-bg-overlay",
                 )}
               >
                 <div className="flex items-start gap-2">
                   {/* Status dot with pulse */}
                   <div className="flex-shrink-0 pt-0.5">
                     <div
-                      className={cn("w-2 h-2 rounded-full", node.status === "active" && "animate-pulse")}
+                      className={cn(
+                        "w-2 h-2 rounded-full",
+                        node.status === "active" && "animate-pulse",
+                      )}
                       style={{ backgroundColor: getStatusColor(node.status) }}
                     />
                   </div>
 
                   {/* Node content */}
                   <div className="flex-1 text-left">
-                    <h4 className="text-sm font-semibold text-wl-text-primary">{node.label}</h4>
+                    <h4 className="text-sm font-semibold text-wl-text-primary">
+                      {node.label}
+                    </h4>
                     <div className="text-xs text-wl-text-secondary mt-1">
                       {node.throughput.toLocaleString()} {node.unit}
                     </div>
                   </div>
 
                   {/* Status badge */}
-                  <Badge variant={getStatusVariant(node.status)} className="flex-shrink-0 text-xs">
+                  <Badge
+                    variant={getStatusVariant(node.status)}
+                    className="flex-shrink-0 text-xs"
+                  >
                     {getStatusLabel(node.status)}
                   </Badge>
                 </div>
@@ -193,22 +212,36 @@ export function SupplyChainFlow({
                 <div className="mt-2 p-3 bg-wl-bg-overlay rounded-lg border border-wl-border-subtle text-xs space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <span className="text-wl-text-secondary">Items Processed</span>
+                      <span className="text-wl-text-secondary">
+                        Items Processed
+                      </span>
                       <p className="font-semibold text-wl-text-primary mt-1">
                         {node.details.itemsProcessed.toLocaleString()}
                       </p>
                     </div>
                     <div>
-                      <span className="text-wl-text-secondary">Avg Processing Time</span>
-                      <p className="font-semibold text-wl-text-primary mt-1">{node.details.avgTime}</p>
+                      <span className="text-wl-text-secondary">
+                        Avg Processing Time
+                      </span>
+                      <p className="font-semibold text-wl-text-primary mt-1">
+                        {node.details.avgTime}
+                      </p>
                     </div>
                     <div>
-                      <span className="text-wl-text-secondary">Success Rate</span>
-                      <p className="font-semibold text-wl-success-400 mt-1">{node.details.successRate}%</p>
+                      <span className="text-wl-text-secondary">
+                        Success Rate
+                      </span>
+                      <p className="font-semibold text-wl-success-400 mt-1">
+                        {node.details.successRate}%
+                      </p>
                     </div>
                     <div>
-                      <span className="text-wl-text-secondary">Last Update</span>
-                      <p className="font-semibold text-wl-text-primary mt-1">{node.details.lastUpdate}</p>
+                      <span className="text-wl-text-secondary">
+                        Last Update
+                      </span>
+                      <p className="font-semibold text-wl-text-primary mt-1">
+                        {node.details.lastUpdate}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -239,7 +272,14 @@ export function SupplyChainFlow({
                   </defs>
 
                   {/* Line with animation */}
-                  <line x1="0" y1="12" x2="32" y2="12" stroke="var(--wl-primary-500)" strokeWidth="2" />
+                  <line
+                    x1="0"
+                    y1="12"
+                    x2="32"
+                    y2="12"
+                    stroke="var(--wl-primary-500)"
+                    strokeWidth="2"
+                  />
 
                   {/* Arrow head */}
                   <polygon
@@ -281,18 +321,24 @@ export function SupplyChainFlow({
           <p className="text-sm font-semibold text-wl-success-400 mt-1">
             {nodes.filter((n) => n.status === "active").length}
           </p>
-          <p className="text-xs text-wl-text-secondary mt-1">of {nodes.length}</p>
+          <p className="text-xs text-wl-text-secondary mt-1">
+            of {nodes.length}
+          </p>
         </div>
 
         <div className="p-3 bg-wl-bg-overlay rounded-lg">
           <p className="text-xs text-wl-text-secondary">Avg Efficiency</p>
-          <p className="text-sm font-semibold text-wl-text-primary mt-1">98.2%</p>
+          <p className="text-sm font-semibold text-wl-text-primary mt-1">
+            98.2%
+          </p>
           <p className="text-xs text-wl-success-400 mt-1">+0.3%</p>
         </div>
 
         <div className="p-3 bg-wl-bg-overlay rounded-lg">
           <p className="text-xs text-wl-text-secondary">Last Sync</p>
-          <p className="text-sm font-semibold text-wl-text-primary mt-1">Just now</p>
+          <p className="text-sm font-semibold text-wl-text-primary mt-1">
+            Just now
+          </p>
           <p className="text-xs text-wl-text-secondary mt-1">Live data</p>
         </div>
       </div>

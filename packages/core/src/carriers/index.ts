@@ -5,27 +5,27 @@
  */
 
 // Export all types
-export * from './types';
+export * from "./types";
 
 // Export registry
-export { carrierRegistry, CarrierRegistry } from './registry';
+export { carrierRegistry, CarrierRegistry } from "./registry";
 
 // Export adapters
-export { UpsAdapter } from './adapters/ups';
-export { FedExAdapter } from './adapters/fedex';
-export { DhlAdapter } from './adapters/dhl';
-export { GenericAdapter, createGenericCarrier } from './adapters/generic';
-export type { GenericCarrierConfig } from './adapters/generic';
+export { UpsAdapter } from "./adapters/ups";
+export { FedExAdapter } from "./adapters/fedex";
+export { DhlAdapter } from "./adapters/dhl";
+export { GenericAdapter, createGenericCarrier } from "./adapters/generic";
+export type { GenericCarrierConfig } from "./adapters/generic";
 
 // ============================================================================
 // Auto-initialization: Register adapters on module load
 // ============================================================================
 
-import { carrierRegistry } from './registry';
-import { UpsAdapter } from './adapters/ups';
-import { FedExAdapter } from './adapters/fedex';
-import { DhlAdapter } from './adapters/dhl';
-import { GenericAdapter } from './adapters/generic';
+import { carrierRegistry } from "./registry";
+import { UpsAdapter } from "./adapters/ups";
+import { FedExAdapter } from "./adapters/fedex";
+import { DhlAdapter } from "./adapters/dhl";
+import { GenericAdapter } from "./adapters/generic";
 
 /**
  * Initialize default carriers
@@ -35,8 +35,8 @@ export function initializeDefaultCarriers(): void {
   // Register UPS
   // In production, credentials would come from environment variables or config
   const upsAdapter = new UpsAdapter(
-    process.env.UPS_CLIENT_ID || 'mock_ups_client_id',
-    process.env.UPS_CLIENT_SECRET || 'mock_ups_client_secret',
+    process.env.UPS_CLIENT_ID || "mock_ups_client_id",
+    process.env.UPS_CLIENT_SECRET || "mock_ups_client_secret",
     process.env.UPS_ACCOUNT_NUMBER,
   );
 
@@ -44,18 +44,18 @@ export function initializeDefaultCarriers(): void {
 
   // Register FedEx
   const fedexAdapter = new FedExAdapter(
-    process.env.FEDEX_CLIENT_ID || 'mock_fedex_client_id',
-    process.env.FEDEX_CLIENT_SECRET || 'mock_fedex_client_secret',
-    process.env.FEDEX_ACCOUNT_NUMBER || 'mock_fedex_account',
-    process.env.FEDEX_METER_NUMBER || 'mock_fedex_meter',
+    process.env.FEDEX_CLIENT_ID || "mock_fedex_client_id",
+    process.env.FEDEX_CLIENT_SECRET || "mock_fedex_client_secret",
+    process.env.FEDEX_ACCOUNT_NUMBER || "mock_fedex_account",
+    process.env.FEDEX_METER_NUMBER || "mock_fedex_meter",
   );
 
   carrierRegistry.registerOrUpdate(fedexAdapter);
 
   // Register DHL
   const dhlAdapter = new DhlAdapter(
-    process.env.DHL_API_KEY || 'mock_dhl_api_key',
-    process.env.DHL_CLIENT_ID || 'mock_dhl_client_id',
+    process.env.DHL_API_KEY || "mock_dhl_api_key",
+    process.env.DHL_CLIENT_ID || "mock_dhl_client_id",
     process.env.DHL_PASSWORD,
     process.env.DHL_ACCOUNT_NUMBER,
   );
@@ -64,32 +64,32 @@ export function initializeDefaultCarriers(): void {
 
   // Register a generic carrier (example: local courier)
   const localCourierAdapter = new GenericAdapter({
-    name: 'Local Courier',
-    code: 'local_courier',
-    defaultService: 'standard',
+    name: "Local Courier",
+    code: "local_courier",
+    defaultService: "standard",
     supportsPickup: true,
     supportsValidation: false,
-    trackingPrefix: 'LC',
+    trackingPrefix: "LC",
     rates: [
       {
-        code: 'standard',
-        name: 'Standard Delivery',
+        code: "standard",
+        name: "Standard Delivery",
         price: 5.99,
-        currency: 'USD',
+        currency: "USD",
         estimatedDays: 2,
       },
       {
-        code: 'express',
-        name: 'Express Delivery',
+        code: "express",
+        name: "Express Delivery",
         price: 12.99,
-        currency: 'USD',
+        currency: "USD",
         estimatedDays: 1,
       },
       {
-        code: 'same_day',
-        name: 'Same Day Delivery',
+        code: "same_day",
+        name: "Same Day Delivery",
         price: 24.99,
-        currency: 'USD',
+        currency: "USD",
         estimatedDays: 0,
         maxWeight: 5,
       },
@@ -100,18 +100,18 @@ export function initializeDefaultCarriers(): void {
 
   // Register a bike messenger carrier (example)
   const bikeMessengerAdapter = new GenericAdapter({
-    name: 'Bike Messenger',
-    code: 'bike_messenger',
-    defaultService: 'standard',
+    name: "Bike Messenger",
+    code: "bike_messenger",
+    defaultService: "standard",
     supportsPickup: false,
     supportsValidation: false,
-    trackingPrefix: 'BIKE',
+    trackingPrefix: "BIKE",
     rates: [
       {
-        code: 'standard',
-        name: 'Standard Delivery',
+        code: "standard",
+        name: "Standard Delivery",
         price: 8.99,
-        currency: 'USD',
+        currency: "USD",
         estimatedDays: 1,
         maxWeight: 2,
       },
@@ -126,7 +126,9 @@ export function initializeDefaultCarriers(): void {
  * Useful for adding carriers at runtime
  * @param adapter - Carrier adapter to register
  */
-export function registerCarrier(adapter: UpsAdapter | FedExAdapter | DhlAdapter | GenericAdapter): void {
+export function registerCarrier(
+  adapter: UpsAdapter | FedExAdapter | DhlAdapter | GenericAdapter,
+): void {
   carrierRegistry.registerOrUpdate(adapter);
 }
 
@@ -148,7 +150,7 @@ export function getCarrier(code: string) {
  * @returns Rates sorted by price
  */
 export async function shopRates(
-  request: import('./types').RateRequest,
+  request: import("./types").RateRequest,
   carriers?: string[],
 ) {
   return carrierRegistry.shopRates(request, carriers as any);
@@ -157,7 +159,10 @@ export async function shopRates(
 /**
  * Initialize default carriers on module import
  */
-if (typeof process !== 'undefined' && process.env.WITYLOGIX_INIT_CARRIERS !== 'false') {
+if (
+  typeof process !== "undefined" &&
+  process.env.WITYLOGIX_INIT_CARRIERS !== "false"
+) {
   // Allow disabling auto-init via environment variable
   try {
     initializeDefaultCarriers();
@@ -165,7 +170,7 @@ if (typeof process !== 'undefined' && process.env.WITYLOGIX_INIT_CARRIERS !== 'f
     // Log initialization errors but don't throw
     // This allows the module to load even if initialization fails
     if (error instanceof Error) {
-      console.error('Failed to initialize default carriers:', error.message);
+      console.error("Failed to initialize default carriers:", error.message);
     }
   }
 }

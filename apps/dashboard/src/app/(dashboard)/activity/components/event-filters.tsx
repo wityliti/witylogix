@@ -75,7 +75,10 @@ export function EventFilters({
   };
 
   const handleUserSelect = (userId: string) => {
-    setFilters({ ...filters, userId: filters.userId === userId ? null : userId });
+    setFilters({
+      ...filters,
+      userId: filters.userId === userId ? null : userId,
+    });
     setShowUserDropdown(false);
   };
 
@@ -90,7 +93,7 @@ export function EventFilters({
             "text-sm font-medium transition-all duration-200",
             "bg-wl-bg-surface border-wl-border-subtle",
             "hover:border-wl-border-default hover:bg-wl-bg-elevated",
-            showTypeDropdown && "border-wl-primary-500 bg-wl-bg-elevated"
+            showTypeDropdown && "border-wl-primary-500 bg-wl-bg-elevated",
           )}
         >
           <span>Event Type</span>
@@ -99,22 +102,34 @@ export function EventFilters({
               {filters.types.length}
             </span>
           )}
-          <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", showTypeDropdown && "rotate-180")} />
+          <ChevronDown
+            className={cn(
+              "w-4 h-4 transition-transform duration-200",
+              showTypeDropdown && "rotate-180",
+            )}
+          />
         </button>
 
         {showTypeDropdown && (
           <div className="absolute top-full left-0 mt-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-md shadow-lg z-40 w-48">
             <div className="p-3 space-y-2">
               {EVENT_TYPES.map((type) => (
-                <label key={type.id} className="flex items-center gap-3 p-2 rounded-md hover:bg-wl-bg-surface cursor-pointer transition-colors">
+                <label
+                  key={type.id}
+                  className="flex items-center gap-3 p-2 rounded-md hover:bg-wl-bg-surface cursor-pointer transition-colors"
+                >
                   <input
                     type="checkbox"
                     checked={filters.types.includes(type.id)}
                     onChange={() => handleTypeToggle(type.id)}
                     className="w-4 h-4 rounded accent-wl-primary-500 cursor-pointer"
                   />
-                  <span className="text-sm text-wl-text-primary">{type.icon}</span>
-                  <span className="text-sm text-wl-text-primary">{type.label}</span>
+                  <span className="text-sm text-wl-text-primary">
+                    {type.icon}
+                  </span>
+                  <span className="text-sm text-wl-text-primary">
+                    {type.label}
+                  </span>
                 </label>
               ))}
             </div>
@@ -131,7 +146,7 @@ export function EventFilters({
             "text-sm font-medium transition-all duration-200",
             "bg-wl-bg-surface border-wl-border-subtle",
             "hover:border-wl-border-default hover:bg-wl-bg-elevated",
-            showSeverityDropdown && "border-wl-primary-500 bg-wl-bg-elevated"
+            showSeverityDropdown && "border-wl-primary-500 bg-wl-bg-elevated",
           )}
         >
           <span>Severity</span>
@@ -140,22 +155,35 @@ export function EventFilters({
               {filters.severities.length}
             </span>
           )}
-          <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", showSeverityDropdown && "rotate-180")} />
+          <ChevronDown
+            className={cn(
+              "w-4 h-4 transition-transform duration-200",
+              showSeverityDropdown && "rotate-180",
+            )}
+          />
         </button>
 
         {showSeverityDropdown && (
           <div className="absolute top-full left-0 mt-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-md shadow-lg z-40 w-48">
             <div className="p-3 space-y-2">
               {SEVERITY_LEVELS.map((level) => (
-                <label key={level.id} className="flex items-center gap-3 p-2 rounded-md hover:bg-wl-bg-surface cursor-pointer transition-colors">
+                <label
+                  key={level.id}
+                  className="flex items-center gap-3 p-2 rounded-md hover:bg-wl-bg-surface cursor-pointer transition-colors"
+                >
                   <input
                     type="checkbox"
                     checked={filters.severities.includes(level.id)}
                     onChange={() => handleSeverityToggle(level.id)}
                     className="w-4 h-4 rounded accent-wl-primary-500 cursor-pointer"
                   />
-                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: level.color }} />
-                  <span className="text-sm text-wl-text-primary">{level.label}</span>
+                  <div
+                    className="w-3 h-3 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: level.color }}
+                  />
+                  <span className="text-sm text-wl-text-primary">
+                    {level.label}
+                  </span>
                 </label>
               ))}
             </div>
@@ -173,7 +201,8 @@ export function EventFilters({
             "bg-wl-bg-surface border-wl-border-subtle",
             "hover:border-wl-border-default hover:bg-wl-bg-elevated",
             showDatePicker && "border-wl-primary-500 bg-wl-bg-elevated",
-            (filters.startDate || filters.endDate) && "border-wl-primary-500/50"
+            (filters.startDate || filters.endDate) &&
+              "border-wl-primary-500/50",
           )}
         >
           <Calendar className="w-4 h-4" />
@@ -183,7 +212,12 @@ export function EventFilters({
               {filters.startDate && filters.endDate ? "2" : "1"}
             </span>
           )}
-          <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", showDatePicker && "rotate-180")} />
+          <ChevronDown
+            className={cn(
+              "w-4 h-4 transition-transform duration-200",
+              showDatePicker && "rotate-180",
+            )}
+          />
         </button>
 
         {showDatePicker && (
@@ -203,16 +237,19 @@ export function EventFilters({
                 className={cn(
                   "w-full px-3 py-2 rounded-md border text-sm",
                   "bg-wl-bg-surface border-wl-border-subtle text-wl-text-primary",
-                  "focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500/20"
+                  "focus:border-wl-primary-500 focus:ring-1 focus:ring-wl-primary-500/20",
                 )}
               />
             </div>
 
             {filters.startDate && filters.endDate && (
               <div className="pt-2 border-t border-wl-border-subtle">
-                <p className="text-xs text-wl-text-secondary mb-2">Selected range:</p>
+                <p className="text-xs text-wl-text-secondary mb-2">
+                  Selected range:
+                </p>
                 <p className="text-sm text-wl-text-primary">
-                  {filters.startDate.toLocaleDateString()} to {filters.endDate.toLocaleDateString()}
+                  {filters.startDate.toLocaleDateString()} to{" "}
+                  {filters.endDate.toLocaleDateString()}
                 </p>
                 <button
                   onClick={() => {
@@ -241,21 +278,31 @@ export function EventFilters({
               "bg-wl-bg-surface border-wl-border-subtle",
               "hover:border-wl-border-default hover:bg-wl-bg-elevated",
               showUserDropdown && "border-wl-primary-500 bg-wl-bg-elevated",
-              filters.userId && "border-wl-primary-500/50"
+              filters.userId && "border-wl-primary-500/50",
             )}
           >
             <span>User</span>
             {filters.userId && (
-              <span className="text-xs bg-wl-primary-500/20 text-wl-primary-400 px-1.5 py-0.5 rounded-md">1</span>
+              <span className="text-xs bg-wl-primary-500/20 text-wl-primary-400 px-1.5 py-0.5 rounded-md">
+                1
+              </span>
             )}
-            <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", showUserDropdown && "rotate-180")} />
+            <ChevronDown
+              className={cn(
+                "w-4 h-4 transition-transform duration-200",
+                showUserDropdown && "rotate-180",
+              )}
+            />
           </button>
 
           {showUserDropdown && (
             <div className="absolute top-full left-0 mt-2 bg-wl-bg-elevated border border-wl-border-subtle rounded-md shadow-lg z-40 w-48">
               <div className="p-3 space-y-2">
                 {users.map((user) => (
-                  <label key={user.id} className="flex items-center gap-3 p-2 rounded-md hover:bg-wl-bg-surface cursor-pointer transition-colors">
+                  <label
+                    key={user.id}
+                    className="flex items-center gap-3 p-2 rounded-md hover:bg-wl-bg-surface cursor-pointer transition-colors"
+                  >
                     <input
                       type="radio"
                       name="user"

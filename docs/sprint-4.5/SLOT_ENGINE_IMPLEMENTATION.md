@@ -9,7 +9,9 @@ Complete production-quality Slot Engine and Capacity Management system for Wityl
 ### Core Package (`packages/core/src/slots/`)
 
 #### 1. **types.ts** (360 lines)
+
 Complete TypeScript type definitions for the entire system:
+
 - Slot and availability types
 - Zone rate types (RateMethod, ZoneRate, WeightTier, CartValueTier, DistanceRate, RateBreakdown)
 - Capacity configuration and reporting types
@@ -22,6 +24,7 @@ Complete TypeScript type definitions for the entire system:
 - Custom error classes with inheritance
 
 **Key Types:**
+
 - `Slot`, `SlotAvailability`, `SlotConfig`, `TimeWindow`
 - `Zone`, `ZoneRate`, `RateBreakdown`
 - `CapacityConfig`, `CapacityReport`, `CapacityAdjustmentResult`
@@ -32,9 +35,11 @@ Complete TypeScript type definitions for the entire system:
 ---
 
 #### 2. **slot-engine.ts** (350+ lines)
+
 Primary class for slot management and atomic reservations:
 
 **Methods:**
+
 - `getAvailableSlots(date, zoneId?, locationId?)` - Get available slots
 - `checkCapacity(slotId)` - Check slot capacity
 - `reserveSlot(slotId, orderId, expiresInMinutes?)` - Atomic reservation with transaction
@@ -46,6 +51,7 @@ Primary class for slot management and atomic reservations:
 - `deleteSlot(slotId)` - Deactivate slot
 
 **Features:**
+
 - Atomic transactions prevent double-booking
 - Full input validation
 - Integrates with BlackoutManager and DeadlineEngine
@@ -55,9 +61,11 @@ Primary class for slot management and atomic reservations:
 ---
 
 #### 3. **capacity-manager.ts** (310+ lines)
+
 Daily capacity management and utilization tracking:
 
 **Methods:**
+
 - `setDailyLimit(locationId, date, maxOrders)` - Set daily cap
 - `setSlotCapacity(slotId, maxOrders)` - Set slot cap
 - `getCapacityUtilization(locationId, date)` - Detailed report
@@ -68,6 +76,7 @@ Daily capacity management and utilization tracking:
 - `setRecurringCapacity(locationId, startDate, endDate, maxOrders, daysOfWeek?)` - Bulk config
 
 **Features:**
+
 - Real-time utilization tracking
 - Demand factor adjustment (0.5-1.5)
 - Automatic status calculation (available/high_demand/at_capacity/closed)
@@ -78,9 +87,11 @@ Daily capacity management and utilization tracking:
 ---
 
 #### 4. **zone-rate-calculator.ts** (380+ lines)
+
 Multi-factor delivery rate calculation:
 
 **Methods:**
+
 - `calculateRate(input)` - Comprehensive rate breakdown
 - `getRateByZipcode(zipcode)` - Zone lookup
 - `calculateDistanceRate(origin, destination, zone)` - Haversine distance
@@ -90,6 +101,7 @@ Multi-factor delivery rate calculation:
 - `validateRateData(data)` - Validate input
 
 **Pricing Models:**
+
 1. Flat rate
 2. Per-km distance
 3. Per-mile distance
@@ -99,6 +111,7 @@ Multi-factor delivery rate calculation:
 7. Minimum charge enforcement
 
 **Features:**
+
 - Haversine formula for accurate distance calculation
 - Multi-tiered weight pricing
 - Cart-value tier matching
@@ -109,9 +122,11 @@ Multi-factor delivery rate calculation:
 ---
 
 #### 5. **deadline-engine.ts** (320+ lines)
+
 Order deadline and cut-off time management:
 
 **Methods:**
+
 - `getOrderDeadline(deliveryDate, slotId)` - Get deadline
 - `isOrderCutoffPassed(deliveryDate, slotId)` - Check cutoff
 - `setPrepTime(locationId, minutes)` - Configure prep
@@ -124,6 +139,7 @@ Order deadline and cut-off time management:
 - `bulkSetDeadlineConfig(locations)` - Bulk configuration
 
 **Features:**
+
 - Configurable prep time per location
 - Customizable cut-off times
 - Hours remaining calculation
@@ -134,9 +150,11 @@ Order deadline and cut-off time management:
 ---
 
 #### 6. **blackout-manager.ts** (330+ lines)
+
 Blackout date and recurring closure management:
 
 **Methods:**
+
 - `addBlackout(locationId, date, reason)` - Single blackout
 - `addRecurringBlackout(locationId, dayOfWeek, reason)` - Recurring (e.g., Sundays)
 - `removeBlackout(locationId, date)` - Remove one-time
@@ -150,6 +168,7 @@ Blackout date and recurring closure management:
 - `updateBlackoutReason(locationId, date, reason)` - Update reason
 
 **Features:**
+
 - One-time blackout dates
 - Recurring blackouts (Sunday, Monday, etc.)
 - Automatic date expansion
@@ -160,6 +179,7 @@ Blackout date and recurring closure management:
 ---
 
 #### 7. **index.ts** (25 lines)
+
 Package exports and initialization:
 
 ```typescript
@@ -170,7 +190,7 @@ export { ZoneRateCalculator } from "./zone-rate-calculator.js";
 export { DeadlineEngine } from "./deadline-engine.js";
 export { BlackoutManager } from "./blackout-manager.js";
 
-export function initializeSlotEngines(db: any)
+export function initializeSlotEngines(db: any);
 ```
 
 ---
@@ -178,6 +198,7 @@ export function initializeSlotEngines(db: any)
 #### 8. **Tests** (`__tests__/`)
 
 **slot-engine.test.ts** (480+ lines)
+
 - 20+ test cases covering all SlotEngine methods
 - Tests for getAvailableSlots, checkCapacity, reserveSlot, releaseSlot
 - Blackout integration tests
@@ -186,6 +207,7 @@ export function initializeSlotEngines(db: any)
 - Edge case coverage
 
 **zone-rate-calculator.test.ts** (440+ lines)
+
 - Rate calculation tests
 - Distance calculation tests (Haversine)
 - Weight-based fee tests
@@ -197,7 +219,9 @@ export function initializeSlotEngines(db: any)
 ---
 
 #### 9. **README.md** (500+ lines)
+
 Comprehensive documentation:
+
 - Architecture overview
 - Module descriptions with code examples
 - Complete API route documentation
@@ -214,9 +238,11 @@ Comprehensive documentation:
 ### API Routes (`apps/api/src/routes/checkout/`)
 
 #### 1. **slots.ts** (380+ lines)
+
 Slot checkout endpoints:
 
 **Endpoints:**
+
 - `GET /api/checkout/slots?date=&zone=&location=` - Get available slots
 - `GET /api/checkout/slots/range?start=&end=&zone=` - Date range query
 - `POST /api/checkout/slots/reserve` - Reserve slot (atomic)
@@ -226,6 +252,7 @@ Slot checkout endpoints:
 - `GET /api/checkout/slots/health` - Health check
 
 **Features:**
+
 - Zod validation for all inputs
 - Rate limiting hooks
 - Error handling with appropriate HTTP codes
@@ -236,9 +263,11 @@ Slot checkout endpoints:
 ---
 
 #### 2. **rates.ts** (340+ lines)
+
 Rate calculation checkout endpoints:
 
 **Endpoints:**
+
 - `GET /api/checkout/rates?zipcode=` - Get zone rate
 - `POST /api/checkout/rates/calculate` - Calculate rate
 - `GET /api/checkout/zones` - List zones (paginated)
@@ -247,6 +276,7 @@ Rate calculation checkout endpoints:
 - `GET /api/checkout/rates/health` - Health check
 
 **Features:**
+
 - Comprehensive rate breakdown
 - Distance calculation
 - Weight-based fees
@@ -258,7 +288,9 @@ Rate calculation checkout endpoints:
 ---
 
 #### 3. **index.ts** (30 lines)
+
 Router combining slots and rates:
+
 - Registers both route plugins
 - Combined health check endpoint
 - Clean composition pattern
@@ -268,9 +300,11 @@ Router combining slots and rates:
 ### Prisma Schema (`packages/db/prisma/schema/`)
 
 #### **43-delivery-slots.prisma** (200+ lines)
+
 Complete database schema:
 
 **Models:**
+
 1. `DeliverySlot` - Time slots with capacity
    - locationId, zoneId, date, startTime, endTime
    - maxCapacity, currentBookings, price
@@ -301,6 +335,7 @@ Complete database schema:
    - locationId, date, startTime, endTime, surgePercent
 
 **Indexes:**
+
 - All foreign keys indexed
 - Composite indexes on (locationId, date, isActive)
 - Indexes on (status, expiresAt) for reservation cleanup
@@ -311,6 +346,7 @@ Complete database schema:
 ## Key Features
 
 ### ✅ Core Functionality
+
 - [x] Atomic slot reservation (prevent double-booking)
 - [x] Multi-location support (20+ locations)
 - [x] Real-time capacity tracking
@@ -320,6 +356,7 @@ Complete database schema:
 - [x] Blackout date handling (one-time + recurring)
 
 ### ✅ Production Quality
+
 - [x] TypeScript strict mode
 - [x] Comprehensive error handling
 - [x] Input validation with Zod
@@ -329,6 +366,7 @@ Complete database schema:
 - [x] Detailed logging/tracing hooks
 
 ### ✅ Performance
+
 - [x] Database indexes on all queries
 - [x] Lazy initialization
 - [x] Batch operations for efficiency
@@ -337,6 +375,7 @@ Complete database schema:
 - [x] Connection pooling ready
 
 ### ✅ API Standards
+
 - [x] RESTful endpoints
 - [x] Standard response format
 - [x] Pagination (page, limit)
@@ -345,6 +384,7 @@ Complete database schema:
 - [x] Error responses with codes
 
 ### ✅ Developer Experience
+
 - [x] Comprehensive documentation
 - [x] Usage examples
 - [x] Test examples
@@ -355,6 +395,7 @@ Complete database schema:
 ## Integration Points
 
 ### With Existing Codebase
+
 - Uses existing Prisma setup
 - Compatible with fastify routes
 - Uses existing validators package
@@ -363,6 +404,7 @@ Complete database schema:
 - Supports existing tenant context
 
 ### Required Database Setup
+
 1. Run migration for schema 43-delivery-slots.prisma
 2. Ensure Location model exists (should in existing code)
 3. Ensure Organization and Shop models exist
@@ -375,23 +417,36 @@ Complete database schema:
 import { initializeSlotEngines } from "@witylogix/core/slots";
 
 const engines = initializeSlotEngines(prisma);
-const { slotEngine, capacityManager, zoneRateCalculator, deadlineEngine, blackoutManager } = engines;
+const {
+  slotEngine,
+  capacityManager,
+  zoneRateCalculator,
+  deadlineEngine,
+  blackoutManager,
+} = engines;
 
 // Get available slots
-const slots = await slotEngine.getAvailableSlots(new Date("2026-04-01"), "zone-1", "loc-1");
+const slots = await slotEngine.getAvailableSlots(
+  new Date("2026-04-01"),
+  "zone-1",
+  "loc-1",
+);
 
 // Calculate rate
 const rate = await zoneRateCalculator.calculateRate({
   address: { zipcode: "10001" },
   cartValue: 100,
-  weight: 2
+  weight: 2,
 });
 
 // Reserve slot
 const reservation = await slotEngine.reserveSlot("slot-1", "order-123");
 
 // Check capacity
-const capacity = await capacityManager.getCapacityUtilization("loc-1", new Date("2026-04-01"));
+const capacity = await capacityManager.getCapacityUtilization(
+  "loc-1",
+  new Date("2026-04-01"),
+);
 ```
 
 ## Testing
@@ -411,45 +466,49 @@ npm test -- --coverage
 
 ## Lines of Code Summary
 
-| File | Lines | Purpose |
-|------|-------|---------|
-| types.ts | 360 | Type definitions |
-| slot-engine.ts | 350+ | Slot management & reservations |
-| capacity-manager.ts | 310+ | Capacity tracking |
-| zone-rate-calculator.ts | 380+ | Rate calculation |
-| deadline-engine.ts | 320+ | Deadline management |
-| blackout-manager.ts | 330+ | Blackout dates |
-| index.ts | 25 | Exports |
-| slot-engine.test.ts | 480+ | Engine tests |
-| zone-rate-calculator.test.ts | 440+ | Rate tests |
-| README.md | 500+ | Documentation |
-| slots.ts (API) | 380+ | Slot routes |
-| rates.ts (API) | 340+ | Rate routes |
-| checkout/index.ts | 30 | Router |
-| 43-delivery-slots.prisma | 200+ | Schema |
-| **Total** | **~4,500+** | **Complete system** |
+| File                         | Lines       | Purpose                        |
+| ---------------------------- | ----------- | ------------------------------ |
+| types.ts                     | 360         | Type definitions               |
+| slot-engine.ts               | 350+        | Slot management & reservations |
+| capacity-manager.ts          | 310+        | Capacity tracking              |
+| zone-rate-calculator.ts      | 380+        | Rate calculation               |
+| deadline-engine.ts           | 320+        | Deadline management            |
+| blackout-manager.ts          | 330+        | Blackout dates                 |
+| index.ts                     | 25          | Exports                        |
+| slot-engine.test.ts          | 480+        | Engine tests                   |
+| zone-rate-calculator.test.ts | 440+        | Rate tests                     |
+| README.md                    | 500+        | Documentation                  |
+| slots.ts (API)               | 380+        | Slot routes                    |
+| rates.ts (API)               | 340+        | Rate routes                    |
+| checkout/index.ts            | 30          | Router                         |
+| 43-delivery-slots.prisma     | 200+        | Schema                         |
+| **Total**                    | **~4,500+** | **Complete system**            |
 
 ## Next Steps for Integration
 
 1. **Database Migration**
+
    ```bash
    npx prisma migrate dev --name add-delivery-slots
    ```
 
 2. **Register Routes**
    Add to main app router:
+
    ```typescript
    import checkoutRouter from "./routes/checkout/index.js";
    await fastify.register(checkoutRouter);
    ```
 
 3. **Configure Locations**
+
    ```typescript
    await deadlineEngine.setPrepTime("loc-1", 120);
    await deadlineEngine.setCutoffTime("loc-1", "20:00", 24);
    ```
 
 4. **Create Test Data**
+
    ```typescript
    await slotEngine.createSlot({
      locationId: "loc-1",
@@ -457,7 +516,7 @@ npm test -- --coverage
      startTime: "09:00",
      endTime: "12:00",
      maxCapacity: 20,
-     price: 15
+     price: 15,
    });
    ```
 
@@ -469,6 +528,7 @@ npm test -- --coverage
 ## Support & Maintenance
 
 All code is production-ready with:
+
 - Comprehensive error handling
 - Input validation
 - Type safety

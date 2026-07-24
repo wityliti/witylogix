@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import { cn } from '@/lib/utils';
-import { X } from 'lucide-react';
+import { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
+import { X } from "lucide-react";
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -57,7 +57,9 @@ export function BottomSheet({
 
     if (!sheetRef.current) return;
 
-    const currentHeightValue = parseFloat(sheetRef.current.style.height || `${currentHeight}`);
+    const currentHeightValue = parseFloat(
+      sheetRef.current.style.height || `${currentHeight}`,
+    );
 
     let nearestSnapIndex = 0;
     let minDistance = Math.abs(snapPoints[0] - currentHeightValue);
@@ -85,7 +87,8 @@ export function BottomSheet({
   // Handle swipe down to dismiss
   const handleTouchEnd = (e: React.TouchEvent) => {
     const deltaY = dragStartYRef.current - e.changedTouches[0].clientY;
-    if (deltaY < -50) { // Swiped down
+    if (deltaY < -50) {
+      // Swiped down
       onClose();
     }
   };
@@ -110,16 +113,16 @@ export function BottomSheet({
       <div
         ref={sheetRef}
         className={cn(
-          'fixed bottom-0 left-0 right-0 z-50',
-          'bg-wl-bg-surface rounded-t-2xl',
-          'border-t border-wl-border-subtle',
-          'shadow-lg',
-          'transition-all duration-300 ease-out',
-          isDragging && 'transition-none'
+          "fixed bottom-0 left-0 right-0 z-50",
+          "bg-wl-bg-surface rounded-t-2xl",
+          "border-t border-wl-border-subtle",
+          "shadow-lg",
+          "transition-all duration-300 ease-out",
+          isDragging && "transition-none",
         )}
         style={{
           height: `${currentHeight}px`,
-          maxHeight: '90vh',
+          maxHeight: "90vh",
         }}
       >
         {/* Drag Handle */}
@@ -132,16 +135,13 @@ export function BottomSheet({
             handleTouchEnd(e);
           }}
           className={cn(
-            'flex flex-col items-center justify-center gap-3',
-            'py-3 cursor-grab active:cursor-grabbing',
-            'select-none'
+            "flex flex-col items-center justify-center gap-3",
+            "py-3 cursor-grab active:cursor-grabbing",
+            "select-none",
           )}
         >
           {/* Handle Bar */}
-          <div className={cn(
-            'w-12 h-1 rounded-full',
-            'bg-wl-neutral-700'
-          )} />
+          <div className={cn("w-12 h-1 rounded-full", "bg-wl-neutral-700")} />
 
           {/* Title */}
           {title && (
@@ -161,11 +161,13 @@ export function BottomSheet({
         </div>
 
         {/* Content */}
-        <div className={cn(
-          'flex-1 overflow-y-auto',
-          'px-6 pb-6',
-          title ? 'pt-3' : 'pt-6'
-        )}>
+        <div
+          className={cn(
+            "flex-1 overflow-y-auto",
+            "px-6 pb-6",
+            title ? "pt-3" : "pt-6",
+          )}
+        >
           {children}
         </div>
       </div>

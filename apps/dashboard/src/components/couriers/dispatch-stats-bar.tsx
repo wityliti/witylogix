@@ -66,7 +66,10 @@ const getColorClasses = (color: string) => {
   }
 };
 
-export function DispatchStatsBar({ stats, isLoading = false }: DispatchStatsBarProps) {
+export function DispatchStatsBar({
+  stats,
+  isLoading = false,
+}: DispatchStatsBarProps) {
   const cards = useMemo<StatCard[]>(
     () => [
       {
@@ -101,7 +104,7 @@ export function DispatchStatsBar({ stats, isLoading = false }: DispatchStatsBarP
         color: "info",
       },
     ],
-    [stats]
+    [stats],
   );
 
   return (
@@ -118,7 +121,7 @@ export function DispatchStatsBar({ stats, isLoading = false }: DispatchStatsBarP
                   "relative overflow-hidden rounded-lg border p-4",
                   "bg-wl-bg-surface border-wl-border-subtle",
                   "transition-all duration-300 hover:border-wl-border-default",
-                  isLoading && "opacity-60 pointer-events-none"
+                  isLoading && "opacity-60 pointer-events-none",
                 )}
               >
                 {/* Color accent bar */}
@@ -129,7 +132,7 @@ export function DispatchStatsBar({ stats, isLoading = false }: DispatchStatsBarP
                     card.color === "warning" && "bg-wl-warning-400",
                     card.color === "danger" && "bg-wl-danger-400",
                     card.color === "info" && "bg-wl-info-400",
-                    card.color === "primary" && "bg-wl-primary-400"
+                    card.color === "primary" && "bg-wl-primary-400",
                   )}
                 />
 
@@ -163,14 +166,23 @@ export function DispatchStatsBar({ stats, isLoading = false }: DispatchStatsBarP
                 {index === cards.length - 1 && !isLoading && (
                   <div className="mt-3 pt-3 border-t border-wl-border-subtle">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-wl-text-secondary">On-time Rate</span>
+                      <span className="text-xs text-wl-text-secondary">
+                        On-time Rate
+                      </span>
                       <span className="text-sm font-semibold text-wl-success-400">
                         {stats.onTimePercentage}%
                       </span>
                     </div>
                     <svg viewBox="0 0 100 12" className="w-full h-2">
                       {/* Background */}
-                      <rect x="0" y="4" width="100" height="4" rx="2" fill="rgb(55, 65, 81)" />
+                      <rect
+                        x="0"
+                        y="4"
+                        width="100"
+                        height="4"
+                        rx="2"
+                        fill="rgb(55, 65, 81)"
+                      />
                       {/* Progress */}
                       <rect
                         x="0"
@@ -191,14 +203,16 @@ export function DispatchStatsBar({ stats, isLoading = false }: DispatchStatsBarP
                       "inline-flex items-center gap-1 text-xs font-medium",
                       card.trend.direction === "up"
                         ? "text-wl-success-400"
-                        : "text-wl-warning-400"
+                        : "text-wl-warning-400",
                     )}
                   >
                     <span>
                       {card.trend.direction === "up" ? "↑" : "↓"}
                       {card.trend.value}%
                     </span>
-                    <span className="text-wl-text-tertiary text-xs">vs yesterday</span>
+                    <span className="text-wl-text-tertiary text-xs">
+                      vs yesterday
+                    </span>
                   </div>
                 )}
               </div>

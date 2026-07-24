@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 interface DesignTabsProps {
   activeTab: string;
@@ -8,17 +8,17 @@ interface DesignTabsProps {
 }
 
 const TABS = [
-  'buttons',
-  'badges',
-  'colors',
-  'inputs',
-  'selects',
-  'cards',
-  'modals',
-  'tables',
-  'typography',
-  'forms',
-  'a11y',
+  "buttons",
+  "badges",
+  "colors",
+  "inputs",
+  "selects",
+  "cards",
+  "modals",
+  "tables",
+  "typography",
+  "forms",
+  "a11y",
 ];
 
 export function DesignTabs({ activeTab, onTabChange }: DesignTabsProps) {
@@ -31,10 +31,10 @@ export function DesignTabs({ activeTab, onTabChange }: DesignTabsProps) {
               key={tab}
               onClick={() => onTabChange(tab)}
               className={cn(
-                'text-sm font-medium py-4 px-1 border-b-2 transition-all duration-fast whitespace-nowrap',
+                "text-sm font-medium py-4 px-1 border-b-2 transition-all duration-fast whitespace-nowrap",
                 activeTab === tab
-                  ? 'text-blue-500 border-b-blue-500'
-                  : 'text-gray-300 border-b-transparent hover:text-white'
+                  ? "text-blue-500 border-b-blue-500"
+                  : "text-gray-300 border-b-transparent hover:text-white",
               )}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}

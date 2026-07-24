@@ -10,7 +10,7 @@
  * Auto-calibrates by tracking prediction accuracy.
  */
 
-import type { DeliveryContext, DeliveryPrediction } from './types.js';
+import type { DeliveryContext, DeliveryPrediction } from "./types.js";
 
 /**
  * Historical prediction record for calibration
@@ -50,13 +50,13 @@ let modelWeights = {
  * Historical average model
  * Uses driver's historical speed for same zone/time of day
  */
-function historicalAverageModel(
-  context: DeliveryContext,
-): { minutes: number; confidence: number } {
+function historicalAverageModel(context: DeliveryContext): {
+  minutes: number;
+  confidence: number;
+} {
   // Filter historical records matching driver, zone, and time of day (±2 hours)
   const matchingRecords = predictionHistory.filter(
-    (r) =>
-      Math.abs(r.context.timeOfDay - context.timeOfDay) <= 2,
+    (r) => Math.abs(r.context.timeOfDay - context.timeOfDay) <= 2,
   );
 
   if (matchingRecords.length < 5) {
@@ -83,9 +83,10 @@ function historicalAverageModel(
  * Distance-based model
  * Uses distance / driver's historical speed
  */
-function distanceBasedModel(
-  context: DeliveryContext,
-): { minutes: number; confidence: number } {
+function distanceBasedModel(context: DeliveryContext): {
+  minutes: number;
+  confidence: number;
+} {
   // Adjust for traffic factor (1.0 = normal, 2.0 = heavy traffic)
   const trafficAdjustedSpeed =
     context.driverHistoricalSpeed / context.currentTrafficFactor;
@@ -107,9 +108,10 @@ function distanceBasedModel(
  * Contextual model
  * Incorporates multiple factors: traffic, weather, stop complexity, time of day
  */
-function contextualModel(
-  context: DeliveryContext,
-): { minutes: number; confidence: number } {
+function contextualModel(context: DeliveryContext): {
+  minutes: number;
+  confidence: number;
+} {
   const distanceKm = context.distanceRemaining / 1000;
 
   // Base speed
@@ -120,17 +122,18 @@ function contextualModel(
 
   // Weather adjustment
   if (context.weather) {
-    if (context.weather.condition === 'rain') {
+    if (context.weather.condition === "rain") {
       effectiveSpeed *= 0.85; // 15% slower in rain
-    } else if (context.weather.condition === 'snow') {
+    } else if (context.weather.condition === "snow") {
       effectiveSpeed *= 0.7; // 30% slower in snow
-    } else if (context.weather.condition === 'fog') {
+    } else if (context.weather.condition === "fog") {
       effectiveSpeed *= 0.9; // 10% slower in fog
     }
   }
 
   // Time of day adjustment (peak hours)
-  const isPeakHour = (context.timeOfDay >= 11 && context.timeOfDay <= 13) ||
+  const isPeakHour =
+    (context.timeOfDay >= 11 && context.timeOfDay <= 13) ||
     (context.timeOfDay >= 17 && context.timeOfDay <= 19);
   if (isPeakHour) {
     effectiveSpeed *= 0.8; // 20% slower during peak hours
@@ -141,11 +144,11 @@ function contextualModel(
 
   // Stop complexity dwell time
   let dwellMinutes = 2; // Base 2 minutes
-  if (context.stopComplexity === 'apartment') {
+  if (context.stopComplexity === "apartment") {
     dwellMinutes = 4; // Apartments take longer (parking, access)
-  } else if (context.stopComplexity === 'business') {
+  } else if (context.stopComplexity === "business") {
     dwellMinutes = 3; // Businesses are medium
-  } else if (context.stopComplexity === 'warehouse') {
+  } else if (context.stopComplexity === "warehouse") {
     dwellMinutes = 5; // Warehouses can be slow
   }
 
@@ -253,7 +256,8 @@ function calculateConfidence(
 
   // Reduce confidence if models disagree significantly
   const avg =
-    (models.historicalModel + models.distanceModel + models.contextualModel) / 3;
+    (models.historicalModel + models.distanceModel + models.contextualModel) /
+    3;
   const maxDeviation = Math.max(
     Math.abs(models.historicalModel - avg),
     Math.abs(models.distanceModel - avg),

@@ -23,11 +23,7 @@
  * - Notifications are best-effort, no compensation
  */
 
-import type {
-  WorkflowStep,
-  StepResult,
-  WorkflowContext,
-} from "../types.js";
+import type { WorkflowStep, StepResult, WorkflowContext } from "../types.js";
 import type {
   AssignDriverInput,
   DriverCandidate,
@@ -59,7 +55,7 @@ const validateAssignmentRequest: WorkflowStep<
 
   async invoke(
     input: AssignDriverInput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<ValidateAssignmentOutput>> {
     const startMs = Date.now();
     const logger = context.logger;
@@ -180,7 +176,7 @@ const findAvailableDrivers: WorkflowStep<
 
   async invoke(
     _input: FindAvailableDriversOutput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<FindAvailableDriversOutput>> {
     const startMs = Date.now();
     const logger = context.logger;
@@ -226,7 +222,10 @@ const findAvailableDrivers: WorkflowStep<
             }
           }
           // If vehicle type specified, must match
-          if (validated.vehicleType && d.vehicleType !== validated.vehicleType) {
+          if (
+            validated.vehicleType &&
+            d.vehicleType !== validated.vehicleType
+          ) {
             return false;
           }
           return true;
@@ -287,7 +286,7 @@ function haversineDistance(
   lat1: number,
   lon1: number,
   lat2: number,
-  lon2: number
+  lon2: number,
 ): number {
   const R = 6371; // Earth radius in km
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -317,7 +316,7 @@ const scoreAndRankDrivers: WorkflowStep<
 
   async invoke(
     input: FindAvailableDriversOutput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<ScoreAndRankOutput>> {
     const startMs = Date.now();
     const logger = context.logger;
@@ -359,7 +358,7 @@ const scoreAndRankDrivers: WorkflowStep<
             driver.currentLocation.latitude,
             driver.currentLocation.longitude,
             validated.pickupLocation.latitude,
-            validated.pickupLocation.longitude
+            validated.pickupLocation.longitude,
           );
           score.distanceToPickup = distanceMeters;
 
@@ -367,7 +366,7 @@ const scoreAndRankDrivers: WorkflowStep<
           const maxDistanceMeters = 10000;
           score.proximityScore = Math.max(
             0,
-            100 - (distanceMeters / maxDistanceMeters) * 100
+            100 - (distanceMeters / maxDistanceMeters) * 100,
           );
         } else {
           score.proximityScore = 20;
@@ -396,7 +395,7 @@ const scoreAndRankDrivers: WorkflowStep<
 
       // Sort by score descending
       const rankedDrivers = scoredDrivers.sort(
-        (a, b) => b.score.score - a.score.score
+        (a, b) => b.score.score - a.score.score,
       );
 
       const durationMs = Date.now() - startMs;
@@ -442,12 +441,11 @@ const selectOptimalDriver: WorkflowStep<
   SelectOptimalDriverOutput
 > = {
   name: "selectOptimalDriver",
-  description:
-    "Pick top-scoring driver, or try next if declined/unavailable",
+  description: "Pick top-scoring driver, or try next if declined/unavailable",
 
   async invoke(
     input: ScoreAndRankOutput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<SelectOptimalDriverOutput>> {
     const startMs = Date.now();
     const logger = context.logger;
@@ -516,7 +514,7 @@ const assignDriverRecord: WorkflowStep<
 
   async invoke(
     input: SelectOptimalDriverOutput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<AssignDriverRecordOutput>> {
     const startMs = Date.now();
     const logger = context.logger;
@@ -586,7 +584,7 @@ const assignDriverRecord: WorkflowStep<
 
   async compensate(
     input: SelectOptimalDriverOutput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<void> {
     const logger = context.logger;
     const validated = context.metadata?.validated as ValidateAssignmentOutput;
@@ -649,7 +647,7 @@ const optimizeDriverRoute: WorkflowStep<
 
   async invoke(
     input: AssignDriverRecordOutput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<OptimizeDriverRouteOutput>> {
     const startMs = Date.now();
     const logger = context.logger;
@@ -747,7 +745,7 @@ const optimizeDriverRoute: WorkflowStep<
 
   async compensate(
     input: AssignDriverRecordOutput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<void> {
     const logger = context.logger;
     const routeOpt = context.metadata?.routeOptimization;
@@ -797,7 +795,7 @@ const calculateEstimatedArrival: WorkflowStep<
 
   async invoke(
     input: OptimizeDriverRouteOutput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<CalculateETAOutput>> {
     const startMs = Date.now();
     const logger = context.logger;
@@ -816,7 +814,7 @@ const calculateEstimatedArrival: WorkflowStep<
 
       const estimatedArrivalAt = new Date(estimatedPickupAt);
       estimatedArrivalAt.setMinutes(
-        estimatedArrivalAt.getMinutes() + estimatedDuration
+        estimatedArrivalAt.getMinutes() + estimatedDuration,
       );
 
       const durationMs = Date.now() - startMs;
@@ -861,16 +859,13 @@ interface NotifyDriverOutput {
   notificationId?: string;
 }
 
-const notifyDriver: WorkflowStep<
-  CalculateETAOutput,
-  NotifyDriverOutput
-> = {
+const notifyDriver: WorkflowStep<CalculateETAOutput, NotifyDriverOutput> = {
   name: "notifyDriver",
   description: "Push notification to driver app with order details",
 
   async invoke(
     input: CalculateETAOutput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<NotifyDriverOutput>> {
     const startMs = Date.now();
     const logger = context.logger;
@@ -918,16 +913,13 @@ interface NotifyCustomerOutput {
   notificationId?: string;
 }
 
-const notifyCustomer: WorkflowStep<
-  NotifyDriverOutput,
-  NotifyCustomerOutput
-> = {
+const notifyCustomer: WorkflowStep<NotifyDriverOutput, NotifyCustomerOutput> = {
   name: "notifyCustomer",
   description: "Notify customer with driver info and ETA",
 
   async invoke(
     _input: NotifyDriverOutput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<NotifyCustomerOutput>> {
     const startMs = Date.now();
     const logger = context.logger;
@@ -982,7 +974,7 @@ const emitDriverAssignedEvent: WorkflowStep<
 
   async invoke(
     _input: NotifyCustomerOutput,
-    context: WorkflowContext
+    context: WorkflowContext,
   ): Promise<StepResult<EmitEventOutput>> {
     const startMs = Date.now();
     const logger = context.logger;

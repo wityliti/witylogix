@@ -160,7 +160,10 @@ describe("EtsySdkClient", () => {
     });
 
     it("should return false for invalid signature without secret", () => {
-      const result = client.verifyWebhookSignature({ test: "data" }, "signature");
+      const result = client.verifyWebhookSignature(
+        { test: "data" },
+        "signature",
+      );
       expect(result).toBe(false);
     });
 
@@ -204,7 +207,9 @@ describe("EtsySdkClient", () => {
     });
 
     it("should throw when getting customer by ID", () => {
-      expect(() => client.getCustomerById("123")).rejects.toThrow("Etsy does not provide customer endpoints");
+      expect(() => client.getCustomerById("123")).rejects.toThrow(
+        "Etsy does not provide customer endpoints",
+      );
     });
 
     it("should return empty array from getCustomers", () => {

@@ -73,7 +73,11 @@ describe("Notification Fatigue Detector", () => {
     it("should track channel-specific fatigue", () => {
       // Record heavy email usage
       for (let i = 0; i < 20; i++) {
-        fatigueScorer.recordNotificationSent("user_ch_fatigue", "EMAIL", "MARKETING");
+        fatigueScorer.recordNotificationSent(
+          "user_ch_fatigue",
+          "EMAIL",
+          "MARKETING",
+        );
       }
 
       // Lighter SMS usage
@@ -84,7 +88,7 @@ describe("Notification Fatigue Detector", () => {
       const score = fatigueScorer.calculateFatigueScore("user_ch_fatigue");
 
       expect(score.factors.channelFatigueScores["EMAIL"]).toBeGreaterThan(
-        score.factors.channelFatigueScores["SMS"]
+        score.factors.channelFatigueScores["SMS"],
       );
     });
 
@@ -95,7 +99,11 @@ describe("Notification Fatigue Detector", () => {
 
       // Heavy usage
       for (let i = 0; i < 50; i++) {
-        fatigueScorer.recordNotificationSent("heavy_user", "EMAIL", "MARKETING");
+        fatigueScorer.recordNotificationSent(
+          "heavy_user",
+          "EMAIL",
+          "MARKETING",
+        );
       }
       const heavyScore = fatigueScorer.calculateFatigueScore("heavy_user");
       expect(heavyScore.overallFatigueScore).toBeGreaterThan(30);
@@ -107,7 +115,9 @@ describe("Notification Fatigue Detector", () => {
       const score = fatigueScorer.calculateFatigueScore("user_unsubscribe");
 
       expect(score.metrics.unsubscribeAttempts).toBe(1);
-      expect(score.signals.some((s) => s.signalType === "UNSUBSCRIBE_REQUEST")).toBe(true);
+      expect(
+        score.signals.some((s) => s.signalType === "UNSUBSCRIBE_REQUEST"),
+      ).toBe(true);
     });
 
     it("should decay fatigue on successful opens", () => {
@@ -124,7 +134,7 @@ describe("Notification Fatigue Detector", () => {
       const scoreAfterOpen = fatigueScorer.calculateFatigueScore("user_open");
 
       expect(scoreAfterOpen.factors.channelFatigueScores["EMAIL"]).toBeLessThan(
-        scoreBeforeOpen.factors.channelFatigueScores["EMAIL"]
+        scoreBeforeOpen.factors.channelFatigueScores["EMAIL"],
       );
     });
   });
@@ -138,7 +148,11 @@ describe("Notification Fatigue Detector", () => {
         overloadDetector.recordNotification("user_overload");
       }
 
-      const isOverloaded = overloadDetector.isOverloaded("user_overload", 20, 1);
+      const isOverloaded = overloadDetector.isOverloaded(
+        "user_overload",
+        20,
+        1,
+      );
       expect(isOverloaded).toBe(true);
     });
 
@@ -156,7 +170,10 @@ describe("Notification Fatigue Detector", () => {
         overloadDetector.recordNotification("user_window");
       }
 
-      const count = overloadDetector.getNotificationCountInWindow("user_window", 1);
+      const count = overloadDetector.getNotificationCountInWindow(
+        "user_window",
+        1,
+      );
       expect(count).toBeGreaterThan(0);
       expect(count).toBeLessThanOrEqual(15);
     });
@@ -166,10 +183,18 @@ describe("Notification Fatigue Detector", () => {
         overloadDetector.recordNotification("user_threshold");
       }
 
-      const isOverloadedHigh = overloadDetector.isOverloaded("user_threshold", 50, 1);
+      const isOverloadedHigh = overloadDetector.isOverloaded(
+        "user_threshold",
+        50,
+        1,
+      );
       expect(isOverloadedHigh).toBe(false);
 
-      const isOverloadedLow = overloadDetector.isOverloaded("user_threshold", 5, 1);
+      const isOverloadedLow = overloadDetector.isOverloaded(
+        "user_threshold",
+        5,
+        1,
+      );
       expect(isOverloadedLow).toBe(true);
     });
   });
@@ -178,7 +203,8 @@ describe("Notification Fatigue Detector", () => {
 
   describe("Throttle Recommender", () => {
     it("should not recommend throttle for healthy users", () => {
-      const recommendation = throttleRecommender.recommendThrottle("healthy_user");
+      const recommendation =
+        throttleRecommender.recommendThrottle("healthy_user");
 
       expect(recommendation.shouldThrottle).toBe(false);
       expect(recommendation.recommendedReduction).toBe(0);
@@ -187,10 +213,15 @@ describe("Notification Fatigue Detector", () => {
     it("should recommend throttle for fatigued users", () => {
       // Create fatigued user
       for (let i = 0; i < 40; i++) {
-        fatigueScorer.recordNotificationSent("fatigued_user", "EMAIL", "MARKETING");
+        fatigueScorer.recordNotificationSent(
+          "fatigued_user",
+          "EMAIL",
+          "MARKETING",
+        );
       }
 
-      const recommendation = throttleRecommender.recommendThrottle("fatigued_user");
+      const recommendation =
+        throttleRecommender.recommendThrottle("fatigued_user");
 
       expect(recommendation.shouldThrottle).toBe(true);
       expect(recommendation.recommendedReduction).toBeGreaterThan(0);
@@ -200,11 +231,16 @@ describe("Notification Fatigue Detector", () => {
     it("should increase throttle duration for severe fatigue", () => {
       // Build severe fatigue
       for (let i = 0; i < 100; i++) {
-        fatigueScorer.recordNotificationSent("severe_user", "EMAIL", "MARKETING");
+        fatigueScorer.recordNotificationSent(
+          "severe_user",
+          "EMAIL",
+          "MARKETING",
+        );
         fatigueScorer.recordNotificationDismissed("severe_user");
       }
 
-      const recommendation = throttleRecommender.recommendThrottle("severe_user");
+      const recommendation =
+        throttleRecommender.recommendThrottle("severe_user");
 
       if (recommendation.shouldThrottle) {
         expect(recommendation.throttleWindow.durationHours).toBeGreaterThan(6);
@@ -231,14 +267,21 @@ describe("Notification Fatigue Detector", () => {
 
     it("should recommend stricter priority threshold for severe cases", () => {
       for (let i = 0; i < 80; i++) {
-        fatigueScorer.recordNotificationSent("severe2_user", "EMAIL", "MARKETING");
+        fatigueScorer.recordNotificationSent(
+          "severe2_user",
+          "EMAIL",
+          "MARKETING",
+        );
         fatigueScorer.recordNotificationDismissed("severe2_user");
       }
 
-      const recommendation = throttleRecommender.recommendThrottle("severe2_user");
+      const recommendation =
+        throttleRecommender.recommendThrottle("severe2_user");
 
       if (recommendation.shouldThrottle) {
-        expect(["HIGH", "CRITICAL"]).toContain(recommendation.priorityThreshold);
+        expect(["HIGH", "CRITICAL"]).toContain(
+          recommendation.priorityThreshold,
+        );
       }
     });
   });
@@ -252,17 +295,19 @@ describe("Notification Fatigue Detector", () => {
         "user_1",
         "ORDER",
         "CRITICAL",
-        0.5
+        0.5,
       );
       const normalScore = importanceRanker.rankImportance(
         "notif_2",
         "user_1",
         "ORDER",
         "NORMAL",
-        0.5
+        0.5,
       );
 
-      expect(criticalScore.importanceScore).toBeGreaterThan(normalScore.importanceScore);
+      expect(criticalScore.importanceScore).toBeGreaterThan(
+        normalScore.importanceScore,
+      );
     });
 
     it("should factor user affinity", () => {
@@ -271,17 +316,19 @@ describe("Notification Fatigue Detector", () => {
         "user_2",
         "ORDER",
         "NORMAL",
-        0.9
+        0.9,
       );
       const lowAffinityScore = importanceRanker.rankImportance(
         "notif_4",
         "user_2",
         "ORDER",
         "NORMAL",
-        0.1
+        0.1,
       );
 
-      expect(highAffinityScore.importanceScore).toBeGreaterThan(lowAffinityScore.importanceScore);
+      expect(highAffinityScore.importanceScore).toBeGreaterThan(
+        lowAffinityScore.importanceScore,
+      );
     });
 
     it("should rank batch of notifications", () => {
@@ -301,7 +348,9 @@ describe("Notification Fatigue Detector", () => {
       const lowScore = scores.find((s) => s.priority === "LOW");
 
       if (criticalScore && lowScore) {
-        expect(criticalScore.importanceScore).toBeGreaterThan(lowScore.importanceScore);
+        expect(criticalScore.importanceScore).toBeGreaterThan(
+          lowScore.importanceScore,
+        );
       }
     });
 
@@ -311,7 +360,7 @@ describe("Notification Fatigue Detector", () => {
         "user_3",
         "ORDER",
         "HIGH",
-        0.6
+        0.6,
       );
 
       expect(score.factors.priorityFactor).toBeGreaterThan(0);
@@ -327,7 +376,10 @@ describe("Notification Fatigue Detector", () => {
     it("should predict low risk for healthy users", () => {
       const fatigueScore = fatigueScorer.calculateFatigueScore("healthy_pred");
       const predictor = createUnsubscribePrediction();
-      const risk = predictor.predictUnsubscribeRisk("healthy_pred", fatigueScore);
+      const risk = predictor.predictUnsubscribeRisk(
+        "healthy_pred",
+        fatigueScore,
+      );
 
       expect(risk.riskLevel).toBe("LOW");
       expect(risk.unsubscribeLikelihood).toBeLessThan(30);
@@ -335,13 +387,20 @@ describe("Notification Fatigue Detector", () => {
 
     it("should predict high risk for fatigued users", () => {
       for (let i = 0; i < 50; i++) {
-        fatigueScorer.recordNotificationSent("fatigued_pred", "EMAIL", "MARKETING");
+        fatigueScorer.recordNotificationSent(
+          "fatigued_pred",
+          "EMAIL",
+          "MARKETING",
+        );
         fatigueScorer.recordNotificationDismissed("fatigued_pred");
       }
 
       const fatigueScore = fatigueScorer.calculateFatigueScore("fatigued_pred");
       const predictor = createUnsubscribePrediction();
-      const risk = predictor.predictUnsubscribeRisk("fatigued_pred", fatigueScore);
+      const risk = predictor.predictUnsubscribeRisk(
+        "fatigued_pred",
+        fatigueScore,
+      );
 
       expect(risk.riskLevel).toBe("HIGH");
       expect(risk.unsubscribeLikelihood).toBeGreaterThan(50);
@@ -349,14 +408,21 @@ describe("Notification Fatigue Detector", () => {
 
     it("should predict CRITICAL risk for severe cases", () => {
       for (let i = 0; i < 80; i++) {
-        fatigueScorer.recordNotificationSent("critical_pred", "EMAIL", "MARKETING");
+        fatigueScorer.recordNotificationSent(
+          "critical_pred",
+          "EMAIL",
+          "MARKETING",
+        );
         fatigueScorer.recordNotificationDismissed("critical_pred");
       }
       fatigueScorer.recordUnsubscribeAttempt("critical_pred");
 
       const fatigueScore = fatigueScorer.calculateFatigueScore("critical_pred");
       const predictor = createUnsubscribePrediction();
-      const risk = predictor.predictUnsubscribeRisk("critical_pred", fatigueScore);
+      const risk = predictor.predictUnsubscribeRisk(
+        "critical_pred",
+        fatigueScore,
+      );
 
       expect(risk.riskLevel).toBe("CRITICAL");
       expect(risk.daysUntilLikelyUnsubscribe).toBeLessThan(30);
@@ -364,13 +430,20 @@ describe("Notification Fatigue Detector", () => {
 
     it("should recommend actions for at-risk users", () => {
       for (let i = 0; i < 60; i++) {
-        fatigueScorer.recordNotificationSent("action_pred", "EMAIL", "MARKETING");
+        fatigueScorer.recordNotificationSent(
+          "action_pred",
+          "EMAIL",
+          "MARKETING",
+        );
         fatigueScorer.recordNotificationDismissed("action_pred");
       }
 
       const fatigueScore = fatigueScorer.calculateFatigueScore("action_pred");
       const predictor = createUnsubscribePrediction();
-      const risk = predictor.predictUnsubscribeRisk("action_pred", fatigueScore);
+      const risk = predictor.predictUnsubscribeRisk(
+        "action_pred",
+        fatigueScore,
+      );
 
       if (risk.riskLevel !== "LOW") {
         expect(risk.recommendedActions.length).toBeGreaterThan(0);
@@ -415,7 +488,9 @@ describe("Notification Fatigue Detector", () => {
       }
 
       const phase2Score = fatigueScorer.calculateFatigueScore(userId);
-      expect(phase2Score.overallFatigueScore).toBeGreaterThan(phase1Score.overallFatigueScore);
+      expect(phase2Score.overallFatigueScore).toBeGreaterThan(
+        phase1Score.overallFatigueScore,
+      );
 
       // Phase 3: Low engagement
       for (let i = 0; i < 10; i++) {
@@ -423,7 +498,9 @@ describe("Notification Fatigue Detector", () => {
       }
 
       const phase3Score = fatigueScorer.calculateFatigueScore(userId);
-      expect(phase3Score.overallFatigueScore).toBeGreaterThan(phase2Score.overallFatigueScore);
+      expect(phase3Score.overallFatigueScore).toBeGreaterThan(
+        phase2Score.overallFatigueScore,
+      );
 
       // Should recommend throttle by phase 3
       const throttleRec = throttleRecommender.recommendThrottle(userId);

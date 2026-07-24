@@ -40,7 +40,11 @@ export class FleetService {
   private prisma: any;
   private adapters: Map<TelematicsProvider, ITelematicsAdapter>;
 
-  constructor(fleetId: string, prisma: any, adapters: Map<TelematicsProvider, ITelematicsAdapter>) {
+  constructor(
+    fleetId: string,
+    prisma: any,
+    adapters: Map<TelematicsProvider, ITelematicsAdapter>,
+  ) {
     this.fleetId = fleetId;
     this.prisma = prisma;
     this.adapters = adapters;
@@ -57,7 +61,9 @@ export class FleetService {
   async registerVehicle(request: RegisterVehicleRequest): Promise<Vehicle> {
     const adapter = this.adapters.get(request.primaryProvider);
     if (!adapter) {
-      throw new Error(`Telematics adapter not available for ${request.primaryProvider}`);
+      throw new Error(
+        `Telematics adapter not available for ${request.primaryProvider}`,
+      );
     }
 
     const registration: VehicleRegistration = {
@@ -115,7 +121,9 @@ export class FleetService {
   /**
    * Get all vehicles in fleet with optional filtering and pagination
    */
-  async getFleetVehicles(params: VehicleListQueryParams): Promise<PaginatedVehicles> {
+  async getFleetVehicles(
+    params: VehicleListQueryParams,
+  ): Promise<PaginatedVehicles> {
     const { status, page = 1, limit = 50, search, provider, isActive } = params;
 
     const where: Prisma.VehicleWhereInput = {
@@ -158,15 +166,22 @@ export class FleetService {
   /**
    * Update vehicle information
    */
-  async updateVehicle(vehicleId: string, request: UpdateVehicleRequest): Promise<Vehicle> {
+  async updateVehicle(
+    vehicleId: string,
+    request: UpdateVehicleRequest,
+  ): Promise<Vehicle> {
     const vehicle = await (this.prisma as any).vehicle.update({
       where: { id: vehicleId },
       data: {
         ...(request.driverId !== undefined && { driverId: request.driverId }),
-        ...(request.primaryProvider && { primaryProvider: request.primaryProvider }),
+        ...(request.primaryProvider && {
+          primaryProvider: request.primaryProvider,
+        }),
         ...(request.capacity !== undefined && { capacity: request.capacity }),
         ...(request.isActive !== undefined && { isActive: request.isActive }),
-        ...(request.nextMaintenanceDate && { nextMaintenanceDate: request.nextMaintenanceDate }),
+        ...(request.nextMaintenanceDate && {
+          nextMaintenanceDate: request.nextMaintenanceDate,
+        }),
       },
     });
 
@@ -226,7 +241,10 @@ export class FleetService {
       }),
     ]);
 
-    const totalVehicles = vehicleStats.reduce((sum: number, row: any) => sum + row._count.id, 0);
+    const totalVehicles = vehicleStats.reduce(
+      (sum: number, row: any) => sum + row._count.id,
+      0,
+    );
     const statusMap = Object.fromEntries(
       vehicleStats.map((row: any) => [row.status, row._count.id]),
     );
@@ -333,7 +351,9 @@ export class FleetService {
   /**
    * Get vehicle diagnostics and fault codes
    */
-  async getVehicleDiagnostics(vehicleId: string): Promise<VehicleDiagnostics | null> {
+  async getVehicleDiagnostics(
+    vehicleId: string,
+  ): Promise<VehicleDiagnostics | null> {
     const vehicle = await (this.prisma as any).vehicle.findUnique({
       where: { id: vehicleId },
     });
@@ -347,10 +367,12 @@ export class FleetService {
     const diagnostics = await adapter.getVehicleDiagnostics(vehicleId);
 
     // Store diagnostics in database for historical tracking
-    const existingCodes = await (this.prisma as any).vehicleDiagnostic.findMany({
-      where: { vehicleId, clearedAt: null },
-      select: { faultCode: true },
-    });
+    const existingCodes = await (this.prisma as any).vehicleDiagnostic.findMany(
+      {
+        where: { vehicleId, clearedAt: null },
+        select: { faultCode: true },
+      },
+    );
 
     const existingCodeSet = new Set(existingCodes.map((c: any) => c.faultCode));
     const newCodes = diagnostics.faultCodes.filter(
@@ -455,7 +477,10 @@ export class FleetService {
   /**
    * Calculate driver behavior score for risk assessment
    */
-  async getDriverRiskScore(vehicleId: string, daysBack: number = 30): Promise<number> {
+  async getDriverRiskScore(
+    vehicleId: string,
+    daysBack: number = 30,
+  ): Promise<number> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - daysBack);
 
@@ -498,7 +523,11 @@ export class FleetService {
     const vehicles = await (this.prisma as any).vehicle.findMany({
       where: { fleetId: this.fleetId, isActive: true },
       include: {
-        behaviors: { where: { timestamp: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } } },
+        behaviors: {
+          where: {
+            timestamp: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+          },
+        },
         diagnostics: { where: { clearedAt: null } },
         maintenanceAlerts: { where: { isCompleted: false } },
         fuelHistory: { orderBy: { recordedAt: "desc" }, take: 30 },
@@ -519,14 +548,20 @@ export class FleetService {
 
     // Fuel efficiency score: based on fuel economy vs target
     const avgFuelEconomy = this.calculateAverageFuelEconomy(vehicles);
-    const fuelEfficiency = Math.min(100, Math.round((avgFuelEconomy / 8) * 100)); // 8 km/l = target
+    const fuelEfficiency = Math.min(
+      100,
+      Math.round((avgFuelEconomy / 8) * 100),
+    ); // 8 km/l = target
 
     // Driver safety score: inverse of behavior risk
     const avgRiskScore = this.calculateAverageRiskScore(vehicles);
     const driverSafety = Math.max(0, 100 - Math.round(avgRiskScore));
 
     // Maintenance status: based on active alerts
-    const totalDiagnostics = vehicles.reduce((sum, v) => sum + v.diagnostics.length, 0);
+    const totalDiagnostics = vehicles.reduce(
+      (sum, v) => sum + v.diagnostics.length,
+      0,
+    );
     const maintenanceStatus = Math.max(0, 100 - totalDiagnostics * 5);
 
     // Utilization rate: active vehicles vs total
@@ -535,7 +570,10 @@ export class FleetService {
 
     // Overall score: weighted average
     const overallScore = Math.round(
-      fuelEfficiency * 0.25 + driverSafety * 0.35 + maintenanceStatus * 0.25 + utilizationRate * 0.15,
+      fuelEfficiency * 0.25 +
+        driverSafety * 0.35 +
+        maintenanceStatus * 0.25 +
+        utilizationRate * 0.15,
     );
 
     // Store metric for historical tracking
@@ -551,7 +589,8 @@ export class FleetService {
         activeVehicles: activeCount,
         idleVehicles: vehicles.filter((v) => v.status === "IDLE").length,
         offlineVehicles: vehicles.filter((v) => v.status === "OFFLINE").length,
-        maintenanceVehicles: vehicles.filter((v) => v.status === "MAINTENANCE").length,
+        maintenanceVehicles: vehicles.filter((v) => v.status === "MAINTENANCE")
+          .length,
         avgFuelEconomy,
         totalIdleHours: 0, // Would be calculated from detailed telemetry
         criticalAlerts: totalDiagnostics,
@@ -577,7 +616,9 @@ export class FleetService {
   /**
    * Get active maintenance alerts for a vehicle
    */
-  async getVehicleMaintenanceAlerts(vehicleId: string): Promise<MaintenanceAlert[]> {
+  async getVehicleMaintenanceAlerts(
+    vehicleId: string,
+  ): Promise<MaintenanceAlert[]> {
     const alerts = await (this.prisma as any).maintenanceAlert.findMany({
       where: {
         vehicleId,
@@ -644,7 +685,9 @@ export class FleetService {
       driverId: vehicle.driverId,
       capacity: vehicle.capacity,
       isActive: vehicle.isActive,
-      lastPosition: vehicle.lastPosition ? JSON.parse(vehicle.lastPosition) : undefined,
+      lastPosition: vehicle.lastPosition
+        ? JSON.parse(vehicle.lastPosition)
+        : undefined,
       lastSyncAt: vehicle.lastSyncAt,
       nextMaintenanceDate: vehicle.nextMaintenanceDate,
       createdAt: vehicle.createdAt,
@@ -657,7 +700,11 @@ export class FleetService {
 
     for (const vehicle of vehicles) {
       if (vehicle.fuelHistory?.length > 0) {
-        const avg = vehicle.fuelHistory.reduce((sum: number, f: any) => sum + f.fuelEconomy, 0) / vehicle.fuelHistory.length;
+        const avg =
+          vehicle.fuelHistory.reduce(
+            (sum: number, f: any) => sum + f.fuelEconomy,
+            0,
+          ) / vehicle.fuelHistory.length;
         fuelEconomies.push(avg);
       }
     }
@@ -672,7 +719,11 @@ export class FleetService {
 
     for (const vehicle of vehicles) {
       if (vehicle.behaviors?.length > 0) {
-        const avgSeverity = vehicle.behaviors.reduce((sum: number, b: any) => sum + b.severity, 0) / vehicle.behaviors.length;
+        const avgSeverity =
+          vehicle.behaviors.reduce(
+            (sum: number, b: any) => sum + b.severity,
+            0,
+          ) / vehicle.behaviors.length;
         riskScores.push(avgSeverity * 20); // Convert to risk score
       }
     }
@@ -685,7 +736,10 @@ export class FleetService {
   private mapEventTypeToCategory(
     eventType: string,
   ): "SAFETY" | "MAINTENANCE" | "FUEL" | "OPERATIONS" {
-    const categoryMap: Record<string, "SAFETY" | "MAINTENANCE" | "FUEL" | "OPERATIONS"> = {
+    const categoryMap: Record<
+      string,
+      "SAFETY" | "MAINTENANCE" | "FUEL" | "OPERATIONS"
+    > = {
       HARSH_ACCELERATION: "SAFETY",
       HARSH_BRAKING: "SAFETY",
       SPEEDING: "SAFETY",
@@ -703,8 +757,12 @@ export class FleetService {
     return categoryMap[eventType] || "OPERATIONS";
   }
 
-  private determineMaintencanceSeverity(dueDate: Date): "INFO" | "WARNING" | "CRITICAL" {
-    const daysUntilDue = Math.ceil((dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  private determineMaintencanceSeverity(
+    dueDate: Date,
+  ): "INFO" | "WARNING" | "CRITICAL" {
+    const daysUntilDue = Math.ceil(
+      (dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+    );
 
     if (daysUntilDue < 0) return "CRITICAL";
     if (daysUntilDue < 7) return "WARNING";

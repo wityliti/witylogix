@@ -33,7 +33,10 @@
  * const route = nearestNeighbor(matrix, 0);
  * // Could return [0, 1, 3, 2, 0] (depot -> stop1 -> stop3 -> stop2 -> depot)
  */
-export function nearestNeighbor(distanceMatrix: number[][], depotIndex: number = 0): number[] {
+export function nearestNeighbor(
+  distanceMatrix: number[][],
+  depotIndex: number = 0,
+): number[] {
   const n = distanceMatrix.length;
 
   if (n === 0) {
@@ -61,7 +64,10 @@ export function nearestNeighbor(distanceMatrix: number[][], depotIndex: number =
 
     // Find the closest unvisited stop
     for (let i = 0; i < n; i++) {
-      if (!visited.has(i) && distanceMatrix[currentIndex][i] < nearestDistance) {
+      if (
+        !visited.has(i) &&
+        distanceMatrix[currentIndex][i] < nearestDistance
+      ) {
         nearestDistance = distanceMatrix[currentIndex][i];
         nearestIndex = i;
       }
@@ -69,7 +75,9 @@ export function nearestNeighbor(distanceMatrix: number[][], depotIndex: number =
 
     if (nearestIndex === -1) {
       // This shouldn't happen if distanceMatrix is valid
-      throw new Error("Could not find nearest neighbor (distance matrix may be invalid)");
+      throw new Error(
+        "Could not find nearest neighbor (distance matrix may be invalid)",
+      );
     }
 
     route.push(nearestIndex);
@@ -113,7 +121,9 @@ export function multiStartNearestNeighbor(
   }
 
   const tries = numTries ?? n - 1; // Try all non-depot stops by default
-  const nonDepotIndices = Array.from({ length: n }, (_, i) => i).filter((i) => i !== depotIndex);
+  const nonDepotIndices = Array.from({ length: n }, (_, i) => i).filter(
+    (i) => i !== depotIndex,
+  );
 
   let bestRoute = nearestNeighbor(distanceMatrix, depotIndex);
   let bestDistance = calculateRouteCost(bestRoute, distanceMatrix);
@@ -121,7 +131,11 @@ export function multiStartNearestNeighbor(
   // Try starting from each non-depot stop
   for (let t = 0; t < Math.min(tries, nonDepotIndices.length); t++) {
     const startIndex = nonDepotIndices[t];
-    const route = nearestNeighborFromStart(distanceMatrix, depotIndex, startIndex);
+    const route = nearestNeighborFromStart(
+      distanceMatrix,
+      depotIndex,
+      startIndex,
+    );
     const distance = calculateRouteCost(route, distanceMatrix);
 
     if (distance < bestDistance) {
@@ -167,7 +181,10 @@ export function nearestNeighborFromStart(
     let nearestDistance = Infinity;
 
     for (let i = 0; i < n; i++) {
-      if (!visited.has(i) && distanceMatrix[currentIndex][i] < nearestDistance) {
+      if (
+        !visited.has(i) &&
+        distanceMatrix[currentIndex][i] < nearestDistance
+      ) {
         nearestDistance = distanceMatrix[currentIndex][i];
         nearestIndex = i;
       }
@@ -195,7 +212,10 @@ export function nearestNeighborFromStart(
  * @param distanceMatrix - n×n distance matrix
  * @returns Total distance of the route
  */
-function calculateRouteCost(route: number[], distanceMatrix: number[][]): number {
+function calculateRouteCost(
+  route: number[],
+  distanceMatrix: number[][],
+): number {
   let totalCost = 0;
 
   for (let i = 0; i < route.length - 1; i++) {

@@ -129,7 +129,12 @@ interface PlatformScienceMessage {
  * Platform Science Workflow Trigger
  */
 interface PlatformScienceWorkflowTrigger {
-  type: "GEOFENCE_ENTRY" | "GEOFENCE_EXIT" | "HARSH_EVENT" | "FATIGUE_ALERT" | "ENGINE_FAULT";
+  type:
+    | "GEOFENCE_ENTRY"
+    | "GEOFENCE_EXIT"
+    | "HARSH_EVENT"
+    | "FATIGUE_ALERT"
+    | "ENGINE_FAULT";
   condition: Record<string, unknown>;
 }
 
@@ -153,7 +158,9 @@ export class PlatformScienceClient implements ITelematicsAdapter {
   constructor(config: TelematicsConfig) {
     const credentials = config.credentials as any;
     if (!credentials?.clientId || !credentials?.clientSecret) {
-      throw new Error("Platform Science API requires clientId and clientSecret");
+      throw new Error(
+        "Platform Science API requires clientId and clientSecret",
+      );
     }
 
     this.clientId = credentials.clientId;
@@ -201,7 +208,9 @@ export class PlatformScienceClient implements ITelematicsAdapter {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to refresh Platform Science token: ${response.statusText}`);
+      throw new Error(
+        `Failed to refresh Platform Science token: ${response.statusText}`,
+      );
     }
 
     const data = (await response.json()) as any;
@@ -212,7 +221,11 @@ export class PlatformScienceClient implements ITelematicsAdapter {
   /**
    * Make authenticated request to Platform Science API
    */
-  private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  private async request<T>(
+    method: string,
+    path: string,
+    body?: unknown,
+  ): Promise<T> {
     return this.circuitBreaker.execute(async () => {
       await this.rateLimiter.waitIfNeeded();
 
@@ -229,7 +242,9 @@ export class PlatformScienceClient implements ITelematicsAdapter {
       });
 
       if (!response.ok) {
-        throw new Error(`Platform Science API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Platform Science API error: ${response.status} ${response.statusText}`,
+        );
       }
 
       return (await response.json()) as T;
@@ -316,7 +331,10 @@ export class PlatformScienceClient implements ITelematicsAdapter {
         timestamp: new Date(diag.timestamp),
       }));
     } catch (error) {
-      this.logger.error("Failed to get diagnostics from Platform Science", error);
+      this.logger.error(
+        "Failed to get diagnostics from Platform Science",
+        error,
+      );
       return [];
     }
   }
@@ -324,7 +342,9 @@ export class PlatformScienceClient implements ITelematicsAdapter {
   /**
    * Get diagnostics by vehicle ID
    */
-  async getDiagnosticsByVehicleId(vehicleId: string): Promise<NormalizedDiagnostic> {
+  async getDiagnosticsByVehicleId(
+    vehicleId: string,
+  ): Promise<NormalizedDiagnostic> {
     const response = await this.request<{
       faultCodes: Array<{ code: string; description: string }>;
       timestamp: string;
@@ -345,7 +365,9 @@ export class PlatformScienceClient implements ITelematicsAdapter {
   /**
    * Get behavior events
    */
-  async getBehaviorEvents(options?: SyncOptions): Promise<NormalizedBehaviorEvent[]> {
+  async getBehaviorEvents(
+    options?: SyncOptions,
+  ): Promise<NormalizedBehaviorEvent[]> {
     // Platform Science integrates events through workflows
     return [];
   }
@@ -353,7 +375,9 @@ export class PlatformScienceClient implements ITelematicsAdapter {
   /**
    * Get fuel readings
    */
-  async getFuelReadings(options?: SyncOptions): Promise<NormalizedFuelReading[]> {
+  async getFuelReadings(
+    options?: SyncOptions,
+  ): Promise<NormalizedFuelReading[]> {
     // Fuel data available through telemetry
     try {
       const positions = await this.getPositions(options);
@@ -371,7 +395,9 @@ export class PlatformScienceClient implements ITelematicsAdapter {
   /**
    * Get fuel reading by vehicle ID
    */
-  async getFuelReadingByVehicleId(vehicleId: string): Promise<NormalizedFuelReading> {
+  async getFuelReadingByVehicleId(
+    vehicleId: string,
+  ): Promise<NormalizedFuelReading> {
     return {
       externalVehicleId: vehicleId,
       fuelLevel: 0,
@@ -476,7 +502,10 @@ export class PlatformScienceClient implements ITelematicsAdapter {
   /**
    * Send message to driver
    */
-  async sendMessageToDriver(driverId: string, message: string): Promise<PlatformScienceMessage> {
+  async sendMessageToDriver(
+    driverId: string,
+    message: string,
+  ): Promise<PlatformScienceMessage> {
     const response = await this.request<PlatformScienceMessage>(
       "POST",
       `/drivers/${driverId}/messages`,
@@ -542,7 +571,9 @@ export class PlatformScienceClient implements ITelematicsAdapter {
     return this.getPositionByVehicleId(vehicleId);
   }
 
-  async getVehicleDiagnostics(vehicleId: string): Promise<NormalizedDiagnostic> {
+  async getVehicleDiagnostics(
+    vehicleId: string,
+  ): Promise<NormalizedDiagnostic> {
     return this.getDiagnosticsByVehicleId(vehicleId);
   }
 
@@ -550,7 +581,10 @@ export class PlatformScienceClient implements ITelematicsAdapter {
     driverId: string,
     dateRange: { startDate: Date; endDate: Date },
   ): Promise<NormalizedBehaviorEvent[]> {
-    return this.getBehaviorEvents({ startDate: dateRange.startDate, endDate: dateRange.endDate });
+    return this.getBehaviorEvents({
+      startDate: dateRange.startDate,
+      endDate: dateRange.endDate,
+    });
   }
 
   async getFuelLevel(vehicleId: string): Promise<NormalizedFuelReading> {
@@ -561,8 +595,18 @@ export class PlatformScienceClient implements ITelematicsAdapter {
     webhookUrl: string,
     eventTypes: string[],
   ): Promise<WebhookSubscription> {
-    await this.subscribeWebhook({ webhookId: "", url: webhookUrl, events: eventTypes, createdAt: new Date() });
-    return { webhookId: `platformscience-${Date.now()}`, url: webhookUrl, events: eventTypes, createdAt: new Date() };
+    await this.subscribeWebhook({
+      webhookId: "",
+      url: webhookUrl,
+      events: eventTypes,
+      createdAt: new Date(),
+    });
+    return {
+      webhookId: `platformscience-${Date.now()}`,
+      url: webhookUrl,
+      events: eventTypes,
+      createdAt: new Date(),
+    };
   }
 
   async unsubscribeFromEvents(webhookId: string): Promise<void> {
@@ -593,14 +637,21 @@ export class PlatformScienceClient implements ITelematicsAdapter {
       make: vehicle.make,
       model: vehicle.model,
       year: vehicle.year,
-      status: vehicle.status === "ACTIVE" ? "ACTIVE" : vehicle.status === "INACTIVE" ? "INACTIVE" : "DELETED",
+      status:
+        vehicle.status === "ACTIVE"
+          ? "ACTIVE"
+          : vehicle.status === "INACTIVE"
+            ? "INACTIVE"
+            : "DELETED",
     };
   }
 
   /**
    * Normalize Platform Science telemetry to position
    */
-  private normalizeTelemetry(telem: PlatformScienceTelemetry): NormalizedPosition {
+  private normalizeTelemetry(
+    telem: PlatformScienceTelemetry,
+  ): NormalizedPosition {
     return {
       externalVehicleId: telem.vehicleId,
       latitude: telem.gps.latitude,

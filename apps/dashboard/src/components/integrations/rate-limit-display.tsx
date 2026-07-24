@@ -20,9 +20,9 @@ export function RateLimitDisplay({
 
   // Get color based on usage
   const getUsageColor = (): string => {
-    if (usagePercent < 60) return 'var(--wl-success-500)';
-    if (usagePercent < 80) return 'var(--wl-warning-500)';
-    return 'var(--wl-danger-500)';
+    if (usagePercent < 60) return "var(--wl-success-500)";
+    if (usagePercent < 80) return "var(--wl-warning-500)";
+    return "var(--wl-danger-500)";
   };
 
   // Calculate time until reset
@@ -30,7 +30,7 @@ export function RateLimitDisplay({
     const now = new Date();
     const diff = rateLimit.resetAt.getTime() - now.getTime();
 
-    if (diff <= 0) return 'Resetting now...';
+    if (diff <= 0) return "Resetting now...";
 
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -61,7 +61,12 @@ export function RateLimitDisplay({
     });
 
     return (
-      <svg width="100%" height={height + 20} viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
+      <svg
+        width="100%"
+        height={height + 20}
+        viewBox={`0 0 ${width} ${height}`}
+        className="overflow-visible"
+      >
         {/* Grid line */}
         <line
           x1="0"
@@ -76,7 +81,7 @@ export function RateLimitDisplay({
         {/* Fill area */}
         {points.length > 1 && (
           <path
-            d={`M ${padding} ${height - padding} L ${points.map((p) => `${p[0]} ${p[1]}`).join(' L ')} L ${width - padding} ${height - padding} Z`}
+            d={`M ${padding} ${height - padding} L ${points.map((p) => `${p[0]} ${p[1]}`).join(" L ")} L ${width - padding} ${height - padding} Z`}
             fill="var(--wl-primary-400)"
             fillOpacity="0.1"
           />
@@ -85,7 +90,7 @@ export function RateLimitDisplay({
         {/* Line */}
         {points.length > 1 && (
           <polyline
-            points={points.map((p) => `${p[0]},${p[1]}`).join(' ')}
+            points={points.map((p) => `${p[0]},${p[1]}`).join(" ")}
             fill="none"
             stroke="var(--wl-primary-500)"
             strokeWidth="1.5"
@@ -107,12 +112,14 @@ export function RateLimitDisplay({
   };
 
   return (
-    <div className={cn('w-full', className)}>
+    <div className={cn("w-full", className)}>
       <div className="space-y-6">
         {/* Main rate limit display */}
         <div className="border border-wl-border-subtle rounded-lg bg-wl-bg-surface p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-semibold text-wl-text-primary">Rate Limit Status</h3>
+            <h3 className="text-base font-semibold text-wl-text-primary">
+              Rate Limit Status
+            </h3>
             <div className="text-right">
               <div className="text-xs text-wl-text-secondary">Resets in</div>
               <div className="text-sm font-medium text-wl-text-primary">
@@ -145,7 +152,11 @@ export function RateLimitDisplay({
               <div className="flex justify-between mt-2 text-xs text-wl-text-secondary">
                 <span>0%</span>
                 <span>
-                  {usagePercent < 60 ? '✓ Good' : usagePercent < 80 ? '⚠ Caution' : '✗ Critical'}
+                  {usagePercent < 60
+                    ? "✓ Good"
+                    : usagePercent < 80
+                      ? "⚠ Caution"
+                      : "✗ Critical"}
                 </span>
                 <span>100%</span>
               </div>
@@ -167,8 +178,9 @@ export function RateLimitDisplay({
                     className="h-full rounded-lg bg-wl-warning-500 transition-all duration-500"
                     style={{
                       width: `${Math.min(
-                        ((rateLimit.burstCurrent || 0) / rateLimit.burstLimit) * 100,
-                        100
+                        ((rateLimit.burstCurrent || 0) / rateLimit.burstLimit) *
+                          100,
+                        100,
                       )}%`,
                     }}
                   />
@@ -180,23 +192,30 @@ export function RateLimitDisplay({
 
         {/* Historical usage */}
         <div className="border border-wl-border-subtle rounded-lg bg-wl-bg-surface p-6">
-          <h3 className="text-sm font-semibold text-wl-text-secondary mb-4">Last Hour Usage</h3>
+          <h3 className="text-sm font-semibold text-wl-text-secondary mb-4">
+            Last Hour Usage
+          </h3>
           {generateHistoricalChart()}
         </div>
 
         {/* Per-endpoint breakdown */}
         {endpoints && endpoints.length > 0 && (
           <div className="border border-wl-border-subtle rounded-lg bg-wl-bg-surface p-6">
-            <h3 className="text-sm font-semibold text-wl-text-secondary mb-4">Per-Endpoint Usage</h3>
+            <h3 className="text-sm font-semibold text-wl-text-secondary mb-4">
+              Per-Endpoint Usage
+            </h3>
             <div className="space-y-3">
               {endpoints.map((endpoint) => {
-                const endpointUsagePercent = Math.min((endpoint.current / endpoint.limit) * 100, 100);
+                const endpointUsagePercent = Math.min(
+                  (endpoint.current / endpoint.limit) * 100,
+                  100,
+                );
                 const endpointColor =
                   endpointUsagePercent < 60
-                    ? 'var(--wl-success-500)'
+                    ? "var(--wl-success-500)"
                     : endpointUsagePercent < 80
-                      ? 'var(--wl-warning-500)'
-                      : 'var(--wl-danger-500)';
+                      ? "var(--wl-warning-500)"
+                      : "var(--wl-danger-500)";
 
                 return (
                   <div key={endpoint.name}>
@@ -227,9 +246,9 @@ export function RateLimitDisplay({
         {/* Info card */}
         <div
           className={cn(
-            'border rounded-lg p-4 text-sm',
-            'bg-wl-primary-100 border-wl-primary-200 text-wl-primary-700',
-            'dark:bg-wl-primary-900/30 dark:border-wl-primary-800 dark:text-wl-primary-300'
+            "border rounded-lg p-4 text-sm",
+            "bg-wl-primary-100 border-wl-primary-200 text-wl-primary-700",
+            "dark:bg-wl-primary-900/30 dark:border-wl-primary-800 dark:text-wl-primary-300",
           )}
         >
           <p className="font-medium mb-1">Rate Limit Information</p>

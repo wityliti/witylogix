@@ -37,7 +37,7 @@ const createStop = (
   latitude: number,
   longitude: number,
   weight = 100,
-  priority = 1
+  priority = 1,
 ): Stop => ({
   id,
   location: { latitude, longitude },
@@ -51,7 +51,7 @@ const createStopWithTimeWindow = (
   latitude: number,
   longitude: number,
   startHour: number,
-  endHour: number
+  endHour: number,
 ): Stop => ({
   id,
   location: { latitude, longitude },
@@ -81,7 +81,7 @@ describe("RouteOptimizer", () => {
       };
 
       await expect(optimizer.optimize(request)).rejects.toThrow(
-        "At least one stop is required"
+        "At least one stop is required",
       );
     });
 
@@ -113,7 +113,7 @@ describe("RouteOptimizer", () => {
       };
 
       await expect(optimizer.optimize(request)).rejects.toThrow(
-        "Depot location is required"
+        "Depot location is required",
       );
     });
 
@@ -126,7 +126,7 @@ describe("RouteOptimizer", () => {
       };
 
       await expect(optimizer.optimize(request)).rejects.toThrow(
-        "At least one vehicle is required"
+        "At least one vehicle is required",
       );
     });
   });
@@ -159,9 +159,9 @@ describe("RouteOptimizer", () => {
         stops.push(
           createStop(
             `s${i}`,
-            40.7 + (i * 0.01) % 0.1,
-            -74.0 + (i * 0.01) % 0.1
-          )
+            40.7 + ((i * 0.01) % 0.1),
+            -74.0 + ((i * 0.01) % 0.1),
+          ),
         );
       }
 
@@ -178,7 +178,7 @@ describe("RouteOptimizer", () => {
       expect(result.routes.length).toBeLessThanOrEqual(2);
       const totalAssigned = result.routes.reduce(
         (sum, r) => sum + r.stops.length,
-        0
+        0,
       );
       expect(totalAssigned).toBe(10);
       expect(result.metrics.stopsCovered).toBe(10);
@@ -219,7 +219,7 @@ describe("RouteOptimizer", () => {
           priority: 1,
           weight: 100,
           timeWindow: {
-            start: new Date(now + 60 * 60 * 1000),   // +1h from now
+            start: new Date(now + 60 * 60 * 1000), // +1h from now
             end: new Date(now + 4 * 60 * 60 * 1000), // +4h from now
           },
         },
@@ -231,7 +231,7 @@ describe("RouteOptimizer", () => {
           weight: 100,
           timeWindow: {
             start: new Date(now + 2 * 60 * 60 * 1000), // +2h from now
-            end: new Date(now + 5 * 60 * 60 * 1000),   // +5h from now
+            end: new Date(now + 5 * 60 * 60 * 1000), // +5h from now
           },
         },
       ];
@@ -254,7 +254,7 @@ describe("RouteOptimizer", () => {
             expect((stop as any).timeWindowViolation?.type).not.toBe("late");
             // Arrival must not exceed the window end
             expect(stop.arrivalTime.getTime()).toBeLessThanOrEqual(
-              stop.timeWindow.end.getTime()
+              stop.timeWindow.end.getTime(),
             );
           }
         }
@@ -330,7 +330,7 @@ describe("RouteOptimizer", () => {
 
       // Stop may be unassigned due to time window constraint
       expect(result.unassignedStops.length + result.metrics.stopsCovered).toBe(
-        1
+        1,
       );
     });
   });
@@ -386,7 +386,7 @@ describe("RouteOptimizer", () => {
       // Should use at least 2 vehicles or leave unassigned
       const totalAssigned = result.routes.reduce(
         (sum, r) => sum + r.stops.length,
-        0
+        0,
       );
       expect(totalAssigned + result.unassignedStops.length).toBe(2);
     });
@@ -414,7 +414,7 @@ describe("RouteOptimizer", () => {
       for (const route of result.routes) {
         const totalVolume = route.stops.reduce(
           (sum, s) => sum + (s.volume || 0),
-          0
+          0,
         );
         expect(totalVolume).toBeLessThanOrEqual(60);
       }
@@ -487,7 +487,7 @@ describe("RouteOptimizer", () => {
 
       const totalAssigned = result.routes.reduce(
         (sum, r) => sum + r.stops.length,
-        0
+        0,
       );
       expect(totalAssigned + result.unassignedStops.length).toBe(2);
     });
@@ -497,7 +497,7 @@ describe("RouteOptimizer", () => {
     it("should respect max stops per vehicle limit", async () => {
       const stops: Stop[] = [];
       for (let i = 0; i < 15; i++) {
-        stops.push(createStop(`s${i}`, 40.7 + (i * 0.001), -74.0));
+        stops.push(createStop(`s${i}`, 40.7 + i * 0.001, -74.0));
       }
 
       const constraints: OptimizationConstraints = {
@@ -596,7 +596,7 @@ describe("RouteOptimizer", () => {
       };
 
       await expect(optimizer.optimize(request)).rejects.toThrow(
-        "Unknown algorithm"
+        "Unknown algorithm",
       );
     });
   });
@@ -609,8 +609,8 @@ describe("RouteOptimizer", () => {
           createStop(
             `s${i}`,
             40.7 + Math.random() * 0.1,
-            -74.0 + Math.random() * 0.1
-          )
+            -74.0 + Math.random() * 0.1,
+          ),
         );
       }
 
@@ -637,8 +637,8 @@ describe("RouteOptimizer", () => {
           createStop(
             `s${i}`,
             40.7 + (Math.random() * 0.1 - 0.05),
-            -74.0 + (Math.random() * 0.1 - 0.05)
-          )
+            -74.0 + (Math.random() * 0.1 - 0.05),
+          ),
         );
       }
 
@@ -705,7 +705,7 @@ describe("RouteOptimizer", () => {
       const result = await optimizer.optimize(request);
 
       expect(result.metrics.stopsCovered + result.metrics.stopsUncovered).toBe(
-        3
+        3,
       );
     });
   });

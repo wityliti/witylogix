@@ -26,4 +26,9 @@ export type {
   UberDirectSignatureVerification,
 } from "./types.js";
 
-export { ProviderEventType, OnfleetTaskStatus, StuartJobStatus, UberDirectDeliveryStatus } from "./types.js";
+export {
+  ProviderEventType,
+  OnfleetTaskStatus,
+  StuartJobStatus,
+  UberDirectDeliveryStatus,
+} from "./types.js";

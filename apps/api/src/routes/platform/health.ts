@@ -9,13 +9,13 @@
  * - GET /api/docs/spec — OpenAPI JSON spec
  */
 
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { prisma } from '@witylogix/db';
-import { getRedis } from '../../lib/redis.js';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import { prisma } from "@witylogix/db";
+import { getRedis } from "../../lib/redis.js";
 import {
   PlatformHealthService,
   type HealthStatus,
-} from '@witylogix/core/platform';
+} from "@witylogix/core/platform";
 
 // ─── Global Health Service Instance ─────────────────────────────
 
@@ -48,13 +48,13 @@ export async function healthRoutes(fastify: FastifyInstance): Promise<void> {
       status: string;
       timestamp: string;
     };
-  }>('/health', async (request: FastifyRequest, reply: FastifyReply) => {
+  }>("/health", async (request: FastifyRequest, reply: FastifyReply) => {
     const health = await service.getQuickHealth();
 
     service.recordRequest();
 
     // Return 200 if healthy, 503 if unhealthy
-    const statusCode = health.status === 'healthy' ? 200 : 503;
+    const statusCode = health.status === "healthy" ? 200 : 503;
 
     reply.code(statusCode).send({
       status: health.status,
@@ -66,57 +66,57 @@ export async function healthRoutes(fastify: FastifyInstance): Promise<void> {
   // For monitoring dashboards — complete report
   fastify.get<{
     Reply: HealthStatus;
-  }>('/health/detailed', async (request: FastifyRequest, reply: FastifyReply) => {
-    const health = await service.getDetailedHealth();
+  }>(
+    "/health/detailed",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const health = await service.getDetailedHealth();
 
-    service.recordRequest();
+      service.recordRequest();
 
-    // Return appropriate status code
-    const statusCode =
-      health.status === 'healthy'
-        ? 200
-        : health.status === 'degraded'
-          ? 200 // Still return 200 to avoid alerting, but data shows degradation
-          : 503;
+      // Return appropriate status code
+      const statusCode =
+        health.status === "healthy"
+          ? 200
+          : health.status === "degraded"
+            ? 200 // Still return 200 to avoid alerting, but data shows degradation
+            : 503;
 
-    reply.code(statusCode).send(health);
-  });
+      reply.code(statusCode).send(health);
+    },
+  );
 
   // ─── Plain Text Health Summary ───────────────────────────────────
   // For quick CLI checks
   fastify.get<{
     Reply: string;
-  }>('/health/text', async (request: FastifyRequest, reply: FastifyReply) => {
+  }>("/health/text", async (request: FastifyRequest, reply: FastifyReply) => {
     const health = await service.getDetailedHealth();
 
     service.recordRequest();
 
     const text = service.formatHealthStatusText(health);
 
-    const statusCode = health.status === 'healthy' ? 200 : 503;
+    const statusCode = health.status === "healthy" ? 200 : 503;
 
-    reply.type('text/plain').code(statusCode).send(text);
+    reply.type("text/plain").code(statusCode).send(text);
   });
 
   // ─── Prometheus Metrics ─────────────────────────────────────────
   // For metric collection and dashboards
   fastify.get<{
     Reply: string;
-  }>('/metrics', async (request: FastifyRequest, reply: FastifyReply) => {
+  }>("/metrics", async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const metrics = await service.getPrometheusMetrics();
 
-      reply
-        .type('text/plain; version=0.0.4')
-        .code(200)
-        .send(metrics);
+      reply.type("text/plain; version=0.0.4").code(200).send(metrics);
     } catch (error: unknown) {
       const errorMsg = error instanceof Error ? error.message : String(error);
 
-      fastify.log.error('Metrics generation error:', errorMsg);
+      fastify.log.error("Metrics generation error:", errorMsg);
 
       reply.code(500).send({
-        error: 'Failed to generate metrics',
+        error: "Failed to generate metrics",
       });
     }
   });
@@ -125,7 +125,7 @@ export async function healthRoutes(fastify: FastifyInstance): Promise<void> {
   // Interactive API documentation
   fastify.get<{
     Reply: string;
-  }>('/api/docs', async (request: FastifyRequest, reply: FastifyReply) => {
+  }>("/api/docs", async (request: FastifyRequest, reply: FastifyReply) => {
     const html = `<!DOCTYPE html>
 <html>
   <head>
@@ -174,107 +174,108 @@ export async function healthRoutes(fastify: FastifyInstance): Promise<void> {
   </body>
 </html>`;
 
-    reply.type('text/html').send(html);
+    reply.type("text/html").send(html);
   });
 
   // ─── OpenAPI Specification ──────────────────────────────────────
   // Machine-readable API spec
   fastify.get<{
     Reply: Record<string, unknown>;
-  }>('/api/docs/spec', async (request: FastifyRequest, reply: FastifyReply) => {
+  }>("/api/docs/spec", async (request: FastifyRequest, reply: FastifyReply) => {
     const spec = {
-      openapi: '3.1.0',
+      openapi: "3.1.0",
       info: {
-        title: 'Witylogix Platform API',
-        version: process.env.APP_VERSION ?? '4.0.0',
-        description: 'Last-mile delivery logistics SaaS platform',
+        title: "Witylogix Platform API",
+        version: process.env.APP_VERSION ?? "4.0.0",
+        description: "Last-mile delivery logistics SaaS platform",
         contact: {
-          name: 'Witylogix Support',
-          email: 'support@witylogix.com',
-          url: 'https://witylogix.com',
+          name: "Witylogix Support",
+          email: "support@witylogix.com",
+          url: "https://witylogix.com",
         },
       },
       servers: [
         {
-          url: process.env.API_URL ?? 'http://localhost:3000',
-          description: 'API Server',
+          url: process.env.API_URL ?? "http://localhost:3000",
+          description: "API Server",
         },
       ],
       paths: {
-        '/health': {
+        "/health": {
           get: {
-            tags: ['Health'],
-            summary: 'Quick health check',
-            description: 'Returns 200 if healthy, 503 if unhealthy',
-            operationId: 'getHealth',
+            tags: ["Health"],
+            summary: "Quick health check",
+            description: "Returns 200 if healthy, 503 if unhealthy",
+            operationId: "getHealth",
             responses: {
-              '200': {
-                description: 'Service is healthy',
+              "200": {
+                description: "Service is healthy",
                 content: {
-                  'application/json': {
+                  "application/json": {
                     schema: {
-                      type: 'object',
+                      type: "object",
                       properties: {
                         status: {
-                          type: 'string',
-                          enum: ['healthy', 'degraded', 'unhealthy'],
+                          type: "string",
+                          enum: ["healthy", "degraded", "unhealthy"],
                         },
                         timestamp: {
-                          type: 'string',
-                          format: 'date-time',
+                          type: "string",
+                          format: "date-time",
                         },
                       },
                     },
                   },
                 },
               },
-              '503': {
-                description: 'Service is unhealthy',
+              "503": {
+                description: "Service is unhealthy",
               },
             },
           },
         },
-        '/health/detailed': {
+        "/health/detailed": {
           get: {
-            tags: ['Health'],
-            summary: 'Detailed health report',
-            description: 'Returns comprehensive health check with all dependencies',
-            operationId: 'getDetailedHealth',
+            tags: ["Health"],
+            summary: "Detailed health report",
+            description:
+              "Returns comprehensive health check with all dependencies",
+            operationId: "getDetailedHealth",
             responses: {
-              '200': {
-                description: 'Health status report',
+              "200": {
+                description: "Health status report",
                 content: {
-                  'application/json': {
+                  "application/json": {
                     schema: {
-                      type: 'object',
+                      type: "object",
                       properties: {
                         status: {
-                          type: 'string',
-                          enum: ['healthy', 'degraded', 'unhealthy'],
+                          type: "string",
+                          enum: ["healthy", "degraded", "unhealthy"],
                         },
                         checks: {
-                          type: 'object',
+                          type: "object",
                           properties: {
                             database: {
-                              type: 'object',
+                              type: "object",
                             },
                             redis: {
-                              type: 'object',
+                              type: "object",
                             },
                             externalServices: {
-                              type: 'object',
+                              type: "object",
                             },
                           },
                         },
                         metrics: {
-                          type: 'object',
+                          type: "object",
                         },
                         uptime: {
-                          type: 'number',
+                          type: "number",
                         },
                         timestamp: {
-                          type: 'string',
-                          format: 'date-time',
+                          type: "string",
+                          format: "date-time",
                         },
                       },
                     },
@@ -284,19 +285,19 @@ export async function healthRoutes(fastify: FastifyInstance): Promise<void> {
             },
           },
         },
-        '/health/text': {
+        "/health/text": {
           get: {
-            tags: ['Health'],
-            summary: 'Health status as plain text',
-            description: 'Returns human-readable health status',
-            operationId: 'getHealthText',
+            tags: ["Health"],
+            summary: "Health status as plain text",
+            description: "Returns human-readable health status",
+            operationId: "getHealthText",
             responses: {
-              '200': {
-                description: 'Health status as text',
+              "200": {
+                description: "Health status as text",
                 content: {
-                  'text/plain': {
+                  "text/plain": {
                     schema: {
-                      type: 'string',
+                      type: "string",
                     },
                   },
                 },
@@ -304,19 +305,19 @@ export async function healthRoutes(fastify: FastifyInstance): Promise<void> {
             },
           },
         },
-        '/metrics': {
+        "/metrics": {
           get: {
-            tags: ['Metrics'],
-            summary: 'Prometheus metrics',
-            description: 'Returns Prometheus-compatible metrics',
-            operationId: 'getMetrics',
+            tags: ["Metrics"],
+            summary: "Prometheus metrics",
+            description: "Returns Prometheus-compatible metrics",
+            operationId: "getMetrics",
             responses: {
-              '200': {
-                description: 'Prometheus metrics',
+              "200": {
+                description: "Prometheus metrics",
                 content: {
-                  'text/plain': {
+                  "text/plain": {
                     schema: {
-                      type: 'string',
+                      type: "string",
                     },
                   },
                 },
@@ -327,12 +328,12 @@ export async function healthRoutes(fastify: FastifyInstance): Promise<void> {
       },
       tags: [
         {
-          name: 'Health',
-          description: 'Health check endpoints',
+          name: "Health",
+          description: "Health check endpoints",
         },
         {
-          name: 'Metrics',
-          description: 'Monitoring and metrics endpoints',
+          name: "Metrics",
+          description: "Monitoring and metrics endpoints",
         },
       ],
     };
@@ -343,8 +344,10 @@ export async function healthRoutes(fastify: FastifyInstance): Promise<void> {
   // ─── ReDoc Documentation ────────────────────────────────────────
   fastify.get<{
     Reply: string;
-  }>('/api/docs/redoc', async (request: FastifyRequest, reply: FastifyReply) => {
-    const html = `<!DOCTYPE html>
+  }>(
+    "/api/docs/redoc",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const html = `<!DOCTYPE html>
 <html>
   <head>
     <title>Witylogix API - ReDoc</title>
@@ -364,27 +367,34 @@ export async function healthRoutes(fastify: FastifyInstance): Promise<void> {
   </body>
 </html>`;
 
-    reply.type('text/html').send(html);
-  });
+      reply.type("text/html").send(html);
+    },
+  );
 
   // ─── Request Tracking Middleware ─────────────────────────────────
   // Record all requests for metrics
-  fastify.addHook('onRequest', async (request: FastifyRequest) => {
+  fastify.addHook("onRequest", async (request: FastifyRequest) => {
     // Don't track health check requests to avoid noise
-    if (!request.url.startsWith('/health') && !request.url.startsWith('/metrics')) {
+    if (
+      !request.url.startsWith("/health") &&
+      !request.url.startsWith("/metrics")
+    ) {
       service.recordRequest();
     }
   });
 
   // ─── Error Tracking ─────────────────────────────────────────────
-  fastify.addHook('onResponse', async (request: FastifyRequest, reply: FastifyReply) => {
-    // Record errors (5xx responses)
-    if (reply.statusCode >= 500) {
-      service.recordError();
-    }
-  });
+  fastify.addHook(
+    "onResponse",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      // Record errors (5xx responses)
+      if (reply.statusCode >= 500) {
+        service.recordError();
+      }
+    },
+  );
 
-  fastify.log.info('Health and metrics routes registered');
+  fastify.log.info("Health and metrics routes registered");
 }
 
 export default healthRoutes;

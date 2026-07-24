@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useApiList, useApiMutation } from '@/hooks/use-api';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { Header } from '@/components/layout/header';
+import { useState } from "react";
+import { useApiList, useApiMutation } from "@/hooks/use-api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { Header } from "@/components/layout/header";
 import {
   Card,
   CardHeader,
@@ -12,11 +12,11 @@ import {
   CardContent,
   CardDescription,
   CardFooter,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import {
   Plus,
   Copy,
@@ -25,7 +25,7 @@ import {
   Calendar,
   Clock,
   AlertCircle,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface APIKey {
   id: string;
@@ -39,13 +39,21 @@ interface APIKey {
 }
 
 export default function APIKeysPage() {
-  const { items: apiKeys, loading, error, refetch } = useApiList<APIKey>('/api/v4/api-keys');
-  const { execute: deleteKey } = useApiMutation('DELETE', '/api/v4/api-keys/:id');
-  const { execute: createKey } = useApiMutation('POST', '/api/v4/api-keys');
+  const {
+    items: apiKeys,
+    loading,
+    error,
+    refetch,
+  } = useApiList<APIKey>("/api/v4/api-keys");
+  const { execute: deleteKey } = useApiMutation(
+    "DELETE",
+    "/api/v4/api-keys/:id",
+  );
+  const { execute: createKey } = useApiMutation("POST", "/api/v4/api-keys");
 
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [newKeyName, setNewKeyName] = useState('');
+  const [newKeyName, setNewKeyName] = useState("");
   const [selectedScopes, setSelectedScopes] = useState<string[]>([]);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
@@ -71,14 +79,14 @@ export default function APIKeysPage() {
     try {
       await createKey({
         name: newKeyName,
-        scopes: selectedScopes.length > 0 ? selectedScopes : ['*'],
+        scopes: selectedScopes.length > 0 ? selectedScopes : ["*"],
       });
-      setNewKeyName('');
+      setNewKeyName("");
       setSelectedScopes([]);
       setShowCreateDialog(false);
       refetch();
     } catch (err) {
-      console.error('Failed to create API key:', err);
+      console.error("Failed to create API key:", err);
     }
   };
 
@@ -88,13 +96,13 @@ export default function APIKeysPage() {
       setDeleteConfirmId(null);
       refetch();
     } catch (err) {
-      console.error('Failed to delete API key:', err);
+      console.error("Failed to delete API key:", err);
     }
   };
 
   const toggleScope = (scope: string) => {
     setSelectedScopes((prev) =>
-      prev.includes(scope) ? prev.filter((s) => s !== scope) : [...prev, scope]
+      prev.includes(scope) ? prev.filter((s) => s !== scope) : [...prev, scope],
     );
   };
 
@@ -123,7 +131,9 @@ export default function APIKeysPage() {
             <Card className="border-blue-500/30 bg-wl-bg-surface border border-wl-border-default">
               <CardHeader>
                 <CardTitle className="text-white">Create New API Key</CardTitle>
-                <CardDescription className="text-gray-400">Generate a new API key for your application</CardDescription>
+                <CardDescription className="text-gray-400">
+                  Generate a new API key for your application
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
@@ -143,7 +153,10 @@ export default function APIKeysPage() {
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     {AVAILABLE_SCOPES.map((scope) => (
-                      <label key={scope.id} className="flex items-center gap-2 cursor-pointer">
+                      <label
+                        key={scope.id}
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
                         <input
                           type="checkbox"
                           checked={selectedScopes.includes(scope.id)}
@@ -161,7 +174,8 @@ export default function APIKeysPage() {
                 <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 flex gap-2">
                   <AlertCircle className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
                   <p className="text-xs text-gray-400">
-                    Store your API key securely. You won't be able to see it again after creation.
+                    Store your API key securely. You won't be able to see it
+                    again after creation.
                   </p>
                 </div>
               </CardContent>
@@ -192,7 +206,8 @@ export default function APIKeysPage() {
             <CardHeader>
               <CardTitle className="text-white">Your API Keys</CardTitle>
               <CardDescription className="text-gray-400">
-                {apiKeys.length} {apiKeys.length === 1 ? "key" : "keys"} available
+                {apiKeys.length} {apiKeys.length === 1 ? "key" : "keys"}{" "}
+                available
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -219,7 +234,9 @@ export default function APIKeysPage() {
                           <Button
                             variant="secondary"
                             size="sm"
-                            onClick={() => copyToClipboard(apiKey.key, apiKey.id)}
+                            onClick={() =>
+                              copyToClipboard(apiKey.key, apiKey.id)
+                            }
                           >
                             <Copy className="w-3.5 h-3.5" />
                             {copiedId === apiKey.id ? "Copied!" : "Copy"}
@@ -256,7 +273,10 @@ export default function APIKeysPage() {
                       </div>
 
                       <div className="text-xs text-gray-400">
-                        <span className="font-semibold">{apiKey.requestsPerDay}</span> requests today
+                        <span className="font-semibold">
+                          {apiKey.requestsPerDay}
+                        </span>{" "}
+                        requests today
                       </div>
 
                       {deleteConfirmId === apiKey.id && (
@@ -288,9 +308,7 @@ export default function APIKeysPage() {
               ) : (
                 <div className="text-center py-12">
                   <Key className="w-12 h-12 text-gray-400 mx-auto mb-3 opacity-30" />
-                  <p className="text-gray-400">
-                    No API keys created yet
-                  </p>
+                  <p className="text-gray-400">No API keys created yet</p>
                 </div>
               )}
             </CardContent>

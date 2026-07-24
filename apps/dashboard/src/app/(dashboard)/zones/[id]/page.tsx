@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { use, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
-import { Header } from '@/components/layout/header';
-import { Badge } from '@/components/ui/badge';
-import { WLMap } from '@/components/map/wl-map';
-import { ZoneLayer } from '@/components/map/zone-layer';
-import { ZoneInspector } from '@/components/zones/zone-inspector';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { api } from '@/lib/api';
-import { useApiQuery } from '@/hooks/use-api';
-import type { FeatureCollection } from 'geojson';
+import { use, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { Header } from "@/components/layout/header";
+import { Badge } from "@/components/ui/badge";
+import { WLMap } from "@/components/map/wl-map";
+import { ZoneLayer } from "@/components/map/zone-layer";
+import { ZoneInspector } from "@/components/zones/zone-inspector";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { api } from "@/lib/api";
+import { useApiQuery } from "@/hooks/use-api";
+import type { FeatureCollection } from "geojson";
 
 interface ZoneData {
   id: string;
@@ -56,7 +56,7 @@ export default function ZoneDetailPage({
     data: geoRes,
     loading: geoLoading,
     error: geoError,
-  } = useApiQuery<FeatureCollection>('/api/v4/zones?format=geojson');
+  } = useApiQuery<FeatureCollection>("/api/v4/zones?format=geojson");
 
   const loading = zoneLoading || geoLoading;
   const error = zoneError || geoError;
@@ -79,7 +79,7 @@ export default function ZoneDetailPage({
   const geojson = useMemo<FeatureCollection | null>(() => {
     if (!geoRes) return null;
     return {
-      type: 'FeatureCollection',
+      type: "FeatureCollection",
       features: geoRes.features.filter((f) => f.properties?.id === id),
     };
   }, [id, geoRes]);
@@ -99,14 +99,17 @@ export default function ZoneDetailPage({
     <>
       <Header
         title={zone.name}
-        subtitle={zone.isActive ? 'Active zone' : 'Inactive zone'}
+        subtitle={zone.isActive ? "Active zone" : "Inactive zone"}
         actions={
-          <Badge variant={zone.isActive ? 'success' : 'default'}>
-            {zone.isActive ? 'Active' : 'Inactive'}
+          <Badge variant={zone.isActive ? "success" : "default"}>
+            {zone.isActive ? "Active" : "Inactive"}
           </Badge>
         }
       />
-      <div className="grid h-[calc(100vh-64px)] bg-wl-bg-root" style={{ gridTemplateColumns: '320px 1fr' }}>
+      <div
+        className="grid h-[calc(100vh-64px)] bg-wl-bg-root"
+        style={{ gridTemplateColumns: "320px 1fr" }}
+      >
         <div className="border-r border-wl-border-default p-4 overflow-auto">
           <ZoneInspector
             zone={zone}
@@ -117,7 +120,7 @@ export default function ZoneDetailPage({
             }}
             onDelete={async () => {
               await api.delete(`/api/v4/zones/${id}`);
-              router.push('/zones');
+              router.push("/zones");
             }}
             onEditGeometry={() => {
               router.push(`/zones?edit=${id}`);

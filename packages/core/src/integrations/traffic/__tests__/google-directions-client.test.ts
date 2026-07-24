@@ -6,37 +6,39 @@
  * caching, and rate limiting.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { GoogleDirectionsClient } from '../google-directions-client.js';
-import type { DirectionsResult } from '../types.js';
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { GoogleDirectionsClient } from "../google-directions-client.js";
+import type { DirectionsResult } from "../types.js";
 
-describe('GoogleDirectionsClient', () => {
+describe("GoogleDirectionsClient", () => {
   let client: GoogleDirectionsClient;
 
   beforeEach(() => {
-    client = new GoogleDirectionsClient('test-api-key-12345', 50);
+    client = new GoogleDirectionsClient("test-api-key-12345", 50);
     vi.clearAllMocks();
   });
 
-  describe('initialization', () => {
-    it('should throw error if API key is missing', () => {
-      expect(() => new GoogleDirectionsClient('', 50)).toThrow('Google Directions API key is required');
+  describe("initialization", () => {
+    it("should throw error if API key is missing", () => {
+      expect(() => new GoogleDirectionsClient("", 50)).toThrow(
+        "Google Directions API key is required",
+      );
     });
 
-    it('should initialize with provided rate limit', () => {
-      const testClient = new GoogleDirectionsClient('key', 100);
+    it("should initialize with provided rate limit", () => {
+      const testClient = new GoogleDirectionsClient("key", 100);
       expect(testClient).toBeDefined();
     });
 
-    it('should use default rate limit if not provided', () => {
-      const testClient = new GoogleDirectionsClient('key');
+    it("should use default rate limit if not provided", () => {
+      const testClient = new GoogleDirectionsClient("key");
       expect(testClient).toBeDefined();
     });
   });
 
-  describe('coordinate normalization', () => {
-    it('should normalize array coordinates to LatLng', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
+  describe("coordinate normalization", () => {
+    it("should normalize array coordinates to LatLng", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
         new Response(
           JSON.stringify({
             routes: [
@@ -51,23 +53,26 @@ describe('GoogleDirectionsClient', () => {
                     steps: [],
                   },
                 ],
-                overview_polyline: { points: 'test' },
+                overview_polyline: { points: "test" },
                 warnings: [],
               },
             ],
-            status: 'OK',
+            status: "OK",
           } as DirectionsResult),
         ),
       );
 
-      const result = await client.getRoute([40.7128, -74.006], [40.7589, -73.9851]);
-      expect(result.status).toBe('OK');
+      const result = await client.getRoute(
+        [40.7128, -74.006],
+        [40.7589, -73.9851],
+      );
+      expect(result.status).toBe("OK");
     });
   });
 
-  describe('getRoute', () => {
-    it('should fetch and return route successfully', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
+  describe("getRoute", () => {
+    it("should fetch and return route successfully", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
         new Response(
           JSON.stringify({
             routes: [
@@ -82,11 +87,11 @@ describe('GoogleDirectionsClient', () => {
                     steps: [],
                   },
                 ],
-                overview_polyline: { points: 'test' },
+                overview_polyline: { points: "test" },
                 warnings: [],
               },
             ],
-            status: 'OK',
+            status: "OK",
           } as DirectionsResult),
         ),
       );
@@ -96,12 +101,12 @@ describe('GoogleDirectionsClient', () => {
         { lat: 40.7589, lng: -73.9851 },
       );
 
-      expect(result.status).toBe('OK');
+      expect(result.status).toBe("OK");
       expect(result.routes).toHaveLength(1);
     });
 
-    it('should handle route options correctly', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
+    it("should handle route options correctly", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
         new Response(
           JSON.stringify({
             routes: [
@@ -115,11 +120,11 @@ describe('GoogleDirectionsClient', () => {
                     steps: [],
                   },
                 ],
-                overview_polyline: { points: 'test' },
+                overview_polyline: { points: "test" },
                 warnings: [],
               },
             ],
-            status: 'OK',
+            status: "OK",
           } as DirectionsResult),
         ),
       );
@@ -129,7 +134,7 @@ describe('GoogleDirectionsClient', () => {
         { lat: 40.7589, lng: -73.9851 },
         {
           alternatives: true,
-          travelMode: 'driving',
+          travelMode: "driving",
           avoidTolls: true,
         },
       );
@@ -137,11 +142,11 @@ describe('GoogleDirectionsClient', () => {
       expect(result.routes).toBeDefined();
     });
 
-    it('should throw error on API failure', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
+    it("should throw error on API failure", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
         new Response(
           JSON.stringify({
-            status: 'REQUEST_DENIED',
+            status: "REQUEST_DENIED",
           }),
         ),
       );
@@ -154,8 +159,8 @@ describe('GoogleDirectionsClient', () => {
       ).rejects.toThrow();
     });
 
-    it('should cache routes for 5 minutes', async () => {
-      const fetchSpy = vi.spyOn(global, 'fetch').mockResolvedValue(
+    it("should cache routes for 5 minutes", async () => {
+      const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(
           JSON.stringify({
             routes: [
@@ -169,11 +174,11 @@ describe('GoogleDirectionsClient', () => {
                     steps: [],
                   },
                 ],
-                overview_polyline: { points: 'test' },
+                overview_polyline: { points: "test" },
                 warnings: [],
               },
             ],
-            status: 'OK',
+            status: "OK",
           } as DirectionsResult),
         ),
       );
@@ -191,9 +196,9 @@ describe('GoogleDirectionsClient', () => {
     });
   });
 
-  describe('getTrafficDuration', () => {
-    it('should return duration with traffic', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
+  describe("getTrafficDuration", () => {
+    it("should return duration with traffic", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
         new Response(
           JSON.stringify({
             routes: [
@@ -208,11 +213,11 @@ describe('GoogleDirectionsClient', () => {
                     steps: [],
                   },
                 ],
-                overview_polyline: { points: 'test' },
+                overview_polyline: { points: "test" },
                 warnings: [],
               },
             ],
-            status: 'OK',
+            status: "OK",
           } as DirectionsResult),
         ),
       );
@@ -228,8 +233,8 @@ describe('GoogleDirectionsClient', () => {
       expect(result.traffic_delay_sec).toBe(120);
     });
 
-    it('should cache traffic duration for 2 minutes', async () => {
-      const fetchSpy = vi.spyOn(global, 'fetch').mockResolvedValue(
+    it("should cache traffic duration for 2 minutes", async () => {
+      const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(
           JSON.stringify({
             routes: [
@@ -244,11 +249,11 @@ describe('GoogleDirectionsClient', () => {
                     steps: [],
                   },
                 ],
-                overview_polyline: { points: 'test' },
+                overview_polyline: { points: "test" },
                 warnings: [],
               },
             ],
-            status: 'OK',
+            status: "OK",
           } as DirectionsResult),
         ),
       );
@@ -264,9 +269,9 @@ describe('GoogleDirectionsClient', () => {
     });
   });
 
-  describe('getDistanceMatrix', () => {
-    it('should fetch distance matrix for multiple origins and destinations', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
+  describe("getDistanceMatrix", () => {
+    it("should fetch distance matrix for multiple origins and destinations", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
         new Response(
           JSON.stringify({
             rows: [
@@ -276,18 +281,18 @@ describe('GoogleDirectionsClient', () => {
                     distance: { value: 5000 },
                     duration: { value: 300 },
                     duration_in_traffic: { value: 420 },
-                    status: 'OK',
+                    status: "OK",
                   },
                   {
                     distance: { value: 8000 },
                     duration: { value: 480 },
                     duration_in_traffic: { value: 600 },
-                    status: 'OK',
+                    status: "OK",
                   },
                 ],
               },
             ],
-            status: 'OK',
+            status: "OK",
           }),
         ),
       );
@@ -304,7 +309,7 @@ describe('GoogleDirectionsClient', () => {
       expect(result.rows[0].elements).toHaveLength(2);
     });
 
-    it('should reject if origins or destinations exceed limits', async () => {
+    it("should reject if origins or destinations exceed limits", async () => {
       const origins = Array(26)
         .fill(null)
         .map((_, i) => ({ lat: 40 + i * 0.01, lng: -74 }));
@@ -312,11 +317,11 @@ describe('GoogleDirectionsClient', () => {
 
       await expect(
         client.getDistanceMatrix(origins, destinations),
-      ).rejects.toThrow('Maximum 25 origins');
+      ).rejects.toThrow("Maximum 25 origins");
     });
 
-    it('should cache distance matrix', async () => {
-      const fetchSpy = vi.spyOn(global, 'fetch').mockResolvedValue(
+    it("should cache distance matrix", async () => {
+      const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(
           JSON.stringify({
             rows: [
@@ -325,12 +330,12 @@ describe('GoogleDirectionsClient', () => {
                   {
                     distance: { value: 5000 },
                     duration: { value: 300 },
-                    status: 'OK',
+                    status: "OK",
                   },
                 ],
               },
             ],
-            status: 'OK',
+            status: "OK",
           }),
         ),
       );
@@ -345,9 +350,9 @@ describe('GoogleDirectionsClient', () => {
     });
   });
 
-  describe('cache statistics', () => {
-    it('should track cache hits and misses', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValue(
+  describe("cache statistics", () => {
+    it("should track cache hits and misses", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(
           JSON.stringify({
             routes: [
@@ -361,11 +366,11 @@ describe('GoogleDirectionsClient', () => {
                     steps: [],
                   },
                 ],
-                overview_polyline: { points: 'test' },
+                overview_polyline: { points: "test" },
                 warnings: [],
               },
             ],
-            status: 'OK',
+            status: "OK",
           } as DirectionsResult),
         ),
       );
@@ -380,8 +385,8 @@ describe('GoogleDirectionsClient', () => {
       expect(stats.hits).toBeGreaterThan(0);
     });
 
-    it('should calculate hit rate', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValue(
+    it("should calculate hit rate", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(
           JSON.stringify({
             routes: [
@@ -395,11 +400,11 @@ describe('GoogleDirectionsClient', () => {
                     steps: [],
                   },
                 ],
-                overview_polyline: { points: 'test' },
+                overview_polyline: { points: "test" },
                 warnings: [],
               },
             ],
-            status: 'OK',
+            status: "OK",
           } as DirectionsResult),
         ),
       );
@@ -416,9 +421,9 @@ describe('GoogleDirectionsClient', () => {
     });
   });
 
-  describe('clear cache', () => {
-    it('should clear all cached entries', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValue(
+  describe("clear cache", () => {
+    it("should clear all cached entries", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(
           JSON.stringify({
             routes: [
@@ -432,16 +437,19 @@ describe('GoogleDirectionsClient', () => {
                     steps: [],
                   },
                 ],
-                overview_polyline: { points: 'test' },
+                overview_polyline: { points: "test" },
                 warnings: [],
               },
             ],
-            status: 'OK',
+            status: "OK",
           } as DirectionsResult),
         ),
       );
 
-      await client.getRoute({ lat: 40.7128, lng: -74.006 }, { lat: 40.7589, lng: -73.9851 });
+      await client.getRoute(
+        { lat: 40.7128, lng: -74.006 },
+        { lat: 40.7589, lng: -73.9851 },
+      );
 
       client.clearCache();
       const stats = client.getCacheStats();
@@ -452,9 +460,9 @@ describe('GoogleDirectionsClient', () => {
     });
   });
 
-  describe('health check', () => {
-    it('should return true on successful health check', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce(
+  describe("health check", () => {
+    it("should return true on successful health check", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValueOnce(
         new Response(
           JSON.stringify({
             routes: [
@@ -468,11 +476,11 @@ describe('GoogleDirectionsClient', () => {
                     steps: [],
                   },
                 ],
-                overview_polyline: { points: 'test' },
+                overview_polyline: { points: "test" },
                 warnings: [],
               },
             ],
-            status: 'OK',
+            status: "OK",
           } as DirectionsResult),
         ),
       );
@@ -481,17 +489,19 @@ describe('GoogleDirectionsClient', () => {
       expect(healthy).toBe(true);
     });
 
-    it('should return false on failed health check', async () => {
-      vi.spyOn(global, 'fetch').mockRejectedValueOnce(new Error('Network error'));
+    it("should return false on failed health check", async () => {
+      vi.spyOn(global, "fetch").mockRejectedValueOnce(
+        new Error("Network error"),
+      );
 
       const healthy = await client.healthCheck();
       expect(healthy).toBe(false);
     });
   });
 
-  describe('statistics', () => {
-    it('should return request statistics', async () => {
-      vi.spyOn(global, 'fetch').mockResolvedValue(
+  describe("statistics", () => {
+    it("should return request statistics", async () => {
+      vi.spyOn(global, "fetch").mockResolvedValue(
         new Response(
           JSON.stringify({
             routes: [
@@ -505,16 +515,19 @@ describe('GoogleDirectionsClient', () => {
                     steps: [],
                   },
                 ],
-                overview_polyline: { points: 'test' },
+                overview_polyline: { points: "test" },
                 warnings: [],
               },
             ],
-            status: 'OK',
+            status: "OK",
           } as DirectionsResult),
         ),
       );
 
-      await client.getRoute({ lat: 40.7128, lng: -74.006 }, { lat: 40.7589, lng: -73.9851 });
+      await client.getRoute(
+        { lat: 40.7128, lng: -74.006 },
+        { lat: 40.7589, lng: -73.9851 },
+      );
 
       const stats = client.getStats();
       expect(stats.totalRequests).toBeGreaterThan(0);

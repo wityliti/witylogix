@@ -73,7 +73,9 @@ export class AllscriptsClient extends HealthcareAdapter {
       try {
         await this.authenticateSSO();
       } catch (error) {
-        throw new Error(`Failed to authenticate with Allscripts: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(
+          `Failed to authenticate with Allscripts: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     }
   }
@@ -89,20 +91,26 @@ export class AllscriptsClient extends HealthcareAdapter {
     };
 
     try {
-      const response = (await fetch(`${this.baseUrl}Authentication/Authenticate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      }).then((r) => r.json())) as any;
+      const response = (await fetch(
+        `${this.baseUrl}Authentication/Authenticate`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        },
+      ).then((r) => r.json())) as any;
 
       if (response.IsSuccessful) {
         this.sessionToken = response.SessionToken;
-        this.sessionExpiresAt = Date.now() + (response.SessionTokenExpireMinutes || 60) * 60 * 1000;
+        this.sessionExpiresAt =
+          Date.now() + (response.SessionTokenExpireMinutes || 60) * 60 * 1000;
       } else {
         throw new Error(response.ErrorMessage || "SSO authentication failed");
       }
     } catch (error) {
-      throw new Error(`Allscripts SSO authentication error: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Allscripts SSO authentication error: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -110,7 +118,11 @@ export class AllscriptsClient extends HealthcareAdapter {
    * Refresh session token if expired.
    */
   private async ensureValidSession(): Promise<void> {
-    if (!this.sessionToken || !this.sessionExpiresAt || Date.now() >= this.sessionExpiresAt - 60000) {
+    if (
+      !this.sessionToken ||
+      !this.sessionExpiresAt ||
+      Date.now() >= this.sessionExpiresAt - 60000
+    ) {
       await this.authenticateSSO();
     }
   }
@@ -124,7 +136,7 @@ export class AllscriptsClient extends HealthcareAdapter {
     options: {
       body?: unknown;
       query?: Record<string, string | string[] | number>;
-    }
+    },
   ): Promise<unknown> {
     await this.applyRateLimit();
     await this.ensureValidSession();
@@ -142,8 +154,8 @@ export class AllscriptsClient extends HealthcareAdapter {
 
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      "AppId": this.appId,
-      "SessionToken": this.sessionToken || "",
+      AppId: this.appId,
+      SessionToken: this.sessionToken || "",
     };
 
     return this.executeWithCircuitBreaker(async () =>
@@ -157,43 +169,75 @@ export class AllscriptsClient extends HealthcareAdapter {
 
         if (!response.ok) {
           const error = await response.text();
-          throw new Error(`Allscripts API error (${response.status}): ${error}`);
+          throw new Error(
+            `Allscripts API error (${response.status}): ${error}`,
+          );
         }
 
         return response.json();
-      })
+      }),
     );
   }
 
   // ─── FHIR CRUD Operations ───────────────────────────────────────────────
 
-  async create<T extends FHIRResource>(resourceType: string, resource: Omit<T, "id">): Promise<T> {
+  async create<T extends FHIRResource>(
+    resourceType: string,
+    resource: Omit<T, "id">,
+  ): Promise<T> {
     // Allscripts uses its own API, convert FHIR to Allscripts format
-    const result = (await this.request("POST", `/api/${resourceType}`, { body: resource })) as T;
-    await this.auditOperation("CREATE", resourceType, result.id || "unknown", undefined, { resourceType });
+    const result = (await this.request("POST", `/api/${resourceType}`, {
+      body: resource,
+    })) as T;
+    await this.auditOperation(
+      "CREATE",
+      resourceType,
+      result.id || "unknown",
+      undefined,
+      { resourceType },
+    );
     return result;
   }
 
-  async read<T extends FHIRResource>(resourceType: string, id: string): Promise<T> {
-    const result = (await this.request("GET", `/api/${resourceType}/${id}`, {})) as T;
-    await this.auditOperation("READ", resourceType, id, undefined, { resourceType });
+  async read<T extends FHIRResource>(
+    resourceType: string,
+    id: string,
+  ): Promise<T> {
+    const result = (await this.request(
+      "GET",
+      `/api/${resourceType}/${id}`,
+      {},
+    )) as T;
+    await this.auditOperation("READ", resourceType, id, undefined, {
+      resourceType,
+    });
     return result;
   }
 
-  async update<T extends FHIRResource>(resourceType: string, id: string, resource: Partial<T>): Promise<T> {
-    const result = (await this.request("PUT", `/api/${resourceType}/${id}`, { body: resource })) as T;
-    await this.auditOperation("UPDATE", resourceType, id, undefined, { resourceType });
+  async update<T extends FHIRResource>(
+    resourceType: string,
+    id: string,
+    resource: Partial<T>,
+  ): Promise<T> {
+    const result = (await this.request("PUT", `/api/${resourceType}/${id}`, {
+      body: resource,
+    })) as T;
+    await this.auditOperation("UPDATE", resourceType, id, undefined, {
+      resourceType,
+    });
     return result;
   }
 
   async delete(resourceType: string, id: string): Promise<void> {
     await this.request("DELETE", `/api/${resourceType}/${id}`, {});
-    await this.auditOperation("DELETE", resourceType, id, undefined, { resourceType });
+    await this.auditOperation("DELETE", resourceType, id, undefined, {
+      resourceType,
+    });
   }
 
   async search<T extends FHIRResource>(
     resourceType: string,
-    params: FHIRSearchParams
+    params: FHIRSearchParams,
   ): Promise<FHIRSearchResult<T>> {
     const query: Record<string, string | string[] | number> = {};
 
@@ -207,8 +251,12 @@ export class AllscriptsClient extends HealthcareAdapter {
       query.pageSize = params.pageSize;
     }
 
-    const result = (await this.request("GET", `/api/${resourceType}`, { query })) as FHIRSearchResult<T>;
-    await this.auditOperation("QUERY", resourceType, "", undefined, { filters: params.filters });
+    const result = (await this.request("GET", `/api/${resourceType}`, {
+      query,
+    })) as FHIRSearchResult<T>;
+    await this.auditOperation("QUERY", resourceType, "", undefined, {
+      filters: params.filters,
+    });
     return result;
   }
 
@@ -218,7 +266,11 @@ export class AllscriptsClient extends HealthcareAdapter {
    * Get e-prescriptions for a patient.
    */
   async getPrescriptions(patientId: string): Promise<MedicationRequest[]> {
-    const result = await this.request("GET", `/api/Prescriptions/${patientId}`, {});
+    const result = await this.request(
+      "GET",
+      `/api/Prescriptions/${patientId}`,
+      {},
+    );
     return (result as any[]) || [];
   }
 
@@ -231,7 +283,7 @@ export class AllscriptsClient extends HealthcareAdapter {
     dosage: string,
     quantity: number,
     daysSupply: number,
-    refillsAllowed: number
+    refillsAllowed: number,
   ): Promise<MedicationRequest> {
     const body = {
       patientId,
@@ -243,18 +295,39 @@ export class AllscriptsClient extends HealthcareAdapter {
       rxStatus: "sent",
     };
 
-    const result = (await this.request("POST", "/api/Prescriptions", { body })) as MedicationRequest;
-    await this.auditOperation("CREATE", "MedicationRequest", result.id || "", patientId, { medication, dosage });
+    const result = (await this.request("POST", "/api/Prescriptions", {
+      body,
+    })) as MedicationRequest;
+    await this.auditOperation(
+      "CREATE",
+      "MedicationRequest",
+      result.id || "",
+      patientId,
+      { medication, dosage },
+    );
     return result;
   }
 
   /**
    * Refill a prescription.
    */
-  async refillPrescription(prescriptionId: string, refillNumber: number = 1): Promise<MedicationRequest> {
+  async refillPrescription(
+    prescriptionId: string,
+    refillNumber: number = 1,
+  ): Promise<MedicationRequest> {
     const body = { refillNumber };
-    const result = (await this.request("POST", `/api/Prescriptions/${prescriptionId}/Refill`, { body })) as MedicationRequest;
-    await this.auditOperation("UPDATE", "MedicationRequest", prescriptionId, undefined, { refillNumber });
+    const result = (await this.request(
+      "POST",
+      `/api/Prescriptions/${prescriptionId}/Refill`,
+      { body },
+    )) as MedicationRequest;
+    await this.auditOperation(
+      "UPDATE",
+      "MedicationRequest",
+      prescriptionId,
+      undefined,
+      { refillNumber },
+    );
     return result;
   }
 
@@ -263,7 +336,11 @@ export class AllscriptsClient extends HealthcareAdapter {
   /**
    * Get lab results for a patient.
    */
-  async getLabResults(patientId: string, startDate?: string, endDate?: string): Promise<DiagnosticReport[]> {
+  async getLabResults(
+    patientId: string,
+    startDate?: string,
+    endDate?: string,
+  ): Promise<DiagnosticReport[]> {
     const query: Record<string, string | string[] | number> = {};
 
     if (startDate) {
@@ -274,7 +351,9 @@ export class AllscriptsClient extends HealthcareAdapter {
       query.endDate = endDate;
     }
 
-    const result = await this.request("GET", `/api/Labs/${patientId}`, { query });
+    const result = await this.request("GET", `/api/Labs/${patientId}`, {
+      query,
+    });
     return (result as any[]) || [];
   }
 
@@ -285,7 +364,7 @@ export class AllscriptsClient extends HealthcareAdapter {
     patientId: string,
     testCode: string,
     testName: string,
-    orderingProvider: string
+    orderingProvider: string,
   ): Promise<DiagnosticReport> {
     const body = {
       patientId,
@@ -295,14 +374,25 @@ export class AllscriptsClient extends HealthcareAdapter {
       orderDate: new Date().toISOString(),
     };
 
-    const result = (await this.request("POST", "/api/Labs/Order", { body })) as DiagnosticReport;
-    await this.auditOperation("CREATE", "DiagnosticReport", result.id || "", patientId, { testCode, testName });
+    const result = (await this.request("POST", "/api/Labs/Order", {
+      body,
+    })) as DiagnosticReport;
+    await this.auditOperation(
+      "CREATE",
+      "DiagnosticReport",
+      result.id || "",
+      patientId,
+      { testCode, testName },
+    );
     return result;
   }
 
   // ─── Document Management ────────────────────────────────────────────────
 
-  async getDocuments(patientId: string, params?: FHIRSearchParams): Promise<ClinicalDocument[]> {
+  async getDocuments(
+    patientId: string,
+    params?: FHIRSearchParams,
+  ): Promise<ClinicalDocument[]> {
     const result = await this.request("GET", `/api/Documents/${patientId}`, {});
     return ((result as any[]) || []).map((doc) => ({
       id: doc.id,
@@ -316,8 +406,15 @@ export class AllscriptsClient extends HealthcareAdapter {
     }));
   }
 
-  async getDocument(documentId: string, format: "pdf" | "xml" | "json" = "pdf"): Promise<ClinicalDocument> {
-    const result = (await this.request("GET", `/api/Documents/${documentId}`, {})) as any;
+  async getDocument(
+    documentId: string,
+    format: "pdf" | "xml" | "json" = "pdf",
+  ): Promise<ClinicalDocument> {
+    const result = (await this.request(
+      "GET",
+      `/api/Documents/${documentId}`,
+      {},
+    )) as any;
 
     return {
       id: result.id,
@@ -325,7 +422,12 @@ export class AllscriptsClient extends HealthcareAdapter {
       patientId: result.patientId || "",
       title: result.description || "Document",
       content: result.content || "",
-      contentType: format === "pdf" ? "application/pdf" : format === "xml" ? "application/xml" : "text/plain",
+      contentType:
+        format === "pdf"
+          ? "application/pdf"
+          : format === "xml"
+            ? "application/xml"
+            : "text/plain",
       createdAt: result.createdDate,
       metadata: result,
     };
@@ -346,7 +448,9 @@ export class AllscriptsClient extends HealthcareAdapter {
     }));
   }
 
-  async createConsent(consent: Omit<ConsentRecord, "id" | "createdAt">): Promise<ConsentRecord> {
+  async createConsent(
+    consent: Omit<ConsentRecord, "id" | "createdAt">,
+  ): Promise<ConsentRecord> {
     const body = {
       patientId: consent.patientId,
       optIn: consent.consentType === "OPT_IN",
@@ -355,8 +459,16 @@ export class AllscriptsClient extends HealthcareAdapter {
       expiryDate: consent.validUntil,
     };
 
-    const result = (await this.request("POST", "/api/Consents", { body })) as any;
-    await this.auditOperation("CREATE", "Consent", result.id, consent.patientId, { purpose: consent.purpose });
+    const result = (await this.request("POST", "/api/Consents", {
+      body,
+    })) as any;
+    await this.auditOperation(
+      "CREATE",
+      "Consent",
+      result.id,
+      consent.patientId,
+      { purpose: consent.purpose },
+    );
     return {
       id: result.id,
       patientId: consent.patientId,
@@ -370,8 +482,14 @@ export class AllscriptsClient extends HealthcareAdapter {
 
   async revokeConsent(consentId: string): Promise<ConsentRecord> {
     const body = { revokedDate: new Date().toISOString() };
-    const result = (await this.request("PUT", `/api/Consents/${consentId}/Revoke`, { body })) as any;
-    await this.auditOperation("UPDATE", "Consent", consentId, undefined, { action: "revoke" });
+    const result = (await this.request(
+      "PUT",
+      `/api/Consents/${consentId}/Revoke`,
+      { body },
+    )) as any;
+    await this.auditOperation("UPDATE", "Consent", consentId, undefined, {
+      action: "revoke",
+    });
     return {
       id: result.id,
       patientId: result.patientId,
@@ -385,7 +503,9 @@ export class AllscriptsClient extends HealthcareAdapter {
 
   // ─── PHI Audit Logging (HIPAA) ──────────────────────────────────────────
 
-  async logAuditEntry(entry: Omit<AuditEntry, "id" | "timestamp">): Promise<AuditEntry> {
+  async logAuditEntry(
+    entry: Omit<AuditEntry, "id" | "timestamp">,
+  ): Promise<AuditEntry> {
     const auditEvent: AuditEntry = {
       id: `audit-${Date.now()}`,
       timestamp: new Date().toISOString(),
@@ -401,7 +521,11 @@ export class AllscriptsClient extends HealthcareAdapter {
     return auditEvent;
   }
 
-  async getAuditLogs(patientId: string, startDate?: string, endDate?: string): Promise<AuditEntry[]> {
+  async getAuditLogs(
+    patientId: string,
+    startDate?: string,
+    endDate?: string,
+  ): Promise<AuditEntry[]> {
     const query: Record<string, string | string[] | number> = { patientId };
 
     if (startDate) {
@@ -421,7 +545,7 @@ export class AllscriptsClient extends HealthcareAdapter {
   async getTerminologyMapping(
     sourceSystem: CodeSystem,
     sourceCode: string,
-    targetSystem: CodeSystem
+    targetSystem: CodeSystem,
   ): Promise<TerminologyMapping | null> {
     try {
       const result = (await this.request("GET", "/api/Terminology/Translate", {
@@ -448,7 +572,9 @@ export class AllscriptsClient extends HealthcareAdapter {
     }
   }
 
-  async createTerminologyMapping(mapping: Omit<TerminologyMapping, "createdAt">): Promise<TerminologyMapping> {
+  async createTerminologyMapping(
+    mapping: Omit<TerminologyMapping, "createdAt">,
+  ): Promise<TerminologyMapping> {
     return {
       ...mapping,
       createdAt: new Date().toISOString(),
@@ -464,7 +590,9 @@ export class AllscriptsClient extends HealthcareAdapter {
       outputFormat: params.outputFormat || "ndjson",
     };
 
-    const response = (await this.request("POST", "/api/Export", { body })) as any;
+    const response = (await this.request("POST", "/api/Export", {
+      body,
+    })) as any;
 
     return {
       transactionTime: new Date().toISOString(),
@@ -481,7 +609,11 @@ export class AllscriptsClient extends HealthcareAdapter {
   }
 
   async getBulkExportStatus(exportId: string): Promise<BulkExportResult> {
-    const response = (await this.request("GET", `/api/Export/${exportId}`, {})) as any;
+    const response = (await this.request(
+      "GET",
+      `/api/Export/${exportId}`,
+      {},
+    )) as any;
 
     return {
       transactionTime: response.createdDate,
@@ -535,7 +667,14 @@ export class AllscriptsClient extends HealthcareAdapter {
     return url.toString();
   }
 
-  async exchangeAuthorizationCode(code: string, codeVerifier?: string): Promise<{ accessToken: string; expiresIn: number; context?: SMARTContext }> {
+  async exchangeAuthorizationCode(
+    code: string,
+    codeVerifier?: string,
+  ): Promise<{
+    accessToken: string;
+    expiresIn: number;
+    context?: SMARTContext;
+  }> {
     throw new Error("SMART OAuth not implemented for Allscripts");
   }
 

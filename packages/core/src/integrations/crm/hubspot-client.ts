@@ -18,8 +18,12 @@ import type {
   CRMPaginationParams,
   CRMFieldMapping,
   ICRMAdapter,
-} from './types.js';
-import { CRMAdapterBase, FieldMappingEngine, PaginationHandler } from './crm-adapter.js';
+} from "./types.js";
+import {
+  CRMAdapterBase,
+  FieldMappingEngine,
+  PaginationHandler,
+} from "./crm-adapter.js";
 
 // ─── HUBSPOT OAUTH TYPES ────────────────────────────────────────
 
@@ -135,9 +139,11 @@ interface HSNote {
 
 export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
   private config: HubSpotConfig;
-  private readonly authBaseUrl: string = 'https://app.hubspot.com/oauth/authorize';
-  private readonly tokenBaseUrl: string = 'https://api.hubapi.com/oauth/v1/token';
-  private readonly apiBaseUrl: string = 'https://api.hubapi.com/crm/v3';
+  private readonly authBaseUrl: string =
+    "https://app.hubspot.com/oauth/authorize";
+  private readonly tokenBaseUrl: string =
+    "https://api.hubapi.com/oauth/v1/token";
+  private readonly apiBaseUrl: string = "https://api.hubapi.com/crm/v3";
 
   constructor(
     connection: CRMConnection,
@@ -155,7 +161,8 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
     const params: URLSearchParams = new URLSearchParams({
       client_id: this.config.clientId,
       redirect_uri: this.config.redirectUri,
-      scope: 'crm.objects.contacts.read crm.objects.contacts.write crm.objects.companies.read crm.objects.companies.write crm.objects.deals.read crm.objects.deals.write crm.lists.read crm.lists.write timeline.timeline_events.create',
+      scope:
+        "crm.objects.contacts.read crm.objects.contacts.write crm.objects.companies.read crm.objects.companies.write crm.objects.deals.read crm.objects.deals.write crm.lists.read crm.lists.write timeline.timeline_events.create",
       state: state || this.generateRandomString(32),
     });
 
@@ -167,28 +174,28 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
    */
   async authenticate(authCode: string): Promise<CRMConnection> {
     const body: URLSearchParams = new URLSearchParams({
-      grant_type: 'authorization_code',
+      grant_type: "authorization_code",
       client_id: this.config.clientId,
       client_secret: this.config.clientSecret,
       redirect_uri: this.config.redirectUri,
       code: authCode,
     });
 
-    const response = await fetch(this.tokenBaseUrl, {
-      method: 'POST',
+    const response = (await fetch(this.tokenBaseUrl, {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        "Content-Type": "application/x-www-form-urlencoded",
       },
       body: body.toString(),
-    }).then((res) => res.json()) as HSAuthResponse;
+    }).then((res) => res.json())) as HSAuthResponse;
 
     const expiresAt: Date = new Date();
     expiresAt.setSeconds(expiresAt.getSeconds() + response.expires_in);
 
     return {
       id: `hs_conn_${Date.now()}`,
-      tenantId: '', // Set by caller
-      provider: 'hubspot',
+      tenantId: "", // Set by caller
+      provider: "hubspot",
       accessToken: response.access_token,
       refreshToken: response.refresh_token,
       expiresAt,
@@ -203,23 +210,23 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
    */
   async refreshToken(): Promise<string> {
     if (!this.connection.refreshToken) {
-      throw new Error('No refresh token available');
+      throw new Error("No refresh token available");
     }
 
     const body: URLSearchParams = new URLSearchParams({
-      grant_type: 'refresh_token',
+      grant_type: "refresh_token",
       client_id: this.config.clientId,
       client_secret: this.config.clientSecret,
       refresh_token: this.connection.refreshToken,
     });
 
-    const response = await fetch(this.tokenBaseUrl, {
-      method: 'POST',
+    const response = (await fetch(this.tokenBaseUrl, {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        "Content-Type": "application/x-www-form-urlencoded",
       },
       body: body.toString(),
-    }).then((res) => res.json()) as HSAuthResponse;
+    }).then((res) => res.json())) as HSAuthResponse;
 
     this.connection.accessToken = response.access_token;
     this.connection.refreshToken = response.refresh_token;
@@ -238,36 +245,75 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
     pagination?: CRMPaginationParams,
   ): Promise<CRMPagedResult<CRMContact>> {
     const limit: number = PaginationHandler.generateLimit(pagination);
-    const after: string | undefined = pagination?.cursor ? PaginationHandler.parseCursor(pagination.cursor).after as string | undefined : undefined;
+    const after: string | undefined = pagination?.cursor
+      ? (PaginationHandler.parseCursor(pagination.cursor).after as
+          | string
+          | undefined)
+      : undefined;
 
-    const filterGroups: Array<{ filters: Array<{ propertyName: string; operator: string; value: unknown }> }> = [];
+    const filterGroups: Array<{
+      filters: Array<{
+        propertyName: string;
+        operator: string;
+        value: unknown;
+      }>;
+    }> = [];
 
     if (filters?.email) {
       filterGroups.push({
-        filters: [{ propertyName: 'email', operator: 'EQ', value: filters.email }],
+        filters: [
+          { propertyName: "email", operator: "EQ", value: filters.email },
+        ],
       });
     }
     if (filters?.phone) {
       filterGroups.push({
-        filters: [{ propertyName: 'phone', operator: 'EQ', value: filters.phone }],
+        filters: [
+          { propertyName: "phone", operator: "EQ", value: filters.phone },
+        ],
       });
     }
     if (filters?.name) {
       filterGroups.push({
-        filters: [{ propertyName: 'firstname', operator: 'CONTAINS_TOKEN', value: filters.name }],
+        filters: [
+          {
+            propertyName: "firstname",
+            operator: "CONTAINS_TOKEN",
+            value: filters.name,
+          },
+        ],
       });
     }
     if (filters?.modifiedAfter) {
       filterGroups.push({
-        filters: [{ propertyName: 'lastmodifieddate', operator: 'GTE', value: filters.modifiedAfter.getTime() }],
+        filters: [
+          {
+            propertyName: "lastmodifieddate",
+            operator: "GTE",
+            value: filters.modifiedAfter.getTime(),
+          },
+        ],
       });
     }
 
     const payload: Record<string, unknown> = {
       limit,
-      properties: ['firstname', 'lastname', 'email', 'phone', 'mobilephone', 'company', 'jobtitle', 'address', 'city', 'state', 'zip', 'country'],
-      associations: ['companies', 'deals'],
-      sorts: [{ propertyName: 'lastmodifieddate', direction: 'DESCENDING' }],
+      properties: [
+        "firstname",
+        "lastname",
+        "email",
+        "phone",
+        "mobilephone",
+        "company",
+        "jobtitle",
+        "address",
+        "city",
+        "state",
+        "zip",
+        "country",
+      ],
+      associations: ["companies", "deals"],
+      sorts: [{ propertyName: "lastmodifieddate", direction: "DESCENDING" }],
     };
 
     if (filterGroups.length > 0) {
@@ -291,7 +337,7 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
     }
 
     const response: SearchResponse = await this.makeRequest<SearchResponse>(
-      'POST',
+      "POST",
       url,
       {
         body: JSON.stringify(payload),
@@ -299,10 +345,14 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
     );
 
     return {
-      data: response.results.map((hs: HSContact) => this.normalizeHSContact(hs)),
+      data: response.results.map((hs: HSContact) =>
+        this.normalizeHSContact(hs),
+      ),
       total: response.total,
       hasMore: !!response.paging?.next,
-      cursor: response.paging?.next ? PaginationHandler.encodeCursor({ after: response.paging.next.after }) : undefined,
+      cursor: response.paging?.next
+        ? PaginationHandler.encodeCursor({ after: response.paging.next.after })
+        : undefined,
     };
   }
 
@@ -312,10 +362,7 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
   async getContact(id: string): Promise<CRMContact> {
     const url: string = `${this.apiBaseUrl}/objects/contacts/${id}?associations=companies,deals&properties=firstname,lastname,email,phone,mobilephone,company,jobtitle,address,city,state,zip,country`;
 
-    const response: HSContact = await this.makeRequest<HSContact>(
-      'GET',
-      url,
-    );
+    const response: HSContact = await this.makeRequest<HSContact>("GET", url);
 
     return this.normalizeHSContact(response);
   }
@@ -323,7 +370,9 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
   /**
    * Create contact
    */
-  async createContact(contact: Omit<CRMContact, 'id' | 'lastModifiedAt'>): Promise<CRMContact> {
+  async createContact(
+    contact: Omit<CRMContact, "id" | "lastModifiedAt">,
+  ): Promise<CRMContact> {
     const properties: Record<string, unknown> = {
       firstname: contact.firstName,
       lastname: contact.lastName,
@@ -339,7 +388,8 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
     };
 
     // Apply field mappings
-    const mappedData: Record<string, unknown> = this.fieldMappingEngine.mapWitylogixToCRM('contact', contact);
+    const mappedData: Record<string, unknown> =
+      this.fieldMappingEngine.mapWitylogixToCRM("contact", contact);
     Object.assign(properties, mappedData);
 
     const url: string = `${this.apiBaseUrl}/objects/contacts`;
@@ -353,7 +403,7 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
     }
 
     const response: CreateResponse = await this.makeRequest<CreateResponse>(
-      'POST',
+      "POST",
       url,
       {
         body: JSON.stringify({ properties }),
@@ -370,7 +420,10 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
   /**
    * Update contact
    */
-  async updateContact(id: string, updates: Partial<CRMContact>): Promise<CRMContact> {
+  async updateContact(
+    id: string,
+    updates: Partial<CRMContact>,
+  ): Promise<CRMContact> {
     const properties: Record<string, unknown> = {};
 
     if (updates.firstName) properties.firstname = updates.firstName;
@@ -387,12 +440,13 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
       properties.country = updates.address.country;
     }
 
-    const mappedData: Record<string, unknown> = this.fieldMappingEngine.mapWitylogixToCRM('contact', updates);
+    const mappedData: Record<string, unknown> =
+      this.fieldMappingEngine.mapWitylogixToCRM("contact", updates);
     Object.assign(properties, mappedData);
 
     const url: string = `${this.apiBaseUrl}/objects/contacts/${id}`;
 
-    await this.makeRequest<void>('PATCH', url, {
+    await this.makeRequest<void>("PATCH", url, {
       body: JSON.stringify({ properties }),
     });
 
@@ -407,30 +461,67 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
     pagination?: CRMPaginationParams,
   ): Promise<CRMPagedResult<CRMAccount>> {
     const limit: number = PaginationHandler.generateLimit(pagination);
-    const after: string | undefined = pagination?.cursor ? PaginationHandler.parseCursor(pagination.cursor).after as string | undefined : undefined;
+    const after: string | undefined = pagination?.cursor
+      ? (PaginationHandler.parseCursor(pagination.cursor).after as
+          | string
+          | undefined)
+      : undefined;
 
-    const filterGroups: Array<{ filters: Array<{ propertyName: string; operator: string; value: unknown }> }> = [];
+    const filterGroups: Array<{
+      filters: Array<{
+        propertyName: string;
+        operator: string;
+        value: unknown;
+      }>;
+    }> = [];
 
     if (filters?.name) {
       filterGroups.push({
-        filters: [{ propertyName: 'name', operator: 'CONTAINS_TOKEN', value: filters.name }],
+        filters: [
+          {
+            propertyName: "name",
+            operator: "CONTAINS_TOKEN",
+            value: filters.name,
+          },
+        ],
       });
     }
     if (filters?.industry) {
       filterGroups.push({
-        filters: [{ propertyName: 'industry', operator: 'EQ', value: filters.industry }],
+        filters: [
+          { propertyName: "industry", operator: "EQ", value: filters.industry },
+        ],
       });
     }
     if (filters?.modifiedAfter) {
       filterGroups.push({
-        filters: [{ propertyName: 'lastmodifieddate', operator: 'GTE', value: filters.modifiedAfter.getTime() }],
+        filters: [
+          {
+            propertyName: "lastmodifieddate",
+            operator: "GTE",
+            value: filters.modifiedAfter.getTime(),
+          },
+        ],
       });
     }
 
     const payload: Record<string, unknown> = {
       limit,
-      properties: ['name', 'industry', 'website', 'phone', 'address', 'city', 'state', 'zip', 'country', 'numberofemployees', 'annualrevenue', 'description'],
-      sorts: [{ propertyName: 'lastmodifieddate', direction: 'DESCENDING' }],
+      properties: [
+        "name",
+        "industry",
+        "website",
+        "phone",
+        "address",
+        "city",
+        "state",
+        "zip",
+        "country",
+        "numberofemployees",
+        "annualrevenue",
+        "description",
+      ],
+      sorts: [{ propertyName: "lastmodifieddate", direction: "DESCENDING" }],
     };
 
     if (filterGroups.length > 0) {
@@ -454,7 +545,7 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
     }
 
     const response: SearchResponse = await this.makeRequest<SearchResponse>(
-      'POST',
+      "POST",
       url,
       {
         body: JSON.stringify(payload),
@@ -462,10 +553,14 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
     );
 
     return {
-      data: response.results.map((hs: HSCompany) => this.normalizeHSAccount(hs)),
+      data: response.results.map((hs: HSCompany) =>
+        this.normalizeHSAccount(hs),
+      ),
       total: response.total,
       hasMore: !!response.paging?.next,
-      cursor: response.paging?.next ? PaginationHandler.encodeCursor({ after: response.paging.next.after }) : undefined,
+      cursor: response.paging?.next
+        ? PaginationHandler.encodeCursor({ after: response.paging.next.after })
+        : undefined,
     };
   }
 
@@ -475,10 +570,7 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
   async getAccount(id: string): Promise<CRMAccount> {
     const url: string = `${this.apiBaseUrl}/objects/companies/${id}?properties=name,industry,website,phone,address,city,state,zip,country,numberofemployees,annualrevenue,description`;
 
-    const response: HSCompany = await this.makeRequest<HSCompany>(
-      'GET',
-      url,
-    );
+    const response: HSCompany = await this.makeRequest<HSCompany>("GET", url);
 
     return this.normalizeHSAccount(response);
   }
@@ -486,7 +578,9 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
   /**
    * Create account (company)
    */
-  async createAccount(account: Omit<CRMAccount, 'id' | 'lastModifiedAt'>): Promise<CRMAccount> {
+  async createAccount(
+    account: Omit<CRMAccount, "id" | "lastModifiedAt">,
+  ): Promise<CRMAccount> {
     const properties: Record<string, unknown> = {
       name: account.name,
       industry: account.industry,
@@ -502,7 +596,8 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
       description: account.description,
     };
 
-    const mappedData: Record<string, unknown> = this.fieldMappingEngine.mapWitylogixToCRM('account', account);
+    const mappedData: Record<string, unknown> =
+      this.fieldMappingEngine.mapWitylogixToCRM("account", account);
     Object.assign(properties, mappedData);
 
     const url: string = `${this.apiBaseUrl}/objects/companies`;
@@ -516,7 +611,7 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
     }
 
     const response: CreateResponse = await this.makeRequest<CreateResponse>(
-      'POST',
+      "POST",
       url,
       {
         body: JSON.stringify({ properties }),
@@ -533,7 +628,10 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
   /**
    * Update account
    */
-  async updateAccount(id: string, updates: Partial<CRMAccount>): Promise<CRMAccount> {
+  async updateAccount(
+    id: string,
+    updates: Partial<CRMAccount>,
+  ): Promise<CRMAccount> {
     const properties: Record<string, unknown> = {};
 
     if (updates.name) properties.name = updates.name;
@@ -547,16 +645,19 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
       properties.zip = updates.address.zip;
       properties.country = updates.address.country;
     }
-    if (updates.employees) properties.numberofemployees = updates.employees.toString();
-    if (updates.annualRevenue) properties.annualrevenue = updates.annualRevenue.toString();
+    if (updates.employees)
+      properties.numberofemployees = updates.employees.toString();
+    if (updates.annualRevenue)
+      properties.annualrevenue = updates.annualRevenue.toString();
     if (updates.description) properties.description = updates.description;
 
-    const mappedData: Record<string, unknown> = this.fieldMappingEngine.mapWitylogixToCRM('account', updates);
+    const mappedData: Record<string, unknown> =
+      this.fieldMappingEngine.mapWitylogixToCRM("account", updates);
     Object.assign(properties, mappedData);
 
     const url: string = `${this.apiBaseUrl}/objects/companies/${id}`;
 
-    await this.makeRequest<void>('PATCH', url, {
+    await this.makeRequest<void>("PATCH", url, {
       body: JSON.stringify({ properties }),
     });
 
@@ -571,26 +672,51 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
     pagination?: CRMPaginationParams,
   ): Promise<CRMPagedResult<CRMOpportunity>> {
     const limit: number = PaginationHandler.generateLimit(pagination);
-    const after: string | undefined = pagination?.cursor ? PaginationHandler.parseCursor(pagination.cursor).after as string | undefined : undefined;
+    const after: string | undefined = pagination?.cursor
+      ? (PaginationHandler.parseCursor(pagination.cursor).after as
+          | string
+          | undefined)
+      : undefined;
 
-    const filterGroups: Array<{ filters: Array<{ propertyName: string; operator: string; value: unknown }> }> = [];
+    const filterGroups: Array<{
+      filters: Array<{
+        propertyName: string;
+        operator: string;
+        value: unknown;
+      }>;
+    }> = [];
 
     if (filters?.stage) {
       filterGroups.push({
-        filters: [{ propertyName: 'dealstage', operator: 'EQ', value: filters.stage }],
+        filters: [
+          { propertyName: "dealstage", operator: "EQ", value: filters.stage },
+        ],
       });
     }
     if (filters?.modifiedAfter) {
       filterGroups.push({
-        filters: [{ propertyName: 'lastmodifieddate', operator: 'GTE', value: filters.modifiedAfter.getTime() }],
+        filters: [
+          {
+            propertyName: "lastmodifieddate",
+            operator: "GTE",
+            value: filters.modifiedAfter.getTime(),
+          },
+        ],
       });
     }
 
     const payload: Record<string, unknown> = {
       limit,
-      properties: ['dealname', 'dealstage', 'dealtype', 'amount', 'closedate', 'description'],
-      associations: ['contacts', 'companies'],
-      sorts: [{ propertyName: 'lastmodifieddate', direction: 'DESCENDING' }],
+      properties: [
+        "dealname",
+        "dealstage",
+        "dealtype",
+        "amount",
+        "closedate",
+        "description",
+      ],
+      associations: ["contacts", "companies"],
+      sorts: [{ propertyName: "lastmodifieddate", direction: "DESCENDING" }],
     };
 
     if (filterGroups.length > 0) {
@@ -614,7 +740,7 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
     }
 
     const response: SearchResponse = await this.makeRequest<SearchResponse>(
-      'POST',
+      "POST",
       url,
       {
         body: JSON.stringify(payload),
@@ -625,7 +751,9 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
       data: response.results.map((hs: HSDeal) => this.normalizeHSDeal(hs)),
       total: response.total,
       hasMore: !!response.paging?.next,
-      cursor: response.paging?.next ? PaginationHandler.encodeCursor({ after: response.paging.next.after }) : undefined,
+      cursor: response.paging?.next
+        ? PaginationHandler.encodeCursor({ after: response.paging.next.after })
+        : undefined,
     };
   }
 
@@ -635,10 +763,7 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
   async getOpportunity(id: string): Promise<CRMOpportunity> {
     const url: string = `${this.apiBaseUrl}/objects/deals/${id}?associations=contacts,companies&properties=dealname,dealstage,dealtype,amount,closedate,description`;
 
-    const response: HSDeal = await this.makeRequest<HSDeal>(
-      'GET',
-      url,
-    );
+    const response: HSDeal = await this.makeRequest<HSDeal>("GET", url);
 
     return this.normalizeHSDeal(response);
   }
@@ -646,7 +771,10 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
   /**
    * Update deal/opportunity
    */
-  async updateDeal(id: string, updates: Partial<CRMOpportunity>): Promise<CRMOpportunity> {
+  async updateDeal(
+    id: string,
+    updates: Partial<CRMOpportunity>,
+  ): Promise<CRMOpportunity> {
     const properties: Record<string, unknown> = {};
 
     if (updates.name) properties.dealname = updates.name;
@@ -655,12 +783,13 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
     if (updates.closeDate) properties.closedate = updates.closeDate.getTime();
     if (updates.description) properties.description = updates.description;
 
-    const mappedData: Record<string, unknown> = this.fieldMappingEngine.mapWitylogixToCRM('opportunity', updates);
+    const mappedData: Record<string, unknown> =
+      this.fieldMappingEngine.mapWitylogixToCRM("opportunity", updates);
     Object.assign(properties, mappedData);
 
     const url: string = `${this.apiBaseUrl}/objects/deals/${id}`;
 
-    await this.makeRequest<void>('PATCH', url, {
+    await this.makeRequest<void>("PATCH", url, {
       body: JSON.stringify({ properties }),
     });
 
@@ -676,10 +805,16 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
   ): Promise<CRMPagedResult<CRMActivity>> {
     const limit: number = PaginationHandler.generateLimit(pagination);
 
-    const filterGroups: Array<{ filters: Array<{ propertyName: string; operator: string; value: unknown }> }> = [
+    const filterGroups: Array<{
+      filters: Array<{
+        propertyName: string;
+        operator: string;
+        value: unknown;
+      }>;
+    }> = [
       {
         filters: [
-          { propertyName: 'hs_object_id', operator: 'EQ', value: recordId },
+          { propertyName: "hs_object_id", operator: "EQ", value: recordId },
         ],
       },
     ];
@@ -687,8 +822,13 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
     const payload: Record<string, unknown> = {
       limit,
       filterGroups,
-      properties: ['hs_note_body', 'hs_created_by', 'hubspot_owner_id', 'hs_timestamp'],
-      sorts: [{ propertyName: 'hs_timestamp', direction: 'DESCENDING' }],
+      properties: [
+        "hs_note_body",
+        "hs_created_by",
+        "hubspot_owner_id",
+        "hs_timestamp",
+      ],
+      sorts: [{ propertyName: "hs_timestamp", direction: "DESCENDING" }],
     };
 
     const url: string = `${this.apiBaseUrl}/objects/notes/search`;
@@ -705,7 +845,7 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
     }
 
     const response: SearchResponse = await this.makeRequest<SearchResponse>(
-      'POST',
+      "POST",
       url,
       {
         body: JSON.stringify(payload),
@@ -713,7 +853,9 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
     );
 
     return {
-      data: response.results.map((hs: HSNote) => this.normalizeHSActivity(hs, recordId)),
+      data: response.results.map((hs: HSNote) =>
+        this.normalizeHSActivity(hs, recordId),
+      ),
       total: response.total,
       hasMore: !!response.paging?.next,
     };
@@ -722,10 +864,12 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
   /**
    * Create activity (note in HubSpot)
    */
-  async createActivity(activity: Omit<CRMActivity, 'id' | 'lastModifiedAt'>): Promise<CRMActivity> {
+  async createActivity(
+    activity: Omit<CRMActivity, "id" | "lastModifiedAt">,
+  ): Promise<CRMActivity> {
     const properties: Record<string, unknown> = {
-      hs_note_body: `${activity.subject}\n${activity.description || ''}`,
-      hs_created_by: activity.owner || 'api',
+      hs_note_body: `${activity.subject}\n${activity.description || ""}`,
+      hs_created_by: activity.owner || "api",
     };
 
     const url: string = `${this.apiBaseUrl}/objects/notes`;
@@ -744,7 +888,7 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
     }
 
     const response: CreateResponse = await this.makeRequest<CreateResponse>(
-      'POST',
+      "POST",
       url,
       {
         body: JSON.stringify({ properties }),
@@ -752,11 +896,11 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
     );
 
     // Create association
-    const associationUrl: string = `${this.apiBaseUrl}/objects/notes/${response.id}/associations/${activity.recordType === 'contact' ? 'contacts' : activity.recordType === 'account' ? 'companies' : 'deals'}/${activity.recordId}`;
+    const associationUrl: string = `${this.apiBaseUrl}/objects/notes/${response.id}/associations/${activity.recordType === "contact" ? "contacts" : activity.recordType === "account" ? "companies" : "deals"}/${activity.recordId}`;
 
-    await this.makeRequest<void>('PUT', associationUrl, {
+    await this.makeRequest<void>("PUT", associationUrl, {
       body: JSON.stringify({
-        associationCategory: 'HUBSPOT_DEFINED',
+        associationCategory: "HUBSPOT_DEFINED",
         associationTypeId: 1,
       }),
     });
@@ -779,22 +923,22 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
         const created: CRMActivity = await this.createActivity(activity);
         results.push({
           id: created.id,
-          recordType: 'activity',
+          recordType: "activity",
           recordId: activity.id,
           externalId: created.id,
           provider: this.connection.provider,
-          status: 'synced',
-          message: 'Activity created successfully',
+          status: "synced",
+          message: "Activity created successfully",
           timestamp: new Date(),
         });
       } catch (error: unknown) {
         results.push({
           id: activity.id,
-          recordType: 'activity',
+          recordType: "activity",
           recordId: activity.id,
           provider: this.connection.provider,
-          status: 'failed',
-          message: error instanceof Error ? error.message : 'Unknown error',
+          status: "failed",
+          message: error instanceof Error ? error.message : "Unknown error",
           timestamp: new Date(),
         });
       }
@@ -813,10 +957,16 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
   ): Promise<CRMPagedResult<unknown>> {
     const limit: number = PaginationHandler.generateLimit(pagination);
 
-    const filterGroups: Array<{ filters: Array<{ propertyName: string; operator: string; value: unknown }> }> = [
+    const filterGroups: Array<{
+      filters: Array<{
+        propertyName: string;
+        operator: string;
+        value: unknown;
+      }>;
+    }> = [
       {
         filters: [
-          { propertyName: 'name', operator: 'CONTAINS_TOKEN', value: query },
+          { propertyName: "name", operator: "CONTAINS_TOKEN", value: query },
         ],
       },
     ];
@@ -834,7 +984,7 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
     }
 
     const response: SearchResponse = await this.makeRequest<SearchResponse>(
-      'POST',
+      "POST",
       url,
       {
         body: JSON.stringify(payload),
@@ -854,8 +1004,8 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
     const props = hs.properties;
     return {
       id: hs.id,
-      firstName: (props.firstname as string) || '',
-      lastName: (props.lastname as string) || '',
+      firstName: (props.firstname as string) || "",
+      lastName: (props.lastname as string) || "",
       email: props.email as string | undefined,
       phone: props.phone as string | undefined,
       mobile: props.mobilephone as string | undefined,
@@ -868,9 +1018,29 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
         zip: props.zip as string | undefined,
         country: props.country as string | undefined,
       },
-      lastModifiedAt: props.lastmodifieddate ? new Date(props.lastmodifieddate as string) : new Date(hs.updatedAt),
+      lastModifiedAt: props.lastmodifieddate
+        ? new Date(props.lastmodifieddate as string)
+        : new Date(hs.updatedAt),
       customFields: Object.fromEntries(
-        Object.entries(props).filter(([key]) => !['firstname', 'lastname', 'email', 'phone', 'mobilephone', 'company', 'jobtitle', 'address', 'city', 'state', 'zip', 'country', 'hs_object_id', 'lastmodifieddate'].includes(key)),
+        Object.entries(props).filter(
+          ([key]) =>
+            ![
+              "firstname",
+              "lastname",
+              "email",
+              "phone",
+              "mobilephone",
+              "company",
+              "jobtitle",
+              "address",
+              "city",
+              "state",
+              "zip",
+              "country",
+              "hs_object_id",
+              "lastmodifieddate",
+            ].includes(key),
+        ),
       ),
     };
   }
@@ -890,12 +1060,36 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
         zip: props.zip as string | undefined,
         country: props.country as string | undefined,
       },
-      employees: props.numberofemployees ? parseInt(props.numberofemployees as string, 10) : undefined,
-      annualRevenue: props.annualrevenue ? parseInt(props.annualrevenue as string, 10) : undefined,
+      employees: props.numberofemployees
+        ? parseInt(props.numberofemployees as string, 10)
+        : undefined,
+      annualRevenue: props.annualrevenue
+        ? parseInt(props.annualrevenue as string, 10)
+        : undefined,
       description: props.description as string | undefined,
-      lastModifiedAt: props.lastmodifieddate ? new Date(props.lastmodifieddate as string) : new Date(hs.updatedAt),
+      lastModifiedAt: props.lastmodifieddate
+        ? new Date(props.lastmodifieddate as string)
+        : new Date(hs.updatedAt),
       customFields: Object.fromEntries(
-        Object.entries(props).filter(([key]) => !['name', 'industry', 'website', 'phone', 'address', 'city', 'state', 'zip', 'country', 'numberofemployees', 'annualrevenue', 'description', 'hs_object_id', 'lastmodifieddate'].includes(key)),
+        Object.entries(props).filter(
+          ([key]) =>
+            ![
+              "name",
+              "industry",
+              "website",
+              "phone",
+              "address",
+              "city",
+              "state",
+              "zip",
+              "country",
+              "numberofemployees",
+              "annualrevenue",
+              "description",
+              "hs_object_id",
+              "lastmodifieddate",
+            ].includes(key),
+        ),
       ),
     };
   }
@@ -908,17 +1102,33 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
     return {
       id: hs.id,
       name: props.dealname as string,
-      accountId: companyAssoc?.id || '',
+      accountId: companyAssoc?.id || "",
       contactId: contactAssoc?.id,
       stage: props.dealstage as string,
       probability: undefined,
       amount: props.amount ? parseInt(props.amount as string, 10) : undefined,
-      currency: 'USD',
-      closeDate: props.closedate ? new Date(parseInt(props.closedate as string, 10)) : undefined,
+      currency: "USD",
+      closeDate: props.closedate
+        ? new Date(parseInt(props.closedate as string, 10))
+        : undefined,
       description: props.description as string | undefined,
-      lastModifiedAt: props.lastmodifieddate ? new Date(props.lastmodifieddate as string) : new Date(hs.updatedAt),
+      lastModifiedAt: props.lastmodifieddate
+        ? new Date(props.lastmodifieddate as string)
+        : new Date(hs.updatedAt),
       customFields: Object.fromEntries(
-        Object.entries(props).filter(([key]) => !['dealname', 'dealstage', 'dealtype', 'amount', 'closedate', 'description', 'hs_object_id', 'lastmodifieddate'].includes(key)),
+        Object.entries(props).filter(
+          ([key]) =>
+            ![
+              "dealname",
+              "dealstage",
+              "dealtype",
+              "amount",
+              "closedate",
+              "description",
+              "hs_object_id",
+              "lastmodifieddate",
+            ].includes(key),
+        ),
       ),
     };
   }
@@ -927,18 +1137,23 @@ export class HubSpotAdapter extends CRMAdapterBase implements ICRMAdapter {
     const props = hs.properties;
     return {
       id: hs.id,
-      type: 'note',
-      subject: (props.hs_note_body as string || '').split('\n')[0] || 'Note',
+      type: "note",
+      subject: ((props.hs_note_body as string) || "").split("\n")[0] || "Note",
       description: props.hs_note_body as string | undefined,
-      recordType: 'contact', // Would need additional logic to determine actual type
+      recordType: "contact", // Would need additional logic to determine actual type
       recordId,
       owner: props.hs_created_by as string | undefined,
-      completedAt: props.hs_timestamp ? new Date(parseInt(props.hs_timestamp as string, 10)) : undefined,
+      completedAt: props.hs_timestamp
+        ? new Date(parseInt(props.hs_timestamp as string, 10))
+        : undefined,
       lastModifiedAt: new Date(hs.updatedAt),
     };
   }
 
   private generateRandomString(length: number): string {
-    return Array.from({ length }, () => Math.random().toString(36)[2] || '0').join('');
+    return Array.from(
+      { length },
+      () => Math.random().toString(36)[2] || "0",
+    ).join("");
   }
 }

@@ -48,27 +48,22 @@ class DegradationAlertingSystem {
     critical: { escalateAfter: 60000, level: 2 }, // 1 minute
   };
 
-  setBaseline(
-    providerId: string,
-    metrics: any
-  ): void {
+  setBaseline(providerId: string, metrics: any): void {
     this.baselineMetrics.set(providerId, metrics);
   }
 
   detectMultiSignalDegradation(
     providerId: string,
-    currentMetrics: any
+    currentMetrics: any,
   ): AlertSignal[] {
     const baseline =
-      this.baselineMetrics.get(providerId) ||
-      createBaselineMetrics(providerId);
+      this.baselineMetrics.get(providerId) || createBaselineMetrics(providerId);
 
     const signals: AlertSignal[] = [];
 
     // Latency signal
     const latencyDeviation =
-      ((currentMetrics.latencyP95 -
-        baseline.latencyP95) /
+      ((currentMetrics.latencyP95 - baseline.latencyP95) /
         baseline.latencyP95) *
       100;
 
@@ -84,8 +79,7 @@ class DegradationAlertingSystem {
 
     // Error rate signal
     const errorRateDeviation =
-      ((currentMetrics.errorRate - baseline.errorRate) /
-        baseline.errorRate) *
+      ((currentMetrics.errorRate - baseline.errorRate) / baseline.errorRate) *
       100;
 
     if (errorRateDeviation > 100) {
@@ -94,17 +88,13 @@ class DegradationAlertingSystem {
         baseline: baseline.errorRate,
         current: currentMetrics.errorRate,
         deviation: errorRateDeviation,
-        severity:
-          currentMetrics.errorRate > 0.05
-            ? "critical"
-            : "warning",
+        severity: currentMetrics.errorRate > 0.05 ? "critical" : "warning",
       });
     }
 
     // Availability signal
     const availabilityDeviation =
-      ((baseline.availability -
-        currentMetrics.availability) /
+      ((baseline.availability - currentMetrics.availability) /
         baseline.availability) *
       100;
 
@@ -114,8 +104,7 @@ class DegradationAlertingSystem {
         baseline: baseline.availability,
         current: currentMetrics.availability,
         deviation: availabilityDeviation,
-        severity:
-          availabilityDeviation > 10 ? "critical" : "warning",
+        severity: availabilityDeviation > 10 ? "critical" : "warning",
       });
     }
 
@@ -124,7 +113,7 @@ class DegradationAlertingSystem {
 
   generateAlert(
     providerId: string,
-    signals: AlertSignal[]
+    signals: AlertSignal[],
   ): DegradationAlert | null {
     if (signals.length === 0) return null;
 
@@ -135,12 +124,9 @@ class DegradationAlertingSystem {
       return null; // Already alerted
     }
 
-    const degradationScore = this.calculateDegradationScore(
-      signals
-    );
+    const degradationScore = this.calculateDegradationScore(signals);
 
-    const severity =
-      degradationScore > 75 ? "critical" : "warning";
+    const severity = degradationScore > 75 ? "critical" : "warning";
 
     const alert: DegradationAlert = {
       id: `alert-${Date.now()}`,
@@ -168,9 +154,7 @@ class DegradationAlertingSystem {
     return alert;
   }
 
-  private calculateDegradationScore(
-    signals: AlertSignal[]
-  ): number {
+  private calculateDegradationScore(signals: AlertSignal[]): number {
     const weights: Record<string, number> = {
       latency: 30,
       error_rate: 40,
@@ -181,8 +165,7 @@ class DegradationAlertingSystem {
 
     for (const signal of signals) {
       const weight = weights[signal.type] || 25;
-      const severity =
-        signal.severity === "critical" ? 100 : 50;
+      const severity = signal.severity === "critical" ? 100 : 50;
 
       score += (severity * weight) / 100;
     }
@@ -190,10 +173,7 @@ class DegradationAlertingSystem {
     return Math.min(100, score);
   }
 
-  acknowledgeAlert(
-    alertId: string,
-    acknowledgedBy: string
-  ): boolean {
+  acknowledgeAlert(alertId: string, acknowledgedBy: string): boolean {
     const alert = this.alerts.find((a) => a.id === alertId);
 
     if (!alert || alert.acknowledgedAt) {
@@ -222,7 +202,7 @@ class DegradationAlertingSystem {
 
     alert.resolvedAt = new Date();
     this.deduplicationMap.delete(
-      `${alert.providerId}:${alert.signals.map((s) => s.type).join(",")}`
+      `${alert.providerId}:${alert.signals.map((s) => s.type).join(",")}`,
     );
 
     this.alertHistory.push({
@@ -254,9 +234,7 @@ class DegradationAlertingSystem {
     return true;
   }
 
-  getActiveAlerts(
-    providerId?: string
-  ): DegradationAlert[] {
+  getActiveAlerts(providerId?: string): DegradationAlert[] {
     return this.alerts.filter((a) => {
       if (a.resolvedAt) return false;
       if (providerId && a.providerId !== providerId) {
@@ -266,13 +244,9 @@ class DegradationAlertingSystem {
     });
   }
 
-  getAlertHistory(
-    alertId?: string
-  ): any[] {
+  getAlertHistory(alertId?: string): any[] {
     if (alertId) {
-      return this.alertHistory.filter(
-        (h) => h.alertId === alertId
-      );
+      return this.alertHistory.filter((h) => h.alertId === alertId);
     }
     return [...this.alertHistory];
   }
@@ -282,9 +256,7 @@ class DegradationAlertingSystem {
   }
 
   getUnacknowledgedAlerts(): DegradationAlert[] {
-    return this.alerts.filter(
-      (a) => !a.acknowledgedAt && !a.resolvedAt
-    );
+    return this.alerts.filter((a) => !a.acknowledgedAt && !a.resolvedAt);
   }
 }
 
@@ -307,12 +279,10 @@ describe("Degradation Alerting", () => {
 
       const signals = system.detectMultiSignalDegradation(
         "stripe",
-        currentMetrics
+        currentMetrics,
       );
 
-      expect(
-        signals.some((s) => s.type === "latency")
-      ).toBe(true);
+      expect(signals.some((s) => s.type === "latency")).toBe(true);
     });
 
     it("should detect error rate degradation", () => {
@@ -326,12 +296,10 @@ describe("Degradation Alerting", () => {
 
       const signals = system.detectMultiSignalDegradation(
         "paypal",
-        currentMetrics
+        currentMetrics,
       );
 
-      expect(
-        signals.some((s) => s.type === "error_rate")
-      ).toBe(true);
+      expect(signals.some((s) => s.type === "error_rate")).toBe(true);
     });
 
     it("should detect availability degradation", () => {
@@ -345,19 +313,14 @@ describe("Degradation Alerting", () => {
 
       const signals = system.detectMultiSignalDegradation(
         "square",
-        currentMetrics
+        currentMetrics,
       );
 
-      expect(
-        signals.some((s) => s.type === "availability")
-      ).toBe(true);
+      expect(signals.some((s) => s.type === "availability")).toBe(true);
     });
 
     it("should detect multiple signals simultaneously", () => {
-      system.setBaseline(
-        "braintree",
-        createBaselineMetrics("braintree")
-      );
+      system.setBaseline("braintree", createBaselineMetrics("braintree"));
 
       const currentMetrics = {
         latencyP95: 8000, // Degraded
@@ -367,7 +330,7 @@ describe("Degradation Alerting", () => {
 
       const signals = system.detectMultiSignalDegradation(
         "braintree",
-        currentMetrics
+        currentMetrics,
       );
 
       expect(signals.length).toBeGreaterThan(1);
@@ -398,7 +361,7 @@ describe("Degradation Alerting", () => {
 
       const signals = system.detectMultiSignalDegradation(
         "stripe",
-        currentMetrics
+        currentMetrics,
       );
 
       const alert = system.generateAlert("stripe", signals);
@@ -420,7 +383,7 @@ describe("Degradation Alerting", () => {
 
       const signals = system.detectMultiSignalDegradation(
         "paypal",
-        currentMetrics
+        currentMetrics,
       );
 
       const alert = system.generateAlert("paypal", signals);
@@ -442,7 +405,7 @@ describe("Degradation Alerting", () => {
 
       const signals = system.detectMultiSignalDegradation(
         "square",
-        currentMetrics
+        currentMetrics,
       );
 
       const alert = system.generateAlert("square", signals);
@@ -463,16 +426,10 @@ describe("Degradation Alerting", () => {
         availability: 0.9999,
       };
 
-      const signals1 = system.detectMultiSignalDegradation(
-        "stripe",
-        metrics
-      );
+      const signals1 = system.detectMultiSignalDegradation("stripe", metrics);
       const alert1 = system.generateAlert("stripe", signals1);
 
-      const signals2 = system.detectMultiSignalDegradation(
-        "stripe",
-        metrics
-      );
+      const signals2 = system.detectMultiSignalDegradation("stripe", metrics);
       const alert2 = system.generateAlert("stripe", signals2);
 
       // Second alert should be deduplicated
@@ -494,10 +451,7 @@ describe("Degradation Alerting", () => {
         availability: 0.9999,
       };
 
-      const signals = system.detectMultiSignalDegradation(
-        "stripe",
-        metrics
-      );
+      const signals = system.detectMultiSignalDegradation("stripe", metrics);
 
       if (signals.length > 0) {
         system.generateAlert("stripe", signals);
@@ -515,10 +469,7 @@ describe("Degradation Alerting", () => {
         availability: 0.5,
       };
 
-      const signals = system.detectMultiSignalDegradation(
-        "paypal",
-        metrics
-      );
+      const signals = system.detectMultiSignalDegradation("paypal", metrics);
 
       const alert = system.generateAlert("paypal", signals);
 
@@ -536,10 +487,7 @@ describe("Degradation Alerting", () => {
         availability: 0.9999,
       };
 
-      const signals = system.detectMultiSignalDegradation(
-        "square",
-        metrics
-      );
+      const signals = system.detectMultiSignalDegradation("square", metrics);
 
       const alert = system.generateAlert("square", signals);
 
@@ -560,10 +508,7 @@ describe("Degradation Alerting", () => {
         availability: 0.5,
       };
 
-      const signals = system.detectMultiSignalDegradation(
-        "braintree",
-        metrics
-      );
+      const signals = system.detectMultiSignalDegradation("braintree", metrics);
 
       const alert = system.generateAlert("braintree", signals);
 
@@ -584,17 +529,14 @@ describe("Degradation Alerting", () => {
         availability: 0.9999,
       };
 
-      const signals = system.detectMultiSignalDegradation(
-        "stripe",
-        metrics
-      );
+      const signals = system.detectMultiSignalDegradation("stripe", metrics);
 
       const alert = system.generateAlert("stripe", signals);
 
       if (alert) {
         const success = system.acknowledgeAlert(
           alert.id,
-          "on-call@example.com"
+          "on-call@example.com",
         );
 
         expect(success).toBe(true);
@@ -612,10 +554,7 @@ describe("Degradation Alerting", () => {
         availability: 0.9999,
       };
 
-      const signals = system.detectMultiSignalDegradation(
-        "paypal",
-        metrics
-      );
+      const signals = system.detectMultiSignalDegradation("paypal", metrics);
 
       const alert = system.generateAlert("paypal", signals);
 
@@ -636,15 +575,11 @@ describe("Degradation Alerting", () => {
         availability: 0.9999,
       };
 
-      const signals = system.detectMultiSignalDegradation(
-        "square",
-        metrics
-      );
+      const signals = system.detectMultiSignalDegradation("square", metrics);
 
       system.generateAlert("square", signals);
 
-      const unacknowledged =
-        system.getUnacknowledgedAlerts();
+      const unacknowledged = system.getUnacknowledgedAlerts();
 
       expect(unacknowledged.length).toBeGreaterThanOrEqual(0);
     });
@@ -660,10 +595,7 @@ describe("Degradation Alerting", () => {
         availability: 0.9999,
       };
 
-      const signals = system.detectMultiSignalDegradation(
-        "stripe",
-        metrics
-      );
+      const signals = system.detectMultiSignalDegradation("stripe", metrics);
 
       system.generateAlert("stripe", signals);
 
@@ -681,10 +613,7 @@ describe("Degradation Alerting", () => {
         availability: 0.9999,
       };
 
-      const signals = system.detectMultiSignalDegradation(
-        "paypal",
-        metrics
-      );
+      const signals = system.detectMultiSignalDegradation("paypal", metrics);
 
       const alert = system.generateAlert("paypal", signals);
 
@@ -693,9 +622,7 @@ describe("Degradation Alerting", () => {
 
         const active = system.getActiveAlerts();
 
-        expect(
-          active.find((a) => a.id === alert.id)
-        ).toBeUndefined();
+        expect(active.find((a) => a.id === alert.id)).toBeUndefined();
       }
     });
   });

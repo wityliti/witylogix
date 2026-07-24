@@ -4,10 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import {
-  WooCommerceClient,
-  createWooCommerceClient,
-} from "../wc-client.js";
+import { WooCommerceClient, createWooCommerceClient } from "../wc-client.js";
 import type { WCClientConfig } from "../types.js";
 
 describe("WooCommerceClient", () => {

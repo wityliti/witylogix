@@ -3,10 +3,10 @@
  * Comprehensive test suite for authorization, store/user/customer management, and impersonation
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 // Types
-type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'MEMBER';
+type UserRole = "SUPER_ADMIN" | "ADMIN" | "MEMBER";
 
 interface AdminContext {
   userId: string;
@@ -93,15 +93,15 @@ class AdminAPI implements AdminAPIClient {
   constructor(private prisma: any) {}
 
   authorize(context: AdminContext): void {
-    if (context.role !== 'SUPER_ADMIN') {
-      throw new Error('Unauthorized: Only SUPER_ADMIN can access admin API');
+    if (context.role !== "SUPER_ADMIN") {
+      throw new Error("Unauthorized: Only SUPER_ADMIN can access admin API");
     }
     this.context = context;
   }
 
   private ensureAuthorized(): AdminContext {
-    if (!this.context || this.context.role !== 'SUPER_ADMIN') {
-      throw new Error('Unauthorized');
+    if (!this.context || this.context.role !== "SUPER_ADMIN") {
+      throw new Error("Unauthorized");
     }
     return this.context;
   }
@@ -133,7 +133,7 @@ class AdminAPI implements AdminAPIClient {
     });
 
     if (!store) {
-      throw new Error('Store not found');
+      throw new Error("Store not found");
     }
 
     return store;
@@ -151,7 +151,7 @@ class AdminAPI implements AdminAPIClient {
       },
     });
 
-    await this.logAuditEvent('SUSPEND_STORE', { storeId, reason });
+    await this.logAuditEvent("SUSPEND_STORE", { storeId, reason });
   }
 
   async restoreStore(storeId: string): Promise<void> {
@@ -166,7 +166,7 @@ class AdminAPI implements AdminAPIClient {
       },
     });
 
-    await this.logAuditEvent('RESTORE_STORE', { storeId });
+    await this.logAuditEvent("RESTORE_STORE", { storeId });
   }
 
   async listUsers(shopId: string): Promise<User[]> {
@@ -186,7 +186,7 @@ class AdminAPI implements AdminAPIClient {
   async changeUserRole(userId: string, newRole: UserRole): Promise<User> {
     this.ensureAuthorized();
 
-    const validRoles: UserRole[] = ['SUPER_ADMIN', 'ADMIN', 'MEMBER'];
+    const validRoles: UserRole[] = ["SUPER_ADMIN", "ADMIN", "MEMBER"];
     if (!validRoles.includes(newRole)) {
       throw new Error(`Invalid role: ${newRole}`);
     }
@@ -202,7 +202,7 @@ class AdminAPI implements AdminAPIClient {
       },
     });
 
-    await this.logAuditEvent('CHANGE_USER_ROLE', { userId, newRole });
+    await this.logAuditEvent("CHANGE_USER_ROLE", { userId, newRole });
 
     return user;
   }
@@ -219,7 +219,7 @@ class AdminAPI implements AdminAPIClient {
       },
     });
 
-    await this.logAuditEvent('SUSPEND_USER', { userId, reason });
+    await this.logAuditEvent("SUSPEND_USER", { userId, reason });
   }
 
   async restoreUser(userId: string): Promise<void> {
@@ -234,7 +234,7 @@ class AdminAPI implements AdminAPIClient {
       },
     });
 
-    await this.logAuditEvent('RESTORE_USER', { userId });
+    await this.logAuditEvent("RESTORE_USER", { userId });
   }
 
   async listCustomers(filters?: any): Promise<Customer[]> {
@@ -267,7 +267,7 @@ class AdminAPI implements AdminAPIClient {
     });
 
     if (!customer) {
-      throw new Error('Customer not found');
+      throw new Error("Customer not found");
     }
 
     return customer;
@@ -276,22 +276,17 @@ class AdminAPI implements AdminAPIClient {
   async getDashboardMetrics(): Promise<any> {
     this.ensureAuthorized();
 
-    const [
-      totalStores,
-      totalUsers,
-      totalCustomers,
-      totalOrders,
-      orderStats,
-    ] = await Promise.all([
-      this.prisma.store.count(),
-      this.prisma.user.count(),
-      this.prisma.customer.count(),
-      this.prisma.order.count(),
-      this.prisma.order.aggregate({
-        _sum: { total: true },
-        _avg: { total: true },
-      }),
-    ]);
+    const [totalStores, totalUsers, totalCustomers, totalOrders, orderStats] =
+      await Promise.all([
+        this.prisma.store.count(),
+        this.prisma.user.count(),
+        this.prisma.customer.count(),
+        this.prisma.order.count(),
+        this.prisma.order.aggregate({
+          _sum: { total: true },
+          _avg: { total: true },
+        }),
+      ]);
 
     return {
       stores: totalStores,
@@ -313,7 +308,7 @@ class AdminAPI implements AdminAPIClient {
     });
 
     if (!user) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
 
     const session = await this.prisma.session.create({
@@ -324,13 +319,13 @@ class AdminAPI implements AdminAPIClient {
       },
     });
 
-    await this.logAuditEvent('IMPERSONATE_USER', { userId });
+    await this.logAuditEvent("IMPERSONATE_USER", { userId });
 
     return { sessionId: session.id };
   }
 }
 
-describe('AdminAPI', () => {
+describe("AdminAPI", () => {
   let api: AdminAPI;
   let adminContext: AdminContext;
 
@@ -338,9 +333,9 @@ describe('AdminAPI', () => {
     vi.clearAllMocks();
     api = new AdminAPI(mockPrisma);
     adminContext = {
-      userId: 'admin-1',
-      shopId: 'shop-admin',
-      role: 'SUPER_ADMIN',
+      userId: "admin-1",
+      shopId: "shop-admin",
+      role: "SUPER_ADMIN",
     };
   });
 
@@ -348,53 +343,55 @@ describe('AdminAPI', () => {
     vi.clearAllMocks();
   });
 
-  describe('Authorization', () => {
-    it('should require SUPER_ADMIN role', () => {
+  describe("Authorization", () => {
+    it("should require SUPER_ADMIN role", () => {
       const memberContext: AdminContext = {
-        userId: 'user-1',
-        shopId: 'shop-1',
-        role: 'MEMBER',
+        userId: "user-1",
+        shopId: "shop-1",
+        role: "MEMBER",
       };
 
       expect(() => {
         api.authorize(memberContext);
-      }).toThrow('Only SUPER_ADMIN can access admin API');
+      }).toThrow("Only SUPER_ADMIN can access admin API");
     });
 
-    it('should reject ADMIN role', () => {
+    it("should reject ADMIN role", () => {
       const adminContext: AdminContext = {
-        userId: 'admin-1',
-        shopId: 'shop-1',
-        role: 'ADMIN',
+        userId: "admin-1",
+        shopId: "shop-1",
+        role: "ADMIN",
       };
 
       expect(() => {
         api.authorize(adminContext);
-      }).toThrow('Only SUPER_ADMIN can access admin API');
+      }).toThrow("Only SUPER_ADMIN can access admin API");
     });
 
-    it('should accept SUPER_ADMIN role', () => {
+    it("should accept SUPER_ADMIN role", () => {
       expect(() => {
         api.authorize(adminContext);
       }).not.toThrow();
     });
 
-    it('should require authorization for all operations', async () => {
+    it("should require authorization for all operations", async () => {
       const unAuthorizedApi = new AdminAPI(mockPrisma);
 
-      await expect(unAuthorizedApi.listStores()).rejects.toThrow('Unauthorized');
+      await expect(unAuthorizedApi.listStores()).rejects.toThrow(
+        "Unauthorized",
+      );
     });
   });
 
-  describe('Store Management', () => {
+  describe("Store Management", () => {
     beforeEach(() => {
       api.authorize(adminContext);
     });
 
-    it('should list all stores', async () => {
+    it("should list all stores", async () => {
       const stores: Store[] = [
-        { id: 'store-1', name: 'Store One', suspended: false },
-        { id: 'store-2', name: 'Store Two', suspended: false },
+        { id: "store-1", name: "Store One", suspended: false },
+        { id: "store-2", name: "Store Two", suspended: false },
       ];
 
       mockPrisma.store.findMany.mockResolvedValue(stores);
@@ -405,36 +402,38 @@ describe('AdminAPI', () => {
       expect(mockPrisma.store.findMany).toHaveBeenCalled();
     });
 
-    it('should get store detail', async () => {
+    it("should get store detail", async () => {
       const store: Store = {
-        id: 'store-1',
-        name: 'Store One',
+        id: "store-1",
+        name: "Store One",
         suspended: false,
       };
 
       mockPrisma.store.findUnique.mockResolvedValue(store);
 
-      const result = await api.getStoreDetail('store-1');
+      const result = await api.getStoreDetail("store-1");
 
       expect(result).toEqual(store);
     });
 
-    it('should throw when store not found', async () => {
+    it("should throw when store not found", async () => {
       mockPrisma.store.findUnique.mockResolvedValue(null);
 
-      await expect(api.getStoreDetail('non-existent')).rejects.toThrow('Store not found');
+      await expect(api.getStoreDetail("non-existent")).rejects.toThrow(
+        "Store not found",
+      );
     });
 
-    it('should suspend store', async () => {
-      const reason = 'Violation of terms of service';
+    it("should suspend store", async () => {
+      const reason = "Violation of terms of service";
 
-      mockPrisma.store.update.mockResolvedValue({ id: 'store-1' });
+      mockPrisma.store.update.mockResolvedValue({ id: "store-1" });
       mockPrisma.adminAuditLog.create.mockResolvedValue({});
 
-      await api.suspendStore('store-1', reason);
+      await api.suspendStore("store-1", reason);
 
       expect(mockPrisma.store.update).toHaveBeenCalledWith({
-        where: { id: 'store-1' },
+        where: { id: "store-1" },
         data: expect.objectContaining({
           suspended: true,
           suspensionReason: reason,
@@ -443,95 +442,105 @@ describe('AdminAPI', () => {
 
       expect(mockPrisma.adminAuditLog.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
-          action: 'SUSPEND_STORE',
+          action: "SUSPEND_STORE",
         }),
       });
     });
 
-    it('should restore suspended store', async () => {
-      mockPrisma.store.update.mockResolvedValue({ id: 'store-1' });
+    it("should restore suspended store", async () => {
+      mockPrisma.store.update.mockResolvedValue({ id: "store-1" });
       mockPrisma.adminAuditLog.create.mockResolvedValue({});
 
-      await api.restoreStore('store-1');
+      await api.restoreStore("store-1");
 
       expect(mockPrisma.store.update).toHaveBeenCalledWith({
-        where: { id: 'store-1' },
+        where: { id: "store-1" },
         data: expect.objectContaining({
           suspended: false,
         }),
       });
     });
 
-    it('should log audit event when suspending store', async () => {
+    it("should log audit event when suspending store", async () => {
       mockPrisma.store.update.mockResolvedValue({});
       mockPrisma.adminAuditLog.create.mockResolvedValue({});
 
-      await api.suspendStore('store-1', 'Violation');
+      await api.suspendStore("store-1", "Violation");
 
       expect(mockPrisma.adminAuditLog.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           adminId: adminContext.userId,
-          action: 'SUSPEND_STORE',
+          action: "SUSPEND_STORE",
         }),
       });
     });
   });
 
-  describe('User Management', () => {
+  describe("User Management", () => {
     beforeEach(() => {
       api.authorize(adminContext);
     });
 
-    it('should list users for a shop', async () => {
+    it("should list users for a shop", async () => {
       const users: User[] = [
-        { id: 'user-1', email: 'user1@example.com', role: 'ADMIN', suspended: false },
-        { id: 'user-2', email: 'user2@example.com', role: 'MEMBER', suspended: false },
+        {
+          id: "user-1",
+          email: "user1@example.com",
+          role: "ADMIN",
+          suspended: false,
+        },
+        {
+          id: "user-2",
+          email: "user2@example.com",
+          role: "MEMBER",
+          suspended: false,
+        },
       ];
 
       mockPrisma.user.findMany.mockResolvedValue(users);
 
-      const result = await api.listUsers('shop-1');
+      const result = await api.listUsers("shop-1");
 
       expect(result).toEqual(users);
       expect(mockPrisma.user.findMany).toHaveBeenCalledWith({
-        where: { shopId: 'shop-1' },
+        where: { shopId: "shop-1" },
         select: expect.any(Object),
       });
     });
 
-    it('should change user role', async () => {
+    it("should change user role", async () => {
       const updatedUser: User = {
-        id: 'user-1',
-        email: 'user1@example.com',
-        role: 'ADMIN',
+        id: "user-1",
+        email: "user1@example.com",
+        role: "ADMIN",
         suspended: false,
       };
 
       mockPrisma.user.update.mockResolvedValue(updatedUser);
       mockPrisma.adminAuditLog.create.mockResolvedValue({});
 
-      const result = await api.changeUserRole('user-1', 'ADMIN');
+      const result = await api.changeUserRole("user-1", "ADMIN");
 
-      expect(result.role).toBe('ADMIN');
+      expect(result.role).toBe("ADMIN");
       expect(mockPrisma.adminAuditLog.create).toHaveBeenCalled();
     });
 
-    it('should reject invalid role', async () => {
+    it("should reject invalid role", async () => {
       await expect(
-        api.changeUserRole('user-1', 'INVALID_ROLE' as any)
-      ).rejects.toThrow('Invalid role');
+        api.changeUserRole("user-1", "INVALID_ROLE" as any),
+      ).rejects.toThrow("Invalid role");
     });
 
-    it('should suspend user', async () => {
-      const reason = 'Suspicious activity';
+    it("should suspend user", async () => {
+      const reason = "Suspicious activity";
 
       mockPrisma.user.update.mockResolvedValue({});
       mockPrisma.adminAuditLog.create.mockResolvedValue({});
 
-      await api.suspendUser('user-1', reason);
+      await api.suspendUser("user-1", reason);
 
       expect(mockPrisma.user.update).toHaveBeenCalledWith({
-        where: { id: 'user-1' },
+        where: { id: "user-1" },
         data: expect.objectContaining({
           suspended: true,
           suspensionReason: reason,
@@ -539,58 +548,58 @@ describe('AdminAPI', () => {
       });
     });
 
-    it('should restore suspended user', async () => {
+    it("should restore suspended user", async () => {
       mockPrisma.user.update.mockResolvedValue({});
       mockPrisma.adminAuditLog.create.mockResolvedValue({});
 
-      await api.restoreUser('user-1');
+      await api.restoreUser("user-1");
 
       expect(mockPrisma.user.update).toHaveBeenCalledWith({
-        where: { id: 'user-1' },
+        where: { id: "user-1" },
         data: expect.objectContaining({
           suspended: false,
         }),
       });
     });
 
-    it('should log audit event when changing role', async () => {
+    it("should log audit event when changing role", async () => {
       mockPrisma.user.update.mockResolvedValue({
-        id: 'user-1',
-        role: 'ADMIN',
+        id: "user-1",
+        role: "ADMIN",
       });
       mockPrisma.adminAuditLog.create.mockResolvedValue({});
 
-      await api.changeUserRole('user-1', 'ADMIN');
+      await api.changeUserRole("user-1", "ADMIN");
 
       expect(mockPrisma.adminAuditLog.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
-          action: 'CHANGE_USER_ROLE',
+          action: "CHANGE_USER_ROLE",
           adminId: adminContext.userId,
         }),
       });
     });
   });
 
-  describe('Customer Management', () => {
+  describe("Customer Management", () => {
     beforeEach(() => {
       api.authorize(adminContext);
     });
 
-    it('should list customers across all shops', async () => {
+    it("should list customers across all shops", async () => {
       const customers: Customer[] = [
         {
-          id: 'cust-1',
-          name: 'John Doe',
-          email: 'john@example.com',
-          phone: '555-1234',
-          shopId: 'shop-1',
+          id: "cust-1",
+          name: "John Doe",
+          email: "john@example.com",
+          phone: "555-1234",
+          shopId: "shop-1",
         },
         {
-          id: 'cust-2',
-          name: 'Jane Doe',
-          email: 'jane@example.com',
-          phone: '555-5678',
-          shopId: 'shop-2',
+          id: "cust-2",
+          name: "Jane Doe",
+          email: "jane@example.com",
+          phone: "555-5678",
+          shopId: "shop-2",
         },
       ];
 
@@ -599,58 +608,64 @@ describe('AdminAPI', () => {
       const result = await api.listCustomers();
 
       expect(result).toEqual(customers);
-      expect(result).toContainEqual(expect.objectContaining({ shopId: 'shop-1' }));
-      expect(result).toContainEqual(expect.objectContaining({ shopId: 'shop-2' }));
+      expect(result).toContainEqual(
+        expect.objectContaining({ shopId: "shop-1" }),
+      );
+      expect(result).toContainEqual(
+        expect.objectContaining({ shopId: "shop-2" }),
+      );
     });
 
-    it('should list customers with filters', async () => {
+    it("should list customers with filters", async () => {
       const customers: Customer[] = [
         {
-          id: 'cust-1',
-          name: 'John Doe',
-          email: 'john@example.com',
-          phone: '555-1234',
-          shopId: 'shop-1',
+          id: "cust-1",
+          name: "John Doe",
+          email: "john@example.com",
+          phone: "555-1234",
+          shopId: "shop-1",
         },
       ];
 
       mockPrisma.customer.findMany.mockResolvedValue(customers);
 
-      const result = await api.listCustomers({ shopId: 'shop-1' });
+      const result = await api.listCustomers({ shopId: "shop-1" });
 
       expect(result).toHaveLength(1);
-      expect(result[0].shopId).toBe('shop-1');
+      expect(result[0].shopId).toBe("shop-1");
     });
 
-    it('should get customer detail', async () => {
+    it("should get customer detail", async () => {
       const customer: Customer = {
-        id: 'cust-1',
-        name: 'John Doe',
-        email: 'john@example.com',
-        phone: '555-1234',
-        shopId: 'shop-1',
+        id: "cust-1",
+        name: "John Doe",
+        email: "john@example.com",
+        phone: "555-1234",
+        shopId: "shop-1",
       };
 
       mockPrisma.customer.findUnique.mockResolvedValue(customer);
 
-      const result = await api.getCustomerDetail('cust-1');
+      const result = await api.getCustomerDetail("cust-1");
 
       expect(result).toEqual(customer);
     });
 
-    it('should throw when customer not found', async () => {
+    it("should throw when customer not found", async () => {
       mockPrisma.customer.findUnique.mockResolvedValue(null);
 
-      await expect(api.getCustomerDetail('non-existent')).rejects.toThrow('Customer not found');
+      await expect(api.getCustomerDetail("non-existent")).rejects.toThrow(
+        "Customer not found",
+      );
     });
   });
 
-  describe('Dashboard Metrics', () => {
+  describe("Dashboard Metrics", () => {
     beforeEach(() => {
       api.authorize(adminContext);
     });
 
-    it('should return correct aggregate counts', async () => {
+    it("should return correct aggregate counts", async () => {
       mockPrisma.store.count.mockResolvedValue(10);
       mockPrisma.user.count.mockResolvedValue(50);
       mockPrisma.customer.count.mockResolvedValue(500);
@@ -670,7 +685,7 @@ describe('AdminAPI', () => {
       expect(metrics.orderValue.average).toBe(50);
     });
 
-    it('should handle zero metrics', async () => {
+    it("should handle zero metrics", async () => {
       mockPrisma.store.count.mockResolvedValue(0);
       mockPrisma.user.count.mockResolvedValue(0);
       mockPrisma.customer.count.mockResolvedValue(0);
@@ -688,69 +703,71 @@ describe('AdminAPI', () => {
     });
   });
 
-  describe('Impersonation', () => {
+  describe("Impersonation", () => {
     beforeEach(() => {
       api.authorize(adminContext);
     });
 
-    it('should create impersonation session', async () => {
+    it("should create impersonation session", async () => {
       mockPrisma.user.findUnique.mockResolvedValue({
-        id: 'user-1',
-        email: 'user@example.com',
+        id: "user-1",
+        email: "user@example.com",
       });
       mockPrisma.session.create.mockResolvedValue({
-        id: 'session-123',
-        userId: 'user-1',
+        id: "session-123",
+        userId: "user-1",
         impersonatedBy: adminContext.userId,
       });
       mockPrisma.adminAuditLog.create.mockResolvedValue({});
 
-      const result = await api.impersonateUser('user-1');
+      const result = await api.impersonateUser("user-1");
 
-      expect(result.sessionId).toBe('session-123');
+      expect(result.sessionId).toBe("session-123");
     });
 
-    it('should throw when impersonating non-existent user', async () => {
+    it("should throw when impersonating non-existent user", async () => {
       mockPrisma.user.findUnique.mockResolvedValue(null);
 
-      await expect(api.impersonateUser('non-existent')).rejects.toThrow('User not found');
+      await expect(api.impersonateUser("non-existent")).rejects.toThrow(
+        "User not found",
+      );
     });
 
-    it('should log impersonation event', async () => {
-      mockPrisma.user.findUnique.mockResolvedValue({ id: 'user-1' });
-      mockPrisma.session.create.mockResolvedValue({ id: 'session-123' });
+    it("should log impersonation event", async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({ id: "user-1" });
+      mockPrisma.session.create.mockResolvedValue({ id: "session-123" });
       mockPrisma.adminAuditLog.create.mockResolvedValue({});
 
-      await api.impersonateUser('user-1');
+      await api.impersonateUser("user-1");
 
       expect(mockPrisma.adminAuditLog.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
-          action: 'IMPERSONATE_USER',
-          details: expect.objectContaining({ userId: 'user-1' }),
+          action: "IMPERSONATE_USER",
+          details: expect.objectContaining({ userId: "user-1" }),
         }),
       });
     });
 
-    it('should restrict impersonation to admin-only', async () => {
-      mockPrisma.user.findUnique.mockResolvedValue({ id: 'user-1' });
+    it("should restrict impersonation to admin-only", async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({ id: "user-1" });
       mockPrisma.session.create.mockResolvedValue({
-        id: 'session-123',
+        id: "session-123",
         adminOnly: true,
       });
       mockPrisma.adminAuditLog.create.mockResolvedValue({});
 
-      const result = await api.impersonateUser('user-1');
+      const result = await api.impersonateUser("user-1");
 
       expect(result.sessionId).toBeDefined();
     });
   });
 
-  describe('Audit Logging', () => {
+  describe("Audit Logging", () => {
     beforeEach(() => {
       api.authorize(adminContext);
     });
 
-    it('should log all administrative actions', async () => {
+    it("should log all administrative actions", async () => {
       mockPrisma.store.findMany.mockResolvedValue([]);
       mockPrisma.adminAuditLog.create.mockResolvedValue({});
 
@@ -758,11 +775,11 @@ describe('AdminAPI', () => {
       expect(mockPrisma.adminAuditLog.create).toBeDefined();
     });
 
-    it('should include admin ID in audit logs', async () => {
+    it("should include admin ID in audit logs", async () => {
       mockPrisma.user.update.mockResolvedValue({});
       mockPrisma.adminAuditLog.create.mockResolvedValue({});
 
-      await api.changeUserRole('user-1', 'MEMBER');
+      await api.changeUserRole("user-1", "MEMBER");
 
       expect(mockPrisma.adminAuditLog.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
@@ -771,54 +788,54 @@ describe('AdminAPI', () => {
       });
     });
 
-    it('should include action details in audit logs', async () => {
+    it("should include action details in audit logs", async () => {
       mockPrisma.store.update.mockResolvedValue({});
       mockPrisma.adminAuditLog.create.mockResolvedValue({});
 
-      await api.suspendStore('store-1', 'Violation of ToS');
+      await api.suspendStore("store-1", "Violation of ToS");
 
       expect(mockPrisma.adminAuditLog.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           details: expect.objectContaining({
-            storeId: 'store-1',
-            reason: 'Violation of ToS',
+            storeId: "store-1",
+            reason: "Violation of ToS",
           }),
         }),
       });
     });
   });
 
-  describe('Integration Scenarios', () => {
+  describe("Integration Scenarios", () => {
     beforeEach(() => {
       api.authorize(adminContext);
     });
 
-    it('should handle complete store suspension workflow', async () => {
+    it("should handle complete store suspension workflow", async () => {
       mockPrisma.store.update.mockResolvedValue({});
       mockPrisma.adminAuditLog.create.mockResolvedValue({});
 
-      const reason = 'Payment dispute';
+      const reason = "Payment dispute";
 
-      await api.suspendStore('store-1', reason);
-      await api.restoreStore('store-1');
+      await api.suspendStore("store-1", reason);
+      await api.restoreStore("store-1");
 
       expect(mockPrisma.adminAuditLog.create).toHaveBeenCalledTimes(2);
     });
 
-    it('should handle user role promotion', async () => {
+    it("should handle user role promotion", async () => {
       mockPrisma.user.update.mockResolvedValue({
-        id: 'user-1',
-        role: 'ADMIN',
+        id: "user-1",
+        role: "ADMIN",
       });
       mockPrisma.adminAuditLog.create.mockResolvedValue({});
 
-      const user = await api.changeUserRole('user-1', 'ADMIN');
+      const user = await api.changeUserRole("user-1", "ADMIN");
 
-      expect(user.role).toBe('ADMIN');
+      expect(user.role).toBe("ADMIN");
       expect(mockPrisma.adminAuditLog.create).toHaveBeenCalled();
     });
 
-    it('should retrieve complete dashboard snapshot', async () => {
+    it("should retrieve complete dashboard snapshot", async () => {
       mockPrisma.store.count.mockResolvedValue(5);
       mockPrisma.user.count.mockResolvedValue(25);
       mockPrisma.customer.count.mockResolvedValue(250);
@@ -830,11 +847,11 @@ describe('AdminAPI', () => {
 
       const metrics = await api.getDashboardMetrics();
 
-      expect(metrics).toHaveProperty('stores');
-      expect(metrics).toHaveProperty('users');
-      expect(metrics).toHaveProperty('customers');
-      expect(metrics).toHaveProperty('orders');
-      expect(metrics).toHaveProperty('orderValue');
+      expect(metrics).toHaveProperty("stores");
+      expect(metrics).toHaveProperty("users");
+      expect(metrics).toHaveProperty("customers");
+      expect(metrics).toHaveProperty("orders");
+      expect(metrics).toHaveProperty("orderValue");
     });
   });
 });

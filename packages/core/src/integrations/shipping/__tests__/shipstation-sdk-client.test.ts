@@ -163,7 +163,7 @@ describe("ShipStationSDKClient", () => {
   describe("Authentication", () => {
     it("should throw error when no credentials provided", () => {
       expect(() => new ShipStationSDKClient({})).toThrow(
-        "requires either (apiKey + apiSecret) or oauthToken"
+        "requires either (apiKey + apiSecret) or oauthToken",
       );
     });
 
@@ -209,7 +209,7 @@ describe("ShipStationSDKClient", () => {
       expect(result.data[0].orderId).toBe("order_123");
       expect(fetchMock).toHaveBeenCalledWith(
         expect.stringContaining("/orders?pageSize=100"),
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -264,7 +264,7 @@ describe("ShipStationSDKClient", () => {
         expect.stringContaining("/orders"),
         expect.objectContaining({
           method: "POST",
-        })
+        }),
       );
     });
 
@@ -315,7 +315,7 @@ describe("ShipStationSDKClient", () => {
       });
 
       await expect(
-        client.assignOrderTag("order_123", "priority")
+        client.assignOrderTag("order_123", "priority"),
       ).resolves.not.toThrow();
 
       expect(fetchMock).toHaveBeenCalledWith(
@@ -323,7 +323,7 @@ describe("ShipStationSDKClient", () => {
         expect.objectContaining({
           method: "POST",
           body: JSON.stringify({ tagName: "priority" }),
-        })
+        }),
       );
     });
 
@@ -339,7 +339,7 @@ describe("ShipStationSDKClient", () => {
       });
 
       await expect(
-        client.addOrderNote("order_123", "Customer requested express shipping")
+        client.addOrderNote("order_123", "Customer requested express shipping"),
       ).resolves.not.toThrow();
     });
 
@@ -354,9 +354,7 @@ describe("ShipStationSDKClient", () => {
         json: async () => ({}),
       });
 
-      await expect(
-        client.markOrderShipped("order_123")
-      ).resolves.not.toThrow();
+      await expect(client.markOrderShipped("order_123")).resolves.not.toThrow();
     });
   });
 
@@ -423,7 +421,7 @@ describe("ShipStationSDKClient", () => {
         expect.stringContaining("/labels/label_123"),
         expect.objectContaining({
           method: "DELETE",
-        })
+        }),
       );
     });
 
@@ -622,7 +620,7 @@ describe("ShipStationSDKClient", () => {
       });
 
       await expect(
-        client.unsubscribeWebhook("webhook_123")
+        client.unsubscribeWebhook("webhook_123"),
       ).resolves.not.toThrow();
     });
 
@@ -719,9 +717,10 @@ describe("ShipStationSDKClient", () => {
       fetchMock.mockResolvedValueOnce({
         ok: false,
         status: 401,
-        text: async () => JSON.stringify({
-          message: "Invalid API credentials",
-        }),
+        text: async () =>
+          JSON.stringify({
+            message: "Invalid API credentials",
+          }),
         headers: new Map([
           ["x-rate-limit-limit", "40"],
           ["x-rate-limit-remaining", "19"],
@@ -730,7 +729,7 @@ describe("ShipStationSDKClient", () => {
       });
 
       await expect(client.listCarriers()).rejects.toThrow(
-        /Authentication failed/
+        /Authentication failed/,
       );
     });
 

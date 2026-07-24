@@ -1,6 +1,12 @@
 "use client";
 
-import { forwardRef, useState, useRef, useEffect, type HTMLAttributes } from "react";
+import {
+  forwardRef,
+  useState,
+  useRef,
+  useEffect,
+  type HTMLAttributes,
+} from "react";
 import {
   ChevronDown,
   DollarSign,
@@ -87,7 +93,7 @@ const TransactionList = forwardRef<HTMLDivElement, TransactionListProps>(
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [refundState, setRefundState] = useState<RefundState>({
@@ -118,14 +124,17 @@ const TransactionList = forwardRef<HTMLDivElement, TransactionListProps>(
 
         return acc;
       },
-      []
+      [],
     );
 
     const handleRefundChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = parseFloat(e.target.value) || 0;
       setRefundState((prev) => ({
         ...prev,
-        amount: Math.min(value, transactions.find((t) => t.id === prev.transactionId)?.amount || 0),
+        amount: Math.min(
+          value,
+          transactions.find((t) => t.id === prev.transactionId)?.amount || 0,
+        ),
       }));
     };
 
@@ -151,7 +160,10 @@ const TransactionList = forwardRef<HTMLDivElement, TransactionListProps>(
       const handleScroll = () => {
         const scrollTop = containerRef.current?.scrollTop || 0;
         const start = Math.floor(scrollTop / itemHeight);
-        const end = start + Math.ceil((containerRef.current?.clientHeight || 0) / itemHeight) + 5;
+        const end =
+          start +
+          Math.ceil((containerRef.current?.clientHeight || 0) / itemHeight) +
+          5;
         setVisibleRange({ start: Math.max(0, start - 5), end });
       };
 
@@ -161,8 +173,12 @@ const TransactionList = forwardRef<HTMLDivElement, TransactionListProps>(
     }, [virtualizeItems, itemHeight]);
 
     const totalAmount = transactions.reduce((sum, t) => sum + t.amount, 0);
-    const completedCount = transactions.filter((t) => t.status === "completed").length;
-    const failedCount = transactions.filter((t) => t.status === "failed").length;
+    const completedCount = transactions.filter(
+      (t) => t.status === "completed",
+    ).length;
+    const failedCount = transactions.filter(
+      (t) => t.status === "failed",
+    ).length;
 
     if (!transactions || transactions.length === 0) {
       return (
@@ -228,15 +244,13 @@ const TransactionList = forwardRef<HTMLDivElement, TransactionListProps>(
                     key={txn.id}
                     className={cn(
                       "space-y-0 rounded-lg border border-wl-border-subtle overflow-hidden transition-all",
-                      isExpanded && "ring-1 ring-wl-primary-400"
+                      isExpanded && "ring-1 ring-wl-primary-400",
                     )}
                   >
                     {/* Transaction Row */}
                     <button
                       onClick={() =>
-                        setExpandedTransactionId(
-                          isExpanded ? null : txn.id
-                        )
+                        setExpandedTransactionId(isExpanded ? null : txn.id)
                       }
                       className="w-full p-3 bg-wl-bg-surface hover:bg-wl-bg-elevated transition-colors text-left"
                     >
@@ -245,7 +259,7 @@ const TransactionList = forwardRef<HTMLDivElement, TransactionListProps>(
                           <PaymentIcon
                             className={cn(
                               "w-5 h-5 flex-shrink-0",
-                              paymentTypeColors[txn.paymentType]
+                              paymentTypeColors[txn.paymentType],
                             )}
                           />
                           <div className="flex-1 min-w-0">
@@ -272,16 +286,19 @@ const TransactionList = forwardRef<HTMLDivElement, TransactionListProps>(
                               ${txn.amount.toFixed(2)}
                             </p>
                             <p className="text-xs text-wl-text-secondary">
-                              {new Date(txn.timestamp).toLocaleTimeString("en-US", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
+                              {new Date(txn.timestamp).toLocaleTimeString(
+                                "en-US",
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                },
+                              )}
                             </p>
                           </div>
                           <ChevronDown
                             className={cn(
                               "w-4 h-4 text-wl-text-secondary transition-transform flex-shrink-0",
-                              isExpanded && "transform rotate-180"
+                              isExpanded && "transform rotate-180",
                             )}
                           />
                         </div>
@@ -294,7 +311,9 @@ const TransactionList = forwardRef<HTMLDivElement, TransactionListProps>(
                         {/* Details Grid */}
                         <div className="grid grid-cols-2 gap-2 text-xs">
                           <div>
-                            <p className="text-wl-text-secondary">Transaction ID</p>
+                            <p className="text-wl-text-secondary">
+                              Transaction ID
+                            </p>
                             <p className="text-wl-text-primary font-mono">
                               {txn.id.substring(0, 12)}...
                             </p>
@@ -307,7 +326,9 @@ const TransactionList = forwardRef<HTMLDivElement, TransactionListProps>(
                           </div>
                           {txn.reference && (
                             <div>
-                              <p className="text-wl-text-secondary">Reference</p>
+                              <p className="text-wl-text-secondary">
+                                Reference
+                              </p>
                               <p className="text-wl-text-primary font-mono">
                                 {txn.reference}
                               </p>
@@ -394,12 +415,16 @@ const TransactionList = forwardRef<HTMLDivElement, TransactionListProps>(
                     type="number"
                     value={refundState.amount}
                     onChange={handleRefundChange}
-                    max={transactions.find((t) => t.id === refundState.transactionId)?.amount || 0}
+                    max={
+                      transactions.find(
+                        (t) => t.id === refundState.transactionId,
+                      )?.amount || 0
+                    }
                     step="0.01"
                     className={cn(
                       "flex-1 px-3 py-2 rounded-md border border-wl-border-subtle",
                       "bg-wl-bg-surface text-wl-text-primary placeholder:text-wl-text-secondary",
-                      "text-sm focus:outline-none focus:ring-2 focus:ring-wl-primary-400"
+                      "text-sm focus:outline-none focus:ring-2 focus:ring-wl-primary-400",
                     )}
                   />
                 </div>
@@ -435,7 +460,7 @@ const TransactionList = forwardRef<HTMLDivElement, TransactionListProps>(
         )}
       </Card>
     );
-  }
+  },
 );
 
 TransactionList.displayName = "TransactionList";

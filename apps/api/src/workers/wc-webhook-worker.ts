@@ -45,11 +45,14 @@ async function processWCWebhookJob(job: Job<WCWebhookJobData>): Promise<void> {
   // DB layer via the Row-Level Security policy set in the transaction.
   const svc = new WooCommerceShipmentService(prisma as any);
 
-  const result = await svc.upsertShipment(payload as unknown as WooCommerceOrder, shopId);
+  const result = await svc.upsertShipment(
+    payload as unknown as WooCommerceOrder,
+    shopId,
+  );
 
   job.log(
     `WC webhook processed: shopId=${shopId} topic=${topic} ` +
-    `orderId=${result.orderId} shipmentId=${result.shipmentId} action=${result.action}`,
+      `orderId=${result.orderId} shipmentId=${result.shipmentId} action=${result.action}`,
   );
 }
 
@@ -89,7 +92,9 @@ export function startWCWebhookWorker(): void {
   });
 
   worker.on("completed", (job) => {
-    console.info(`[wc-webhook-worker] Job ${job.id} completed for shop ${job.data.shopId}`);
+    console.info(
+      `[wc-webhook-worker] Job ${job.id} completed for shop ${job.data.shopId}`,
+    );
   });
 
   registerWorker(worker);

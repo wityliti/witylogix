@@ -121,7 +121,9 @@ export class SyncAPIService {
    * @param platformType - Platform type
    * @returns Sync job
    */
-  public async getStatusForPlatform(platformType: string): Promise<SyncJob | null> {
+  public async getStatusForPlatform(
+    platformType: string,
+  ): Promise<SyncJob | null> {
     const response = await this.get(`/api/sync/status/${platformType}`);
     return (response as SyncJob) || null;
   }
@@ -134,7 +136,10 @@ export class SyncAPIService {
    * @param offset - Result offset (default 0)
    * @returns Array of conflicts
    */
-  public async getConflicts(limit: number = 50, offset: number = 0): Promise<SyncConflict[]> {
+  public async getConflicts(
+    limit: number = 50,
+    offset: number = 0,
+  ): Promise<SyncConflict[]> {
     const response = await this.get("/api/sync/conflicts", { limit, offset });
     return response as SyncConflict[];
   }
@@ -151,9 +156,12 @@ export class SyncAPIService {
   public async getConflictsForPlatform(
     platformType: string,
     limit: number = 50,
-    offset: number = 0
+    offset: number = 0,
   ): Promise<SyncConflict[]> {
-    const response = await this.get(`/api/sync/conflicts/${platformType}`, { limit, offset });
+    const response = await this.get(`/api/sync/conflicts/${platformType}`, {
+      limit,
+      offset,
+    });
     return response as SyncConflict[];
   }
 
@@ -167,9 +175,12 @@ export class SyncAPIService {
    */
   public async resolveConflict(
     conflictId: string,
-    request: ResolveConflictRequest
+    request: ResolveConflictRequest,
   ): Promise<ConflictResolution> {
-    const response = await this.post(`/api/sync/conflicts/${conflictId}/resolve`, request);
+    const response = await this.post(
+      `/api/sync/conflicts/${conflictId}/resolve`,
+      request,
+    );
     return response as ConflictResolution;
   }
 
@@ -191,7 +202,9 @@ export class SyncAPIService {
    * @param platformType - Platform type
    * @returns Metrics for platform
    */
-  public async getMetricsForPlatform(platformType: string): Promise<SyncMetrics | null> {
+  public async getMetricsForPlatform(
+    platformType: string,
+  ): Promise<SyncMetrics | null> {
     const response = await this.get(`/api/sync/metrics/${platformType}`);
     return (response as SyncMetrics) || null;
   }
@@ -203,7 +216,9 @@ export class SyncAPIService {
    * @param filters - Query filters
    * @returns Array of sync jobs
    */
-  public async getHistory(filters: SyncHistoryFilters = {}): Promise<SyncJob[]> {
+  public async getHistory(
+    filters: SyncHistoryFilters = {},
+  ): Promise<SyncJob[]> {
     const response = await this.get("/api/sync/history", filters);
     return response as SyncJob[];
   }
@@ -230,9 +245,12 @@ export class SyncAPIService {
    */
   public async updateConfig(
     platformType: string,
-    request: UpdateSyncConfigRequest
+    request: UpdateSyncConfigRequest,
   ): Promise<SyncConfig> {
-    const response = await this.post(`/api/sync/config/${platformType}`, request);
+    const response = await this.post(
+      `/api/sync/config/${platformType}`,
+      request,
+    );
     return response as SyncConfig;
   }
 
@@ -270,8 +288,14 @@ export class SyncAPIService {
    * @param offset - Result offset
    * @returns Array of batch operations
    */
-  public async getBatchOperations(limit: number = 50, offset: number = 0): Promise<any[]> {
-    const response = await this.get("/api/sync/batch-operations", { limit, offset });
+  public async getBatchOperations(
+    limit: number = 50,
+    offset: number = 0,
+  ): Promise<any[]> {
+    const response = await this.get("/api/sync/batch-operations", {
+      limit,
+      offset,
+    });
     return response as any[];
   }
 
@@ -282,7 +306,9 @@ export class SyncAPIService {
    * @param platformType - Platform type
    * @returns Pause confirmation
    */
-  public async pausePlatformSync(platformType: string): Promise<{ paused: boolean }> {
+  public async pausePlatformSync(
+    platformType: string,
+  ): Promise<{ paused: boolean }> {
     const response = await this.post(`/api/sync/pause/${platformType}`, {});
     return response as { paused: boolean };
   }
@@ -294,7 +320,9 @@ export class SyncAPIService {
    * @param platformType - Platform type
    * @returns Resume confirmation
    */
-  public async resumePlatformSync(platformType: string): Promise<{ resumed: boolean }> {
+  public async resumePlatformSync(
+    platformType: string,
+  ): Promise<{ resumed: boolean }> {
     const response = await this.post(`/api/sync/resume/${platformType}`, {});
     return response as { resumed: boolean };
   }
@@ -318,7 +346,10 @@ export class SyncAPIService {
   /**
    * Make GET request
    */
-  private async get(path: string, params?: Record<string, unknown>): Promise<unknown> {
+  private async get(
+    path: string,
+    params?: Record<string, unknown>,
+  ): Promise<unknown> {
     const url = new URL(`${this.baseUrl}${path}`);
 
     if (params) {
@@ -370,7 +401,7 @@ export class SyncAPIService {
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
       throw new Error(
-        `API error ${response.status}: ${(error as any).message || response.statusText}`
+        `API error ${response.status}: ${(error as any).message || response.statusText}`,
       );
     }
 

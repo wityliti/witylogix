@@ -53,9 +53,11 @@ export class TimeSeriesExtractor {
    */
   extractTimeSeries(
     data: Array<{ timestamp: Date; value: number }>,
-    granularity: 'hourly' | 'daily' | 'weekly' = 'daily'
+    granularity: "hourly" | "daily" | "weekly" = "daily",
   ): TimeSeriesPoint[] {
-    const sorted = [...data].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+    const sorted = [...data].sort(
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
+    );
 
     return sorted.map((point, index) => ({
       timestamp: point.timestamp,
@@ -68,9 +70,12 @@ export class TimeSeriesExtractor {
    * Decompose time series into trend, seasonal, and residual components
    * Uses additive decomposition (Y = Trend + Seasonal + Residual)
    */
-  decompose(series: TimeSeriesPoint[], period: number = 7): DecompositionResult {
+  decompose(
+    series: TimeSeriesPoint[],
+    period: number = 7,
+  ): DecompositionResult {
     const n = series.length;
-    const values = series.map(s => s.value);
+    const values = series.map((s) => s.value);
 
     // Step 1: Compute trend using centered moving average
     const trend = this.computeMovingAverage(values, period * 2 + 1);
@@ -127,8 +132,11 @@ export class TimeSeriesExtractor {
   /**
    * Detect change points using binary segmentation
    */
-  detectChangePoints(series: TimeSeriesPoint[], threshold: number = 2.0): ChangePoint[] {
-    const values = series.map(s => s.value);
+  detectChangePoints(
+    series: TimeSeriesPoint[],
+    threshold: number = 2.0,
+  ): ChangePoint[] {
+    const values = series.map((s) => s.value);
     const changePoints: ChangePoint[] = [];
 
     // Compute rolling mean and std dev
@@ -143,7 +151,8 @@ export class TimeSeriesExtractor {
 
       if (stdDev === 0) continue;
 
-      const tStatistic = Math.abs(meanAfter - meanBefore) / (stdDev / Math.sqrt(windowSize));
+      const tStatistic =
+        Math.abs(meanAfter - meanBefore) / (stdDev / Math.sqrt(windowSize));
       const magnitude = Math.abs(meanAfter - meanBefore);
       const confidence = Math.min(1, tStatistic / threshold);
 
@@ -163,8 +172,11 @@ export class TimeSeriesExtractor {
   /**
    * Compute autocorrelation function
    */
-  computeAutocorrelation(series: TimeSeriesPoint[], maxLag: number = 30): number[] {
-    const values = series.map(s => s.value);
+  computeAutocorrelation(
+    series: TimeSeriesPoint[],
+    maxLag: number = 30,
+  ): number[] {
+    const values = series.map((s) => s.value);
     const n = values.length;
 
     if (n < 2) return [];
@@ -193,7 +205,7 @@ export class TimeSeriesExtractor {
   computeMovingAverage(
     values: number[],
     windowSize: number,
-    exponential: boolean = false
+    exponential: boolean = false,
   ): number[] {
     const result: number[] = [];
 
@@ -228,9 +240,9 @@ export class TimeSeriesExtractor {
    */
   detectOutliers(
     series: TimeSeriesPoint[],
-    threshold: number = 3.0
+    threshold: number = 3.0,
   ): OutlierPoint[] {
-    const values = series.map(s => s.value);
+    const values = series.map((s) => s.value);
     const mean = this.mean(values);
     const stdDev = this.standardDeviation(values, mean);
 
@@ -296,7 +308,7 @@ export class TimeSeriesExtractor {
           result[i] = result[nextIndex];
         } else {
           // No valid neighbors, use mean of all non-null values
-          const validValues = result.filter(v => v !== null) as number[];
+          const validValues = result.filter((v) => v !== null) as number[];
           result[i] = validValues.length > 0 ? this.mean(validValues) : 0;
         }
       }
@@ -354,7 +366,9 @@ export class TimeSeriesExtractor {
     if (values.length < 2) return 0;
 
     const m = mean ?? this.mean(values);
-    return values.reduce((sum, val) => sum + Math.pow(val - m, 2), 0) / values.length;
+    return (
+      values.reduce((sum, val) => sum + Math.pow(val - m, 2), 0) / values.length
+    );
   }
 
   /**

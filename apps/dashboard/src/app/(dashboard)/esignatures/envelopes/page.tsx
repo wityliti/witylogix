@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { cn } from '@/lib/utils';
-import { useApiList } from '@/hooks/use-api';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { FileText, Plus, Trash2 } from 'lucide-react';
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { useApiList } from "@/hooks/use-api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { FileText, Plus, Trash2 } from "lucide-react";
 
 interface Envelope {
   id: string;
@@ -69,7 +69,11 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
                 <span className="text-sm text-gray-400">
                   {selectedIds.size} selected
                 </span>
-                <Button variant="secondary" size="sm" className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
                   <Trash2 size={14} /> Delete
                 </Button>
                 <Button variant="secondary" size="sm">
@@ -87,17 +91,32 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
                   <th className="text-left py-3 px-4 w-10">
                     <input
                       type="checkbox"
-                      checked={selectedIds.size === envelopes.length && envelopes.length > 0}
+                      checked={
+                        selectedIds.size === envelopes.length &&
+                        envelopes.length > 0
+                      }
                       onChange={toggleSelectAll}
                       className="w-4 h-4 rounded border-wl-border-default accent-blue-500"
                     />
                   </th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">Name</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">Sender</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">Status</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">Signers</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">Completion</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-400">Created</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-400">
+                    Name
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-400">
+                    Sender
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-400">
+                    Status
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-400">
+                    Signers
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-400">
+                    Completion
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-400">
+                    Created
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -206,7 +225,11 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
                           <p className="text-sm font-medium text-white">
                             {r.name}
                           </p>
-                          <Badge variant={r.status === "SIGNED" ? "success" : "warning"}>
+                          <Badge
+                            variant={
+                              r.status === "SIGNED" ? "success" : "warning"
+                            }
+                          >
                             {r.status}
                           </Badge>
                         </div>
@@ -229,14 +252,18 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
                     <div className="flex justify-between">
                       <span className="text-gray-400">Created:</span>
                       <span className="text-white font-medium">
-                        {new Date(selectedEnvelope.createdDate).toLocaleDateString()}
+                        {new Date(
+                          selectedEnvelope.createdDate,
+                        ).toLocaleDateString()}
                       </span>
                     </div>
                     {selectedEnvelope.sentDate && (
                       <div className="flex justify-between">
                         <span className="text-gray-400">Sent:</span>
                         <span className="text-white font-medium">
-                          {new Date(selectedEnvelope.sentDate).toLocaleDateString()}
+                          {new Date(
+                            selectedEnvelope.sentDate,
+                          ).toLocaleDateString()}
                         </span>
                       </div>
                     )}
@@ -244,7 +271,9 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
                       <div className="flex justify-between">
                         <span className="text-gray-400">Completed:</span>
                         <span className="text-white font-medium">
-                          {new Date(selectedEnvelope.completedDate).toLocaleDateString()}
+                          {new Date(
+                            selectedEnvelope.completedDate,
+                          ).toLocaleDateString()}
                         </span>
                       </div>
                     )}
@@ -285,8 +314,13 @@ function EnvelopeTable({ envelopes }: { envelopes: Envelope[] }) {
 }
 
 export default function EnvelopesPage() {
-  const { items: data, loading, error, refetch } = useApiList<Envelope>('/api/v4/envelopes');
-  const [filterStatus, setFilterStatus] = useState<string>('ALL');
+  const {
+    items: data,
+    loading,
+    error,
+    refetch,
+  } = useApiList<Envelope>("/api/v4/envelopes");
+  const [filterStatus, setFilterStatus] = useState<string>("ALL");
 
   const statusOptions = [
     "ALL",
@@ -298,7 +332,10 @@ export default function EnvelopesPage() {
     "EXPIRED",
   ];
 
-  const filteredEnvelopes = filterStatus === "ALL" ? data : data.filter((e) => e.status === filterStatus);
+  const filteredEnvelopes =
+    filterStatus === "ALL"
+      ? data
+      : data.filter((e) => e.status === filterStatus);
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState message={error.message} onRetry={refetch} />;
@@ -309,8 +346,12 @@ export default function EnvelopesPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Envelope Management</h1>
-            <p className="text-gray-400">Create, send, and track document envelopes</p>
+            <h1 className="text-3xl font-bold text-white mb-2">
+              Envelope Management
+            </h1>
+            <p className="text-gray-400">
+              Create, send, and track document envelopes
+            </p>
           </div>
           <Button variant="primary" className="flex items-center gap-2">
             <Plus size={16} /> Create Envelope
@@ -323,7 +364,9 @@ export default function EnvelopesPage() {
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-gray-400 text-sm font-medium">Total Envelopes</span>
+              <span className="text-gray-400 text-sm font-medium">
+                Total Envelopes
+              </span>
               <FileText className="text-blue-500" size={20} />
             </div>
             <p className="text-3xl font-bold text-white">{data.length}</p>
@@ -333,11 +376,13 @@ export default function EnvelopesPage() {
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-gray-400 text-sm font-medium">Completed</span>
+              <span className="text-gray-400 text-sm font-medium">
+                Completed
+              </span>
               <div className="w-5 h-5 rounded-full bg-emerald-500"></div>
             </div>
             <p className="text-3xl font-bold text-white">
-              {data.filter(e => e.status === 'COMPLETED').length}
+              {data.filter((e) => e.status === "COMPLETED").length}
             </p>
           </CardContent>
         </Card>
@@ -349,7 +394,11 @@ export default function EnvelopesPage() {
               <div className="w-5 h-5 rounded-full bg-amber-500"></div>
             </div>
             <p className="text-3xl font-bold text-white">
-              {data.filter(e => ['DRAFT', 'SENT', 'VIEWED'].includes(e.status)).length}
+              {
+                data.filter((e) =>
+                  ["DRAFT", "SENT", "VIEWED"].includes(e.status),
+                ).length
+              }
             </p>
           </CardContent>
         </Card>
@@ -357,11 +406,19 @@ export default function EnvelopesPage() {
         <Card className="bg-wl-bg-surface border-wl-border-default">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-gray-400 text-sm font-medium">Avg. Completion</span>
+              <span className="text-gray-400 text-sm font-medium">
+                Avg. Completion
+              </span>
               <div className="w-5 h-5 rounded-full bg-blue-500"></div>
             </div>
             <p className="text-3xl font-bold text-white">
-              {data.length > 0 ? Math.round(data.reduce((sum, e) => sum + e.completionRate, 0) / data.length) : 0}%
+              {data.length > 0
+                ? Math.round(
+                    data.reduce((sum, e) => sum + e.completionRate, 0) /
+                      data.length,
+                  )
+                : 0}
+              %
             </p>
           </CardContent>
         </Card>
@@ -383,7 +440,7 @@ export default function EnvelopesPage() {
                     "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
                     filterStatus === status
                       ? "bg-blue-500 text-white"
-                      : "bg-wl-bg-elevated text-gray-400 hover:text-white"
+                      : "bg-wl-bg-elevated text-gray-400 hover:text-white",
                   )}
                 >
                   {status}

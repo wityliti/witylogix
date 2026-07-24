@@ -47,14 +47,14 @@ export interface ColumnDefinition<T> {
   key: keyof T;
   label: string;
   width?: string | number;
-  align?: 'left' | 'center' | 'right';
+  align?: "left" | "center" | "right";
   formatter?: (value: any) => string | React.ReactNode;
   sortable?: boolean;
 }
 
 export interface SortConfig {
   key: string;
-  direction: 'asc' | 'desc';
+  direction: "asc" | "desc";
 }
 
 export interface HeatmapData {

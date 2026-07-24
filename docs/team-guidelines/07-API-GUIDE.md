@@ -7,16 +7,19 @@ The API is a Fastify 5 application at `apps/api/`. It serves 61 route files, all
 ## Route Registration
 
 Every route file MUST be registered in `server.ts`:
+
 ```typescript
 await app.register(import("./routes/orders.js"), { prefix: "/api/v4/orders" });
 ```
 
 To check if a route is registered:
+
 ```bash
 grep 'prefix.*"/api/v4' apps/api/src/server.ts | wc -l  # Should be 61
 ```
 
 To find unregistered routes:
+
 ```bash
 for f in apps/api/src/routes/*.ts; do
   base=$(basename "$f" .ts);
@@ -46,7 +49,9 @@ const routes: FastifyPluginAsync = async (app) => {
       take: limit,
       orderBy: { createdAt: "desc" },
     });
-    const total = await (prisma as any).order.count({ where: { orgId: request.user.orgId } });
+    const total = await (prisma as any).order.count({
+      where: { orgId: request.user.orgId },
+    });
     return reply.send({ data: items, pagination: { page, limit, total } });
   });
 
@@ -128,15 +133,15 @@ All API responses follow this structure:
 
 Plugins are registered in `server.ts` before routes:
 
-| Plugin | Purpose |
-|--------|---------|
-| `rawBodyPlugin` | HMAC signature verification |
-| `cors` | Cross-origin requests |
-| `helmet` | Security headers |
-| `sensible` | Error utilities |
-| `jwt` | Token authentication |
-| `rateLimit` | Request throttling |
-| `errorHandlerPlugin` | Standardized error responses |
-| `websocket` | WebSocket real-time channels |
-| `sse` | Server-Sent Events fallback |
-| `workflow-integration` | Workflow engine hooks |
+| Plugin                 | Purpose                      |
+| ---------------------- | ---------------------------- |
+| `rawBodyPlugin`        | HMAC signature verification  |
+| `cors`                 | Cross-origin requests        |
+| `helmet`               | Security headers             |
+| `sensible`             | Error utilities              |
+| `jwt`                  | Token authentication         |
+| `rateLimit`            | Request throttling           |
+| `errorHandlerPlugin`   | Standardized error responses |
+| `websocket`            | WebSocket real-time channels |
+| `sse`                  | Server-Sent Events fallback  |
+| `workflow-integration` | Workflow engine hooks        |

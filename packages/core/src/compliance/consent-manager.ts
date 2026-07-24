@@ -4,7 +4,7 @@
  * Tracks consent grants, revocations, and maintains audit trail
  */
 
-import { ConsentRecord } from './types';
+import { ConsentRecord } from "./types";
 
 /**
  * Consent Manager
@@ -29,10 +29,10 @@ export class ConsentManager {
     purpose: string,
     granted: boolean,
     source: string,
-    metadata?: Partial<ConsentRecord>
+    metadata?: Partial<ConsentRecord>,
   ): ConsentRecord {
     if (!userId || !purpose) {
-      throw new Error('userId and purpose are required');
+      throw new Error("userId and purpose are required");
     }
 
     const consentRecord: ConsentRecord = {
@@ -65,7 +65,11 @@ export class ConsentManager {
    * @param reason - Optional reason for revocation
    * @returns Updated ConsentRecord or null if not found
    */
-  revokeConsent(userId: string, purpose: string, reason?: string): ConsentRecord | null {
+  revokeConsent(
+    userId: string,
+    purpose: string,
+    reason?: string,
+  ): ConsentRecord | null {
     const userConsents = this.consents.get(userId);
     if (!userConsents) {
       return null;
@@ -73,7 +77,7 @@ export class ConsentManager {
 
     // Find most recent consent for this purpose
     const consentIndex = userConsents.findIndex(
-      c => c.purpose === purpose && !c.revokedAt
+      (c) => c.purpose === purpose && !c.revokedAt,
     );
 
     if (consentIndex === -1) {
@@ -116,7 +120,9 @@ export class ConsentManager {
 
     for (const [purpose, consentRecords] of byPurpose.entries()) {
       // Sort by ID (which includes timestamp) and take most recent
-      const mostRecent = consentRecords.sort((a, b) => b.id.localeCompare(a.id))[0];
+      const mostRecent = consentRecords.sort((a, b) =>
+        b.id.localeCompare(a.id),
+      )[0];
       if (mostRecent.revokedAt) {
         revoked[purpose] = mostRecent.revokedAt;
       } else if (mostRecent.granted) {
@@ -178,7 +184,7 @@ export class ConsentManager {
     const history = this.getConsentHistory(userId);
     const status = this.getConsentStatus(userId);
 
-    const purposes = Array.from(new Set(history.map(c => c.purpose)));
+    const purposes = Array.from(new Set(history.map((c) => c.purpose)));
 
     return {
       totalConsents: history.length,
@@ -194,7 +200,7 @@ export class ConsentManager {
    */
   private getNextConsentVersion(userId: string, purpose: string): number {
     const userConsents = this.consents.get(userId) || [];
-    const purposeConsents = userConsents.filter(c => c.purpose === purpose);
+    const purposeConsents = userConsents.filter((c) => c.purpose === purpose);
     return purposeConsents.length + 1;
   }
 
@@ -204,7 +210,10 @@ export class ConsentManager {
    * @param purposes - Array of purposes to check
    * @returns Object mapping purpose to consent status
    */
-  validateMultipleConsents(userId: string, purposes: string[]): Record<string, boolean> {
+  validateMultipleConsents(
+    userId: string,
+    purposes: string[],
+  ): Record<string, boolean> {
     const result: Record<string, boolean> = {};
     for (const purpose of purposes) {
       result[purpose] = this.validateConsent(userId, purpose);

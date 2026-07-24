@@ -8,32 +8,32 @@
  * Filter operators for comparing values
  */
 export type FilterOperator =
-  | 'equals'
-  | 'not_equals'
-  | 'contains'
-  | 'starts_with'
-  | 'greater_than'
-  | 'less_than'
-  | 'in'
-  | 'between'
-  | 'is_empty'
-  | 'is_not_empty';
+  | "equals"
+  | "not_equals"
+  | "contains"
+  | "starts_with"
+  | "greater_than"
+  | "less_than"
+  | "in"
+  | "between"
+  | "is_empty"
+  | "is_not_empty";
 
 /**
  * Supported table names for views
  */
 export type TableName =
-  | 'orders'
-  | 'shipments'
-  | 'drivers'
-  | 'routes'
-  | 'customers'
-  | 'inventory';
+  | "orders"
+  | "shipments"
+  | "drivers"
+  | "routes"
+  | "customers"
+  | "inventory";
 
 /**
  * Sort direction
  */
-export type SortDirection = 'asc' | 'desc';
+export type SortDirection = "asc" | "desc";
 
 /**
  * A single filter condition for a view
@@ -103,76 +103,76 @@ export interface UpdateViewRequest {
  */
 export const TABLE_COLUMNS: Record<TableName, string[]> = {
   orders: [
-    'id',
-    'orderNumber',
-    'status',
-    'customer',
-    'total',
-    'items',
-    'createdAt',
-    'updatedAt',
-    'shippingAddress',
-    'notes',
+    "id",
+    "orderNumber",
+    "status",
+    "customer",
+    "total",
+    "items",
+    "createdAt",
+    "updatedAt",
+    "shippingAddress",
+    "notes",
   ],
   shipments: [
-    'id',
-    'shipmentNumber',
-    'orderId',
-    'status',
-    'carrier',
-    'trackingNumber',
-    'estimatedDelivery',
-    'actualDelivery',
-    'cost',
-    'weight',
+    "id",
+    "shipmentNumber",
+    "orderId",
+    "status",
+    "carrier",
+    "trackingNumber",
+    "estimatedDelivery",
+    "actualDelivery",
+    "cost",
+    "weight",
   ],
   drivers: [
-    'id',
-    'name',
-    'phone',
-    'email',
-    'status',
-    'vehicle',
-    'licensePlate',
-    'currentLocation',
-    'totalDeliveries',
-    'averageRating',
+    "id",
+    "name",
+    "phone",
+    "email",
+    "status",
+    "vehicle",
+    "licensePlate",
+    "currentLocation",
+    "totalDeliveries",
+    "averageRating",
   ],
   routes: [
-    'id',
-    'routeNumber',
-    'driverId',
-    'status',
-    'stops',
-    'distance',
-    'duration',
-    'startTime',
-    'endTime',
-    'efficiency',
+    "id",
+    "routeNumber",
+    "driverId",
+    "status",
+    "stops",
+    "distance",
+    "duration",
+    "startTime",
+    "endTime",
+    "efficiency",
   ],
   customers: [
-    'id',
-    'name',
-    'email',
-    'phone',
-    'address',
-    'city',
-    'country',
-    'totalOrders',
-    'totalSpent',
-    'createdAt',
+    "id",
+    "name",
+    "email",
+    "phone",
+    "address",
+    "city",
+    "country",
+    "totalOrders",
+    "totalSpent",
+    "createdAt",
   ],
   inventory: [
-    'id',
-    'productId',
-    'productName',
-    'location',
-    'quantity',
-    'reserved',
-    'available',
-    'reorderPoint',
-    'lastRestocked',
-    'sku',
+    "id",
+    "productId",
+    "productName",
+    "location",
+    "quantity",
+    "reserved",
+    "available",
+    "reorderPoint",
+    "lastRestocked",
+    "sku",
   ],
 };
 
@@ -182,7 +182,7 @@ export const TABLE_COLUMNS: Record<TableName, string[]> = {
 export class ViewNotFoundError extends Error {
   constructor(viewId: string) {
     super(`View not found: ${viewId}`);
-    this.name = 'ViewNotFoundError';
+    this.name = "ViewNotFoundError";
   }
 }
 
@@ -192,6 +192,6 @@ export class ViewNotFoundError extends Error {
 export class ViewValidationError extends Error {
   constructor(message: string) {
     super(`View validation error: ${message}`);
-    this.name = 'ViewValidationError';
+    this.name = "ViewValidationError";
   }
 }

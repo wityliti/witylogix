@@ -33,7 +33,10 @@ import type { WitylogixEvents } from "../../event-bus/types.js";
 export class OrderWebhookConsumer extends QueueConsumer {
   private eventBus?: TypedEventBus<WitylogixEvents>;
 
-  constructor(config: ConsumerConfig, eventBus?: TypedEventBus<WitylogixEvents>) {
+  constructor(
+    config: ConsumerConfig,
+    eventBus?: TypedEventBus<WitylogixEvents>,
+  ) {
     super(config);
     this.eventBus = eventBus;
   }
@@ -48,9 +51,7 @@ export class OrderWebhookConsumer extends QueueConsumer {
     await super.validateJob(job);
 
     if (job.type !== "order_webhook") {
-      throw new QueueValidationError(
-        `Expected order_webhook, got ${job.type}`,
-      );
+      throw new QueueValidationError(`Expected order_webhook, got ${job.type}`);
     }
 
     const { data } = job as { type: "order_webhook"; data: OrderWebhookJob };
@@ -65,9 +66,7 @@ export class OrderWebhookConsumer extends QueueConsumer {
 
     // Validate address information
     if (!payload.shipping_address) {
-      throw new QueueValidationError(
-        "Order missing required shipping_address",
-      );
+      throw new QueueValidationError("Order missing required shipping_address");
     }
 
     const addr = payload.shipping_address;
@@ -78,7 +77,9 @@ export class OrderWebhookConsumer extends QueueConsumer {
       !addr.country ||
       !addr.zip
     ) {
-      throw new QueueValidationError("Shipping address missing required fields");
+      throw new QueueValidationError(
+        "Shipping address missing required fields",
+      );
     }
 
     // Validate line items
@@ -175,10 +176,7 @@ export class OrderWebhookConsumer extends QueueConsumer {
       };
     } catch (error) {
       // Determine if error is retriable
-      if (
-        error instanceof Error &&
-        error.message.includes("database")
-      ) {
+      if (error instanceof Error && error.message.includes("database")) {
         // Database errors are transient and should be retried
         throw new QueueTransientError(
           `Database error processing order: ${error.message}`,
@@ -371,19 +369,25 @@ export class OrderWebhookConsumer extends QueueConsumer {
       );
 
       if (!this.eventBus) {
-        console.warn("[OrderWebhookConsumer] EventBus not initialized, skipping event emission");
+        console.warn(
+          "[OrderWebhookConsumer] EventBus not initialized, skipping event emission",
+        );
         return;
       }
 
       // Emit order created event
-      await this.eventBus.emit("order.created", {
-        orderId,
-        shopId,
-        customerId: payload.email,
-        totalAmount: parseFloat(payload.total_price),
-        currency: payload.currency,
-        createdAt: payload.created_at,
-      }, { tenantId: shopId });
+      await this.eventBus.emit(
+        "order.created",
+        {
+          orderId,
+          shopId,
+          customerId: payload.email,
+          totalAmount: parseFloat(payload.total_price),
+          currency: payload.currency,
+          createdAt: payload.created_at,
+        },
+        { tenantId: shopId },
+      );
 
       await this.simulateAsyncOperation(20);
     } catch (error) {
@@ -412,16 +416,22 @@ export class OrderWebhookConsumer extends QueueConsumer {
       );
 
       if (!this.eventBus) {
-        console.warn("[OrderWebhookConsumer] EventBus not initialized, skipping notification");
+        console.warn(
+          "[OrderWebhookConsumer] EventBus not initialized, skipping notification",
+        );
         return;
       }
 
       // Emit order confirmed event
-      await this.eventBus.emit("order.confirmed", {
-        orderId,
-        shopId,
-        confirmedAt: new Date().toISOString(),
-      }, { tenantId: shopId });
+      await this.eventBus.emit(
+        "order.confirmed",
+        {
+          orderId,
+          shopId,
+          confirmedAt: new Date().toISOString(),
+        },
+        { tenantId: shopId },
+      );
 
       await this.simulateAsyncOperation(25);
     } catch (error) {

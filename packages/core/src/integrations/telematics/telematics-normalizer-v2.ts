@@ -114,7 +114,11 @@ export class TelematicsNormalizerV2 {
       lat: record.latitude,
       lng: record.longitude,
       heading: record.bearing,
-      speed: this.convertSpeed(record.speed, "kmh", this.tenantRules!.speedUnit),
+      speed: this.convertSpeed(
+        record.speed,
+        "kmh",
+        this.tenantRules!.speedUnit,
+      ),
       timestamp: new Date(record.dateTime),
       provider,
       accuracy: 0, // Geotab doesn't provide accuracy
@@ -162,7 +166,11 @@ export class TelematicsNormalizerV2 {
    * Normalize Geotab Trip to WitylogixTrip
    */
   normalizeGeotabTrip(trip: GeotabTrip): WitylogixTrip {
-    const distanceMiles = this.convertDistance(trip.distance, "kilometers", "miles");
+    const distanceMiles = this.convertDistance(
+      trip.distance,
+      "kilometers",
+      "miles",
+    );
 
     return {
       vehicleId: trip.device.id,
@@ -182,13 +190,20 @@ export class TelematicsNormalizerV2 {
   /**
    * Normalize Samsara location to WitylogixVehiclePosition
    */
-  normalizeSamsaraPosition(location: SamsaraLocation, provider: string = "samsara"): WitylogixVehiclePosition {
+  normalizeSamsaraPosition(
+    location: SamsaraLocation,
+    provider: string = "samsara",
+  ): WitylogixVehiclePosition {
     return {
       vehicleId: location.vehicleId,
       lat: location.latitude,
       lng: location.longitude,
       heading: location.heading,
-      speed: this.convertSpeed(location.speedMph, "mph", this.tenantRules!.speedUnit),
+      speed: this.convertSpeed(
+        location.speedMph,
+        "mph",
+        this.tenantRules!.speedUnit,
+      ),
       timestamp: new Date(location.time),
       provider,
       accuracy: location.accuracy || 0,
@@ -208,7 +223,11 @@ export class TelematicsNormalizerV2 {
       fuelUnit: this.tenantRules?.fuelUnit || "gallons",
       odometer: stats.odometer
         ? {
-            value: this.convertDistance(stats.odometer.miles, "miles", this.tenantRules!.distanceUnit),
+            value: this.convertDistance(
+              stats.odometer.miles,
+              "miles",
+              this.tenantRules!.distanceUnit,
+            ),
             unit: this.tenantRules!.distanceUnit,
           }
         : undefined,
@@ -223,7 +242,9 @@ export class TelematicsNormalizerV2 {
   /**
    * Deduplicate positions based on distance threshold
    */
-  deduplicatePosition(position: WitylogixVehiclePosition): WitylogixVehiclePosition | null {
+  deduplicatePosition(
+    position: WitylogixVehiclePosition,
+  ): WitylogixVehiclePosition | null {
     const threshold = this.tenantRules?.deduplicationMeters || 5;
     const state = this.deduplicationState[position.vehicleId];
 
@@ -282,7 +303,9 @@ export class TelematicsNormalizerV2 {
   /**
    * Enrich position with idle detection
    */
-  enrichPositionWithIdleDetection(position: WitylogixVehiclePosition): EnrichedVehiclePosition {
+  enrichPositionWithIdleDetection(
+    position: WitylogixVehiclePosition,
+  ): EnrichedVehiclePosition {
     return {
       ...(position as EnrichedVehiclePosition),
       geofences: (position as EnrichedVehiclePosition).geofences || [],
@@ -293,7 +316,11 @@ export class TelematicsNormalizerV2 {
   /**
    * Convert speed between units
    */
-  private convertSpeed(value: number, fromUnit: "mph" | "kmh", toUnit: "mph" | "kmh"): number {
+  private convertSpeed(
+    value: number,
+    fromUnit: "mph" | "kmh",
+    toUnit: "mph" | "kmh",
+  ): number {
     if (fromUnit === toUnit) return value;
     if (fromUnit === "mph" && toUnit === "kmh") {
       return value * 1.60934;
@@ -319,20 +346,30 @@ export class TelematicsNormalizerV2 {
   /**
    * Extract numeric value from StatusData
    */
-  private extractNumericValue(statusData?: GeotabStatusData): number | undefined {
+  private extractNumericValue(
+    statusData?: GeotabStatusData,
+  ): number | undefined {
     if (!statusData) return undefined;
     const value = statusData.value;
-    return typeof value === "number" ? value : parseFloat(String(value)) || undefined;
+    return typeof value === "number"
+      ? value
+      : parseFloat(String(value)) || undefined;
   }
 
   /**
    * Extract odometer data
    */
-  private extractOdometerData(statusData?: GeotabStatusData): { value: number; unit: "miles" | "kilometers" } | undefined {
+  private extractOdometerData(
+    statusData?: GeotabStatusData,
+  ): { value: number; unit: "miles" | "kilometers" } | undefined {
     const value = this.extractNumericValue(statusData);
     return value
       ? {
-          value: this.convertDistance(value, "kilometers", this.tenantRules!.distanceUnit),
+          value: this.convertDistance(
+            value,
+            "kilometers",
+            this.tenantRules!.distanceUnit,
+          ),
           unit: this.tenantRules!.distanceUnit,
         }
       : undefined;
@@ -360,13 +397,26 @@ export class TelematicsNormalizerV2 {
   /**
    * Check if point is inside geofence (circle or polygon)
    */
-  private isPointInGeofence(lat: number, lng: number, geofence: GeofenceConfig): boolean {
+  private isPointInGeofence(
+    lat: number,
+    lng: number,
+    geofence: GeofenceConfig,
+  ): boolean {
     if (geofence.type === "circle" && geofence.center && geofence.radius) {
-      const distance = this.haversineDistance(lat, lng, geofence.center.lat, geofence.center.lng);
+      const distance = this.haversineDistance(
+        lat,
+        lng,
+        geofence.center.lat,
+        geofence.center.lng,
+      );
       return distance <= geofence.radius;
     }
 
-    if (geofence.type === "polygon" && geofence.points && geofence.points.length >= 3) {
+    if (
+      geofence.type === "polygon" &&
+      geofence.points &&
+      geofence.points.length >= 3
+    ) {
       return this.pointInPolygon(lat, lng, geofence.points);
     }
 
@@ -376,7 +426,12 @@ export class TelematicsNormalizerV2 {
   /**
    * Haversine distance calculation in meters
    */
-  private haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  private haversineDistance(
+    lat1: number,
+    lng1: number,
+    lat2: number,
+    lng2: number,
+  ): number {
     const R = 6371000; // Earth radius in meters
     const dLat = ((lat2 - lat1) * Math.PI) / 180;
     const dLng = ((lng2 - lng1) * Math.PI) / 180;
@@ -393,7 +448,11 @@ export class TelematicsNormalizerV2 {
   /**
    * Point-in-polygon test using ray casting
    */
-  private pointInPolygon(lat: number, lng: number, polygon: Array<{ lat: number; lng: number }>): boolean {
+  private pointInPolygon(
+    lat: number,
+    lng: number,
+    polygon: Array<{ lat: number; lng: number }>,
+  ): boolean {
     let inside = false;
 
     for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
@@ -402,7 +461,9 @@ export class TelematicsNormalizerV2 {
       const xj = polygon[j].lng;
       const yj = polygon[j].lat;
 
-      const intersect = yi > lng !== yj > lng && lat < ((xj - xi) * (lng - yi)) / (yj - yi) + xi;
+      const intersect =
+        yi > lng !== yj > lng &&
+        lat < ((xj - xi) * (lng - yi)) / (yj - yi) + xi;
       if (intersect) {
         inside = !inside;
       }

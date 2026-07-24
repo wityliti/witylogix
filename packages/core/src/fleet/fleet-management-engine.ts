@@ -99,7 +99,9 @@ export class VehicleManager {
   /**
    * Get vehicle by license plate
    */
-  async getVehicleByLicensePlate(licensePlate: string): Promise<Vehicle | null> {
+  async getVehicleByLicensePlate(
+    licensePlate: string,
+  ): Promise<Vehicle | null> {
     const vehicle = await (this.prisma as any).vehicle.findFirst({
       where: { licensePlate },
     });
@@ -124,7 +126,8 @@ export class VehicleManager {
     if (filter?.status) where.status = filter.status;
     if (filter?.type) where.type = filter.type;
     if (filter?.fuelType) where.fuelType = filter.fuelType;
-    if (filter?.assignedDriverId) where.assignedDriverId = filter.assignedDriverId;
+    if (filter?.assignedDriverId)
+      where.assignedDriverId = filter.assignedDriverId;
 
     const [vehicles, total] = await Promise.all([
       (this.prisma as any).vehicle.findMany({
@@ -145,7 +148,10 @@ export class VehicleManager {
   /**
    * Update vehicle details
    */
-  async updateVehicle(vehicleId: string, request: UpdateVehicleRequest): Promise<Vehicle> {
+  async updateVehicle(
+    vehicleId: string,
+    request: UpdateVehicleRequest,
+  ): Promise<Vehicle> {
     const vehicle = await (this.prisma as any).vehicle.update({
       where: { id: vehicleId },
       data: {
@@ -199,7 +205,8 @@ export class VehicleManager {
 
     const now = new Date();
     const daysUntilExpiry = Math.ceil(
-      (vehicle.registration.expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+      (vehicle.registration.expiryDate.getTime() - now.getTime()) /
+        (1000 * 60 * 60 * 24),
     );
 
     return {
@@ -222,7 +229,8 @@ export class VehicleManager {
 
     const now = new Date();
     const daysUntilExpiry = Math.ceil(
-      (vehicle.insurance.expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+      (vehicle.insurance.expiryDate.getTime() - now.getTime()) /
+        (1000 * 60 * 60 * 24),
     );
 
     return {
@@ -276,7 +284,9 @@ export class VehicleAssigner {
   /**
    * Assign vehicle to driver
    */
-  async assignVehicle(request: AssignVehicleRequest): Promise<VehicleAssignment> {
+  async assignVehicle(
+    request: AssignVehicleRequest,
+  ): Promise<VehicleAssignment> {
     const vehicle = await (this.prisma as any).vehicle.findUnique({
       where: { id: request.vehicleId },
     });
@@ -286,14 +296,19 @@ export class VehicleAssigner {
     }
 
     // Check if vehicle is already assigned
-    const existingAssignment = await (this.prisma as any).vehicleAssignment.findFirst({
+    const existingAssignment = await (
+      this.prisma as any
+    ).vehicleAssignment.findFirst({
       where: { vehicleId: request.vehicleId, endDate: null },
     });
 
     if (existingAssignment) {
       throw new InvalidAssignmentError(
         `Vehicle is already assigned to driver ${existingAssignment.driverId}`,
-        { vehicleId: request.vehicleId, currentDriver: existingAssignment.driverId },
+        {
+          vehicleId: request.vehicleId,
+          currentDriver: existingAssignment.driverId,
+        },
       );
     }
 
@@ -319,7 +334,9 @@ export class VehicleAssigner {
    * Unassign vehicle from driver
    */
   async unassignVehicle(vehicleId: string): Promise<VehicleAssignment> {
-    const activeAssignment = await (this.prisma as any).vehicleAssignment.findFirst({
+    const activeAssignment = await (
+      this.prisma as any
+    ).vehicleAssignment.findFirst({
       where: { vehicleId, endDate: null },
     });
 
@@ -350,7 +367,10 @@ export class VehicleAssigner {
   async swapVehicles(
     vehicleId1: string,
     vehicleId2: string,
-  ): Promise<{ assignment1: VehicleAssignment; assignment2: VehicleAssignment }> {
+  ): Promise<{
+    assignment1: VehicleAssignment;
+    assignment2: VehicleAssignment;
+  }> {
     const [assignment1, assignment2] = await Promise.all([
       (this.prisma as any).vehicleAssignment.findFirst({
         where: { vehicleId: vehicleId1, endDate: null },
@@ -361,10 +381,13 @@ export class VehicleAssigner {
     ]);
 
     if (!assignment1 || !assignment2) {
-      throw new InvalidAssignmentError("Both vehicles must have active assignments", {
-        vehicleId1: vehicleId1,
-        vehicleId2: vehicleId2,
-      });
+      throw new InvalidAssignmentError(
+        "Both vehicles must have active assignments",
+        {
+          vehicleId1: vehicleId1,
+          vehicleId2: vehicleId2,
+        },
+      );
     }
 
     const driverId1 = assignment1.driverId;
@@ -481,7 +504,9 @@ export class FleetHealthCalculator {
       (m: any) => m.status === "COMPLETED",
     ).length;
     const maintenanceCompliance =
-      maintenance.length > 0 ? (completedCount / maintenance.length) * 100 : 100;
+      maintenance.length > 0
+        ? (completedCount / maintenance.length) * 100
+        : 100;
 
     // Calculate age score (newer = higher)
     const currentYear = new Date().getFullYear();
@@ -560,14 +585,20 @@ export class FleetHealthCalculator {
     );
 
     if (scores.length === 0) {
-      throw new FleetManagementError("No vehicles in fleet", "NO_VEHICLES", 400);
+      throw new FleetManagementError(
+        "No vehicles in fleet",
+        "NO_VEHICLES",
+        400,
+      );
     }
 
     const avgOverall =
       scores.reduce((sum, s) => sum + s.overallScore, 0) / scores.length;
     const avgMaintenance =
-      scores.reduce((sum, s) => sum + s.maintenanceCompliance, 0) / scores.length;
-    const avgAge = scores.reduce((sum, s) => sum + s.ageScore, 0) / scores.length;
+      scores.reduce((sum, s) => sum + s.maintenanceCompliance, 0) /
+      scores.length;
+    const avgAge =
+      scores.reduce((sum, s) => sum + s.ageScore, 0) / scores.length;
     const avgMileage =
       scores.reduce((sum, s) => sum + s.mileageScore, 0) / scores.length;
     const avgIncidents =
@@ -726,7 +757,10 @@ export class VehicleLifecycleManager {
   /**
    * Dispose of vehicle
    */
-  async disposeVehicle(vehicleId: string, disposalValue: number): Promise<Vehicle> {
+  async disposeVehicle(
+    vehicleId: string,
+    disposalValue: number,
+  ): Promise<Vehicle> {
     const vehicleManager = new VehicleManager(this.prisma);
     const vehicle = await vehicleManager.updateVehicle(vehicleId, {
       status: "DISPOSED",
@@ -747,7 +781,10 @@ export class VehicleLifecycleManager {
   /**
    * Calculate total cost of ownership
    */
-  async calculateTCO(vehicleId: string, lifespanYears: number): Promise<{
+  async calculateTCO(
+    vehicleId: string,
+    lifespanYears: number,
+  ): Promise<{
     acquisition: number;
     fuel: number;
     maintenance: number;
@@ -775,7 +812,10 @@ export class VehicleLifecycleManager {
       }),
     ]);
 
-    const fuelCost = fuelTransactions.reduce((sum: number, f: any) => sum + f.totalCost, 0);
+    const fuelCost = fuelTransactions.reduce(
+      (sum: number, f: any) => sum + f.totalCost,
+      0,
+    );
     const maintenanceCost = maintenanceRecords.reduce(
       (sum: number, m: any) => sum + (m.cost || 0),
       0,
@@ -789,7 +829,12 @@ export class VehicleLifecycleManager {
     const salvageValue = acquisitionCost * 0.1;
     const depreciation = acquisitionCost - salvageValue;
 
-    const total = acquisitionCost + fuelCost + maintenanceCost + insuranceCost + depreciation;
+    const total =
+      acquisitionCost +
+      fuelCost +
+      maintenanceCost +
+      insuranceCost +
+      depreciation;
 
     return {
       acquisition: acquisitionCost,
@@ -910,45 +955,69 @@ export class FleetDashboardAggregator {
    * Get comprehensive fleet dashboard metrics
    */
   async getFleetDashboard(): Promise<FleetDashboardMetrics> {
-    const [vehicles, healthScores, fuelTransactions, maintenanceRecords] = await Promise.all([
-      (this.prisma as any).vehicle.findMany(),
-      (this.prisma as any).fleetHealthScore.findMany(),
-      (this.prisma as any).fuelTransaction.findMany(),
-      (this.prisma as any).maintenanceRecord.findMany(),
-    ]);
+    const [vehicles, healthScores, fuelTransactions, maintenanceRecords] =
+      await Promise.all([
+        (this.prisma as any).vehicle.findMany(),
+        (this.prisma as any).fleetHealthScore.findMany(),
+        (this.prisma as any).fuelTransaction.findMany(),
+        (this.prisma as any).maintenanceRecord.findMany(),
+      ]);
 
-    const activeVehicles = vehicles.filter((v: any) => v.status === "ACTIVE").length;
-    const maintenanceVehicles = vehicles.filter((v: any) => v.status === "MAINTENANCE").length;
-    const retiredVehicles = vehicles.filter((v: any) => v.status === "RETIRED").length;
-    const disposedVehicles = vehicles.filter((v: any) => v.status === "DISPOSED").length;
+    const activeVehicles = vehicles.filter(
+      (v: any) => v.status === "ACTIVE",
+    ).length;
+    const maintenanceVehicles = vehicles.filter(
+      (v: any) => v.status === "MAINTENANCE",
+    ).length;
+    const retiredVehicles = vehicles.filter(
+      (v: any) => v.status === "RETIRED",
+    ).length;
+    const disposedVehicles = vehicles.filter(
+      (v: any) => v.status === "DISPOSED",
+    ).length;
 
-    const totalMiles = vehicles.reduce((sum: number, v: any) => sum + v.mileage, 0);
-    const utilizationRate = activeVehicles > 0 ? (activeVehicles / vehicles.length) * 100 : 0;
+    const totalMiles = vehicles.reduce(
+      (sum: number, v: any) => sum + v.mileage,
+      0,
+    );
+    const utilizationRate =
+      activeVehicles > 0 ? (activeVehicles / vehicles.length) * 100 : 0;
 
     const avgHealthScore =
       healthScores.length > 0
-        ? healthScores.reduce((sum: number, h: any) => sum + h.overallScore, 0) /
-          healthScores.length
+        ? healthScores.reduce(
+            (sum: number, h: any) => sum + h.overallScore,
+            0,
+          ) / healthScores.length
         : 0;
 
-    const totalFuelCost = fuelTransactions.reduce((sum: number, f: any) => sum + f.totalCost, 0);
+    const totalFuelCost = fuelTransactions.reduce(
+      (sum: number, f: any) => sum + f.totalCost,
+      0,
+    );
     const totalMaintenanceCost = maintenanceRecords.reduce(
       (sum: number, m: any) => sum + (m.cost || 0),
       0,
     );
-    const costPerMile = totalMiles > 0 ? (totalFuelCost + totalMaintenanceCost) / totalMiles : 0;
+    const costPerMile =
+      totalMiles > 0 ? (totalFuelCost + totalMaintenanceCost) / totalMiles : 0;
 
     const overdueMaintenance = maintenanceRecords.filter(
       (m: any) => m.status === "OVERDUE",
     ).length;
 
-    const totalGallons = fuelTransactions.reduce((sum: number, f: any) => sum + f.gallons, 0);
+    const totalGallons = fuelTransactions.reduce(
+      (sum: number, f: any) => sum + f.gallons,
+      0,
+    );
     const avgFuelEconomy = totalGallons > 0 ? totalMiles / totalGallons : 0;
 
     const avgAge =
       vehicles.length > 0
-        ? vehicles.reduce((sum: number, v: any) => sum + (new Date().getFullYear() - v.year), 0) /
-          vehicles.length
+        ? vehicles.reduce(
+            (sum: number, v: any) => sum + (new Date().getFullYear() - v.year),
+            0,
+          ) / vehicles.length
         : 0;
 
     const avgMileage = vehicles.length > 0 ? totalMiles / vehicles.length : 0;
@@ -986,7 +1055,8 @@ export class FleetDashboardAggregator {
     return {
       active: vehicles.filter((v: any) => v.status === "ACTIVE").length,
       idle: 0, // Would require real-time telematics data
-      maintenance: vehicles.filter((v: any) => v.status === "MAINTENANCE").length,
+      maintenance: vehicles.filter((v: any) => v.status === "MAINTENANCE")
+        .length,
       offline: 0, // Would require real-time telematics data
     };
   }
@@ -997,7 +1067,12 @@ export class FleetDashboardAggregator {
   async getCostSummary(
     startDate: Date,
     endDate: Date,
-  ): Promise<{ fuel: number; maintenance: number; insurance: number; total: number }> {
+  ): Promise<{
+    fuel: number;
+    maintenance: number;
+    insurance: number;
+    total: number;
+  }> {
     const [fuelTransactions, maintenanceRecords, vehicles] = await Promise.all([
       (this.prisma as any).fuelTransaction.findMany({
         where: { date: { gte: startDate, lte: endDate } },
@@ -1008,9 +1083,18 @@ export class FleetDashboardAggregator {
       (this.prisma as any).vehicle.findMany(),
     ]);
 
-    const fuel = fuelTransactions.reduce((sum: number, f: any) => sum + f.totalCost, 0);
-    const maintenance = maintenanceRecords.reduce((sum: number, m: any) => sum + (m.cost || 0), 0);
-    const insurance = vehicles.reduce((sum: number, v: any) => sum + v.insurance.premium, 0);
+    const fuel = fuelTransactions.reduce(
+      (sum: number, f: any) => sum + f.totalCost,
+      0,
+    );
+    const maintenance = maintenanceRecords.reduce(
+      (sum: number, m: any) => sum + (m.cost || 0),
+      0,
+    );
+    const insurance = vehicles.reduce(
+      (sum: number, v: any) => sum + v.insurance.premium,
+      0,
+    );
 
     return {
       fuel,

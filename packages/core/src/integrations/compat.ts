@@ -83,10 +83,15 @@ export function resolveNotificationProviderCompat(
  * RoutingProvider instantiation still happens in the routing module.
  */
 export function resolveRoutingCredentialsCompat(
-  tenantCredentials?: { provider?: string; apiKey?: string; baseUrl?: string } | null,
+  tenantCredentials?: {
+    provider?: string;
+    apiKey?: string;
+    baseUrl?: string;
+  } | null,
   shopId?: string,
 ) {
-  const slug = tenantCredentials?.provider || process.env.ROUTING_PROVIDER || "mapbox";
+  const slug =
+    tenantCredentials?.provider || process.env.ROUTING_PROVIDER || "mapbox";
 
   let tenantInstallation: TenantIntegrationConfig | null = null;
   if (tenantCredentials?.apiKey || tenantCredentials?.baseUrl) {

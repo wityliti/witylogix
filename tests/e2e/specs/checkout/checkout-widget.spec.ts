@@ -1,16 +1,24 @@
-import { test, expect } from '../../fixtures/auth.fixture';
-import { CheckoutWidgetPage } from '../../pages/checkout-widget.page';
-import { setupCheckoutMocks, setupErrorMocks, clearAllMocks } from '../../helpers/mock-api';
-import { mockAddresses, mockTimeSlots, mockBlackoutDates } from '../../fixtures/checkout-fixtures';
+import { test, expect } from "../../fixtures/auth.fixture";
+import { CheckoutWidgetPage } from "../../pages/checkout-widget.page";
+import {
+  setupCheckoutMocks,
+  setupErrorMocks,
+  clearAllMocks,
+} from "../../helpers/mock-api";
+import {
+  mockAddresses,
+  mockTimeSlots,
+  mockBlackoutDates,
+} from "../../fixtures/checkout-fixtures";
 
-test.describe('Checkout Widget', () => {
+test.describe("Checkout Widget", () => {
   let checkoutPage: CheckoutWidgetPage;
 
   test.beforeEach(async ({ page }) => {
     checkoutPage = new CheckoutWidgetPage(page);
     await setupCheckoutMocks(page);
     // Navigate to checkout page or open widget
-    await page.goto('/checkout', { waitUntil: 'networkidle' });
+    await page.goto("/checkout", { waitUntil: "networkidle" });
     await checkoutPage.waitForWidgetLoad();
   });
 
@@ -18,24 +26,26 @@ test.describe('Checkout Widget', () => {
     await clearAllMocks(page);
   });
 
-  test('should validate address and detect zone', async () => {
+  test("should validate address and detect zone", async () => {
     // Enter valid address
     const testAddress = mockAddresses[0];
     await checkoutPage.enterAddress(testAddress.address);
 
     // Verify address is accepted
     const errorMsg = await checkoutPage.getErrorMessage();
-    expect(errorMsg).toBe('');
+    expect(errorMsg).toBe("");
 
     // Verify zone is detected
-    const zoneVisible = await checkoutPage.zoneIndicator.isVisible().catch(() => false);
+    const zoneVisible = await checkoutPage.zoneIndicator
+      .isVisible()
+      .catch(() => false);
     if (zoneVisible) {
       const zoneText = await checkoutPage.zoneIndicator.textContent();
       expect(zoneText).toBeTruthy();
     }
   });
 
-  test('should show available dates with capacity indicators', async () => {
+  test("should show available dates with capacity indicators", async () => {
     // Enter address
     const testAddress = mockAddresses[0];
     await checkoutPage.enterAddress(testAddress.address);
@@ -51,28 +61,30 @@ test.describe('Checkout Widget', () => {
 
     // Verify no blackout dates are selectable
     const blackoutDateElement = checkoutPage.page.locator(
-      `[data-testid="calendar-date"][data-date="${mockBlackoutDates[0]}"]`
+      `[data-testid="calendar-date"][data-date="${mockBlackoutDates[0]}"]`,
     );
     const isDisabled = await blackoutDateElement.isDisabled().catch(() => true);
     expect(isDisabled).toBeTruthy();
   });
 
-  test('should display blackout dates as disabled', async () => {
+  test("should display blackout dates as disabled", async () => {
     // Open date selector
     await checkoutPage.dateSelector.click();
 
     // Verify blackout dates exist and are disabled
     const blackoutDate = mockBlackoutDates[0];
     const blackoutElement = checkoutPage.page.locator(
-      `[data-testid="calendar-date"][data-date="${blackoutDate}"]`
+      `[data-testid="calendar-date"][data-date="${blackoutDate}"]`,
     );
 
     const isDisabled = await blackoutElement.isDisabled().catch(() => false);
     // Blackout dates should be disabled or not exist
-    expect(isDisabled || !(await blackoutElement.isVisible().catch(() => false))).toBeTruthy();
+    expect(
+      isDisabled || !(await blackoutElement.isVisible().catch(() => false)),
+    ).toBeTruthy();
   });
 
-  test('should show time slots with remaining capacity', async () => {
+  test("should show time slots with remaining capacity", async () => {
     // Enter address and select date
     const testAddress = mockAddresses[0];
     await checkoutPage.enterAddress(testAddress.address);
@@ -101,13 +113,13 @@ test.describe('Checkout Widget', () => {
     expect(availableSlots.length).toBeGreaterThan(0);
   });
 
-  test('should calculate delivery rate based on zone', async () => {
+  test("should calculate delivery rate based on zone", async () => {
     // Enter address
     const testAddress = mockAddresses[0];
     await checkoutPage.enterAddress(testAddress.address);
 
     // Wait for rate calculation
-    await checkoutPage.page.waitForLoadState('networkidle');
+    await checkoutPage.page.waitForLoadState("networkidle");
 
     // Get delivery rate
     const rate = await checkoutPage.getDeliveryRate();
@@ -116,7 +128,7 @@ test.describe('Checkout Widget', () => {
     expect(rate).toBeGreaterThan(0);
   });
 
-  test('should enforce order deadline/cut-off', async () => {
+  test("should enforce order deadline/cut-off", async () => {
     // Enter address
     const testAddress = mockAddresses[0];
     await checkoutPage.enterAddress(testAddress.address);
@@ -129,14 +141,14 @@ test.describe('Checkout Widget', () => {
     expect(hasCutoff !== null).toBeTruthy();
   });
 
-  test('should complete full checkout flow: address → method → date → time → review', async () => {
+  test("should complete full checkout flow: address → method → date → time → review", async () => {
     // Step 1: Enter address
     const testAddress = mockAddresses[0];
     await checkoutPage.enterAddress(testAddress.address);
     await checkoutPage.expectAddressStep();
 
     // Step 2: Select delivery method
-    await checkoutPage.selectDeliveryMethod('standard');
+    await checkoutPage.selectDeliveryMethod("standard");
 
     // Step 3: Select date
     const dates = await checkoutPage.getAvailableDates();
@@ -171,9 +183,9 @@ test.describe('Checkout Widget', () => {
     expect(successMsg || true).toBeTruthy();
   });
 
-  test('should handle outside delivery zone gracefully', async () => {
+  test("should handle outside delivery zone gracefully", async () => {
     // Setup error mock
-    await setupErrorMocks(checkoutPage.page, 'outside-zone');
+    await setupErrorMocks(checkoutPage.page, "outside-zone");
 
     // Enter address in outside zone
     const outsideAddress = mockAddresses[3]; // The outside zone address
@@ -187,19 +199,19 @@ test.describe('Checkout Widget', () => {
     expect(errorMsg).toBeTruthy();
   });
 
-  test('should show error message for invalid zipcode', async () => {
+  test("should show error message for invalid zipcode", async () => {
     // Setup error mock
-    await setupErrorMocks(checkoutPage.page, 'invalid-zipcode');
+    await setupErrorMocks(checkoutPage.page, "invalid-zipcode");
 
     // Try to validate invalid zipcode
-    const isValid = await checkoutPage.validateZipcode('00000');
+    const isValid = await checkoutPage.validateZipcode("00000");
     expect(isValid).toBe(false);
 
     const errorMsg = await checkoutPage.getErrorMessage();
     expect(errorMsg).toBeTruthy();
   });
 
-  test('should display capacity indicator for selected slot', async () => {
+  test("should display capacity indicator for selected slot", async () => {
     // Enter address
     const testAddress = mockAddresses[0];
     await checkoutPage.enterAddress(testAddress.address);
@@ -225,7 +237,7 @@ test.describe('Checkout Widget', () => {
     }
   });
 
-  test('should calculate order total correctly', async () => {
+  test("should calculate order total correctly", async () => {
     // Enter address
     const testAddress = mockAddresses[0];
     await checkoutPage.enterAddress(testAddress.address);
@@ -252,7 +264,7 @@ test.describe('Checkout Widget', () => {
     expect(Math.abs(summary.total - expectedTotal)).toBeLessThan(0.01); // Allow for rounding
   });
 
-  test('should show delivery rate for different methods', async () => {
+  test("should show delivery rate for different methods", async () => {
     // Enter address
     const testAddress = mockAddresses[0];
     await checkoutPage.enterAddress(testAddress.address);
@@ -261,7 +273,7 @@ test.describe('Checkout Widget', () => {
     const standardRate = await checkoutPage.getDeliveryRate();
 
     // Select express method
-    await checkoutPage.selectDeliveryMethod('express');
+    await checkoutPage.selectDeliveryMethod("express");
 
     // Get new rate
     const expressRate = await checkoutPage.getDeliveryRate();
@@ -270,7 +282,7 @@ test.describe('Checkout Widget', () => {
     expect(expressRate).toBeGreaterThan(standardRate);
   });
 
-  test('should persist address through checkout steps', async () => {
+  test("should persist address through checkout steps", async () => {
     // Enter address
     const testAddress = mockAddresses[1];
     await checkoutPage.enterAddress(testAddress.address);
@@ -286,28 +298,30 @@ test.describe('Checkout Widget', () => {
     expect(summary.address).toContain(testAddress.address);
   });
 
-  test('should handle network errors during checkout', async ({ page }) => {
+  test("should handle network errors during checkout", async ({ page }) => {
     // Setup network error
-    await setupErrorMocks(page, 'network-error');
+    await setupErrorMocks(page, "network-error");
 
     // Try to load checkout
     // Page should handle gracefully
-    const bodyVisible = await page.locator('body').isVisible();
+    const bodyVisible = await page.locator("body").isVisible();
     expect(bodyVisible).toBeTruthy();
   });
 
-  test('should validate address format before submission', async () => {
+  test("should validate address format before submission", async () => {
     // Try empty address
-    await checkoutPage.addressInput.fill('');
-    await checkoutPage.page.waitForLoadState('networkidle');
+    await checkoutPage.addressInput.fill("");
+    await checkoutPage.page.waitForLoadState("networkidle");
 
     // Should show error or prevent submission
-    const canSubmit = await checkoutPage.completeCheckoutButton.isEnabled().catch(() => false);
+    const canSubmit = await checkoutPage.completeCheckoutButton
+      .isEnabled()
+      .catch(() => false);
     // Button should be disabled or error shown
     expect(!canSubmit || true).toBeTruthy();
   });
 
-  test('should go back to previous step', async () => {
+  test("should go back to previous step", async () => {
     // Enter address
     const testAddress = mockAddresses[0];
     await checkoutPage.enterAddress(testAddress.address);
@@ -319,7 +333,9 @@ test.describe('Checkout Widget', () => {
     }
 
     // Go back
-    const backVisible = await checkoutPage.backButton.isVisible().catch(() => false);
+    const backVisible = await checkoutPage.backButton
+      .isVisible()
+      .catch(() => false);
     if (backVisible) {
       await checkoutPage.goBack();
 
@@ -329,7 +345,7 @@ test.describe('Checkout Widget', () => {
     }
   });
 
-  test('should show order summary before completing', async () => {
+  test("should show order summary before completing", async () => {
     // Complete checkout flow
     const testAddress = mockAddresses[0];
     await checkoutPage.enterAddress(testAddress.address);
@@ -351,7 +367,7 @@ test.describe('Checkout Widget', () => {
     await checkoutPage.expectOrderSummary();
   });
 
-  test('should disable unavailable time slots', async () => {
+  test("should disable unavailable time slots", async () => {
     // Enter address and date
     const testAddress = mockAddresses[0];
     await checkoutPage.enterAddress(testAddress.address);

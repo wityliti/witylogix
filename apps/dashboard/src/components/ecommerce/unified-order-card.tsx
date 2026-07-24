@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { forwardRef, useState, type HTMLAttributes } from 'react';
-import { cn } from '@/lib/utils';
+import { forwardRef, useState, type HTMLAttributes } from "react";
+import { cn } from "@/lib/utils";
 import {
   ChevronDown,
   ChevronUp,
@@ -11,18 +11,18 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock,
-} from 'lucide-react';
-import { PlatformLogo, type Platform } from './platform-logo';
+} from "lucide-react";
+import { PlatformLogo, type Platform } from "./platform-logo";
 
 type OrderStatus =
-  | 'pending'
-  | 'processing'
-  | 'shipped'
-  | 'delivered'
-  | 'cancelled'
-  | 'refunded';
+  | "pending"
+  | "processing"
+  | "shipped"
+  | "delivered"
+  | "cancelled"
+  | "refunded";
 
-type SyncStatus = 'synced' | 'pending' | 'conflict';
+type SyncStatus = "synced" | "pending" | "conflict";
 
 interface OrderLineItem {
   sku: string;
@@ -69,34 +69,34 @@ const statusConfig: Record<
   }
 > = {
   pending: {
-    bgColor: 'bg-yellow-100 dark:bg-yellow-500/20',
-    textColor: 'text-yellow-700 dark:text-yellow-400',
-    label: 'Pending',
+    bgColor: "bg-yellow-100 dark:bg-yellow-500/20",
+    textColor: "text-yellow-700 dark:text-yellow-400",
+    label: "Pending",
   },
   processing: {
-    bgColor: 'bg-blue-100 dark:bg-blue-500/20',
-    textColor: 'text-blue-700 dark:text-blue-400',
-    label: 'Processing',
+    bgColor: "bg-blue-100 dark:bg-blue-500/20",
+    textColor: "text-blue-700 dark:text-blue-400",
+    label: "Processing",
   },
   shipped: {
-    bgColor: 'bg-purple-100 dark:bg-purple-500/20',
-    textColor: 'text-purple-700 dark:text-purple-400',
-    label: 'Shipped',
+    bgColor: "bg-purple-100 dark:bg-purple-500/20",
+    textColor: "text-purple-700 dark:text-purple-400",
+    label: "Shipped",
   },
   delivered: {
-    bgColor: 'bg-green-100 dark:bg-green-500/20',
-    textColor: 'text-green-700 dark:text-green-400',
-    label: 'Delivered',
+    bgColor: "bg-green-100 dark:bg-green-500/20",
+    textColor: "text-green-700 dark:text-green-400",
+    label: "Delivered",
   },
   cancelled: {
-    bgColor: 'bg-red-100 dark:bg-red-500/20',
-    textColor: 'text-red-700 dark:text-red-400',
-    label: 'Cancelled',
+    bgColor: "bg-red-100 dark:bg-red-500/20",
+    textColor: "text-red-700 dark:text-red-400",
+    label: "Cancelled",
   },
   refunded: {
-    bgColor: 'bg-gray-100 dark:bg-gray-500/20',
-    textColor: 'text-gray-700 dark:text-gray-400',
-    label: 'Refunded',
+    bgColor: "bg-gray-100 dark:bg-gray-500/20",
+    textColor: "text-gray-700 dark:text-gray-400",
+    label: "Refunded",
   },
 };
 
@@ -111,36 +111,36 @@ const syncStatusConfig: Record<
 > = {
   synced: {
     icon: CheckCircle2,
-    color: 'text-green-600 dark:text-green-400',
-    bgColor: 'bg-green-100 dark:bg-green-500/20',
-    label: 'Synced',
+    color: "text-green-600 dark:text-green-400",
+    bgColor: "bg-green-100 dark:bg-green-500/20",
+    label: "Synced",
   },
   pending: {
     icon: Clock,
-    color: 'text-yellow-600 dark:text-yellow-400',
-    bgColor: 'bg-yellow-100 dark:bg-yellow-500/20',
-    label: 'Pending Sync',
+    color: "text-yellow-600 dark:text-yellow-400",
+    bgColor: "bg-yellow-100 dark:bg-yellow-500/20",
+    label: "Pending Sync",
   },
   conflict: {
     icon: AlertCircle,
-    color: 'text-red-600 dark:text-red-400',
-    bgColor: 'bg-red-100 dark:bg-red-500/20',
-    label: 'Conflict',
+    color: "text-red-600 dark:text-red-400",
+    bgColor: "bg-red-100 dark:bg-red-500/20",
+    label: "Conflict",
   },
 };
 
-const formatCurrency = (amount: number, currency: string = 'USD'): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
+const formatCurrency = (amount: number, currency: string = "USD"): string => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
     currency,
   }).format(amount);
 };
 
 const formatDate = (date: Date): string => {
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   });
 };
 
@@ -184,10 +184,10 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
       orderDate,
       customerName,
       totalAmount,
-      currency = 'USD',
-      status = 'pending',
+      currency = "USD",
+      status = "pending",
       lineItems,
-      syncStatus = 'synced',
+      syncStatus = "synced",
       lastSyncAt,
       onView,
       onSync,
@@ -195,7 +195,7 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const statusInfo = statusConfig[status];
@@ -206,14 +206,14 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
       <div
         ref={ref}
         className={cn(
-          'flex flex-col',
-          'bg-white dark:bg-gray-900',
-          'border border-gray-200 dark:border-gray-800',
-          'rounded-lg overflow-hidden',
-          'transition-all duration-200 ease-default',
-          'hover:shadow-md dark:hover:shadow-lg',
-          isExpanded && 'shadow-md dark:shadow-lg',
-          className
+          "flex flex-col",
+          "bg-white dark:bg-gray-900",
+          "border border-gray-200 dark:border-gray-800",
+          "rounded-lg overflow-hidden",
+          "transition-all duration-200 ease-default",
+          "hover:shadow-md dark:hover:shadow-lg",
+          isExpanded && "shadow-md dark:shadow-lg",
+          className,
         )}
         {...props}
       >
@@ -221,10 +221,10 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className={cn(
-            'w-full p-4 text-left',
-            'hover:bg-gray-50 dark:hover:bg-gray-800/50',
-            'transition-colors duration-150',
-            'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900'
+            "w-full p-4 text-left",
+            "hover:bg-gray-50 dark:hover:bg-gray-800/50",
+            "transition-colors duration-150",
+            "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900",
           )}
           aria-expanded={isExpanded}
         >
@@ -257,10 +257,10 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
                   {/* Status badge */}
                   <span
                     className={cn(
-                      'inline-flex items-center gap-1',
-                      'px-2 py-1 rounded text-xs font-semibold',
+                      "inline-flex items-center gap-1",
+                      "px-2 py-1 rounded text-xs font-semibold",
                       statusInfo.bgColor,
-                      statusInfo.textColor
+                      statusInfo.textColor,
                     )}
                   >
                     {statusInfo.label}
@@ -269,7 +269,7 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
                   {/* Item count */}
                   <span className="text-xs text-gray-600 dark:text-gray-400">
                     <Package className="w-3 h-3 inline mr-1" />
-                    {lineItems.length} item{lineItems.length !== 1 ? 's' : ''}
+                    {lineItems.length} item{lineItems.length !== 1 ? "s" : ""}
                   </span>
                 </div>
 
@@ -290,7 +290,7 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
                 {formatCurrency(totalAmount, currency)}
               </div>
               <SyncIcon
-                className={cn('w-4 h-4 mt-1 ml-auto', syncInfo.color)}
+                className={cn("w-4 h-4 mt-1 ml-auto", syncInfo.color)}
                 title={syncInfo.label}
                 aria-label={`Sync status: ${syncInfo.label}`}
               />
@@ -308,17 +308,19 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
             {/* Sync status section */}
             <div
               className={cn(
-                'flex items-start gap-2 p-2 rounded',
-                syncInfo.bgColor
+                "flex items-start gap-2 p-2 rounded",
+                syncInfo.bgColor,
               )}
             >
-              <SyncIcon className={cn('w-4 h-4 mt-0.5 flex-shrink-0', syncInfo.color)} />
+              <SyncIcon
+                className={cn("w-4 h-4 mt-0.5 flex-shrink-0", syncInfo.color)}
+              />
               <div className="flex-1 min-w-0">
-                <div className={cn('text-xs font-semibold', syncInfo.color)}>
+                <div className={cn("text-xs font-semibold", syncInfo.color)}>
                   {syncInfo.label}
                 </div>
                 {lastSyncAt && (
-                  <div className={cn('text-xs', syncInfo.color, 'opacity-75')}>
+                  <div className={cn("text-xs", syncInfo.color, "opacity-75")}>
                     {formatTime(lastSyncAt)}
                   </div>
                 )}
@@ -356,7 +358,8 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
                 ))}
                 {lineItems.length > 3 && (
                   <div className="text-xs text-gray-500 dark:text-gray-400 p-2">
-                    +{lineItems.length - 3} more item{lineItems.length - 3 > 1 ? 's' : ''}
+                    +{lineItems.length - 3} more item
+                    {lineItems.length - 3 > 1 ? "s" : ""}
                   </div>
                 )}
               </div>
@@ -380,12 +383,12 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
                 onClick={onView}
                 disabled={!onView}
                 className={cn(
-                  'flex items-center justify-center gap-1.5',
-                  'flex-1 px-3 py-2 text-xs font-semibold rounded',
-                  'bg-blue-600 dark:bg-blue-700 text-white',
-                  'hover:bg-blue-700 dark:hover:bg-blue-800',
-                  'disabled:opacity-50 disabled:cursor-not-allowed',
-                  'transition-colors duration-150'
+                  "flex items-center justify-center gap-1.5",
+                  "flex-1 px-3 py-2 text-xs font-semibold rounded",
+                  "bg-blue-600 dark:bg-blue-700 text-white",
+                  "hover:bg-blue-700 dark:hover:bg-blue-800",
+                  "disabled:opacity-50 disabled:cursor-not-allowed",
+                  "transition-colors duration-150",
                 )}
               >
                 <Eye className="w-3.5 h-3.5" />
@@ -396,12 +399,12 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
                 onClick={onSync}
                 disabled={!onSync}
                 className={cn(
-                  'flex items-center justify-center gap-1.5',
-                  'flex-1 px-3 py-2 text-xs font-semibold rounded',
-                  'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white',
-                  'hover:bg-gray-300 dark:hover:bg-gray-600',
-                  'disabled:opacity-50 disabled:cursor-not-allowed',
-                  'transition-colors duration-150'
+                  "flex items-center justify-center gap-1.5",
+                  "flex-1 px-3 py-2 text-xs font-semibold rounded",
+                  "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white",
+                  "hover:bg-gray-300 dark:hover:bg-gray-600",
+                  "disabled:opacity-50 disabled:cursor-not-allowed",
+                  "transition-colors duration-150",
                 )}
               >
                 <RefreshCw className="w-3.5 h-3.5" />
@@ -410,14 +413,16 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
 
               <button
                 onClick={onTrack}
-                disabled={!onTrack || !['shipped', 'delivered'].includes(status)}
+                disabled={
+                  !onTrack || !["shipped", "delivered"].includes(status)
+                }
                 className={cn(
-                  'flex items-center justify-center gap-1.5',
-                  'flex-1 px-3 py-2 text-xs font-semibold rounded',
-                  'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white',
-                  'hover:bg-gray-300 dark:hover:bg-gray-600',
-                  'disabled:opacity-50 disabled:cursor-not-allowed',
-                  'transition-colors duration-150'
+                  "flex items-center justify-center gap-1.5",
+                  "flex-1 px-3 py-2 text-xs font-semibold rounded",
+                  "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white",
+                  "hover:bg-gray-300 dark:hover:bg-gray-600",
+                  "disabled:opacity-50 disabled:cursor-not-allowed",
+                  "transition-colors duration-150",
                 )}
               >
                 <Package className="w-3.5 h-3.5" />
@@ -428,14 +433,10 @@ const UnifiedOrderCard = forwardRef<HTMLDivElement, UnifiedOrderCardProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
-UnifiedOrderCard.displayName = 'UnifiedOrderCard';
+UnifiedOrderCard.displayName = "UnifiedOrderCard";
 
 export { UnifiedOrderCard };
-export type {
-  OrderStatus,
-  SyncStatus,
-  OrderLineItem,
-};
+export type { OrderStatus, SyncStatus, OrderLineItem };

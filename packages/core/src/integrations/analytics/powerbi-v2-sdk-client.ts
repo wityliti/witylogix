@@ -30,7 +30,7 @@ import type {
   RateLimitInfo,
   PaginatedResponse,
   HealthCheckResult,
-} from './analytics-sdk-types.js';
+} from "./analytics-sdk-types.js";
 
 // ─── POWER BI SPECIFIC TYPES ────────────────────────────────────────
 
@@ -130,7 +130,7 @@ class RateLimiter {
   async acquire(): Promise<void> {
     const now = Date.now();
     this.requestTimestamps = this.requestTimestamps.filter(
-      (ts) => now - ts < this.windowMs
+      (ts) => now - ts < this.windowMs,
     );
 
     if (this.requestTimestamps.length >= this.maxRequests) {
@@ -146,7 +146,7 @@ class RateLimiter {
   getInfo(): RateLimitInfo {
     const now = Date.now();
     const recentRequests = this.requestTimestamps.filter(
-      (ts) => now - ts < this.windowMs
+      (ts) => now - ts < this.windowMs,
     );
     const remaining = Math.max(0, this.maxRequests - recentRequests.length);
 
@@ -181,13 +181,12 @@ class RetryHandler {
       try {
         return await fn();
       } catch (error: unknown) {
-        lastError =
-          error instanceof Error ? error : new Error(String(error));
+        lastError = error instanceof Error ? error : new Error(String(error));
 
         const statusCode =
           lastError instanceof Error &&
-          'statusCode' in lastError &&
-          typeof (lastError as Record<string, unknown>).statusCode === 'number'
+          "statusCode" in lastError &&
+          typeof (lastError as Record<string, unknown>).statusCode === "number"
             ? ((lastError as Record<string, unknown>).statusCode as number)
             : 500;
 
@@ -201,7 +200,7 @@ class RetryHandler {
         const delay = Math.min(
           this.config.maxDelayMs,
           this.config.initialDelayMs *
-            Math.pow(this.config.backoffMultiplier, attempt)
+            Math.pow(this.config.backoffMultiplier, attempt),
         );
 
         await new Promise((resolve) => setTimeout(resolve, delay));
@@ -218,7 +217,7 @@ class RetryHandler {
  * Power BI REST API v1.0 SDK Client
  */
 export class PowerBIV2SDKClient {
-  private baseUrl = 'https://api.powerbi.com/v1.0/myorg';
+  private baseUrl = "https://api.powerbi.com/v1.0/myorg";
   private accessToken: string | null = null;
   private tokenExpiresAt: number = 0;
   private readonly authConfig: PowerBIAuthConfig;
@@ -257,18 +256,18 @@ export class PowerBIV2SDKClient {
       await this.rateLimiter.acquire();
 
       const payload = new URLSearchParams();
-      payload.append('grant_type', 'client_credentials');
-      payload.append('client_id', this.authConfig.clientId);
-      payload.append('client_secret', this.authConfig.clientSecret);
-      payload.append('resource', 'https://analysis.windows.net/powerbi/api');
+      payload.append("grant_type", "client_credentials");
+      payload.append("client_id", this.authConfig.clientId);
+      payload.append("client_secret", this.authConfig.clientSecret);
+      payload.append("resource", "https://analysis.windows.net/powerbi/api");
 
       const response = await fetch(
         `https://login.microsoftonline.com/${this.authConfig.tenantId}/oauth2/token`,
         {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: payload.toString(),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -289,14 +288,14 @@ export class PowerBIV2SDKClient {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<T> {
     return this.retryHandler.execute(async () => {
       await this.rateLimiter.acquire();
 
       const token = await this.ensureAuthenticated();
       const headers = {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
         ...(options.headers as Record<string, string>),
       };
@@ -308,7 +307,7 @@ export class PowerBIV2SDKClient {
 
       if (!response.ok) {
         const error = new Error(
-          `API request failed: ${response.status} ${response.statusText}`
+          `API request failed: ${response.status} ${response.statusText}`,
         ) as AnalyticsSDKError;
         error.statusCode = response.status;
         error.code = `POWERBI_API_ERROR`;
@@ -316,8 +315,8 @@ export class PowerBIV2SDKClient {
         throw error;
       }
 
-      const contentType = response.headers.get('content-type');
-      if (contentType?.includes('application/json')) {
+      const contentType = response.headers.get("content-type");
+      if (contentType?.includes("application/json")) {
         return (await response.json()) as T;
       }
 
@@ -336,7 +335,7 @@ export class PowerBIV2SDKClient {
       : `/datasets`;
 
     const data = (await this.request<{ value: PowerBIDataset[] }>(
-      endpoint
+      endpoint,
     )) as { value: PowerBIDataset[] };
 
     return data.value.map((ds) => this.normalizeDataset(ds));
@@ -350,9 +349,9 @@ export class PowerBIV2SDKClient {
       ? `/groups/${this.groupId}/datasets/${datasetId}`
       : `/datasets/${datasetId}`;
 
-    const data = (await this.request<{ value: PowerBIDataset }>(
-      endpoint
-    )) as { value: PowerBIDataset };
+    const data = (await this.request<{ value: PowerBIDataset }>(endpoint)) as {
+      value: PowerBIDataset;
+    };
 
     return this.normalizeDataset(data.value);
   }
@@ -366,14 +365,16 @@ export class PowerBIV2SDKClient {
       : `/datasets/${datasetId}/refreshes`;
 
     const response = await this.request(endpoint, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({
-        notifyOption: 'MailOnCompletion',
+        notifyOption: "MailOnCompletion",
       }),
     });
 
     return {
-      requestId: (response as Record<string, unknown>).id as string || `refresh-${Date.now()}`,
+      requestId:
+        ((response as Record<string, unknown>).id as string) ||
+        `refresh-${Date.now()}`,
     };
   }
 
@@ -382,16 +383,33 @@ export class PowerBIV2SDKClient {
    */
   async getRefreshHistory(
     datasetId: string,
-    top: number = 20
-  ): Promise<Array<{ refreshType: string; startTime: string; endTime?: string; status: string }>> {
+    top: number = 20,
+  ): Promise<
+    Array<{
+      refreshType: string;
+      startTime: string;
+      endTime?: string;
+      status: string;
+    }>
+  > {
     const endpoint = this.groupId
       ? `/groups/${this.groupId}/datasets/${datasetId}/refreshes?$top=${top}`
       : `/datasets/${datasetId}/refreshes?$top=${top}`;
 
     const data = (await this.request<{
-      value: Array<{ refreshType: string; startTime: string; endTime?: string; status: string }>;
+      value: Array<{
+        refreshType: string;
+        startTime: string;
+        endTime?: string;
+        status: string;
+      }>;
     }>(endpoint)) as {
-      value: Array<{ refreshType: string; startTime: string; endTime?: string; status: string }>;
+      value: Array<{
+        refreshType: string;
+        startTime: string;
+        endTime?: string;
+        status: string;
+      }>;
     };
 
     return data.value;
@@ -402,14 +420,14 @@ export class PowerBIV2SDKClient {
    */
   async bindDatasetToGateway(
     datasetId: string,
-    gatewayId: string
+    gatewayId: string,
   ): Promise<void> {
     const endpoint = this.groupId
       ? `/groups/${this.groupId}/datasets/${datasetId}/Default.BindToGateway`
       : `/datasets/${datasetId}/Default.BindToGateway`;
 
     await this.request(endpoint, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({ gatewayObjectId: gatewayId }),
     });
   }
@@ -419,14 +437,14 @@ export class PowerBIV2SDKClient {
    */
   async updateDatasetParameters(
     datasetId: string,
-    parameters: Array<{ name: string; newValue: string }>
+    parameters: Array<{ name: string; newValue: string }>,
   ): Promise<void> {
     const endpoint = this.groupId
       ? `/groups/${this.groupId}/datasets/${datasetId}/Default.UpdateParameters`
       : `/datasets/${datasetId}/Default.UpdateParameters`;
 
     await this.request(endpoint, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({ updateDetails: parameters }),
     });
   }
@@ -437,11 +455,13 @@ export class PowerBIV2SDKClient {
    * List reports in workspace
    */
   async listReports(): Promise<NormalizedReport[]> {
-    const endpoint = this.groupId ? `/groups/${this.groupId}/reports` : `/reports`;
+    const endpoint = this.groupId
+      ? `/groups/${this.groupId}/reports`
+      : `/reports`;
 
-    const data = (await this.request<{ value: PowerBIReport[] }>(
-      endpoint
-    )) as { value: PowerBIReport[] };
+    const data = (await this.request<{ value: PowerBIReport[] }>(endpoint)) as {
+      value: PowerBIReport[];
+    };
 
     return data.value.map((r) => this.normalizeReport(r));
   }
@@ -454,9 +474,9 @@ export class PowerBIV2SDKClient {
       ? `/groups/${this.groupId}/reports/${reportId}`
       : `/reports/${reportId}`;
 
-    const data = (await this.request<{ value: PowerBIReport }>(
-      endpoint
-    )) as { value: PowerBIReport };
+    const data = (await this.request<{ value: PowerBIReport }>(endpoint)) as {
+      value: PowerBIReport;
+    };
 
     return this.normalizeReport(data.value);
   }
@@ -467,7 +487,7 @@ export class PowerBIV2SDKClient {
   async cloneReport(
     reportId: string,
     targetName: string,
-    targetDatasetId?: string
+    targetDatasetId?: string,
   ): Promise<NormalizedReport> {
     const endpoint = this.groupId
       ? `/groups/${this.groupId}/reports/${reportId}/Clone`
@@ -478,13 +498,10 @@ export class PowerBIV2SDKClient {
       targetDatasetId,
     };
 
-    const data = (await this.request<{ value: PowerBIReport }>(
-      endpoint,
-      {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      }
-    )) as { value: PowerBIReport };
+    const data = (await this.request<{ value: PowerBIReport }>(endpoint, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    })) as { value: PowerBIReport };
 
     return this.normalizeReport(data.value);
   }
@@ -498,7 +515,7 @@ export class PowerBIV2SDKClient {
       : `/reports/${reportId}/Rebind`;
 
     await this.request(endpoint, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({ datasetId: targetDatasetId }),
     });
   }
@@ -512,7 +529,7 @@ export class PowerBIV2SDKClient {
     options?: {
       powerBIReportConfiguration?: Record<string, unknown>;
       allowedActions?: string[];
-    }
+    },
   ): Promise<ExportResult> {
     const endpoint = this.groupId
       ? `/groups/${this.groupId}/reports/${reportId}/ExportTo`
@@ -524,13 +541,13 @@ export class PowerBIV2SDKClient {
     };
 
     const data = (await this.request<{ id: string }>(endpoint, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(payload),
     })) as { id: string };
 
     return {
       id: data.id,
-      status: 'pending',
+      status: "pending",
       format,
       createdAt: new Date(),
     };
@@ -541,7 +558,7 @@ export class PowerBIV2SDKClient {
    */
   async getExportStatus(
     reportId: string,
-    exportId: string
+    exportId: string,
   ): Promise<ExportResult> {
     const endpoint = this.groupId
       ? `/groups/${this.groupId}/reports/${reportId}/Exports/${exportId}`
@@ -561,8 +578,8 @@ export class PowerBIV2SDKClient {
 
     return {
       id: data.id,
-      status: (data.status.toLowerCase() as 'pending' | 'completed' | 'failed'),
-      format: 'pdf',
+      status: data.status.toLowerCase() as "pending" | "completed" | "failed",
+      format: "pdf",
       createdAt: new Date(),
       expiresAt: data.expirationTime
         ? new Date(data.expirationTime)
@@ -581,7 +598,7 @@ export class PowerBIV2SDKClient {
       : `/dashboards`;
 
     const data = (await this.request<{ value: PowerBIDashboard[] }>(
-      endpoint
+      endpoint,
     )) as { value: PowerBIDashboard[] };
 
     return data.value.map((d) => this.normalizeDashboard(d));
@@ -596,7 +613,7 @@ export class PowerBIV2SDKClient {
       : `/dashboards/${dashboardId}/tiles`;
 
     const data = (await this.request<{ value: PowerBIDashboardTile[] }>(
-      endpoint
+      endpoint,
     )) as { value: PowerBIDashboardTile[] };
 
     return data.value;
@@ -610,28 +627,32 @@ export class PowerBIV2SDKClient {
   async generateReportEmbedToken(
     reportId: string,
     options?: {
-      identities?: Array<{ username: string; roles?: string[]; datasets?: string[] }>;
+      identities?: Array<{
+        username: string;
+        roles?: string[];
+        datasets?: string[];
+      }>;
       accessLevel?: string;
       expiration?: number; // minutes
-    }
+    },
   ): Promise<EmbedConfig> {
     const endpoint = this.groupId
       ? `/groups/${this.groupId}/reports/${reportId}/GenerateToken`
       : `/reports/${reportId}/GenerateToken`;
 
     const payload = {
-      accessLevel: options?.accessLevel || 'View',
+      accessLevel: options?.accessLevel || "View",
       identities: options?.identities || [],
       expiration: options?.expiration || 60,
     };
 
     const data = (await this.request<PowerBIEmbedToken>(endpoint, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(payload),
     })) as PowerBIEmbedToken;
 
     return {
-      type: 'report',
+      type: "report",
       contentId: reportId,
       token: data.token,
       tokenExpiresAt: new Date(data.expiration),
@@ -639,8 +660,8 @@ export class PowerBIV2SDKClient {
         reportId,
       },
       rlsRules: options?.identities?.map((id) => ({
-        column: 'Username',
-        operator: 'equals' as const,
+        column: "Username",
+        operator: "equals" as const,
         value: id.username,
         userIdentifier: id.username,
       })),
@@ -655,25 +676,25 @@ export class PowerBIV2SDKClient {
     options?: {
       identities?: Array<{ username: string; roles?: string[] }>;
       expiration?: number; // minutes
-    }
+    },
   ): Promise<EmbedConfig> {
     const endpoint = this.groupId
       ? `/groups/${this.groupId}/dashboards/${dashboardId}/GenerateToken`
       : `/dashboards/${dashboardId}/GenerateToken`;
 
     const payload = {
-      accessLevel: 'View',
+      accessLevel: "View",
       identities: options?.identities || [],
       expiration: options?.expiration || 60,
     };
 
     const data = (await this.request<PowerBIEmbedToken>(endpoint, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(payload),
     })) as PowerBIEmbedToken;
 
     return {
-      type: 'dashboard',
+      type: "dashboard",
       contentId: dashboardId,
       token: data.token,
       tokenExpiresAt: new Date(data.expiration),
@@ -705,11 +726,11 @@ export class PowerBIV2SDKClient {
     const payload = {
       name: config.name,
       tables: config.tables,
-      defaultRetentionPolicy: 'BasicFIFO',
+      defaultRetentionPolicy: "BasicFIFO",
     };
 
     const data = (await this.request<{ id: string }>(endpoint, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(payload),
     })) as { id: string };
 
@@ -722,14 +743,14 @@ export class PowerBIV2SDKClient {
   async pushRows(
     datasetId: string,
     tableName: string,
-    rows: Record<string, unknown>[]
+    rows: Record<string, unknown>[],
   ): Promise<void> {
     const endpoint = this.groupId
       ? `/groups/${this.groupId}/datasets/${datasetId}/tables/${tableName}/rows`
       : `/datasets/${datasetId}/tables/${tableName}/rows`;
 
     await this.request(endpoint, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({ rows }),
     });
   }
@@ -741,7 +762,7 @@ export class PowerBIV2SDKClient {
    */
   async listGateways(): Promise<PowerBIGateway[]> {
     const data = (await this.request<{ value: PowerBIGateway[] }>(
-      `/gateways`
+      `/gateways`,
     )) as { value: PowerBIGateway[] };
 
     return data.value;
@@ -752,7 +773,7 @@ export class PowerBIV2SDKClient {
    */
   async getGatewayDatasources(gatewayId: string): Promise<Array<any>> {
     const data = (await this.request<{ value: Array<any> }>(
-      `/gateways/${gatewayId}/datasources`
+      `/gateways/${gatewayId}/datasources`,
     )) as { value: Array<any> };
 
     return data.value;
@@ -765,7 +786,7 @@ export class PowerBIV2SDKClient {
    */
   async listCapacities(): Promise<PowerBICapacity[]> {
     const data = (await this.request<{ value: PowerBICapacity[] }>(
-      `/capacities`
+      `/capacities`,
     )) as { value: PowerBICapacity[] };
 
     return data.value;
@@ -776,7 +797,7 @@ export class PowerBIV2SDKClient {
    */
   async getCapacity(capacityId: string): Promise<PowerBICapacity> {
     const data = (await this.request<PowerBICapacity>(
-      `/capacities/${capacityId}`
+      `/capacities/${capacityId}`,
     )) as PowerBICapacity;
 
     return data;
@@ -793,7 +814,7 @@ export class PowerBIV2SDKClient {
       : `/dataflows`;
 
     const data = (await this.request<{ value: PowerBIDataflow[] }>(
-      endpoint
+      endpoint,
     )) as { value: PowerBIDataflow[] };
 
     return data.value;
@@ -808,7 +829,7 @@ export class PowerBIV2SDKClient {
       : `/dataflows/${dataflowId}/refreshes`;
 
     await this.request(endpoint, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({}),
     });
 
@@ -825,12 +846,20 @@ export class PowerBIV2SDKClient {
     endDateTime?: string;
     $top?: number;
     $filter?: string;
-  }): Promise<Array<{ id: string; eventDateTime: string; activity: string; userId: string }>> {
+  }): Promise<
+    Array<{
+      id: string;
+      eventDateTime: string;
+      activity: string;
+      userId: string;
+    }>
+  > {
     const params = new URLSearchParams();
-    if (options?.startDateTime) params.append('startDateTime', options.startDateTime);
-    if (options?.endDateTime) params.append('endDateTime', options.endDateTime);
-    if (options?.$top) params.append('$top', String(options.$top));
-    if (options?.$filter) params.append('$filter', options.$filter);
+    if (options?.startDateTime)
+      params.append("startDateTime", options.startDateTime);
+    if (options?.endDateTime) params.append("endDateTime", options.endDateTime);
+    if (options?.$top) params.append("$top", String(options.$top));
+    if (options?.$filter) params.append("$filter", options.$filter);
 
     const data = (await this.request<{
       activityEventEntities: Array<{
@@ -857,7 +886,7 @@ export class PowerBIV2SDKClient {
   async scanDatasets(workspaceId: string): Promise<{ scanId: string }> {
     const data = (await this.request<{ id: string }>(
       `/admin/workspaces/${workspaceId}/datasets/scan`,
-      { method: 'POST', body: JSON.stringify({}) }
+      { method: "POST", body: JSON.stringify({}) },
     )) as { id: string };
 
     return { scanId: data.id };
@@ -877,7 +906,7 @@ export class PowerBIV2SDKClient {
       tables: [],
       refreshSchedule: {
         enabled: !!ds.isRefreshable,
-        frequency: 'daily',
+        frequency: "daily",
       },
     };
   }
@@ -921,17 +950,17 @@ export class PowerBIV2SDKClient {
       const duration = Date.now() - startTime;
 
       return {
-        status: 'healthy',
+        status: "healthy",
         timestamp: new Date(),
         responseTimeMs: duration,
       };
     } catch (error: unknown) {
       return {
-        status: 'unhealthy',
+        status: "unhealthy",
         timestamp: new Date(),
         responseTimeMs: Date.now() - startTime,
         details: {
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : "Unknown error",
         },
       };
     }

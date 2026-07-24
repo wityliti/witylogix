@@ -14,7 +14,14 @@
 export type Entity = "order" | "driver" | "delivery" | "customer" | "invoice";
 
 export interface DateExpression {
-  range: "today" | "yesterday" | "this_week" | "last_week" | "this_month" | "last_month" | "custom";
+  range:
+    | "today"
+    | "yesterday"
+    | "this_week"
+    | "last_week"
+    | "this_month"
+    | "last_month"
+    | "custom";
   startDate?: Date;
   endDate?: Date;
 }
@@ -120,7 +127,12 @@ export class NaturalLanguageFilterParser {
     filter.tags = this.extractTags(query);
 
     // If no structured pattern matched, use full-text search
-    if (!filter.status && !filter.dateRange && !filter.amount && !filter.location) {
+    if (
+      !filter.status &&
+      !filter.dateRange &&
+      !filter.amount &&
+      !filter.location
+    ) {
       filter.fullTextFallback = true;
     }
 
@@ -180,7 +192,7 @@ export class NaturalLanguageFilterParser {
 
     // Try to extract custom date range (e.g., "from Jan 1 to Jan 31")
     const customDateMatch = query.match(
-      /from\s+(\w+\s+\d+)\s+to\s+(\w+\s+\d+)/i
+      /from\s+(\w+\s+\d+)\s+to\s+(\w+\s+\d+)/i,
     );
     if (customDateMatch) {
       return {
@@ -270,7 +282,9 @@ export class NaturalLanguageFilterParser {
   /**
    * Detect location type
    */
-  private detectLocationType(location: string): "zip" | "city" | "area" | "address" {
+  private detectLocationType(
+    location: string,
+  ): "zip" | "city" | "area" | "address" {
     if (/^\d{5}(-\d{4})?$/.test(location)) {
       return "zip";
     }
@@ -284,7 +298,15 @@ export class NaturalLanguageFilterParser {
   /**
    * Get start date for relative date ranges
    */
-  private getDateRangeStart(range: "today" | "yesterday" | "this_week" | "last_week" | "this_month" | "last_month"): Date {
+  private getDateRangeStart(
+    range:
+      | "today"
+      | "yesterday"
+      | "this_week"
+      | "last_week"
+      | "this_month"
+      | "last_month",
+  ): Date {
     const now = new Date();
     switch (range) {
       case "today":
@@ -292,15 +314,27 @@ export class NaturalLanguageFilterParser {
       case "yesterday":
         const yesterday = new Date(now);
         yesterday.setDate(yesterday.getDate() - 1);
-        return new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate());
+        return new Date(
+          yesterday.getFullYear(),
+          yesterday.getMonth(),
+          yesterday.getDate(),
+        );
       case "this_week":
         const weekStart = new Date(now);
         weekStart.setDate(now.getDate() - now.getDay());
-        return new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate());
+        return new Date(
+          weekStart.getFullYear(),
+          weekStart.getMonth(),
+          weekStart.getDate(),
+        );
       case "last_week":
         const lastWeekStart = new Date(now);
         lastWeekStart.setDate(now.getDate() - now.getDay() - 7);
-        return new Date(lastWeekStart.getFullYear(), lastWeekStart.getMonth(), lastWeekStart.getDate());
+        return new Date(
+          lastWeekStart.getFullYear(),
+          lastWeekStart.getMonth(),
+          lastWeekStart.getDate(),
+        );
       case "this_month":
         return new Date(now.getFullYear(), now.getMonth(), 1);
       case "last_month":
@@ -311,7 +345,15 @@ export class NaturalLanguageFilterParser {
   /**
    * Get end date for relative date ranges
    */
-  private getDateRangeEnd(range: "today" | "yesterday" | "this_week" | "last_week" | "this_month" | "last_month"): Date {
+  private getDateRangeEnd(
+    range:
+      | "today"
+      | "yesterday"
+      | "this_week"
+      | "last_week"
+      | "this_month"
+      | "last_month",
+  ): Date {
     const now = new Date();
     switch (range) {
       case "today":

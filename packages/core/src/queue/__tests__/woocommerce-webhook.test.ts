@@ -38,7 +38,11 @@ const { mockPrisma } = vi.hoisted(() => {
 
 vi.mock("@witylogix/db", () => ({ prisma: mockPrisma }));
 
-const mockOrder = { id: "order-uuid-1", shopId: "shop-1", externalOrderId: "1001" };
+const mockOrder = {
+  id: "order-uuid-1",
+  shopId: "shop-1",
+  externalOrderId: "1001",
+};
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -162,7 +166,10 @@ describe("WooCommerceWebhookConsumer", () => {
       expect(mockPrisma.order.upsert).toHaveBeenCalledOnce();
       const call = mockPrisma.order.upsert.mock.calls[0][0];
       expect(call.where).toMatchObject({ externalOrderId: "1001" });
-      expect(call.create).toMatchObject({ shopId: "shop-1", source: "WOOCOMMERCE" });
+      expect(call.create).toMatchObject({
+        shopId: "shop-1",
+        source: "WOOCOMMERCE",
+      });
     });
 
     it("creates a Shipment when none exists for the order", async () => {
@@ -188,15 +195,29 @@ describe("WooCommerceWebhookConsumer", () => {
 
       expect(mockPrisma.wooCommerceWebhookLog.upsert).toHaveBeenCalledOnce();
       const call = mockPrisma.wooCommerceWebhookLog.upsert.mock.calls[0][0];
-      expect(call.where).toMatchObject({ connectionId_deliveryId: { connectionId: "conn-1", deliveryId: "delivery-abc" } });
-      expect(call.update).toMatchObject({ processed: true, status: "processed" });
+      expect(call.where).toMatchObject({
+        connectionId_deliveryId: {
+          connectionId: "conn-1",
+          deliveryId: "delivery-abc",
+        },
+      });
+      expect(call.update).toMatchObject({
+        processed: true,
+        status: "processed",
+      });
     });
 
     it("returns success result with orderId and shipmentCreated flag", async () => {
-      const result = await consumer.process(makeOrderCreatedJob(), makeMetadata());
+      const result = await consumer.process(
+        makeOrderCreatedJob(),
+        makeMetadata(),
+      );
 
       expect(result.success).toBe(true);
-      expect(result.data).toMatchObject({ orderId: "1001", shipmentCreated: true });
+      expect(result.data).toMatchObject({
+        orderId: "1001",
+        shipmentCreated: true,
+      });
     });
   });
 
@@ -232,7 +253,10 @@ describe("WooCommerceWebhookConsumer", () => {
         status: "processed",
       });
 
-      const result = await consumer.process(makeOrderCreatedJob(), makeMetadata());
+      const result = await consumer.process(
+        makeOrderCreatedJob(),
+        makeMetadata(),
+      );
 
       expect(result.success).toBe(true);
       expect(result.data).toMatchObject({ duplicate: true });
@@ -248,14 +272,20 @@ describe("WooCommerceWebhookConsumer", () => {
         status: "pending",
       });
 
-      const result = await consumer.process(makeOrderCreatedJob(), makeMetadata());
+      const result = await consumer.process(
+        makeOrderCreatedJob(),
+        makeMetadata(),
+      );
 
       expect(result.success).toBe(true);
       expect(mockPrisma.order.upsert).toHaveBeenCalledOnce();
     });
 
     it("skips idempotency check when deliveryId is absent", async () => {
-      const job = makeOrderCreatedJob({ deliveryId: undefined, connectionId: undefined });
+      const job = makeOrderCreatedJob({
+        deliveryId: undefined,
+        connectionId: undefined,
+      });
       await consumer.process(job, makeMetadata());
 
       // No log lookup, but still processes
@@ -268,7 +298,9 @@ describe("WooCommerceWebhookConsumer", () => {
 
   describe("processing failure", () => {
     it("throws QueueTransientError on DB failure (triggering BullMQ retry)", async () => {
-      mockPrisma.order.upsert.mockRejectedValueOnce(new Error("Connection timeout"));
+      mockPrisma.order.upsert.mockRejectedValueOnce(
+        new Error("Connection timeout"),
+      );
 
       await expect(
         consumer.process(makeOrderCreatedJob(), makeMetadata()),
@@ -287,9 +319,9 @@ describe("WooCommerceWebhookConsumer", () => {
         },
       };
 
-      await expect(
-        consumer.process(badJob, makeMetadata()),
-      ).rejects.toThrow(QueuePermanentError);
+      await expect(consumer.process(badJob, makeMetadata())).rejects.toThrow(
+        QueuePermanentError,
+      );
     });
 
     it("does NOT mark delivery as processed when processing fails", async () => {

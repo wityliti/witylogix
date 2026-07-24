@@ -2,7 +2,7 @@
  * ETA Recalculator — Type Definitions
  */
 
-import type { ZoneType } from '../ai-eta/lightgbm-residual-model.js';
+import type { ZoneType } from "../ai-eta/lightgbm-residual-model.js";
 
 // ─── Input types ──────────────────────────────────────────────────────────
 
@@ -71,7 +71,7 @@ export interface RecalculationResult {
 // ─── Notification types ───────────────────────────────────────────────────
 
 /** Notification channels to use */
-export type NotificationChannel = 'sms' | 'push';
+export type NotificationChannel = "sms" | "push";
 
 /** Payload passed to the notification handler when ETA delta exceeds threshold */
 export interface NotificationTrigger {

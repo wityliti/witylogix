@@ -140,15 +140,15 @@ function parseFields(modelBody: string): PrismaField[] {
     /(\w+)\s+(\w+(?:\[\])?|\w+\?)\s*(@[\w\s():".,]*)?(?:@[\w\s():".,]*)*\s*\/\/\s*(.*)?\n/g;
 
   // Simpler regex to match field lines
-  const lines = modelBody.split("\n").filter((l) => l.trim() && !l.includes("@@"));
+  const lines = modelBody
+    .split("\n")
+    .filter((l) => l.trim() && !l.includes("@@"));
 
   for (const line of lines) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith("//")) continue;
 
-    const parts = trimmed.match(
-      /^\s*(\w+)\s+([A-Z]\w+(\[\])?(\?)?)\s*(.*)/
-    );
+    const parts = trimmed.match(/^\s*(\w+)\s+([A-Z]\w+(\[\])?(\?)?)\s*(.*)/);
     if (!parts) continue;
 
     const [, fieldName, fieldType, isList, optional] = parts;
@@ -233,9 +233,11 @@ function inferRelationships(models: Map<string, PrismaModel>): Relationship[] {
 function generateMermaidDiagram(
   models: Map<string, PrismaModel>,
   relationships: Relationship[],
-  filter?: string
+  filter?: string,
 ): string {
-  const filterSet = filter ? new Set(filter.split(",").map((s) => s.trim())) : null;
+  const filterSet = filter
+    ? new Set(filter.split(",").map((s) => s.trim()))
+    : null;
 
   let output = "```mermaid\nerDiagram\n";
 
@@ -244,7 +246,7 @@ function generateMermaidDiagram(
     Array.from(models.entries()).filter(([, model]) => {
       if (!filterSet) return true;
       return filterSet.has(model.module);
-    })
+    }),
   );
 
   // Add relationships
@@ -266,7 +268,8 @@ function generateMermaidDiagram(
       const nullable = !field.isRequired ? "?" : "";
       const isList = field.isList ? "[]" : "";
 
-      output += `        ${field.type}${isList} ${field.name} ${nullable} ${marker}\n`.trim();
+      output +=
+        `        ${field.type}${isList} ${field.name} ${nullable} ${marker}\n`.trim();
       output += "\n";
     }
 
@@ -279,7 +282,7 @@ function generateMermaidDiagram(
 
 function generateGroupedDiagrams(
   models: Map<string, PrismaModel>,
-  relationships: Relationship[]
+  relationships: Relationship[],
 ): string {
   let output = "# Entity Relationship Diagrams (Auto-Generated)\n\n";
 
@@ -298,12 +301,12 @@ function generateGroupedDiagrams(
 
     const moduleModelSet = new Set(moduleModels.map((m) => m.name));
     const moduleRelationships = relationships.filter(
-      (r) => moduleModelSet.has(r.from) || moduleModelSet.has(r.to)
+      (r) => moduleModelSet.has(r.from) || moduleModelSet.has(r.to),
     );
 
     output += generateMermaidDiagram(
       new Map(moduleModels.map((m) => [m.name, m])),
-      moduleRelationships
+      moduleRelationships,
     );
 
     output += "\n";

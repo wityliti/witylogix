@@ -144,7 +144,7 @@ export function WebhookEventPicker({
 
   // Track expanded/collapsed groups
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
-    new Set(groups.map((g) => g.domain))
+    new Set(groups.map((g) => g.domain)),
   );
 
   // Toggle group expansion
@@ -169,7 +169,7 @@ export function WebhookEventPicker({
         onChange(selected.filter((id) => id !== eventId));
       }
     },
-    [selected, onChange]
+    [selected, onChange],
   );
 
   // Handle group select-all
@@ -182,18 +182,14 @@ export function WebhookEventPicker({
 
       if (checked) {
         // Add all events in group that aren't already selected
-        const newSelected = [
-          ...new Set([...selected, ...groupEventIds]),
-        ];
+        const newSelected = [...new Set([...selected, ...groupEventIds])];
         onChange(newSelected);
       } else {
         // Remove all events in group
-        onChange(
-          selected.filter((id) => !groupEventIds.includes(id))
-        );
+        onChange(selected.filter((id) => !groupEventIds.includes(id)));
       }
     },
-    [groups, selected, onChange]
+    [groups, selected, onChange],
   );
 
   return (
@@ -202,10 +198,9 @@ export function WebhookEventPicker({
         const isExpanded = expandedGroups.has(group.domain);
         const groupEventIds = group.events.map((e) => e.id);
         const selectedInGroup = selected.filter((id) =>
-          groupEventIds.includes(id)
+          groupEventIds.includes(id),
         );
-        const isAllSelected =
-          selectedInGroup.length === group.events.length;
+        const isAllSelected = selectedInGroup.length === group.events.length;
         const isPartiallySelected =
           selectedInGroup.length > 0 &&
           selectedInGroup.length < group.events.length;
@@ -261,9 +256,7 @@ export function WebhookEventPicker({
               {/* Expand/Collapse Arrow */}
               <div
                 style={{
-                  transform: isExpanded
-                    ? "rotate(0deg)"
-                    : "rotate(-90deg)",
+                  transform: isExpanded ? "rotate(0deg)" : "rotate(-90deg)",
                   transition: "transform 0.2s",
                   display: "flex",
                   alignItems: "center",
@@ -289,8 +282,7 @@ export function WebhookEventPicker({
                     style={{
                       marginBottom: 12,
                       paddingBottom: 12,
-                      borderBottom:
-                        "1px solid var(--p-color-border-subdued)",
+                      borderBottom: "1px solid var(--p-color-border-subdued)",
                     }}
                   >
                     <Checkbox

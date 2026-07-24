@@ -116,8 +116,7 @@ export class WhatsAppClient {
 
   constructor(config: WhatsAppConfig) {
     this.config = config;
-    this.baseUrl =
-      config.baseUrl || "https://graph.instagram.com/v18.0";
+    this.baseUrl = config.baseUrl || "https://graph.instagram.com/v18.0";
     this.rateLimitState = {
       messageCount: 0,
       templateCount: 0,
@@ -132,7 +131,7 @@ export class WhatsAppClient {
   private async request<T>(
     method: string,
     endpoint: string,
-    body?: Record<string, unknown>
+    body?: Record<string, unknown>,
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     const headers: Record<string, string> = {
@@ -152,10 +151,10 @@ export class WhatsAppClient {
     const response = await fetch(url, options);
 
     if (!response.ok) {
-      const error = await response.json() as Record<string, unknown>;
+      const error = (await response.json()) as Record<string, unknown>;
       throw new WhatsAppError(
         `WhatsApp API error: ${String(error.message || response.statusText)}`,
-        response.status
+        response.status,
       );
     }
 
@@ -174,9 +173,7 @@ export class WhatsAppClient {
         this.rateLimitState.messageResetTime = now + 1000;
       }
       if (this.rateLimitState.messageCount >= 80) {
-        throw new Error(
-          "Rate limit exceeded: 80 messages per second"
-        );
+        throw new Error("Rate limit exceeded: 80 messages per second");
       }
       this.rateLimitState.messageCount++;
     } else {
@@ -185,9 +182,7 @@ export class WhatsAppClient {
         this.rateLimitState.templateResetTime = now + 60000;
       }
       if (this.rateLimitState.templateCount >= 1000) {
-        throw new Error(
-          "Rate limit exceeded: 1000 templates per minute"
-        );
+        throw new Error("Rate limit exceeded: 1000 templates per minute");
       }
       this.rateLimitState.templateCount++;
     }
@@ -199,7 +194,7 @@ export class WhatsAppClient {
   async sendText(
     to: string,
     text: string,
-    previewUrl: boolean = false
+    previewUrl: boolean = false,
   ): Promise<WhatsAppSendResponse> {
     try {
       this.checkRateLimit("message");
@@ -219,7 +214,7 @@ export class WhatsAppClient {
             preview_url: previewUrl,
             body: text,
           },
-        }
+        },
       );
 
       const messageId = response.messages[0]?.id || "unknown";
@@ -242,7 +237,7 @@ export class WhatsAppClient {
     to: string,
     type: "image" | "video" | "audio" | "document" | "sticker",
     mediaId: string,
-    caption?: string
+    caption?: string,
   ): Promise<WhatsAppSendResponse> {
     try {
       this.checkRateLimit("message");
@@ -256,7 +251,10 @@ export class WhatsAppClient {
       const mediaKey = type;
       const mediaData: Record<string, unknown> = { id: mediaId };
 
-      if (caption && (type === "image" || type === "video" || type === "document")) {
+      if (
+        caption &&
+        (type === "image" || type === "video" || type === "document")
+      ) {
         mediaData.caption = caption;
       }
 
@@ -273,7 +271,7 @@ export class WhatsAppClient {
       const response = await this.request<SendResponse>(
         "POST",
         `/${this.config.phoneNumberId}/messages`,
-        body
+        body,
       );
 
       const messageId = response.messages[0]?.id || "unknown";
@@ -297,7 +295,7 @@ export class WhatsAppClient {
     latitude: number,
     longitude: number,
     name?: string,
-    address?: string
+    address?: string,
   ): Promise<WhatsAppSendResponse> {
     try {
       this.checkRateLimit("message");
@@ -319,7 +317,7 @@ export class WhatsAppClient {
             ...(name && { name }),
             ...(address && { address }),
           },
-        }
+        },
       );
 
       const messageId = response.messages[0]?.id || "unknown";
@@ -340,7 +338,7 @@ export class WhatsAppClient {
    */
   async sendContact(
     to: string,
-    contact: WhatsAppContactInfo
+    contact: WhatsAppContactInfo,
   ): Promise<WhatsAppSendResponse> {
     try {
       this.checkRateLimit("message");
@@ -357,7 +355,7 @@ export class WhatsAppClient {
           to,
           type: "contacts",
           contacts: [contact],
-        }
+        },
       );
 
       const messageId = response.messages[0]?.id || "unknown";
@@ -384,7 +382,7 @@ export class WhatsAppClient {
       body: { text: string };
       footer?: { text: string };
       action: Record<string, unknown>;
-    }
+    },
   ): Promise<WhatsAppSendResponse> {
     try {
       this.checkRateLimit("message");
@@ -401,7 +399,7 @@ export class WhatsAppClient {
           to,
           type: "interactive",
           interactive,
-        }
+        },
       );
 
       const messageId = response.messages[0]?.id || "unknown";
@@ -424,7 +422,7 @@ export class WhatsAppClient {
     to: string,
     templateName: string,
     languageCode: string,
-    parameters?: Array<{ type: string; [key: string]: unknown }>
+    parameters?: Array<{ type: string; [key: string]: unknown }>,
   ): Promise<WhatsAppSendResponse> {
     try {
       this.checkRateLimit("template");
@@ -455,7 +453,7 @@ export class WhatsAppClient {
             },
             ...(components.length > 0 && { components }),
           },
-        }
+        },
       );
 
       const messageId = response.messages[0]?.id || "unknown";
@@ -477,7 +475,7 @@ export class WhatsAppClient {
   async sendReaction(
     to: string,
     messageId: string,
-    emoji: string
+    emoji: string,
   ): Promise<WhatsAppSendResponse> {
     try {
       this.checkRateLimit("message");
@@ -497,7 +495,7 @@ export class WhatsAppClient {
             message_id: messageId,
             emoji,
           },
-        }
+        },
       );
 
       const responseMessageId = response.messages[0]?.id || "unknown";
@@ -535,7 +533,7 @@ export class WhatsAppClient {
     mediaType: "image" | "video" | "audio" | "document",
     fileName: string,
     mimeType: string,
-    data: Buffer
+    data: Buffer,
   ): Promise<WhatsAppMedia> {
     try {
       const formData = new FormData();
@@ -550,13 +548,13 @@ export class WhatsAppClient {
             Authorization: `Bearer ${this.config.accessToken}`,
           },
           body: formData,
-        }
+        },
       );
 
       if (!response.ok) {
         const error = (await response.json()) as { message?: string };
         throw new WhatsAppError(
-          `Media upload failed: ${String(error.message || response.statusText)}`
+          `Media upload failed: ${String(error.message || response.statusText)}`,
         );
       }
 
@@ -587,10 +585,7 @@ export class WhatsAppClient {
         mime_type: string;
       }
 
-      const response = await this.request<MediaResponse>(
-        "GET",
-        `/${mediaId}`
-      );
+      const response = await this.request<MediaResponse>("GET", `/${mediaId}`);
 
       return {
         id: mediaId,
@@ -631,7 +626,7 @@ export class WhatsAppClient {
         phone_number?: string;
         url?: string;
       }>;
-    }>
+    }>,
   ): Promise<WhatsAppTemplate> {
     try {
       this.checkRateLimit("template");
@@ -649,7 +644,7 @@ export class WhatsAppClient {
           language,
           category,
           components,
-        }
+        },
       );
 
       return {
@@ -692,14 +687,17 @@ export class WhatsAppClient {
 
       const response = await this.request<TemplateResponse>(
         "GET",
-        `/${templateId}`
+        `/${templateId}`,
       );
 
       return {
         id: response.id,
         name: response.name,
         status: response.status as "APPROVED" | "REJECTED" | "PENDING_REVIEW",
-        category: response.category as "MARKETING" | "AUTHENTICATION" | "UTILITY",
+        category: response.category as
+          | "MARKETING"
+          | "AUTHENTICATION"
+          | "UTILITY",
         language: response.language,
         components: response.components as WhatsAppTemplate["components"],
         rejectionReason: response.rejection_reason,
@@ -737,7 +735,7 @@ export class WhatsAppClient {
 
       const response = await this.request<ListResponse>(
         "GET",
-        `/${this.config.businessAccountId}/message_templates?limit=${limit}`
+        `/${this.config.businessAccountId}/message_templates?limit=${limit}`,
       );
 
       return response.data.map((t) => ({
@@ -783,7 +781,7 @@ export class WhatsAppClient {
 
       const response = await this.request<ProfileResponse>(
         "GET",
-        `/${this.config.businessAccountId}`
+        `/${this.config.businessAccountId}`,
       );
 
       return {
@@ -805,7 +803,7 @@ export class WhatsAppClient {
    * Update business profile.
    */
   async updateBusinessProfile(
-    profile: Partial<WhatsAppBusinessProfile>
+    profile: Partial<WhatsAppBusinessProfile>,
   ): Promise<WhatsAppBusinessProfile> {
     try {
       const updates: Record<string, unknown> = {};
@@ -821,7 +819,7 @@ export class WhatsAppClient {
       return this.getBusinessProfile();
     } catch (error) {
       throw new WhatsAppError(
-        `Update business profile failed: ${String(error)}`
+        `Update business profile failed: ${String(error)}`,
       );
     }
   }
@@ -830,7 +828,7 @@ export class WhatsAppClient {
    * Check if phone number is registered on WhatsApp.
    */
   async checkPhoneNumberRegistration(
-    phoneNumber: string
+    phoneNumber: string,
   ): Promise<{ registered: boolean; waId?: string }> {
     try {
       interface CheckResponse {
@@ -846,7 +844,7 @@ export class WhatsAppClient {
         {
           blocking: "wait",
           contacts: [phoneNumber],
-        }
+        },
       );
 
       const contact = response.contacts[0];
@@ -856,7 +854,7 @@ export class WhatsAppClient {
       };
     } catch (error) {
       throw new WhatsAppError(
-        `Check phone registration failed: ${String(error)}`
+        `Check phone registration failed: ${String(error)}`,
       );
     }
   }
@@ -864,18 +862,14 @@ export class WhatsAppClient {
   /**
    * Verify webhook token.
    */
-  verifyWebhook(
-    token: string,
-    challenge: string,
-    signature: string
-  ): boolean {
+  verifyWebhook(token: string, challenge: string, signature: string): boolean {
     if (!this.config.webhookVerifyToken) {
       return false;
     }
 
     const expectedSignature = createHmac(
       "sha256",
-      this.config.webhookVerifyToken
+      this.config.webhookVerifyToken,
     )
       .update(token + challenge)
       .digest("hex");
@@ -895,9 +889,7 @@ export class WhatsAppClient {
    */
   private handleSendError(error: unknown, to: string): WhatsAppSendResponse {
     const message = String(error);
-    const errorCode = message.includes("429")
-      ? "RATE_LIMITED"
-      : "SEND_FAILED";
+    const errorCode = message.includes("429") ? "RATE_LIMITED" : "SEND_FAILED";
 
     return {
       to,
@@ -913,7 +905,7 @@ export class WhatsAppClient {
    * Parse MIME type to media type.
    */
   private parseMediaType(
-    mimeType: string
+    mimeType: string,
   ): "image" | "video" | "audio" | "document" {
     if (mimeType.startsWith("image")) return "image";
     if (mimeType.startsWith("video")) return "video";
@@ -928,7 +920,7 @@ export class WhatsAppClient {
 export class WhatsAppError extends Error {
   constructor(
     message: string,
-    public statusCode?: number
+    public statusCode?: number,
   ) {
     super(message);
     this.name = "WhatsAppError";

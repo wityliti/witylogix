@@ -108,7 +108,10 @@ export default async function benchAdminRoutes(
   const tenantBody = z.object({
     slug: z
       .string()
-      .regex(/^[a-z0-9][a-z0-9-]{1,62}$/, "slug must match /^[a-z0-9][a-z0-9-]{1,62}$/"),
+      .regex(
+        /^[a-z0-9][a-z0-9-]{1,62}$/,
+        "slug must match /^[a-z0-9][a-z0-9-]{1,62}$/",
+      ),
     ownerEmail: z.string().email(),
     ownerName: z.string().min(1).max(200),
     plan: z.enum(["starter", "pro", "enterprise"]).optional(),
@@ -121,7 +124,9 @@ export default async function benchAdminRoutes(
     if (!parsed.success) {
       return reply.code(400).send({
         code: "invalid_body",
-        message: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; "),
+        message: parsed.error.issues
+          .map((i) => `${i.path.join(".")}: ${i.message}`)
+          .join("; "),
       });
     }
     try {

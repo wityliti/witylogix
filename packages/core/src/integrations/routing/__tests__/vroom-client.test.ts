@@ -5,16 +5,16 @@
  * covering VRP, VRPTW, pickup-delivery, and capacity constraints.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { VroomClient } from '../vroom-client.js';
-import type { OptimizationRequest, MatrixRequest } from '../types.js';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { VroomClient } from "../vroom-client.js";
+import type { OptimizationRequest, MatrixRequest } from "../types.js";
 
-describe('VroomClient', () => {
+describe("VroomClient", () => {
   let client: VroomClient;
 
   beforeEach(() => {
     client = new VroomClient({
-      baseUrl: 'https://vroom.test.local',
+      baseUrl: "https://vroom.test.local",
       rateLimit: 5,
       timeout: 30000,
     });
@@ -26,8 +26,8 @@ describe('VroomClient', () => {
     vi.clearAllMocks();
   });
 
-  describe('Vehicle Routing Problem (CVRP)', () => {
-    it('should solve basic CVRP', async () => {
+  describe("Vehicle Routing Problem (CVRP)", () => {
+    it("should solve basic CVRP", async () => {
       const mockResponse = {
         code: 0,
         summary: {
@@ -41,14 +41,14 @@ describe('VroomClient', () => {
             vehicle: 0,
             steps: [
               {
-                type: 'start',
+                type: "start",
                 location: [-74.006, 40.7128],
                 arrival: 0,
                 departure: 0,
                 service: 0,
               },
               {
-                type: 'job',
+                type: "job",
                 id: 1,
                 location: [-74.0, 40.72],
                 arrival: 300,
@@ -56,7 +56,7 @@ describe('VroomClient', () => {
                 service: 300,
               },
               {
-                type: 'end',
+                type: "end",
                 location: [-73.9855, 40.758],
                 arrival: 1200,
                 departure: 1200,
@@ -94,13 +94,13 @@ describe('VroomClient', () => {
 
       const result = await client.optimize(request);
 
-      expect(result.code).toBe('OK');
+      expect(result.code).toBe("OK");
       expect(result.routes).toHaveLength(1);
       expect(result.routes[0].steps).toHaveLength(3);
       expect(result.summary.unassigned_jobs).toBe(0);
     });
 
-    it('should handle capacity constraints', async () => {
+    it("should handle capacity constraints", async () => {
       const mockResponse = {
         code: 0,
         summary: {
@@ -113,9 +113,29 @@ describe('VroomClient', () => {
           {
             vehicle: 0,
             steps: [
-              { type: 'start', location: [-74.006, 40.7128], arrival: 0, departure: 0, service: 0 },
-              { type: 'job', id: 1, location: [-74.0, 40.72], arrival: 300, departure: 600, service: 300, load: [500] },
-              { type: 'end', location: [-73.9855, 40.758], arrival: 1200, departure: 1200, service: 0 },
+              {
+                type: "start",
+                location: [-74.006, 40.7128],
+                arrival: 0,
+                departure: 0,
+                service: 0,
+              },
+              {
+                type: "job",
+                id: 1,
+                location: [-74.0, 40.72],
+                arrival: 300,
+                departure: 600,
+                service: 300,
+                load: [500],
+              },
+              {
+                type: "end",
+                location: [-73.9855, 40.758],
+                arrival: 1200,
+                departure: 1200,
+                service: 0,
+              },
             ],
             distance: 5000,
             duration: 1200,
@@ -124,9 +144,29 @@ describe('VroomClient', () => {
           {
             vehicle: 1,
             steps: [
-              { type: 'start', location: [-74.006, 40.7128], arrival: 0, departure: 0, service: 0 },
-              { type: 'job', id: 2, location: [-74.01, 40.73], arrival: 300, departure: 600, service: 300, load: [500] },
-              { type: 'end', location: [-73.9855, 40.758], arrival: 1200, departure: 1200, service: 0 },
+              {
+                type: "start",
+                location: [-74.006, 40.7128],
+                arrival: 0,
+                departure: 0,
+                service: 0,
+              },
+              {
+                type: "job",
+                id: 2,
+                location: [-74.01, 40.73],
+                arrival: 300,
+                departure: 600,
+                service: 300,
+                load: [500],
+              },
+              {
+                type: "end",
+                location: [-73.9855, 40.758],
+                arrival: 1200,
+                departure: 1200,
+                service: 0,
+              },
             ],
             distance: 5000,
             duration: 1200,
@@ -158,7 +198,7 @@ describe('VroomClient', () => {
       expect(result.summary.vehicle_count).toBe(2);
     });
 
-    it('should report unassigned jobs', async () => {
+    it("should report unassigned jobs", async () => {
       const mockResponse = {
         code: 0,
         summary: {
@@ -171,15 +211,34 @@ describe('VroomClient', () => {
           {
             vehicle: 0,
             steps: [
-              { type: 'start', location: [-74.006, 40.7128], arrival: 0, departure: 0, service: 0 },
-              { type: 'job', id: 1, location: [-74.0, 40.72], arrival: 300, departure: 600, service: 300 },
-              { type: 'end', location: [-73.9855, 40.758], arrival: 1200, departure: 1200, service: 0 },
+              {
+                type: "start",
+                location: [-74.006, 40.7128],
+                arrival: 0,
+                departure: 0,
+                service: 0,
+              },
+              {
+                type: "job",
+                id: 1,
+                location: [-74.0, 40.72],
+                arrival: 300,
+                departure: 600,
+                service: 300,
+              },
+              {
+                type: "end",
+                location: [-73.9855, 40.758],
+                arrival: 1200,
+                departure: 1200,
+                service: 0,
+              },
             ],
             distance: 5000,
             duration: 1200,
           },
         ],
-        unassigned: [{ id: 2, type: 'job' }],
+        unassigned: [{ id: 2, type: "job" }],
       };
 
       (global.fetch as any).mockResolvedValueOnce({
@@ -188,9 +247,7 @@ describe('VroomClient', () => {
       });
 
       const request: OptimizationRequest = {
-        vehicles: [
-          { start_location: [40.7128, -74.006], capacity: 100 },
-        ],
+        vehicles: [{ start_location: [40.7128, -74.006], capacity: 100 }],
         jobs: [
           { location: [40.72, -74.0] },
           { location: [40.73, -74.01], priority: 10 }, // Far away, may not fit
@@ -204,8 +261,8 @@ describe('VroomClient', () => {
     });
   });
 
-  describe('Vehicle Routing Problem with Time Windows (VRPTW)', () => {
-    it('should respect time windows', async () => {
+  describe("Vehicle Routing Problem with Time Windows (VRPTW)", () => {
+    it("should respect time windows", async () => {
       const now = Math.floor(Date.now() / 1000);
 
       const mockResponse = {
@@ -215,9 +272,15 @@ describe('VroomClient', () => {
           {
             vehicle: 0,
             steps: [
-              { type: 'start', location: [-74.006, 40.7128], arrival: now, departure: now, service: 0 },
               {
-                type: 'job',
+                type: "start",
+                location: [-74.006, 40.7128],
+                arrival: now,
+                departure: now,
+                service: 0,
+              },
+              {
+                type: "job",
                 id: 1,
                 location: [-74.0, 40.72],
                 arrival: now + 300,
@@ -225,7 +288,13 @@ describe('VroomClient', () => {
                 service: 300,
                 waiting_time: 0,
               },
-              { type: 'end', location: [-73.9855, 40.758], arrival: now + 1200, departure: now + 1200, service: 0 },
+              {
+                type: "end",
+                location: [-73.9855, 40.758],
+                arrival: now + 1200,
+                departure: now + 1200,
+                service: 0,
+              },
             ],
             distance: 5000,
             duration: 1200,
@@ -264,7 +333,7 @@ describe('VroomClient', () => {
       expect(result.routes[0].steps[1].departure_time).toBe(now + 600);
     });
 
-    it('should handle waiting time', async () => {
+    it("should handle waiting time", async () => {
       const now = Math.floor(Date.now() / 1000);
 
       const mockResponse = {
@@ -274,9 +343,15 @@ describe('VroomClient', () => {
           {
             vehicle: 0,
             steps: [
-              { type: 'start', location: [-74.006, 40.7128], arrival: now, departure: now, service: 0 },
               {
-                type: 'job',
+                type: "start",
+                location: [-74.006, 40.7128],
+                arrival: now,
+                departure: now,
+                service: 0,
+              },
+              {
+                type: "job",
                 id: 1,
                 location: [-74.0, 40.72],
                 arrival: now + 100,
@@ -284,7 +359,13 @@ describe('VroomClient', () => {
                 service: 300,
                 waiting_time: 200,
               },
-              { type: 'end', location: [-73.9855, 40.758], arrival: now + 1200, departure: now + 1200, service: 0 },
+              {
+                type: "end",
+                location: [-73.9855, 40.758],
+                arrival: now + 1200,
+                departure: now + 1200,
+                service: 0,
+              },
             ],
             distance: 5000,
             duration: 1200,
@@ -321,12 +402,14 @@ describe('VroomClient', () => {
 
       const result = await client.optimize(request);
 
-      expect(result.routes[0].steps[1].arrival_time).toBeLessThan(result.routes[0].steps[1].departure_time - 300);
+      expect(result.routes[0].steps[1].arrival_time).toBeLessThan(
+        result.routes[0].steps[1].departure_time - 300,
+      );
     });
   });
 
-  describe('Pickup-Delivery Problems', () => {
-    it('should handle pickup and delivery constraints', async () => {
+  describe("Pickup-Delivery Problems", () => {
+    it("should handle pickup and delivery constraints", async () => {
       const mockResponse = {
         code: 0,
         summary: { cost: 10000, routes: 1, unassigned: 0, amount: [0] },
@@ -334,10 +417,16 @@ describe('VroomClient', () => {
           {
             vehicle: 0,
             steps: [
-              { type: 'start', location: [-74.006, 40.7128], arrival: 0, departure: 0, service: 0 },
               {
-                type: 'pickup',
-                id: 'p1',
+                type: "start",
+                location: [-74.006, 40.7128],
+                arrival: 0,
+                departure: 0,
+                service: 0,
+              },
+              {
+                type: "pickup",
+                id: "p1",
                 location: [-74.0, 40.72],
                 arrival: 300,
                 departure: 600,
@@ -345,15 +434,21 @@ describe('VroomClient', () => {
                 load: [100],
               },
               {
-                type: 'delivery',
-                id: 'd1',
+                type: "delivery",
+                id: "d1",
                 location: [-73.99, 40.73],
                 arrival: 1200,
                 departure: 1500,
                 service: 300,
                 load: [0],
               },
-              { type: 'end', location: [-73.9855, 40.758], arrival: 1800, departure: 1800, service: 0 },
+              {
+                type: "end",
+                location: [-73.9855, 40.758],
+                arrival: 1800,
+                departure: 1800,
+                service: 0,
+              },
             ],
             distance: 10000,
             duration: 1800,
@@ -379,7 +474,7 @@ describe('VroomClient', () => {
           {
             location: [40.72, -74.0],
             duration_s: 300,
-            pickup_delivery: { pickup_job_id: 'p1', delivery_job_id: 'd1' },
+            pickup_delivery: { pickup_job_id: "p1", delivery_job_id: "d1" },
           },
         ],
       };
@@ -390,8 +485,8 @@ describe('VroomClient', () => {
     });
   });
 
-  describe('Skills and Priorities', () => {
-    it('should consider job skills', async () => {
+  describe("Skills and Priorities", () => {
+    it("should consider job skills", async () => {
       const mockResponse = {
         code: 0,
         summary: { cost: 5000, routes: 1, unassigned: 0, amount: [100] },
@@ -399,16 +494,28 @@ describe('VroomClient', () => {
           {
             vehicle: 0,
             steps: [
-              { type: 'start', location: [-74.006, 40.7128], arrival: 0, departure: 0, service: 0 },
               {
-                type: 'job',
+                type: "start",
+                location: [-74.006, 40.7128],
+                arrival: 0,
+                departure: 0,
+                service: 0,
+              },
+              {
+                type: "job",
                 id: 1,
                 location: [-74.0, 40.72],
                 arrival: 300,
                 departure: 600,
                 service: 300,
               },
-              { type: 'end', location: [-73.9855, 40.758], arrival: 1200, departure: 1200, service: 0 },
+              {
+                type: "end",
+                location: [-73.9855, 40.758],
+                arrival: 1200,
+                departure: 1200,
+                service: 0,
+              },
             ],
             distance: 5000,
             duration: 1200,
@@ -426,13 +533,13 @@ describe('VroomClient', () => {
         vehicles: [
           {
             start_location: [40.7128, -74.006],
-            skills: ['delivery', 'heavy'],
+            skills: ["delivery", "heavy"],
           },
         ],
         jobs: [
           {
             location: [40.72, -74.0],
-            skills: ['delivery', 'heavy'],
+            skills: ["delivery", "heavy"],
           },
         ],
       };
@@ -442,7 +549,7 @@ describe('VroomClient', () => {
       expect(result.routes).toHaveLength(1);
     });
 
-    it('should prioritize high-priority jobs', async () => {
+    it("should prioritize high-priority jobs", async () => {
       const mockResponse = {
         code: 0,
         summary: { cost: 5000, routes: 1, unassigned: 0, amount: [100] },
@@ -450,9 +557,15 @@ describe('VroomClient', () => {
           {
             vehicle: 0,
             steps: [
-              { type: 'start', location: [-74.006, 40.7128], arrival: 0, departure: 0, service: 0 },
               {
-                type: 'job',
+                type: "start",
+                location: [-74.006, 40.7128],
+                arrival: 0,
+                departure: 0,
+                service: 0,
+              },
+              {
+                type: "job",
                 id: 1,
                 location: [-74.01, 40.73],
                 arrival: 300,
@@ -460,14 +573,20 @@ describe('VroomClient', () => {
                 service: 300,
               },
               {
-                type: 'job',
+                type: "job",
                 id: 2,
                 location: [-74.0, 40.72],
                 arrival: 900,
                 departure: 1200,
                 service: 300,
               },
-              { type: 'end', location: [-73.9855, 40.758], arrival: 1800, departure: 1800, service: 0 },
+              {
+                type: "end",
+                location: [-73.9855, 40.758],
+                arrival: 1800,
+                departure: 1800,
+                service: 0,
+              },
             ],
             distance: 5000,
             duration: 1800,
@@ -482,9 +601,7 @@ describe('VroomClient', () => {
       });
 
       const request: OptimizationRequest = {
-        vehicles: [
-          { start_location: [40.7128, -74.006] },
-        ],
+        vehicles: [{ start_location: [40.7128, -74.006] }],
         jobs: [
           { location: [40.72, -74.0], priority: 1 },
           { location: [40.73, -74.01], priority: 100 }, // Higher priority
@@ -494,12 +611,12 @@ describe('VroomClient', () => {
       const result = await client.optimize(request);
 
       // High-priority job should be visited first
-      expect(result.routes[0].steps[1].job_id).toBe('1');
+      expect(result.routes[0].steps[1].job_id).toBe("1");
     });
   });
 
-  describe('Matrix Operations', () => {
-    it('should compute distance matrix', async () => {
+  describe("Matrix Operations", () => {
+    it("should compute distance matrix", async () => {
       const request: MatrixRequest = {
         origins: [[40.7128, -74.006]],
         destinations: [[40.758, -73.9855]],
@@ -514,8 +631,8 @@ describe('VroomClient', () => {
     });
   });
 
-  describe('Speed Factors', () => {
-    it('should apply vehicle speed factors', async () => {
+  describe("Speed Factors", () => {
+    it("should apply vehicle speed factors", async () => {
       const mockResponse = {
         code: 0,
         summary: { cost: 5000, routes: 1, unassigned: 0, amount: [100] },
@@ -523,16 +640,28 @@ describe('VroomClient', () => {
           {
             vehicle: 0,
             steps: [
-              { type: 'start', location: [-74.006, 40.7128], arrival: 0, departure: 0, service: 0 },
               {
-                type: 'job',
+                type: "start",
+                location: [-74.006, 40.7128],
+                arrival: 0,
+                departure: 0,
+                service: 0,
+              },
+              {
+                type: "job",
                 id: 1,
                 location: [-74.0, 40.72],
                 arrival: 150, // Faster due to speed_factor
                 departure: 450,
                 service: 300,
               },
-              { type: 'end', location: [-73.9855, 40.758], arrival: 600, departure: 600, service: 0 },
+              {
+                type: "end",
+                location: [-73.9855, 40.758],
+                arrival: 600,
+                departure: 600,
+                service: 0,
+              },
             ],
             distance: 5000,
             duration: 600,
@@ -553,9 +682,7 @@ describe('VroomClient', () => {
             speed_factor: 2, // Double speed
           },
         ],
-        jobs: [
-          { location: [40.72, -74.0], duration_s: 300 },
-        ],
+        jobs: [{ location: [40.72, -74.0], duration_s: 300 }],
       };
 
       const result = await client.optimize(request);
@@ -564,8 +691,8 @@ describe('VroomClient', () => {
     });
   });
 
-  describe('Caching', () => {
-    it('should cache optimization results', async () => {
+  describe("Caching", () => {
+    it("should cache optimization results", async () => {
       const mockResponse = {
         code: 0,
         summary: { cost: 5000, routes: 1, unassigned: 0, amount: [100] },
@@ -573,16 +700,28 @@ describe('VroomClient', () => {
           {
             vehicle: 0,
             steps: [
-              { type: 'start', location: [-74.006, 40.7128], arrival: 0, departure: 0, service: 0 },
               {
-                type: 'job',
+                type: "start",
+                location: [-74.006, 40.7128],
+                arrival: 0,
+                departure: 0,
+                service: 0,
+              },
+              {
+                type: "job",
                 id: 1,
                 location: [-74.0, 40.72],
                 arrival: 300,
                 departure: 600,
                 service: 300,
               },
-              { type: 'end', location: [-73.9855, 40.758], arrival: 1200, departure: 1200, service: 0 },
+              {
+                type: "end",
+                location: [-73.9855, 40.758],
+                arrival: 1200,
+                departure: 1200,
+                service: 0,
+              },
             ],
             distance: 5000,
             duration: 1200,
@@ -597,12 +736,8 @@ describe('VroomClient', () => {
       });
 
       const request: OptimizationRequest = {
-        vehicles: [
-          { start_location: [40.7128, -74.006] },
-        ],
-        jobs: [
-          { location: [40.72, -74.0] },
-        ],
+        vehicles: [{ start_location: [40.7128, -74.006] }],
+        jobs: [{ location: [40.72, -74.0] }],
       };
 
       await client.optimize(request);
@@ -612,13 +747,13 @@ describe('VroomClient', () => {
     });
   });
 
-  describe('Error Handling', () => {
-    it('should handle solver errors', async () => {
+  describe("Error Handling", () => {
+    it("should handle solver errors", async () => {
       (global.fetch as any).mockResolvedValue({
         ok: true,
         json: async () => ({
           code: 1,
-          message: 'Invalid problem definition',
+          message: "Invalid problem definition",
         }),
       });
 
@@ -627,11 +762,13 @@ describe('VroomClient', () => {
         jobs: [{ location: [40.72, -74.0] }],
       };
 
-      await expect(client.optimize(request)).rejects.toThrow('VROOM solver returned code 1');
+      await expect(client.optimize(request)).rejects.toThrow(
+        "VROOM solver returned code 1",
+      );
     });
 
-    it('should handle network errors', async () => {
-      (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+    it("should handle network errors", async () => {
+      (global.fetch as any).mockRejectedValueOnce(new Error("Network error"));
 
       const request: OptimizationRequest = {
         vehicles: [{ start_location: [40.7128, -74.006] }],
@@ -642,8 +779,8 @@ describe('VroomClient', () => {
     });
   });
 
-  describe('Health Checks', () => {
-    it('should report health status', async () => {
+  describe("Health Checks", () => {
+    it("should report health status", async () => {
       const status = await client.health();
 
       expect(status).toBeDefined();

@@ -12,35 +12,51 @@
  * Credential type enumeration
  */
 export type CredentialType =
-  | 'api_key'
-  | 'oauth_token'
-  | 'jwt'
-  | 'certificate'
-  | 'ssh_key'
-  | 'password'
-  | 'connection_string'
-  | 'webhook_secret'
-  | 'custom';
+  | "api_key"
+  | "oauth_token"
+  | "jwt"
+  | "certificate"
+  | "ssh_key"
+  | "password"
+  | "connection_string"
+  | "webhook_secret"
+  | "custom";
 
 /**
  * Credential severity levels
  */
-export type Severity = 'critical' | 'high' | 'medium' | 'low';
+export type Severity = "critical" | "high" | "medium" | "low";
 
 /**
  * Rotation schedule frequency
  */
-export type RotationFrequency = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'annually' | 'manual';
+export type RotationFrequency =
+  | "daily"
+  | "weekly"
+  | "monthly"
+  | "quarterly"
+  | "annually"
+  | "manual";
 
 /**
  * Rotation status enumeration
  */
-export type RotationStatus = 'pending' | 'in_progress' | 'completed' | 'failed' | 'rolled_back';
+export type RotationStatus =
+  | "pending"
+  | "in_progress"
+  | "completed"
+  | "failed"
+  | "rolled_back";
 
 /**
  * Rotation trigger type
  */
-export type RotationTrigger = 'scheduled' | 'breach_detected' | 'team_change' | 'manual' | 'compliance';
+export type RotationTrigger =
+  | "scheduled"
+  | "breach_detected"
+  | "team_change"
+  | "manual"
+  | "compliance";
 
 /**
  * Credential entry in vault
@@ -136,7 +152,7 @@ export interface SecretScanFinding {
   id: string;
   tenantId: string;
   scanId: string;
-  scanType: 'regex' | 'entropy' | 'file_scan';
+  scanType: "regex" | "entropy" | "file_scan";
   severity: Severity;
   pattern: string;
   patternName: string;
@@ -149,9 +165,9 @@ export interface SecretScanFinding {
   entropy?: number; // Shannon entropy score
   context?: string; // surrounding code
   detectedAt: Date;
-  remediationStatus: 'pending' | 'remediated' | 'false_positive' | 'ignored';
+  remediationStatus: "pending" | "remediated" | "false_positive" | "ignored";
   remediationDetails?: {
-    action: 'rotated' | 'removed' | 'marked_false_positive' | 'ignored';
+    action: "rotated" | "removed" | "marked_false_positive" | "ignored";
     executedAt: Date;
     executedBy: string;
     comment?: string;
@@ -165,14 +181,14 @@ export interface SecretScanFinding {
 export interface ScanResult {
   id: string;
   tenantId: string;
-  scanType: 'regex' | 'entropy' | 'file_scan' | 'full';
+  scanType: "regex" | "entropy" | "file_scan" | "full";
   startedAt: Date;
   completedAt?: Date;
   duration?: number;
   filesScanned: number;
   secretsFound: number;
   findings: SecretScanFinding[];
-  status: 'pending' | 'in_progress' | 'completed' | 'failed';
+  status: "pending" | "in_progress" | "completed" | "failed";
   errorMessage?: string;
   metadata?: Record<string, unknown>;
 }
@@ -192,7 +208,7 @@ export interface CredentialHealth {
   scanFindingsCount: number;
   rotationStatus: RotationStatus;
   nextRotationDue?: Date;
-  riskAssessment: 'critical' | 'high' | 'medium' | 'low';
+  riskAssessment: "critical" | "high" | "medium" | "low";
   recommendations: string[];
   calculatedAt: Date;
 }
@@ -202,13 +218,17 @@ export interface CredentialHealth {
  */
 export interface VaultConfig {
   tenantId: string;
-  vaultType: 'local' | 'aws_secrets_manager' | 'hashicorp_vault' | 'azure_keyvault';
+  vaultType:
+    | "local"
+    | "aws_secrets_manager"
+    | "hashicorp_vault"
+    | "azure_keyvault";
   endpoint?: string;
   region?: string;
-  authMethod?: 'bearer_token' | 'api_key' | 'msal' | 'local';
+  authMethod?: "bearer_token" | "api_key" | "msal" | "local";
   encryptionKeyId?: string;
   enableAutoBackup?: boolean;
-  backupFrequency?: 'hourly' | 'daily' | 'weekly';
+  backupFrequency?: "hourly" | "daily" | "weekly";
   failoverVaults?: VaultConfig[];
   consistencyCheckInterval?: number;
   metadata?: Record<string, unknown>;
@@ -279,7 +299,7 @@ export interface TrafficShiftConfig {
 export interface ProviderRotationFlow {
   providerId: string;
   credentialType: CredentialType;
-  rotationType: 'regenerate' | 'refresh' | 'renewal' | 'custom';
+  rotationType: "regenerate" | "refresh" | "renewal" | "custom";
   preValidationSteps?: Array<{
     name: string;
     endpoint: string;
@@ -287,9 +307,13 @@ export interface ProviderRotationFlow {
   }>;
   rotationSteps: Array<{
     name: string;
-    action: 'call_provider_api' | 'validate_token' | 'update_vault' | 'notify_service';
+    action:
+      | "call_provider_api"
+      | "validate_token"
+      | "update_vault"
+      | "notify_service";
     endpoint?: string;
-    method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+    method?: "GET" | "POST" | "PUT" | "DELETE";
     timeout?: number;
   }>;
   postValidationSteps?: Array<{

@@ -50,7 +50,15 @@ export interface DistanceResult {
  */
 export interface DirectionsResult {
   routes: Route[];
-  status: 'OK' | 'NOT_FOUND' | 'ZERO_RESULTS' | 'MAX_WAYPOINTS_EXCEEDED' | 'INVALID_REQUEST' | 'OVER_QUERY_LIMIT' | 'REQUEST_DENIED' | 'UNKNOWN_ERROR';
+  status:
+    | "OK"
+    | "NOT_FOUND"
+    | "ZERO_RESULTS"
+    | "MAX_WAYPOINTS_EXCEEDED"
+    | "INVALID_REQUEST"
+    | "OVER_QUERY_LIMIT"
+    | "REQUEST_DENIED"
+    | "UNKNOWN_ERROR";
 }
 
 export interface Route {
@@ -118,16 +126,16 @@ export interface ZoneDetectionResult {
  * GeoJSON Feature for zone visualization
  */
 export interface GeoJSONFeature {
-  type: 'Feature';
+  type: "Feature";
   properties: Record<string, any>;
   geometry: {
-    type: 'Polygon' | 'MultiPolygon';
+    type: "Polygon" | "MultiPolygon";
     coordinates: number[][][] | number[][][][];
   };
 }
 
 export interface GeoJSONFeatureCollection {
-  type: 'FeatureCollection';
+  type: "FeatureCollection";
   features: GeoJSONFeature[];
 }
 
@@ -157,7 +165,7 @@ export interface CalendarEvent {
   startTime: string; // ISO 8601
   endTime: string; // ISO 8601
   location?: string;
-  status: 'confirmed' | 'tentative' | 'cancelled';
+  status: "confirmed" | "tentative" | "cancelled";
   organizer?: {
     email: string;
     displayName?: string;
@@ -165,7 +173,7 @@ export interface CalendarEvent {
   attendees?: Array<{
     email: string;
     displayName?: string;
-    responseStatus: 'accepted' | 'declined' | 'tentative' | 'needsAction';
+    responseStatus: "accepted" | "declined" | "tentative" | "needsAction";
   }>;
   extendedProperties?: {
     shared?: Record<string, string>;
@@ -203,7 +211,7 @@ export interface OAuth2Token {
   accessToken: string;
   refreshToken?: string;
   expiresAt: number; // Timestamp in milliseconds
-  tokenType: 'Bearer';
+  tokenType: "Bearer";
 }
 
 /**

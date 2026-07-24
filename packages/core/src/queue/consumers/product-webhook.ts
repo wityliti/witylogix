@@ -33,7 +33,10 @@ import type { WitylogixEvents } from "../../event-bus/types.js";
 export class ProductWebhookConsumer extends QueueConsumer {
   private eventBus?: TypedEventBus<WitylogixEvents>;
 
-  constructor(config: ConsumerConfig, eventBus?: TypedEventBus<WitylogixEvents>) {
+  constructor(
+    config: ConsumerConfig,
+    eventBus?: TypedEventBus<WitylogixEvents>,
+  ) {
     super(config);
     this.eventBus = eventBus;
   }
@@ -91,7 +94,11 @@ export class ProductWebhookConsumer extends QueueConsumer {
 
     // Validate variant structure
     for (const variant of payload.variants) {
-      if (!variant.id || !variant.sku || variant.inventory_quantity === undefined) {
+      if (
+        !variant.id ||
+        !variant.sku ||
+        variant.inventory_quantity === undefined
+      ) {
         throw new QueueValidationError(
           "Product variant missing required fields: id, sku, inventory_quantity",
         );
@@ -127,7 +134,9 @@ export class ProductWebhookConsumer extends QueueConsumer {
         case "create":
         case "update":
           if (!payload) {
-            throw new QueueValidationError("Payload required for create/update");
+            throw new QueueValidationError(
+              "Payload required for create/update",
+            );
           }
           await this.syncProductData(shopId, payload);
           await this.updateVariantInventory(shopId, payload);
@@ -167,10 +176,7 @@ export class ProductWebhookConsumer extends QueueConsumer {
         );
       }
 
-      if (
-        error instanceof Error &&
-        error.message.includes("database")
-      ) {
+      if (error instanceof Error && error.message.includes("database")) {
         throw new QueueTransientError(
           `Database error processing product: ${error.message}`,
           { productId: data.externalProductId },
@@ -334,9 +340,7 @@ export class ProductWebhookConsumer extends QueueConsumer {
     productId: string,
   ): Promise<void> {
     try {
-      console.log(
-        `[ProductWebhookConsumer] Deleting product ${productId}`,
-      );
+      console.log(`[ProductWebhookConsumer] Deleting product ${productId}`);
 
       // Soft delete product using tenant-aware Prisma
       await (dbPrisma as any).product.update({
@@ -371,33 +375,47 @@ export class ProductWebhookConsumer extends QueueConsumer {
       );
 
       if (!this.eventBus) {
-        console.warn("[ProductWebhookConsumer] EventBus not initialized, skipping event emission");
+        console.warn(
+          "[ProductWebhookConsumer] EventBus not initialized, skipping event emission",
+        );
         return;
       }
 
       // Emit typed events based on action
       if (action === "create") {
-        await this.eventBus.emit("order.created", {
-          orderId: productId,
-          shopId,
-          customerId: "",
-          totalAmount: 0,
-          currency: "USD",
-          createdAt: new Date().toISOString(),
-        }, { tenantId: shopId });
+        await this.eventBus.emit(
+          "order.created",
+          {
+            orderId: productId,
+            shopId,
+            customerId: "",
+            totalAmount: 0,
+            currency: "USD",
+            createdAt: new Date().toISOString(),
+          },
+          { tenantId: shopId },
+        );
       } else if (action === "update") {
-        await this.eventBus.emit("order.confirmed", {
-          orderId: productId,
-          shopId,
-          confirmedAt: new Date().toISOString(),
-        }, { tenantId: shopId });
+        await this.eventBus.emit(
+          "order.confirmed",
+          {
+            orderId: productId,
+            shopId,
+            confirmedAt: new Date().toISOString(),
+          },
+          { tenantId: shopId },
+        );
       } else if (action === "delete") {
-        await this.eventBus.emit("order.cancelled", {
-          orderId: productId,
-          shopId,
-          reason: "Product deleted",
-          cancelledAt: new Date().toISOString(),
-        }, { tenantId: shopId });
+        await this.eventBus.emit(
+          "order.cancelled",
+          {
+            orderId: productId,
+            shopId,
+            reason: "Product deleted",
+            cancelledAt: new Date().toISOString(),
+          },
+          { tenantId: shopId },
+        );
       }
 
       await this.simulateAsyncOperation(20);

@@ -24,7 +24,9 @@ export default function FleetLayout({
       <div className="border-b border-wl-border-subtle sticky top-0 z-40 bg-wl-bg-base">
         <div className="px-6 flex gap-0">
           {tabs.map((tab) => {
-            const isActive = tab.exact ? pathname === tab.href : pathname.startsWith(tab.href);
+            const isActive = tab.exact
+              ? pathname === tab.href
+              : pathname.startsWith(tab.href);
             return (
               <Link
                 key={tab.href}
@@ -33,7 +35,7 @@ export default function FleetLayout({
                   "px-4 py-3 text-sm font-medium transition-colors border-b-2",
                   isActive
                     ? "border-wl-primary-500 text-wl-primary-500"
-                    : "border-transparent text-wl-text-secondary hover:text-wl-text-primary"
+                    : "border-transparent text-wl-text-secondary hover:text-wl-text-primary",
                 )}
               >
                 {tab.label}

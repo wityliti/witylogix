@@ -1,7 +1,7 @@
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from "expo-secure-store";
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
-const TOKEN_KEY = 'auth_token';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
+const TOKEN_KEY = "auth_token";
 
 export class ApiClient {
   private baseUrl: string;
@@ -14,20 +14,20 @@ export class ApiClient {
     try {
       return await SecureStore.getItemAsync(TOKEN_KEY);
     } catch (error) {
-      console.error('Failed to get token:', error);
+      console.error("Failed to get token:", error);
       return null;
     }
   }
 
   private async buildHeaders(includeAuth = true): Promise<HeadersInit> {
     const headers: HeadersInit = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
 
     if (includeAuth) {
       const token = await this.getToken();
       if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+        headers["Authorization"] = `Bearer ${token}`;
       }
     }
 
@@ -37,7 +37,7 @@ export class ApiClient {
   async get<T = any>(path: string, options?: RequestInit): Promise<T> {
     const headers = await this.buildHeaders();
     const response = await fetch(`${this.baseUrl}${path}`, {
-      method: 'GET',
+      method: "GET",
       ...options,
       headers: { ...headers, ...(options?.headers || {}) },
     });
@@ -49,10 +49,14 @@ export class ApiClient {
     return response.json();
   }
 
-  async post<T = any>(path: string, body?: any, options?: RequestInit): Promise<T> {
+  async post<T = any>(
+    path: string,
+    body?: any,
+    options?: RequestInit,
+  ): Promise<T> {
     const headers = await this.buildHeaders();
     const response = await fetch(`${this.baseUrl}${path}`, {
-      method: 'POST',
+      method: "POST",
       ...options,
       headers: { ...headers, ...(options?.headers || {}) },
       body: body ? JSON.stringify(body) : undefined,
@@ -65,10 +69,14 @@ export class ApiClient {
     return response.json();
   }
 
-  async patch<T = any>(path: string, body?: any, options?: RequestInit): Promise<T> {
+  async patch<T = any>(
+    path: string,
+    body?: any,
+    options?: RequestInit,
+  ): Promise<T> {
     const headers = await this.buildHeaders();
     const response = await fetch(`${this.baseUrl}${path}`, {
-      method: 'PATCH',
+      method: "PATCH",
       ...options,
       headers: { ...headers, ...(options?.headers || {}) },
       body: body ? JSON.stringify(body) : undefined,
@@ -84,7 +92,7 @@ export class ApiClient {
   async delete<T = any>(path: string, options?: RequestInit): Promise<T> {
     const headers = await this.buildHeaders();
     const response = await fetch(`${this.baseUrl}${path}`, {
-      method: 'DELETE',
+      method: "DELETE",
       ...options,
       headers: { ...headers, ...(options?.headers || {}) },
     });

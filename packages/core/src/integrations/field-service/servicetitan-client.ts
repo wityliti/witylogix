@@ -4,7 +4,7 @@
  * OAuth2 authentication with app key and tenant ID
  */
 
-import { AbstractFieldServiceAdapter } from './field-service-adapter.js';
+import { AbstractFieldServiceAdapter } from "./field-service-adapter.js";
 import type {
   Job,
   WorkOrder,
@@ -21,7 +21,7 @@ import type {
   PaginatedResult,
   PriorityLevel,
   FieldServiceBatchResult,
-} from './types.js';
+} from "./types.js";
 
 interface ServiceTitanConfig {
   appKey: string;
@@ -136,11 +136,13 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
    * Initialize ServiceTitan client
    */
   constructor(connection: FieldServiceConnection) {
-    super('servicetitan', connection);
+    super("servicetitan", connection);
 
     const { apiKey, apiSecret, tenantId, siteUrl } = connection.credentials;
     if (!apiKey || !apiSecret || !tenantId) {
-      throw new Error('Missing ServiceTitan credentials: appKey, appSecret, tenantId');
+      throw new Error(
+        "Missing ServiceTitan credentials: appKey, appSecret, tenantId",
+      );
     }
 
     this.config = {
@@ -150,7 +152,7 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
       apiUrl: siteUrl,
     };
 
-    this.apiUrl = this.config.apiUrl || 'https://api.servicetitan.com';
+    this.apiUrl = this.config.apiUrl || "https://api.servicetitan.com";
   }
 
   /**
@@ -159,7 +161,7 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
   async healthCheck(): Promise<boolean> {
     try {
       const response = await this.executeWithProtection(() =>
-        this.request('GET', '/crm/v2/customers?limit=1')
+        this.request("GET", "/crm/v2/customers?limit=1"),
       );
       return !!response;
     } catch {
@@ -172,16 +174,27 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
    */
   async authenticate(): Promise<void> {
     try {
-      const response = (await this.request('POST', '/auth/v1/oauth/token', {
-        grant_type: 'client_credentials',
-        client_id: this.config.appKey,
-        client_secret: this.config.appSecret,
-      }, false)) as any;
+      const response = (await this.request(
+        "POST",
+        "/auth/v1/oauth/token",
+        {
+          grant_type: "client_credentials",
+          client_id: this.config.appKey,
+          client_secret: this.config.appSecret,
+        },
+        false,
+      )) as any;
 
       this.accessToken = response.access_token;
-      this.tokenExpiresAt = new Date(Date.now() + (response.expires_in - 300) * 1000);
+      this.tokenExpiresAt = new Date(
+        Date.now() + (response.expires_in - 300) * 1000,
+      );
     } catch (error) {
-      throw this.createOperationError('Failed to authenticate with ServiceTitan', 'AUTH_ERROR', 401);
+      throw this.createOperationError(
+        "Failed to authenticate with ServiceTitan",
+        "AUTH_ERROR",
+        401,
+      );
     }
   }
 
@@ -194,16 +207,20 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
     body?: unknown,
     requireAuth: boolean = true,
   ): Promise<unknown> {
-    if (requireAuth && (!this.accessToken || (this.tokenExpiresAt && Date.now() > this.tokenExpiresAt.getTime()))) {
+    if (
+      requireAuth &&
+      (!this.accessToken ||
+        (this.tokenExpiresAt && Date.now() > this.tokenExpiresAt.getTime()))
+    ) {
       await this.authenticate();
     }
 
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
 
     if (requireAuth && this.accessToken) {
-      headers['Authorization'] = `Bearer ${this.accessToken}`;
+      headers["Authorization"] = `Bearer ${this.accessToken}`;
     }
 
     const response = await fetch(`${this.apiUrl}${endpoint}`, {
@@ -216,7 +233,7 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
     if (!response.ok) {
       throw this.createOperationError(
         `ServiceTitan API error: ${response.statusText}`,
-        'API_ERROR',
+        "API_ERROR",
         response.status,
         response.status >= 500 || response.status === 429,
       );
@@ -241,11 +258,15 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
         locationCity: job.location.city,
         locationZip: job.location.postalCode,
         locationState: job.location.state,
-        jobDate: job.scheduledStart?.toISOString().split('T')[0],
+        jobDate: job.scheduledStart?.toISOString().split("T")[0],
         notes: job.notes,
       };
 
-      const response = (await this.request('POST', '/jobs/v2/jobs', data)) as ServiceTitanJobData;
+      const response = (await this.request(
+        "POST",
+        "/jobs/v2/jobs",
+        data,
+      )) as ServiceTitanJobData;
       return this.mapJobFromProvider(response);
     });
   }
@@ -255,7 +276,10 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
    */
   async getJob(jobId: string): Promise<Job> {
     return this.executeWithRetry(async () => {
-      const response = (await this.request('GET', `/jobs/v2/jobs/${jobId}`)) as ServiceTitanJobData;
+      const response = (await this.request(
+        "GET",
+        `/jobs/v2/jobs/${jobId}`,
+      )) as ServiceTitanJobData;
       return this.mapJobFromProvider(response);
     });
   }
@@ -272,7 +296,11 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
       if (updates.notes) data.notes = updates.notes;
       if (updates.status) data.status = updates.status;
 
-      const response = (await this.request('PATCH', `/jobs/v2/jobs/${jobId}`, data)) as ServiceTitanJobData;
+      const response = (await this.request(
+        "PATCH",
+        `/jobs/v2/jobs/${jobId}`,
+        data,
+      )) as ServiceTitanJobData;
       return this.mapJobFromProvider(response);
     });
   }
@@ -282,7 +310,7 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
    */
   async deleteJob(jobId: string): Promise<void> {
     return this.executeWithRetry(async () => {
-      await this.request('DELETE', `/jobs/v2/jobs/${jobId}`);
+      await this.request("DELETE", `/jobs/v2/jobs/${jobId}`);
     });
   }
 
@@ -292,11 +320,14 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
   async listJobs(params?: PaginationParams): Promise<PaginatedResult<Job>> {
     return this.executeWithRetry(async () => {
       const queryParams = new URLSearchParams({
-        limit: ((params?.limit) || 50).toString(),
-        offset: ((params?.offset) || 0).toString(),
+        limit: (params?.limit || 50).toString(),
+        offset: (params?.offset || 0).toString(),
       });
 
-      const response = (await this.request('GET', `/jobs/v2/jobs?${queryParams}`)) as any;
+      const response = (await this.request(
+        "GET",
+        `/jobs/v2/jobs?${queryParams}`,
+      )) as any;
       const items = (response.data || []).map((item: ServiceTitanJobData) =>
         this.mapJobFromProvider(item),
       );
@@ -325,7 +356,11 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
         notes: workOrder.notes,
       };
 
-      const response = (await this.request('POST', '/jobs/v2/jobs', jobData)) as ServiceTitanJobData;
+      const response = (await this.request(
+        "POST",
+        "/jobs/v2/jobs",
+        jobData,
+      )) as ServiceTitanJobData;
       return {
         id: response.id,
         externalId: response.id,
@@ -345,15 +380,18 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
    */
   async getWorkOrder(workOrderId: string): Promise<WorkOrder> {
     return this.executeWithRetry(async () => {
-      const response = (await this.request('GET', `/jobs/v2/jobs/${workOrderId}`)) as ServiceTitanJobData;
+      const response = (await this.request(
+        "GET",
+        `/jobs/v2/jobs/${workOrderId}`,
+      )) as ServiceTitanJobData;
       return {
         id: response.id,
         externalId: response.id,
         workOrderNumber: response.number,
         jobId: response.customerId,
-        status: 'in_progress',
+        status: "in_progress",
         description: response.description,
-        priority: 'high',
+        priority: "high",
         createdAt: new Date(response.createdDate),
       };
     });
@@ -362,13 +400,20 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
   /**
    * Update work order
    */
-  async updateWorkOrder(workOrderId: string, updates: Partial<WorkOrder>): Promise<WorkOrder> {
+  async updateWorkOrder(
+    workOrderId: string,
+    updates: Partial<WorkOrder>,
+  ): Promise<WorkOrder> {
     return this.executeWithRetry(async () => {
       const data: Record<string, unknown> = {};
       if (updates.status) data.status = updates.status;
       if (updates.description) data.description = updates.description;
 
-      const response = (await this.request('PATCH', `/jobs/v2/jobs/${workOrderId}`, data)) as ServiceTitanJobData;
+      const response = (await this.request(
+        "PATCH",
+        `/jobs/v2/jobs/${workOrderId}`,
+        data,
+      )) as ServiceTitanJobData;
       return this.getWorkOrder(response.id);
     });
   }
@@ -376,7 +421,9 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
   /**
    * List work orders
    */
-  async listWorkOrders(params?: PaginationParams): Promise<PaginatedResult<WorkOrder>> {
+  async listWorkOrders(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<WorkOrder>> {
     return this.executeWithRetry(async () => {
       const result = await this.listJobs(params);
       const workOrders: WorkOrder[] = result.items.map((job) => ({
@@ -384,8 +431,8 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
         externalId: job.externalId,
         workOrderNumber: job.jobNumber,
         jobId: job.customerId,
-        status: 'in_progress' as const,
-        description: job.description ?? '',
+        status: "in_progress" as const,
+        description: job.description ?? "",
         priority: job.priority,
         createdAt: job.createdAt,
       }));
@@ -406,7 +453,10 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
    */
   async getTechnician(technicianId: string): Promise<Technician> {
     return this.executeWithRetry(async () => {
-      const response = (await this.request('GET', `/crm/v2/resources/${technicianId}`)) as ServiceTitanResourceData;
+      const response = (await this.request(
+        "GET",
+        `/crm/v2/resources/${technicianId}`,
+      )) as ServiceTitanResourceData;
       return this.mapTechnicianFromProvider(response);
     });
   }
@@ -414,16 +464,22 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
   /**
    * List technicians
    */
-  async listTechnicians(params?: PaginationParams): Promise<PaginatedResult<Technician>> {
+  async listTechnicians(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<Technician>> {
     return this.executeWithRetry(async () => {
       const queryParams = new URLSearchParams({
-        limit: ((params?.limit) || 50).toString(),
-        offset: ((params?.offset) || 0).toString(),
+        limit: (params?.limit || 50).toString(),
+        offset: (params?.offset || 0).toString(),
       });
 
-      const response = (await this.request('GET', `/crm/v2/resources?${queryParams}`)) as any;
-      const items = (response.data || []).map((item: ServiceTitanResourceData) =>
-        this.mapTechnicianFromProvider(item),
+      const response = (await this.request(
+        "GET",
+        `/crm/v2/resources?${queryParams}`,
+      )) as any;
+      const items = (response.data || []).map(
+        (item: ServiceTitanResourceData) =>
+          this.mapTechnicianFromProvider(item),
       );
 
       return {
@@ -438,10 +494,17 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
   /**
    * Update technician availability
    */
-  async updateTechnicianAvailability(technicianId: string, status: string): Promise<Technician> {
+  async updateTechnicianAvailability(
+    technicianId: string,
+    status: string,
+  ): Promise<Technician> {
     return this.executeWithRetry(async () => {
       const data = { status };
-      const response = (await this.request('PATCH', `/crm/v2/resources/${technicianId}`, data)) as ServiceTitanResourceData;
+      const response = (await this.request(
+        "PATCH",
+        `/crm/v2/resources/${technicianId}`,
+        data,
+      )) as ServiceTitanResourceData;
       return this.mapTechnicianFromProvider(response);
     });
   }
@@ -451,7 +514,10 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
    */
   async getTechnicianLocation(technicianId: string): Promise<any> {
     return this.executeWithRetry(async () => {
-      const response = (await this.request('GET', `/gps/v2/resources/${technicianId}/location`)) as any;
+      const response = (await this.request(
+        "GET",
+        `/gps/v2/resources/${technicianId}/location`,
+      )) as any;
       return {
         latitude: response.latitude,
         longitude: response.longitude,
@@ -470,12 +536,16 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
     return this.executeWithRetry(async () => {
       const data = {
         resourceId: schedule.technician,
-        startDate: schedule.dateStart.toISOString().split('T')[0],
-        endDate: schedule.dateEnd.toISOString().split('T')[0],
+        startDate: schedule.dateStart.toISOString().split("T")[0],
+        endDate: schedule.dateEnd.toISOString().split("T")[0],
         type: schedule.type,
       };
 
-      const response = (await this.request('POST', '/crm/v2/schedules', data)) as any;
+      const response = (await this.request(
+        "POST",
+        "/crm/v2/schedules",
+        data,
+      )) as any;
       return {
         id: response.id,
         externalId: response.id,
@@ -498,11 +568,14 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
     return this.executeWithRetry(async () => {
       const queryParams = new URLSearchParams({
         resourceId: technicianId,
-        startDate: startDate.toISOString().split('T')[0],
-        endDate: endDate.toISOString().split('T')[0],
+        startDate: startDate.toISOString().split("T")[0],
+        endDate: endDate.toISOString().split("T")[0],
       });
 
-      const response = (await this.request('GET', `/crm/v2/availability-slots?${queryParams}`)) as any;
+      const response = (await this.request(
+        "GET",
+        `/crm/v2/availability-slots?${queryParams}`,
+      )) as any;
       return (response.data || []).map((slot: any) => ({
         start: new Date(slot.startTime),
         end: new Date(slot.endTime),
@@ -513,14 +586,22 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
   /**
    * Schedule job for technician
    */
-  async scheduleJob(jobId: string, technicianId: string, start: Date): Promise<Job> {
+  async scheduleJob(
+    jobId: string,
+    technicianId: string,
+    start: Date,
+  ): Promise<Job> {
     return this.executeWithRetry(async () => {
       const data = {
         resourceId: technicianId,
-        jobDate: start.toISOString().split('T')[0],
+        jobDate: start.toISOString().split("T")[0],
       };
 
-      const response = (await this.request('PATCH', `/jobs/v2/jobs/${jobId}`, data)) as ServiceTitanJobData;
+      const response = (await this.request(
+        "PATCH",
+        `/jobs/v2/jobs/${jobId}`,
+        data,
+      )) as ServiceTitanJobData;
       return this.mapJobFromProvider(response);
     });
   }
@@ -532,7 +613,10 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
    */
   async getEquipment(equipmentId: string): Promise<any> {
     return this.executeWithRetry(async () => {
-      const response = (await this.request('GET', `/assets/v2/equipment/${equipmentId}`)) as any;
+      const response = (await this.request(
+        "GET",
+        `/assets/v2/equipment/${equipmentId}`,
+      )) as any;
       return {
         id: response.id,
         externalId: response.id,
@@ -548,14 +632,19 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
   /**
    * List equipment
    */
-  async listEquipment(params?: PaginationParams): Promise<PaginatedResult<any>> {
+  async listEquipment(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<any>> {
     return this.executeWithRetry(async () => {
       const queryParams = new URLSearchParams({
-        limit: ((params?.limit) || 50).toString(),
-        offset: ((params?.offset) || 0).toString(),
+        limit: (params?.limit || 50).toString(),
+        offset: (params?.offset || 0).toString(),
       });
 
-      const response = (await this.request('GET', `/assets/v2/equipment?${queryParams}`)) as any;
+      const response = (await this.request(
+        "GET",
+        `/assets/v2/equipment?${queryParams}`,
+      )) as any;
       return {
         items: response.data || [],
         total: response.pageInfo?.totalCount || 0,
@@ -569,7 +658,10 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
    */
   async getEquipmentServiceHistory(equipmentId: string): Promise<any[]> {
     return this.executeWithRetry(async () => {
-      const response = (await this.request('GET', `/assets/v2/equipment/${equipmentId}/service-history`)) as any;
+      const response = (await this.request(
+        "GET",
+        `/assets/v2/equipment/${equipmentId}/service-history`,
+      )) as any;
       return response.data || [];
     });
   }
@@ -593,10 +685,14 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
         state: customer.primaryAddress.state,
         zip: customer.primaryAddress.postalCode,
         country: customer.primaryAddress.country,
-        type: customer.type === 'residential' ? 'Residential' : 'Commercial',
+        type: customer.type === "residential" ? "Residential" : "Commercial",
       };
 
-      const response = (await this.request('POST', '/crm/v2/customers', data)) as any;
+      const response = (await this.request(
+        "POST",
+        "/crm/v2/customers",
+        data,
+      )) as any;
       return {
         id: response.id,
         externalId: response.id,
@@ -612,7 +708,7 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
           country: response.country,
         },
         type: customer.type,
-        status: 'active',
+        status: "active",
       };
     });
   }
@@ -622,7 +718,10 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
    */
   async getCustomer(customerId: string): Promise<CustomerRecord> {
     return this.executeWithRetry(async () => {
-      const response = (await this.request('GET', `/crm/v2/customers/${customerId}`)) as any;
+      const response = (await this.request(
+        "GET",
+        `/crm/v2/customers/${customerId}`,
+      )) as any;
       return {
         id: response.id,
         externalId: response.id,
@@ -637,7 +736,7 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
           postalCode: response.zip,
           country: response.country,
         },
-        type: response.type === 'Residential' ? 'residential' : 'commercial',
+        type: response.type === "Residential" ? "residential" : "commercial",
         status: response.status,
       };
     });
@@ -646,14 +745,21 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
   /**
    * Update customer
    */
-  async updateCustomer(customerId: string, updates: Partial<CustomerRecord>): Promise<CustomerRecord> {
+  async updateCustomer(
+    customerId: string,
+    updates: Partial<CustomerRecord>,
+  ): Promise<CustomerRecord> {
     return this.executeWithRetry(async () => {
       const data: Record<string, unknown> = {};
       if (updates.email) data.email = updates.email;
       if (updates.phone) data.phone = updates.phone;
       if (updates.mobile) data.mobile = updates.mobile;
 
-      const response = (await this.request('PATCH', `/crm/v2/customers/${customerId}`, data)) as any;
+      const response = (await this.request(
+        "PATCH",
+        `/crm/v2/customers/${customerId}`,
+        data,
+      )) as any;
       return this.getCustomer(response.id);
     });
   }
@@ -661,14 +767,19 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
   /**
    * List customers
    */
-  async listCustomers(params?: PaginationParams): Promise<PaginatedResult<CustomerRecord>> {
+  async listCustomers(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<CustomerRecord>> {
     return this.executeWithRetry(async () => {
       const queryParams = new URLSearchParams({
-        limit: ((params?.limit) || 50).toString(),
-        offset: ((params?.offset) || 0).toString(),
+        limit: (params?.limit || 50).toString(),
+        offset: (params?.offset || 0).toString(),
       });
 
-      const response = (await this.request('GET', `/crm/v2/customers?${queryParams}`)) as any;
+      const response = (await this.request(
+        "GET",
+        `/crm/v2/customers?${queryParams}`,
+      )) as any;
       const items = (response.data || []).map((item: any) => ({
         id: item.id,
         externalId: item.id,
@@ -683,7 +794,7 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
           postalCode: item.zip,
           country: item.country,
         },
-        type: item.type === 'Residential' ? 'residential' : 'commercial',
+        type: item.type === "Residential" ? "residential" : "commercial",
         status: item.status,
       }));
 
@@ -716,7 +827,11 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
         notes: estimate.notes,
       };
 
-      const response = (await this.request('POST', '/billing/v2/estimates', data)) as ServiceTitanEstimateData;
+      const response = (await this.request(
+        "POST",
+        "/billing/v2/estimates",
+        data,
+      )) as ServiceTitanEstimateData;
       return this.mapEstimateFromProvider(response);
     });
   }
@@ -726,7 +841,10 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
    */
   async getEstimate(estimateId: string): Promise<Estimate> {
     return this.executeWithRetry(async () => {
-      const response = (await this.request('GET', `/billing/v2/estimates/${estimateId}`)) as ServiceTitanEstimateData;
+      const response = (await this.request(
+        "GET",
+        `/billing/v2/estimates/${estimateId}`,
+      )) as ServiceTitanEstimateData;
       return this.mapEstimateFromProvider(response);
     });
   }
@@ -750,7 +868,11 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
         notes: invoice.notes,
       };
 
-      const response = (await this.request('POST', '/billing/v2/invoices', data)) as ServiceTitanInvoiceData;
+      const response = (await this.request(
+        "POST",
+        "/billing/v2/invoices",
+        data,
+      )) as ServiceTitanInvoiceData;
       return this.mapInvoiceFromProvider(response);
     });
   }
@@ -760,7 +882,10 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
    */
   async getInvoice(invoiceId: string): Promise<Invoice> {
     return this.executeWithRetry(async () => {
-      const response = (await this.request('GET', `/billing/v2/invoices/${invoiceId}`)) as ServiceTitanInvoiceData;
+      const response = (await this.request(
+        "GET",
+        `/billing/v2/invoices/${invoiceId}`,
+      )) as ServiceTitanInvoiceData;
       return this.mapInvoiceFromProvider(response);
     });
   }
@@ -768,14 +893,19 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
   /**
    * List invoices
    */
-  async listInvoices(params?: PaginationParams): Promise<PaginatedResult<Invoice>> {
+  async listInvoices(
+    params?: PaginationParams,
+  ): Promise<PaginatedResult<Invoice>> {
     return this.executeWithRetry(async () => {
       const queryParams = new URLSearchParams({
-        limit: ((params?.limit) || 50).toString(),
-        offset: ((params?.offset) || 0).toString(),
+        limit: (params?.limit || 50).toString(),
+        offset: (params?.offset || 0).toString(),
       });
 
-      const response = (await this.request('GET', `/billing/v2/invoices?${queryParams}`)) as any;
+      const response = (await this.request(
+        "GET",
+        `/billing/v2/invoices?${queryParams}`,
+      )) as any;
       const items = (response.data || []).map((item: ServiceTitanInvoiceData) =>
         this.mapInvoiceFromProvider(item),
       );
@@ -791,7 +921,11 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
   /**
    * Record invoice payment
    */
-  async recordPayment(invoiceId: string, amount: number, method: string): Promise<Invoice> {
+  async recordPayment(
+    invoiceId: string,
+    amount: number,
+    method: string,
+  ): Promise<Invoice> {
     return this.executeWithRetry(async () => {
       const data = {
         invoiceId,
@@ -800,7 +934,11 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
         paymentDate: new Date().toISOString(),
       };
 
-      const response = (await this.request('POST', '/billing/v2/payments', data)) as any;
+      const response = (await this.request(
+        "POST",
+        "/billing/v2/payments",
+        data,
+      )) as any;
       return this.getInvoice(response.invoiceId);
     });
   }
@@ -810,7 +948,9 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
   /**
    * Create dispatch assignment
    */
-  async createDispatchAssignment(assignment: DispatchAssignment): Promise<DispatchAssignment> {
+  async createDispatchAssignment(
+    assignment: DispatchAssignment,
+  ): Promise<DispatchAssignment> {
     return this.executeWithRetry(async () => {
       const data = {
         jobId: assignment.jobId,
@@ -818,13 +958,17 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
         priority: this.mapPriority(assignment.priority),
       };
 
-      const response = (await this.request('POST', '/dispatch/v2/assignments', data)) as any;
+      const response = (await this.request(
+        "POST",
+        "/dispatch/v2/assignments",
+        data,
+      )) as any;
       return {
         id: response.id,
         externalId: response.id,
         jobId: response.jobId,
         technicianId: response.resourceId,
-        status: 'assigned',
+        status: "assigned",
         assignedAt: new Date(response.createdDate),
         priority: assignment.priority,
       };
@@ -834,9 +978,14 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
   /**
    * Get dispatch assignment
    */
-  async getDispatchAssignment(assignmentId: string): Promise<DispatchAssignment> {
+  async getDispatchAssignment(
+    assignmentId: string,
+  ): Promise<DispatchAssignment> {
     return this.executeWithRetry(async () => {
-      const response = (await this.request('GET', `/dispatch/v2/assignments/${assignmentId}`)) as any;
+      const response = (await this.request(
+        "GET",
+        `/dispatch/v2/assignments/${assignmentId}`,
+      )) as any;
       return {
         id: response.id,
         externalId: response.id,
@@ -844,7 +993,7 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
         technicianId: response.resourceId,
         status: response.status,
         assignedAt: new Date(response.createdDate),
-        priority: 'high',
+        priority: "high",
       };
     });
   }
@@ -860,7 +1009,11 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
       const data: Record<string, unknown> = {};
       if (updates.status) data.status = updates.status;
 
-      const response = (await this.request('PATCH', `/dispatch/v2/assignments/${assignmentId}`, data)) as any;
+      const response = (await this.request(
+        "PATCH",
+        `/dispatch/v2/assignments/${assignmentId}`,
+        data,
+      )) as any;
       return this.getDispatchAssignment(response.id);
     });
   }
@@ -870,7 +1023,7 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
    */
   async cancelDispatchAssignment(assignmentId: string): Promise<void> {
     return this.executeWithRetry(async () => {
-      await this.request('DELETE', `/dispatch/v2/assignments/${assignmentId}`);
+      await this.request("DELETE", `/dispatch/v2/assignments/${assignmentId}`);
     });
   }
 
@@ -894,20 +1047,20 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
     };
 
     results.forEach((result, index) => {
-      if (result.status === 'fulfilled') {
+      if (result.status === "fulfilled") {
         batchResult.successful++;
         batchResult.results.push({
-          recordId: jobs[index]!.id || '',
+          recordId: jobs[index]!.id || "",
           externalId: result.value.externalId,
-          status: 'success',
+          status: "success",
           data: result.value,
         });
       } else {
         batchResult.failed++;
         batchResult.results.push({
-          recordId: jobs[index]!.id || '',
-          status: 'failed',
-          error: (result.reason as any).message || 'Unknown error',
+          recordId: jobs[index]!.id || "",
+          status: "failed",
+          error: (result.reason as any).message || "Unknown error",
         });
       }
     });
@@ -935,20 +1088,20 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
     };
 
     results.forEach((result, index) => {
-      if (result.status === 'fulfilled') {
+      if (result.status === "fulfilled") {
         batchResult.successful++;
         batchResult.results.push({
           recordId: updates[index]!.jobId,
           externalId: result.value.externalId,
-          status: 'success',
+          status: "success",
           data: result.value,
         });
       } else {
         batchResult.failed++;
         batchResult.results.push({
           recordId: updates[index]!.jobId,
-          status: 'failed',
-          error: (result.reason as any).message || 'Unknown error',
+          status: "failed",
+          error: (result.reason as any).message || "Unknown error",
         });
       }
     });
@@ -985,7 +1138,7 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
       customerPhone: data.customerPhone,
       title: data.description,
       description: data.description,
-      status: (data.status.toLowerCase() as any) || 'scheduled',
+      status: (data.status.toLowerCase() as any) || "scheduled",
       priority: this.unmapPriority(data.priority),
       scheduledStart: data.jobDate ? new Date(data.jobDate) : undefined,
       location: {
@@ -993,19 +1146,23 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
         city: data.locationCity,
         state: data.locationState,
         postalCode: data.locationZip,
-        country: 'US',
+        country: "US",
       },
       notes: data.notes,
       createdAt: new Date(data.createdDate),
       updatedAt: new Date(data.modifiedDate),
-      completedAt: data.completionDate ? new Date(data.completionDate) : undefined,
+      completedAt: data.completionDate
+        ? new Date(data.completionDate)
+        : undefined,
     };
   }
 
   /**
    * Map technician from ServiceTitan response
    */
-  private mapTechnicianFromProvider(data: ServiceTitanResourceData): Technician {
+  private mapTechnicianFromProvider(
+    data: ServiceTitanResourceData,
+  ): Technician {
     return {
       id: data.id,
       externalId: data.id,
@@ -1014,19 +1171,25 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
       email: data.email,
       phone: data.phone,
       mobile: data.mobile,
-      status: (data.status.toLowerCase() as any) || 'available',
+      status: (data.status.toLowerCase() as any) || "available",
       skills: data.skillIds || [],
-      certifications: (data.certifications || []).map((c: { name: string; expiryDate?: string }): TechnicianCertification => ({
-        name: c.name,
-        expiryDate: c.expiryDate ? new Date(c.expiryDate) : undefined,
-      })),
-      currentLocation: data.currentLocationLatitude && data.currentLocationLongitude
-        ? {
-            latitude: data.currentLocationLatitude,
-            longitude: data.currentLocationLongitude,
-            timestamp: new Date(),
-          }
-        : undefined,
+      certifications: (data.certifications || []).map(
+        (c: {
+          name: string;
+          expiryDate?: string;
+        }): TechnicianCertification => ({
+          name: c.name,
+          expiryDate: c.expiryDate ? new Date(c.expiryDate) : undefined,
+        }),
+      ),
+      currentLocation:
+        data.currentLocationLatitude && data.currentLocationLongitude
+          ? {
+              latitude: data.currentLocationLatitude,
+              longitude: data.currentLocationLongitude,
+              timestamp: new Date(),
+            }
+          : undefined,
       currentJobId: data.currentJobId,
       hoursWorked: data.hoursWorked,
       rating: data.rating,
@@ -1046,10 +1209,15 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
       customerId: data.customerId,
       customerName: data.customerName,
       jobId: data.jobId,
-      status: (data.status.toLowerCase() as any) || 'draft',
+      status: (data.status.toLowerCase() as any) || "draft",
       issueDate: new Date(data.issueDate),
-      expiryDate: data.expirationDate ? new Date(data.expirationDate) : undefined,
-      lineItems: (data.lineItems || []).map((item) => ({ ...item, total: item.quantity * item.unitPrice })),
+      expiryDate: data.expirationDate
+        ? new Date(data.expirationDate)
+        : undefined,
+      lineItems: (data.lineItems || []).map((item) => ({
+        ...item,
+        total: item.quantity * item.unitPrice,
+      })),
       subtotal: data.total * 0.9,
       total: data.total,
       notes: data.notes,
@@ -1067,14 +1235,17 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
       customerId: data.customerId,
       customerName: data.customerName,
       jobIds: data.jobIds,
-      status: (data.status.toLowerCase() as any) || 'draft',
+      status: (data.status.toLowerCase() as any) || "draft",
       invoiceDate: new Date(data.invoiceDate),
       dueDate: new Date(data.dueDate),
-      lineItems: (data.lineItems || []).map((item) => ({ ...item, total: item.quantity * item.unitPrice })),
+      lineItems: (data.lineItems || []).map((item) => ({
+        ...item,
+        total: item.quantity * item.unitPrice,
+      })),
       subtotal: data.total * 0.9,
       total: data.total,
       amountPaid: data.amountPaid,
-      amountDue: (data.total - (data.amountPaid || 0)),
+      amountDue: data.total - (data.amountPaid || 0),
       notes: data.notes,
     };
   }
@@ -1084,11 +1255,11 @@ export class ServiceTitanClient extends AbstractFieldServiceAdapter {
    */
   private unmapPriority(priority: number): PriorityLevel {
     const map: Record<number, PriorityLevel> = {
-      0: 'urgent',
-      1: 'high',
-      2: 'medium',
-      3: 'low',
+      0: "urgent",
+      1: "high",
+      2: "medium",
+      3: "low",
     };
-    return map[priority] ?? 'medium';
+    return map[priority] ?? "medium";
   }
 }

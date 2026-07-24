@@ -1,13 +1,7 @@
 "use client";
 
 import { forwardRef, useState, useEffect, type HTMLAttributes } from "react";
-import {
-  MapPin,
-  CheckCircle,
-  AlertCircle,
-  Clock,
-  Zap,
-} from "lucide-react";
+import { MapPin, CheckCircle, AlertCircle, Clock, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -76,7 +70,7 @@ const TechnicianMarker = forwardRef<HTMLDivElement, TechnicianMarkerProps>(
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [isHovered, setIsHovered] = useState(false);
     const [isPulsing, setIsPulsing] = useState(status === "busy");
@@ -101,7 +95,7 @@ const TechnicianMarker = forwardRef<HTMLDivElement, TechnicianMarkerProps>(
         ref={ref}
         className={cn(
           "relative group cursor-pointer transition-all",
-          className
+          className,
         )}
         onClick={() => onMarkerClick?.(id)}
         {...props}
@@ -111,7 +105,7 @@ const TechnicianMarker = forwardRef<HTMLDivElement, TechnicianMarkerProps>(
           className={cn(
             "relative w-12 h-12 rounded-full border-2 transition-all",
             statusInfo.ring,
-            isHovered && "scale-110 shadow-lg"
+            isHovered && "scale-110 shadow-lg",
           )}
         >
           {/* Pulsing animation for en-route */}
@@ -135,7 +129,7 @@ const TechnicianMarker = forwardRef<HTMLDivElement, TechnicianMarkerProps>(
                 ? "bg-wl-success-500"
                 : status === "busy"
                   ? "bg-wl-warning-500"
-                  : "bg-wl-text-secondary"
+                  : "bg-wl-text-secondary",
             )}
           >
             {avatar ? (
@@ -154,7 +148,7 @@ const TechnicianMarker = forwardRef<HTMLDivElement, TechnicianMarkerProps>(
             className={cn(
               "absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-wl-bg-elevated",
               statusInfo.bg,
-              statusInfo.dot && "animate-pulse"
+              statusInfo.dot && "animate-pulse",
             )}
           />
         </div>
@@ -277,7 +271,7 @@ const TechnicianMarker = forwardRef<HTMLDivElement, TechnicianMarkerProps>(
         />
       </div>
     );
-  }
+  },
 );
 
 TechnicianMarker.displayName = "TechnicianMarker";

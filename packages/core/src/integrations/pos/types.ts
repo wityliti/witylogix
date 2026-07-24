@@ -7,32 +7,42 @@
  * Order status enumeration
  */
 export type OrderStatus =
-  | 'open'
-  | 'in_progress'
-  | 'ready'
-  | 'completed'
-  | 'voided'
-  | 'cancelled';
+  | "open"
+  | "in_progress"
+  | "ready"
+  | "completed"
+  | "voided"
+  | "cancelled";
 
 /**
  * Order type enumeration
  */
-export type OrderType = 'dine-in' | 'takeout' | 'delivery';
+export type OrderType = "dine-in" | "takeout" | "delivery";
 
 /**
  * Payment method enumeration
  */
-export type POSPaymentMethod = 'cash' | 'card' | 'mobile' | 'check' | 'gift_card';
+export type POSPaymentMethod =
+  | "cash"
+  | "card"
+  | "mobile"
+  | "check"
+  | "gift_card";
 
 /**
  * Kitchen display order status
  */
-export type KitchenOrderStatus = 'new' | 'received' | 'in_progress' | 'ready' | 'completed';
+export type KitchenOrderStatus =
+  | "new"
+  | "received"
+  | "in_progress"
+  | "ready"
+  | "completed";
 
 /**
  * Labor shift status
  */
-export type ShiftStatus = 'open' | 'closed' | 'break' | 'off_duty';
+export type ShiftStatus = "open" | "closed" | "break" | "off_duty";
 
 /**
  * POS location entity
@@ -158,7 +168,7 @@ export interface POSOrderLineItem {
  */
 export interface POSDiscount {
   id: string;
-  type: 'fixed' | 'percentage';
+  type: "fixed" | "percentage";
   amount: number; // In cents or percentage points
   reason?: string;
   appliedBy?: string;
@@ -266,7 +276,7 @@ export interface POSRevenueCenter {
   providerId: string;
   locationId: string;
   name: string;
-  type: 'bar' | 'dining_room' | 'patio' | 'private_event' | 'other';
+  type: "bar" | "dining_room" | "patio" | "private_event" | "other";
   tableCount?: number;
   isActive: boolean;
   createdAt: Date;
@@ -293,7 +303,13 @@ export interface POSDiningOption {
  */
 export interface POSConfig {
   providerId: string;
-  provider: 'toast' | 'square' | 'clover' | 'lightspeed' | 'toast-pos' | 'square-restaurants';
+  provider:
+    | "toast"
+    | "square"
+    | "clover"
+    | "lightspeed"
+    | "toast-pos"
+    | "square-restaurants";
   credentials: {
     apiKey?: string;
     apiSecret?: string;
@@ -304,7 +320,7 @@ export interface POSConfig {
     accountId?: string;
     merchantId?: string;
     locationId?: string;
-    environment: 'sandbox' | 'production';
+    environment: "sandbox" | "production";
   };
   webhookSecret?: string;
   webhookUrl?: string;
@@ -338,7 +354,13 @@ export interface POSWebhookEvent {
   providerId: string;
   provider: string;
   eventType: string;
-  resourceType: 'order' | 'payment' | 'employee' | 'shift' | 'menu' | 'inventory';
+  resourceType:
+    | "order"
+    | "payment"
+    | "employee"
+    | "shift"
+    | "menu"
+    | "inventory";
   resourceId: string;
   data: Record<string, any>;
   timestamp: Date;
@@ -388,13 +410,17 @@ export interface POSAdapterInterface {
    */
   listOrders(
     locationId: string,
-    filters?: { startDate?: Date; endDate?: Date; status?: OrderStatus }
+    filters?: { startDate?: Date; endDate?: Date; status?: OrderStatus },
   ): Promise<POSOrder[]>;
 
   /**
    * Update order
    */
-  updateOrder(locationId: string, orderId: string, updates: Partial<POSOrder>): Promise<POSOrder>;
+  updateOrder(
+    locationId: string,
+    orderId: string,
+    updates: Partial<POSOrder>,
+  ): Promise<POSOrder>;
 
   /**
    * Add payment to order
@@ -402,13 +428,17 @@ export interface POSAdapterInterface {
   addPayment(
     locationId: string,
     orderId: string,
-    payment: Partial<POSPayment>
+    payment: Partial<POSPayment>,
   ): Promise<POSPayment>;
 
   /**
    * Void order
    */
-  voidOrder(locationId: string, orderId: string, reason?: string): Promise<POSOrder>;
+  voidOrder(
+    locationId: string,
+    orderId: string,
+    reason?: string,
+  ): Promise<POSOrder>;
 
   /**
    * Send order to kitchen display
@@ -418,7 +448,10 @@ export interface POSAdapterInterface {
   /**
    * Get kitchen display status
    */
-  getKitchenDisplayStatus(locationId: string, orderId: string): Promise<KitchenOrderStatus>;
+  getKitchenDisplayStatus(
+    locationId: string,
+    orderId: string,
+  ): Promise<KitchenOrderStatus>;
 
   /**
    * List employees
@@ -438,7 +471,10 @@ export interface POSAdapterInterface {
   /**
    * Get revenue center details
    */
-  getRevenueCenter(locationId: string, revenueCenterId: string): Promise<POSRevenueCenter>;
+  getRevenueCenter(
+    locationId: string,
+    revenueCenterId: string,
+  ): Promise<POSRevenueCenter>;
 
   /**
    * List revenue centers

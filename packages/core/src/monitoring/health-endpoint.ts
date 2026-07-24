@@ -44,7 +44,7 @@ export type HealthCheckFn = () => Promise<ComponentHealth>;
  * Standard health check for database connectivity.
  */
 export async function checkDatabase(
-  query?: () => Promise<boolean>
+  query?: () => Promise<boolean>,
 ): Promise<ComponentHealth> {
   const start = Date.now();
 
@@ -76,7 +76,7 @@ export async function checkDatabase(
  * Standard health check for Redis/cache connectivity.
  */
 export async function checkCache(
-  ping?: () => Promise<string>
+  ping?: () => Promise<string>,
 ): Promise<ComponentHealth> {
   const start = Date.now();
 
@@ -108,7 +108,7 @@ export async function checkCache(
  * Standard health check for message queue.
  */
 export async function checkQueue(
-  checkConnection?: () => Promise<boolean>
+  checkConnection?: () => Promise<boolean>,
 ): Promise<ComponentHealth> {
   const start = Date.now();
 
@@ -140,7 +140,7 @@ export async function checkQueue(
  * Standard health check for file storage.
  */
 export async function checkStorage(
-  testWrite?: () => Promise<boolean>
+  testWrite?: () => Promise<boolean>,
 ): Promise<ComponentHealth> {
   const start = Date.now();
 
@@ -368,7 +368,7 @@ export class HealthChecker {
  * Usage: app.get('/health', healthEndpoint(checker));
  */
 export function healthEndpoint(
-  checker: HealthChecker
+  checker: HealthChecker,
 ): (req: any, res: any) => Promise<void> {
   return async (_req: any, res: any) => {
     const health = await checker.getLiveness();
@@ -382,7 +382,7 @@ export function healthEndpoint(
  * Usage: app.get('/health/ready', readinessEndpoint(checker));
  */
 export function readinessEndpoint(
-  checker: HealthChecker
+  checker: HealthChecker,
 ): (req: any, res: any) => Promise<void> {
   return async (_req: any, res: any) => {
     const health = await checker.getReadiness();
@@ -396,7 +396,7 @@ export function readinessEndpoint(
  * Usage: app.get('/health/startup', startupEndpoint(checker));
  */
 export function startupEndpoint(
-  checker: HealthChecker
+  checker: HealthChecker,
 ): (req: any, res: any) => Promise<void> {
   return async (_req: any, res: any) => {
     const health = await checker.getStartup();

@@ -140,17 +140,22 @@ const DASHBOARD_PRESETS: DashboardPresetLayout[] = [
   },
 ];
 
-interface DashboardPreviewCardProps extends Omit<HTMLAttributes<HTMLButtonElement>, "onSelect"> {
+interface DashboardPreviewCardProps extends Omit<
+  HTMLAttributes<HTMLButtonElement>,
+  "onSelect"
+> {
   preset: DashboardPresetLayout;
   selected?: boolean;
   onPresetSelect?: (id: string) => void;
 }
 
-const DashboardPreviewCard = forwardRef<HTMLButtonElement, DashboardPreviewCardProps>(
-  ({ preset, selected = false, onPresetSelect, className, ...props }, ref) => {
-    return (
-      <>
-        <style>{`
+const DashboardPreviewCard = forwardRef<
+  HTMLButtonElement,
+  DashboardPreviewCardProps
+>(({ preset, selected = false, onPresetSelect, className, ...props }, ref) => {
+  return (
+    <>
+      <style>{`
           @keyframes float-up {
             from {
               transform: translateY(0);
@@ -166,7 +171,7 @@ const DashboardPreviewCard = forwardRef<HTMLButtonElement, DashboardPreviewCardP
             box-shadow: 0 0 24px rgba(59, 130, 246, 0.4), 0 0 16px rgba(59, 130, 246, 0.2);
           }
         `}</style>
-        <button
+      <button
         ref={ref}
         onClick={() => onPresetSelect?.(preset.id)}
         className={cn(
@@ -174,7 +179,7 @@ const DashboardPreviewCard = forwardRef<HTMLButtonElement, DashboardPreviewCardP
           "bg-wl-bg-overlay text-left preview-hover",
           selected
             ? "border-wl-primary-500 bg-wl-primary-500/10 preview-glow"
-            : "border-wl-border-subtle hover:border-wl-border-default"
+            : "border-wl-border-subtle hover:border-wl-border-default",
         )}
         {...props}
       >
@@ -202,42 +207,45 @@ const DashboardPreviewCard = forwardRef<HTMLButtonElement, DashboardPreviewCardP
         <p className="text-xs text-wl-text-tertiary leading-relaxed">
           {preset.description}
         </p>
-        </button>
-      </>
-    );
-  }
-);
+      </button>
+    </>
+  );
+});
 
 DashboardPreviewCard.displayName = "DashboardPreviewCard";
 
-interface DashboardPreviewGridProps extends Omit<HTMLAttributes<HTMLDivElement>, "onSelect"> {
+interface DashboardPreviewGridProps extends Omit<
+  HTMLAttributes<HTMLDivElement>,
+  "onSelect"
+> {
   selected?: string;
   onPresetSelect?: (id: string) => void;
 }
 
-const DashboardPreviewGrid = forwardRef<HTMLDivElement, DashboardPreviewGridProps>(
-  ({ selected, onPresetSelect, className, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4",
-          className
-        )}
-        {...props}
-      >
-        {DASHBOARD_PRESETS.map((preset) => (
-          <DashboardPreviewCard
-            key={preset.id}
-            preset={preset}
-            selected={selected === preset.id}
-            onPresetSelect={onPresetSelect}
-          />
-        ))}
-      </div>
-    );
-  }
-);
+const DashboardPreviewGrid = forwardRef<
+  HTMLDivElement,
+  DashboardPreviewGridProps
+>(({ selected, onPresetSelect, className, ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4",
+        className,
+      )}
+      {...props}
+    >
+      {DASHBOARD_PRESETS.map((preset) => (
+        <DashboardPreviewCard
+          key={preset.id}
+          preset={preset}
+          selected={selected === preset.id}
+          onPresetSelect={onPresetSelect}
+        />
+      ))}
+    </div>
+  );
+});
 
 DashboardPreviewGrid.displayName = "DashboardPreviewGrid";
 

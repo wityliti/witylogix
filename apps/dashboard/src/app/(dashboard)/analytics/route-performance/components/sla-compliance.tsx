@@ -20,16 +20,28 @@ import type { SLAComplianceProps } from "@witylogix/core/analytics";
  * Displays overall SLA compliance percentage with breakdown by service tier
  * and trend visualization.
  */
-export function SLACompliance({ data, dateRange, isLoading }: SLAComplianceProps) {
+export function SLACompliance({
+  data,
+  dateRange,
+  isLoading,
+}: SLAComplianceProps) {
   const pieData = useMemo(() => {
     const tiers = [
-      { name: "Premium", value: data.byTier.premium.percentage, color: "var(--wl-success-500)" },
+      {
+        name: "Premium",
+        value: data.byTier.premium.percentage,
+        color: "var(--wl-success-500)",
+      },
       {
         name: "Standard",
         value: data.byTier.standard.percentage,
         color: "var(--wl-primary-500)",
       },
-      { name: "Economy", value: data.byTier.economy.percentage, color: "var(--wl-info-400)" },
+      {
+        name: "Economy",
+        value: data.byTier.economy.percentage,
+        color: "var(--wl-info-400)",
+      },
     ];
     return tiers;
   }, [data]);
@@ -64,11 +76,21 @@ export function SLACompliance({ data, dateRange, isLoading }: SLAComplianceProps
         <div className="mb-8">
           <div className="flex items-end justify-between mb-4">
             <div>
-              <p className="text-sm text-wl-text-secondary mb-2">Overall Compliance</p>
-              <p className="text-4xl font-bold text-wl-text-primary">{data.overall}%</p>
+              <p className="text-sm text-wl-text-secondary mb-2">
+                Overall Compliance
+              </p>
+              <p className="text-4xl font-bold text-wl-text-primary">
+                {data.overall}%
+              </p>
             </div>
             <Badge
-              variant={data.overall >= 95 ? "success" : data.overall >= 90 ? "info" : "warning"}
+              variant={
+                data.overall >= 95
+                  ? "success"
+                  : data.overall >= 90
+                    ? "info"
+                    : "warning"
+              }
               className="text-base px-4 py-2"
             >
               {data.overall >= 95
@@ -138,8 +160,14 @@ export function SLACompliance({ data, dateRange, isLoading }: SLAComplianceProps
         {/* Trend chart */}
         {trendData.length > 0 && (
           <div>
-            <p className="text-sm font-semibold text-wl-text-primary mb-4">14-Day Trend</p>
-            <Suspense fallback={<div className="h-64 bg-wl-bg-secondary animate-pulse rounded-lg border border-wl-neutral-800" />}>
+            <p className="text-sm font-semibold text-wl-text-primary mb-4">
+              14-Day Trend
+            </p>
+            <Suspense
+              fallback={
+                <div className="h-64 bg-wl-bg-secondary animate-pulse rounded-lg border border-wl-neutral-800" />
+              }
+            >
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={trendData}>
                   <CartesianGrid
@@ -165,10 +193,16 @@ export function SLACompliance({ data, dateRange, isLoading }: SLAComplianceProps
                       borderRadius: "var(--wl-radius-md)",
                       color: "var(--wl-text-primary)",
                     }}
-                    formatter={(value: unknown) => [`${value}%`, ""] as [string, string]}
+                    formatter={(value: unknown) =>
+                      [`${value}%`, ""] as [string, string]
+                    }
                     labelStyle={{ color: "var(--wl-text-primary)" }}
                   />
-                  <Bar dataKey="overall" fill="var(--wl-primary-500)" radius={[8, 8, 0, 0]} />
+                  <Bar
+                    dataKey="overall"
+                    fill="var(--wl-primary-500)"
+                    radius={[8, 8, 0, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </Suspense>

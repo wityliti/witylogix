@@ -41,7 +41,7 @@ export function LaneHeatmap({
       regions.forEach((destination) => {
         if (origin !== destination) {
           const lane = lanes.find(
-            (l) => l.origin === origin && l.destination === destination
+            (l) => l.origin === origin && l.destination === destination,
           );
           const key = `${origin}-${destination}`;
           data[key] = lane || null;
@@ -94,7 +94,7 @@ export function LaneHeatmap({
     <div
       className={cn(
         "rounded-lg border border-wl-border-default bg-wl-bg-primary p-4 space-y-4",
-        className
+        className,
       )}
     >
       {/* Header */}
@@ -116,7 +116,7 @@ export function LaneHeatmap({
               "text-xs px-3 py-1.5 rounded transition-colors font-medium",
               view === "volume"
                 ? "bg-wl-primary-500/20 text-wl-primary-400"
-                : "text-wl-text-secondary hover:bg-wl-bg-secondary"
+                : "text-wl-text-secondary hover:bg-wl-bg-secondary",
             )}
           >
             Volume
@@ -127,7 +127,7 @@ export function LaneHeatmap({
               "text-xs px-3 py-1.5 rounded transition-colors font-medium",
               view === "cost"
                 ? "bg-wl-primary-500/20 text-wl-primary-400"
-                : "text-wl-text-secondary hover:bg-wl-bg-secondary"
+                : "text-wl-text-secondary hover:bg-wl-bg-secondary",
             )}
           >
             Cost/Mile
@@ -177,7 +177,11 @@ export function LaneHeatmap({
 
                 const key = `${origin}-${destination}`;
                 const lane = matrix[key];
-                const value = lane ? (view === "volume" ? lane.volume : lane.costPerMile) : null;
+                const value = lane
+                  ? view === "volume"
+                    ? lane.volume
+                    : lane.costPerMile
+                  : null;
                 const cellId = `cell-${key}`;
                 const isHovered = hoveredCell === cellId;
 
@@ -188,7 +192,7 @@ export function LaneHeatmap({
                     className={cn(
                       "border border-wl-border-default cursor-pointer transition-all relative",
                       getColor(value),
-                      isHovered && "ring-2 ring-wl-primary-400"
+                      isHovered && "ring-2 ring-wl-primary-400",
                     )}
                     onMouseEnter={() => setHoveredCell(cellId)}
                     onMouseLeave={() => setHoveredCell(null)}
@@ -199,10 +203,13 @@ export function LaneHeatmap({
                     {lane && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center">
                         <p className="text-xs font-semibold text-white">
-                          {view === "volume" ? lane.volume : `$${lane.costPerMile.toFixed(2)}`}
+                          {view === "volume"
+                            ? lane.volume
+                            : `$${lane.costPerMile.toFixed(2)}`}
                         </p>
                         <p className="text-xs text-gray-300 mt-1">
-                          {lane.carriers} carrier{lane.carriers !== 1 ? 's' : ''}
+                          {lane.carriers} carrier
+                          {lane.carriers !== 1 ? "s" : ""}
                         </p>
                       </div>
                     )}
@@ -255,25 +262,27 @@ export function LaneHeatmap({
           Intensity Scale {view === "volume" ? "(Shipments)" : "($/Mile)"}
         </p>
         <div className="flex items-center gap-2">
-          {["Low", "Moderate", "Medium", "High", "Very High"].map((label, i) => {
-            const colors = [
-              "bg-wl-primary-900",
-              "bg-wl-primary-800",
-              "bg-wl-primary-700",
-              "bg-wl-warning-700",
-              "bg-wl-danger-700",
-            ];
-            return (
-              <div key={label} className="flex items-center gap-2">
-                <div className={cn("w-6 h-6 rounded", colors[i])} />
-                {i === 4 && (
-                  <span className="text-xs text-wl-text-secondary ml-1">
-                    {label}
-                  </span>
-                )}
-              </div>
-            );
-          })}
+          {["Low", "Moderate", "Medium", "High", "Very High"].map(
+            (label, i) => {
+              const colors = [
+                "bg-wl-primary-900",
+                "bg-wl-primary-800",
+                "bg-wl-primary-700",
+                "bg-wl-warning-700",
+                "bg-wl-danger-700",
+              ];
+              return (
+                <div key={label} className="flex items-center gap-2">
+                  <div className={cn("w-6 h-6 rounded", colors[i])} />
+                  {i === 4 && (
+                    <span className="text-xs text-wl-text-secondary ml-1">
+                      {label}
+                    </span>
+                  )}
+                </div>
+              );
+            },
+          )}
         </div>
       </div>
 
@@ -305,11 +314,13 @@ export function LaneHeatmap({
         <div>
           <p className="text-xs text-wl-text-secondary">Unique Carriers</p>
           <p className="text-sm font-semibold text-wl-text-primary mt-1">
-            {new Set(
-              Object.values(matrix)
-                .filter((l) => l !== null)
-                .flatMap(() => [1, 2, 3])
-            ).size}
+            {
+              new Set(
+                Object.values(matrix)
+                  .filter((l) => l !== null)
+                  .flatMap(() => [1, 2, 3]),
+              ).size
+            }
           </p>
         </div>
       </div>

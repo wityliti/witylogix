@@ -2,7 +2,10 @@
  * Template engine for rendering email templates with variable interpolation
  */
 
-export function renderTemplate(html: string, data: Record<string, any>): string {
+export function renderTemplate(
+  html: string,
+  data: Record<string, any>,
+): string {
   let result = html;
 
   // Process each loops: {{#each items}}...{{/each}}
@@ -21,7 +24,7 @@ function processEachLoops(html: string, data: Record<string, any>): string {
     const array = getNestedValue(data, arrayName);
 
     if (!Array.isArray(array)) {
-      return '';
+      return "";
     }
 
     return array
@@ -29,20 +32,20 @@ function processEachLoops(html: string, data: Record<string, any>): string {
         const itemData = { ...data, ...item };
         return interpolate(content, itemData);
       })
-      .join('');
+      .join("");
   });
 }
 
 export function interpolate(
   html: string,
-  variables: Record<string, any>
+  variables: Record<string, any>,
 ): string {
   return html.replace(/\{\{([^}]*)\}\}/g, (match, key) => {
     const trimmedKey = key.trim();
     const value = getNestedValue(variables, trimmedKey);
 
     if (value === undefined || value === null) {
-      return '';
+      return "";
     }
 
     return String(value);
@@ -50,26 +53,26 @@ export function interpolate(
 }
 
 function getNestedValue(obj: Record<string, any>, path: string): any {
-  return path.split('.').reduce((current, key) => current?.[key], obj);
+  return path.split(".").reduce((current, key) => current?.[key], obj);
 }
 
 export function formatCurrency(amount: number, currency: string): string {
   const currencySymbols: Record<string, string> = {
-    USD: '$',
-    EUR: '€',
-    GBP: '£',
-    JPY: '¥',
-    CAD: 'C$',
-    AUD: 'A$',
-    CHF: 'CHF',
-    CNY: '¥',
-    INR: '₹',
-    AED: 'د.إ',
+    USD: "$",
+    EUR: "€",
+    GBP: "£",
+    JPY: "¥",
+    CAD: "C$",
+    AUD: "A$",
+    CHF: "CHF",
+    CNY: "¥",
+    INR: "₹",
+    AED: "د.إ",
   };
 
   const symbol = currencySymbols[currency.toUpperCase()] || currency;
 
-  const formatter = new Intl.NumberFormat('en-US', {
+  const formatter = new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
@@ -85,11 +88,11 @@ export function formatDate(dateString: string): string {
       return dateString;
     }
 
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return date.toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   } catch {
     return dateString;
@@ -104,9 +107,9 @@ export function formatTime(dateString: string): string {
       return dateString;
     }
 
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
+    return date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
     });
   } catch {
     return dateString;

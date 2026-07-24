@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import Link from "next/link";
 import { Header } from "@/components/layout/header";
@@ -121,7 +121,7 @@ export default function SettingsHub() {
                   "bg-wl-bg-surface border border-white/[0.06]",
                   "hover:border-white/[0.14] hover:bg-wl-bg-elevated",
                   "transition-all duration-200 ease-out",
-                  "h-full"
+                  "h-full",
                 )}
                 style={{
                   animationDelay: `${i * 50}ms`,
@@ -146,9 +146,7 @@ export default function SettingsHub() {
                   >
                     {tab.icon}
                   </div>
-                  <ArrowUpRight
-                    className="w-4 h-4 text-white/20 group-hover:text-white/50 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                  />
+                  <ArrowUpRight className="w-4 h-4 text-white/20 group-hover:text-white/50 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </div>
 
                 {/* Label */}

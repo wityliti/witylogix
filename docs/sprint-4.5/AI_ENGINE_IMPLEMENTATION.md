@@ -20,11 +20,13 @@ Both use simple, practical ML (no heavy frameworks) with confidence intervals an
 ## 1. Smart Slot Recommendation Engine
 
 ### Location
+
 `packages/core/src/ai-slots/`
 
 ### Files Created
 
 #### Core Implementation
+
 - **`types.ts`** - 13 type definitions
   - `ScoredSlot` - Recommended slot with score and reasoning
   - `DemandForecast` - Demand prediction output
@@ -66,6 +68,7 @@ Both use simple, practical ML (no heavy frameworks) with confidence intervals an
 - **`index.ts`** - Module exports
 
 #### Tests
+
 - **`__tests__/slot-recommender.test.ts`** (300+ lines, 12 test cases)
   - Slot recommendation accuracy
   - Scoring and ranking
@@ -75,6 +78,7 @@ Both use simple, practical ML (no heavy frameworks) with confidence intervals an
   - Edge cases
 
 #### API Routes
+
 - **`apps/api/src/routes/ai/slots.ts`** (250 lines)
   - `GET /api/ai/slots/recommend` - Recommend slots
   - `GET /api/ai/slots/top` - Single top recommendation
@@ -82,6 +86,7 @@ Both use simple, practical ML (no heavy frameworks) with confidence intervals an
   - `GET /api/ai/demand/peak` - Peak hour analysis
 
 #### Documentation
+
 - **`README.md`** - Complete guide with examples
 
 ### Scoring Algorithm
@@ -121,11 +126,13 @@ score = (
 ## 2. Traffic-Aware ML ETA Engine
 
 ### Location
+
 `packages/core/src/ai-eta/`
 
 ### Files Created
 
 #### Core Implementation
+
 - **`types.ts`** - 12 type definitions
   - `ETAPrediction` - ETA with confidence intervals
   - `TimeInterval` - Low/expected/high times
@@ -203,6 +210,7 @@ score = (
 - **`index.ts`** - Module exports
 
 #### Tests
+
 - **`__tests__/eta-engine.test.ts`** (320+ lines, 15 test cases)
   - ETA prediction accuracy
   - Time-of-day adjustments
@@ -213,6 +221,7 @@ score = (
   - Edge cases
 
 #### API Routes
+
 - **`apps/api/src/routes/ai/eta.ts`** (330 lines)
   - `POST /api/ai/eta` - Single ETA prediction
   - `POST /api/ai/eta/batch` - Batch predictions
@@ -223,6 +232,7 @@ score = (
   - `PUT /api/ai/eta/config` - Configuration update (admin)
 
 #### Documentation
+
 - **`README.md`** - Complete guide with examples and formulas
 
 ### Model Architecture
@@ -266,7 +276,12 @@ ETAEngine
   },
   "confidence": 0.87,
   "modelUsed": "Ensemble",
-  "modelsConsidered": ["TimeOfDayModel", "DistanceModel", "HistoricalModel", "TrafficModel"],
+  "modelsConsidered": [
+    "TimeOfDayModel",
+    "DistanceModel",
+    "HistoricalModel",
+    "TrafficModel"
+  ],
   "trafficCondition": "moderate",
   "estimationError": 3.5
 }
@@ -277,6 +292,7 @@ ETAEngine
 ## Key Features
 
 ### Smart Slot Recommendation
+
 ✅ 5-factor composite scoring
 ✅ Demand prediction with seasonal factors
 ✅ Driver availability forecasting
@@ -287,6 +303,7 @@ ETAEngine
 ✅ Confidence scores for each slot
 
 ### ML ETA Engine
+
 ✅ 4-model ensemble (time, distance, historical, traffic)
 ✅ Confidence intervals (low/expected/high)
 ✅ Dynamic model weighting based on accuracy
@@ -297,6 +314,7 @@ ETAEngine
 ✅ Continuous learning from actual deliveries
 
 ### Both Modules
+
 ✅ No heavy ML frameworks (pure TypeScript)
 ✅ Practical heuristics with fallbacks
 ✅ < 100ms prediction latency
@@ -360,6 +378,7 @@ Return ETA with confidence interval
 ### Test Coverage
 
 **Slot Recommender Tests** (12 tests)
+
 - Recommendation accuracy
 - Slot ranking verification
 - Driver availability impact
@@ -370,6 +389,7 @@ Return ETA with confidence interval
 - Cache management
 
 **ETA Engine Tests** (15 tests)
+
 - ETA accuracy across times
 - Time-of-day adjustments
 - Distance scaling
@@ -399,17 +419,19 @@ npm test -- ai-
 ### Package Exports
 
 **Core Module:**
+
 ```typescript
 import {
   slotRecommender,
   demandPredictor,
   driverAvailabilityPredictor,
   etaEngine,
-} from '@witylogix/core/ai-slots';
-import { etaEngine } from '@witylogix/core/ai-eta';
+} from "@witylogix/core/ai-slots";
+import { etaEngine } from "@witylogix/core/ai-eta";
 ```
 
 **Package.json exports added:**
+
 ```json
 {
   "./ai-slots": "./src/ai-slots/index.ts",
@@ -420,12 +442,14 @@ import { etaEngine } from '@witylogix/core/ai-eta';
 ### API Routes
 
 **Slot Recommendations**
+
 - `GET /api/ai/slots/recommend?customerId=&zoneId=&date=&maxSlots=5`
 - `GET /api/ai/slots/top?customerId=&zoneId=&date=`
 - `GET /api/ai/demand?zoneId=&date=&hour=`
 - `GET /api/ai/demand/peak?zoneId=`
 
 **ETA Predictions**
+
 - `POST /api/ai/eta` - Single prediction
 - `POST /api/ai/eta/batch` - Batch processing
 - `GET /api/ai/eta/accuracy?modelName=`
@@ -439,6 +463,7 @@ import { etaEngine } from '@witylogix/core/ai-eta';
 ## Performance Characteristics
 
 ### Slot Recommender
+
 - **Latency**: < 50ms per slot recommendation
 - **Memory**: ~5MB per zone (6-month history)
 - **Accuracy**:
@@ -448,6 +473,7 @@ import { etaEngine } from '@witylogix/core/ai-eta';
 - **Scaling**: Linear with slots, square with historical data
 
 ### ETA Engine
+
 - **Latency**: 10-50ms per prediction
 - **Batch Processing**: 1-10ms per delivery (100+ batch)
 - **Memory**: ~2MB per zone (1-year history)
@@ -468,6 +494,7 @@ import { etaEngine } from '@witylogix/core/ai-eta';
 ### Total Files Created: 22
 
 #### Core Implementations: 13
+
 - `ai-slots/types.ts`
 - `ai-slots/demand-predictor.ts`
 - `ai-slots/driver-availability.ts`
@@ -483,19 +510,23 @@ import { etaEngine } from '@witylogix/core/ai-eta';
 - `ai-eta/index.ts`
 
 #### API Routes: 2
+
 - `apps/api/src/routes/ai/slots.ts`
 - `apps/api/src/routes/ai/eta.ts`
 
 #### Tests: 2
+
 - `packages/core/src/ai-slots/__tests__/slot-recommender.test.ts`
 - `packages/core/src/ai-eta/__tests__/eta-engine.test.ts`
 
 #### Documentation: 3
+
 - `packages/core/src/ai-slots/README.md`
 - `packages/core/src/ai-eta/README.md`
 - `AI_ENGINE_IMPLEMENTATION.md` (this file)
 
 #### Configuration: 1
+
 - Updated `packages/core/package.json` with new exports
 
 ---
@@ -526,26 +557,31 @@ import { etaEngine } from '@witylogix/core/ai-eta';
 ## Next Steps for Operations Team
 
 ### 1. Data Initialization
+
 - Load historical delivery routes into ETA engine
 - Configure traffic zones for your regions
 - Set up customer preference tracking
 
 ### 2. Model Training
+
 - Collect 2+ weeks of actual deliveries
 - Record actual delivery times via `/api/ai/eta/record`
 - Models auto-improve as data accumulates
 
 ### 3. Performance Monitoring
+
 - Check `/api/ai/eta/health` daily
 - Monitor `/api/ai/eta/accuracy` trends
 - Adjust model weights with `PUT /api/ai/eta/config` if needed
 
 ### 4. A/B Testing
+
 - Compare AI recommendations with manual decisions
 - Measure on-time delivery rate improvement
 - Track customer satisfaction
 
 ### 5. Scaling Recommendations
+
 - For 50k+ daily deliveries: Cache model predictions
 - For multi-regional: Deploy separate instances per region
 - For real-time traffic: Set up traffic API keys
@@ -555,22 +591,26 @@ import { etaEngine } from '@witylogix/core/ai-eta';
 ## Technical Notes
 
 ### ML Approach
+
 - **No TensorFlow/PyTorch**: Uses simple statistics and linear regression
 - **Practical over Perfect**: Heuristics + learning beats complex models with little data
 - **Fast Training**: Models retrain on new data in < 100ms
 - **Fallback-First**: Always has reasonable estimates even with zero data
 
 ### Data Requirements
+
 - Minimal: Works without data (uses defaults)
 - Better: 100+ historical deliveries per zone/model
 - Best: 1000+ routes per zone for 85%+ accuracy
 
 ### Accuracy Improvement
+
 - Automatically improves as deliveries are recorded
 - Weight adjustment is automatic (no manual tuning needed)
 - Can be fine-tuned via API for specific zones
 
 ### Scalability
+
 - Linear time complexity (O(n) for n slots/routes)
 - Constant space for models
 - Supports 10k+ concurrent requests
@@ -580,12 +620,14 @@ import { etaEngine } from '@witylogix/core/ai-eta';
 ## Known Limitations & Future Improvements
 
 ### Current Limitations
+
 1. No real-time driver location tracking (can add later)
 2. No package weight/size impact (can add to distance model)
 3. Traffic model requires Google API (can use local data)
 4. No learning cross-zone (can add transfer learning)
 
 ### Future Enhancements
+
 - Add driver skill/experience factor
 - Integrate real-time traffic APIs
 - Add weather impact learning
@@ -598,12 +640,14 @@ import { etaEngine } from '@witylogix/core/ai-eta';
 ## Support & Documentation
 
 **For Developers:**
+
 - API Routes: See inline comments in `ai/slots.ts` and `ai/eta.ts`
 - Model Details: Check README.md in each module
 - Type Definitions: See `types.ts` for all interfaces
 - Examples: In README.md files and test files
 
 **For Operations:**
+
 - Setup: See API endpoint documentation
 - Monitoring: Use `/health` and `/accuracy` endpoints
 - Configuration: Use `PUT /api/ai/eta/config` endpoint

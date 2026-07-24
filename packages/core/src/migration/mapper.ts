@@ -3,7 +3,7 @@
  * Transforms MongoDB documents to PostgreSQL records
  */
 
-import { CollectionMapping, FieldTransform } from './types.js';
+import { CollectionMapping, FieldTransform } from "./types.js";
 
 /**
  * Built-in field transformers
@@ -13,7 +13,7 @@ export const BuiltInTransformers = {
    * Convert MongoDB ObjectId to string
    */
   objectIdToString: (value: any): string => {
-    if (!value) return '';
+    if (!value) return "";
     return String(value);
   },
 
@@ -21,7 +21,7 @@ export const BuiltInTransformers = {
    * Convert date to ISO string
    */
   dateToISO: (value: any): string => {
-    if (!value) return '';
+    if (!value) return "";
     const date = value instanceof Date ? value : new Date(value);
     return date.toISOString();
   },
@@ -30,7 +30,7 @@ export const BuiltInTransformers = {
    * Convert nested object to JSON string
    */
   nestedToJson: (value: any): string => {
-    if (!value) return '{}';
+    if (!value) return "{}";
     return JSON.stringify(value);
   },
 
@@ -38,7 +38,7 @@ export const BuiltInTransformers = {
    * Convert array to PostgreSQL array format
    */
   arrayToPostgres: (value: any[]): string => {
-    if (!Array.isArray(value)) return '[]';
+    if (!Array.isArray(value)) return "[]";
     return JSON.stringify(value);
   },
 
@@ -46,8 +46,8 @@ export const BuiltInTransformers = {
    * Convert MongoDB reference to foreign key
    */
   mongoRefToFk: (value: any): string => {
-    if (!value) return '';
-    if (typeof value === 'object' && value.$oid) {
+    if (!value) return "";
+    if (typeof value === "object" && value.$oid) {
       return value.$oid;
     }
     return String(value);
@@ -56,16 +56,18 @@ export const BuiltInTransformers = {
   /**
    * Convert enum value with mapping
    */
-  enumMapper: (mapping: Record<string, string>) => (value: any): string => {
-    if (!value) return '';
-    return mapping[String(value)] || String(value);
-  },
+  enumMapper:
+    (mapping: Record<string, string>) =>
+    (value: any): string => {
+      if (!value) return "";
+      return mapping[String(value)] || String(value);
+    },
 
   /**
    * Default string conversion
    */
   toString: (value: any): string => {
-    if (value === null || value === undefined) return '';
+    if (value === null || value === undefined) return "";
     return String(value);
   },
 
@@ -81,9 +83,9 @@ export const BuiltInTransformers = {
    * Default boolean conversion
    */
   toBoolean: (value: any): boolean => {
-    if (typeof value === 'boolean') return value;
-    if (typeof value === 'string') {
-      return value.toLowerCase() === 'true' || value === '1';
+    if (typeof value === "boolean") return value;
+    if (typeof value === "string") {
+      return value.toLowerCase() === "true" || value === "1";
     }
     return !!value;
   },
@@ -94,124 +96,196 @@ export const BuiltInTransformers = {
  */
 export const DefaultMappings: Record<string, CollectionMapping> = {
   orders: {
-    mongoCollection: 'orders',
-    prismaModel: 'Order',
+    mongoCollection: "orders",
+    prismaModel: "Order",
     fieldMap: [
       {
-        sourceField: '_id',
-        targetField: 'id',
+        sourceField: "_id",
+        targetField: "id",
         transformer: BuiltInTransformers.objectIdToString,
       },
-      { sourceField: 'shopId', targetField: 'shopId' },
-      { sourceField: 'status', targetField: 'status' },
-      { sourceField: 'totalPrice', targetField: 'totalPrice', transformer: BuiltInTransformers.toNumber },
-      { sourceField: 'createdAt', targetField: 'createdAt', transformer: BuiltInTransformers.dateToISO },
-      { sourceField: 'updatedAt', targetField: 'updatedAt', transformer: BuiltInTransformers.dateToISO },
+      { sourceField: "shopId", targetField: "shopId" },
+      { sourceField: "status", targetField: "status" },
+      {
+        sourceField: "totalPrice",
+        targetField: "totalPrice",
+        transformer: BuiltInTransformers.toNumber,
+      },
+      {
+        sourceField: "createdAt",
+        targetField: "createdAt",
+        transformer: BuiltInTransformers.dateToISO,
+      },
+      {
+        sourceField: "updatedAt",
+        targetField: "updatedAt",
+        transformer: BuiltInTransformers.dateToISO,
+      },
     ],
   },
 
   shipments: {
-    mongoCollection: 'shipments',
-    prismaModel: 'Shipment',
+    mongoCollection: "shipments",
+    prismaModel: "Shipment",
     fieldMap: [
       {
-        sourceField: '_id',
-        targetField: 'id',
+        sourceField: "_id",
+        targetField: "id",
         transformer: BuiltInTransformers.objectIdToString,
       },
-      { sourceField: 'orderId', targetField: 'orderId', transformer: BuiltInTransformers.mongoRefToFk },
-      { sourceField: 'status', targetField: 'status' },
-      { sourceField: 'items', targetField: 'items', transformer: BuiltInTransformers.arrayToPostgres },
-      { sourceField: 'createdAt', targetField: 'createdAt', transformer: BuiltInTransformers.dateToISO },
-      { sourceField: 'updatedAt', targetField: 'updatedAt', transformer: BuiltInTransformers.dateToISO },
+      {
+        sourceField: "orderId",
+        targetField: "orderId",
+        transformer: BuiltInTransformers.mongoRefToFk,
+      },
+      { sourceField: "status", targetField: "status" },
+      {
+        sourceField: "items",
+        targetField: "items",
+        transformer: BuiltInTransformers.arrayToPostgres,
+      },
+      {
+        sourceField: "createdAt",
+        targetField: "createdAt",
+        transformer: BuiltInTransformers.dateToISO,
+      },
+      {
+        sourceField: "updatedAt",
+        targetField: "updatedAt",
+        transformer: BuiltInTransformers.dateToISO,
+      },
     ],
   },
 
   customers: {
-    mongoCollection: 'customers',
-    prismaModel: 'Customer',
+    mongoCollection: "customers",
+    prismaModel: "Customer",
     fieldMap: [
       {
-        sourceField: '_id',
-        targetField: 'id',
+        sourceField: "_id",
+        targetField: "id",
         transformer: BuiltInTransformers.objectIdToString,
       },
-      { sourceField: 'shopId', targetField: 'shopId' },
-      { sourceField: 'email', targetField: 'email' },
-      { sourceField: 'name', targetField: 'name' },
-      { sourceField: 'phone', targetField: 'phone' },
-      { sourceField: 'createdAt', targetField: 'createdAt', transformer: BuiltInTransformers.dateToISO },
-      { sourceField: 'updatedAt', targetField: 'updatedAt', transformer: BuiltInTransformers.dateToISO },
+      { sourceField: "shopId", targetField: "shopId" },
+      { sourceField: "email", targetField: "email" },
+      { sourceField: "name", targetField: "name" },
+      { sourceField: "phone", targetField: "phone" },
+      {
+        sourceField: "createdAt",
+        targetField: "createdAt",
+        transformer: BuiltInTransformers.dateToISO,
+      },
+      {
+        sourceField: "updatedAt",
+        targetField: "updatedAt",
+        transformer: BuiltInTransformers.dateToISO,
+      },
     ],
   },
 
   products: {
-    mongoCollection: 'products',
-    prismaModel: 'Product',
+    mongoCollection: "products",
+    prismaModel: "Product",
     fieldMap: [
       {
-        sourceField: '_id',
-        targetField: 'id',
+        sourceField: "_id",
+        targetField: "id",
         transformer: BuiltInTransformers.objectIdToString,
       },
-      { sourceField: 'shopId', targetField: 'shopId' },
-      { sourceField: 'sku', targetField: 'sku' },
-      { sourceField: 'name', targetField: 'name' },
-      { sourceField: 'description', targetField: 'description' },
-      { sourceField: 'createdAt', targetField: 'createdAt', transformer: BuiltInTransformers.dateToISO },
-      { sourceField: 'updatedAt', targetField: 'updatedAt', transformer: BuiltInTransformers.dateToISO },
+      { sourceField: "shopId", targetField: "shopId" },
+      { sourceField: "sku", targetField: "sku" },
+      { sourceField: "name", targetField: "name" },
+      { sourceField: "description", targetField: "description" },
+      {
+        sourceField: "createdAt",
+        targetField: "createdAt",
+        transformer: BuiltInTransformers.dateToISO,
+      },
+      {
+        sourceField: "updatedAt",
+        targetField: "updatedAt",
+        transformer: BuiltInTransformers.dateToISO,
+      },
     ],
   },
 
   users: {
-    mongoCollection: 'users',
-    prismaModel: 'User',
+    mongoCollection: "users",
+    prismaModel: "User",
     fieldMap: [
       {
-        sourceField: '_id',
-        targetField: 'id',
+        sourceField: "_id",
+        targetField: "id",
         transformer: BuiltInTransformers.objectIdToString,
       },
-      { sourceField: 'email', targetField: 'email' },
-      { sourceField: 'name', targetField: 'name' },
-      { sourceField: 'createdAt', targetField: 'createdAt', transformer: BuiltInTransformers.dateToISO },
-      { sourceField: 'updatedAt', targetField: 'updatedAt', transformer: BuiltInTransformers.dateToISO },
+      { sourceField: "email", targetField: "email" },
+      { sourceField: "name", targetField: "name" },
+      {
+        sourceField: "createdAt",
+        targetField: "createdAt",
+        transformer: BuiltInTransformers.dateToISO,
+      },
+      {
+        sourceField: "updatedAt",
+        targetField: "updatedAt",
+        transformer: BuiltInTransformers.dateToISO,
+      },
     ],
   },
 
   zones: {
-    mongoCollection: 'zones',
-    prismaModel: 'Zone',
+    mongoCollection: "zones",
+    prismaModel: "Zone",
     fieldMap: [
       {
-        sourceField: '_id',
-        targetField: 'id',
+        sourceField: "_id",
+        targetField: "id",
         transformer: BuiltInTransformers.objectIdToString,
       },
-      { sourceField: 'shopId', targetField: 'shopId' },
-      { sourceField: 'name', targetField: 'name' },
-      { sourceField: 'geometry', targetField: 'geometry', transformer: BuiltInTransformers.nestedToJson },
-      { sourceField: 'createdAt', targetField: 'createdAt', transformer: BuiltInTransformers.dateToISO },
-      { sourceField: 'updatedAt', targetField: 'updatedAt', transformer: BuiltInTransformers.dateToISO },
+      { sourceField: "shopId", targetField: "shopId" },
+      { sourceField: "name", targetField: "name" },
+      {
+        sourceField: "geometry",
+        targetField: "geometry",
+        transformer: BuiltInTransformers.nestedToJson,
+      },
+      {
+        sourceField: "createdAt",
+        targetField: "createdAt",
+        transformer: BuiltInTransformers.dateToISO,
+      },
+      {
+        sourceField: "updatedAt",
+        targetField: "updatedAt",
+        transformer: BuiltInTransformers.dateToISO,
+      },
     ],
   },
 
   drivers: {
-    mongoCollection: 'drivers',
-    prismaModel: 'Driver',
+    mongoCollection: "drivers",
+    prismaModel: "Driver",
     fieldMap: [
       {
-        sourceField: '_id',
-        targetField: 'id',
+        sourceField: "_id",
+        targetField: "id",
         transformer: BuiltInTransformers.objectIdToString,
       },
-      { sourceField: 'shopId', targetField: 'shopId' },
-      { sourceField: 'name', targetField: 'name' },
-      { sourceField: 'email', targetField: 'email' },
-      { sourceField: 'phone', targetField: 'phone' },
-      { sourceField: 'status', targetField: 'status' },
-      { sourceField: 'createdAt', targetField: 'createdAt', transformer: BuiltInTransformers.dateToISO },
-      { sourceField: 'updatedAt', targetField: 'updatedAt', transformer: BuiltInTransformers.dateToISO },
+      { sourceField: "shopId", targetField: "shopId" },
+      { sourceField: "name", targetField: "name" },
+      { sourceField: "email", targetField: "email" },
+      { sourceField: "phone", targetField: "phone" },
+      { sourceField: "status", targetField: "status" },
+      {
+        sourceField: "createdAt",
+        targetField: "createdAt",
+        transformer: BuiltInTransformers.dateToISO,
+      },
+      {
+        sourceField: "updatedAt",
+        targetField: "updatedAt",
+        transformer: BuiltInTransformers.dateToISO,
+      },
     ],
   },
 };
@@ -234,7 +308,8 @@ export class DataMapper {
         // Skip if value is undefined and field is optional
         if (fieldTransform.optional) continue;
         // Use default if available
-        const defaultValue = mapping.defaultValues?.[fieldTransform.targetField];
+        const defaultValue =
+          mapping.defaultValues?.[fieldTransform.targetField];
         if (defaultValue !== undefined) {
           record[fieldTransform.targetField] = defaultValue;
           continue;
@@ -253,7 +328,7 @@ export class DataMapper {
     // Add default values for missing fields
     if (mapping.defaultValues) {
       for (const [field, defaultValue] of Object.entries(
-        mapping.defaultValues
+        mapping.defaultValues,
       )) {
         if (!(field in record)) {
           record[field] = defaultValue;
@@ -280,7 +355,7 @@ export class DataMapper {
    * Get nested value from object using dot notation
    */
   private getNestedValue(obj: any, path: string): any {
-    const keys = path.split('.');
+    const keys = path.split(".");
     let value = obj;
 
     for (const key of keys) {
@@ -306,11 +381,11 @@ export class DataMapper {
   createFieldTransform(
     sourceField: string,
     targetField: string,
-    transformer?: string
+    transformer?: string,
   ): FieldTransform {
     let transformFn: any;
 
-    if (transformer && typeof transformer === 'string') {
+    if (transformer && typeof transformer === "string") {
       transformFn = (BuiltInTransformers as any)[transformer];
     }
 

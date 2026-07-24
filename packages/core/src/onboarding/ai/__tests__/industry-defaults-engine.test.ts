@@ -181,7 +181,9 @@ describe("Industry Defaults Engine", () => {
     });
 
     it("should mention mobile app in tips", () => {
-      expect(profile.tips.some((t) => t.toLowerCase().includes("mobile"))).toBe(true);
+      expect(profile.tips.some((t) => t.toLowerCase().includes("mobile"))).toBe(
+        true,
+      );
     });
   });
 
@@ -256,7 +258,9 @@ describe("Industry Defaults Engine", () => {
     });
 
     it("should mention cold-chain in tips", () => {
-      expect(profile.tips.some((t) => t.toLowerCase().includes("cold"))).toBe(true);
+      expect(profile.tips.some((t) => t.toLowerCase().includes("cold"))).toBe(
+        true,
+      );
     });
 
     it("should suggest Fresh Delivery layout", () => {
@@ -362,12 +366,16 @@ describe("Industry Defaults Engine", () => {
   });
 
   describe("Integration priority ordering", () => {
-    const industries = Object.values(Industry).filter((i) => i !== Industry.CUSTOM);
+    const industries = Object.values(Industry).filter(
+      (i) => i !== Industry.CUSTOM,
+    );
 
     industries.forEach((industry) => {
       it(`should have properly ordered priorities for ${industry}`, () => {
         const profile = getIndustryDefaults(industry);
-        const priorities = profile.recommendedIntegrations.map((i) => i.priority);
+        const priorities = profile.recommendedIntegrations.map(
+          (i) => i.priority,
+        );
 
         // Priorities should be in descending order or at least non-increasing
         for (let i = 1; i < priorities.length; i++) {

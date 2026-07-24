@@ -32,7 +32,13 @@ export {
 } from "./comparison.js";
 
 // Zone utilities
-export { getZone, isRemoteArea, getZoneMultiplier, getRemoteAreaSurcharge, getEstimatedDays } from "./zones.js";
+export {
+  getZone,
+  isRemoteArea,
+  getZoneMultiplier,
+  getRemoteAreaSurcharge,
+  getEstimatedDays,
+} from "./zones.js";
 
 // Surcharge utilities
 export {

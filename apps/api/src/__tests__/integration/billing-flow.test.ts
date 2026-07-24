@@ -205,16 +205,16 @@ describe("Billing Flow Integration Tests", () => {
         status: "trialing",
         currentPeriodStart: now.toISOString(),
         currentPeriodEnd: new Date(
-          now.getTime() + 30 * 24 * 60 * 60 * 1000
+          now.getTime() + 30 * 24 * 60 * 60 * 1000,
         ).toISOString(),
         trialEnd: new Date(
-          now.getTime() + 14 * 24 * 60 * 60 * 1000
+          now.getTime() + 14 * 24 * 60 * 60 * 1000,
         ).toISOString(),
         createdAt: now.toISOString(),
       };
 
       mockPrisma.billingSubscription.create.mockResolvedValue(
-        subscriptionResponse
+        subscriptionResponse,
       );
 
       const subscription = await mockPrisma.billingSubscription.create({
@@ -315,7 +315,7 @@ describe("Billing Flow Integration Tests", () => {
       };
 
       mockPrisma.billingSubscription.update.mockResolvedValue(
-        upgradedSubscription
+        upgradedSubscription,
       );
 
       const updated = await mockPrisma.billingSubscription.update({
@@ -354,7 +354,9 @@ describe("Billing Flow Integration Tests", () => {
             quantity: 1,
           },
         ],
-        dueDate: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        dueDate: new Date(
+          now.getTime() + 30 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
         createdAt: new Date().toISOString(),
       };
 
@@ -448,14 +450,14 @@ describe("Billing Flow Integration Tests", () => {
         status: "trialing",
         currentPeriodStart: now.toISOString(),
         currentPeriodEnd: new Date(
-          now.getTime() + 30 * 24 * 60 * 60 * 1000
+          now.getTime() + 30 * 24 * 60 * 60 * 1000,
         ).toISOString(),
         trialEnd: trialEnd.toISOString(),
         createdAt: now.toISOString(),
       };
 
       mockPrisma.billingSubscription.findUnique.mockResolvedValue(
-        trialSubscription
+        trialSubscription,
       );
 
       const subscription = await mockPrisma.billingSubscription.findUnique({
@@ -498,9 +500,15 @@ describe("Billing Flow Integration Tests", () => {
         shopId: shopId,
         amount: 49.99,
         status: "finalized",
-        lineItems: [{ description: "Growth Plan - First month", amount: 49.99, quantity: 1 }],
+        lineItems: [
+          {
+            description: "Growth Plan - First month",
+            amount: 49.99,
+            quantity: 1,
+          },
+        ],
         dueDate: new Date(
-          currentDate.getTime() + 30 * 24 * 60 * 60 * 1000
+          currentDate.getTime() + 30 * 24 * 60 * 60 * 1000,
         ).toISOString(),
         createdAt: currentDate.toISOString(),
       });
@@ -527,17 +535,17 @@ describe("Billing Flow Integration Tests", () => {
         planId: planId,
         status: "trialing",
         currentPeriodStart: new Date(
-          now.getTime() - 15 * 24 * 60 * 60 * 1000
+          now.getTime() - 15 * 24 * 60 * 60 * 1000,
         ).toISOString(),
         currentPeriodEnd: now.toISOString(),
         trialEnd: trialEnd.toISOString(),
         createdAt: new Date(
-          now.getTime() - 15 * 24 * 60 * 60 * 1000
+          now.getTime() - 15 * 24 * 60 * 60 * 1000,
         ).toISOString(),
       };
 
       mockPrisma.billingSubscription.findUnique.mockResolvedValue(
-        expiredTrialSubscription
+        expiredTrialSubscription,
       );
 
       const subscription = await mockPrisma.billingSubscription.findUnique({
@@ -545,9 +553,7 @@ describe("Billing Flow Integration Tests", () => {
       });
 
       // Attempt to charge
-      mockPrisma.invoice.create.mockRejectedValue(
-        new Error("Payment failed")
-      );
+      mockPrisma.invoice.create.mockRejectedValue(new Error("Payment failed"));
 
       await expect(
         mockPrisma.invoice.create({
@@ -556,7 +562,7 @@ describe("Billing Flow Integration Tests", () => {
             shopId: shopId,
             amount: 49.99,
           },
-        })
+        }),
       ).rejects.toThrow("Payment failed");
 
       // Update subscription to past_due
@@ -584,18 +590,15 @@ describe("Billing Flow Integration Tests", () => {
         status: "active",
       });
 
-      const activeSubscription = await mockPrisma.billingSubscription.findUnique(
-        {
+      const activeSubscription =
+        await mockPrisma.billingSubscription.findUnique({
           where: { id: subscriptionId },
-        }
-      );
+        });
 
       expect(activeSubscription.status).toBe("active");
 
       // Grant trial for new feature add-on
-      const featureTrialEnd = new Date(
-        now.getTime() + 7 * 24 * 60 * 60 * 1000
-      ); // 7-day trial for new feature
+      const featureTrialEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7-day trial for new feature
 
       const featureTrial = {
         feature: "advancedAnalytics",
@@ -623,9 +626,10 @@ describe("Billing Flow Integration Tests", () => {
         currentPeriodEnd: cycleEnd.toISOString(),
       });
 
-      const currentSubscription = await mockPrisma.billingSubscription.findUnique(
-        { where: { id: subscriptionId } }
-      );
+      const currentSubscription =
+        await mockPrisma.billingSubscription.findUnique({
+          where: { id: subscriptionId },
+        });
 
       expect(currentSubscription.status).toBe("active");
 
@@ -646,9 +650,9 @@ describe("Billing Flow Integration Tests", () => {
       const proratedResponse: ProrationResponse = {
         creditAmount: proratedCredit,
         explanation: `Unused days of Enterprise plan (${remainingDays} days) credited: $${creditForCurrentPlan.toFixed(
-          2
+          2,
         )}. New Growth plan charge for same period: $${chargeForNewPlan.toFixed(
-          2
+          2,
         )}. Net credit: $${proratedCredit.toFixed(2)}`,
       };
 
@@ -662,12 +666,11 @@ describe("Billing Flow Integration Tests", () => {
         status: "active",
       });
 
-      const downgradedSubscription = await mockPrisma.billingSubscription.update(
-        {
+      const downgradedSubscription =
+        await mockPrisma.billingSubscription.update({
           where: { id: subscriptionId },
           data: { planId: generateId("plan") },
-        }
-      );
+        });
 
       expect(downgradedSubscription.status).toBe("active");
 
@@ -742,10 +745,11 @@ describe("Billing Flow Integration Tests", () => {
           status: "cancelled",
         });
 
-        const cancelledSubscription = await mockPrisma.billingSubscription.update({
-          where: { id: subscriptionId },
-          data: { status: "cancelled" },
-        });
+        const cancelledSubscription =
+          await mockPrisma.billingSubscription.update({
+            where: { id: subscriptionId },
+            data: { status: "cancelled" },
+          });
 
         expect(cancelledSubscription.status).toBe("cancelled");
       }
@@ -798,7 +802,7 @@ describe("Billing Flow Integration Tests", () => {
       // Generate invoices for 3 months
       for (let month = 0; month < 3; month++) {
         const invoiceDate = new Date(
-          now.getTime() + month * 30 * 24 * 60 * 60 * 1000
+          now.getTime() + month * 30 * 24 * 60 * 60 * 1000,
         );
 
         mockPrisma.invoice.create.mockResolvedValue({
@@ -815,7 +819,7 @@ describe("Billing Flow Integration Tests", () => {
             },
           ],
           dueDate: new Date(
-            invoiceDate.getTime() + 30 * 24 * 60 * 60 * 1000
+            invoiceDate.getTime() + 30 * 24 * 60 * 60 * 1000,
           ).toISOString(),
           createdAt: invoiceDate.toISOString(),
         });
@@ -906,9 +910,7 @@ describe("Billing Flow Integration Tests", () => {
             quantity: 1,
           },
         ],
-        dueDate: new Date(
-          Date.now() + 30 * 24 * 60 * 60 * 1000
-        ).toISOString(),
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         createdAt: new Date().toISOString(),
       });
 
@@ -947,7 +949,7 @@ describe("Billing Flow Integration Tests", () => {
           subscriptionId: subscriptionId,
           type: "QUOTA_WARNING",
           message: `Order quota at ${(percentageUsed * 100).toFixed(
-            0
+            0,
           )}% of limit (${usage}/${limit})`,
         }),
       };
@@ -974,7 +976,7 @@ describe("Billing Flow Integration Tests", () => {
       // Should return error
       if (!canCreateMore) {
         const error = new Error(
-          `Quota exceeded for ${resource}: ${currentUsage}/${limit}`
+          `Quota exceeded for ${resource}: ${currentUsage}/${limit}`,
         );
         expect(() => {
           throw error;

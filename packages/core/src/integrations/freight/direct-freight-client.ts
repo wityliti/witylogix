@@ -134,7 +134,7 @@ export class DirectFreightClient extends FreightAdapter {
   private async apiRequest<T>(
     endpoint: string,
     method: string = "GET",
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     await this.preRequestCheck();
 
@@ -152,7 +152,7 @@ export class DirectFreightClient extends FreightAdapter {
             },
             body: body ? JSON.stringify(body) : undefined,
           }),
-        `Direct Freight ${method} ${endpoint}`
+        `Direct Freight ${method} ${endpoint}`,
       )) as Response;
 
       if (!response.ok) {
@@ -200,7 +200,7 @@ export class DirectFreightClient extends FreightAdapter {
         deliveryDateTime: load.deliveryDate?.toISOString(),
         commodity: load.commodity,
         hazmat: load.isHazmat,
-      }
+      },
     );
 
     return this.mapDirectFreightLoadToLoadPosting(response);
@@ -222,10 +222,11 @@ export class DirectFreightClient extends FreightAdapter {
     });
 
     const endpoint = `/api/loads?${params.toString()}`;
-    const responses = await this.apiRequest<DirectFreightLoadResponse[]>(endpoint);
+    const responses =
+      await this.apiRequest<DirectFreightLoadResponse[]>(endpoint);
 
     return responses.map((response) =>
-      this.mapDirectFreightLoadToLoadPosting(response)
+      this.mapDirectFreightLoadToLoadPosting(response),
     );
   }
 
@@ -250,11 +251,13 @@ export class DirectFreightClient extends FreightAdapter {
    * @param truck - Truck posting data
    * @returns Created truck posting
    */
-  async postTruck(truck: Record<string, unknown>): Promise<Record<string, unknown>> {
+  async postTruck(
+    truck: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
     const response = await this.apiRequest<Record<string, unknown>>(
       "/api/trucks",
       "POST",
-      truck
+      truck,
     );
 
     return response;
@@ -266,7 +269,9 @@ export class DirectFreightClient extends FreightAdapter {
    * @param criteria - Search criteria
    * @returns Array of truck postings
    */
-  async searchTrucks(criteria: Record<string, unknown>): Promise<DirectFreightTruckResponse[]> {
+  async searchTrucks(
+    criteria: Record<string, unknown>,
+  ): Promise<DirectFreightTruckResponse[]> {
     const params = new URLSearchParams();
 
     Object.entries(criteria).forEach(([key, value]) => {
@@ -276,7 +281,8 @@ export class DirectFreightClient extends FreightAdapter {
     });
 
     const endpoint = `/api/trucks?${params.toString()}`;
-    const trucks = await this.apiRequest<DirectFreightTruckResponse[]>(endpoint);
+    const trucks =
+      await this.apiRequest<DirectFreightTruckResponse[]>(endpoint);
 
     return trucks;
   }
@@ -289,13 +295,9 @@ export class DirectFreightClient extends FreightAdapter {
    * @returns Rate quote
    */
   async requestQuote(loadId: string, carrierId: string): Promise<FreightQuote> {
-    const quote = await this.apiRequest(
-      `/api/loads/${loadId}/quotes`,
-      "POST",
-      {
-        carrierId,
-      }
-    );
+    const quote = await this.apiRequest(`/api/loads/${loadId}/quotes`, "POST", {
+      carrierId,
+    });
 
     return quote as FreightQuote;
   }
@@ -308,7 +310,7 @@ export class DirectFreightClient extends FreightAdapter {
    */
   async getQuotes(loadId: string): Promise<FreightQuote[]> {
     const quotes = await this.apiRequest<FreightQuote[]>(
-      `/api/loads/${loadId}/quotes`
+      `/api/loads/${loadId}/quotes`,
     );
 
     return quotes;
@@ -324,7 +326,7 @@ export class DirectFreightClient extends FreightAdapter {
     const confirmation = await this.apiRequest(
       `/api/quotes/${quoteId}/accept`,
       "POST",
-      {}
+      {},
     );
 
     return confirmation as BookingConfirmation;
@@ -336,11 +338,13 @@ export class DirectFreightClient extends FreightAdapter {
    * @param rateParams - Rate estimate parameters
    * @returns Rate estimate data
    */
-  async getRateEstimate(rateParams: Partial<RateEstimate>): Promise<RateEstimate> {
+  async getRateEstimate(
+    rateParams: Partial<RateEstimate>,
+  ): Promise<RateEstimate> {
     const estimate = await this.apiRequest(
       "/api/rates/estimate",
       "POST",
-      rateParams
+      rateParams,
     );
 
     return estimate as RateEstimate;
@@ -353,9 +357,7 @@ export class DirectFreightClient extends FreightAdapter {
    * @returns Carrier profile
    */
   async getCarrier(carrierId: string): Promise<CarrierProfile> {
-    const carrier = await this.apiRequest(
-      `/api/carriers/${carrierId}`
-    );
+    const carrier = await this.apiRequest(`/api/carriers/${carrierId}`);
 
     return carrier as CarrierProfile;
   }
@@ -366,7 +368,9 @@ export class DirectFreightClient extends FreightAdapter {
    * @param criteria - Search criteria
    * @returns Array of carrier profiles
    */
-  async searchCarriers(criteria: Record<string, unknown>): Promise<CarrierProfile[]> {
+  async searchCarriers(
+    criteria: Record<string, unknown>,
+  ): Promise<CarrierProfile[]> {
     const params = new URLSearchParams();
 
     Object.entries(criteria).forEach(([key, value]) => {
@@ -391,7 +395,7 @@ export class DirectFreightClient extends FreightAdapter {
     const carrier = await this.apiRequest(
       `/api/carriers/${carrierId}/score`,
       "POST",
-      {}
+      {},
     );
 
     return carrier as CarrierProfile;
@@ -405,7 +409,7 @@ export class DirectFreightClient extends FreightAdapter {
    */
   async monitorCarrier(carrierId: string): Promise<Record<string, unknown>> {
     const monitoring = await this.apiRequest<Record<string, unknown>>(
-      `/api/carriers/${carrierId}/monitoring`
+      `/api/carriers/${carrierId}/monitoring`,
     );
 
     return monitoring;
@@ -420,7 +424,7 @@ export class DirectFreightClient extends FreightAdapter {
    */
   async getLaneRate(origin: string, destination: string): Promise<LaneRate> {
     const laneRate = await this.apiRequest(
-      `/api/rates/lane?origin=${origin}&destination=${destination}`
+      `/api/rates/lane?origin=${origin}&destination=${destination}`,
     );
 
     return laneRate as LaneRate;
@@ -433,9 +437,7 @@ export class DirectFreightClient extends FreightAdapter {
    * @returns Shipment tracking data
    */
   async getTracking(trackingNumber: string): Promise<ShipmentTracking> {
-    const tracking = await this.apiRequest(
-      `/api/shipments/${trackingNumber}`
-    );
+    const tracking = await this.apiRequest(`/api/shipments/${trackingNumber}`);
 
     return tracking as ShipmentTracking;
   }
@@ -447,9 +449,7 @@ export class DirectFreightClient extends FreightAdapter {
    * @returns Freight invoice
    */
   async getInvoice(loadId: string): Promise<FreightInvoice> {
-    const invoice = await this.apiRequest(
-      `/api/loads/${loadId}/invoice`
-    );
+    const invoice = await this.apiRequest(`/api/loads/${loadId}/invoice`);
 
     return invoice as FreightInvoice;
   }
@@ -460,9 +460,11 @@ export class DirectFreightClient extends FreightAdapter {
    * @param carrierId - Carrier identifier
    * @returns Array of compliance documents
    */
-  async getComplianceDocuments(carrierId: string): Promise<ComplianceDocument[]> {
+  async getComplianceDocuments(
+    carrierId: string,
+  ): Promise<ComplianceDocument[]> {
     const documents = await this.apiRequest<ComplianceDocument[]>(
-      `/api/carriers/${carrierId}/documents`
+      `/api/carriers/${carrierId}/documents`,
     );
 
     return documents;
@@ -477,12 +479,12 @@ export class DirectFreightClient extends FreightAdapter {
    */
   async manageFleet(
     carrierId: string,
-    fleetData: Record<string, unknown>
+    fleetData: Record<string, unknown>,
   ): Promise<Record<string, unknown>> {
     const fleet = await this.apiRequest<Record<string, unknown>>(
       `/api/carriers/${carrierId}/fleet`,
       "POST",
-      fleetData
+      fleetData,
     );
 
     return fleet;
@@ -496,7 +498,7 @@ export class DirectFreightClient extends FreightAdapter {
    */
   async getFleet(carrierId: string): Promise<Record<string, unknown>> {
     const fleet = await this.apiRequest<Record<string, unknown>>(
-      `/api/carriers/${carrierId}/fleet`
+      `/api/carriers/${carrierId}/fleet`,
     );
 
     return fleet;
@@ -509,7 +511,7 @@ export class DirectFreightClient extends FreightAdapter {
    * @returns LoadPosting object
    */
   private mapDirectFreightLoadToLoadPosting(
-    response: DirectFreightLoadResponse
+    response: DirectFreightLoadResponse,
   ): LoadPosting {
     return {
       loadId: response.loadId,

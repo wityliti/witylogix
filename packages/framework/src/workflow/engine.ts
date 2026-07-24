@@ -42,10 +42,7 @@ import {
   markStepSuccess,
   markStepFailure,
 } from "./step-runner.js";
-import {
-  runCompensation,
-  isCompensationNeeded,
-} from "./compensation.js";
+import { runCompensation, isCompensationNeeded } from "./compensation.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // WORKFLOW ENGINE
@@ -124,7 +121,7 @@ export class WorkflowEngine extends EventEmitter {
     workflowName: string,
     input: unknown,
     context: WorkflowContext,
-    options: WorkflowExecutionOptions = {}
+    options: WorkflowExecutionOptions = {},
   ): Promise<WorkflowExecution> {
     const definition = this.registry.get(workflowName);
     if (!definition) {
@@ -136,7 +133,7 @@ export class WorkflowEngine extends EventEmitter {
     // Prevent duplicate concurrent executions of the same workflow instance
     if (this.executingWorkflows.has(executionId)) {
       throw new Error(
-        `Workflow execution "${executionId}" is already in progress`
+        `Workflow execution "${executionId}" is already in progress`,
       );
     }
 
@@ -150,7 +147,13 @@ export class WorkflowEngine extends EventEmitter {
     };
 
     // Track this execution
-    const promise = this.runWorkflow(definition, input, context, options, execution);
+    const promise = this.runWorkflow(
+      definition,
+      input,
+      context,
+      options,
+      execution,
+    );
     this.executingWorkflows.set(executionId, promise);
 
     try {
@@ -168,7 +171,7 @@ export class WorkflowEngine extends EventEmitter {
     input: unknown,
     context: WorkflowContext,
     options: WorkflowExecutionOptions,
-    execution: WorkflowExecution
+    execution: WorkflowExecution,
   ): Promise<WorkflowExecution> {
     const combinedOptions = {
       timeout: options.timeout ?? definition.options?.timeout,
@@ -190,14 +193,14 @@ export class WorkflowEngine extends EventEmitter {
       // Run beforeWorkflow hook
       if (definition.hooks?.beforeWorkflow) {
         await Promise.resolve(
-          definition.hooks.beforeWorkflow(definition.name, input, context)
+          definition.hooks.beforeWorkflow(definition.name, input, context),
         );
       }
 
       // Execute steps
       let currentInput = input;
       const stepDefMap = new Map(
-        definition.steps.map((step) => [step.id, step])
+        definition.steps.map((step) => [step.id, step]),
       );
 
       for (const stepDef of definition.steps) {
@@ -207,7 +210,7 @@ export class WorkflowEngine extends EventEmitter {
         // Run beforeStep hook
         if (definition.hooks?.beforeStep) {
           await Promise.resolve(
-            definition.hooks.beforeStep(stepDef, currentInput, context)
+            definition.hooks.beforeStep(stepDef, currentInput, context),
           );
         }
 
@@ -226,7 +229,7 @@ export class WorkflowEngine extends EventEmitter {
           stepDef,
           currentInput,
           context,
-          combinedOptions.timeout
+          combinedOptions.timeout,
         );
 
         if (result.ok) {
@@ -246,7 +249,7 @@ export class WorkflowEngine extends EventEmitter {
 
           context.logger.debug(
             `Workflow "${definition.name}" step "${stepDef.name}" completed`,
-            { stepId: stepDef.id, executionId: execution.id }
+            { stepId: stepDef.id, executionId: execution.id },
           );
         } else {
           markStepFailure(stepExecution, result.error);
@@ -269,7 +272,7 @@ export class WorkflowEngine extends EventEmitter {
               stepId: stepDef.id,
               error: result.error.message,
               executionId: execution.id,
-            }
+            },
           );
 
           execution.status = "compensating" as WorkflowStatus;
@@ -287,7 +290,7 @@ export class WorkflowEngine extends EventEmitter {
             const compensationResult = await runCompensation(
               definition.steps,
               execution.steps,
-              context
+              context,
             );
 
             execution.status = compensationResult.success
@@ -314,7 +317,7 @@ export class WorkflowEngine extends EventEmitter {
         // Run afterStep hook
         if (definition.hooks?.afterStep) {
           await Promise.resolve(
-            definition.hooks.afterStep(stepExecution, context)
+            definition.hooks.afterStep(stepExecution, context),
           );
         }
       }
@@ -349,7 +352,7 @@ export class WorkflowEngine extends EventEmitter {
       // Run afterWorkflow hook
       if (definition.hooks?.afterWorkflow) {
         await Promise.resolve(
-          definition.hooks.afterWorkflow(execution, context)
+          definition.hooks.afterWorkflow(execution, context),
         );
       }
 
@@ -363,7 +366,7 @@ export class WorkflowEngine extends EventEmitter {
 
       context.logger.error(
         `Workflow "${definition.name}" failed unexpectedly: ${error.message}`,
-        { executionId: execution.id, error }
+        { executionId: execution.id, error },
       );
 
       this.emitEvent({

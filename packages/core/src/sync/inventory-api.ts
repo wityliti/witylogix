@@ -26,7 +26,11 @@ import type {
   InventoryAuditEntry,
   InventorySyncResult,
 } from "./inventory-types.js";
-import { StockAdjustmentReason, StockConflictStrategy, ReservationStatus } from "./inventory-types.js";
+import {
+  StockAdjustmentReason,
+  StockConflictStrategy,
+  ReservationStatus,
+} from "./inventory-types.js";
 import { InventorySyncEngine } from "./inventory-sync-engine.js";
 
 /**
@@ -70,7 +74,7 @@ export class InventoryApiHandler {
       warehouseId?: string;
       platformType?: string;
       minAvailable?: number;
-    }
+    },
   ): StockLevel[] {
     const engine = this.getEngine(tenantId);
     // Implementation would retrieve from actual storage
@@ -90,7 +94,7 @@ export class InventoryApiHandler {
   public getStockLevel(
     tenantId: string,
     sku: string,
-    warehouseId: string
+    warehouseId: string,
   ): StockLevel | null {
     const engine = this.getEngine(tenantId);
     return engine.getStockLevel(sku, warehouseId) || null;
@@ -125,7 +129,7 @@ export class InventoryApiHandler {
       reason: StockAdjustmentReason;
       notes?: string;
       referenceId?: string;
-    }
+    },
   ): StockAdjustment {
     const engine = this.getEngine(tenantId);
     return engine.adjustStock(
@@ -134,7 +138,7 @@ export class InventoryApiHandler {
       adjustment.quantity,
       adjustment.reason,
       adjustment.notes,
-      userId
+      userId,
     );
   }
 
@@ -162,14 +166,14 @@ export class InventoryApiHandler {
       sku: string;
       quantity: number;
       warehouseId: string;
-    }
+    },
   ): ReservationRecord {
     const engine = this.getEngine(tenantId);
     return engine.reserveStock(
       reservation.orderId,
       reservation.sku,
       reservation.quantity,
-      reservation.warehouseId
+      reservation.warehouseId,
     );
   }
 
@@ -220,14 +224,14 @@ export class InventoryApiHandler {
       warehouseId: string;
       platformCounts: Record<string, number>;
       strategy?: StockConflictStrategy;
-    }
+    },
   ): StockDiscrepancy | null {
     const engine = this.getEngine(tenantId);
     return engine.reconcileStock(
       reconciliation.platformCounts,
       reconciliation.sku,
       reconciliation.warehouseId,
-      reconciliation.strategy || StockConflictStrategy.AVERAGE
+      reconciliation.strategy || StockConflictStrategy.AVERAGE,
     );
   }
 
@@ -252,7 +256,7 @@ export class InventoryApiHandler {
       severity?: string;
       sku?: string;
       acknowledged?: boolean;
-    }
+    },
   ): InventoryAlert[] {
     // Implementation would retrieve from actual storage
     // This is a placeholder showing the structure
@@ -268,7 +272,11 @@ export class InventoryApiHandler {
    * @param userId - User acknowledging alert
    * @returns Updated alert
    */
-  public acknowledgeAlert(tenantId: string, alertId: string, userId: string): InventoryAlert {
+  public acknowledgeAlert(
+    tenantId: string,
+    alertId: string,
+    userId: string,
+  ): InventoryAlert {
     // Implementation would update alert status
     return {
       alertId,
@@ -307,7 +315,7 @@ export class InventoryApiHandler {
       status?: ReservationStatus;
       sku?: string;
       expiredOnly?: boolean;
-    }
+    },
   ): ReservationRecord[] {
     // Implementation would retrieve from actual storage
     return [];
@@ -321,7 +329,10 @@ export class InventoryApiHandler {
    * @param orderId - Order ID
    * @returns Array of reservations
    */
-  public getOrderReservations(tenantId: string, orderId: string): ReservationRecord[] {
+  public getOrderReservations(
+    tenantId: string,
+    orderId: string,
+  ): ReservationRecord[] {
     const engine = this.getEngine(tenantId);
     return engine.getOrderReservations(orderId);
   }
@@ -362,7 +373,7 @@ export class InventoryApiHandler {
       warehouseId: string;
       quantity: number;
       reason?: StockAdjustmentReason;
-    }>
+    }>,
   ): Promise<BulkStockUpdateJob> {
     const engine = this.getEngine(tenantId);
     return engine.bulkUpdateStock(updates, userId);
@@ -376,7 +387,10 @@ export class InventoryApiHandler {
    * @param jobId - Bulk update job ID
    * @returns Job details with progress
    */
-  public getBulkUpdateStatus(tenantId: string, jobId: string): BulkStockUpdateJob | null {
+  public getBulkUpdateStatus(
+    tenantId: string,
+    jobId: string,
+  ): BulkStockUpdateJob | null {
     // Implementation would retrieve from actual storage
     return null;
   }
@@ -410,7 +424,7 @@ export class InventoryApiHandler {
       endDate?: string;
       limit?: number;
       offset?: number;
-    }
+    },
   ): InventoryAuditEntry[] {
     // Implementation would retrieve from actual storage with pagination
     return [];
@@ -437,7 +451,7 @@ export class InventoryApiHandler {
       warehouseId?: string;
       resolved?: boolean;
       minVariance?: number;
-    }
+    },
   ): StockDiscrepancy[] {
     // Implementation would retrieve from actual storage
     return [];
@@ -465,13 +479,19 @@ export class InventoryApiHandler {
    */
   public processExpiredReservations(tenantId: string): number {
     const engine = this.getEngine(tenantId);
-    const before = Array.from((engine as any).reservations?.values() || [])
-      .filter((r: ReservationRecord) => r.status === ReservationStatus.ACTIVE).length;
+    const before = Array.from(
+      (engine as any).reservations?.values() || [],
+    ).filter(
+      (r: ReservationRecord) => r.status === ReservationStatus.ACTIVE,
+    ).length;
 
     engine.processExpiredReservations();
 
-    const after = Array.from((engine as any).reservations?.values() || [])
-      .filter((r: ReservationRecord) => r.status === ReservationStatus.ACTIVE).length;
+    const after = Array.from(
+      (engine as any).reservations?.values() || [],
+    ).filter(
+      (r: ReservationRecord) => r.status === ReservationStatus.ACTIVE,
+    ).length;
 
     return before - after;
   }
@@ -536,7 +556,7 @@ export interface ListResponse<T> extends ApiResponse<T[]> {
  */
 export function createSuccessResponse<T>(
   data: T,
-  requestId: string
+  requestId: string,
 ): ApiResponse<T> {
   return {
     success: true,
@@ -556,7 +576,7 @@ export function createSuccessResponse<T>(
 export function createErrorResponse(
   error: string,
   errorCode: string,
-  requestId: string
+  requestId: string,
 ): ApiResponse {
   return {
     success: false,
@@ -581,7 +601,7 @@ export function createListResponse<T>(
   total: number,
   limit: number,
   offset: number,
-  requestId: string
+  requestId: string,
 ): ListResponse<T> {
   return {
     success: true,

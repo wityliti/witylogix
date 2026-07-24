@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
 /**
  * Dashboard statistics API hooks for main dashboard page
  */
 
-import { useApiQuery, UseApiQueryResult } from './use-api';
+import { useApiQuery, UseApiQueryResult } from "./use-api";
 
 /**
  * Dashboard statistics — matches GET /api/v4/dashboard/stats response
@@ -61,7 +61,7 @@ export interface DeliveryHeatmap {
  * @returns Dashboard statistics
  */
 export function useDashboardStats(): UseApiQueryResult<DashboardStats> {
-  return useApiQuery<DashboardStats>('/api/v4/dashboard/stats');
+  return useApiQuery<DashboardStats>("/api/v4/dashboard/stats");
 }
 
 /**
@@ -72,11 +72,9 @@ export function useDashboardStats(): UseApiQueryResult<DashboardStats> {
 export function useRecentOrders(
   limit: number = 5,
 ): UseApiQueryResult<RecentOrder[]> {
-  return useApiQuery<RecentOrder[]>(
-    `/orders?limit=${limit}&sort=-createdAt`,
-  );
+  return useApiQuery<RecentOrder[]>(`/orders?limit=${limit}&sort=-createdAt`);
 }
 
 export function useDeliveryHeatmap(): UseApiQueryResult<DeliveryHeatmap> {
-  return useApiQuery<DeliveryHeatmap>('/api/v4/analytics/heatmap');
+  return useApiQuery<DeliveryHeatmap>("/api/v4/analytics/heatmap");
 }

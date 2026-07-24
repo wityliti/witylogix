@@ -17,9 +17,9 @@ import {
   CampaignExecutionResult,
   BroadcastGroup,
   SegmentRule,
-} from './types';
+} from "./types";
 
-import { getNotificationOrchestrator } from '../notifications/orchestrator.js';
+import { getNotificationOrchestrator } from "../notifications/orchestrator.js";
 
 /**
  * Campaign Manager for creating, scheduling, and executing campaigns
@@ -40,7 +40,7 @@ export class CampaignManager {
   createCampaign(request: CampaignDraftRequest): Campaign {
     this.validateCampaignRequest(request);
 
-    const campaignId = this.generateId('campaign');
+    const campaignId = this.generateId("campaign");
     const now = Date.now();
 
     const campaign: Campaign = {
@@ -54,7 +54,7 @@ export class CampaignManager {
       content: request.content,
       createdAt: now,
       updatedAt: now,
-      createdBy: 'system',
+      createdBy: "system",
       metadata: request.metadata,
     };
 
@@ -78,13 +78,13 @@ export class CampaignManager {
    */
   updateCampaign(
     campaignId: string,
-    request: Partial<CampaignDraftRequest>
+    request: Partial<CampaignDraftRequest>,
   ): Campaign {
     const campaign = this.getCampaign(campaignId);
 
     if (campaign.status !== CampaignStatus.DRAFT) {
       throw new Error(
-        `Cannot update campaign in ${campaign.status} status. Only draft campaigns can be updated.`
+        `Cannot update campaign in ${campaign.status} status. Only draft campaigns can be updated.`,
       );
     }
 
@@ -103,15 +103,12 @@ export class CampaignManager {
   /**
    * Schedule a campaign
    */
-  scheduleCampaign(
-    campaignId: string,
-    schedule: CampaignSchedule
-  ): Campaign {
+  scheduleCampaign(campaignId: string, schedule: CampaignSchedule): Campaign {
     const campaign = this.getCampaign(campaignId);
 
     if (campaign.status !== CampaignStatus.DRAFT) {
       throw new Error(
-        `Cannot schedule campaign in ${campaign.status} status. Only draft campaigns can be scheduled.`
+        `Cannot schedule campaign in ${campaign.status} status. Only draft campaigns can be scheduled.`,
       );
     }
 
@@ -126,7 +123,9 @@ export class CampaignManager {
   /**
    * Execute a campaign (send immediately or at scheduled time)
    */
-  async executeCampaign(request: CampaignExecutionRequest): Promise<CampaignExecutionResult> {
+  async executeCampaign(
+    request: CampaignExecutionRequest,
+  ): Promise<CampaignExecutionResult> {
     const campaign = this.getCampaign(request.campaignId);
 
     if (
@@ -134,7 +133,7 @@ export class CampaignManager {
       campaign.status !== CampaignStatus.DRAFT
     ) {
       throw new Error(
-        `Cannot execute campaign in ${campaign.status} status. Only scheduled or draft campaigns can be executed.`
+        `Cannot execute campaign in ${campaign.status} status. Only scheduled or draft campaigns can be executed.`,
       );
     }
 
@@ -142,20 +141,20 @@ export class CampaignManager {
     const audience = request.audience || campaign.audience;
     const recipients = this.buildAudience(
       audience,
-      request.isTest ? request.testRecipients : undefined
+      request.isTest ? request.testRecipients : undefined,
     );
 
     if (recipients.length === 0) {
-      throw new Error('No recipients found for campaign');
+      throw new Error("No recipients found for campaign");
     }
 
     // Execute based on campaign type
-    const executionId = this.generateId('exec');
+    const executionId = this.generateId("exec");
     const messages = await this.dispatchToChan(
       campaign,
       recipients,
       executionId,
-      request.isTest
+      request.isTest,
     );
 
     // Update campaign status and metrics
@@ -176,7 +175,7 @@ export class CampaignManager {
       queued: messages.length,
       failed: 0,
       startTime: Date.now(),
-      status: 'in_progress',
+      status: "in_progress",
     };
   }
 
@@ -191,7 +190,7 @@ export class CampaignManager {
       campaign.status !== CampaignStatus.SCHEDULED
     ) {
       throw new Error(
-        `Cannot pause campaign in ${campaign.status} status. Only active or scheduled campaigns can be paused.`
+        `Cannot pause campaign in ${campaign.status} status. Only active or scheduled campaigns can be paused.`,
       );
     }
 
@@ -210,7 +209,7 @@ export class CampaignManager {
 
     if (campaign.status !== CampaignStatus.PAUSED) {
       throw new Error(
-        `Cannot resume campaign in ${campaign.status} status. Only paused campaigns can be resumed.`
+        `Cannot resume campaign in ${campaign.status} status. Only paused campaigns can be resumed.`,
       );
     }
 
@@ -242,7 +241,7 @@ export class CampaignManager {
     const campaign = this.getCampaign(campaignId);
 
     if (campaign.status === CampaignStatus.COMPLETED) {
-      throw new Error('Cannot cancel a completed campaign');
+      throw new Error("Cannot cancel a completed campaign");
     }
 
     campaign.status = CampaignStatus.CANCELLED;
@@ -287,7 +286,7 @@ export class CampaignManager {
    */
   buildAudience(
     audience: CampaignAudience,
-    testRecipients?: string[]
+    testRecipients?: string[],
   ): string[] {
     if (testRecipients && testRecipients.length > 0) {
       return testRecipients;
@@ -296,7 +295,7 @@ export class CampaignManager {
     // If customer list is provided, use that
     if (audience.customerList && audience.customerList.length > 0) {
       return audience.customerList.filter(
-        (id) => !audience.excludedSegments?.includes(id)
+        (id) => !audience.excludedSegments?.includes(id),
       );
     }
 
@@ -306,7 +305,7 @@ export class CampaignManager {
     if (audience.segmentRules && audience.segmentRules.length > 0) {
       recipients = this.applySegmentRules(
         audience.segmentRules,
-        audience.filters
+        audience.filters,
       );
     } else if (audience.includeAll) {
       recipients = Array.from(this.customerStore.keys());
@@ -317,7 +316,7 @@ export class CampaignManager {
     // Remove excluded segments
     if (audience.excludedSegments && audience.excludedSegments.length > 0) {
       recipients = recipients.filter(
-        (id) => !audience.excludedSegments!.includes(id)
+        (id) => !audience.excludedSegments!.includes(id),
       );
     }
 
@@ -329,7 +328,7 @@ export class CampaignManager {
    */
   private applySegmentRules(
     rules: SegmentRule[],
-    filters?: Array<{ type: string; value: string }>
+    filters?: Array<{ type: string; value: string }>,
   ): string[] {
     const recipients: string[] = [];
 
@@ -363,7 +362,9 @@ export class CampaignManager {
   /**
    * Apply filters to build recipient list
    */
-  private applyFilters(filters: Array<{ type: string; value: string }>): string[] {
+  private applyFilters(
+    filters: Array<{ type: string; value: string }>,
+  ): string[] {
     const recipients: string[] = [];
 
     for (const [customerId, customerData] of this.customerStore.entries()) {
@@ -387,32 +388,35 @@ export class CampaignManager {
   /**
    * Check if a rule matches customer data
    */
-  private ruleMatches(rule: SegmentRule, customerData: Record<string, unknown>): boolean {
+  private ruleMatches(
+    rule: SegmentRule,
+    customerData: Record<string, unknown>,
+  ): boolean {
     const fieldValue = customerData[rule.field];
 
     switch (rule.operator) {
-      case 'equals':
+      case "equals":
         return fieldValue === rule.value;
-      case 'contains':
+      case "contains":
         return String(fieldValue).includes(String(rule.value));
-      case 'gt':
+      case "gt":
         return Number(fieldValue) > Number(rule.value);
-      case 'lt':
+      case "lt":
         return Number(fieldValue) < Number(rule.value);
-      case 'gte':
+      case "gte":
         return Number(fieldValue) >= Number(rule.value);
-      case 'lte':
+      case "lte":
         return Number(fieldValue) <= Number(rule.value);
-      case 'in':
+      case "in":
         return (rule.value as string[]).includes(String(fieldValue));
-      case 'between': {
+      case "between": {
         const [min, max] = rule.value as number[];
         const num = Number(fieldValue);
         return num >= min && num <= max;
       }
-      case 'startsWith':
+      case "startsWith":
         return String(fieldValue).startsWith(String(rule.value));
-      case 'endsWith':
+      case "endsWith":
         return String(fieldValue).endsWith(String(rule.value));
       default:
         return false;
@@ -422,18 +426,21 @@ export class CampaignManager {
   /**
    * Check if a filter matches customer data
    */
-  private filterMatches(filter: { type: string; value: string }, customerData: Record<string, unknown>): boolean {
+  private filterMatches(
+    filter: { type: string; value: string },
+    customerData: Record<string, unknown>,
+  ): boolean {
     const fieldValue = customerData[filter.type];
-    const operator = filter.operator || 'equals';
+    const operator = filter.operator || "equals";
 
     switch (operator) {
-      case 'equals':
+      case "equals":
         return fieldValue === filter.value;
-      case 'contains':
+      case "contains":
         return String(fieldValue).includes(filter.value);
-      case 'in':
-        return filter.value.split(',').includes(String(fieldValue));
-      case 'not_equals':
+      case "in":
+        return filter.value.split(",").includes(String(fieldValue));
+      case "not_equals":
         return fieldValue !== filter.value;
       default:
         return false;
@@ -447,7 +454,7 @@ export class CampaignManager {
     campaign: Campaign,
     recipients: string[],
     executionId: string,
-    isTest: boolean
+    isTest: boolean,
   ): Promise<Array<{ id: string; recipient: string }>> {
     const messages: Array<{ id: string; recipient: string }> = [];
     const orchestrator = getNotificationOrchestrator();
@@ -456,7 +463,7 @@ export class CampaignManager {
     const channels = this.getChannelsForCampaignType(campaign.type);
 
     for (const recipient of recipients) {
-      const messageId = this.generateId('msg');
+      const messageId = this.generateId("msg");
 
       // Build variables for template interpolation
       const variables = this.buildTemplateVariables(campaign);
@@ -465,7 +472,7 @@ export class CampaignManager {
       for (const channel of channels) {
         try {
           const result = await orchestrator.sendNotification(
-            'default-tenant', // In production, derive from campaign or context
+            "default-tenant", // In production, derive from campaign or context
             channel,
             recipient,
             campaign.templateId || `campaign_${campaign.id}`,
@@ -474,13 +481,13 @@ export class CampaignManager {
 
           if (!result.success) {
             console.warn(
-              `Failed to send ${channel} to ${recipient}: ${result.error}`
+              `Failed to send ${channel} to ${recipient}: ${result.error}`,
             );
           }
         } catch (error) {
           console.error(
             `Error dispatching ${channel} for campaign ${campaign.id}:`,
-            error
+            error,
           );
         }
       }
@@ -495,21 +502,21 @@ export class CampaignManager {
    * Map campaign type to notification channels
    */
   private getChannelsForCampaignType(
-    type: CampaignType
-  ): Array<'EMAIL' | 'SMS' | 'WHATSAPP' | 'PUSH'> {
+    type: CampaignType,
+  ): Array<"EMAIL" | "SMS" | "WHATSAPP" | "PUSH"> {
     switch (type) {
       case CampaignType.EMAIL:
-        return ['EMAIL'];
+        return ["EMAIL"];
       case CampaignType.SMS:
-        return ['SMS'];
+        return ["SMS"];
       case CampaignType.WHATSAPP:
-        return ['WHATSAPP'];
+        return ["WHATSAPP"];
       case CampaignType.PUSH:
-        return ['PUSH'];
+        return ["PUSH"];
       case CampaignType.MULTI_CHANNEL:
-        return ['EMAIL', 'SMS', 'WHATSAPP', 'PUSH'];
+        return ["EMAIL", "SMS", "WHATSAPP", "PUSH"];
       default:
-        return ['EMAIL'];
+        return ["EMAIL"];
     }
   }
 
@@ -520,7 +527,7 @@ export class CampaignManager {
     const variables: Record<string, unknown> = {
       campaignId: campaign.id,
       campaignName: campaign.name,
-      executionId: this.generateId('exec'),
+      executionId: this.generateId("exec"),
     };
 
     // Add campaign-specific variables from content
@@ -536,8 +543,12 @@ export class CampaignManager {
   /**
    * Create a broadcast group
    */
-  createBroadcastGroup(name: string, members: string[], tags?: string[]): BroadcastGroup {
-    const groupId = this.generateId('group');
+  createBroadcastGroup(
+    name: string,
+    members: string[],
+    tags?: string[],
+  ): BroadcastGroup {
+    const groupId = this.generateId("group");
     const now = Date.now();
 
     const group: BroadcastGroup = {
@@ -570,7 +581,7 @@ export class CampaignManager {
    */
   updateBroadcastGroup(
     groupId: string,
-    updates: Partial<Omit<BroadcastGroup, 'id' | 'createdAt'>>
+    updates: Partial<Omit<BroadcastGroup, "id" | "createdAt">>,
   ): BroadcastGroup {
     const group = this.getBroadcastGroup(groupId);
 
@@ -591,12 +602,10 @@ export class CampaignManager {
   /**
    * List campaigns
    */
-  listCampaigns(
-    filters?: {
-      status?: CampaignStatus;
-      type?: CampaignType;
-    }
-  ): Campaign[] {
+  listCampaigns(filters?: {
+    status?: CampaignStatus;
+    type?: CampaignType;
+  }): Campaign[] {
     let campaigns = Array.from(this.campaigns.values());
 
     if (filters?.status) {
@@ -624,7 +633,9 @@ export class CampaignManager {
     const campaign = this.getCampaign(campaignId);
 
     if (campaign.status === CampaignStatus.ACTIVE) {
-      throw new Error('Cannot delete an active campaign. Pause or complete it first.');
+      throw new Error(
+        "Cannot delete an active campaign. Pause or complete it first.",
+      );
     }
 
     this.campaigns.delete(campaignId);
@@ -635,23 +646,23 @@ export class CampaignManager {
    */
   private validateCampaignRequest(request: CampaignDraftRequest): void {
     if (!request.name || request.name.trim().length === 0) {
-      throw new Error('Campaign name is required');
+      throw new Error("Campaign name is required");
     }
 
     if (!request.type) {
-      throw new Error('Campaign type is required');
+      throw new Error("Campaign type is required");
     }
 
     if (!request.audience) {
-      throw new Error('Campaign audience is required');
+      throw new Error("Campaign audience is required");
     }
 
     if (!request.schedule) {
-      throw new Error('Campaign schedule is required');
+      throw new Error("Campaign schedule is required");
     }
 
     if (!request.content) {
-      throw new Error('Campaign content is required');
+      throw new Error("Campaign content is required");
     }
   }
 

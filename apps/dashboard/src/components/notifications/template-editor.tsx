@@ -33,7 +33,7 @@ const useTemplateEditorContext = () => {
   const context = useContext(TemplateEditorContext);
   if (!context) {
     throw new Error(
-      "useTemplateEditorContext must be used within TemplateEditor.Root"
+      "useTemplateEditorContext must be used within TemplateEditor.Root",
     );
   }
   return context;
@@ -60,18 +60,14 @@ interface RootProps {
   onSave?: (data: { subject: string; body: string; channel: Channel }) => void;
 }
 
-const Root = ({
-  children,
-  defaultChannel = "email",
-  onSave,
-}: RootProps) => {
+const Root = ({ children, defaultChannel = "email", onSave }: RootProps) => {
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [channel, setChannel] = useState<Channel>(defaultChannel);
 
   const value = useMemo(
     () => ({ subject, body, channel, setSubject, setBody, setChannel }),
-    [subject, body, channel]
+    [subject, body, channel],
   );
 
   return (
@@ -86,7 +82,10 @@ interface SubjectProps {
   placeholder?: string;
 }
 
-const Subject = ({ label = "Subject", placeholder = "Enter email subject" }: SubjectProps) => {
+const Subject = ({
+  label = "Subject",
+  placeholder = "Enter email subject",
+}: SubjectProps) => {
   const { subject, setSubject, channel } = useTemplateEditorContext();
   const limit = CHANNEL_LIMITS[channel]?.subject || 78;
   const remaining = limit - subject.length;
@@ -112,7 +111,7 @@ const Subject = ({ label = "Subject", placeholder = "Enter email subject" }: Sub
             "absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium",
             remaining < 10
               ? "text-[var(--wl-danger)]"
-              : "text-[var(--wl-text-secondary)]"
+              : "text-[var(--wl-text-secondary)]",
           )}
         >
           {remaining}/{limit}
@@ -143,7 +142,7 @@ const Body = ({
   const filteredVariables = useMemo(() => {
     if (!query) return AVAILABLE_VARIABLES;
     return AVAILABLE_VARIABLES.filter((v) =>
-      v.name.toLowerCase().includes(query.toLowerCase())
+      v.name.toLowerCase().includes(query.toLowerCase()),
     );
   }, [query]);
 
@@ -152,7 +151,10 @@ const Body = ({
       const textarea = e.currentTarget;
       if (e.key === "{" && e.ctrlKey === false) {
         const cursorPos = textarea.selectionStart;
-        const precedingText = body.substring(Math.max(0, cursorPos - 1), cursorPos);
+        const precedingText = body.substring(
+          Math.max(0, cursorPos - 1),
+          cursorPos,
+        );
 
         if (precedingText === "{") {
           setAutocompleteOpen(true);
@@ -170,7 +172,7 @@ const Body = ({
         setAutocompleteOpen(false);
       }
     },
-    [body]
+    [body],
   );
 
   const handleBodyChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -232,7 +234,7 @@ const Body = ({
             "border border-[var(--wl-border)]",
             "focus:outline-none focus:ring-2 focus:ring-[var(--wl-primary)]/40",
             "placeholder:text-[var(--wl-text-secondary)]",
-            "font-mono text-sm"
+            "font-mono text-sm",
           )}
           aria-label={label}
         />
@@ -241,7 +243,7 @@ const Body = ({
             "absolute right-3 bottom-3 text-xs font-medium",
             remaining < 20
               ? "text-[var(--wl-danger)]"
-              : "text-[var(--wl-text-secondary)]"
+              : "text-[var(--wl-text-secondary)]",
           )}
         >
           {remaining}/{limit}
@@ -252,7 +254,7 @@ const Body = ({
             className={cn(
               "absolute z-50 mt-1 rounded-md border border-[var(--wl-border)]",
               "bg-[var(--wl-bg-primary)] shadow-lg",
-              "max-h-48 w-64 overflow-y-auto"
+              "max-h-48 w-64 overflow-y-auto",
             )}
             style={{
               top: `${autocompletePos.y}px`,
@@ -266,7 +268,7 @@ const Body = ({
                 className={cn(
                   "w-full px-3 py-2 text-left text-sm",
                   "hover:bg-[var(--wl-bg-secondary)] transition-colors",
-                  "border-b border-[var(--wl-border)] last:border-b-0"
+                  "border-b border-[var(--wl-border)] last:border-b-0",
                 )}
               >
                 <div className="font-mono text-[var(--wl-text-primary)]">
@@ -296,7 +298,7 @@ const Preview = ({ label = "Preview" }: PreviewProps) => {
     AVAILABLE_VARIABLES.forEach((variable) => {
       text = text.replace(
         new RegExp(`{{\\s*${variable.name}\\s*}}`, "g"),
-        variable.example
+        variable.example,
       );
     });
     return text;
@@ -311,7 +313,7 @@ const Preview = ({ label = "Preview" }: PreviewProps) => {
         className={cn(
           "rounded-md border border-[var(--wl-border)]",
           "bg-[var(--wl-bg-secondary)] p-4",
-          "min-h-32"
+          "min-h-32",
         )}
       >
         {subject && (
@@ -356,7 +358,7 @@ const Tabs = ({ children }: TabsProps) => {
               "border-b-2 -mb-[2px]",
               channel === ch
                 ? "text-[var(--wl-primary)] border-[var(--wl-primary)]"
-                : "text-[var(--wl-text-secondary)] border-transparent hover:text-[var(--wl-text-primary)]"
+                : "text-[var(--wl-text-secondary)] border-transparent hover:text-[var(--wl-text-primary)]",
             )}
           >
             {ch === "email" && "Email HTML"}
@@ -374,7 +376,9 @@ interface VariablesSidebarProps {
   title?: string;
 }
 
-const VariablesSidebar = ({ title = "Available Variables" }: VariablesSidebarProps) => {
+const VariablesSidebar = ({
+  title = "Available Variables",
+}: VariablesSidebarProps) => {
   return (
     <div className="space-y-3">
       <h4 className="text-sm font-semibold text-[var(--wl-text-primary)]">
@@ -387,7 +391,7 @@ const VariablesSidebar = ({ title = "Available Variables" }: VariablesSidebarPro
             className={cn(
               "px-3 py-2 rounded-md",
               "bg-[var(--wl-bg-secondary)] border border-[var(--wl-border)]",
-              "text-xs"
+              "text-xs",
             )}
           >
             <p className="font-mono font-semibold text-[var(--wl-text-primary)]">

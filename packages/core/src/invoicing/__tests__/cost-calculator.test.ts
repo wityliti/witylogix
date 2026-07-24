@@ -3,16 +3,19 @@
  * Comprehensive tests for delivery cost calculations with all surcharges, tiers, and premiums
  */
 
-import { describe, it, expect } from 'vitest';
-import { calculateDeliveryCost, calculateBatchCost } from '../cost-calculator.js';
-import type { RateCard, DeliveryForCosting } from '../types.js';
+import { describe, it, expect } from "vitest";
+import {
+  calculateDeliveryCost,
+  calculateBatchCost,
+} from "../cost-calculator.js";
+import type { RateCard, DeliveryForCosting } from "../types.js";
 
 // ─── FIXTURES ────────────────────────────────────────────────────────
 
 const baseRateCard: RateCard = {
-  id: 'rc-1',
-  tenantId: 'tenant-1',
-  name: 'Standard Rates',
+  id: "rc-1",
+  tenantId: "tenant-1",
+  name: "Standard Rates",
   baseRate: 5.0,
   perKmRate: 1.0,
   perKgRate: 0.5,
@@ -37,29 +40,31 @@ const baseRateCard: RateCard = {
   },
   minimumCharge: 8.0,
   isDefault: true,
-  effectiveFrom: new Date('2026-01-01'),
+  effectiveFrom: new Date("2026-01-01"),
   createdAt: new Date(),
   updatedAt: new Date(),
 };
 
 const simpleDelivery: DeliveryForCosting = {
-  id: 'delv-1',
+  id: "delv-1",
   distanceKm: 3,
   weightKg: 2,
-  pickupTime: new Date('2026-03-11T10:00:00'),
+  pickupTime: new Date("2026-03-11T10:00:00"),
   specialHandling: undefined,
 };
 
-describe('Cost Calculator', () => {
-  describe('calculateDeliveryCost', () => {
-    it('should apply base rate to simple delivery', () => {
+describe("Cost Calculator", () => {
+  describe("calculateDeliveryCost", () => {
+    it("should apply base rate to simple delivery", () => {
       const result = calculateDeliveryCost(simpleDelivery, baseRateCard);
 
       expect(result.baseCharge).toBe(5.0);
-      expect(result.finalCharge).toBeGreaterThanOrEqual(baseRateCard.minimumCharge);
+      expect(result.finalCharge).toBeGreaterThanOrEqual(
+        baseRateCard.minimumCharge,
+      );
     });
 
-    it('should calculate distance surcharge for short distance', () => {
+    it("should calculate distance surcharge for short distance", () => {
       const delivery: DeliveryForCosting = {
         ...simpleDelivery,
         distanceKm: 3, // Base tier (0-5km, 1.0x multiplier)
@@ -71,7 +76,7 @@ describe('Cost Calculator', () => {
       expect(result.distanceSurcharge).toBe(3.0);
     });
 
-    it('should calculate distance surcharge with tier multiplier', () => {
+    it("should calculate distance surcharge with tier multiplier", () => {
       const delivery: DeliveryForCosting = {
         ...simpleDelivery,
         distanceKm: 10, // Medium tier (5-15km, 1.5x multiplier)
@@ -83,7 +88,7 @@ describe('Cost Calculator', () => {
       expect(result.distanceSurcharge).toBe(15.0);
     });
 
-    it('should calculate long distance surcharge', () => {
+    it("should calculate long distance surcharge", () => {
       const delivery: DeliveryForCosting = {
         ...simpleDelivery,
         distanceKm: 35, // Long tier (30km+, 2.5x multiplier)
@@ -95,7 +100,7 @@ describe('Cost Calculator', () => {
       expect(result.distanceSurcharge).toBe(87.5);
     });
 
-    it('should calculate weight surcharge for light delivery', () => {
+    it("should calculate weight surcharge for light delivery", () => {
       const delivery: DeliveryForCosting = {
         ...simpleDelivery,
         weightKg: 3, // Base tier (0-5kg, $0.5/kg)
@@ -107,7 +112,7 @@ describe('Cost Calculator', () => {
       expect(result.weightSurcharge).toBe(1.5);
     });
 
-    it('should calculate weight surcharge with tier increase', () => {
+    it("should calculate weight surcharge with tier increase", () => {
       const delivery: DeliveryForCosting = {
         ...simpleDelivery,
         weightKg: 10, // Medium tier (5-15kg, $2/kg)
@@ -119,7 +124,7 @@ describe('Cost Calculator', () => {
       expect(result.weightSurcharge).toBe(20.0);
     });
 
-    it('should calculate weight surcharge for heavy delivery', () => {
+    it("should calculate weight surcharge for heavy delivery", () => {
       const delivery: DeliveryForCosting = {
         ...simpleDelivery,
         weightKg: 40, // Heavy tier (30kg+, $5/kg)
@@ -131,10 +136,10 @@ describe('Cost Calculator', () => {
       expect(result.weightSurcharge).toBe(200.0);
     });
 
-    it('should apply time-of-day premium for peak hours (11am)', () => {
+    it("should apply time-of-day premium for peak hours (11am)", () => {
       const delivery: DeliveryForCosting = {
         ...simpleDelivery,
-        pickupTime: new Date('2026-03-11T11:30:00'), // Peak: 11am-1pm
+        pickupTime: new Date("2026-03-11T11:30:00"), // Peak: 11am-1pm
       };
 
       const result = calculateDeliveryCost(delivery, baseRateCard);
@@ -144,10 +149,10 @@ describe('Cost Calculator', () => {
       expect(result.timePremium).toBeCloseTo(1.8, 1);
     });
 
-    it('should apply time-of-day premium for peak hours (evening)', () => {
+    it("should apply time-of-day premium for peak hours (evening)", () => {
       const delivery: DeliveryForCosting = {
         ...simpleDelivery,
-        pickupTime: new Date('2026-03-11T18:00:00'), // Peak: 5pm-8pm
+        pickupTime: new Date("2026-03-11T18:00:00"), // Peak: 5pm-8pm
       };
 
       const result = calculateDeliveryCost(delivery, baseRateCard);
@@ -155,10 +160,10 @@ describe('Cost Calculator', () => {
       expect(result.timePremium).toBeGreaterThan(0);
     });
 
-    it('should not apply premium for off-peak hours', () => {
+    it("should not apply premium for off-peak hours", () => {
       const delivery: DeliveryForCosting = {
         ...simpleDelivery,
-        pickupTime: new Date('2026-03-11T09:00:00'), // Off-peak
+        pickupTime: new Date("2026-03-11T09:00:00"), // Off-peak
       };
 
       const result = calculateDeliveryCost(delivery, baseRateCard);
@@ -166,10 +171,14 @@ describe('Cost Calculator', () => {
       expect(result.timePremium).toBe(0);
     });
 
-    it('should apply fragile handling surcharge', () => {
+    it("should apply fragile handling surcharge", () => {
       const delivery: DeliveryForCosting = {
         ...simpleDelivery,
-        specialHandling: { fragile: true, refrigerated: false, oversized: false },
+        specialHandling: {
+          fragile: true,
+          refrigerated: false,
+          oversized: false,
+        },
       };
 
       const result = calculateDeliveryCost(delivery, baseRateCard);
@@ -177,10 +186,14 @@ describe('Cost Calculator', () => {
       expect(result.specialHandling).toBeGreaterThan(0);
     });
 
-    it('should apply multiple special handling surcharges', () => {
+    it("should apply multiple special handling surcharges", () => {
       const delivery: DeliveryForCosting = {
         ...simpleDelivery,
-        specialHandling: { fragile: true, refrigerated: true, oversized: false },
+        specialHandling: {
+          fragile: true,
+          refrigerated: true,
+          oversized: false,
+        },
       };
 
       const result = calculateDeliveryCost(delivery, baseRateCard);
@@ -191,7 +204,7 @@ describe('Cost Calculator', () => {
       expect(result.specialHandling).toBeCloseTo(expectedSpecial, 1);
     });
 
-    it('should apply fuel surcharge to all costs', () => {
+    it("should apply fuel surcharge to all costs", () => {
       const delivery: DeliveryForCosting = {
         ...simpleDelivery,
         distanceKm: 10,
@@ -204,7 +217,7 @@ describe('Cost Calculator', () => {
       expect(result.fuelSurcharge).toBeCloseTo(2.1, 1);
     });
 
-    it('should enforce minimum charge', () => {
+    it("should enforce minimum charge", () => {
       const delivery: DeliveryForCosting = {
         ...simpleDelivery,
         distanceKm: 1,
@@ -213,16 +226,22 @@ describe('Cost Calculator', () => {
 
       const result = calculateDeliveryCost(delivery, baseRateCard);
 
-      expect(result.finalCharge).toBeGreaterThanOrEqual(baseRateCard.minimumCharge);
+      expect(result.finalCharge).toBeGreaterThanOrEqual(
+        baseRateCard.minimumCharge,
+      );
     });
 
-    it('should calculate realistic complex delivery', () => {
+    it("should calculate realistic complex delivery", () => {
       const delivery: DeliveryForCosting = {
-        id: 'delv-complex',
+        id: "delv-complex",
         distanceKm: 12,
         weightKg: 8,
-        pickupTime: new Date('2026-03-11T12:00:00'), // Peak time
-        specialHandling: { fragile: true, refrigerated: true, oversized: false },
+        pickupTime: new Date("2026-03-11T12:00:00"), // Peak time
+        specialHandling: {
+          fragile: true,
+          refrigerated: true,
+          oversized: false,
+        },
       };
 
       const result = calculateDeliveryCost(delivery, baseRateCard);
@@ -240,12 +259,12 @@ describe('Cost Calculator', () => {
     });
   });
 
-  describe('calculateBatchCost', () => {
-    it('should calculate cost for multiple deliveries', () => {
+  describe("calculateBatchCost", () => {
+    it("should calculate cost for multiple deliveries", () => {
       const deliveries: DeliveryForCosting[] = [
-        { ...simpleDelivery, id: 'delv-1' },
-        { ...simpleDelivery, id: 'delv-2', distanceKm: 10 },
-        { ...simpleDelivery, id: 'delv-3', distanceKm: 25 },
+        { ...simpleDelivery, id: "delv-1" },
+        { ...simpleDelivery, id: "delv-2", distanceKm: 10 },
+        { ...simpleDelivery, id: "delv-3", distanceKm: 25 },
       ];
 
       const result = calculateBatchCost(deliveries, baseRateCard);
@@ -261,28 +280,28 @@ describe('Cost Calculator', () => {
       expect(result.totalCost).toBeCloseTo(sumOfBreakdowns, 2);
     });
 
-    it('should handle empty batch', () => {
+    it("should handle empty batch", () => {
       const result = calculateBatchCost([], baseRateCard);
 
       expect(result.costBreakdowns).toHaveLength(0);
       expect(result.totalCost).toBe(0);
     });
 
-    it('should preserve delivery IDs in breakdowns', () => {
+    it("should preserve delivery IDs in breakdowns", () => {
       const deliveries: DeliveryForCosting[] = [
-        { ...simpleDelivery, id: 'delv-alpha' },
-        { ...simpleDelivery, id: 'delv-beta' },
+        { ...simpleDelivery, id: "delv-alpha" },
+        { ...simpleDelivery, id: "delv-beta" },
       ];
 
       const result = calculateBatchCost(deliveries, baseRateCard);
 
-      expect(result.costBreakdowns[0].deliveryId).toBe('delv-alpha');
-      expect(result.costBreakdowns[1].deliveryId).toBe('delv-beta');
+      expect(result.costBreakdowns[0].deliveryId).toBe("delv-alpha");
+      expect(result.costBreakdowns[1].deliveryId).toBe("delv-beta");
     });
   });
 
-  describe('tier transitions', () => {
-    it('should apply correct rate at distance tier boundary (5km)', () => {
+  describe("tier transitions", () => {
+    it("should apply correct rate at distance tier boundary (5km)", () => {
       const resultAtBoundary = calculateDeliveryCost(
         { ...simpleDelivery, distanceKm: 5 },
         baseRateCard,
@@ -299,7 +318,7 @@ describe('Cost Calculator', () => {
       );
     });
 
-    it('should apply correct rate at weight tier boundary (5kg)', () => {
+    it("should apply correct rate at weight tier boundary (5kg)", () => {
       const resultAtBoundary = calculateDeliveryCost(
         { ...simpleDelivery, weightKg: 5 },
         baseRateCard,
@@ -309,7 +328,9 @@ describe('Cost Calculator', () => {
         baseRateCard,
       );
 
-      expect(resultAtBoundary.weightSurcharge).toBeGreaterThan(resultBelow.weightSurcharge);
+      expect(resultAtBoundary.weightSurcharge).toBeGreaterThan(
+        resultBelow.weightSurcharge,
+      );
     });
   });
 });

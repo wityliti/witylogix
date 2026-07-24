@@ -121,10 +121,7 @@ const DASHBOARD_PRESETS: LayoutPreset[] = [
   },
 ];
 
-export function DashboardLayout({
-  data,
-  onSelect,
-}: DashboardLayoutProps) {
+export function DashboardLayout({ data, onSelect }: DashboardLayoutProps) {
   const selected = data.dashboardLayout;
 
   return (
@@ -155,7 +152,7 @@ export function DashboardLayout({
                 "bg-wl-bg-surface/50 backdrop-blur-sm",
                 isSelected
                   ? "border-wl-primary-500 shadow-lg shadow-wl-primary-500/20"
-                  : "border-wl-border-default hover:border-wl-border-strong"
+                  : "border-wl-border-default hover:border-wl-border-strong",
               )}
             >
               {/* Checkmark */}
@@ -170,7 +167,7 @@ export function DashboardLayout({
                 className={cn(
                   "w-10 h-10 rounded-lg flex items-center justify-center",
                   `bg-gradient-to-br ${preset.color}`,
-                  isSelected && "shadow-md"
+                  isSelected && "shadow-md",
                 )}
               >
                 <Icon className="w-5 h-5 text-wl-text-inverse" />
@@ -201,7 +198,7 @@ export function DashboardLayout({
                   className={cn(
                     "absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100",
                     "transition-opacity duration-300 pointer-events-none",
-                    "bg-gradient-to-br from-wl-primary-500/5 to-transparent"
+                    "bg-gradient-to-br from-wl-primary-500/5 to-transparent",
                   )}
                 />
               )}

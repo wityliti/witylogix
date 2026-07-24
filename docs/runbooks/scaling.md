@@ -9,6 +9,7 @@ This runbook provides procedures for scaling infrastructure to handle increased 
 ### When to Scale
 
 Scale when:
+
 - API CPU utilization >80% for >5 minutes
 - API memory >85% for >5 minutes
 - P95 latency >2 seconds
@@ -218,11 +219,7 @@ aws cloudfront create-invalidation \
 
 ```json
 {
-  "PathPatterns": [
-    "images/*",
-    "static/*",
-    "assets/*"
-  ],
+  "PathPatterns": ["images/*", "static/*", "assets/*"],
   "TTL": 31536000,
   "Compress": true,
   "FieldLevelEncryptionId": null
@@ -249,31 +246,31 @@ spec:
   minReplicas: 3
   maxReplicas: 20
   metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 70
-  - type: Resource
-    resource:
-      name: memory
-      target:
-        type: Utilization
-        averageUtilization: 80
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
   behavior:
     scaleUp:
       stabilizationWindowSeconds: 300
       policies:
-      - type: Percent
-        value: 50
-        periodSeconds: 60
+        - type: Percent
+          value: 50
+          periodSeconds: 60
     scaleDown:
       stabilizationWindowSeconds: 300
       policies:
-      - type: Pods
-        value: 1
-        periodSeconds: 300
+        - type: Pods
+          value: 1
+          periodSeconds: 300
 ```
 
 ## Monitoring Scaling Events
@@ -311,6 +308,7 @@ jmeter -n -t load-test.jmx \
 ### Baseline Metrics
 
 Current baseline (steady state):
+
 - API requests: 5,000 req/s
 - P95 latency: 200ms
 - Error rate: 0.1%
@@ -318,6 +316,7 @@ Current baseline (steady state):
 - Database connections: 100/500 max
 
 Peak load expectations:
+
 - Black Friday: 50x baseline
 - Marketing campaign: 10x baseline
 - New feature launch: 5x baseline

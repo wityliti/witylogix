@@ -7,12 +7,12 @@
  * SKILLS: api-design, security-review
  */
 
-import { createHmac } from 'node:crypto';
-import { z } from 'zod';
+import { createHmac } from "node:crypto";
+import { z } from "zod";
 
 // ─── TYPES ────────────────────────────────────────────────────────────
 
-export type ZohoDomain = 'com' | 'eu' | 'in' | 'au' | 'ca' | 'jp';
+export type ZohoDomain = "com" | "eu" | "in" | "au" | "ca" | "jp";
 
 export interface ZohoCRMSDKConfig {
   clientId: string;
@@ -32,7 +32,7 @@ export interface ZohoLead {
   company?: string;
   source?: string;
   leadStatus?: string;
-  rating?: 'hot' | 'warm' | 'cold';
+  rating?: "hot" | "warm" | "cold";
   notes?: string;
   customFields?: Record<string, unknown>;
 }
@@ -84,8 +84,13 @@ export interface ZohoTask {
   subject: string;
   description?: string;
   dueDate?: string;
-  status?: 'Not Started' | 'In Progress' | 'Completed' | 'Waiting for Input' | 'Deferred';
-  priority?: 'High' | 'Medium' | 'Low';
+  status?:
+    | "Not Started"
+    | "In Progress"
+    | "Completed"
+    | "Waiting for Input"
+    | "Deferred";
+  priority?: "High" | "Medium" | "Low";
   relatedTo?: string;
   customFields?: Record<string, unknown>;
 }
@@ -106,17 +111,21 @@ export interface ZohoNote {
   title: string;
   content: string;
   parentId?: string;
-  parentType?: 'Leads' | 'Contacts' | 'Accounts' | 'Deals';
+  parentType?: "Leads" | "Contacts" | "Accounts" | "Deals";
   createdTime?: string;
   customFields?: Record<string, unknown>;
 }
 
 export interface ZohoBulkOperation {
   id: string;
-  status: 'QUEUED' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
+  status: "QUEUED" | "IN_PROGRESS" | "COMPLETED" | "FAILED";
   result?: {
     success?: Array<{ id: string; message: string }>;
-    failed?: Array<{ id: string; message: string; errors: Array<{ message: string }> }>;
+    failed?: Array<{
+      id: string;
+      message: string;
+      errors: Array<{ message: string }>;
+    }>;
   };
 }
 
@@ -148,7 +157,7 @@ const ZohoContactResponseSchema = z.object({
       Phone: z.string().optional(),
       Mailing_City: z.string().optional(),
       Account_Name: z.unknown().optional(),
-    })
+    }),
   ),
   info: z.object({
     count: z.number(),
@@ -160,22 +169,24 @@ const ZohoBulkOperationResponseSchema = z.object({
   data: z.array(
     z.object({
       id: z.string(),
-      status: z.enum(['QUEUED', 'IN_PROGRESS', 'COMPLETED', 'FAILED']),
+      status: z.enum(["QUEUED", "IN_PROGRESS", "COMPLETED", "FAILED"]),
       result: z
         .object({
-          success: z.array(z.object({ id: z.string(), message: z.string() })).optional(),
+          success: z
+            .array(z.object({ id: z.string(), message: z.string() }))
+            .optional(),
           failed: z
             .array(
               z.object({
                 id: z.string(),
                 message: z.string(),
                 errors: z.array(z.object({ message: z.string() })),
-              })
+              }),
             )
             .optional(),
         })
         .optional(),
-    })
+    }),
   ),
 });
 
@@ -194,27 +205,27 @@ export class ZohoCRMSDKClient {
   private rateLimitResetAt = new Date();
 
   private readonly domainMap: Record<ZohoDomain, string> = {
-    com: 'https://accounts.zoho.com',
-    eu: 'https://accounts.zoho.eu',
-    in: 'https://accounts.zoho.in',
-    au: 'https://accounts.zoho.com.au',
-    ca: 'https://accounts.zoho.ca',
-    jp: 'https://accounts.zoho.jp',
+    com: "https://accounts.zoho.com",
+    eu: "https://accounts.zoho.eu",
+    in: "https://accounts.zoho.in",
+    au: "https://accounts.zoho.com.au",
+    ca: "https://accounts.zoho.ca",
+    jp: "https://accounts.zoho.jp",
   };
 
   private readonly apiDomainMap: Record<ZohoDomain, string> = {
-    com: 'https://www.zohoapis.com',
-    eu: 'https://www.zohoapis.eu',
-    in: 'https://www.zohoapis.in',
-    au: 'https://www.zohoapis.com.au',
-    ca: 'https://www.zohoapis.ca',
-    jp: 'https://www.zohoapis.jp',
+    com: "https://www.zohoapis.com",
+    eu: "https://www.zohoapis.eu",
+    in: "https://www.zohoapis.in",
+    au: "https://www.zohoapis.com.au",
+    ca: "https://www.zohoapis.ca",
+    jp: "https://www.zohoapis.jp",
   };
 
   constructor(config: ZohoCRMSDKConfig) {
     this.config = {
       ...config,
-      apiVersion: config.apiVersion || 'v6',
+      apiVersion: config.apiVersion || "v6",
     };
   }
 
@@ -223,11 +234,12 @@ export class ZohoCRMSDKClient {
    */
   getAuthorizationUrl(state?: string): string {
     const params = new URLSearchParams({
-      response_type: 'code',
+      response_type: "code",
       client_id: this.config.clientId,
       redirect_uri: this.config.redirectUri,
-      scope: 'ZohoCRM.modules.all,ZohoCRM.users.all,ZohoCRM.bulk.all,ZohoCRM.org.all',
-      access_type: 'offline',
+      scope:
+        "ZohoCRM.modules.all,ZohoCRM.users.all,ZohoCRM.bulk.all,ZohoCRM.org.all",
+      access_type: "offline",
       ...(state && { state }),
     });
 
@@ -242,17 +254,20 @@ export class ZohoCRMSDKClient {
     refreshToken?: string;
     expiresIn?: number;
   }> {
-    const response = await fetch(`${this.domainMap[this.config.domain]}/oauth/v2/token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        grant_type: 'authorization_code',
-        client_id: this.config.clientId,
-        client_secret: this.config.clientSecret,
-        redirect_uri: this.config.redirectUri,
-        code,
-      }).toString(),
-    });
+    const response = await fetch(
+      `${this.domainMap[this.config.domain]}/oauth/v2/token`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          grant_type: "authorization_code",
+          client_id: this.config.clientId,
+          client_secret: this.config.clientSecret,
+          redirect_uri: this.config.redirectUri,
+          code,
+        }).toString(),
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Zoho token exchange failed: ${response.statusText}`);
@@ -281,16 +296,19 @@ export class ZohoCRMSDKClient {
     accessToken: string;
     expiresIn?: number;
   }> {
-    const response = await fetch(`${this.domainMap[this.config.domain]}/oauth/v2/token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        grant_type: 'refresh_token',
-        client_id: this.config.clientId,
-        client_secret: this.config.clientSecret,
-        refresh_token: refreshToken,
-      }).toString(),
-    });
+    const response = await fetch(
+      `${this.domainMap[this.config.domain]}/oauth/v2/token`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          grant_type: "refresh_token",
+          client_id: this.config.clientId,
+          client_secret: this.config.clientSecret,
+          refresh_token: refreshToken,
+        }).toString(),
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Zoho token refresh failed: ${response.statusText}`);
@@ -323,10 +341,14 @@ export class ZohoCRMSDKClient {
    */
   private async ensureValidToken(): Promise<void> {
     if (!this.accessToken) {
-      throw new Error('Access token not set. Authenticate first.');
+      throw new Error("Access token not set. Authenticate first.");
     }
 
-    if (this.tokenExpiresAt && new Date() > this.tokenExpiresAt && this.refreshToken) {
+    if (
+      this.tokenExpiresAt &&
+      new Date() > this.tokenExpiresAt &&
+      this.refreshToken
+    ) {
       await this.refreshAccessToken(this.refreshToken);
     }
   }
@@ -337,14 +359,14 @@ export class ZohoCRMSDKClient {
   private async makeRequest<T>(
     method: string,
     endpoint: string,
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     await this.ensureValidToken();
 
     const url = `${this.apiDomainMap[this.config.domain]}/crm/${this.config.apiVersion}${endpoint}`;
     const headers: Record<string, string> = {
       Authorization: `Bearer ${this.accessToken}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
 
     const options: RequestInit = { method, headers };
@@ -355,8 +377,8 @@ export class ZohoCRMSDKClient {
     const response = await fetch(url, options);
 
     // Track rate limits
-    const remaining = response.headers.get('X-RATELIMIT-REMAINING');
-    const reset = response.headers.get('X-RATELIMIT-RESET');
+    const remaining = response.headers.get("X-RATELIMIT-REMAINING");
+    const reset = response.headers.get("X-RATELIMIT-RESET");
     if (remaining) {
       this.rateLimitRemaining = parseInt(remaining, 10);
     }
@@ -366,7 +388,9 @@ export class ZohoCRMSDKClient {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(`Zoho CRM API error: ${response.status} ${JSON.stringify(errorData)}`);
+      throw new Error(
+        `Zoho CRM API error: ${response.status} ${JSON.stringify(errorData)}`,
+      );
     }
 
     return response.json() as Promise<T>;
@@ -388,10 +412,12 @@ export class ZohoCRMSDKClient {
   /**
    * Get leads with optional filters
    */
-  async getLeads(
-    filters?: { modifiedAfter?: Date; limit?: number; offset?: number }
-  ): Promise<{ leads: ZohoLead[]; total: number; hasMore: boolean }> {
-    let coql = 'SELECT * FROM Leads';
+  async getLeads(filters?: {
+    modifiedAfter?: Date;
+    limit?: number;
+    offset?: number;
+  }): Promise<{ leads: ZohoLead[]; total: number; hasMore: boolean }> {
+    let coql = "SELECT * FROM Leads";
 
     if (filters?.modifiedAfter) {
       coql += ` WHERE Modified_Time > '${filters.modifiedAfter.toISOString()}'`;
@@ -407,7 +433,7 @@ export class ZohoCRMSDKClient {
     const response = await this.makeRequest<{
       data: Array<Record<string, unknown>>;
       info: { count: number; more_records: boolean };
-    }>('POST', '/coql', { query: coql });
+    }>("POST", "/coql", { query: coql });
 
     return {
       leads: response.data.map((record) => this.transformZohoLead(record)),
@@ -420,20 +446,19 @@ export class ZohoCRMSDKClient {
    * Get single lead by ID
    */
   async getLead(id: string): Promise<ZohoLead> {
-    const response = await this.makeRequest<{ data: Array<Record<string, unknown>> }>(
-      'GET',
-      `/Leads/${id}`
-    );
+    const response = await this.makeRequest<{
+      data: Array<Record<string, unknown>>;
+    }>("GET", `/Leads/${id}`);
     return this.transformZohoLead(response.data[0] as Record<string, unknown>);
   }
 
   /**
    * Create lead
    */
-  async createLead(lead: Omit<ZohoLead, 'id'>): Promise<ZohoLead> {
+  async createLead(lead: Omit<ZohoLead, "id">): Promise<ZohoLead> {
     const response = await this.makeRequest<{
       data: Array<{ id: string; message: string }>;
-    }>('POST', '/Leads', { data: [this.transformToZohoRecord(lead)] });
+    }>("POST", "/Leads", { data: [this.transformToZohoRecord(lead)] });
 
     return { ...lead, id: response.data[0].id };
   }
@@ -442,7 +467,7 @@ export class ZohoCRMSDKClient {
    * Update lead
    */
   async updateLead(id: string, updates: Partial<ZohoLead>): Promise<void> {
-    await this.makeRequest('PUT', `/Leads/${id}`, {
+    await this.makeRequest("PUT", `/Leads/${id}`, {
       data: [this.transformToZohoRecord(updates)],
     });
   }
@@ -451,7 +476,7 @@ export class ZohoCRMSDKClient {
    * Delete lead
    */
   async deleteLead(id: string): Promise<void> {
-    await this.makeRequest('DELETE', `/Leads/${id}`, null);
+    await this.makeRequest("DELETE", `/Leads/${id}`, null);
   }
 
   // ─── CONTACTS OPERATIONS ─────────────────────────────────────────
@@ -459,21 +484,25 @@ export class ZohoCRMSDKClient {
   /**
    * Get contacts with optional filters
    */
-  async getContacts(
-    filters?: { modifiedAfter?: Date; limit?: number; offset?: number }
-  ): Promise<{ contacts: ZohoContact[]; total: number; hasMore: boolean }> {
+  async getContacts(filters?: {
+    modifiedAfter?: Date;
+    limit?: number;
+    offset?: number;
+  }): Promise<{ contacts: ZohoContact[]; total: number; hasMore: boolean }> {
     const limit = filters?.limit || 200;
     const offset = filters?.offset || 0;
 
     const response = await this.makeRequest<{
       data: Array<Record<string, unknown>>;
       info: { count: number; more_records: boolean };
-    }>('GET', `/Contacts?fields=*&limit=${limit}&offset=${offset}`);
+    }>("GET", `/Contacts?fields=*&limit=${limit}&offset=${offset}`);
 
     const validated = ZohoContactResponseSchema.parse(response);
 
     return {
-      contacts: validated.data.map((record) => this.transformZohoContact(record)),
+      contacts: validated.data.map((record) =>
+        this.transformZohoContact(record),
+      ),
       total: validated.info.count,
       hasMore: validated.info.more_records,
     };
@@ -483,20 +512,21 @@ export class ZohoCRMSDKClient {
    * Get single contact by ID
    */
   async getContact(id: string): Promise<ZohoContact> {
-    const response = await this.makeRequest<{ data: Array<Record<string, unknown>> }>(
-      'GET',
-      `/Contacts/${id}`
+    const response = await this.makeRequest<{
+      data: Array<Record<string, unknown>>;
+    }>("GET", `/Contacts/${id}`);
+    return this.transformZohoContact(
+      response.data[0] as Record<string, unknown>,
     );
-    return this.transformZohoContact(response.data[0] as Record<string, unknown>);
   }
 
   /**
    * Create contact
    */
-  async createContact(contact: Omit<ZohoContact, 'id'>): Promise<ZohoContact> {
+  async createContact(contact: Omit<ZohoContact, "id">): Promise<ZohoContact> {
     const response = await this.makeRequest<{
       data: Array<{ id: string; message: string }>;
-    }>('POST', '/Contacts', { data: [this.transformToZohoRecord(contact)] });
+    }>("POST", "/Contacts", { data: [this.transformToZohoRecord(contact)] });
 
     return { ...contact, id: response.data[0].id };
   }
@@ -504,8 +534,11 @@ export class ZohoCRMSDKClient {
   /**
    * Update contact
    */
-  async updateContact(id: string, updates: Partial<ZohoContact>): Promise<void> {
-    await this.makeRequest('PUT', `/Contacts/${id}`, {
+  async updateContact(
+    id: string,
+    updates: Partial<ZohoContact>,
+  ): Promise<void> {
+    await this.makeRequest("PUT", `/Contacts/${id}`, {
       data: [this.transformToZohoRecord(updates)],
     });
   }
@@ -514,7 +547,7 @@ export class ZohoCRMSDKClient {
    * Delete contact
    */
   async deleteContact(id: string): Promise<void> {
-    await this.makeRequest('DELETE', `/Contacts/${id}`, null);
+    await this.makeRequest("DELETE", `/Contacts/${id}`, null);
   }
 
   // ─── ACCOUNTS OPERATIONS ─────────────────────────────────────────
@@ -522,19 +555,23 @@ export class ZohoCRMSDKClient {
   /**
    * Get accounts with optional filters
    */
-  async getAccounts(
-    filters?: { modifiedAfter?: Date; limit?: number; offset?: number }
-  ): Promise<{ accounts: ZohoAccount[]; total: number; hasMore: boolean }> {
+  async getAccounts(filters?: {
+    modifiedAfter?: Date;
+    limit?: number;
+    offset?: number;
+  }): Promise<{ accounts: ZohoAccount[]; total: number; hasMore: boolean }> {
     const limit = filters?.limit || 200;
     const offset = filters?.offset || 0;
 
     const response = await this.makeRequest<{
       data: Array<Record<string, unknown>>;
       info: { count: number; more_records: boolean };
-    }>('GET', `/Accounts?fields=*&limit=${limit}&offset=${offset}`);
+    }>("GET", `/Accounts?fields=*&limit=${limit}&offset=${offset}`);
 
     return {
-      accounts: response.data.map((record) => this.transformZohoAccount(record)),
+      accounts: response.data.map((record) =>
+        this.transformZohoAccount(record),
+      ),
       total: response.info.count,
       hasMore: response.info.more_records,
     };
@@ -544,20 +581,21 @@ export class ZohoCRMSDKClient {
    * Get single account by ID
    */
   async getAccount(id: string): Promise<ZohoAccount> {
-    const response = await this.makeRequest<{ data: Array<Record<string, unknown>> }>(
-      'GET',
-      `/Accounts/${id}`
+    const response = await this.makeRequest<{
+      data: Array<Record<string, unknown>>;
+    }>("GET", `/Accounts/${id}`);
+    return this.transformZohoAccount(
+      response.data[0] as Record<string, unknown>,
     );
-    return this.transformZohoAccount(response.data[0] as Record<string, unknown>);
   }
 
   /**
    * Create account
    */
-  async createAccount(account: Omit<ZohoAccount, 'id'>): Promise<ZohoAccount> {
+  async createAccount(account: Omit<ZohoAccount, "id">): Promise<ZohoAccount> {
     const response = await this.makeRequest<{
       data: Array<{ id: string; message: string }>;
-    }>('POST', '/Accounts', { data: [this.transformToZohoRecord(account)] });
+    }>("POST", "/Accounts", { data: [this.transformToZohoRecord(account)] });
 
     return { ...account, id: response.data[0].id };
   }
@@ -565,8 +603,11 @@ export class ZohoCRMSDKClient {
   /**
    * Update account
    */
-  async updateAccount(id: string, updates: Partial<ZohoAccount>): Promise<void> {
-    await this.makeRequest('PUT', `/Accounts/${id}`, {
+  async updateAccount(
+    id: string,
+    updates: Partial<ZohoAccount>,
+  ): Promise<void> {
+    await this.makeRequest("PUT", `/Accounts/${id}`, {
       data: [this.transformToZohoRecord(updates)],
     });
   }
@@ -575,7 +616,7 @@ export class ZohoCRMSDKClient {
    * Delete account
    */
   async deleteAccount(id: string): Promise<void> {
-    await this.makeRequest('DELETE', `/Accounts/${id}`, null);
+    await this.makeRequest("DELETE", `/Accounts/${id}`, null);
   }
 
   // ─── DEALS OPERATIONS ────────────────────────────────────────────
@@ -583,16 +624,18 @@ export class ZohoCRMSDKClient {
   /**
    * Get deals with optional filters
    */
-  async getDeals(
-    filters?: { modifiedAfter?: Date; limit?: number; offset?: number }
-  ): Promise<{ deals: ZohoDeal[]; total: number; hasMore: boolean }> {
+  async getDeals(filters?: {
+    modifiedAfter?: Date;
+    limit?: number;
+    offset?: number;
+  }): Promise<{ deals: ZohoDeal[]; total: number; hasMore: boolean }> {
     const limit = filters?.limit || 200;
     const offset = filters?.offset || 0;
 
     const response = await this.makeRequest<{
       data: Array<Record<string, unknown>>;
       info: { count: number; more_records: boolean };
-    }>('GET', `/Deals?fields=*&limit=${limit}&offset=${offset}`);
+    }>("GET", `/Deals?fields=*&limit=${limit}&offset=${offset}`);
 
     return {
       deals: response.data.map((record) => this.transformZohoDeal(record)),
@@ -605,20 +648,19 @@ export class ZohoCRMSDKClient {
    * Get single deal by ID
    */
   async getDeal(id: string): Promise<ZohoDeal> {
-    const response = await this.makeRequest<{ data: Array<Record<string, unknown>> }>(
-      'GET',
-      `/Deals/${id}`
-    );
+    const response = await this.makeRequest<{
+      data: Array<Record<string, unknown>>;
+    }>("GET", `/Deals/${id}`);
     return this.transformZohoDeal(response.data[0] as Record<string, unknown>);
   }
 
   /**
    * Create deal
    */
-  async createDeal(deal: Omit<ZohoDeal, 'id'>): Promise<ZohoDeal> {
+  async createDeal(deal: Omit<ZohoDeal, "id">): Promise<ZohoDeal> {
     const response = await this.makeRequest<{
       data: Array<{ id: string; message: string }>;
-    }>('POST', '/Deals', { data: [this.transformToZohoRecord(deal)] });
+    }>("POST", "/Deals", { data: [this.transformToZohoRecord(deal)] });
 
     return { ...deal, id: response.data[0].id };
   }
@@ -627,7 +669,7 @@ export class ZohoCRMSDKClient {
    * Update deal
    */
   async updateDeal(id: string, updates: Partial<ZohoDeal>): Promise<void> {
-    await this.makeRequest('PUT', `/Deals/${id}`, {
+    await this.makeRequest("PUT", `/Deals/${id}`, {
       data: [this.transformToZohoRecord(updates)],
     });
   }
@@ -636,7 +678,7 @@ export class ZohoCRMSDKClient {
    * Delete deal
    */
   async deleteDeal(id: string): Promise<void> {
-    await this.makeRequest('DELETE', `/Deals/${id}`, null);
+    await this.makeRequest("DELETE", `/Deals/${id}`, null);
   }
 
   // ─── BULK OPERATIONS ──────────────────────────────────────────────
@@ -645,8 +687,8 @@ export class ZohoCRMSDKClient {
    * Perform bulk create operation (up to 100 records)
    */
   async bulkCreateRecords(
-    module: 'Leads' | 'Contacts' | 'Accounts' | 'Deals',
-    records: Array<Record<string, unknown>>
+    module: "Leads" | "Contacts" | "Accounts" | "Deals",
+    records: Array<Record<string, unknown>>,
   ): Promise<{ bulkId: string }> {
     const chunks = [];
     for (let i = 0; i < records.length; i += 100) {
@@ -657,11 +699,11 @@ export class ZohoCRMSDKClient {
     for (const chunk of chunks) {
       const response = await this.makeRequest<{
         data: Array<{ id: string; message: string }>;
-      }>('POST', `/${module}`, { data: chunk });
+      }>("POST", `/${module}`, { data: chunk });
       bulkIds.push(...response.data.map((r) => r.id));
     }
 
-    return { bulkId: bulkIds.join(',') };
+    return { bulkId: bulkIds.join(",") };
   }
 
   /**
@@ -670,7 +712,7 @@ export class ZohoCRMSDKClient {
   async getBulkOperationStatus(bulkId: string): Promise<ZohoBulkOperation> {
     const response = await this.makeRequest<{
       data: Array<Record<string, unknown>>;
-    }>('GET', `/bulk/${bulkId}`);
+    }>("GET", `/bulk/${bulkId}`);
 
     const bulkOp = response.data[0] as Record<string, unknown>;
     const validated = ZohoBulkOperationResponseSchema.parse({
@@ -685,10 +727,14 @@ export class ZohoCRMSDKClient {
   /**
    * Verify Zoho webhook signature
    */
-  verifyWebhookSignature(signature: string, payload: string, secret: string): boolean {
-    const hmac = createHmac('sha256', secret);
+  verifyWebhookSignature(
+    signature: string,
+    payload: string,
+    secret: string,
+  ): boolean {
+    const hmac = createHmac("sha256", secret);
     hmac.update(payload);
-    const computed = hmac.digest('hex');
+    const computed = hmac.digest("hex");
     return computed === signature;
   }
 
@@ -698,11 +744,11 @@ export class ZohoCRMSDKClient {
   async createWebhook(
     events: string[],
     url: string,
-    channelExpiry?: number
+    channelExpiry?: number,
   ): Promise<{ channelId: string }> {
     const response = await this.makeRequest<{
       data: Array<{ channelId: string; message: string }>;
-    }>('POST', '/channels', {
+    }>("POST", "/channels", {
       data: [
         {
           events,
@@ -719,14 +765,12 @@ export class ZohoCRMSDKClient {
    * Enable webhook notifications for module
    */
   async enableWebhookNotifications(
-    module: 'Leads' | 'Contacts' | 'Accounts' | 'Deals',
-    channelId: string
+    module: "Leads" | "Contacts" | "Accounts" | "Deals",
+    channelId: string,
   ): Promise<void> {
-    await this.makeRequest(
-      'POST',
-      `/settings/notifications/${module}`,
-      { data: [{ channel_id: channelId }] }
-    );
+    await this.makeRequest("POST", `/settings/notifications/${module}`, {
+      data: [{ channel_id: channelId }],
+    });
   }
 
   // ─── SEARCH OPERATIONS ───────────────────────────────────────────
@@ -737,7 +781,7 @@ export class ZohoCRMSDKClient {
   async search(query: string): Promise<Array<Record<string, unknown>>> {
     const response = await this.makeRequest<{
       data: Array<Record<string, unknown>>;
-    }>('POST', '/coql', { query });
+    }>("POST", "/coql", { query });
 
     return response.data;
   }
@@ -746,8 +790,8 @@ export class ZohoCRMSDKClient {
 
   private transformZohoLead(record: Record<string, unknown>): ZohoLead {
     return {
-      id: String(record.id || ''),
-      firstName: String(record.First_Name || ''),
+      id: String(record.id || ""),
+      firstName: String(record.First_Name || ""),
       lastName: record.Last_Name ? String(record.Last_Name) : undefined,
       email: record.Email ? String(record.Email) : undefined,
       phone: record.Phone ? String(record.Phone) : undefined,
@@ -755,58 +799,74 @@ export class ZohoCRMSDKClient {
       company: record.Company ? String(record.Company) : undefined,
       source: record.Lead_Source ? String(record.Lead_Source) : undefined,
       leadStatus: record.Lead_Status ? String(record.Lead_Status) : undefined,
-      rating: (record.Rating as 'hot' | 'warm' | 'cold') || undefined,
+      rating: (record.Rating as "hot" | "warm" | "cold") || undefined,
       notes: record.Notes ? String(record.Notes) : undefined,
     };
   }
 
   private transformZohoContact(record: Record<string, unknown>): ZohoContact {
     return {
-      id: String(record.id || ''),
-      firstName: String(record.First_Name || ''),
+      id: String(record.id || ""),
+      firstName: String(record.First_Name || ""),
       lastName: record.Last_Name ? String(record.Last_Name) : undefined,
       email: record.Email ? String(record.Email) : undefined,
       phone: record.Phone ? String(record.Phone) : undefined,
       mobile: record.Mobile ? String(record.Mobile) : undefined,
-      mailingCity: record.Mailing_City ? String(record.Mailing_City) : undefined,
-      mailingState: record.Mailing_State ? String(record.Mailing_State) : undefined,
+      mailingCity: record.Mailing_City
+        ? String(record.Mailing_City)
+        : undefined,
+      mailingState: record.Mailing_State
+        ? String(record.Mailing_State)
+        : undefined,
       mailingZip: record.Mailing_Zip ? String(record.Mailing_Zip) : undefined,
-      mailingCountry: record.Mailing_Country ? String(record.Mailing_Country) : undefined,
+      mailingCountry: record.Mailing_Country
+        ? String(record.Mailing_Country)
+        : undefined,
       accountId: record.Account_Name ? String(record.Account_Name) : undefined,
     };
   }
 
   private transformZohoAccount(record: Record<string, unknown>): ZohoAccount {
     return {
-      id: String(record.id || ''),
-      accountName: String(record.Account_Name || ''),
+      id: String(record.id || ""),
+      accountName: String(record.Account_Name || ""),
       website: record.Website ? String(record.Website) : undefined,
       phone: record.Phone ? String(record.Phone) : undefined,
       fax: record.Fax ? String(record.Fax) : undefined,
-      billingCity: record.Billing_City ? String(record.Billing_City) : undefined,
-      billingState: record.Billing_State ? String(record.Billing_State) : undefined,
+      billingCity: record.Billing_City
+        ? String(record.Billing_City)
+        : undefined,
+      billingState: record.Billing_State
+        ? String(record.Billing_State)
+        : undefined,
       billingZip: record.Billing_Zip ? String(record.Billing_Zip) : undefined,
-      billingCountry: record.Billing_Country ? String(record.Billing_Country) : undefined,
+      billingCountry: record.Billing_Country
+        ? String(record.Billing_Country)
+        : undefined,
       employees: record.Employees ? Number(record.Employees) : undefined,
-      annualRevenue: record.Annual_Revenue ? Number(record.Annual_Revenue) : undefined,
+      annualRevenue: record.Annual_Revenue
+        ? Number(record.Annual_Revenue)
+        : undefined,
     };
   }
 
   private transformZohoDeal(record: Record<string, unknown>): ZohoDeal {
     return {
-      id: String(record.id || ''),
-      dealName: String(record.Deal_Name || ''),
+      id: String(record.id || ""),
+      dealName: String(record.Deal_Name || ""),
       accountId: record.Account_Name ? String(record.Account_Name) : undefined,
       contactId: record.Contact_Name ? String(record.Contact_Name) : undefined,
       amount: record.Amount ? Number(record.Amount) : undefined,
-      closingDate: record.Closing_Date ? String(record.Closing_Date) : undefined,
+      closingDate: record.Closing_Date
+        ? String(record.Closing_Date)
+        : undefined,
       stage: record.Stage ? String(record.Stage) : undefined,
       pipeline: record.Pipeline ? String(record.Pipeline) : undefined,
     };
   }
 
   private transformToZohoRecord(data: unknown): Record<string, unknown> {
-    if (typeof data !== 'object' || data === null) {
+    if (typeof data !== "object" || data === null) {
       return {};
     }
 
@@ -815,26 +875,26 @@ export class ZohoCRMSDKClient {
 
     // Map camelCase to Zoho API naming conventions
     for (const [key, value] of Object.entries(record)) {
-      if (key === 'id') continue;
+      if (key === "id") continue;
 
       const zohoKey =
         {
-          firstName: 'First_Name',
-          lastName: 'Last_Name',
-          leadStatus: 'Lead_Status',
-          accountName: 'Account_Name',
-          dealName: 'Deal_Name',
-          closingDate: 'Closing_Date',
-          billingCity: 'Billing_City',
-          billingState: 'Billing_State',
-          billingZip: 'Billing_Zip',
-          billingCountry: 'Billing_Country',
-          mailingCity: 'Mailing_City',
-          mailingState: 'Mailing_State',
-          mailingZip: 'Mailing_Zip',
-          mailingCountry: 'Mailing_Country',
-          accountId: 'Account_Name',
-          contactId: 'Contact_Name',
+          firstName: "First_Name",
+          lastName: "Last_Name",
+          leadStatus: "Lead_Status",
+          accountName: "Account_Name",
+          dealName: "Deal_Name",
+          closingDate: "Closing_Date",
+          billingCity: "Billing_City",
+          billingState: "Billing_State",
+          billingZip: "Billing_Zip",
+          billingCountry: "Billing_Country",
+          mailingCity: "Mailing_City",
+          mailingState: "Mailing_State",
+          mailingZip: "Mailing_Zip",
+          mailingCountry: "Mailing_Country",
+          accountId: "Account_Name",
+          contactId: "Contact_Name",
           customFields: undefined,
         }[key] || key;
 

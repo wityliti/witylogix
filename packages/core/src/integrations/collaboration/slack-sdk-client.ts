@@ -4,8 +4,8 @@
  * @internal
  */
 
-import { createHmac, timingSafeEqual } from 'crypto';
-import { z } from 'zod';
+import { createHmac, timingSafeEqual } from "crypto";
+import { z } from "zod";
 
 // ─────────────────────────────────────────────────────────────────
 // Type Definitions & Schemas
@@ -16,14 +16,14 @@ import { z } from 'zod';
  */
 export interface SlackOAuth2Token {
   access_token: string;
-  token_type: 'bot' | 'user';
+  token_type: "bot" | "user";
   scope: string;
   bot_user_id?: string;
   app_id: string;
   authed_user?: {
     id: string;
     scope: string;
-    token_type: 'user';
+    token_type: "user";
   };
   expires_in?: number;
   refresh_token?: string;
@@ -34,7 +34,7 @@ export interface SlackOAuth2Token {
  */
 export interface SlackMessage {
   ts: string;
-  type: 'message';
+  type: "message";
   user?: string;
   bot_id?: string;
   text?: string;
@@ -109,7 +109,11 @@ export interface SlackUser {
     display_name_normalized?: string;
     status_text?: string;
     status_emoji?: string;
-    status_emoji_display_info?: Array<{ emoji_name: string; display_alias?: string; display_url?: string }>;
+    status_emoji_display_info?: Array<{
+      emoji_name: string;
+      display_alias?: string;
+      display_url?: string;
+    }>;
     email?: string;
     image_24?: string;
     image_32?: string;
@@ -148,7 +152,7 @@ export interface SlackFile {
   user: string;
   editable: boolean;
   size: number;
-  mode: 'snippet' | 'standard' | 'post' | 'hosted';
+  mode: "snippet" | "standard" | "post" | "hosted";
   is_external: boolean;
   external_type: string;
   is_public: boolean;
@@ -183,12 +187,15 @@ export interface SlackFile {
   lines_more?: number;
   preview_is_truncated?: boolean;
   has_rich_preview: boolean;
-  file_access?: 'visible' | 'read_only' | 'no_access';
+  file_access?: "visible" | "read_only" | "no_access";
   initial_comment?: Record<string, unknown>;
   comments_count?: number;
   num_stars?: number;
   is_starred?: boolean;
-  shares?: { public?: Record<string, unknown>; private?: Record<string, unknown> };
+  shares?: {
+    public?: Record<string, unknown>;
+    private?: Record<string, unknown>;
+  };
   channels?: string[];
   groups?: string[];
   ims?: string[];
@@ -199,11 +206,29 @@ export interface SlackFile {
  * Slack block kit element (section, divider, actions, context, input)
  */
 export type SlackBlockElement =
-  | { type: 'section'; text?: { type: 'mrkdwn' | 'plain_text'; text: string }; fields?: Array<{ type: 'mrkdwn' | 'plain_text'; text: string }> }
-  | { type: 'divider' }
-  | { type: 'actions'; elements: Array<{ type: 'button' | 'select'; text: { type: 'plain_text'; text: string } }> }
-  | { type: 'context'; elements: Array<{ type: 'mrkdwn' | 'plain_text'; text: string }> }
-  | { type: 'input'; block_id: string; element: Record<string, unknown>; label: { type: 'plain_text'; text: string } };
+  | {
+      type: "section";
+      text?: { type: "mrkdwn" | "plain_text"; text: string };
+      fields?: Array<{ type: "mrkdwn" | "plain_text"; text: string }>;
+    }
+  | { type: "divider" }
+  | {
+      type: "actions";
+      elements: Array<{
+        type: "button" | "select";
+        text: { type: "plain_text"; text: string };
+      }>;
+    }
+  | {
+      type: "context";
+      elements: Array<{ type: "mrkdwn" | "plain_text"; text: string }>;
+    }
+  | {
+      type: "input";
+      block_id: string;
+      element: Record<string, unknown>;
+      label: { type: "plain_text"; text: string };
+    };
 
 /**
  * Slack attachment (legacy rich formatting)
@@ -236,7 +261,7 @@ export interface SlackEvent {
   enterprise_id?: string;
   api_app_id: string;
   event: Record<string, unknown>;
-  type: 'event_callback' | 'url_verification' | 'app_rate_limited';
+  type: "event_callback" | "url_verification" | "app_rate_limited";
   event_id: string;
   event_time: number;
   is_ext_shared_channel?: boolean;
@@ -259,8 +284,8 @@ export interface SlackSignatureVerification {
 // ─────────────────────────────────────────────────────────────────
 
 const slackOAuth2ConfigSchema = z.object({
-  clientId: z.string().min(1, 'clientId is required'),
-  clientSecret: z.string().min(1, 'clientSecret is required'),
+  clientId: z.string().min(1, "clientId is required"),
+  clientSecret: z.string().min(1, "clientSecret is required"),
   redirectUri: z.string().url(),
   scopes: z.array(z.string()).min(1),
   state: z.string().optional(),
@@ -279,7 +304,7 @@ const slackMessagePayloadSchema = z.object({
 const slackEventVerificationSchema = z.object({
   token: z.string(),
   challenge: z.string(),
-  type: z.literal('url_verification'),
+  type: z.literal("url_verification"),
 });
 
 const slackSignatureSchema = z.object({
@@ -314,39 +339,39 @@ export class SlackSDKClient {
   private botToken?: string;
   private userToken?: string;
   private appSigningSecret?: string;
-  private apiBaseUrl = 'https://slack.com/api';
+  private apiBaseUrl = "https://slack.com/api";
   private methodRateLimiters: Map<string, MethodRateLimiter> = new Map();
 
   /**
    * Rate limit tiers per Slack API documentation
    */
   private rateLimitConfigs: Record<string, RateLimitConfig> = {
-    'conversations.list': { tier: 1, callsPerMinute: 60 },
-    'conversations.create': { tier: 1, callsPerMinute: 60 },
-    'conversations.info': { tier: 1, callsPerMinute: 60 },
-    'conversations.members': { tier: 1, callsPerMinute: 60 },
-    'conversations.history': { tier: 1, callsPerMinute: 60 },
-    'conversations.archive': { tier: 1, callsPerMinute: 60 },
-    'conversations.unarchive': { tier: 1, callsPerMinute: 60 },
-    'conversations.invite': { tier: 1, callsPerMinute: 60 },
-    'conversations.kick': { tier: 1, callsPerMinute: 60 },
-    'chat.postMessage': { tier: 2, callsPerMinute: 20 },
-    'chat.update': { tier: 2, callsPerMinute: 20 },
-    'chat.delete': { tier: 2, callsPerMinute: 20 },
-    'chat.getPermalink': { tier: 2, callsPerMinute: 20 },
-    'chat.unfurl': { tier: 2, callsPerMinute: 20 },
-    'chat.scheduleMessage': { tier: 2, callsPerMinute: 20 },
-    'reactions.add': { tier: 2, callsPerMinute: 20 },
-    'reactions.remove': { tier: 2, callsPerMinute: 20 },
-    'reactions.get': { tier: 2, callsPerMinute: 20 },
-    'reactions.list': { tier: 2, callsPerMinute: 20 },
-    'users.list': { tier: 3, callsPerMinute: 50 },
-    'users.info': { tier: 3, callsPerMinute: 50 },
-    'users.conversations': { tier: 3, callsPerMinute: 50 },
-    'files.upload': { tier: 4, callsPerMinute: 100 },
-    'files.list': { tier: 4, callsPerMinute: 100 },
-    'files.delete': { tier: 4, callsPerMinute: 100 },
-    'files.share': { tier: 4, callsPerMinute: 100 },
+    "conversations.list": { tier: 1, callsPerMinute: 60 },
+    "conversations.create": { tier: 1, callsPerMinute: 60 },
+    "conversations.info": { tier: 1, callsPerMinute: 60 },
+    "conversations.members": { tier: 1, callsPerMinute: 60 },
+    "conversations.history": { tier: 1, callsPerMinute: 60 },
+    "conversations.archive": { tier: 1, callsPerMinute: 60 },
+    "conversations.unarchive": { tier: 1, callsPerMinute: 60 },
+    "conversations.invite": { tier: 1, callsPerMinute: 60 },
+    "conversations.kick": { tier: 1, callsPerMinute: 60 },
+    "chat.postMessage": { tier: 2, callsPerMinute: 20 },
+    "chat.update": { tier: 2, callsPerMinute: 20 },
+    "chat.delete": { tier: 2, callsPerMinute: 20 },
+    "chat.getPermalink": { tier: 2, callsPerMinute: 20 },
+    "chat.unfurl": { tier: 2, callsPerMinute: 20 },
+    "chat.scheduleMessage": { tier: 2, callsPerMinute: 20 },
+    "reactions.add": { tier: 2, callsPerMinute: 20 },
+    "reactions.remove": { tier: 2, callsPerMinute: 20 },
+    "reactions.get": { tier: 2, callsPerMinute: 20 },
+    "reactions.list": { tier: 2, callsPerMinute: 20 },
+    "users.list": { tier: 3, callsPerMinute: 50 },
+    "users.info": { tier: 3, callsPerMinute: 50 },
+    "users.conversations": { tier: 3, callsPerMinute: 50 },
+    "files.upload": { tier: 4, callsPerMinute: 100 },
+    "files.list": { tier: 4, callsPerMinute: 100 },
+    "files.delete": { tier: 4, callsPerMinute: 100 },
+    "files.share": { tier: 4, callsPerMinute: 100 },
   };
 
   /**
@@ -359,12 +384,13 @@ export class SlackSDKClient {
     appSigningSecret?: string;
   }) {
     if (!process.env.SLACK_BOT_TOKEN && !config.botToken) {
-      throw new Error('SLACK_BOT_TOKEN env var or config.botToken is required');
+      throw new Error("SLACK_BOT_TOKEN env var or config.botToken is required");
     }
 
     this.botToken = config.botToken || process.env.SLACK_BOT_TOKEN;
     this.userToken = config.userToken || process.env.SLACK_USER_TOKEN;
-    this.appSigningSecret = config.appSigningSecret || process.env.SLACK_SIGNING_SECRET;
+    this.appSigningSecret =
+      config.appSigningSecret || process.env.SLACK_SIGNING_SECRET;
   }
 
   // ─────────────────────────────────────────────────────────────────
@@ -376,11 +402,13 @@ export class SlackSDKClient {
    * @param config - OAuth2 configuration
    * @returns Authorization URL
    */
-  getOAuth2AuthorizationUrl(config: z.infer<typeof slackOAuth2ConfigSchema>): string {
+  getOAuth2AuthorizationUrl(
+    config: z.infer<typeof slackOAuth2ConfigSchema>,
+  ): string {
     const validated = slackOAuth2ConfigSchema.parse(config);
     const params = new URLSearchParams({
       client_id: validated.clientId,
-      scope: validated.scopes.join(','),
+      scope: validated.scopes.join(","),
       redirect_uri: validated.redirectUri,
       ...(validated.state && { state: validated.state }),
     });
@@ -403,7 +431,7 @@ export class SlackSDKClient {
     redirectUri: string,
   ): Promise<SlackOAuth2Token> {
     const response = await fetch(`${this.apiBaseUrl}/oauth.v2.access`, {
-      method: 'POST',
+      method: "POST",
       body: new URLSearchParams({
         client_id: clientId,
         client_secret: clientSecret,
@@ -416,9 +444,12 @@ export class SlackSDKClient {
       throw new Error(`OAuth2 exchange failed: ${response.statusText}`);
     }
 
-    const data = (await response.json()) as { ok: boolean; error?: string } & SlackOAuth2Token;
+    const data = (await response.json()) as {
+      ok: boolean;
+      error?: string;
+    } & SlackOAuth2Token;
     if (!data.ok) {
-      throw new Error(`OAuth2 error: ${data.error || 'Unknown error'}`);
+      throw new Error(`OAuth2 error: ${data.error || "Unknown error"}`);
     }
 
     return data;
@@ -436,9 +467,13 @@ export class SlackSDKClient {
    * @param body - Raw request body
    * @returns Whether signature is valid
    */
-  verifyEventSignature(signature: string, timestamp: string, body: string): boolean {
+  verifyEventSignature(
+    signature: string,
+    timestamp: string,
+    body: string,
+  ): boolean {
     if (!this.appSigningSecret) {
-      throw new Error('appSigningSecret required for signature verification');
+      throw new Error("appSigningSecret required for signature verification");
     }
 
     // Check timestamp is recent (within 5 minutes)
@@ -450,13 +485,16 @@ export class SlackSDKClient {
 
     // Calculate expected signature
     const baseString = `v0:${timestamp}:${body}`;
-    const expectedSignature = `v0=${createHmac('sha256', this.appSigningSecret)
+    const expectedSignature = `v0=${createHmac("sha256", this.appSigningSecret)
       .update(baseString)
-      .digest('hex')}`;
+      .digest("hex")}`;
 
     // Timing-safe comparison
     try {
-      return timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature));
+      return timingSafeEqual(
+        Buffer.from(signature),
+        Buffer.from(expectedSignature),
+      );
     } catch {
       return false;
     }
@@ -470,23 +508,33 @@ export class SlackSDKClient {
    * @param body - Raw request body
    * @returns Parsed and verified event
    */
-  async handleEvent(event: unknown, signature: string, timestamp: string, body: string): Promise<SlackEvent> {
+  async handleEvent(
+    event: unknown,
+    signature: string,
+    timestamp: string,
+    body: string,
+  ): Promise<SlackEvent> {
     // Verify signature first
     if (!this.verifyEventSignature(signature, timestamp, body)) {
-      throw new Error('Invalid Slack event signature');
+      throw new Error("Invalid Slack event signature");
     }
 
     const parsed = JSON.parse(body) as unknown;
 
     // Handle URL verification challenge
-    if (typeof parsed === 'object' && parsed !== null && 'type' in parsed && parsed.type === 'url_verification') {
+    if (
+      typeof parsed === "object" &&
+      parsed !== null &&
+      "type" in parsed &&
+      parsed.type === "url_verification"
+    ) {
       const verified = slackEventVerificationSchema.parse(parsed);
       return verified as unknown as SlackEvent;
     }
 
     // Parse event
     const slackEvent = parsed as SlackEvent;
-    if (slackEvent.type !== 'event_callback') {
+    if (slackEvent.type !== "event_callback") {
       throw new Error(`Unexpected event type: ${slackEvent.type}`);
     }
 
@@ -507,7 +555,7 @@ export class SlackSDKClient {
     limit?: number;
     cursor?: string;
   }): Promise<{ channels: SlackChannel[]; cursor?: string }> {
-    return this.callApi('conversations.list', {
+    return this.callApi("conversations.list", {
       exclude_archived: options?.exclude_archived ?? true,
       limit: Math.min(options?.limit ?? 100, 1000),
       cursor: options?.cursor,
@@ -527,11 +575,14 @@ export class SlackSDKClient {
       description?: string;
     },
   ): Promise<SlackChannel> {
-    const response = await this.callApi<{ channel: SlackChannel }>('conversations.create', {
-      name,
-      is_private: options?.is_private ?? false,
-      topic: options?.description,
-    });
+    const response = await this.callApi<{ channel: SlackChannel }>(
+      "conversations.create",
+      {
+        name,
+        is_private: options?.is_private ?? false,
+        topic: options?.description,
+      },
+    );
     return response.channel;
   }
 
@@ -540,7 +591,7 @@ export class SlackSDKClient {
    * @param channelId - Channel ID
    */
   async archiveConversation(channelId: string): Promise<void> {
-    await this.callApi('conversations.archive', { channel: channelId });
+    await this.callApi("conversations.archive", { channel: channelId });
   }
 
   /**
@@ -548,7 +599,7 @@ export class SlackSDKClient {
    * @param channelId - Channel ID
    */
   async unarchiveConversation(channelId: string): Promise<void> {
-    await this.callApi('conversations.unarchive', { channel: channelId });
+    await this.callApi("conversations.unarchive", { channel: channelId });
   }
 
   /**
@@ -557,7 +608,10 @@ export class SlackSDKClient {
    * @returns Channel information
    */
   async getConversationInfo(channelId: string): Promise<SlackChannel> {
-    const response = await this.callApi<{ channel: SlackChannel }>('conversations.info', { channel: channelId });
+    const response = await this.callApi<{ channel: SlackChannel }>(
+      "conversations.info",
+      { channel: channelId },
+    );
     return response.channel;
   }
 
@@ -571,7 +625,7 @@ export class SlackSDKClient {
     channelId: string,
     options?: { limit?: number; cursor?: string },
   ): Promise<{ members: string[]; cursor?: string }> {
-    return this.callApi('conversations.members', {
+    return this.callApi("conversations.members", {
       channel: channelId,
       limit: Math.min(options?.limit ?? 100, 1000),
       cursor: options?.cursor,
@@ -593,8 +647,12 @@ export class SlackSDKClient {
       limit?: number;
       cursor?: string;
     },
-  ): Promise<{ messages: SlackMessage[]; cursor?: string; has_more?: boolean }> {
-    return this.callApi('conversations.history', {
+  ): Promise<{
+    messages: SlackMessage[];
+    cursor?: string;
+    has_more?: boolean;
+  }> {
+    return this.callApi("conversations.history", {
       channel: channelId,
       oldest: options?.oldest,
       latest: options?.latest,
@@ -609,10 +667,13 @@ export class SlackSDKClient {
    * @param channelId - Channel ID
    * @param userIds - User IDs to invite
    */
-  async inviteToConversation(channelId: string, userIds: string[]): Promise<void> {
-    await this.callApi('conversations.invite', {
+  async inviteToConversation(
+    channelId: string,
+    userIds: string[],
+  ): Promise<void> {
+    await this.callApi("conversations.invite", {
       channel: channelId,
-      users: userIds.join(','),
+      users: userIds.join(","),
     });
   }
 
@@ -621,8 +682,11 @@ export class SlackSDKClient {
    * @param channelId - Channel ID
    * @param userId - User ID to remove
    */
-  async removeFromConversation(channelId: string, userId: string): Promise<void> {
-    await this.callApi('conversations.kick', {
+  async removeFromConversation(
+    channelId: string,
+    userId: string,
+  ): Promise<void> {
+    await this.callApi("conversations.kick", {
       channel: channelId,
       user: userId,
     });
@@ -637,9 +701,11 @@ export class SlackSDKClient {
    * @param payload - Message payload
    * @returns Posted message info
    */
-  async postMessage(payload: z.infer<typeof slackMessagePayloadSchema>): Promise<{ ts: string; channel: string }> {
+  async postMessage(
+    payload: z.infer<typeof slackMessagePayloadSchema>,
+  ): Promise<{ ts: string; channel: string }> {
     const validated = slackMessagePayloadSchema.parse(payload);
-    return this.callApi('chat.postMessage', validated);
+    return this.callApi("chat.postMessage", validated);
   }
 
   /**
@@ -655,7 +721,7 @@ export class SlackSDKClient {
     text?: string,
     blocks?: SlackBlockElement[],
   ): Promise<{ ts: string }> {
-    return this.callApi('chat.update', {
+    return this.callApi("chat.update", {
       channel,
       ts,
       ...(text && { text }),
@@ -669,7 +735,7 @@ export class SlackSDKClient {
    * @param ts - Message timestamp
    */
   async deleteMessage(channel: string, ts: string): Promise<void> {
-    await this.callApi('chat.delete', { channel, ts });
+    await this.callApi("chat.delete", { channel, ts });
   }
 
   /**
@@ -677,8 +743,14 @@ export class SlackSDKClient {
    * @param channel - Channel ID
    * @param messageTs - Message timestamp
    */
-  async getMessagePermalink(channel: string, messageTs: string): Promise<{ permalink: string }> {
-    return this.callApi('chat.getPermalink', { channel, message_ts: messageTs });
+  async getMessagePermalink(
+    channel: string,
+    messageTs: string,
+  ): Promise<{ permalink: string }> {
+    return this.callApi("chat.getPermalink", {
+      channel,
+      message_ts: messageTs,
+    });
   }
 
   /**
@@ -692,7 +764,11 @@ export class SlackSDKClient {
     ts: string,
     unfurls: Record<string, Record<string, unknown>>,
   ): Promise<void> {
-    await this.callApi('chat.unfurl', { channel, ts, unfurls: JSON.stringify(unfurls) });
+    await this.callApi("chat.unfurl", {
+      channel,
+      ts,
+      unfurls: JSON.stringify(unfurls),
+    });
   }
 
   /**
@@ -708,7 +784,7 @@ export class SlackSDKClient {
     text?: string,
     blocks?: SlackBlockElement[],
   ): Promise<{ scheduled_message_id: string }> {
-    return this.callApi('chat.scheduleMessage', {
+    return this.callApi("chat.scheduleMessage", {
       channel,
       post_at: postAt,
       ...(text && { text }),
@@ -727,7 +803,7 @@ export class SlackSDKClient {
    * @param emoji - Emoji name (without colons)
    */
   async addReaction(channel: string, ts: string, emoji: string): Promise<void> {
-    await this.callApi('reactions.add', {
+    await this.callApi("reactions.add", {
       channel,
       timestamp: ts,
       name: emoji,
@@ -740,8 +816,12 @@ export class SlackSDKClient {
    * @param ts - Message timestamp
    * @param emoji - Emoji name
    */
-  async removeReaction(channel: string, ts: string, emoji: string): Promise<void> {
-    await this.callApi('reactions.remove', {
+  async removeReaction(
+    channel: string,
+    ts: string,
+    emoji: string,
+  ): Promise<void> {
+    await this.callApi("reactions.remove", {
       channel,
       timestamp: ts,
       name: emoji,
@@ -753,8 +833,11 @@ export class SlackSDKClient {
    * @param channel - Channel ID
    * @param ts - Message timestamp
    */
-  async getReactions(channel: string, ts: string): Promise<{ message: SlackMessage }> {
-    return this.callApi('reactions.get', {
+  async getReactions(
+    channel: string,
+    ts: string,
+  ): Promise<{ message: SlackMessage }> {
+    return this.callApi("reactions.get", {
       channel,
       timestamp: ts,
       full: true,
@@ -766,11 +849,14 @@ export class SlackSDKClient {
    * @param userId - User ID
    * @param options - Query options
    */
-  async listReactions(userId: string, options?: { limit?: number; cursor?: string }): Promise<{
+  async listReactions(
+    userId: string,
+    options?: { limit?: number; cursor?: string },
+  ): Promise<{
     items: Array<{ message?: SlackMessage; file?: SlackFile }>;
     cursor?: string;
   }> {
-    return this.callApi('reactions.list', {
+    return this.callApi("reactions.list", {
       user: userId,
       limit: Math.min(options?.limit ?? 100, 200),
       cursor: options?.cursor,
@@ -787,7 +873,9 @@ export class SlackSDKClient {
    * @param userId - User ID
    */
   async getUserInfo(userId: string): Promise<SlackUser> {
-    const response = await this.callApi<{ user: SlackUser }>('users.info', { user: userId });
+    const response = await this.callApi<{ user: SlackUser }>("users.info", {
+      user: userId,
+    });
     return response.user;
   }
 
@@ -800,7 +888,7 @@ export class SlackSDKClient {
     cursor?: string;
     include_locale?: boolean;
   }): Promise<{ members: SlackUser[]; cursor?: string }> {
-    return this.callApi('users.list', {
+    return this.callApi("users.list", {
       limit: Math.min(options?.limit ?? 100, 1000),
       cursor: options?.cursor,
       include_locale: options?.include_locale ?? true,
@@ -812,11 +900,14 @@ export class SlackSDKClient {
    * @param userId - User ID
    * @param options - Query options
    */
-  async getUserConversations(userId: string, options?: { limit?: number; cursor?: string }): Promise<{
+  async getUserConversations(
+    userId: string,
+    options?: { limit?: number; cursor?: string },
+  ): Promise<{
     channels: SlackChannel[];
     cursor?: string;
   }> {
-    return this.callApi('users.conversations', {
+    return this.callApi("users.conversations", {
       user: userId,
       limit: Math.min(options?.limit ?? 100, 1000),
       cursor: options?.cursor,
@@ -846,22 +937,27 @@ export class SlackSDKClient {
     },
   ): Promise<SlackFile> {
     const formData = new FormData();
-    formData.append('channels', channel);
-    formData.append('filename', filename);
-    formData.append('file', new Blob([content]));
-    if (options?.title) formData.append('title', options.title);
-    if (options?.initial_comment) formData.append('initial_comment', options.initial_comment);
-    if (options?.thread_ts) formData.append('thread_ts', options.thread_ts);
+    formData.append("channels", channel);
+    formData.append("filename", filename);
+    formData.append("file", new Blob([content]));
+    if (options?.title) formData.append("title", options.title);
+    if (options?.initial_comment)
+      formData.append("initial_comment", options.initial_comment);
+    if (options?.thread_ts) formData.append("thread_ts", options.thread_ts);
 
     const response = await fetch(`${this.apiBaseUrl}/files.upload`, {
-      method: 'POST',
+      method: "POST",
       headers: {
         Authorization: `Bearer ${this.botToken}`,
       },
       body: formData,
     });
 
-    const data = (await response.json()) as { ok: boolean; file?: SlackFile; error?: string };
+    const data = (await response.json()) as {
+      ok: boolean;
+      file?: SlackFile;
+      error?: string;
+    };
     if (!data.ok) throw new Error(`File upload failed: ${data.error}`);
     return data.file!;
   }
@@ -877,7 +973,7 @@ export class SlackSDKClient {
     limit?: number;
     cursor?: string;
   }): Promise<{ files: SlackFile[]; cursor?: string }> {
-    return this.callApi('files.list', {
+    return this.callApi("files.list", {
       channel: options?.channel,
       user: options?.user,
       types: options?.types,
@@ -891,7 +987,7 @@ export class SlackSDKClient {
    * @param fileId - File ID
    */
   async deleteFile(fileId: string): Promise<void> {
-    await this.callApi('files.delete', { file: fileId });
+    await this.callApi("files.delete", { file: fileId });
   }
 
   /**
@@ -900,9 +996,9 @@ export class SlackSDKClient {
    * @param channels - Channel IDs to share to
    */
   async shareFile(fileId: string, channels: string[]): Promise<void> {
-    await this.callApi('files.share', {
+    await this.callApi("files.share", {
       file: fileId,
-      channels: channels.join(','),
+      channels: channels.join(","),
     });
   }
 
@@ -915,13 +1011,15 @@ export class SlackSDKClient {
    * Must be called with event handler registered
    * @param handler - Async function to handle incoming events
    */
-  async connectSocketMode(handler: (event: SlackEvent) => Promise<void>): Promise<void> {
-    if (!this.botToken) throw new Error('Bot token required for Socket Mode');
+  async connectSocketMode(
+    handler: (event: SlackEvent) => Promise<void>,
+  ): Promise<void> {
+    if (!this.botToken) throw new Error("Bot token required for Socket Mode");
 
     // In production, use WebSocket library like 'ws'
     // This is a simplified placeholder showing the pattern
     const response = await fetch(`${this.apiBaseUrl}/apps.connections.open`, {
-      method: 'POST',
+      method: "POST",
       headers: {
         Authorization: `Bearer ${this.botToken}`,
       },
@@ -932,11 +1030,20 @@ export class SlackSDKClient {
       url?: string;
       error?: string;
     };
-    if (!data.ok) throw new Error(`Socket Mode connection failed: ${data.error}`);
+    if (!data.ok)
+      throw new Error(`Socket Mode connection failed: ${data.error}`);
 
     // WebSocket connection would be established to data.url
     // Event handler would process incoming messages
-    await handler({ token: '', team_id: '', api_app_id: '', type: 'event_callback', event: {}, event_id: '', event_time: 0 });
+    await handler({
+      token: "",
+      team_id: "",
+      api_app_id: "",
+      type: "event_callback",
+      event: {},
+      event_id: "",
+      event_time: 0,
+    });
   }
 
   // ─────────────────────────────────────────────────────────────────
@@ -947,29 +1054,38 @@ export class SlackSDKClient {
    * Call Slack API with rate limiting and error handling
    * @internal
    */
-  private async callApi<T = unknown>(method: string, params: Record<string, unknown>): Promise<T> {
+  private async callApi<T = unknown>(
+    method: string,
+    params: Record<string, unknown>,
+  ): Promise<T> {
     await this.applyRateLimit(method);
 
     const body = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
-        body.append(key, typeof value === 'string' ? value : JSON.stringify(value));
+        body.append(
+          key,
+          typeof value === "string" ? value : JSON.stringify(value),
+        );
       }
     });
 
     const response = await fetch(`${this.apiBaseUrl}/${method}`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${this.botToken}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
+        Authorization: `Bearer ${this.botToken}`,
+        "Content-Type": "application/x-www-form-urlencoded",
       },
       body,
     });
 
-    const data = (await response.json()) as { ok: boolean; error?: string } & Record<string, unknown>;
+    const data = (await response.json()) as {
+      ok: boolean;
+      error?: string;
+    } & Record<string, unknown>;
 
     if (!data.ok) {
-      throw new Error(`Slack API error: ${data.error || 'Unknown error'}`);
+      throw new Error(`Slack API error: ${data.error || "Unknown error"}`);
     }
 
     return data as unknown as T;
@@ -980,7 +1096,10 @@ export class SlackSDKClient {
    * @internal
    */
   private async applyRateLimit(method: string): Promise<void> {
-    const config = this.rateLimitConfigs[method] ?? { tier: 4, callsPerMinute: 100 };
+    const config = this.rateLimitConfigs[method] ?? {
+      tier: 4,
+      callsPerMinute: 100,
+    };
     const tokensPerSecond = config.callsPerMinute / 60;
 
     let limiter = this.methodRateLimiters.get(method);
@@ -992,7 +1111,10 @@ export class SlackSDKClient {
     // Refill tokens
     const now = Date.now();
     const timePassed = (now - limiter.lastRefillTime) / 1000;
-    limiter.tokens = Math.min(tokensPerSecond, limiter.tokens + tokensPerSecond * timePassed);
+    limiter.tokens = Math.min(
+      tokensPerSecond,
+      limiter.tokens + tokensPerSecond * timePassed,
+    );
     limiter.lastRefillTime = now;
 
     // Check if we have tokens

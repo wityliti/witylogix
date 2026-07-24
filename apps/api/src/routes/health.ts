@@ -73,10 +73,7 @@ async function healthHandler(request: FastifyRequest, reply: FastifyReply) {
  *   "timestamp": "2026-03-06T..."
  * }
  */
-async function readinessHandler(
-  request: FastifyRequest,
-  reply: FastifyReply
-) {
+async function readinessHandler(request: FastifyRequest, reply: FastifyReply) {
   const dependencies: Record<string, string> = {};
   let isReady = true;
 
@@ -133,19 +130,16 @@ async function readinessHandler(
  *   "dependencies": { ... }
  * }
  */
-async function deepHealthHandler(
-  request: FastifyRequest,
-  reply: FastifyReply
-) {
+async function deepHealthHandler(request: FastifyRequest, reply: FastifyReply) {
   const dependencies: Record<string, any> = {};
   let status = "ok";
 
   // Memory usage (in MB)
   const memUsage = process.memoryUsage();
   const memory = {
-    heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024 * 10) / 10,
-    heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024 * 10) / 10,
-    external: Math.round(memUsage.external / 1024 / 1024 * 10) / 10,
+    heapUsed: Math.round((memUsage.heapUsed / 1024 / 1024) * 10) / 10,
+    heapTotal: Math.round((memUsage.heapTotal / 1024 / 1024) * 10) / 10,
+    external: Math.round((memUsage.external / 1024 / 1024) * 10) / 10,
   };
 
   // Database check with timing

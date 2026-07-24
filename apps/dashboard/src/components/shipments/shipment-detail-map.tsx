@@ -1,4 +1,4 @@
-'use client';
+"use client";
 /**
  * ShipmentDetailMap — shows origin (hub marker), destination (pin marker),
  * and optionally the live driver location.  Auto-fits bounds to all visible
@@ -7,14 +7,14 @@
  * Always dynamically imported (ssr: false) from the parent.
  */
 
-import { useRef } from 'react';
-import { WLMap } from '@/components/map/wl-map';
-import { HubLayer } from '@/components/map/hub-layer';
-import { ShipmentMarkerLayer } from '@/components/map/shipment-marker-layer';
-import { DriverLocationLayer } from '@/components/map/driver-location-layer';
-import { RouteLineLayer } from '@/components/map/route-line-layer';
-import { useWLMap } from '@/components/map/wl-map-context';
-import { fitBounds } from '@/components/map/use-fit-bounds';
+import { useRef } from "react";
+import { WLMap } from "@/components/map/wl-map";
+import { HubLayer } from "@/components/map/hub-layer";
+import { ShipmentMarkerLayer } from "@/components/map/shipment-marker-layer";
+import { DriverLocationLayer } from "@/components/map/driver-location-layer";
+import { RouteLineLayer } from "@/components/map/route-line-layer";
+import { useWLMap } from "@/components/map/wl-map-context";
+import { fitBounds } from "@/components/map/use-fit-bounds";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -48,7 +48,7 @@ function BoundsFitter({ coords }: BoundsFitterProps) {
     fitted.current = true;
     const run = () => fitBounds(map, coords, 80);
     if (map.isStyleLoaded()) run();
-    else map.on('load', run);
+    else map.on("load", run);
   }
 
   return null;
@@ -62,11 +62,9 @@ export default function ShipmentDetailMap({
   driverLocation,
 }: ShipmentDetailMapProps) {
   // Collect all non-null coords for auto-fit
-  const coords: GeoPoint[] = [
-    destination,
-    origin,
-    driverLocation,
-  ].filter((c): c is GeoPoint => c != null);
+  const coords: GeoPoint[] = [destination, origin, driverLocation].filter(
+    (c): c is GeoPoint => c != null,
+  );
 
   // Default centre
   const defaultCenter: [number, number] =
@@ -77,30 +75,32 @@ export default function ShipmentDetailMap({
         ]
       : [55.2708, 25.2048];
 
-  const originHubs =
-    origin
-      ? [{ id: 'origin', name: 'Origin', lng: origin.lng, lat: origin.lat, type: 'warehouse' as const }]
-      : [];
+  const originHubs = origin
+    ? [
+        {
+          id: "origin",
+          name: "Origin",
+          lng: origin.lng,
+          lat: origin.lat,
+          type: "warehouse" as const,
+        },
+      ]
+    : [];
 
-  const destinationMarkers =
-    destination
-      ? [
-          {
-            id: 'destination',
-            lng: destination.lng,
-            lat: destination.lat,
-            status: 'DELIVERED' as const,
-            label: 'Delivery',
-          },
-        ]
-      : [];
+  const destinationMarkers = destination
+    ? [
+        {
+          id: "destination",
+          lng: destination.lng,
+          lat: destination.lat,
+          status: "DELIVERED" as const,
+          label: "Delivery",
+        },
+      ]
+    : [];
 
   return (
-    <WLMap
-      center={defaultCenter}
-      zoom={12}
-      className="h-full w-full"
-    >
+    <WLMap center={defaultCenter} zoom={12} className="h-full w-full">
       <BoundsFitter coords={coords} />
 
       {/* Dashed route line between origin and destination */}

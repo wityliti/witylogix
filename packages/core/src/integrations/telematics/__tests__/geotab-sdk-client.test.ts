@@ -18,7 +18,11 @@ import type { GeotabCredentials } from "../types.js";
 /**
  * Mock fetch helper
  */
-function mockFetchResponse<T>(result: T | null, error?: { code: number; message: string }, status = 200) {
+function mockFetchResponse<T>(
+  result: T | null,
+  error?: { code: number; message: string },
+  status = 200,
+) {
   return vi.fn().mockResolvedValue({
     ok: status >= 200 && status < 300,
     status,
@@ -67,7 +71,10 @@ describe("GeotabSDKClient", () => {
     });
 
     it("should handle authentication errors", async () => {
-      global.fetch = mockFetchResponse(null, { code: 401, message: "Invalid credentials" });
+      global.fetch = mockFetchResponse(null, {
+        code: 401,
+        message: "Invalid credentials",
+      });
 
       await expect(client.authenticate()).rejects.toThrow(GeotabSDKError);
     });
@@ -108,7 +115,10 @@ describe("GeotabSDKClient", () => {
     });
 
     it("should handle getDevices errors", async () => {
-      global.fetch = mockFetchResponse(null, { code: 500, message: "Server error" });
+      global.fetch = mockFetchResponse(null, {
+        code: 500,
+        message: "Server error",
+      });
 
       await expect(client.getDevices()).rejects.toThrow(GeotabSDKError);
     });
@@ -148,7 +158,10 @@ describe("GeotabSDKClient", () => {
       const startDate = new Date("2025-01-01");
       const endDate = new Date("2025-01-31");
 
-      await client.getLogRecords("device-1", { fromDate: startDate, toDate: endDate });
+      await client.getLogRecords("device-1", {
+        fromDate: startDate,
+        toDate: endDate,
+      });
 
       expect(global.fetch).toHaveBeenCalled();
     });
@@ -349,7 +362,11 @@ describe("GeotabSDKClient", () => {
     });
 
     it("should handle HTTP errors", async () => {
-      global.fetch = mockFetchResponse(null, { code: 500, message: "Server error" }, 500);
+      global.fetch = mockFetchResponse(
+        null,
+        { code: 500, message: "Server error" },
+        500,
+      );
 
       await expect(client.getDevices()).rejects.toThrow(GeotabSDKError);
     });

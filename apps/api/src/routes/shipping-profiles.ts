@@ -45,60 +45,57 @@ export default async function shippingProfileRoutes(
 
   // ── GET / — List shipping profiles ──────────────────────────
 
-  fastify.get(
-    "/",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const query = listQuerySchema.parse(request.query);
-      const shopId = request.shopId;
+  fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
+    const query = listQuerySchema.parse(request.query);
+    const shopId = request.shopId;
 
-      const where: Record<string, unknown> = { shopId };
+    const where: Record<string, unknown> = { shopId };
 
-      if (query.deliveryMethod) {
-        where.deliveryMethod = query.deliveryMethod;
-      }
+    if (query.deliveryMethod) {
+      where.deliveryMethod = query.deliveryMethod;
+    }
 
-      if (query.isActive !== undefined) {
-        where.isActive = query.isActive;
-      }
+    if (query.isActive !== undefined) {
+      where.isActive = query.isActive;
+    }
 
-      const [profiles, total] = await Promise.all([
-        request.tenantDb.shippingProfile.findMany({
-          where,
-          orderBy: { createdAt: "desc" },
-          take: query.limit,
-          skip: (query.page - 1) * query.limit,
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            deliveryMethod: true,
-            isDefault: true,
-            isActive: true,
-            processingTimeHours: true,
-            rateType: true,
-            flatRate: true,
-            freeShippingAbove: true,
-            minOrderAmount: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        }),
-        request.tenantDb.shippingProfile.count({ where }),
-      ]);
-
-      const totalPages = Math.ceil(total / query.limit);
-
-      return {
-        data: profiles,
-        pagination: {
-          page: query.page,
-          limit: query.limit,
-          total,
-          totalPages,
+    const [profiles, total] = await Promise.all([
+      request.tenantDb.shippingProfile.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        take: query.limit,
+        skip: (query.page - 1) * query.limit,
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          deliveryMethod: true,
+          isDefault: true,
+          isActive: true,
+          processingTimeHours: true,
+          rateType: true,
+          flatRate: true,
+          freeShippingAbove: true,
+          minOrderAmount: true,
+          createdAt: true,
+          updatedAt: true,
         },
-      };
-    },
-  );
+      }),
+      request.tenantDb.shippingProfile.count({ where }),
+    ]);
+
+    const totalPages = Math.ceil(total / query.limit);
+
+    return {
+      data: profiles,
+      pagination: {
+        page: query.page,
+        limit: query.limit,
+        total,
+        totalPages,
+      },
+    };
+  });
 
   // ── GET /:id — Get profile with locations and calendar rules ──
 
@@ -213,10 +210,9 @@ export default async function shippingProfileRoutes(
 
       // Check for duplicate default if setting as default
       if (body.isDefault && !existing.isDefault) {
-        const otherDefault =
-          await request.tenantDb.shippingProfile.findFirst({
-            where: { shopId, isDefault: true, isActive: true, NOT: { id } },
-          });
+        const otherDefault = await request.tenantDb.shippingProfile.findFirst({
+          where: { shopId, isDefault: true, isActive: true, NOT: { id } },
+        });
 
         if (otherDefault) {
           throw new ConflictError("Only one default shipping profile allowed");
@@ -322,7 +318,10 @@ export default async function shippingProfileRoutes(
     "/:id/locations/:locationId",
     { preHandler: [requireRole("ADMIN")] },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const { id, locationId } = request.params as { id: string; locationId: string };
+      const { id, locationId } = request.params as {
+        id: string;
+        locationId: string;
+      };
       const shopId = request.shopId;
 
       // Verify profile exists
@@ -335,15 +334,14 @@ export default async function shippingProfileRoutes(
       }
 
       // Verify link exists
-      const link =
-        await request.tenantDb.shippingProfileLocation.findUnique({
-          where: {
-            shippingProfileId_locationId: {
-              shippingProfileId: id,
-              locationId,
-            },
+      const link = await request.tenantDb.shippingProfileLocation.findUnique({
+        where: {
+          shippingProfileId_locationId: {
+            shippingProfileId: id,
+            locationId,
           },
-        });
+        },
+      });
 
       if (!link) {
         throw new NotFoundError("Link", `${id}/${locationId}`);

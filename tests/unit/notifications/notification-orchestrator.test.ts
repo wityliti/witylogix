@@ -45,7 +45,7 @@ describe("ChannelRouter", () => {
   it("should route CRITICAL priority to push first", async () => {
     const channels = await router.routeChannels(
       NotificationPriority.CRITICAL,
-      undefined
+      undefined,
     );
     expect(channels[0]).toBe(NotificationChannel.PUSH);
   });
@@ -53,7 +53,7 @@ describe("ChannelRouter", () => {
   it("should route NORMAL priority to push first, then email", async () => {
     const channels = await router.routeChannels(
       NotificationPriority.NORMAL,
-      undefined
+      undefined,
     );
     expect(channels[0]).toBe(NotificationChannel.PUSH);
     expect(channels).toContain(NotificationChannel.EMAIL);
@@ -75,7 +75,7 @@ describe("ChannelRouter", () => {
 
     const channels = await router.routeChannels(
       NotificationPriority.NORMAL,
-      prefs
+      prefs,
     );
     expect(channels).not.toContain(NotificationChannel.PUSH);
     expect(channels).toContain(NotificationChannel.EMAIL);
@@ -85,9 +85,12 @@ describe("ChannelRouter", () => {
     const channels = await router.routeChannels(
       NotificationPriority.NORMAL,
       undefined,
-      [NotificationChannel.SMS, NotificationChannel.EMAIL]
+      [NotificationChannel.SMS, NotificationChannel.EMAIL],
     );
-    expect(channels).toEqual([NotificationChannel.SMS, NotificationChannel.EMAIL]);
+    expect(channels).toEqual([
+      NotificationChannel.SMS,
+      NotificationChannel.EMAIL,
+    ]);
   });
 });
 
@@ -104,7 +107,7 @@ describe("QuietHoursManager", () => {
     const isQuiet = await manager.isInQuietHours(
       "user123",
       undefined,
-      NotificationPriority.CRITICAL
+      NotificationPriority.CRITICAL,
     );
     expect(isQuiet).toBe(false);
   });
@@ -113,7 +116,7 @@ describe("QuietHoursManager", () => {
     const isQuiet = await manager.isInQuietHours(
       "user123",
       undefined,
-      NotificationPriority.HIGH
+      NotificationPriority.HIGH,
     );
     expect(isQuiet).toBe(false);
   });
@@ -243,7 +246,7 @@ describe("DeliveryTracker", () => {
   it("should create initial receipt with PENDING status", async () => {
     const receipt = await tracker.createReceipt(
       "msg123",
-      NotificationChannel.EMAIL
+      NotificationChannel.EMAIL,
     );
 
     expect(receipt.status).toBe(DeliveryStatus.PENDING);
@@ -256,12 +259,12 @@ describe("DeliveryTracker", () => {
     await tracker.updateReceipt(
       "msg123",
       NotificationChannel.EMAIL,
-      DeliveryStatus.SENT
+      DeliveryStatus.SENT,
     );
 
     const receipts = await tracker.getReceipts("msg123");
     const emailReceipt = receipts.find(
-      (r) => r.channel === NotificationChannel.EMAIL
+      (r) => r.channel === NotificationChannel.EMAIL,
     );
     expect(emailReceipt?.status).toBe(DeliveryStatus.SENT);
   });
@@ -282,12 +285,12 @@ describe("DeliveryTracker", () => {
     await tracker.updateReceipt(
       "msg123",
       NotificationChannel.EMAIL,
-      DeliveryStatus.READ
+      DeliveryStatus.READ,
     );
     await tracker.updateReceipt(
       "msg123",
       NotificationChannel.PUSH,
-      DeliveryStatus.SENT
+      DeliveryStatus.SENT,
     );
 
     const status = await tracker.getMessageStatus("msg123");
@@ -301,12 +304,12 @@ describe("DeliveryTracker", () => {
     await tracker.updateReceipt(
       "msg123",
       NotificationChannel.EMAIL,
-      DeliveryStatus.FAILED
+      DeliveryStatus.FAILED,
     );
     await tracker.updateReceipt(
       "msg123",
       NotificationChannel.PUSH,
-      DeliveryStatus.FAILED
+      DeliveryStatus.FAILED,
     );
 
     const status = await tracker.getMessageStatus("msg123");
@@ -390,7 +393,7 @@ describe("NotificationThrottler", () => {
   it("should allow notifications within rate limit", async () => {
     const limited = await throttler.isRateLimited(
       "user123",
-      NotificationChannel.EMAIL
+      NotificationChannel.EMAIL,
     );
     expect(limited).toBe(false);
   });

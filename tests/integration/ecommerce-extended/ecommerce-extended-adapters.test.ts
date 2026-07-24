@@ -55,7 +55,7 @@ describe("Amazon SP-API Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(tokenResponse), { status: 200 })
+        new Response(JSON.stringify(tokenResponse), { status: 200 }),
       );
 
       expect(tokenResponse.access_token).toMatch(/^amazon_lwa_token_/);
@@ -68,7 +68,7 @@ describe("Amazon SP-API Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(refreshResponse), { status: 200 })
+        new Response(JSON.stringify(refreshResponse), { status: 200 }),
       );
 
       expect(refreshResponse.access_token).toBeDefined();
@@ -81,8 +81,8 @@ describe("Amazon SP-API Adapter Integration", () => {
             error: "rate_limit_exceeded",
             retry_after: 60,
           }),
-          { status: 429 }
-        )
+          { status: 429 },
+        ),
       );
 
       const response = await mockFetch();
@@ -100,7 +100,7 @@ describe("Amazon SP-API Adapter Integration", () => {
 
     it("should retrieve orders", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(mockOrder), { status: 200 })
+        new Response(JSON.stringify(mockOrder), { status: 200 }),
       );
 
       expect(mockOrder.status).toBe("Pending");
@@ -120,7 +120,7 @@ describe("Amazon SP-API Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(orderDetails), { status: 200 })
+        new Response(JSON.stringify(orderDetails), { status: 200 }),
       );
 
       expect(orderDetails.shippingAddress.city).toBe("New York");
@@ -135,7 +135,7 @@ describe("Amazon SP-API Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(fulfillment), { status: 200 })
+        new Response(JSON.stringify(fulfillment), { status: 200 }),
       );
 
       expect(fulfillment.status).toBe("Shipped");
@@ -150,7 +150,7 @@ describe("Amazon SP-API Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(cancellation), { status: 200 })
+        new Response(JSON.stringify(cancellation), { status: 200 }),
       );
 
       expect(cancellation.status).toBe("Cancelled");
@@ -166,7 +166,7 @@ describe("Amazon SP-API Adapter Integration", () => {
 
     it("should get inventory quantity", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(mockInventory), { status: 200 })
+        new Response(JSON.stringify(mockInventory), { status: 200 }),
       );
 
       expect(mockInventory.quantity).toBe(500);
@@ -180,7 +180,7 @@ describe("Amazon SP-API Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(update), { status: 200 })
+        new Response(JSON.stringify(update), { status: 200 }),
       );
 
       expect(update.quantity).toBeLessThan(mockInventory.quantity);
@@ -195,7 +195,7 @@ describe("Amazon SP-API Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(report), { status: 200 })
+        new Response(JSON.stringify(report), { status: 200 }),
       );
 
       expect(report.processingStatus).toBe("DONE");
@@ -213,7 +213,7 @@ describe("Amazon SP-API Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(fbaSubmission), { status: 201 })
+        new Response(JSON.stringify(fbaSubmission), { status: 201 }),
       );
 
       expect(fbaSubmission.status).toBe("SUBMITTED");
@@ -228,7 +228,7 @@ describe("Amazon SP-API Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(shipmentStatus), { status: 200 })
+        new Response(JSON.stringify(shipmentStatus), { status: 200 }),
       );
 
       expect(shipmentStatus.status).toBe("WORKING");
@@ -245,7 +245,7 @@ describe("Amazon SP-API Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(fbaInventory), { status: 200 })
+        new Response(JSON.stringify(fbaInventory), { status: 200 }),
       );
 
       expect(fbaInventory.fcQuantity.fulfillable).toBeGreaterThan(0);
@@ -261,7 +261,7 @@ describe("Amazon SP-API Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(removal), { status: 201 })
+        new Response(JSON.stringify(removal), { status: 201 }),
       );
 
       expect(removal.status).toBe("PENDING");
@@ -278,7 +278,7 @@ describe("Amazon SP-API Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(reportRequest), { status: 201 })
+        new Response(JSON.stringify(reportRequest), { status: 201 }),
       );
 
       expect(reportRequest.status).toBe("PENDING");
@@ -293,7 +293,7 @@ describe("Amazon SP-API Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(completedReport), { status: 200 })
+        new Response(JSON.stringify(completedReport), { status: 200 }),
       );
 
       expect(completedReport.status).toBe("DONE");
@@ -323,7 +323,7 @@ describe("eBay Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(oauthToken), { status: 200 })
+        new Response(JSON.stringify(oauthToken), { status: 200 }),
       );
 
       expect(oauthToken.access_token).toMatch(/^ebay_oauth_token_/);
@@ -336,7 +336,7 @@ describe("eBay Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(refreshResponse), { status: 200 })
+        new Response(JSON.stringify(refreshResponse), { status: 200 }),
       );
 
       expect(refreshResponse.access_token).toBeDefined();
@@ -353,7 +353,7 @@ describe("eBay Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(order), { status: 200 })
+        new Response(JSON.stringify(order), { status: 200 }),
       );
 
       expect(order.status).toBe("Active");
@@ -369,7 +369,7 @@ describe("eBay Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(orderDetails), { status: 200 })
+        new Response(JSON.stringify(orderDetails), { status: 200 }),
       );
 
       expect(orderDetails.paymentStatus).toBe("Paid");
@@ -383,7 +383,7 @@ describe("eBay Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(update), { status: 200 })
+        new Response(JSON.stringify(update), { status: 200 }),
       );
 
       expect(update.shippingStatus).toBe("Shipped");
@@ -399,7 +399,7 @@ describe("eBay Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(inventory), { status: 200 })
+        new Response(JSON.stringify(inventory), { status: 200 }),
       );
 
       expect(inventory.quantity).toBeGreaterThan(0);
@@ -413,7 +413,7 @@ describe("eBay Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(update), { status: 200 })
+        new Response(JSON.stringify(update), { status: 200 }),
       );
 
       expect(update.quantity).toBeLessThanOrEqual(250);
@@ -431,7 +431,7 @@ describe("eBay Adapter Integration", () => {
 
     it("should get listing details", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(mockListing), { status: 200 })
+        new Response(JSON.stringify(mockListing), { status: 200 }),
       );
 
       expect(mockListing.title).toBe("Sample Item");
@@ -445,7 +445,7 @@ describe("eBay Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(priceUpdate), { status: 200 })
+        new Response(JSON.stringify(priceUpdate), { status: 200 }),
       );
 
       expect(priceUpdate.price).toBeLessThan(mockListing.price);
@@ -459,7 +459,7 @@ describe("eBay Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(ending), { status: 200 })
+        new Response(JSON.stringify(ending), { status: 200 }),
       );
 
       expect(ending.status).toBe("Ended");
@@ -476,7 +476,7 @@ describe("eBay Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(returnRequest), { status: 200 })
+        new Response(JSON.stringify(returnRequest), { status: 200 }),
       );
 
       expect(returnRequest.status).toBe("Requested");
@@ -490,7 +490,7 @@ describe("eBay Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(acceptance), { status: 200 })
+        new Response(JSON.stringify(acceptance), { status: 200 }),
       );
 
       expect(acceptance.status).toBe("Accepted");
@@ -505,7 +505,7 @@ describe("eBay Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(refund), { status: 200 })
+        new Response(JSON.stringify(refund), { status: 200 }),
       );
 
       expect(refund.status).toBe("Refunded");
@@ -535,7 +535,7 @@ describe("Etsy Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(oauthToken), { status: 200 })
+        new Response(JSON.stringify(oauthToken), { status: 200 }),
       );
 
       expect(oauthToken.access_token).toMatch(/^etsy_oauth_token_/);
@@ -553,7 +553,7 @@ describe("Etsy Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(receipt), { status: 200 })
+        new Response(JSON.stringify(receipt), { status: 200 }),
       );
 
       expect(receipt.status).toBe("Paid");
@@ -567,7 +567,7 @@ describe("Etsy Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(update), { status: 200 })
+        new Response(JSON.stringify(update), { status: 200 }),
       );
 
       expect(update.status).toBe("Shipped");
@@ -585,7 +585,7 @@ describe("Etsy Adapter Integration", () => {
 
     it("should get listing details", async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(mockListing), { status: 200 })
+        new Response(JSON.stringify(mockListing), { status: 200 }),
       );
 
       expect(mockListing.title).toContain("Handmade");
@@ -601,7 +601,7 @@ describe("Etsy Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(newListing), { status: 201 })
+        new Response(JSON.stringify(newListing), { status: 201 }),
       );
 
       expect(newListing.status).toBe("active");
@@ -616,7 +616,7 @@ describe("Etsy Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(update), { status: 200 })
+        new Response(JSON.stringify(update), { status: 200 }),
       );
 
       expect(update.price).toBeGreaterThan(mockListing.price);
@@ -630,7 +630,7 @@ describe("Etsy Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(deactivation), { status: 200 })
+        new Response(JSON.stringify(deactivation), { status: 200 }),
       );
 
       expect(deactivation.status).toBe("inactive");
@@ -646,7 +646,7 @@ describe("Etsy Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(profile), { status: 200 })
+        new Response(JSON.stringify(profile), { status: 200 }),
       );
 
       expect(profile.destinations).toHaveLength(1);
@@ -662,7 +662,7 @@ describe("Etsy Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(update), { status: 200 })
+        new Response(JSON.stringify(update), { status: 200 }),
       );
 
       expect(update.destinations).toHaveLength(2);
@@ -692,7 +692,7 @@ describe("Square Online Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(oauthToken), { status: 200 })
+        new Response(JSON.stringify(oauthToken), { status: 200 }),
       );
 
       expect(oauthToken.access_token).toMatch(/^square_oauth_token_/);
@@ -705,7 +705,7 @@ describe("Square Online Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(refreshResponse), { status: 200 })
+        new Response(JSON.stringify(refreshResponse), { status: 200 }),
       );
 
       expect(refreshResponse.access_token).toBeDefined();
@@ -722,7 +722,7 @@ describe("Square Online Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(order), { status: 200 })
+        new Response(JSON.stringify(order), { status: 200 }),
       );
 
       expect(order.status).toBe("OPEN");
@@ -737,7 +737,7 @@ describe("Square Online Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(details), { status: 200 })
+        new Response(JSON.stringify(details), { status: 200 }),
       );
 
       expect(details.state).toBe("OPEN");
@@ -751,7 +751,7 @@ describe("Square Online Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(update), { status: 200 })
+        new Response(JSON.stringify(update), { status: 200 }),
       );
 
       expect(update.state).toBe("COMPLETED");
@@ -769,7 +769,7 @@ describe("Square Online Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(catalogItem), { status: 200 })
+        new Response(JSON.stringify(catalogItem), { status: 200 }),
       );
 
       expect(catalogItem.title).toBeDefined();
@@ -779,11 +779,13 @@ describe("Square Online Adapter Integration", () => {
       const newItem = {
         itemId: "sq_item_001",
         name: "New Product",
-        variations: [{ id: "var_001", name: "Regular", priceMoneyAmount: 2999 }],
+        variations: [
+          { id: "var_001", name: "Regular", priceMoneyAmount: 2999 },
+        ],
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(newItem), { status: 201 })
+        new Response(JSON.stringify(newItem), { status: 201 }),
       );
 
       expect(newItem.variations).toHaveLength(1);
@@ -799,7 +801,7 @@ describe("Square Online Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(update), { status: 200 })
+        new Response(JSON.stringify(update), { status: 200 }),
       );
 
       expect(update.variations[0].priceMoneyAmount).toBeGreaterThan(2999);
@@ -821,7 +823,7 @@ describe("Square Online Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(inventory), { status: 200 })
+        new Response(JSON.stringify(inventory), { status: 200 }),
       );
 
       expect(inventory.items).toHaveLength(1);
@@ -836,7 +838,7 @@ describe("Square Online Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(update), { status: 200 })
+        new Response(JSON.stringify(update), { status: 200 }),
       );
 
       expect(update.quantityDelta).toBe("-5");
@@ -853,7 +855,7 @@ describe("Square Online Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(loyaltyProgram), { status: 200 })
+        new Response(JSON.stringify(loyaltyProgram), { status: 200 }),
       );
 
       expect(loyaltyProgram.name).toBe("Rewards");
@@ -868,7 +870,7 @@ describe("Square Online Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(enrollment), { status: 201 })
+        new Response(JSON.stringify(enrollment), { status: 201 }),
       );
 
       expect(enrollment.status).toBe("enrolled");
@@ -883,7 +885,7 @@ describe("Square Online Adapter Integration", () => {
       };
 
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify(points), { status: 200 })
+        new Response(JSON.stringify(points), { status: 200 }),
       );
 
       expect(points.totalPoints).toBeGreaterThan(0);

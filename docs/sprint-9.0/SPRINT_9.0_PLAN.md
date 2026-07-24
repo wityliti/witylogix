@@ -13,15 +13,15 @@
 
 ## Agent Assignments
 
-| Agent | Role | Task | ECC Skill |
-|-------|------|------|-----------|
-| AR | CTO | Fix systemic test patterns (auth, monitoring, queue modules) | tdd-workflow |
-| RG | Backend Lead | Wire Fastify API routes — orders, drivers, zones, shipments | api-design, backend-patterns |
-| PK | Sr. Backend | Wire Fastify API routes — tracking, webhooks, notifications, auth | api-design, security-review |
-| SP | Full-stack | Fix test failures in integrations (payments, erp, messaging, couriers) | tdd-workflow |
-| KS | QA Lead | Fix test failures in AI, demand-prediction, onboarding, campaigns | tdd-workflow |
-| DM | Frontend | Order Kanban board with drag-and-drop | frontend-patterns |
-| NK | Frontend Lead | i18n infrastructure — next-intl setup, locale files, dashboard wiring | frontend-patterns |
-| VS | Component Dev | Kanban card components, status badges, drag indicators | frontend-patterns |
-| AM | Integration | Fix integration test failures (ecommerce, routing, shipping, gateway) | tdd-workflow |
-| ZR | AI Engineer | Fix AI module test failures and add missing mocks | tdd-workflow |
+| Agent | Role          | Task                                                                   | ECC Skill                    |
+| ----- | ------------- | ---------------------------------------------------------------------- | ---------------------------- |
+| AR    | CTO           | Fix systemic test patterns (auth, monitoring, queue modules)           | tdd-workflow                 |
+| RG    | Backend Lead  | Wire Fastify API routes — orders, drivers, zones, shipments            | api-design, backend-patterns |
+| PK    | Sr. Backend   | Wire Fastify API routes — tracking, webhooks, notifications, auth      | api-design, security-review  |
+| SP    | Full-stack    | Fix test failures in integrations (payments, erp, messaging, couriers) | tdd-workflow                 |
+| KS    | QA Lead       | Fix test failures in AI, demand-prediction, onboarding, campaigns      | tdd-workflow                 |
+| DM    | Frontend      | Order Kanban board with drag-and-drop                                  | frontend-patterns            |
+| NK    | Frontend Lead | i18n infrastructure — next-intl setup, locale files, dashboard wiring  | frontend-patterns            |
+| VS    | Component Dev | Kanban card components, status badges, drag indicators                 | frontend-patterns            |
+| AM    | Integration   | Fix integration test failures (ecommerce, routing, shipping, gateway)  | tdd-workflow                 |
+| ZR    | AI Engineer   | Fix AI module test failures and add missing mocks                      | tdd-workflow                 |

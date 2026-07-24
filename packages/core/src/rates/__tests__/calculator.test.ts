@@ -1,10 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { calculateRate, calculateRatesBatch } from "../calculator";
-import {
-  RateCalculationRequest,
-  RatePackage,
-  ShippingProfile,
-} from "../types";
+import { RateCalculationRequest, RatePackage, ShippingProfile } from "../types";
 
 // Test helper functions
 const createAddress = (postalCode: string, country = "US") => ({
@@ -19,7 +15,7 @@ const createAddress = (postalCode: string, country = "US") => ({
 const createPackage = (
   weight = 5,
   weightUnit = "lb" as const,
-  quantity = 1
+  quantity = 1,
 ): RatePackage => ({
   weight,
   weightUnit,
@@ -33,7 +29,7 @@ const createPackage = (
 
 const createRequest = (
   originZip = "94105",
-  destZip = "10001"
+  destZip = "10001",
 ): RateCalculationRequest => ({
   origin: createAddress(originZip),
   destination: createAddress(destZip, "US"),
@@ -237,7 +233,9 @@ describe("Rate Calculator", () => {
       const rate = calculateRate(request, profile);
 
       expect(rate.surcharges.length).toBeGreaterThanOrEqual(0);
-      expect(rate.surcharges.some((s) => s.description.includes("Fuel"))).toBeDefined();
+      expect(
+        rate.surcharges.some((s) => s.description.includes("Fuel")),
+      ).toBeDefined();
     });
 
     it("should apply residential surcharge", () => {
@@ -266,7 +264,10 @@ describe("Rate Calculator", () => {
 
       const rate = calculateRate(request, profile);
 
-      const surchargeTotal = rate.surcharges.reduce((sum, s) => sum + s.amount, 0);
+      const surchargeTotal = rate.surcharges.reduce(
+        (sum, s) => sum + s.amount,
+        0,
+      );
       expect(surchargeTotal).toBeGreaterThanOrEqual(0);
     });
   });
@@ -343,10 +344,7 @@ describe("Rate Calculator", () => {
   describe("multi-package rates", () => {
     it("should sum weights for multiple packages", () => {
       const request = createRequest();
-      request.packages = [
-        createPackage(5, "lb", 1),
-        createPackage(3, "lb", 1),
-      ];
+      request.packages = [createPackage(5, "lb", 1), createPackage(3, "lb", 1)];
 
       const profile = createWeightBasedProfile();
       const rate = calculateRate(request, profile);
@@ -357,10 +355,7 @@ describe("Rate Calculator", () => {
 
     it("should handle different weight units", () => {
       const request = createRequest();
-      request.packages = [
-        createPackage(5, "lb", 1),
-        createPackage(2, "kg", 1),
-      ];
+      request.packages = [createPackage(5, "lb", 1), createPackage(2, "kg", 1)];
 
       const profile = createWeightBasedProfile();
       const rate = calculateRate(request, profile);
@@ -421,7 +416,9 @@ describe("Rate Calculator", () => {
       const profile = createWeightBasedProfile();
       const rate = calculateRate(request, profile);
 
-      const quantityDiscount = rate.discounts.find((d) => d.type === "quantity");
+      const quantityDiscount = rate.discounts.find(
+        (d) => d.type === "quantity",
+      );
       expect(quantityDiscount).toBeDefined();
       if (quantityDiscount) {
         expect(quantityDiscount.amount).toBeGreaterThan(0);
@@ -435,7 +432,9 @@ describe("Rate Calculator", () => {
       const profile = createWeightBasedProfile();
       const rate = calculateRate(request, profile);
 
-      const quantityDiscount = rate.discounts.find((d) => d.type === "quantity");
+      const quantityDiscount = rate.discounts.find(
+        (d) => d.type === "quantity",
+      );
       expect(quantityDiscount).toBeDefined();
     });
 
@@ -446,7 +445,9 @@ describe("Rate Calculator", () => {
       const profile = createWeightBasedProfile();
       const rate = calculateRate(request, profile);
 
-      const quantityDiscount = rate.discounts.find((d) => d.type === "quantity");
+      const quantityDiscount = rate.discounts.find(
+        (d) => d.type === "quantity",
+      );
       expect(quantityDiscount).toBeDefined();
     });
 
@@ -478,7 +479,10 @@ describe("Rate Calculator", () => {
 
       const rate = calculateRate(request, profile);
 
-      const discountTotal = rate.discounts.reduce((sum, d) => sum + d.amount, 0);
+      const discountTotal = rate.discounts.reduce(
+        (sum, d) => sum + d.amount,
+        0,
+      );
       expect(discountTotal).toBeGreaterThanOrEqual(0);
     });
   });
@@ -488,7 +492,9 @@ describe("Rate Calculator", () => {
   describe("weight constraints", () => {
     it("should enforce minimum weight", () => {
       const request = createRequest();
-      request.packages = [{ weight: 0.5, weightUnit: "lb" as const, quantity: 1 }]; // Below minimum, no dimensions
+      request.packages = [
+        { weight: 0.5, weightUnit: "lb" as const, quantity: 1 },
+      ]; // Below minimum, no dimensions
 
       const profile = createFlatRateProfile();
       profile.minimumWeight = 1;
@@ -565,7 +571,7 @@ describe("Rate Calculator", () => {
 
       expect(rate.estimatedDelivery).toBeInstanceOf(Date);
       expect(rate.estimatedDelivery.getTime()).toBeGreaterThan(
-        request.shipDate.getTime()
+        request.shipDate.getTime(),
       );
     });
 
@@ -631,7 +637,9 @@ describe("Rate Calculator", () => {
       const rate = calculateRate(request, profile);
 
       // Check if matches currency format
-      expect(rate.totalRate.toString().split(".")[1]?.length).toBeLessThanOrEqual(2);
+      expect(
+        rate.totalRate.toString().split(".")[1]?.length,
+      ).toBeLessThanOrEqual(2);
     });
   });
 
@@ -659,7 +667,7 @@ describe("Rate Calculator", () => {
       // Different pricing models should produce different results
       expect(
         flatRate.totalRate === weightRate.totalRate ||
-          flatRate.totalRate !== weightRate.totalRate
+          flatRate.totalRate !== weightRate.totalRate,
       ).toBe(true);
     });
 
@@ -685,7 +693,10 @@ describe("Rate Calculator", () => {
       const request3 = createRequest("94105", "60601");
 
       const profile = createWeightBasedProfile();
-      const rates = calculateRatesBatch([request1, request2, request3], profile);
+      const rates = calculateRatesBatch(
+        [request1, request2, request3],
+        profile,
+      );
 
       expect(rates).toHaveLength(3);
       expect(rates.every((r) => r.totalRate > 0)).toBe(true);
@@ -758,7 +769,10 @@ describe("Rate Calculator", () => {
 
       const rate = calculateRate(request, profile);
 
-      const totalSurcharge = rate.surcharges.reduce((sum, s) => sum + s.amount, 0);
+      const totalSurcharge = rate.surcharges.reduce(
+        (sum, s) => sum + s.amount,
+        0,
+      );
       expect(totalSurcharge).toBeGreaterThanOrEqual(0);
     });
 

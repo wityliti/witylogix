@@ -106,7 +106,9 @@ export const ConfirmDialog: Story = {
         </div>
       }
     >
-      <p>Are you sure you want to delete this item? This action cannot be undone.</p>
+      <p>
+        Are you sure you want to delete this item? This action cannot be undone.
+      </p>
     </ModalWrapper>
   ),
 };
@@ -145,7 +147,8 @@ export const WithDescription: Story = {
     >
       <div className="space-y-4">
         <p className="text-wl-text-secondary">
-          This is important information that users should read before proceeding.
+          This is important information that users should read before
+          proceeding.
         </p>
         <p className="text-sm text-wl-text-tertiary">
           Additional details can be provided here to give more context.
@@ -169,12 +172,12 @@ export const LongContent: Story = {
     >
       <div className="space-y-4 text-sm text-wl-text-secondary">
         <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
-          tempor incididunt ut labore et dolore magna aliqua.
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua.
         </p>
         <p>
-          Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi
-          ut aliquip ex ea commodo consequat.
+          Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+          nisi ut aliquip ex ea commodo consequat.
         </p>
         <p>
           Duis aute irure dolor in reprehenderit in voluptate velit esse cillum

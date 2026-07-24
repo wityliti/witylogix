@@ -4,7 +4,7 @@
  * OAuth2 authentication
  */
 
-import type { ERPInvoice, ERPPayment, ERPConnection } from './types.js';
+import type { ERPInvoice, ERPPayment, ERPConnection } from "./types.js";
 
 /**
  * FreshBooks API v3 Client
@@ -12,7 +12,8 @@ import type { ERPInvoice, ERPPayment, ERPConnection } from './types.js';
 export class FreshBooksClient {
   private accessToken?: string;
   private accountId?: string;
-  private apiUrl: string = 'https://api.freshbooks.com/accounting_account/account';
+  private apiUrl: string =
+    "https://api.freshbooks.com/accounting_account/account";
   private connection: ERPConnection;
 
   /**
@@ -24,7 +25,7 @@ export class FreshBooksClient {
     this.accountId = connection.credentials.accountId;
 
     if (!this.accessToken || !this.accountId) {
-      throw new Error('Missing FreshBooks credentials: accessToken, accountId');
+      throw new Error("Missing FreshBooks credentials: accessToken, accountId");
     }
   }
 
@@ -33,7 +34,7 @@ export class FreshBooksClient {
    */
   async healthCheck(): Promise<boolean> {
     try {
-      await this.request('GET', '/invoices?limit=1');
+      await this.request("GET", "/invoices?limit=1");
       return true;
     } catch {
       return false;
@@ -43,18 +44,25 @@ export class FreshBooksClient {
   /**
    * Make HTTP request
    */
-  private async request(method: string, endpoint: string, body?: unknown): Promise<any> {
+  private async request(
+    method: string,
+    endpoint: string,
+    body?: unknown,
+  ): Promise<any> {
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${this.accessToken}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${this.accessToken}`,
     };
 
-    const response = await fetch(`${this.apiUrl}/${this.accountId}${endpoint}`, {
-      method,
-      headers,
-      body: body ? JSON.stringify(body) : undefined,
-      signal: AbortSignal.timeout(30000),
-    });
+    const response = await fetch(
+      `${this.apiUrl}/${this.accountId}${endpoint}`,
+      {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : undefined,
+        signal: AbortSignal.timeout(30000),
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`FreshBooks API error: ${response.statusText}`);
@@ -71,8 +79,8 @@ export class FreshBooksClient {
       invoice: {
         clientid: invoice.customerId,
         invoicenumber: invoice.invoiceNumber,
-        invoicedate: invoice.invoiceDate.toISOString().split('T')[0],
-        duedate: invoice.dueDate.toISOString().split('T')[0],
+        invoicedate: invoice.invoiceDate.toISOString().split("T")[0],
+        duedate: invoice.dueDate.toISOString().split("T")[0],
         lines: invoice.lineItems.map((item) => ({
           description: item.description,
           quantity: item.quantity,
@@ -80,11 +88,11 @@ export class FreshBooksClient {
           amount: item.totalAmount,
         })),
         amount: invoice.total,
-        status: invoice.status || 'draft',
+        status: invoice.status || "draft",
       },
     };
 
-    const response = await this.request('POST', '/invoices', data);
+    const response = await this.request("POST", "/invoices", data);
     return {
       id: response.invoice.id,
       externalId: response.invoice.id,
@@ -102,7 +110,7 @@ export class FreshBooksClient {
    * Get invoice
    */
   async getInvoice(invoiceId: string): Promise<ERPInvoice> {
-    const response = await this.request('GET', `/invoices/${invoiceId}`);
+    const response = await this.request("GET", `/invoices/${invoiceId}`);
     const inv = response.invoice;
     return {
       id: inv.id,
@@ -121,7 +129,7 @@ export class FreshBooksClient {
    * List invoices
    */
   async listInvoices(): Promise<ERPInvoice[]> {
-    const response = await this.request('GET', '/invoices');
+    const response = await this.request("GET", "/invoices");
     return (response.invoices || []).map((inv: any) => ({
       id: inv.id,
       externalId: inv.id,
@@ -143,12 +151,12 @@ export class FreshBooksClient {
       payment: {
         invoiceid: invoiceId,
         amount: payment.amount,
-        paymentdate: payment.paymentDate.toISOString().split('T')[0],
+        paymentdate: payment.paymentDate.toISOString().split("T")[0],
         paymentmethod: payment.paymentMethod,
       },
     };
 
-    await this.request('POST', '/payments', data);
+    await this.request("POST", "/payments", data);
   }
 
   /**
@@ -159,15 +167,15 @@ export class FreshBooksClient {
       estimate: {
         clientid: estimate.customerId,
         estimatenumber: estimate.estimateNumber,
-        estimatedate: estimate.issueDate.toISOString().split('T')[0],
-        expirydate: estimate.expiryDate?.toISOString().split('T')[0],
+        estimatedate: estimate.issueDate.toISOString().split("T")[0],
+        expirydate: estimate.expiryDate?.toISOString().split("T")[0],
         lines: estimate.lineItems,
         amount: estimate.total,
-        status: estimate.status || 'draft',
+        status: estimate.status || "draft",
       },
     };
 
-    const response = await this.request('POST', '/estimates', data);
+    const response = await this.request("POST", "/estimates", data);
     return response.estimate;
   }
 
@@ -181,12 +189,12 @@ export class FreshBooksClient {
         categoryid: expense.categoryId,
         amount: expense.amount,
         notes: expense.notes,
-        date: expense.date.toISOString().split('T')[0],
+        date: expense.date.toISOString().split("T")[0],
         vendor: expense.vendor,
       },
     };
 
-    const response = await this.request('POST', '/expenses', data);
+    const response = await this.request("POST", "/expenses", data);
     return response.expense;
   }
 
@@ -201,11 +209,11 @@ export class FreshBooksClient {
         userid: entry.userId,
         hours: entry.hours,
         notes: entry.notes,
-        date: entry.date.toISOString().split('T')[0],
+        date: entry.date.toISOString().split("T")[0],
       },
     };
 
-    const response = await this.request('POST', '/time_entries', data);
+    const response = await this.request("POST", "/time_entries", data);
     return response.timeentry;
   }
 
@@ -213,7 +221,7 @@ export class FreshBooksClient {
    * List projects
    */
   async listProjects(): Promise<any[]> {
-    const response = await this.request('GET', '/projects');
+    const response = await this.request("GET", "/projects");
     return response.projects || [];
   }
 
@@ -221,7 +229,7 @@ export class FreshBooksClient {
    * Get project details
    */
   async getProject(projectId: string): Promise<any> {
-    const response = await this.request('GET', `/projects/${projectId}`);
+    const response = await this.request("GET", `/projects/${projectId}`);
     return response.project;
   }
 
@@ -229,7 +237,7 @@ export class FreshBooksClient {
    * List clients
    */
   async listClients(): Promise<any[]> {
-    const response = await this.request('GET', '/clients');
+    const response = await this.request("GET", "/clients");
     return response.clients || [];
   }
 
@@ -246,7 +254,7 @@ export class FreshBooksClient {
       },
     };
 
-    const response = await this.request('POST', '/taxes', data);
+    const response = await this.request("POST", "/taxes", data);
     return response.tax;
   }
 
@@ -254,7 +262,7 @@ export class FreshBooksClient {
    * List currencies
    */
   async listCurrencies(): Promise<any[]> {
-    const response = await this.request('GET', '/currencies');
+    const response = await this.request("GET", "/currencies");
     return response.currencies || [];
   }
 }

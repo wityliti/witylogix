@@ -3,12 +3,18 @@
  * Calendar-based date picker with availability indicators
  */
 
-import React, { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { format, getDaysInMonth, getDay, addMonths, subMonths } from 'date-fns';
-import { isValidSelectableDate, isDateBlackouted, getBlackoutDatesInMonth, getAvailableSlotsText, formatDateDisplay } from '../utils/date-utils';
-import type { BlackoutDate, CapacityInfo } from '../types';
-import clsx from 'clsx';
+import React, { useState, useMemo } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { format, getDaysInMonth, getDay, addMonths, subMonths } from "date-fns";
+import {
+  isValidSelectableDate,
+  isDateBlackouted,
+  getBlackoutDatesInMonth,
+  getAvailableSlotsText,
+  formatDateDisplay,
+} from "../utils/date-utils";
+import type { BlackoutDate, CapacityInfo } from "../types";
+import clsx from "clsx";
 
 interface DatePickerProps {
   selectedDate?: Date;
@@ -21,7 +27,7 @@ interface DatePickerProps {
   compact?: boolean;
 }
 
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export const DatePicker: React.FC<DatePickerProps> = ({
   selectedDate,
@@ -33,11 +39,19 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   isLoading = false,
   compact = false,
 }) => {
-  const [displayMonth, setDisplayMonth] = useState(selectedDate ? new Date(selectedDate) : new Date());
+  const [displayMonth, setDisplayMonth] = useState(
+    selectedDate ? new Date(selectedDate) : new Date(),
+  );
 
   const daysInMonth = getDaysInMonth(displayMonth);
-  const firstDayOfMonth = getDay(new Date(displayMonth.getFullYear(), displayMonth.getMonth(), 1));
-  const blackoutMap = getBlackoutDatesInMonth(displayMonth.getFullYear(), displayMonth.getMonth() + 1, blackoutDates);
+  const firstDayOfMonth = getDay(
+    new Date(displayMonth.getFullYear(), displayMonth.getMonth(), 1),
+  );
+  const blackoutMap = getBlackoutDatesInMonth(
+    displayMonth.getFullYear(),
+    displayMonth.getMonth() + 1,
+    blackoutDates,
+  );
 
   const calendarDays = useMemo(() => {
     const days: (number | null)[] = [];
@@ -64,7 +78,11 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   };
 
   const handleDateClick = (day: number) => {
-    const date = new Date(displayMonth.getFullYear(), displayMonth.getMonth(), day);
+    const date = new Date(
+      displayMonth.getFullYear(),
+      displayMonth.getMonth(),
+      day,
+    );
     if (isValidSelectableDate(date, blackoutDates, minDate, maxDate)) {
       onDateSelect(date);
     }
@@ -75,10 +93,20 @@ export const DatePicker: React.FC<DatePickerProps> = ({
       return <div className="wl-p-2 wl-h-16" key={`empty-${Math.random()}`} />;
     }
 
-    const date = new Date(displayMonth.getFullYear(), displayMonth.getMonth(), day);
-    const dateStr = format(date, 'yyyy-MM-dd');
-    const isSelected = selectedDate && format(selectedDate, 'yyyy-MM-dd') === dateStr;
-    const isValid = isValidSelectableDate(date, blackoutDates, minDate, maxDate);
+    const date = new Date(
+      displayMonth.getFullYear(),
+      displayMonth.getMonth(),
+      day,
+    );
+    const dateStr = format(date, "yyyy-MM-dd");
+    const isSelected =
+      selectedDate && format(selectedDate, "yyyy-MM-dd") === dateStr;
+    const isValid = isValidSelectableDate(
+      date,
+      blackoutDates,
+      minDate,
+      maxDate,
+    );
     const blackout = blackoutMap.get(day);
     const capacity = availableDates.get(dateStr);
 
@@ -88,15 +116,18 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         onClick={() => handleDateClick(day)}
         disabled={!isValid || isLoading}
         className={clsx(
-          'wl-p-2 wl-h-16 wl-flex wl-flex-col wl-items-center wl-justify-center wl-rounded wl-text-sm wl-font-medium wl-relative wl-border-2',
-          'wl-transition-colors wl-duration-200',
+          "wl-p-2 wl-h-16 wl-flex wl-flex-col wl-items-center wl-justify-center wl-rounded wl-text-sm wl-font-medium wl-relative wl-border-2",
+          "wl-transition-colors wl-duration-200",
           {
-            'wl-border-wl-accent wl-bg-wl-accent/10 wl-text-wl-accent': isSelected,
-            'wl-border-transparent wl-hover:bg-wl-accent/5 wl-text-wl-foreground wl-cursor-pointer': isValid && !isSelected,
-            'wl-border-transparent wl-bg-wl-muted wl-text-wl-muted-foreground wl-cursor-not-allowed wl-opacity-50': !isValid,
-          }
+            "wl-border-wl-accent wl-bg-wl-accent/10 wl-text-wl-accent":
+              isSelected,
+            "wl-border-transparent wl-hover:bg-wl-accent/5 wl-text-wl-foreground wl-cursor-pointer":
+              isValid && !isSelected,
+            "wl-border-transparent wl-bg-wl-muted wl-text-wl-muted-foreground wl-cursor-not-allowed wl-opacity-50":
+              !isValid,
+          },
         )}
-        aria-label={`${formatDateDisplay(date)}${capacity ? `, ${getAvailableSlotsText(capacity.available, capacity.total)}` : ''}`}
+        aria-label={`${formatDateDisplay(date)}${capacity ? `, ${getAvailableSlotsText(capacity.available, capacity.total)}` : ""}`}
         aria-disabled={!isValid}
       >
         <span>{day}</span>
@@ -120,7 +151,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   };
 
   return (
-    <div className={clsx('wl-w-full', { 'wl-max-w-sm': compact })}>
+    <div className={clsx("wl-w-full", { "wl-max-w-sm": compact })}>
       {/* Header */}
       <div className="wl-flex wl-items-center wl-justify-between wl-mb-4 wl-px-2">
         <button
@@ -133,7 +164,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         </button>
 
         <h2 className="wl-text-lg wl-font-semibold">
-          {format(displayMonth, 'MMMM yyyy')}
+          {format(displayMonth, "MMMM yyyy")}
         </h2>
 
         <button

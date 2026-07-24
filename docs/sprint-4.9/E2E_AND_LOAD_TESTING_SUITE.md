@@ -32,6 +32,7 @@ tests/
 **Purpose**: Centralized test data generators and mock object factories
 
 **Key Functions**:
+
 - `createTestCustomer()` - Generate customer test data
 - `createTestOrder()` - Generate single order
 - `createTestOrderWithMultipleItems()` - Generate order with n items
@@ -46,6 +47,7 @@ tests/
 - `createInvoiceRecord()` - Generate invoice record
 
 **Features**:
+
 - Randomized realistic test data using UUIDs and email generation
 - Type-safe interfaces for all fixtures
 - Support for partial overrides
@@ -58,10 +60,12 @@ tests/
 **Key Functions**:
 
 #### Status Polling
+
 - `waitForStatus()` - Poll until status changes with timeout
 - `waitForWebhookDelivery()` - Wait for webhook delivery confirmation
 
 #### Assertions
+
 - `assertNotificationSent()` - Verify notification was sent
 - `assertNotificationsSent()` - Verify multiple notifications
 - `assertInvoiceGenerated()` - Verify invoice creation
@@ -69,6 +73,7 @@ tests/
 - `assertAnyMatch()` - Assert any item matches predicate
 
 #### API Clients & Requests
+
 - `createAuthenticatedClient()` - Create auth context for role
 - `createAuthHeaders()` - Generate request headers
 - `apiGet<T>()` - Authenticated GET request
@@ -78,9 +83,11 @@ tests/
 - `apiDelete<T>()` - Authenticated DELETE request
 
 #### WebSocket Support
+
 - `connectWebSocketAndWaitForEvent<T>()` - Connect to WS and wait for event
 
 **Features**:
+
 - Configurable timeouts and polling intervals
 - Strong TypeScript typing with generics
 - Support for multiple user roles (admin, merchant, customer, driver, support)
@@ -320,6 +327,7 @@ tests/
    - Verify concurrent handling
 
 **Performance Thresholds**:
+
 - p95 response time < 500ms
 - p99 response time < 1000ms
 - Average response time < 250ms
@@ -329,6 +337,7 @@ tests/
 - Checkout response p95 < 600ms
 
 **Configuration**:
+
 - Ramp-up: 30s
 - Sustained: 5m at 100 VUs
 - Ramp-down: 30s
@@ -369,6 +378,7 @@ tests/
    - Verify queue health
 
 **Performance Thresholds**:
+
 - p95 processing time < 5s
 - p99 processing time < 10s
 - Average processing time < 2s
@@ -377,6 +387,7 @@ tests/
 - Deduplication rate > 95%
 
 **Configuration**:
+
 - Target: 1000 webhooks/min (configurable)
 - Ramp-up: 1m
 - Sustained: 10m
@@ -427,11 +438,13 @@ k6 run --cloud tests/load/k6-api-load.ts
 ## Environment Variables
 
 ### E2E Tests
+
 ```bash
 API_BASE_URL=http://localhost:3000/api/v4
 ```
 
 ### Load Tests (K6)
+
 ```bash
 API_BASE_URL=http://localhost:3000/api/v4
 API_TOKEN=test_token_123
@@ -443,43 +456,48 @@ LOADIMPACT_PROJECT_ID=xxxx (for cloud testing)
 
 ## Test Coverage Summary
 
-| Component | Tests | Coverage |
-|-----------|-------|----------|
-| Order Lifecycle | 30+ | Pending → Delivered → Invoiced |
-| Checkout Flow | 25+ | Slot Selection → Payment → Order |
-| Payment Processing | 25+ | Multi-gateway, Refunds, Reconciliation |
-| E-commerce Sync | 20+ | Shopify, WooCommerce, Magento, BigCommerce |
-| Demand Prediction | 15+ | Training, Prediction, Anomaly Detection |
-| API Load | - | Order Creation, Routes, Checkout, Tracking |
-| Webhook Load | - | 1000+ webhooks/min, Deduplication |
-| **Total** | **100+** | **Enterprise Coverage** |
+| Component          | Tests    | Coverage                                   |
+| ------------------ | -------- | ------------------------------------------ |
+| Order Lifecycle    | 30+      | Pending → Delivered → Invoiced             |
+| Checkout Flow      | 25+      | Slot Selection → Payment → Order           |
+| Payment Processing | 25+      | Multi-gateway, Refunds, Reconciliation     |
+| E-commerce Sync    | 20+      | Shopify, WooCommerce, Magento, BigCommerce |
+| Demand Prediction  | 15+      | Training, Prediction, Anomaly Detection    |
+| API Load           | -        | Order Creation, Routes, Checkout, Tracking |
+| Webhook Load       | -        | 1000+ webhooks/min, Deduplication          |
+| **Total**          | **100+** | **Enterprise Coverage**                    |
 
 ## Key Features
 
 ### Type Safety
+
 - Full TypeScript strict mode compliance
 - Explicit named imports throughout
 - Comprehensive type definitions for all test data
 
 ### Assertions
+
 - Status polling with configurable timeouts
 - Notification verification
 - Invoice generation confirmation
 - Payment reconciliation validation
 
 ### Realistic Data
+
 - Random UUIDs and emails
 - Realistic order amounts and quantities
 - Geographic coordinates with variance
 - Webhook payloads matching actual platform formats
 
 ### Error Handling
+
 - Graceful timeout handling
 - Error rate monitoring
 - Failed request tracking
 - Detailed error messages
 
 ### Performance Monitoring
+
 - Response time tracking (p95, p99, avg)
 - Success rate monitoring
 - Queue depth monitoring
@@ -521,6 +539,7 @@ jobs:
 ## Debugging & Troubleshooting
 
 ### Enable Verbose Logging
+
 ```bash
 # Vitest
 npm run test -- tests/e2e/ --reporter=verbose
@@ -530,24 +549,30 @@ k6 run -v tests/load/k6-api-load.ts
 ```
 
 ### Mock API Responses
+
 All E2E tests use in-memory mock stores for isolation. Real API calls require:
+
 ```bash
 export API_BASE_URL=http://localhost:3000/api/v4
 ```
 
 ### WebSocket Testing
+
 WebSocket tests use the built-in `connectWebSocketAndWaitForEvent()` helper with automatic cleanup.
 
 ## Maintenance
 
 ### Adding New Tests
+
 1. Add fixture generators to `e2e-fixtures.ts`
 2. Use shared helpers from `test-helpers.ts`
 3. Group related tests in describe blocks
 4. Follow naming convention: `should [action] with [condition]`
 
 ### Updating Thresholds
+
 Performance thresholds should be updated when:
+
 - Infrastructure changes
 - Algorithm optimizations
 - Load increases
@@ -575,6 +600,7 @@ Edit thresholds in respective k6 config `thresholds` object.
 ## Support
 
 For issues or questions:
+
 1. Check test failure messages and logs
 2. Review test file headers for test descriptions
 3. Consult helper function documentation

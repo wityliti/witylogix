@@ -19,14 +19,14 @@ export type Coordinate = LatLng | [number, number];
  * Geocoding result types
  */
 export type PlaceCategory =
-  | 'address'
-  | 'place'
-  | 'locality'
-  | 'venue'
-  | 'administrative-area'
-  | 'country'
-  | 'point-of-interest'
-  | 'business';
+  | "address"
+  | "place"
+  | "locality"
+  | "venue"
+  | "administrative-area"
+  | "country"
+  | "point-of-interest"
+  | "business";
 
 /**
  * Geocoding result
@@ -35,7 +35,11 @@ export interface GeocodingResult {
   id: string;
   address: string;
   location: LatLng;
-  accuracy?: 'rooftop' | 'range_interpolated' | 'geometric_center' | 'approximate';
+  accuracy?:
+    | "rooftop"
+    | "range_interpolated"
+    | "geometric_center"
+    | "approximate";
   categories?: PlaceCategory[];
   bounds?: {
     ne: LatLng;
@@ -68,7 +72,7 @@ export interface GeocodingRequest {
  */
 export interface GeocodingResponse {
   results: GeocodingResult[];
-  status: 'OK' | 'NOT_FOUND' | 'ZERO_RESULTS' | 'ERROR';
+  status: "OK" | "NOT_FOUND" | "ZERO_RESULTS" | "ERROR";
   error?: string;
 }
 
@@ -86,7 +90,7 @@ export interface ReverseGeocodeRequest {
  */
 export interface ReverseGeocodeResponse {
   results: GeocodingResult[];
-  status: 'OK' | 'NOT_FOUND' | 'ERROR';
+  status: "OK" | "NOT_FOUND" | "ERROR";
   error?: string;
 }
 
@@ -101,7 +105,7 @@ export interface AutosuggestResult {
   location?: LatLng;
   categories?: PlaceCategory[];
   distance_m?: number;
-  type?: 'place' | 'address' | 'query';
+  type?: "place" | "address" | "query";
 }
 
 /**
@@ -125,7 +129,7 @@ export interface AutosuggestRequest {
  */
 export interface AutosuggestResponse {
   results: AutosuggestResult[];
-  status: 'OK' | 'NOT_FOUND' | 'ERROR';
+  status: "OK" | "NOT_FOUND" | "ERROR";
   error?: string;
 }
 
@@ -178,7 +182,7 @@ export interface PlaceSearchRequest {
  */
 export interface PlaceSearchResponse {
   results: PlaceDetail[];
-  status: 'OK' | 'NOT_FOUND' | 'ERROR';
+  status: "OK" | "NOT_FOUND" | "ERROR";
   error?: string;
 }
 
@@ -189,9 +193,9 @@ export interface MapTileRequest {
   x: number;
   y: number;
   zoom: number;
-  format?: 'png' | 'jpg' | 'webp' | 'pbf'; // pbf is vector
+  format?: "png" | "jpg" | "webp" | "pbf"; // pbf is vector
   style?: string; // Style name
-  size?: '256' | '512'; // Tile size
+  size?: "256" | "512"; // Tile size
 }
 
 /**
@@ -220,7 +224,9 @@ export interface MapsProvider {
   /**
    * Reverse geocode coordinates
    */
-  reverseGeocode(request: ReverseGeocodeRequest): Promise<ReverseGeocodeResponse>;
+  reverseGeocode(
+    request: ReverseGeocodeRequest,
+  ): Promise<ReverseGeocodeResponse>;
 
   /**
    * Get autocomplete suggestions
@@ -252,7 +258,7 @@ export interface MapsProvider {
  * Maps health status
  */
 export interface MapsHealthStatus {
-  status: 'healthy' | 'degraded' | 'unhealthy';
+  status: "healthy" | "degraded" | "unhealthy";
   timestamp: Date;
   lastCheck: Date;
   responseTime?: number; // milliseconds

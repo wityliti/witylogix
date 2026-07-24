@@ -7,7 +7,11 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { StuartClient } from "../stuart-client.js";
-import type { CourierConfig, QuoteRequest, CreateDeliveryRequest } from "../types.js";
+import type {
+  CourierConfig,
+  QuoteRequest,
+  CreateDeliveryRequest,
+} from "../types.js";
 import { DeliveryStatus, WebhookEvent } from "../types.js";
 
 describe("StuartClient", () => {
@@ -26,10 +30,14 @@ describe("StuartClient", () => {
   describe("validateConfig", () => {
     it("should require client ID and secret", async () => {
       const missingId = new StuartClient({ clientSecret: "secret" });
-      await expect(missingId.validateConfig()).rejects.toThrow("Stuart client ID is required");
+      await expect(missingId.validateConfig()).rejects.toThrow(
+        "Stuart client ID is required",
+      );
 
       const missingSecret = new StuartClient({ clientId: "id" });
-      await expect(missingSecret.validateConfig()).rejects.toThrow("Stuart client secret is required");
+      await expect(missingSecret.validateConfig()).rejects.toThrow(
+        "Stuart client secret is required",
+      );
     });
 
     it("should validate OAuth2 credentials", async () => {
@@ -57,7 +65,9 @@ describe("StuartClient", () => {
       };
 
       // INTEGRATION: OAuth is called first, so "OAuth2 integration required" is thrown
-      await expect(client.getQuote(request)).rejects.toThrow("OAuth2 integration required");
+      await expect(client.getQuote(request)).rejects.toThrow(
+        "OAuth2 integration required",
+      );
     });
 
     it("should handle different transport types (bike, car, van)", async () => {
@@ -118,7 +128,9 @@ describe("StuartClient", () => {
       };
 
       // INTEGRATION: OAuth is called first, so "OAuth2 integration required" is thrown
-      await expect(client.createDelivery(request)).rejects.toThrow("OAuth2 integration required");
+      await expect(client.createDelivery(request)).rejects.toThrow(
+        "OAuth2 integration required",
+      );
     });
 
     it("should include order reference in job creation", async () => {
@@ -150,7 +162,9 @@ describe("StuartClient", () => {
   describe("getDeliveryStatus", () => {
     it("should return job status with courier information", async () => {
       // INTEGRATION: OAuth is called first, so "OAuth2 integration required" is thrown
-      await expect(client.getDeliveryStatus("job_123")).rejects.toThrow("OAuth2 integration required");
+      await expect(client.getDeliveryStatus("job_123")).rejects.toThrow(
+        "OAuth2 integration required",
+      );
     });
 
     it("should map Stuart job statuses to normalized status", async () => {
@@ -176,7 +190,9 @@ describe("StuartClient", () => {
   describe("cancelDelivery", () => {
     it("should cancel a job and return updated status", async () => {
       // INTEGRATION: OAuth is called first, so "OAuth2 integration required" is thrown
-      await expect(client.cancelDelivery("job_123")).rejects.toThrow("OAuth2 integration required");
+      await expect(client.cancelDelivery("job_123")).rejects.toThrow(
+        "OAuth2 integration required",
+      );
     });
 
     it("should fetch status after cancellation", async () => {
@@ -188,12 +204,16 @@ describe("StuartClient", () => {
   describe("getDriverLocation", () => {
     it("should return courier location from job data", async () => {
       // INTEGRATION: OAuth is called first, so "OAuth2 integration required" is thrown
-      await expect(client.getDriverLocation("job_123")).rejects.toThrow("OAuth2 integration required");
+      await expect(client.getDriverLocation("job_123")).rejects.toThrow(
+        "OAuth2 integration required",
+      );
     });
 
     it("should throw error if no courier assigned", async () => {
       // INTEGRATION: Verify error for unassigned jobs
-      await expect(client.getDriverLocation("unassigned_job")).rejects.toThrow();
+      await expect(
+        client.getDriverLocation("unassigned_job"),
+      ).rejects.toThrow();
     });
 
     it("should include last update timestamp", async () => {

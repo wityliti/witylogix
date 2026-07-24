@@ -16,7 +16,11 @@ import { z } from "zod";
 import { requireAuth } from "../middleware/auth.js";
 import { tenantContext } from "../middleware/tenant.js";
 import { prisma } from "@witylogix/db";
-import { NotFoundError, ValidationError, ConflictError } from "../lib/errors.js";
+import {
+  NotFoundError,
+  ValidationError,
+  ConflictError,
+} from "../lib/errors.js";
 
 // ─── Schemas ────────────────────────────────────────────────
 
@@ -44,7 +48,7 @@ const cancelExecutionSchema = z.object({
 // ─── Route Plugin ────────────────────────────────────────────
 
 async function workflowExecutionsRoutes(
-  fastify: FastifyInstance
+  fastify: FastifyInstance,
 ): Promise<void> {
   fastify.addHook("preHandler", requireAuth);
   fastify.addHook("preHandler", tenantContext);
@@ -59,7 +63,7 @@ async function workflowExecutionsRoutes(
       request: FastifyRequest<{
         Querystring: z.infer<typeof listExecutionsQuerySchema>;
       }>,
-      reply: FastifyReply
+      reply: FastifyReply,
     ) => {
       const query = listExecutionsQuerySchema.parse(request.query);
       const {
@@ -165,7 +169,7 @@ async function workflowExecutionsRoutes(
           },
         },
       };
-    }
+    },
   );
 
   // ── GET /api/workflow/executions/:id (Get execution details) ──
@@ -178,7 +182,7 @@ async function workflowExecutionsRoutes(
       request: FastifyRequest<{
         Params: { id: string };
       }>,
-      reply: FastifyReply
+      reply: FastifyReply,
     ) => {
       const { id } = request.params;
       const tenantDb = (request as any).tenantDb;
@@ -229,7 +233,7 @@ async function workflowExecutionsRoutes(
           createdAt: execution.createdAt,
         },
       };
-    }
+    },
   );
 
   // ── POST /api/workflow/executions/:id/cancel (Cancel execution) ──
@@ -244,7 +248,7 @@ async function workflowExecutionsRoutes(
         Params: { id: string };
         Body: z.infer<typeof cancelExecutionSchema>;
       }>,
-      reply: FastifyReply
+      reply: FastifyReply,
     ) => {
       const { id } = request.params;
       const { reason } = cancelExecutionSchema.parse(request.body);
@@ -270,7 +274,7 @@ async function workflowExecutionsRoutes(
       // Only allow canceling running workflows
       if (!["running", "compensating"].includes(execution.status)) {
         throw new ConflictError(
-          `Cannot cancel execution with status: ${execution.status}`
+          `Cannot cancel execution with status: ${execution.status}`,
         );
       }
 
@@ -301,7 +305,7 @@ async function workflowExecutionsRoutes(
           cancelReason: reason,
         },
       };
-    }
+    },
   );
 
   // ── GET /api/workflow/executions/:id/stream (SSE stream fallback) ──
@@ -329,7 +333,7 @@ async function workflowExecutionsRoutes(
       request: FastifyRequest<{
         Params: { id: string };
       }>,
-      reply: FastifyReply
+      reply: FastifyReply,
     ) => {
       const { id } = request.params;
       const tenantDb = (request as any).tenantDb;
@@ -422,7 +426,10 @@ async function workflowExecutionsRoutes(
           if (!updated) return;
 
           // Detect status changes and emit events
-          if (updated.status === "completed" && execution.status !== "completed") {
+          if (
+            updated.status === "completed" &&
+            execution.status !== "completed"
+          ) {
             sendEvent("workflow:completed", {
               executionId: id,
               status: updated.status,
@@ -466,7 +473,7 @@ async function workflowExecutionsRoutes(
       // Return without closing the response
       // This keeps the connection open for SSE
       return;
-    }
+    },
   );
 }
 

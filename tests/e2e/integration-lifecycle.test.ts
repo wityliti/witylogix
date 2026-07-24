@@ -237,9 +237,7 @@ describe("Integration Connection Lifecycle", () => {
           { id: "cust_1", name: "Customer 1" },
           { id: "cust_2", name: "Customer 2" },
         ],
-        orders: [
-          { id: "ord_1", customerId: "cust_1", total: 1000 },
-        ],
+        orders: [{ id: "ord_1", customerId: "cust_1", total: 1000 }],
       };
 
       integrationState.syncedData = syncData;

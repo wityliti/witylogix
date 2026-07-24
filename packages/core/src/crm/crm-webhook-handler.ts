@@ -17,9 +17,7 @@ import type {
   CrmProvider,
 } from "./crm-types.js";
 
-import {
-  CrmProvider as CrmProviderEnum,
-} from "./crm-types.js";
+import { CrmProvider as CrmProviderEnum } from "./crm-types.js";
 
 /**
  * Webhook event from CRM provider (before normalization)
@@ -78,7 +76,9 @@ export interface WebhookParser {
 class SalesforceParser implements WebhookParser {
   parse(payload: Record<string, unknown>): Partial<WitylogixCrmEvent> | null {
     // Salesforce uses sObject (Sobjects) format
-    const notification = payload.notification as Record<string, unknown> | undefined;
+    const notification = payload.notification as
+      | Record<string, unknown>
+      | undefined;
     if (!notification) return null;
 
     const eventData = notification.data as Record<string, unknown> | undefined;
@@ -88,7 +88,9 @@ class SalesforceParser implements WebhookParser {
     if (!sObject) return null;
 
     // Extract entity type from sobject type
-    const entityType = this.mapSObjectType(sObject.attributes as Record<string, unknown>);
+    const entityType = this.mapSObjectType(
+      sObject.attributes as Record<string, unknown>,
+    );
     if (!entityType) return null;
 
     return {
@@ -105,8 +107,12 @@ class SalesforceParser implements WebhookParser {
   }
 
   extractEventId(payload: Record<string, unknown>): string | null {
-    const notification = payload.notification as Record<string, unknown> | undefined;
-    const sObject = (notification?.data as Record<string, unknown>)?.sObject as Record<string, unknown> | undefined;
+    const notification = payload.notification as
+      | Record<string, unknown>
+      | undefined;
+    const sObject = (notification?.data as Record<string, unknown>)?.sObject as
+      | Record<string, unknown>
+      | undefined;
     return sObject?.Id ? `sf-${sObject.Id}` : null;
   }
 
@@ -115,7 +121,9 @@ class SalesforceParser implements WebhookParser {
     return new Date().toISOString();
   }
 
-  private mapSObjectType(attributes: Record<string, unknown> | undefined): "Contact" | "Deal" | "Company" | "Activity" | null {
+  private mapSObjectType(
+    attributes: Record<string, unknown> | undefined,
+  ): "Contact" | "Deal" | "Company" | "Activity" | null {
     if (!attributes) return null;
     const type = attributes.type as string | undefined;
 
@@ -134,7 +142,9 @@ class SalesforceParser implements WebhookParser {
     }
   }
 
-  private extractChangedFields(sObject: Record<string, unknown>): Record<string, FieldChange> {
+  private extractChangedFields(
+    sObject: Record<string, unknown>,
+  ): Record<string, FieldChange> {
     // In real implementation, would compare with previous state
     const changes: Record<string, FieldChange> = {};
 
@@ -189,7 +199,9 @@ class HubSpotParser implements WebhookParser {
     return new Date().toISOString();
   }
 
-  private mapObjectType(type: unknown): "Contact" | "Deal" | "Company" | "Activity" | null {
+  private mapObjectType(
+    type: unknown,
+  ): "Contact" | "Deal" | "Company" | "Activity" | null {
     const typeStr = String(type);
 
     switch (typeStr) {
@@ -206,9 +218,13 @@ class HubSpotParser implements WebhookParser {
     }
   }
 
-  private extractChangedFields(payload: Record<string, unknown>): Record<string, FieldChange> {
+  private extractChangedFields(
+    payload: Record<string, unknown>,
+  ): Record<string, FieldChange> {
     const changes: Record<string, FieldChange> = {};
-    const changes_data = payload.changesData as Array<Record<string, unknown>> | undefined;
+    const changes_data = payload.changesData as
+      | Array<Record<string, unknown>>
+      | undefined;
 
     if (changes_data) {
       for (const change of changes_data) {
@@ -267,7 +283,9 @@ class ZohoParser implements WebhookParser {
     return new Date().toISOString();
   }
 
-  private mapZohoModule(module: string | undefined): "Contact" | "Deal" | "Company" | "Activity" | null {
+  private mapZohoModule(
+    module: string | undefined,
+  ): "Contact" | "Deal" | "Company" | "Activity" | null {
     switch (module) {
       case "Contacts":
         return "Contact";
@@ -283,7 +301,9 @@ class ZohoParser implements WebhookParser {
     }
   }
 
-  private extractChangedFields(record: Record<string, unknown>): Record<string, FieldChange> {
+  private extractChangedFields(
+    record: Record<string, unknown>,
+  ): Record<string, FieldChange> {
     const changes: Record<string, FieldChange> = {};
 
     for (const [key, value] of Object.entries(record)) {
@@ -343,7 +363,9 @@ class PipedriveParser implements WebhookParser {
     return new Date().toISOString();
   }
 
-  private mapPipedriveEntity(entity: string): "Contact" | "Deal" | "Company" | "Activity" | null {
+  private mapPipedriveEntity(
+    entity: string,
+  ): "Contact" | "Deal" | "Company" | "Activity" | null {
     switch (entity) {
       case "person":
         return "Contact";
@@ -358,7 +380,9 @@ class PipedriveParser implements WebhookParser {
     }
   }
 
-  private extractChangedFields(record: Record<string, unknown>): Record<string, FieldChange> {
+  private extractChangedFields(
+    record: Record<string, unknown>,
+  ): Record<string, FieldChange> {
     const changes: Record<string, FieldChange> = {};
 
     for (const [key, value] of Object.entries(record)) {
@@ -402,7 +426,9 @@ export class CrmWebhookHandler {
    * @param rawEvent - Raw webhook event from CRM
    * @returns Normalized event or null if duplicate/invalid
    */
-  async processWebhook(rawEvent: RawWebhookEvent): Promise<WitylogixCrmEvent | null> {
+  async processWebhook(
+    rawEvent: RawWebhookEvent,
+  ): Promise<WitylogixCrmEvent | null> {
     const parser = this.parsers.get(rawEvent.provider);
     if (!parser) {
       console.error(`No parser found for provider: ${rawEvent.provider}`);
@@ -423,7 +449,9 @@ export class CrmWebhookHandler {
     }
 
     // Parse webhook payload
-    const normalizedEvent = parser.parse(rawEvent.rawPayload) as WitylogixCrmEvent | undefined;
+    const normalizedEvent = parser.parse(rawEvent.rawPayload) as
+      | WitylogixCrmEvent
+      | undefined;
     if (!normalizedEvent) {
       console.warn("Failed to parse webhook payload");
       return null;
@@ -451,7 +479,11 @@ export class CrmWebhookHandler {
   /**
    * Check if event is a duplicate
    */
-  private isDuplicate(eventId: string, provider: CrmProvider, tenantId: string): boolean {
+  private isDuplicate(
+    eventId: string,
+    provider: CrmProvider,
+    tenantId: string,
+  ): boolean {
     const key = `${provider}:${tenantId}:${eventId}`;
     return this.deduplicationCache.has(key);
   }
@@ -459,7 +491,11 @@ export class CrmWebhookHandler {
   /**
    * Record event for deduplication
    */
-  private recordDeduplication(eventId: string, provider: CrmProvider, tenantId: string): void {
+  private recordDeduplication(
+    eventId: string,
+    provider: CrmProvider,
+    tenantId: string,
+  ): void {
     const key = `${provider}:${tenantId}:${eventId}`;
     this.deduplicationCache.set(key, {
       eventId,
@@ -511,7 +547,9 @@ export class CrmWebhookHandler {
    */
   async processRetryQueue(): Promise<void> {
     const now = Date.now();
-    const toRetry = this.retryQueue.filter((entry) => entry.nextRetryTime <= now);
+    const toRetry = this.retryQueue.filter(
+      (entry) => entry.nextRetryTime <= now,
+    );
 
     for (const entry of toRetry) {
       if (entry.attempt >= entry.maxAttempts) {

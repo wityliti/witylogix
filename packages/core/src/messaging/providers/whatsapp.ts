@@ -4,7 +4,12 @@
  * Handles webhook callbacks for delivery status updates.
  */
 
-import type { Message, MessageTemplate, SendResult, DeliveryStatus } from '../types.js';
+import type {
+  Message,
+  MessageTemplate,
+  SendResult,
+  DeliveryStatus,
+} from "../types.js";
 import {
   MessageChannel,
   DeliveryStatus as DeliveryStatusEnum,
@@ -12,14 +17,18 @@ import {
   AuthenticationError,
   ConfigurationError,
   RateLimitError,
-} from '../types.js';
-import { MessageProvider } from './base.js';
+} from "../types.js";
+import { MessageProvider } from "./base.js";
 
 /**
  * Type stubs for Meta Cloud API HTTP client.
  */
 interface HttpClient {
-  post<T>(path: string, data: unknown, headers?: Record<string, string>): Promise<T>;
+  post<T>(
+    path: string,
+    data: unknown,
+    headers?: Record<string, string>,
+  ): Promise<T>;
   get<T>(path: string, headers?: Record<string, string>): Promise<T>;
 }
 
@@ -58,7 +67,7 @@ interface MetaWebhookPayload {
  * WhatsApp provider for Meta Cloud API.
  */
 export class WhatsAppProvider extends MessageProvider {
-  readonly providerId = 'whatsapp_meta';
+  readonly providerId = "whatsapp_meta";
 
   private httpClient?: HttpClient;
   private phoneNumberId: string;
@@ -84,7 +93,7 @@ export class WhatsAppProvider extends MessageProvider {
     if (!this.phoneNumberId || !this.businessAccountId || !this.accessToken) {
       throw new ConfigurationError(
         MessageChannel.WHATSAPP,
-        'Missing WhatsApp configuration: phoneNumberId, businessAccountId, or accessToken',
+        "Missing WhatsApp configuration: phoneNumberId, businessAccountId, or accessToken",
       );
     }
 
@@ -106,11 +115,19 @@ export class WhatsAppProvider extends MessageProvider {
     const phoneNumberId = this.phoneNumberId;
 
     return {
-      post: async <T,>(path: string, data: unknown, headers?: Record<string, string>): Promise<T> => {
+      post: async <T>(
+        path: string,
+        data: unknown,
+        headers?: Record<string, string>,
+      ): Promise<T> => {
         // Mock implementation - in real code would make actual HTTP request
         // Using fetch or axios with proper error handling
         if (!accessToken) {
-          throw new AuthenticationError(MessageChannel.WHATSAPP, 'meta', 'Invalid access token');
+          throw new AuthenticationError(
+            MessageChannel.WHATSAPP,
+            "meta",
+            "Invalid access token",
+          );
         }
 
         // Simulate API response
@@ -121,7 +138,10 @@ export class WhatsAppProvider extends MessageProvider {
         return response as T;
       },
 
-      get: async <T,>(path: string, headers?: Record<string, string>): Promise<T> => {
+      get: async <T>(
+        path: string,
+        headers?: Record<string, string>,
+      ): Promise<T> => {
         // Mock implementation for status check
         return { messages: [] } as T;
       },
@@ -135,7 +155,7 @@ export class WhatsAppProvider extends MessageProvider {
     if (!this.httpClient) {
       throw new ConfigurationError(
         MessageChannel.WHATSAPP,
-        'WhatsApp HTTP client not initialized',
+        "WhatsApp HTTP client not initialized",
       );
     }
 
@@ -144,7 +164,7 @@ export class WhatsAppProvider extends MessageProvider {
       throw new InvalidRecipientError(
         MessageChannel.WHATSAPP,
         message.to,
-        'Phone number must be in E.164 format (+[country][number])',
+        "Phone number must be in E.164 format (+[country][number])",
       );
     }
 
@@ -154,13 +174,13 @@ export class WhatsAppProvider extends MessageProvider {
       if (message.templateId) {
         // Template-based message (pre-approved WhatsApp templates)
         payload = {
-          messaging_product: 'whatsapp',
-          recipient_type: 'individual',
+          messaging_product: "whatsapp",
+          recipient_type: "individual",
           to: message.to,
-          type: 'template',
+          type: "template",
           template: {
             name: message.templateId,
-            language: { code: 'en_US' },
+            language: { code: "en_US" },
             ...(message.templateVars && {
               parameters: {
                 body: {
@@ -173,10 +193,10 @@ export class WhatsAppProvider extends MessageProvider {
       } else {
         // Free-form message (limited to plain text)
         payload = {
-          messaging_product: 'whatsapp',
-          recipient_type: 'individual',
+          messaging_product: "whatsapp",
+          recipient_type: "individual",
           to: message.to,
-          type: 'text',
+          type: "text",
           text: { body: message.body },
         };
       }
@@ -184,10 +204,14 @@ export class WhatsAppProvider extends MessageProvider {
       const path = `/v18.0/${this.phoneNumberId}/messages`;
       const headers = {
         Authorization: `Bearer ${this.accessToken}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       };
 
-      const result = await this.httpClient.post<MetaApiResponse>(path, payload, headers);
+      const result = await this.httpClient.post<MetaApiResponse>(
+        path,
+        payload,
+        headers,
+      );
 
       if (result.error) {
         return {
@@ -202,7 +226,7 @@ export class WhatsAppProvider extends MessageProvider {
         return {
           success: false,
           status: DeliveryStatusEnum.FAILED,
-          error: 'No message ID returned from API',
+          error: "No message ID returned from API",
         };
       }
 
@@ -212,18 +236,25 @@ export class WhatsAppProvider extends MessageProvider {
         status: DeliveryStatusEnum.SENT,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
 
-      if (errorMessage.includes('401') || errorMessage.includes('unauthorized')) {
+      if (
+        errorMessage.includes("401") ||
+        errorMessage.includes("unauthorized")
+      ) {
         throw new AuthenticationError(
           MessageChannel.WHATSAPP,
-          'meta',
-          'Invalid WhatsApp credentials',
+          "meta",
+          "Invalid WhatsApp credentials",
         );
       }
 
-      if (errorMessage.includes('429')) {
-        throw new RateLimitError(MessageChannel.WHATSAPP, 'WhatsApp API rate limit exceeded');
+      if (errorMessage.includes("429")) {
+        throw new RateLimitError(
+          MessageChannel.WHATSAPP,
+          "WhatsApp API rate limit exceeded",
+        );
       }
 
       throw new Error(`WhatsApp send failed: ${errorMessage}`);
@@ -269,7 +300,9 @@ export class WhatsAppProvider extends MessageProvider {
     // Check variables match parameter slots
     const paramPattern = /{{(\d+)}}/g; // WhatsApp uses {{1}}, {{2}}, etc.
     const maxParam = Math.max(
-      ...[...template.body.matchAll(paramPattern)].map((m) => parseInt(m[1], 10)),
+      ...[...template.body.matchAll(paramPattern)].map((m) =>
+        parseInt(m[1], 10),
+      ),
       0,
     );
 
@@ -309,7 +342,9 @@ export class WhatsAppProvider extends MessageProvider {
    * @param payload Webhook payload from Meta
    * @returns Parsed delivery status update
    */
-  processWebhook(payload: MetaWebhookPayload): Array<{ messageId: string; status: DeliveryStatus }> {
+  processWebhook(
+    payload: MetaWebhookPayload,
+  ): Array<{ messageId: string; status: DeliveryStatus }> {
     const updates: Array<{ messageId: string; status: DeliveryStatus }> = [];
 
     for (const entry of payload.entry) {
@@ -347,13 +382,13 @@ export function validatePhoneE164(phone: string): boolean {
  */
 function mapMetaStatus(metaStatus: string): DeliveryStatus {
   switch (metaStatus.toLowerCase()) {
-    case 'sent':
+    case "sent":
       return DeliveryStatusEnum.SENT;
-    case 'delivered':
+    case "delivered":
       return DeliveryStatusEnum.DELIVERED;
-    case 'read':
+    case "read":
       return DeliveryStatusEnum.OPENED;
-    case 'failed':
+    case "failed":
       return DeliveryStatusEnum.FAILED;
     default:
       return DeliveryStatusEnum.QUEUED;

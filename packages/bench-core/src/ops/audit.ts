@@ -51,9 +51,7 @@ export function emitAudit(
     mkdirSync(dirname(path), { recursive: true });
     appendFileSync(path, `${JSON.stringify(payload)}\n`);
   } catch (err) {
-    ctx.logger.warn(
-      `failed to write audit event: ${(err as Error).message}`,
-    );
+    ctx.logger.warn(`failed to write audit event: ${(err as Error).message}`);
   }
   if (ctx.json) {
     try {

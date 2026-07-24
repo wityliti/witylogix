@@ -136,8 +136,8 @@ export interface RouteEfficiency {
  * CO2 emission factors by vehicle type (kg/km)
  */
 const EMISSION_FACTORS: Record<string, number> = {
-  "motorcycle": 0.089,
-  "van": 0.156,
+  motorcycle: 0.089,
+  van: 0.156,
   "truck-small": 0.198,
   "truck-large": 0.286,
 };
@@ -163,12 +163,12 @@ const SLA_TIERS = {
  */
 export function calculateOnTimePercentage(
   routes: RouteData[],
-  dateRange?: TimeRange
+  dateRange?: TimeRange,
 ): number {
   const buffer = 5; // minutes
 
   const filteredRoutes = dateRange
-    ? routes.filter(r => {
+    ? routes.filter((r) => {
         const endTime = r.actualEndTime || r.plannedEndTime;
         return endTime >= dateRange.from && endTime <= dateRange.to;
       })
@@ -176,9 +176,9 @@ export function calculateOnTimePercentage(
 
   if (filteredRoutes.length === 0) return 0;
 
-  const deliveries = filteredRoutes.flatMap(r => r.stops);
+  const deliveries = filteredRoutes.flatMap((r) => r.stops);
 
-  const onTimeDeliveries = deliveries.filter(stop => {
+  const onTimeDeliveries = deliveries.filter((stop) => {
     // Only count completed deliveries
     if (!stop.actualArrival || stop.status !== "delivered") return false;
 
@@ -186,8 +186,10 @@ export function calculateOnTimePercentage(
     const actualTime = stop.actualArrival.getTime();
     const bufferMs = buffer * 60 * 1000;
 
-    return actualTime >= estimatedTime - bufferMs &&
-           actualTime <= estimatedTime + bufferMs;
+    return (
+      actualTime >= estimatedTime - bufferMs &&
+      actualTime <= estimatedTime + bufferMs
+    );
   }).length;
 
   if (deliveries.length === 0) return 0;
@@ -202,15 +204,14 @@ export function calculateOnTimePercentage(
  * @returns Array of planned vs actual comparisons
  */
 export function calculatePlannedVsActual(
-  routes: RouteData[]
+  routes: RouteData[],
 ): PlannedVsActual[] {
-  return routes.map(route => {
+  return routes.map((route) => {
     const actualDuration = route.actualDuration || 0;
     const plannedDuration = route.plannedDuration;
     const variance = actualDuration - plannedDuration;
-    const variancePercent = plannedDuration > 0
-      ? (variance / plannedDuration) * 100
-      : 0;
+    const variancePercent =
+      plannedDuration > 0 ? (variance / plannedDuration) * 100 : 0;
 
     // Determine status
     let status: "on-time" | "delayed" | "not-completed" = "not-completed";
@@ -242,9 +243,9 @@ export function calculatePlannedVsActual(
 export function calculateDriverScorecard(
   driverId: string,
   routes: RouteData[],
-  period: "24h" | "7d" | "30d" = "30d"
+  period: "24h" | "7d" | "30d" = "30d",
 ): DriverScorecard {
-  const driverRoutes = routes.filter(r => r.driverId === driverId);
+  const driverRoutes = routes.filter((r) => r.driverId === driverId);
 
   if (driverRoutes.length === 0) {
     return {
@@ -262,50 +263,64 @@ export function calculateDriverScorecard(
   }
 
   // Count deliveries
-  const allStops = driverRoutes.flatMap(r => r.stops);
-  const deliveriesCompleted = allStops.filter(s => s.status === "delivered").length;
+  const allStops = driverRoutes.flatMap((r) => r.stops);
+  const deliveriesCompleted = allStops.filter(
+    (s) => s.status === "delivered",
+  ).length;
   const deliveriesAttempted = allStops.length;
 
   // On-time percentage
   const onTimePercentage = calculateOnTimePercentage(driverRoutes);
 
   // Average time per stop
-  const stopsWithActualTime = allStops.filter(s => s.actualDuration !== undefined);
-  const avgTimePerStop = stopsWithActualTime.length > 0
-    ? stopsWithActualTime.reduce((sum, s) => sum + (s.actualDuration || 0), 0) /
-      stopsWithActualTime.length
-    : 0;
+  const stopsWithActualTime = allStops.filter(
+    (s) => s.actualDuration !== undefined,
+  );
+  const avgTimePerStop =
+    stopsWithActualTime.length > 0
+      ? stopsWithActualTime.reduce(
+          (sum, s) => sum + (s.actualDuration || 0),
+          0,
+        ) / stopsWithActualTime.length
+      : 0;
 
   // Customer rating average
-  const stopsWithRating = allStops.filter(s => s.customerRating !== undefined);
-  const customerRatingAvg = stopsWithRating.length > 0
-    ? stopsWithRating.reduce((sum, s) => sum + (s.customerRating || 0), 0) /
-      stopsWithRating.length
-    : 0;
+  const stopsWithRating = allStops.filter(
+    (s) => s.customerRating !== undefined,
+  );
+  const customerRatingAvg =
+    stopsWithRating.length > 0
+      ? stopsWithRating.reduce((sum, s) => sum + (s.customerRating || 0), 0) /
+        stopsWithRating.length
+      : 0;
 
   // First attempt rate
-  const firstAttemptStops = allStops.filter(s => s.firstAttempt === true).length;
-  const firstAttemptRate = deliveriesAttempted > 0
-    ? (firstAttemptStops / deliveriesAttempted) * 100
-    : 0;
+  const firstAttemptStops = allStops.filter(
+    (s) => s.firstAttempt === true,
+  ).length;
+  const firstAttemptRate =
+    deliveriesAttempted > 0
+      ? (firstAttemptStops / deliveriesAttempted) * 100
+      : 0;
 
   // Efficiency score (inverse of avg time variance)
   const plannedVsActual = calculatePlannedVsActual(driverRoutes);
-  const avgVariancePercent = plannedVsActual.length > 0
-    ? Math.abs(
-        plannedVsActual.reduce((sum, p) => sum + p.variancePercent, 0) /
-        plannedVsActual.length
-      )
-    : 0;
+  const avgVariancePercent =
+    plannedVsActual.length > 0
+      ? Math.abs(
+          plannedVsActual.reduce((sum, p) => sum + p.variancePercent, 0) /
+            plannedVsActual.length,
+        )
+      : 0;
   const efficiencyScore = Math.max(0, 100 - avgVariancePercent);
 
   // Composite score
   const ratingScore = (customerRatingAvg / 5) * 100;
   const compositeScore =
-    (onTimePercentage * 0.4) +
-    (efficiencyScore * 0.3) +
-    (ratingScore * 0.2) +
-    (firstAttemptRate * 0.1);
+    onTimePercentage * 0.4 +
+    efficiencyScore * 0.3 +
+    ratingScore * 0.2 +
+    firstAttemptRate * 0.1;
 
   // Determine trend (mock: neutral for now)
   const trend: "up" | "down" | "neutral" = "neutral";
@@ -334,7 +349,7 @@ export function calculateDriverScorecard(
  * @returns CO2 estimates for each route
  */
 export function calculateCO2Estimates(routes: RouteData[]): CO2Estimates[] {
-  return routes.map(route => {
+  return routes.map((route) => {
     const emissionFactor = EMISSION_FACTORS[route.vehicleType] || 0.156;
 
     const plannedCO2kg = route.plannedDistance * emissionFactor;
@@ -365,10 +380,10 @@ export function calculateCO2Estimates(routes: RouteData[]): CO2Estimates[] {
 export function calculateServiceLevelMetrics(
   tenantId: string,
   routes: RouteData[],
-  dateRange: TimeRange
+  dateRange: TimeRange,
 ): ServiceLevelMetrics {
-  const allStops = routes.flatMap(r => r.stops);
-  const deliverableStops = allStops.filter(s => s.status !== "returned");
+  const allStops = routes.flatMap((r) => r.stops);
+  const deliverableStops = allStops.filter((s) => s.status !== "returned");
 
   if (deliverableStops.length === 0) {
     return {
@@ -387,16 +402,17 @@ export function calculateServiceLevelMetrics(
   const slaCompliance: Record<string, number> = {};
 
   for (const tier of tiers) {
-    const tierStops = deliverableStops.filter(s => s.slaTier === tier);
+    const tierStops = deliverableStops.filter((s) => s.slaTier === tier);
     if (tierStops.length === 0) {
       slaCompliance[tier] = 0;
       continue;
     }
 
     const slaWindow = SLA_TIERS[tier as keyof typeof SLA_TIERS].window;
-    const onTimeStops = tierStops.filter(stop => {
+    const onTimeStops = tierStops.filter((stop) => {
       if (!stop.actualArrival) return false;
-      const diffMs = stop.actualArrival.getTime() - stop.estimatedArrival.getTime();
+      const diffMs =
+        stop.actualArrival.getTime() - stop.estimatedArrival.getTime();
       const diffMinutes = diffMs / (60 * 1000);
       return diffMinutes <= slaWindow;
     }).length;
@@ -408,15 +424,17 @@ export function calculateServiceLevelMetrics(
   const slaOverall = calculateOnTimePercentage(routes, dateRange);
 
   // First attempt rate
-  const firstAttemptStops = deliverableStops.filter(s => s.firstAttempt === true).length;
+  const firstAttemptStops = deliverableStops.filter(
+    (s) => s.firstAttempt === true,
+  ).length;
   const firstAttemptRate = (firstAttemptStops / deliverableStops.length) * 100;
 
   // Return rate
-  const returnedStops = allStops.filter(s => s.status === "returned").length;
+  const returnedStops = allStops.filter((s) => s.status === "returned").length;
   const returnRate = (returnedStops / allStops.length) * 100;
 
   // Failure rate
-  const failedStops = allStops.filter(s => s.status === "failed").length;
+  const failedStops = allStops.filter((s) => s.status === "failed").length;
   const failureRate = (failedStops / allStops.length) * 100;
 
   return {
@@ -452,17 +470,24 @@ export function calculateRouteEfficiency(route: RouteData): RouteEfficiency {
 
   // Calculate idle time (time between stops)
   const stops = route.stops
-    .filter(s => s.actualArrival && s.actualDuration !== undefined)
-    .sort((a, b) => a.estimatedArrival.getTime() - b.estimatedArrival.getTime());
+    .filter((s) => s.actualArrival && s.actualDuration !== undefined)
+    .sort(
+      (a, b) => a.estimatedArrival.getTime() - b.estimatedArrival.getTime(),
+    );
 
   let idleTime = 0;
   for (let i = 0; i < stops.length - 1; i++) {
     const currentStop = stops[i];
     const nextStop = stops[i + 1];
 
-    if (currentStop.actualArrival && currentStop.actualDuration && nextStop.actualArrival) {
+    if (
+      currentStop.actualArrival &&
+      currentStop.actualDuration &&
+      nextStop.actualArrival
+    ) {
       const currentEnd = new Date(
-        currentStop.actualArrival.getTime() + (currentStop.actualDuration * 60 * 1000)
+        currentStop.actualArrival.getTime() +
+          currentStop.actualDuration * 60 * 1000,
       );
       const idleMs = nextStop.actualArrival.getTime() - currentEnd.getTime();
       if (idleMs > 0) {
@@ -471,7 +496,8 @@ export function calculateRouteEfficiency(route: RouteData): RouteEfficiency {
     }
   }
 
-  const idlePercentage = actualDuration > 0 ? (idleTime / actualDuration) * 100 : 0;
+  const idlePercentage =
+    actualDuration > 0 ? (idleTime / actualDuration) * 100 : 0;
 
   // Deviation events (simplified: count stops outside planned sequence)
   const deviationEvents = 0; // TODO: compare actual coordinates to planned waypoints

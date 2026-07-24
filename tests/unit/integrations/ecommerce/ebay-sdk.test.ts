@@ -204,7 +204,10 @@ describe("EbaySdkClient", () => {
     });
 
     it("should return false for invalid signature without secret", () => {
-      const result = client.verifyWebhookSignature({ test: "data" }, "signature");
+      const result = client.verifyWebhookSignature(
+        { test: "data" },
+        "signature",
+      );
       expect(result).toBe(false);
     });
 
@@ -231,7 +234,9 @@ describe("EbaySdkClient", () => {
     });
 
     it("should throw when getting customer by ID", () => {
-      expect(() => client.getCustomerById("123")).rejects.toThrow("eBay does not provide customer endpoints");
+      expect(() => client.getCustomerById("123")).rejects.toThrow(
+        "eBay does not provide customer endpoints",
+      );
     });
   });
 

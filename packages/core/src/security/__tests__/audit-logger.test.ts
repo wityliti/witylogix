@@ -27,7 +27,7 @@ describe("AuditLogger", () => {
         AuditEventType.LOGIN,
         { userId: "user-123", ip: "192.168.1.1" },
         "user:user-123",
-        "login"
+        "login",
       );
 
       expect(entry.id).toBeDefined();
@@ -41,13 +41,13 @@ describe("AuditLogger", () => {
         AuditEventType.LOGIN,
         { userId: "user-123", ip: "192.168.1.1" },
         "user:user-123",
-        "login"
+        "login",
       );
       await auditLogger.log(
         AuditEventType.DATA_ACCESS,
         { userId: "user-123", ip: "192.168.1.1" },
         "drivers",
-        "read"
+        "read",
       );
 
       expect(auditLogger.count()).toBe(2);
@@ -58,7 +58,7 @@ describe("AuditLogger", () => {
         AuditEventType.LOGIN,
         { userId: "user-123", ip: "192.168.1.1" },
         "user:user-123",
-        "login"
+        "login",
       );
 
       expect(entry.outcome).toBe("SUCCESS");
@@ -70,7 +70,7 @@ describe("AuditLogger", () => {
         { userId: "user-123", ip: "192.168.1.1" },
         "user:user-123",
         "login",
-        { outcome: "FAILURE" }
+        { outcome: "FAILURE" },
       );
 
       expect(entry.outcome).toBe("FAILURE");
@@ -83,13 +83,13 @@ describe("AuditLogger", () => {
         AuditEventType.LOGIN,
         { userId: "user-123", ip: "192.168.1.1" },
         "user:user-123",
-        "login"
+        "login",
       );
       const entry2 = await auditLogger.log(
         AuditEventType.DATA_ACCESS,
         { userId: "user-123", ip: "192.168.1.1" },
         "drivers",
-        "read"
+        "read",
       );
 
       expect(entry2.previousHash).toBe(entry1.hash);
@@ -100,13 +100,13 @@ describe("AuditLogger", () => {
         AuditEventType.LOGIN,
         { userId: "user-123", ip: "192.168.1.1" },
         "user:user-123",
-        "login"
+        "login",
       );
       const entry2 = await auditLogger.log(
         AuditEventType.LOGIN,
         { userId: "user-456", ip: "192.168.1.2" },
         "user:user-456",
-        "login"
+        "login",
       );
 
       expect(entry1.hash).not.toBe(entry2.hash);
@@ -117,13 +117,13 @@ describe("AuditLogger", () => {
         AuditEventType.LOGIN,
         { userId: "user-123", ip: "192.168.1.1" },
         "user:user-123",
-        "login"
+        "login",
       );
       await auditLogger.log(
         AuditEventType.DATA_ACCESS,
         { userId: "user-123", ip: "192.168.1.1" },
         "drivers",
-        "read"
+        "read",
       );
 
       const isIntact = auditLogger.verifyChainIntegrity();
@@ -136,7 +136,7 @@ describe("AuditLogger", () => {
       const entry = await auditLogger.logLogin(
         "user-123",
         "192.168.1.1",
-        "session-456"
+        "session-456",
       );
 
       expect(entry.eventType).toBe(AuditEventType.LOGIN);
@@ -160,7 +160,7 @@ describe("AuditLogger", () => {
         "user-456",
         { userId: "user-123", ip: "192.168.1.1" },
         before,
-        after
+        after,
       );
 
       expect(entry.eventType).toBe(AuditEventType.PERMISSION_CHANGE);
@@ -172,7 +172,7 @@ describe("AuditLogger", () => {
       const entry = await auditLogger.logDataAccess(
         { userId: "user-123", ip: "192.168.1.1" },
         "drivers",
-        { status: "active" }
+        { status: "active" },
       );
 
       expect(entry.eventType).toBe(AuditEventType.DATA_ACCESS);
@@ -188,7 +188,7 @@ describe("AuditLogger", () => {
         "users:user-456",
         "update",
         before,
-        after
+        after,
       );
 
       expect(entry.eventType).toBe(AuditEventType.DATA_MODIFY);
@@ -225,14 +225,14 @@ describe("AuditLogger", () => {
         { userId: "user-123", ip: "192.168.1.1" },
         "user:user-123",
         "login",
-        { outcome: "SUCCESS" }
+        { outcome: "SUCCESS" },
       );
       await auditLogger.log(
         AuditEventType.LOGIN,
         { userId: "user-456", ip: "192.168.1.2" },
         "user:user-456",
         "login",
-        { outcome: "FAILURE" }
+        { outcome: "FAILURE" },
       );
 
       const result = await auditLogger.query({ outcome: "FAILURE" });
@@ -364,7 +364,7 @@ describe("AuditLogger", () => {
         "user-123",
         "192.168.1.1",
         undefined,
-        { orgId: "org-456" }
+        { orgId: "org-456" },
       );
 
       expect(entry.orgId).toBe("org-456");

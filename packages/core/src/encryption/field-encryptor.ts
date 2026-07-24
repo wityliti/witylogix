@@ -5,29 +5,29 @@
  * Configurable sensitive fields list
  */
 
-import { CryptoService } from './crypto.js';
-import { EncryptedPayload, EncryptionError, DecryptionError } from './types.js';
+import { CryptoService } from "./crypto.js";
+import { EncryptedPayload, EncryptionError, DecryptionError } from "./types.js";
 
 /**
  * Default sensitive fields to encrypt automatically
  * Can be customized per instance
  */
 export const DEFAULT_SENSITIVE_FIELDS = [
-  'accessToken',
-  'access_token',
-  'apiSecret',
-  'api_secret',
-  'webhookSecret',
-  'webhook_secret',
-  'password',
-  'refreshToken',
-  'refresh_token',
-  'privateKey',
-  'private_key',
-  'sessionToken',
-  'session_token',
-  'creditCard',
-  'credit_card',
+  "accessToken",
+  "access_token",
+  "apiSecret",
+  "api_secret",
+  "webhookSecret",
+  "webhook_secret",
+  "password",
+  "refreshToken",
+  "refresh_token",
+  "privateKey",
+  "private_key",
+  "sessionToken",
+  "session_token",
+  "creditCard",
+  "credit_card",
 ];
 
 /**
@@ -69,9 +69,9 @@ export class FieldEncryptor {
    */
   encryptFields<T extends Record<string, unknown>>(
     obj: T,
-    fieldPaths: string[]
+    fieldPaths: string[],
   ): T {
-    if (!obj || typeof obj !== 'object') {
+    if (!obj || typeof obj !== "object") {
       return obj;
     }
 
@@ -79,7 +79,11 @@ export class FieldEncryptor {
       for (const fieldPath of fieldPaths) {
         const value = this.getNestedValue(obj, fieldPath);
 
-        if (value !== null && value !== undefined && typeof value === 'string') {
+        if (
+          value !== null &&
+          value !== undefined &&
+          typeof value === "string"
+        ) {
           // Encrypt the field
           const encrypted = this.crypto.encrypt(value);
 
@@ -91,7 +95,7 @@ export class FieldEncryptor {
       return obj;
     } catch (error) {
       throw new EncryptionError(
-        `Failed to encrypt fields: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to encrypt fields: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -107,9 +111,9 @@ export class FieldEncryptor {
    */
   decryptFields<T extends Record<string, unknown>>(
     obj: T,
-    fieldPaths: string[]
+    fieldPaths: string[],
   ): T {
-    if (!obj || typeof obj !== 'object') {
+    if (!obj || typeof obj !== "object") {
       return obj;
     }
 
@@ -120,7 +124,7 @@ export class FieldEncryptor {
         if (value !== null && value !== undefined) {
           try {
             // Try to parse as JSON (encrypted payload format)
-            if (typeof value === 'string') {
+            if (typeof value === "string") {
               const decrypted = this.crypto.decrypt(value);
               this.setNestedValue(obj, fieldPath, decrypted);
             }
@@ -137,7 +141,7 @@ export class FieldEncryptor {
       return obj;
     } catch (error) {
       throw new DecryptionError(
-        `Failed to decrypt fields: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to decrypt fields: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -148,7 +152,7 @@ export class FieldEncryptor {
    */
   encryptSensitiveFields<T extends Record<string, unknown>>(obj: T): T {
     const fieldsToEncrypt = Object.keys(obj).filter((key) =>
-      this.isSensitiveField(key)
+      this.isSensitiveField(key),
     );
 
     return this.encryptFields(obj, fieldsToEncrypt);
@@ -160,7 +164,7 @@ export class FieldEncryptor {
    */
   decryptSensitiveFields<T extends Record<string, unknown>>(obj: T): T {
     const fieldsToDecrypt = Object.keys(obj).filter((key) =>
-      this.isSensitiveField(key)
+      this.isSensitiveField(key),
     );
 
     return this.decryptFields(obj, fieldsToDecrypt);
@@ -182,7 +186,7 @@ export class FieldEncryptor {
   prismaMiddleware() {
     return (params: any, next: any) => {
       // Encrypt sensitive fields on write operations
-      if (['create', 'update', 'upsert'].includes(params.action)) {
+      if (["create", "update", "upsert"].includes(params.action)) {
         if (params.args.data) {
           this.encryptSensitiveFields(params.args.data);
         }
@@ -192,7 +196,7 @@ export class FieldEncryptor {
       const result = next(params);
 
       // Decrypt sensitive fields on read operations
-      if (['findUnique', 'findFirst', 'findMany'].includes(params.action)) {
+      if (["findUnique", "findFirst", "findMany"].includes(params.action)) {
         if (Array.isArray(result)) {
           result.forEach((item) => this.decryptSensitiveFields(item));
         } else if (result) {
@@ -210,7 +214,7 @@ export class FieldEncryptor {
    * @param path Dot-separated path (e.g., 'user.profile.email')
    */
   private getNestedValue(obj: Record<string, unknown>, path: string): unknown {
-    const keys = path.split('.');
+    const keys = path.split(".");
     let current: any = obj;
 
     for (const key of keys) {
@@ -233,9 +237,9 @@ export class FieldEncryptor {
   private setNestedValue(
     obj: Record<string, unknown>,
     path: string,
-    value: unknown
+    value: unknown,
   ): void {
-    const keys = path.split('.');
+    const keys = path.split(".");
     const lastKey = keys.pop();
 
     if (!lastKey) {
@@ -260,7 +264,7 @@ export class FieldEncryptor {
  */
 export function createFieldEncryptor(
   crypto: CryptoService,
-  sensitiveFields?: string[]
+  sensitiveFields?: string[],
 ): FieldEncryptor {
   return new FieldEncryptor(crypto, sensitiveFields);
 }

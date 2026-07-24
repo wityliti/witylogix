@@ -49,7 +49,7 @@ export function CarrierScorecard({
         (100 - scores.claimsRatio) * 0.2 +
         scores.costEfficiency * 0.2 +
         scores.safetyScore * 0.1) /
-        1
+        1,
     );
   }, [scores]);
 
@@ -74,7 +74,8 @@ export function CarrierScorecard({
   // Trend indicator helper
   const getTrendIndicator = (current: number, previous: number) => {
     const diff = current - previous;
-    if (Math.abs(diff) < 1) return { arrow: "→", color: "text-wl-text-secondary" };
+    if (Math.abs(diff) < 1)
+      return { arrow: "→", color: "text-wl-text-secondary" };
     return diff > 0
       ? { arrow: "↑", color: "text-wl-success-400" }
       : { arrow: "↓", color: "text-wl-danger-400" };
@@ -88,11 +89,31 @@ export function CarrierScorecard({
     const maxScore = 100;
 
     const metrics = [
-      { label: "On-Time %", value: scores.onTimePercentage, angle: -Math.PI / 2 },
-      { label: "Tender Accept", value: scores.tenderAcceptance, angle: -Math.PI / 2 + (Math.PI * 2) / 5 },
-      { label: "Claims Ratio", value: 100 - scores.claimsRatio, angle: -Math.PI / 2 + (Math.PI * 4) / 5 },
-      { label: "Cost Efficiency", value: scores.costEfficiency, angle: -Math.PI / 2 + (Math.PI * 6) / 5 },
-      { label: "Safety", value: scores.safetyScore, angle: -Math.PI / 2 + (Math.PI * 8) / 5 },
+      {
+        label: "On-Time %",
+        value: scores.onTimePercentage,
+        angle: -Math.PI / 2,
+      },
+      {
+        label: "Tender Accept",
+        value: scores.tenderAcceptance,
+        angle: -Math.PI / 2 + (Math.PI * 2) / 5,
+      },
+      {
+        label: "Claims Ratio",
+        value: 100 - scores.claimsRatio,
+        angle: -Math.PI / 2 + (Math.PI * 4) / 5,
+      },
+      {
+        label: "Cost Efficiency",
+        value: scores.costEfficiency,
+        angle: -Math.PI / 2 + (Math.PI * 6) / 5,
+      },
+      {
+        label: "Safety",
+        value: scores.safetyScore,
+        angle: -Math.PI / 2 + (Math.PI * 8) / 5,
+      },
     ];
 
     // Generate web polygon points
@@ -110,7 +131,7 @@ export function CarrierScorecard({
     const webPaths = webLevels.map((level) => {
       const levelPoints = metrics
         .map((m) => {
-          const r = ((level / 100) * radius);
+          const r = (level / 100) * radius;
           const x = center + r * Math.cos(m.angle);
           const y = center + r * Math.sin(m.angle);
           return `${x},${y}`;
@@ -201,9 +222,10 @@ export function CarrierScorecard({
     );
   };
 
-  const previousQuarterScore = quarterlyTrends.length >= 2
-    ? quarterlyTrends[quarterlyTrends.length - 2]?.score || overallScore
-    : overallScore;
+  const previousQuarterScore =
+    quarterlyTrends.length >= 2
+      ? quarterlyTrends[quarterlyTrends.length - 2]?.score || overallScore
+      : overallScore;
 
   const trend = getTrendIndicator(overallScore, previousQuarterScore);
 
@@ -211,7 +233,7 @@ export function CarrierScorecard({
     <div
       className={cn(
         "rounded-lg border border-wl-border-default bg-wl-bg-primary p-6 space-y-6",
-        className
+        className,
       )}
     >
       {/* Header with Grade */}
@@ -227,7 +249,7 @@ export function CarrierScorecard({
             <div
               className={cn(
                 "w-20 h-20 rounded-lg flex items-center justify-center font-bold text-4xl",
-                getGradeBg(overallScore)
+                getGradeBg(overallScore),
               )}
             >
               <span className={grade.color}>{grade.letter}</span>
@@ -285,20 +307,27 @@ export function CarrierScorecard({
               color: "wl-success-400",
             },
           ].map((metric) => (
-            <div key={metric.label} className="flex items-center justify-between">
-              <span className="text-xs text-wl-text-secondary">{metric.label}</span>
+            <div
+              key={metric.label}
+              className="flex items-center justify-between"
+            >
+              <span className="text-xs text-wl-text-secondary">
+                {metric.label}
+              </span>
               <div className="flex items-center gap-2">
                 <div className="h-1.5 bg-wl-bg-secondary rounded-full w-20">
                   <div
                     className={cn("h-full rounded-full", `bg-${metric.color}`)}
                     style={{
-                      width: `${typeof metric.value === 'string' ? 50 : Math.min(metric.value, 100)}%`,
+                      width: `${typeof metric.value === "string" ? 50 : Math.min(metric.value, 100)}%`,
                     }}
                   />
                 </div>
-                <span className={cn("text-xs font-semibold text-${metric.color}")}>
+                <span
+                  className={cn("text-xs font-semibold text-${metric.color}")}
+                >
                   {metric.value}
-                  {typeof metric.value === 'number' ? '%' : ''}
+                  {typeof metric.value === "number" ? "%" : ""}
                 </span>
               </div>
             </div>

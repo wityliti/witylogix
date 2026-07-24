@@ -7,6 +7,6 @@
  * - Maps adapter base class
  */
 
-export * from './types.js';
-export { MapsAdapter } from './maps-adapter.js';
-export { HEREMapsClient } from './here-maps-client.js';
+export * from "./types.js";
+export { MapsAdapter } from "./maps-adapter.js";
+export { HEREMapsClient } from "./here-maps-client.js";

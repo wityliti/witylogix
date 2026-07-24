@@ -30,6 +30,7 @@ npm start
 ```
 
 This will launch the Expo development server. You'll see options to:
+
 - Press `i` for iOS Simulator
 - Press `a` for Android Emulator
 - Scan QR code with Expo Go app on physical device
@@ -108,43 +109,47 @@ Root (App.tsx)
 The app expects your backend to provide:
 
 **Authentication:**
+
 - `POST /api/v4/auth/driver/login`
   - Request: `{ phone: string, password: string }`
   - Response: `{ token: string, user: {...} }`
 
 **Today's Data:**
+
 - `GET /api/v4/drivers/me/stats/today`
   - Returns: `{ ordersRemaining, completed, successRate }`
-  
 - `GET /api/v4/drivers/me/active-delivery`
   - Returns: `{ id, customerName, address, status, eta }`
 
 **Routes:**
+
 - `GET /api/v4/drivers/me/routes`
   - Returns: Array of routes with stops
-  
 - `GET /api/v4/routes/{routeId}`
   - Returns: Full route details with map coordinates
 
 **Deliveries:**
+
 - `GET /api/v4/deliveries/{deliveryId}`
   - Returns: Delivery details
-  
 - `PATCH /api/v4/deliveries/{deliveryId}`
   - Request: `{ status, notes, proofImage }`
   - Updates delivery status
 
 **Profile:**
+
 - `GET /api/v4/drivers/me/profile`
   - Returns: Driver info, vehicle, today's stats
 
 **Location:**
+
 - `PATCH /api/v4/drivers/{driverId}/location`
   - Request: `{ latitude, longitude, accuracy, timestamp }`
 
 ## Key Screens Walkthrough
 
 ### LoginScreen
+
 ```
 ┌─────────────────────────┐
 │  Witylogix Driver       │
@@ -162,6 +167,7 @@ The app expects your backend to provide:
 ```
 
 ### HomeScreen (Today Tab)
+
 ```
 ┌─────────────────────────┐
 │  Today's Summary        │
@@ -179,6 +185,7 @@ The app expects your backend to provide:
 ```
 
 ### RoutesScreen (Routes Tab)
+
 ```
 ┌─────────────────────────┐
 │  Your Routes            │
@@ -195,6 +202,7 @@ The app expects your backend to provide:
 ```
 
 ### DeliveryScreen
+
 ```
 ┌─────────────────────────┐
 │  John Smith             │
@@ -225,10 +233,11 @@ The app expects your backend to provide:
 4. Add screen to navigator
 
 Example:
+
 ```tsx
 // src/screens/NewScreen.tsx
-import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
+import React from "react";
+import { View, Text, StyleSheet, SafeAreaView } from "react-native";
 
 const NewScreen: React.FC = () => {
   return (
@@ -241,7 +250,7 @@ const NewScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
 });
 
@@ -256,14 +265,15 @@ export default NewScreen;
 4. Use in screen via try-catch
 
 Example:
+
 ```tsx
 // In a screen
 const fetchData = async () => {
   try {
-    const data = await api.get('/api/v4/endpoint');
+    const data = await api.get("/api/v4/endpoint");
     setData(data);
   } catch (error) {
-    Alert.alert('Error', 'Failed to load data');
+    Alert.alert("Error", "Failed to load data");
   }
 };
 ```
@@ -284,14 +294,14 @@ All styles are defined with `StyleSheet.create()`:
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   button: {
-    backgroundColor: '#005bd3',
+    backgroundColor: "#005bd3",
     padding: 12,
   },
   text: {
-    color: '#202223',
+    color: "#202223",
     fontSize: 16,
   },
 });
@@ -325,6 +335,7 @@ const styles = StyleSheet.create({
 ### "Cannot find module" errors
 
 Run `npm install` again and restart dev server:
+
 ```bash
 npm install
 npm start
@@ -333,6 +344,7 @@ npm start
 ### TypeScript errors
 
 Check with:
+
 ```bash
 npm run typecheck
 ```
@@ -342,6 +354,7 @@ Fix type issues or ignore with `// @ts-ignore` (not recommended)
 ### API connection fails
 
 Check:
+
 1. Backend server is running
 2. `.env` has correct API URL
 3. Network connectivity on device
@@ -355,6 +368,7 @@ Check:
 ### Token storage issues
 
 Clear app data and login again:
+
 - iOS: Delete app and reinstall
 - Android: Settings → Apps → Witylogix → Clear Data
 
@@ -395,6 +409,7 @@ eas submit --platform android
 ## Support
 
 For issues or questions:
+
 - Check the README.md
 - Review ARCHITECTURE.md for design details
 - Check API endpoints in this guide

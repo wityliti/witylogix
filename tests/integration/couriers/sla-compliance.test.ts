@@ -62,7 +62,8 @@ class SLAService {
   // ─ SLA Evaluation ──────────────────────────────────────────────────────
 
   evaluateSLA(delivery: DeliveryEvent, sla: fixtures.SLADefinition): boolean {
-    const timeTaken = delivery.completedAt.getTime() - delivery.assignedAt.getTime();
+    const timeTaken =
+      delivery.completedAt.getTime() - delivery.assignedAt.getTime();
     const minutesTaken = timeTaken / (1000 * 60);
 
     if (minutesTaken > sla.targetTimeMinutes) {
@@ -79,18 +80,23 @@ class SLAService {
 
   // ─ Breach Detection ────────────────────────────────────────────────────
 
-  detectBreach(delivery: DeliveryEvent, sla: fixtures.SLADefinition): SLABreach | null {
+  detectBreach(
+    delivery: DeliveryEvent,
+    sla: fixtures.SLADefinition,
+  ): SLABreach | null {
     const isMet = this.evaluateSLA(delivery, sla);
 
     if (isMet) {
       return null;
     }
 
-    const timeTaken = delivery.completedAt.getTime() - delivery.assignedAt.getTime();
+    const timeTaken =
+      delivery.completedAt.getTime() - delivery.assignedAt.getTime();
     const minutesTaken = timeTaken / (1000 * 60);
 
     let breachType: "time" | "quality" = "time";
-    let severity: "minor" | "major" = minutesTaken - sla.targetTimeMinutes < 30 ? "minor" : "major";
+    let severity: "minor" | "major" =
+      minutesTaken - sla.targetTimeMinutes < 30 ? "minor" : "major";
 
     if (sla.metadata?.qualityBased && delivery.courierRating < 4.5) {
       breachType = "quality";
@@ -111,20 +117,25 @@ class SLAService {
 
   // ─ Penalty Calculation ─────────────────────────────────────────────────
 
-  calculatePenalty(delivery: DeliveryEvent, sla: fixtures.SLADefinition): number {
+  calculatePenalty(
+    delivery: DeliveryEvent,
+    sla: fixtures.SLADefinition,
+  ): number {
     const isMet = this.evaluateSLA(delivery, sla);
 
     if (isMet) {
       return 0;
     }
 
-    const timeTaken = delivery.completedAt.getTime() - delivery.assignedAt.getTime();
+    const timeTaken =
+      delivery.completedAt.getTime() - delivery.assignedAt.getTime();
     const minutesTaken = timeTaken / (1000 * 60);
     const minutesOver = minutesTaken - sla.targetTimeMinutes;
 
     // Graduated penalty: +5% per 30 minutes over
     const penaltyMultiplier = Math.ceil(minutesOver / 30) * 0.05;
-    const adjustedPenalty = sla.breachPenalty * (1 + Math.min(penaltyMultiplier, 2)); // max 2x
+    const adjustedPenalty =
+      sla.breachPenalty * (1 + Math.min(penaltyMultiplier, 2)); // max 2x
 
     return Math.round(adjustedPenalty * 100) / 100;
   }
@@ -134,13 +145,13 @@ class SLAService {
   generateComplianceReport(
     slaId: string,
     periodStart: Date,
-    periodEnd: Date
+    periodEnd: Date,
   ): ComplianceReport {
     const sla = this.slas.get(slaId);
     if (!sla) throw new Error("SLA not found");
 
     const periodDeliveries = Array.from(this.deliveryEvents.values()).filter(
-      (e) => e.assignedAt >= periodStart && e.assignedAt <= periodEnd
+      (e) => e.assignedAt >= periodStart && e.assignedAt <= periodEnd,
     );
 
     const breachedDeliveries: SLABreach[] = [];
@@ -154,9 +165,12 @@ class SLAService {
       }
     }
 
-    const compliantDeliveries = periodDeliveries.length - breachedDeliveries.length;
+    const compliantDeliveries =
+      periodDeliveries.length - breachedDeliveries.length;
     const complianceRate =
-      periodDeliveries.length > 0 ? (compliantDeliveries / periodDeliveries.length) * 100 : 100;
+      periodDeliveries.length > 0
+        ? (compliantDeliveries / periodDeliveries.length) * 100
+        : 100;
 
     return {
       slaId,
@@ -173,7 +187,10 @@ class SLAService {
 
   // ─ Escalation Triggering ───────────────────────────────────────────────
 
-  triggerEscalation(report: ComplianceReport, courierId: string): EscalationAction | null {
+  triggerEscalation(
+    report: ComplianceReport,
+    courierId: string,
+  ): EscalationAction | null {
     let action: "warning" | "suspension" | "termination" | null = null;
 
     if (report.complianceRate < 50) {

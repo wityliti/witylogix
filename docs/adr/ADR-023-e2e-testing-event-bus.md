@@ -30,6 +30,7 @@ This architecture ensures **reliable, maintainable E2E tests** while providing a
 ### Context: Why E2E Testing Matters
 
 Witylogix is a complex multi-tenant platform with:
+
 - **Multi-shop orchestration** (Shopify, WooCommerce, Magento integrations)
 - **Real-time dashboards** (WebSocket subscriptions, live updates)
 - **Workflow engines** (order creation, fulfillment, shipping routing)
@@ -37,6 +38,7 @@ Witylogix is a complex multi-tenant platform with:
 - **Third-party integrations** (payment providers, shipping APIs, auth providers)
 
 Manual testing is insufficient because:
+
 1. **Coverage gaps** — Hard to test all integration paths (shop + carrier + auth provider combos)
 2. **Regression risks** — Changes to core workflows break downstream features
 3. **Multi-environment complexity** — Staging ≠ production due to service variations
@@ -50,23 +52,24 @@ Manual testing is insufficient because:
 
 ### Why Playwright Over Cypress?
 
-| Criterion | Playwright | Cypress | Selenium | Nightwatch |
-|-----------|-----------|---------|----------|-----------|
-| **Multi-browser** | ✓ Chrome, Firefox, Safari, Chromium Edge | ✗ Chrome-only | ✓ All browsers | ✓ Most browsers |
-| **Multi-tab/window** | ✓ Native support | ✗ Fundamentally limited | ✓ Yes | ✓ Yes |
-| **Mobile testing** | ✓ Device emulation | Partial | ✓ Via Appium | Limited |
-| **API testing** | ✓ Built-in via context | ✗ Community plugins | Partial | Limited |
-| **Performance metrics** | ✓ Chrome DevTools Protocol | Limited | Limited | Limited |
-| **WebSocket support** | ✓ Native listener | Partial | ✓ Yes | Limited |
-| **Test execution speed** | Fast (headless) | Fast | Slower | Slower |
-| **Debugging UX** | ✓ Inspector tool | ✓ Time travel | Basic | Basic |
-| **Documentation** | Excellent | Good | Decent | Decent |
-| **Enterprise support** | ✓ Microsoft-backed | ✓ Strong | ✓ Strong | Limited |
-| **Learning curve** | Medium | Low | High | Medium |
-| **Flakiness handling** | ✓ Auto-retry, expect() API | Good retry logic | Good | Good |
-| **Cost** | Free (open-source) | Free / Paid (Dashboard) | Free | Free |
+| Criterion                | Playwright                               | Cypress                 | Selenium       | Nightwatch      |
+| ------------------------ | ---------------------------------------- | ----------------------- | -------------- | --------------- |
+| **Multi-browser**        | ✓ Chrome, Firefox, Safari, Chromium Edge | ✗ Chrome-only           | ✓ All browsers | ✓ Most browsers |
+| **Multi-tab/window**     | ✓ Native support                         | ✗ Fundamentally limited | ✓ Yes          | ✓ Yes           |
+| **Mobile testing**       | ✓ Device emulation                       | Partial                 | ✓ Via Appium   | Limited         |
+| **API testing**          | ✓ Built-in via context                   | ✗ Community plugins     | Partial        | Limited         |
+| **Performance metrics**  | ✓ Chrome DevTools Protocol               | Limited                 | Limited        | Limited         |
+| **WebSocket support**    | ✓ Native listener                        | Partial                 | ✓ Yes          | Limited         |
+| **Test execution speed** | Fast (headless)                          | Fast                    | Slower         | Slower          |
+| **Debugging UX**         | ✓ Inspector tool                         | ✓ Time travel           | Basic          | Basic           |
+| **Documentation**        | Excellent                                | Good                    | Decent         | Decent          |
+| **Enterprise support**   | ✓ Microsoft-backed                       | ✓ Strong                | ✓ Strong       | Limited         |
+| **Learning curve**       | Medium                                   | Low                     | High           | Medium          |
+| **Flakiness handling**   | ✓ Auto-retry, expect() API               | Good retry logic        | Good           | Good            |
+| **Cost**                 | Free (open-source)                       | Free / Paid (Dashboard) | Free           | Free            |
 
 **Key Reasons for Playwright:**
+
 1. **Multi-browser testing** — Test Safari and Firefox without sacrificing developer speed
 2. **API + UI in one tool** — Test webhooks, GraphQL subscriptions alongside UI flows
 3. **Mobile emulation** — Validate responsive designs without physical devices
@@ -76,6 +79,7 @@ Manual testing is insufficient because:
 7. **Microsoft backing** — Long-term support and rapid feature development
 
 **Trade-offs:**
+
 - Learning curve steeper than Cypress (but TypeScript familiarity helps)
 - Community smaller than Cypress (mitigated by Microsoft support)
 - Visual regression testing requires plugin (Percy, Argos, or manual snapshots)
@@ -87,6 +91,7 @@ Manual testing is insufficient because:
 ### Overview
 
 The **Page Object Model** is a design pattern that:
+
 - Encapsulates page interactions in reusable "page" classes
 - Abstracts DOM selectors and UI logic from test scenarios
 - Improves maintainability (UI changes = fix one place, not 50 tests)
@@ -151,7 +156,7 @@ apps/e2e-tests/
 
 ```typescript
 // pages/basePage.ts
-import { Page, Locator, expect } from '@playwright/test';
+import { Page, Locator, expect } from "@playwright/test";
 
 export abstract class BasePage {
   protected page: Page;
@@ -159,7 +164,7 @@ export abstract class BasePage {
 
   constructor(page: Page) {
     this.page = page;
-    this.baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    this.baseUrl = process.env.BASE_URL || "http://localhost:3000";
   }
 
   // Generic locator methods
@@ -173,7 +178,7 @@ export abstract class BasePage {
 
   // Wait helpers
   async waitForNavigation() {
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState("networkidle");
   }
 
   async waitForElement(locator: Locator, timeout = 5000) {
@@ -183,7 +188,7 @@ export abstract class BasePage {
   async click(locator: Locator) {
     await this.waitForElement(locator);
     await locator.click();
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState("networkidle");
   }
 
   // Error handling
@@ -204,8 +209,8 @@ export abstract class BasePage {
 
 ```typescript
 // pages/authPage.ts
-import { Page, Locator } from '@playwright/test';
-import { BasePage } from './basePage';
+import { Page, Locator } from "@playwright/test";
+import { BasePage } from "./basePage";
 
 export class AuthPage extends BasePage {
   readonly emailInput: Locator;
@@ -215,9 +220,9 @@ export class AuthPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.emailInput = page.getByLabel('Email');
-    this.passwordInput = page.getByLabel('Password');
-    this.loginButton = page.getByRole('button', { name: /sign in/i });
+    this.emailInput = page.getByLabel("Email");
+    this.passwordInput = page.getByLabel("Password");
+    this.loginButton = page.getByRole("button", { name: /sign in/i });
     this.errorAlert = page.locator('[role="alert"]');
   }
 
@@ -239,9 +244,9 @@ export class AuthPage extends BasePage {
 
   async loginWithMFA(email: string, password: string, mfaCode: string) {
     await this.login(email, password);
-    const mfaInput = this.page.getByLabel('2FA Code');
+    const mfaInput = this.page.getByLabel("2FA Code");
     await mfaInput.fill(mfaCode);
-    await this.click(this.page.getByRole('button', { name: /verify/i }));
+    await this.click(this.page.getByRole("button", { name: /verify/i }));
     await this.page.waitForURL(/\/dashboard/);
   }
 }
@@ -251,10 +256,10 @@ export class AuthPage extends BasePage {
 
 ```typescript
 // tests/auth/login.spec.ts
-import { test, expect } from '@playwright/test';
-import { AuthPage } from '../../pages/authPage';
+import { test, expect } from "@playwright/test";
+import { AuthPage } from "../../pages/authPage";
 
-test.describe('Authentication', () => {
+test.describe("Authentication", () => {
   let authPage: AuthPage;
 
   test.beforeEach(async ({ page }) => {
@@ -262,18 +267,18 @@ test.describe('Authentication', () => {
     await authPage.goto();
   });
 
-  test('should login with valid credentials', async () => {
-    await authPage.login('user@example.com', 'password123');
+  test("should login with valid credentials", async () => {
+    await authPage.login("user@example.com", "password123");
     // Implicit: page navigated to /dashboard (verified in POM)
   });
 
-  test('should show error for invalid credentials', async () => {
-    await authPage.login('user@example.com', 'wrong-password');
-    await authPage.expectLoginError('Invalid email or password');
+  test("should show error for invalid credentials", async () => {
+    await authPage.login("user@example.com", "wrong-password");
+    await authPage.expectLoginError("Invalid email or password");
   });
 
-  test('should support multi-factor authentication', async () => {
-    await authPage.loginWithMFA('user@example.com', 'password123', '123456');
+  test("should support multi-factor authentication", async () => {
+    await authPage.loginWithMFA("user@example.com", "password123", "123456");
     // Dashboard loads after MFA verification
   });
 });
@@ -286,6 +291,7 @@ test.describe('Authentication', () => {
 ### Challenge: Multi-Tenant, Multi-Integration Scenarios
 
 Tests need:
+
 1. **Isolated data** — Each test runs with fresh org, shop, users
 2. **Deterministic state** — Same seed always produces same data
 3. **Quick setup** — Minimize database population time
@@ -391,20 +397,20 @@ export async function seedE2EDatabase() {
 
 ```typescript
 // fixtures/testData.fixture.ts
-import { test as base, expect } from '@playwright/test';
+import { test as base, expect } from "@playwright/test";
 
 export const test = base.extend({
   // Authenticated browser context
   authenticatedPage: async ({ page }, use) => {
     // Login using API calls (faster than UI)
     const response = await page.request.post(
-      'http://localhost:3000/api/auth/login',
+      "http://localhost:3000/api/auth/login",
       {
         data: {
-          email: 'admin@e2etest.com',
-          password: 'Test@1234',
+          email: "admin@e2etest.com",
+          password: "Test@1234",
         },
-      }
+      },
     );
 
     const { accessToken } = await response.json();
@@ -412,11 +418,11 @@ export const test = base.extend({
     // Set auth cookie
     await page.context().addCookies([
       {
-        name: 'authToken',
+        name: "authToken",
         value: accessToken,
-        domain: 'localhost',
-        path: '/',
-        sameSite: 'Lax',
+        domain: "localhost",
+        path: "/",
+        sameSite: "Lax",
         secure: false,
       },
     ]);
@@ -442,19 +448,16 @@ export const test = base.extend({
               `,
               variables: { input: { shopId, ...data } },
             },
-          }
+          },
         );
         return response.json();
       },
 
       async deleteAllOrders(shopId: string) {
         // Direct DB cleanup for test isolation
-        await request.post(
-          `http://localhost:3000/api/test/cleanup`,
-          {
-            data: { shopId, entityType: 'orders' },
-          }
-        );
+        await request.post(`http://localhost:3000/api/test/cleanup`, {
+          data: { shopId, entityType: "orders" },
+        });
       },
     };
 
@@ -469,14 +472,14 @@ export { expect };
 
 ```typescript
 // tests/orders/orders.spec.ts
-import { test } from '../../fixtures/testData.fixture';
+import { test } from "../../fixtures/testData.fixture";
 
-test.describe('Orders Dashboard', () => {
+test.describe("Orders Dashboard", () => {
   let shopId: string;
 
   test.beforeAll(async () => {
     // Get shop ID from seed data
-    shopId = process.env.E2E_SHOP_ID || '';
+    shopId = process.env.E2E_SHOP_ID || "";
   });
 
   test.beforeEach(async ({ testData }) => {
@@ -489,17 +492,17 @@ test.describe('Orders Dashboard', () => {
     await testData.deleteAllOrders(shopId);
   });
 
-  test('should display orders on dashboard', async ({
+  test("should display orders on dashboard", async ({
     authenticatedPage,
     testData,
   }) => {
     // Create test order
     const { data } = await testData.createOrder(shopId, {
-      externalOrderId: 'test-order-123',
+      externalOrderId: "test-order-123",
       totalPrice: 99.99,
     });
 
-    await authenticatedPage.goto('http://localhost:3000/dashboard/orders');
+    await authenticatedPage.goto("http://localhost:3000/dashboard/orders");
     // Assertions...
   });
 });
@@ -513,7 +516,7 @@ test.describe('Orders Dashboard', () => {
 
 ```typescript
 // utils/dbHelpers.ts
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
 const db = new PrismaClient();
 
@@ -522,7 +525,7 @@ export async function isolateTestData(testId: string) {
     data: {
       name: `E2E Test (${testId})`,
       slug: `e2e-test-${testId}-${Date.now()}`,
-      planTier: 'PROFESSIONAL',
+      planTier: "PROFESSIONAL",
     },
   });
 
@@ -538,14 +541,15 @@ export async function cleanupTestOrg(orgId: string) {
 ```
 
 **Usage in tests:**
+
 ```typescript
-test.describe('Multi-org isolation', () => {
+test.describe("Multi-org isolation", () => {
   let testOrg1: Organization;
   let testOrg2: Organization;
 
   test.beforeAll(async () => {
-    testOrg1 = await isolateTestData('org1');
-    testOrg2 = await isolateTestData('org2');
+    testOrg1 = await isolateTestData("org1");
+    testOrg2 = await isolateTestData("org2");
   });
 
   test.afterAll(async () => {
@@ -553,9 +557,7 @@ test.describe('Multi-org isolation', () => {
     await cleanupTestOrg(testOrg2.id);
   });
 
-  test('org1 orders should not leak to org2', async ({
-    authenticatedPage,
-  }) => {
+  test("org1 orders should not leak to org2", async ({ authenticatedPage }) => {
     // Login as org2 user
     // Verify org1 orders are not visible
   });
@@ -641,15 +643,13 @@ interface OrderCreatedV2 {
 export function migrateOrderCreatedV1toV2(v1: OrderCreatedV1): OrderCreatedV2 {
   return {
     ...v1,
-    currency: 'USD', // Default to USD for legacy events
+    currency: "USD", // Default to USD for legacy events
   };
 }
 
 // Subscriber handles versioning
-export const subscribeToOrderCreated = (
-  bus: TypedEventBus
-) => {
-  bus.subscribe('order.created', async (envelope) => {
+export const subscribeToOrderCreated = (bus: TypedEventBus) => {
+  bus.subscribe("order.created", async (envelope) => {
     let data: OrderCreatedV2;
 
     if (envelope.version === 1) {
@@ -659,7 +659,9 @@ export const subscribeToOrderCreated = (
       data = envelope.data as OrderCreatedV2;
     } else {
       // V3+ — reject or handle unknown
-      throw new Error(`Unsupported order.created schema version: ${envelope.version}`);
+      throw new Error(
+        `Unsupported order.created schema version: ${envelope.version}`,
+      );
     }
 
     // Process normalized data
@@ -681,7 +683,7 @@ export class EventSchemaRegistry {
     eventType: string,
     version: number,
     schema: EventSchema,
-    migrations?: { [fromVersion: number]: (data: any) => any }
+    migrations?: { [fromVersion: number]: (data: any) => any },
   ) {
     const key = `${eventType}@v${version}`;
     this.schemas.set(key, schema);
@@ -693,9 +695,11 @@ export class EventSchemaRegistry {
   }
 
   async normalizeEvent<T>(
-    envelope: EventEnvelope<unknown>
+    envelope: EventEnvelope<unknown>,
   ): Promise<EventEnvelope<T>> {
-    const targetVersion = this.schemas.has(`${envelope.type}@v${envelope.version + 1}`)
+    const targetVersion = this.schemas.has(
+      `${envelope.type}@v${envelope.version + 1}`,
+    )
       ? envelope.version + 1
       : envelope.version;
 
@@ -740,7 +744,7 @@ export interface DLQEntry {
 }
 
 export class DeadLetterQueue {
-  private streamKey = 'event-bus:dlq';
+  private streamKey = "event-bus:dlq";
   private readonly redis: Redis;
   private readonly maxRetries = 3;
   private readonly baseBackoffMs = 60_000; // 1 minute
@@ -748,7 +752,7 @@ export class DeadLetterQueue {
   async enqueue(
     envelope: EventEnvelope,
     failureReason: string,
-    subscriberName: string
+    subscriberName: string,
   ): Promise<void> {
     const dlqEntry: DLQEntry = {
       envelope,
@@ -769,17 +773,17 @@ export class DeadLetterQueue {
     // Store in Redis Stream
     await this.redis.xadd(
       this.streamKey,
-      '*', // Auto-generate ID
-      'envelope',
+      "*", // Auto-generate ID
+      "envelope",
       JSON.stringify(dlqEntry.envelope),
-      'failureReason',
+      "failureReason",
       dlqEntry.failureReason,
-      'subscriber',
+      "subscriber",
       dlqEntry.subscriber,
-      'nextRetryAt',
-      dlqEntry.nextRetryAt?.toISOString() || 'null',
-      'failureCount',
-      dlqEntry.failureCount.toString()
+      "nextRetryAt",
+      dlqEntry.nextRetryAt?.toISOString() || "null",
+      "failureCount",
+      dlqEntry.failureCount.toString(),
     );
 
     // Emit DLQ alert for monitoring
@@ -791,15 +795,13 @@ export class DeadLetterQueue {
     const now = Date.now();
 
     // Get pending DLQ entries ready for retry
-    const entries = await this.redis.xrange(this.streamKey, '-', '+');
+    const entries = await this.redis.xrange(this.streamKey, "-", "+");
 
     for (const [id, fields] of entries) {
-      const nextRetryAt = new Date(
-        fields['nextRetryAt'] || 'null'
-      ).getTime();
+      const nextRetryAt = new Date(fields["nextRetryAt"] || "null").getTime();
       if (nextRetryAt > now) continue; // Not ready yet
 
-      const envelope = JSON.parse(fields['envelope']);
+      const envelope = JSON.parse(fields["envelope"]);
 
       // Attempt reprocessing
       try {
@@ -808,7 +810,7 @@ export class DeadLetterQueue {
         await this.redis.xdel(this.streamKey, id);
       } catch (error) {
         // Increment retry count, update nextRetryAt
-        const failureCount = parseInt(fields['failureCount']) + 1;
+        const failureCount = parseInt(fields["failureCount"]) + 1;
         if (failureCount > this.maxRetries) {
           // Permanently fail after maxRetries
           await this.markPermanentlyFailed(id, envelope);
@@ -820,24 +822,24 @@ export class DeadLetterQueue {
 
   async markPermanentlyFailed(
     dlqId: string,
-    envelope: EventEnvelope
+    envelope: EventEnvelope,
   ): Promise<void> {
     // Store in permanent failure archive
     const archiveKey = `event-bus:dlq:archive:${envelope.type}`;
     await this.redis.xadd(
       archiveKey,
-      '*',
-      'envelope',
+      "*",
+      "envelope",
       JSON.stringify(envelope),
-      'archived_at',
-      new Date().toISOString()
+      "archived_at",
+      new Date().toISOString(),
     );
 
     // Alert ops team
     await this.emit(`dlq.event.permanently_failed`, {
       eventType: envelope.type,
       eventId: envelope.id,
-      reason: 'Max retries exceeded',
+      reason: "Max retries exceeded",
     });
   }
 }
@@ -851,39 +853,45 @@ export class DeadLetterQueue {
 export class DLQMonitor {
   async startDLQReprocessing() {
     // Run reprocessing loop every 5 minutes
-    setInterval(async () => {
-      const dlq = container.resolve(DeadLetterQueue);
-      try {
-        await dlq.reprocessPending();
-      } catch (error) {
-        logger.error('DLQ reprocessing failed', { error });
-      }
-    }, 5 * 60 * 1000);
+    setInterval(
+      async () => {
+        const dlq = container.resolve(DeadLetterQueue);
+        try {
+          await dlq.reprocessPending();
+        } catch (error) {
+          logger.error("DLQ reprocessing failed", { error });
+        }
+      },
+      5 * 60 * 1000,
+    );
   }
 
   async setupDLQAlerts() {
     const dlq = container.resolve(DeadLetterQueue);
 
     // Alert on critical failures
-    dlq.on('dlq.event.permanently_failed', async (event) => {
+    dlq.on("dlq.event.permanently_failed", async (event) => {
       await this.sendAlert({
-        severity: 'high',
+        severity: "high",
         title: `Event ${event.eventId} permanently failed`,
         body: `Event type ${event.eventType} exceeded max retries`,
       });
     });
 
     // Track DLQ depth
-    setInterval(async () => {
-      const depth = await dlq.getDepth();
-      if (depth > 100) {
-        await this.sendAlert({
-          severity: 'medium',
-          title: 'DLQ accumulating events',
-          body: `Current DLQ depth: ${depth}`,
-        });
-      }
-    }, 1 * 60 * 1000);
+    setInterval(
+      async () => {
+        const depth = await dlq.getDepth();
+        if (depth > 100) {
+          await this.sendAlert({
+            severity: "medium",
+            title: "DLQ accumulating events",
+            body: `Current DLQ depth: ${depth}`,
+          });
+        }
+      },
+      1 * 60 * 1000,
+    );
   }
 }
 ```
@@ -899,14 +907,14 @@ export class DLQMonitor {
 
 export async function fanOutOrderCreated(
   bus: TypedEventBus,
-  envelope: EventEnvelope<OrderCreated>
+  envelope: EventEnvelope<OrderCreated>,
 ) {
   // All subscribers get the same event
   const subscribers = [
-    'notification-service', // Email order confirmation
-    'inventory-service', // Decrement stock
-    'analytics-service', // Track order metrics
-    'workflow-service', // Trigger fulfillment workflow
+    "notification-service", // Email order confirmation
+    "inventory-service", // Decrement stock
+    "analytics-service", // Track order metrics
+    "workflow-service", // Trigger fulfillment workflow
   ];
 
   for (const subscriber of subscribers) {
@@ -941,7 +949,7 @@ Failure in Notification doesn't block Inventory
 
 export async function routeWebhookToPartner(
   bus: TypedEventBus,
-  envelope: EventEnvelope<OrderCreated>
+  envelope: EventEnvelope<OrderCreated>,
 ) {
   const partnerId = envelope.data.partnerId; // Specific target
 
@@ -957,7 +965,7 @@ export async function routeWebhookToPartner(
 ```typescript
 // Point-to-point: include routing key
 const envelope = {
-  type: 'order.created',
+  type: "order.created",
   tenantId: org.id,
   routingKey: `webhook:partner-123`, // Directed to partner
   data: orderData,
@@ -965,7 +973,7 @@ const envelope = {
 
 // Fan-out: broadcast to all
 const envelope2 = {
-  type: 'order.created',
+  type: "order.created",
   tenantId: org.id,
   // No routingKey = broadcast
   data: orderData,
@@ -980,35 +988,35 @@ const envelope2 = {
 // packages/event-bus/src/patterns/priorityQueue.ts
 
 export interface PriorityEventEnvelope extends EventEnvelope {
-  priority: 'critical' | 'high' | 'normal' | 'low'; // Default: normal
+  priority: "critical" | "high" | "normal" | "low"; // Default: normal
 }
 
 // Redis Stream key by priority
 const streamKeys = {
-  critical: 'event-bus:critical',
-  high: 'event-bus:high',
-  normal: 'event-bus:default',
-  low: 'event-bus:low',
+  critical: "event-bus:critical",
+  high: "event-bus:high",
+  normal: "event-bus:default",
+  low: "event-bus:low",
 };
 
 export async function publishWithPriority(
-  envelope: PriorityEventEnvelope
+  envelope: PriorityEventEnvelope,
 ): Promise<void> {
   const streamKey = streamKeys[envelope.priority] || streamKeys.normal;
-  await redis.xadd(streamKey, '*', 'envelope', JSON.stringify(envelope));
+  await redis.xadd(streamKey, "*", "envelope", JSON.stringify(envelope));
 }
 
 // Consumer groups process by priority
 export async function consumeByPriority(): Promise<void> {
-  const queues = ['critical', 'high', 'normal', 'low'];
+  const queues = ["critical", "high", "normal", "low"];
 
   for (const priority of queues) {
     const messages = await redis.xread(
-      'COUNT',
+      "COUNT",
       10, // Read 10 messages at a time
-      'STREAMS',
+      "STREAMS",
       streamKeys[priority],
-      '>'
+      ">",
     );
 
     for (const message of messages || []) {
@@ -1025,6 +1033,7 @@ export async function consumeByPriority(): Promise<void> {
 ### Challenge: Observability in E2E Tests
 
 Tests run in CI/CD; when they fail, debugging is hard:
+
 - No interactive browser to inspect state
 - Logs are massive; hard to correlate
 - Flakiness hard to diagnose (race conditions? API timeouts?)
@@ -1035,7 +1044,12 @@ Tests run in CI/CD; when they fail, debugging is hard:
 
 ```typescript
 // support/reporters/aiReporter.ts
-import { Reporter, TestCase, TestError, FullResult } from '@playwright/test/reporter';
+import {
+  Reporter,
+  TestCase,
+  TestError,
+  FullResult,
+} from "@playwright/test/reporter";
 
 export class AIReporter implements Reporter {
   onTestFailure(test: TestCase, error: TestError) {
@@ -1044,8 +1058,8 @@ export class AIReporter implements Reporter {
       testName: test.title,
       errorMessage: error.message,
       stack: error.stack,
-      screenshot: test.attachments.find((a) => a.name === 'screenshot')?.path,
-      logs: test.attachments.find((a) => a.name === 'logs')?.path,
+      screenshot: test.attachments.find((a) => a.name === "screenshot")?.path,
+      logs: test.attachments.find((a) => a.name === "logs")?.path,
       duration: test.duration,
       retries: test.retries,
     };
@@ -1076,21 +1090,21 @@ Possible causes (from most to least likely):
 Suggest: (1) root cause, (2) fix, (3) how to prevent
 `;
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
       headers: {
-        'x-api-key': process.env.ANTHROPIC_API_KEY!,
-        'content-type': 'application/json',
+        "x-api-key": process.env.ANTHROPIC_API_KEY!,
+        "content-type": "application/json",
       },
       body: JSON.stringify({
-        model: 'claude-opus-4-6',
+        model: "claude-opus-4-6",
         max_tokens: 500,
-        messages: [{ role: 'user', content: prompt }],
+        messages: [{ role: "user", content: prompt }],
       }),
     });
 
     const { content } = await response.json();
-    console.log('AI Analysis:', content[0].text);
+    console.log("AI Analysis:", content[0].text);
   }
 }
 ```
@@ -1115,17 +1129,17 @@ export class EventBusMonitor {
     if (metrics.errorRate > 0.1) {
       // > 10% failure rate
       await this.sendAlert({
-        severity: 'high',
+        severity: "high",
         title: `High error rate for ${envelope.type}`,
         metrics,
-        suggestion: 'Review recent deployments; check subscriber logs',
+        suggestion: "Review recent deployments; check subscriber logs",
       });
     }
 
     if (metrics.averageLatency > 5000) {
       // > 5 seconds
       await this.sendAIAnalysis({
-        type: 'performance',
+        type: "performance",
         issue: `${envelope.type} processing slow (${metrics.averageLatency}ms avg)`,
         context: metrics,
       });
@@ -1142,17 +1156,17 @@ Event bus performance issue:
 Suggest: (1) root cause, (2) optimization, (3) monitoring strategy
 `;
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
       body: JSON.stringify({
-        model: 'claude-opus-4-6',
+        model: "claude-opus-4-6",
         max_tokens: 500,
-        messages: [{ role: 'user', content: prompt }],
+        messages: [{ role: "user", content: prompt }],
       }),
     });
 
     const result = await response.json();
-    console.log('Performance Analysis:', result.content[0].text);
+    console.log("Performance Analysis:", result.content[0].text);
   }
 }
 ```
@@ -1170,7 +1184,9 @@ export class FlakinessDetector {
       this.history.set(testName, []);
     }
 
-    this.history.get(testName)!.push({ passed, duration, timestamp: Date.now() });
+    this.history
+      .get(testName)!
+      .push({ passed, duration, timestamp: Date.now() });
   }
 
   async detectFlakiness(window = 50) {
@@ -1189,7 +1205,7 @@ export class FlakinessDetector {
   private async reportFlakiness(
     testName: string,
     passRate: number,
-    results: TestResult[]
+    results: TestResult[],
   ) {
     const prompt = `
 Test "${testName}" is flaky:
@@ -1207,15 +1223,15 @@ Suggest: (1) root cause, (2) fix, (3) assertion improvements
   }
 
   private async askClaude(prompt: string): Promise<string> {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
       headers: {
-        'x-api-key': process.env.ANTHROPIC_API_KEY!,
+        "x-api-key": process.env.ANTHROPIC_API_KEY!,
       },
       body: JSON.stringify({
-        model: 'claude-opus-4-6',
+        model: "claude-opus-4-6",
         max_tokens: 500,
-        messages: [{ role: 'user', content: prompt }],
+        messages: [{ role: "user", content: prompt }],
       }),
     });
 
@@ -1231,37 +1247,39 @@ Suggest: (1) root cause, (2) fix, (3) assertion improvements
 
 ### Trade-off 1: Playwright vs Cypress for Multi-Browser Testing
 
-| Factor | Playwright | Cypress |
-|--------|-----------|---------|
-| **Safari testing** | ✓ Native (webkit) | ✗ Not supported |
-| **Dev experience** | Good (inspector) | Excellent (time travel debug) |
-| **Stability** | Very stable | Very stable |
-| **Learning curve** | Medium | Low |
-| **Team proficiency** | Increasing | High |
+| Factor               | Playwright        | Cypress                       |
+| -------------------- | ----------------- | ----------------------------- |
+| **Safari testing**   | ✓ Native (webkit) | ✗ Not supported               |
+| **Dev experience**   | Good (inspector)  | Excellent (time travel debug) |
+| **Stability**        | Very stable       | Very stable                   |
+| **Learning curve**   | Medium            | Low                           |
+| **Team proficiency** | Increasing        | High                          |
 
 **Decision:** Playwright for cross-browser coverage (Safari for iPad/iPhone testing).
 
 **Mitigations:**
+
 - Invest in documentation
 - Pair-program setup with team
 - Create reusable fixtures to hide complexity
 
 ### Trade-off 2: Seed Scripts vs Factories
 
-| Approach | Seed Script | Factory Pattern |
-|----------|------------|-----------------|
-| **Speed** | Fast (bulk insert) | Slower (per-entity overhead) |
-| **Flexibility** | Less (fixed data) | More (per-test customization) |
-| **Determinism** | High (same seed = same data) | Medium (random defaults) |
-| **Maintenance** | Database schema changes break it | More robust |
+| Approach        | Seed Script                      | Factory Pattern               |
+| --------------- | -------------------------------- | ----------------------------- |
+| **Speed**       | Fast (bulk insert)               | Slower (per-entity overhead)  |
+| **Flexibility** | Less (fixed data)                | More (per-test customization) |
+| **Determinism** | High (same seed = same data)     | Medium (random defaults)      |
+| **Maintenance** | Database schema changes break it | More robust                   |
 
 **Decision:** Hybrid approach
+
 - Use seed scripts for static test orgs, users (run once before suite)
 - Use factories for dynamic test data (create order with custom amounts, dates)
 
 ```typescript
 // Best of both worlds
-const org = await getOrCreateSeedOrg('e2e-test');
+const org = await getOrCreateSeedOrg("e2e-test");
 const order = await orderFactory.create({
   shopId: org.shops[0].id,
   totalPrice: 199.99, // Custom value
@@ -1271,27 +1289,28 @@ const order = await orderFactory.create({
 
 ### Trade-off 3: API vs UI Test Data Setup
 
-| Setup Method | API Calls | UI Automation |
-|---------|-----------|--------------|
-| **Speed** | ~100ms per entity | ~2-5s per action |
-| **Realism** | Less (bypasses validation) | More (full flow) |
-| **Debugging** | Easier (inspect requests) | Harder (what did UI change?) |
-| **Resilience to refactors** | Breaks if API changes | More brittle with UI changes |
+| Setup Method                | API Calls                  | UI Automation                |
+| --------------------------- | -------------------------- | ---------------------------- |
+| **Speed**                   | ~100ms per entity          | ~2-5s per action             |
+| **Realism**                 | Less (bypasses validation) | More (full flow)             |
+| **Debugging**               | Easier (inspect requests)  | Harder (what did UI change?) |
+| **Resilience to refactors** | Breaks if API changes      | More brittle with UI changes |
 
 **Decision:** API-first for setup, UI for critical flows
+
 - Setup test data via API (fast)
 - Test critical user flows via UI (realistic)
 - Verify state via API (fast + reliable)
 
 ```typescript
-test('user can create order via dashboard', async ({ page, request }) => {
+test("user can create order via dashboard", async ({ page, request }) => {
   // Setup: Create shop via API (fast)
   const shop = await apiHelper.createShop();
 
   // UI: User creates order via dashboard
   await page.goto(`/dashboard/orders/new`);
-  await page.fill('[name="customerId"]', 'cust-123');
-  await page.fill('[name="totalPrice"]', '99.99');
+  await page.fill('[name="customerId"]', "cust-123");
+  await page.fill('[name="totalPrice"]', "99.99");
   await page.click('button[type="submit"]');
 
   // Verify: Check order created via API (fast + reliable)
@@ -1303,6 +1322,7 @@ test('user can create order via dashboard', async ({ page, request }) => {
 ### Trade-off 4: Event Schema Versioning Strategy
 
 **Options:**
+
 1. **No versioning** — Subscribers always expect latest schema
 2. **Implicit versioning** — Detect schema via trial (try parse, fall back)
 3. **Explicit versioning** — Include version in envelope (chosen)
@@ -1310,6 +1330,7 @@ test('user can create order via dashboard', async ({ page, request }) => {
 **Decision:** Explicit versioning
 
 **Why:**
+
 - Clear contract between publishers and subscribers
 - Prevents silent failures (unknown version caught immediately)
 - Easy to track migration progress
@@ -1319,6 +1340,7 @@ test('user can create order via dashboard', async ({ page, request }) => {
 ### Trade-off 5: DLQ Retry Strategy
 
 **Options:**
+
 1. **Fire-and-forget** — No retries, lose events
 2. **Immediate retries** — Retry 3x then fail (risk: thundering herd)
 3. **Exponential backoff** — Delay retries, backoff (chosen)
@@ -1327,6 +1349,7 @@ test('user can create order via dashboard', async ({ page, request }) => {
 **Decision:** Exponential backoff with max retries (3)
 
 **Rationale:**
+
 - Handles transient failures (API rate limits, brief outages)
 - Fails fast on permanent errors (invalid data, auth failure)
 - Prevents retry storms
@@ -1574,6 +1597,7 @@ Test Suite Start
 ## Implementation Roadmap
 
 ### Phase 1 (Sprint 5.1): E2E Foundation
+
 - [ ] Set up Playwright config (`playwright.config.ts`)
 - [ ] Create base page object (`pages/basePage.ts`)
 - [ ] Create fixtures (`fixtures/auth.fixture.ts`, `fixtures/testData.fixture.ts`)
@@ -1581,6 +1605,7 @@ Test Suite Start
 - [ ] Set up CI/CD workflow for E2E tests
 
 ### Phase 2 (Sprint 5.2): Page Objects & Test Cases
+
 - [ ] Implement all page objects (dashboard, orders, settings, etc.)
 - [ ] Write 20+ UI tests (orders, workflows, integrations)
 - [ ] Add API test layer (GraphQL mutations)
@@ -1588,6 +1613,7 @@ Test Suite Start
 - [ ] Add flakiness detection
 
 ### Phase 3 (Sprint 5.3): Event Bus Enhancements
+
 - [ ] Implement event schema versioning
 - [ ] Implement dead-letter queue (DLQ)
 - [ ] Add DLQ reprocessing loop
@@ -1595,6 +1621,7 @@ Test Suite Start
 - [ ] Write consumer group tests
 
 ### Phase 4 (Sprint 5.4): AI Integration & Monitoring
+
 - [ ] Implement AI failure analysis reporter
 - [ ] Setup flakiness analyzer
 - [ ] Add event bus performance monitoring
@@ -1602,6 +1629,7 @@ Test Suite Start
 - [ ] Document debugging guide
 
 ### Phase 5 (Sprint 5.5): Production Hardening
+
 - [ ] Performance optimization (reduce test suite duration)
 - [ ] Visual regression testing (Percy integration)
 - [ ] Cross-browser testing setup (Safari, Firefox)
@@ -1612,15 +1640,15 @@ Test Suite Start
 
 ## Risks and Mitigations
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|-----------|
-| **Flaky tests** | High | High | Use `expect()` API, auto-retry, flakiness detector |
-| **Test data pollution** | Medium | Medium | Strict isolation per test, cleanup hooks |
-| **DLQ growth unbounded** | Low | Medium | Max retries, archive strategy, monitoring |
-| **Event schema incompatibility** | Medium | High | Explicit versioning, migration tests |
-| **Playwright adoption learning curve** | Medium | Low | Pair programming, documentation, training |
-| **CI/CD timeout (test suite too slow)** | Medium | Medium | Parallel execution, selective test runs, caching |
-| **Redis Streams scalability** | Low | High | Benchmark under load, consider clustering |
+| Risk                                    | Likelihood | Impact | Mitigation                                         |
+| --------------------------------------- | ---------- | ------ | -------------------------------------------------- |
+| **Flaky tests**                         | High       | High   | Use `expect()` API, auto-retry, flakiness detector |
+| **Test data pollution**                 | Medium     | Medium | Strict isolation per test, cleanup hooks           |
+| **DLQ growth unbounded**                | Low        | Medium | Max retries, archive strategy, monitoring          |
+| **Event schema incompatibility**        | Medium     | High   | Explicit versioning, migration tests               |
+| **Playwright adoption learning curve**  | Medium     | Low    | Pair programming, documentation, training          |
+| **CI/CD timeout (test suite too slow)** | Medium     | Medium | Parallel execution, selective test runs, caching   |
+| **Redis Streams scalability**           | Low        | High   | Benchmark under load, consider clustering          |
 
 ---
 
@@ -1654,6 +1682,7 @@ This ADR establishes **Playwright + Page Object Model** as the E2E testing stand
 5. **Production-grade monitoring** for event flow and performance
 
 The combination ensures:
+
 - **Developer confidence** — Automated testing of critical flows
 - **Operational visibility** — Events monitored end-to-end
 - **Maintainability** — Page objects and schema versioning reduce brittleness

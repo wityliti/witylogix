@@ -53,7 +53,10 @@ export interface UseVehicleTrackingReturn extends UseVehicleTrackingState {
     maxLng: number;
   }) => string[];
   /** Get position history for a vehicle */
-  getPositionHistory: (vehicleId: string, limit?: number) => WitylogixVehiclePosition[];
+  getPositionHistory: (
+    vehicleId: string,
+    limit?: number,
+  ) => WitylogixVehiclePosition[];
 }
 
 /**
@@ -98,7 +101,9 @@ export function useVehicleTracking(
   const wsRef = useRef<WebSocket | undefined>();
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
   const reconnectAttemptsRef = useRef(0);
-  const positionHistoryRef = useRef<Map<string, WitylogixVehiclePosition[]>>(new Map());
+  const positionHistoryRef = useRef<Map<string, WitylogixVehiclePosition[]>>(
+    new Map(),
+  );
 
   /**
    * Connect to vehicle feed
@@ -147,7 +152,8 @@ export function useVehicleTracking(
               vehicles.set(position.vehicleId, position);
 
               // Store in history
-              const history = positionHistoryRef.current.get(position.vehicleId) || [];
+              const history =
+                positionHistoryRef.current.get(position.vehicleId) || [];
               history.push(position);
               if (history.length > (config?.maxPositions || 100)) {
                 history.shift();
@@ -267,23 +273,26 @@ export function useVehicleTracking(
   /**
    * Filter vehicles by status
    */
-  const filterByStatus = useCallback((status: string) => {
-    // Filter logic based on vehicle properties
-    // Stale if lastUpdate > 5 minutes
-    const staleThreshold = Date.now() - (5 * 60 * 1000);
+  const filterByStatus = useCallback(
+    (status: string) => {
+      // Filter logic based on vehicle properties
+      // Stale if lastUpdate > 5 minutes
+      const staleThreshold = Date.now() - 5 * 60 * 1000;
 
-    return Array.from(state.vehicles.entries())
-      .filter(([_, position]) => {
-        if (status === "active") {
-          return position.timestamp.getTime() > staleThreshold;
-        }
-        if (status === "stale") {
-          return position.timestamp.getTime() <= staleThreshold;
-        }
-        return true;
-      })
-      .map(([id]) => id);
-  }, [state.vehicles]);
+      return Array.from(state.vehicles.entries())
+        .filter(([_, position]) => {
+          if (status === "active") {
+            return position.timestamp.getTime() > staleThreshold;
+          }
+          if (status === "stale") {
+            return position.timestamp.getTime() <= staleThreshold;
+          }
+          return true;
+        })
+        .map(([id]) => id);
+    },
+    [state.vehicles],
+  );
 
   /**
    * Filter vehicles in geofence
@@ -334,7 +343,7 @@ export function useVehicleTracking(
 
   // Update stale count
   useEffect(() => {
-    const staleThreshold = Date.now() - (5 * 60 * 1000);
+    const staleThreshold = Date.now() - 5 * 60 * 1000;
     const staleCount = Array.from(state.vehicles.values()).filter(
       (pos) => pos.timestamp.getTime() <= staleThreshold,
     ).length;
@@ -357,4 +366,3 @@ export function useVehicleTracking(
     getPositionHistory,
   };
 }
-

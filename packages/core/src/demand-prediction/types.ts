@@ -458,17 +458,17 @@ export interface IFeatureStore {
   snapshot(
     zoneId: string,
     timestamp: Date,
-    features: Omit<FeatureSnapshot, "id" | "zoneId" | "timestamp" | "createdAt">,
-    observedVolume?: number
+    features: Omit<
+      FeatureSnapshot,
+      "id" | "zoneId" | "timestamp" | "createdAt"
+    >,
+    observedVolume?: number,
   ): Promise<FeatureSnapshot>;
 
   /**
    * Retrieve recent features for a zone
    */
-  getRecent(
-    zoneId: string,
-    lookbackDays: number
-  ): Promise<FeatureSnapshot[]>;
+  getRecent(zoneId: string, lookbackDays: number): Promise<FeatureSnapshot[]>;
 
   /**
    * Get zone profile
@@ -478,7 +478,10 @@ export interface IFeatureStore {
   /**
    * Update zone profile
    */
-  updateZoneProfile(zoneId: string, profile: Partial<ZoneProfile>): Promise<void>;
+  updateZoneProfile(
+    zoneId: string,
+    profile: Partial<ZoneProfile>,
+  ): Promise<void>;
 }
 
 /**
@@ -491,7 +494,7 @@ export interface IDemandPredictor {
   forecast(
     zoneId: string,
     forecastDate: Date,
-    granularity: ForecastGranularity
+    granularity: ForecastGranularity,
   ): Promise<HourlyForecast[]>;
 
   /**
@@ -499,7 +502,7 @@ export interface IDemandPredictor {
    */
   recommendCapacity(
     zoneId: string,
-    slotDate: Date
+    slotDate: Date,
   ): Promise<CapacityRecommendation>;
 
   /**
@@ -510,7 +513,7 @@ export interface IDemandPredictor {
     timeRange: {
       from: Date;
       to: Date;
-    }
+    },
   ): Promise<DemandAnomaly[]>;
 
   /**
@@ -518,7 +521,7 @@ export interface IDemandPredictor {
    */
   getPerformance(
     zoneId: string,
-    days: number
+    days: number,
   ): Promise<ModelPerformanceMetrics>;
 
   /**

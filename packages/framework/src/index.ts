@@ -110,7 +110,11 @@ export { WorkflowStatus } from "./types/index.js";
 
 export { Container, createContainer } from "./container/index.js";
 
-export type { ContainerConfig, ServiceFactory, ServiceLifetime } from "./container/index.js";
+export type {
+  ContainerConfig,
+  ServiceFactory,
+  ServiceLifetime,
+} from "./container/index.js";
 
 // ─────────────────────────────────────────────────────────────────────────
 // WORKFLOW EXPORTS
@@ -125,6 +129,9 @@ export {
   markStepFailure,
   markStepRetry,
 } from "./workflow/step-runner.js";
-export { runCompensation, isCompensationNeeded } from "./workflow/compensation.js";
+export {
+  runCompensation,
+  isCompensationNeeded,
+} from "./workflow/compensation.js";
 
 export type { CompensationResult } from "./workflow/compensation.js";

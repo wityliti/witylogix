@@ -119,7 +119,7 @@ class CircuitBreaker {
   constructor(
     failureThreshold: number,
     successThreshold: number,
-    timeout: number
+    timeout: number,
   ) {
     this.failureThreshold = failureThreshold;
     this.successThreshold = successThreshold;
@@ -206,11 +206,7 @@ class RetryHandler {
    * @param delayMs - Initial delay in milliseconds
    * @param backoffMultiplier - Multiplier for exponential backoff
    */
-  constructor(
-    maxAttempts: number,
-    delayMs: number,
-    backoffMultiplier: number
-  ) {
+  constructor(maxAttempts: number, delayMs: number, backoffMultiplier: number) {
     this.maxAttempts = maxAttempts;
     this.delayMs = delayMs;
     this.backoffMultiplier = backoffMultiplier;
@@ -225,7 +221,7 @@ class RetryHandler {
    */
   async execute<T>(
     fn: () => Promise<T>,
-    context: string = "operation"
+    context: string = "operation",
   ): Promise<T> {
     let lastError: Error | null = null;
 
@@ -233,22 +229,18 @@ class RetryHandler {
       try {
         return await fn();
       } catch (error) {
-        lastError =
-          error instanceof Error
-            ? error
-            : new Error(String(error));
+        lastError = error instanceof Error ? error : new Error(String(error));
 
         if (attempt < this.maxAttempts) {
           const delay =
-            this.delayMs *
-            Math.pow(this.backoffMultiplier, attempt - 1);
+            this.delayMs * Math.pow(this.backoffMultiplier, attempt - 1);
           await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
     }
 
     throw new Error(
-      `${context} failed after ${this.maxAttempts} attempts: ${lastError?.message}`
+      `${context} failed after ${this.maxAttempts} attempts: ${lastError?.message}`,
     );
   }
 }
@@ -280,19 +272,19 @@ export abstract class FreightAdapter extends EventEmitter {
 
     this.rateLimiter = new RateLimiter(
       config.rateLimit.maxRequests,
-      config.rateLimit.windowMs
+      config.rateLimit.windowMs,
     );
 
     this.circuitBreaker = new CircuitBreaker(
       config.circuitBreaker.failureThreshold,
       config.circuitBreaker.successThreshold,
-      config.circuitBreaker.timeout
+      config.circuitBreaker.timeout,
     );
 
     this.retryHandler = new RetryHandler(
       config.retry.maxAttempts,
       config.retry.delayMs,
-      config.retry.backoffMultiplier
+      config.retry.backoffMultiplier,
     );
   }
 
@@ -324,9 +316,7 @@ export abstract class FreightAdapter extends EventEmitter {
     // Check rate limiter
     if (!this.rateLimiter.isAllowed()) {
       const remaining = this.rateLimiter.getRemaining();
-      throw new Error(
-        `Rate limit exceeded. ${remaining} requests remaining`
-      );
+      throw new Error(`Rate limit exceeded. ${remaining} requests remaining`);
     }
 
     // Check circuit breaker
@@ -366,7 +356,9 @@ export abstract class FreightAdapter extends EventEmitter {
    * @param criteria - Search criteria
    * @returns Array of matching loads
    */
-  abstract searchLoads(criteria: Record<string, unknown>): Promise<LoadPosting[]>;
+  abstract searchLoads(
+    criteria: Record<string, unknown>,
+  ): Promise<LoadPosting[]>;
 
   /**
    * Delete/unpost a load
@@ -383,7 +375,10 @@ export abstract class FreightAdapter extends EventEmitter {
    * @param carrierId - Carrier identifier
    * @returns Rate quote
    */
-  abstract requestQuote(loadId: string, carrierId: string): Promise<FreightQuote>;
+  abstract requestQuote(
+    loadId: string,
+    carrierId: string,
+  ): Promise<FreightQuote>;
 
   /**
    * Get all quotes for a load
@@ -415,7 +410,9 @@ export abstract class FreightAdapter extends EventEmitter {
    * @param criteria - Search criteria
    * @returns Array of carrier profiles
    */
-  abstract searchCarriers(criteria: Record<string, unknown>): Promise<CarrierProfile[]>;
+  abstract searchCarriers(
+    criteria: Record<string, unknown>,
+  ): Promise<CarrierProfile[]>;
 
   /**
    * Score/rate a carrier
@@ -432,10 +429,7 @@ export abstract class FreightAdapter extends EventEmitter {
    * @param destination - Destination location
    * @returns Lane rate information
    */
-  abstract getLaneRate(
-    origin: string,
-    destination: string
-  ): Promise<LaneRate>;
+  abstract getLaneRate(origin: string, destination: string): Promise<LaneRate>;
 
   /**
    * Get tracking information for a shipment
@@ -459,5 +453,7 @@ export abstract class FreightAdapter extends EventEmitter {
    * @param carrierId - Carrier identifier
    * @returns Array of compliance documents
    */
-  abstract getComplianceDocuments(carrierId: string): Promise<ComplianceDocument[]>;
+  abstract getComplianceDocuments(
+    carrierId: string,
+  ): Promise<ComplianceDocument[]>;
 }

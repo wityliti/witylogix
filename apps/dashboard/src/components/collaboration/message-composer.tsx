@@ -11,7 +11,13 @@ import {
 } from "react";
 import { cn } from "@/lib/utils";
 
-type Attachment = { id: string; name: string; url: string; size?: number; type?: string };
+type Attachment = {
+  id: string;
+  name: string;
+  url: string;
+  size?: number;
+  type?: string;
+};
 
 interface ComposerContextType {
   content: string;
@@ -27,21 +33,25 @@ interface ComposerContextType {
   handleSend: (onSend: () => void) => void;
 }
 
-const ComposerContext = createContext<ComposerContextType | undefined>(undefined);
+const ComposerContext = createContext<ComposerContextType | undefined>(
+  undefined,
+);
 
 function useComposerContext(): ComposerContextType {
   const context = useContext(ComposerContext);
   if (!context) {
-    throw new Error(
-      "Composer components must be used within ComposerRoot"
-    );
+    throw new Error("Composer components must be used within ComposerRoot");
   }
   return context;
 }
 
 interface ComposerRootProps {
   children: ReactNode;
-  onSend: (content: string, attachments: Attachment[], mentions: string[]) => Promise<void>;
+  onSend: (
+    content: string,
+    attachments: Attachment[],
+    mentions: string[],
+  ) => Promise<void>;
 }
 
 export function ComposerRoot({ children, onSend }: ComposerRootProps) {
@@ -64,7 +74,7 @@ export function ComposerRoot({ children, onSend }: ComposerRootProps) {
         console.error("Failed to send message:", error);
       }
     },
-    [content]
+    [content],
   );
 
   const value: ComposerContextType = {
@@ -88,13 +98,13 @@ export function ComposerRoot({ children, onSend }: ComposerRootProps) {
   );
 }
 
-interface ComposerInputProps
-  extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+interface ComposerInputProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   onTyping?: () => void;
 }
 
 export function ComposerInput({ onTyping, ...props }: ComposerInputProps) {
-  const { content, setContent, mentionQuery, setMentionQuery } = useComposerContext();
+  const { content, setContent, mentionQuery, setMentionQuery } =
+    useComposerContext();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleChange = useCallback(
@@ -107,7 +117,8 @@ export function ComposerInput({ onTyping, ...props }: ComposerInputProps) {
       if (lastAtIndex !== -1) {
         const afterAt = text.substring(lastAtIndex + 1);
         const spaceIndex = afterAt.indexOf(" ");
-        const query = spaceIndex === -1 ? afterAt : afterAt.substring(0, spaceIndex);
+        const query =
+          spaceIndex === -1 ? afterAt : afterAt.substring(0, spaceIndex);
         setMentionQuery(query);
       } else {
         setMentionQuery("");
@@ -121,11 +132,11 @@ export function ComposerInput({ onTyping, ...props }: ComposerInputProps) {
         textareaRef.current.style.height = "auto";
         textareaRef.current.style.height = `${Math.min(
           textareaRef.current.scrollHeight,
-          200
+          200,
         )}px`;
       }
     },
-    [setContent, setMentionQuery, onTyping]
+    [setContent, setMentionQuery, onTyping],
   );
 
   const handleKeyDown = useCallback(
@@ -135,11 +146,11 @@ export function ComposerInput({ onTyping, ...props }: ComposerInputProps) {
         e.preventDefault();
         const sendButton = (
           e.currentTarget.closest("form") || document
-        ).querySelector('[data-send-button]') as HTMLButtonElement;
+        ).querySelector("[data-send-button]") as HTMLButtonElement;
         sendButton?.click();
       }
     },
-    []
+    [],
   );
 
   return (
@@ -157,7 +168,7 @@ export function ComposerInput({ onTyping, ...props }: ComposerInputProps) {
         "focus-visible:ring-wl-primary-500 focus-visible:border-transparent",
         "placeholder-wl-text-tertiary",
         "scrollbar-thin scrollbar-thumb-wl-border-strong",
-        "transition-colors duration-fast ease-default"
+        "transition-colors duration-fast ease-default",
       )}
       rows={3}
       {...props}
@@ -173,7 +184,13 @@ interface ToolbarButtonProps {
   disabled?: boolean;
 }
 
-function ToolbarButton({ icon, label, onClick, active, disabled }: ToolbarButtonProps) {
+function ToolbarButton({
+  icon,
+  label,
+  onClick,
+  active,
+  disabled,
+}: ToolbarButtonProps) {
   return (
     <button
       type="button"
@@ -188,7 +205,7 @@ function ToolbarButton({ icon, label, onClick, active, disabled }: ToolbarButton
           : "text-wl-text-secondary hover:text-wl-text-primary",
         "hover:bg-wl-bg-overlay",
         "disabled:opacity-50 disabled:cursor-not-allowed",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wl-primary-500"
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wl-primary-500",
       )}
     >
       <span className="text-lg">{icon}</span>
@@ -197,7 +214,8 @@ function ToolbarButton({ icon, label, onClick, active, disabled }: ToolbarButton
 }
 
 export function ComposerToolbar() {
-  const { content, setContent, showEmojiPicker, setShowEmojiPicker } = useComposerContext();
+  const { content, setContent, showEmojiPicker, setShowEmojiPicker } =
+    useComposerContext();
 
   const toggleBold = useCallback(() => {
     setContent(`**${content}**`);
@@ -262,11 +280,7 @@ function AttachmentItem({ id, name, url, onRemove }: AttachmentItemProps) {
   return (
     <div className="flex items-center gap-2 p-2 bg-wl-bg-surface rounded border border-wl-border-subtle">
       {isImage && (
-        <img
-          src={url}
-          alt={name}
-          className="w-12 h-12 rounded object-cover"
-        />
+        <img src={url} alt={name} className="w-12 h-12 rounded object-cover" />
       )}
       <div className="flex-1 min-w-0">
         <p className="text-xs font-medium text-wl-text-primary truncate">
@@ -305,7 +319,7 @@ export function ComposerAttachments() {
         ]);
       });
     },
-    [setAttachments]
+    [setAttachments],
   );
 
   const handleDrop = useCallback(
@@ -326,14 +340,14 @@ export function ComposerAttachments() {
         ]);
       });
     },
-    [setAttachments]
+    [setAttachments],
   );
 
   const removeAttachment = useCallback(
     (id: string) => {
       setAttachments((prev) => prev.filter((a) => a.id !== id));
     },
-    [setAttachments]
+    [setAttachments],
   );
 
   if (attachments.length === 0) return null;

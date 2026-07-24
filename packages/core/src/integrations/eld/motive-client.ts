@@ -170,10 +170,7 @@ export class MotiveELDClient extends ELDAdapter {
     // Test API connectivity
     try {
       await this.executeWithRetry(() =>
-        this.makeRequest<{ account: { id: string } }>(
-          "GET",
-          "/account"
-        )
+        this.makeRequest<{ account: { id: string } }>("GET", "/account"),
       );
       this.logEvent({
         type: "diagnostic-event",
@@ -190,13 +187,17 @@ export class MotiveELDClient extends ELDAdapter {
   async getDriverLogs(
     driverId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<ELDDriverLog[]> {
     const logs = await this.executeWithRetry(() =>
-      this.makeRequest<{ logs: MotiveHosLog[] }>("GET", `/drivers/${driverId}/hos-logs`, {
-        startTime: startDate.toISOString(),
-        endTime: endDate.toISOString(),
-      })
+      this.makeRequest<{ logs: MotiveHosLog[] }>(
+        "GET",
+        `/drivers/${driverId}/hos-logs`,
+        {
+          startTime: startDate.toISOString(),
+          endTime: endDate.toISOString(),
+        },
+      ),
     );
 
     return logs.logs.map((log, idx) => ({
@@ -224,15 +225,15 @@ export class MotiveELDClient extends ELDAdapter {
    */
   async getDutyStatus(driverId: string): Promise<ELDDutyStatus> {
     const driver = await this.executeWithRetry(() =>
-      this.makeRequest<MotiveDriver>("GET", `/drivers/${driverId}`)
+      this.makeRequest<MotiveDriver>("GET", `/drivers/${driverId}`),
     );
 
     const hosSummary = await this.executeWithRetry(() =>
       this.makeRequest<MotiveHosResponse>(
         "GET",
         `/drivers/${driverId}/hos-summary`,
-        { date: new Date().toISOString().split("T")[0] }
-      )
+        { date: new Date().toISOString().split("T")[0] },
+      ),
     );
 
     return {
@@ -261,7 +262,7 @@ export class MotiveELDClient extends ELDAdapter {
   async setDutyStatus(
     driverId: string,
     status: DutyStatus,
-    location?: { latitude: number; longitude: number }
+    location?: { latitude: number; longitude: number },
   ): Promise<ELDDutyStatus> {
     const payload = {
       dutyStatus: this.mapDutyStatusReverse(status),
@@ -270,7 +271,7 @@ export class MotiveELDClient extends ELDAdapter {
     };
 
     await this.executeWithRetry(() =>
-      this.makeRequest("POST", `/drivers/${driverId}/duty-status`, payload)
+      this.makeRequest("POST", `/drivers/${driverId}/duty-status`, payload),
     );
 
     this.logEvent({
@@ -287,7 +288,7 @@ export class MotiveELDClient extends ELDAdapter {
    */
   async getViolations(
     driverId: string,
-    days: number = 30
+    days: number = 30,
   ): Promise<ELDViolation[]> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -296,8 +297,8 @@ export class MotiveELDClient extends ELDAdapter {
       this.makeRequest<{ violations: MotiveViolation[] }>(
         "GET",
         `/drivers/${driverId}/violations`,
-        { startDate: startDate.toISOString() }
-      )
+        { startDate: startDate.toISOString() },
+      ),
     );
 
     return violations.violations.map((v) => ({
@@ -325,7 +326,7 @@ export class MotiveELDClient extends ELDAdapter {
    */
   async getVehicle(vehicleId: string): Promise<ELDVehicle> {
     const vehicle = await this.executeWithRetry(() =>
-      this.makeRequest<MotiveVehicle>("GET", `/vehicles/${vehicleId}`)
+      this.makeRequest<MotiveVehicle>("GET", `/vehicles/${vehicleId}`),
     );
 
     return {
@@ -338,7 +339,9 @@ export class MotiveELDClient extends ELDAdapter {
       year: vehicle.year,
       group: undefined,
       odometerMiles: vehicle.odometer,
-      fuelType: (vehicle.fuelType as "diesel" | "gasoline" | "electric" | "hybrid") || undefined,
+      fuelType:
+        (vehicle.fuelType as "diesel" | "gasoline" | "electric" | "hybrid") ||
+        undefined,
       capacityLbs: vehicle.gvwr,
       currentLocation: vehicle.currentLocation
         ? {
@@ -365,12 +368,10 @@ export class MotiveELDClient extends ELDAdapter {
    */
   async getVehicles(): Promise<ELDVehicle[]> {
     const response = await this.executeWithRetry(() =>
-      this.makeRequest<{ vehicles: MotiveVehicle[] }>("GET", "/vehicles")
+      this.makeRequest<{ vehicles: MotiveVehicle[] }>("GET", "/vehicles"),
     );
 
-    return Promise.all(
-      response.vehicles.map((v) => this.getVehicle(v.id))
-    );
+    return Promise.all(response.vehicles.map((v) => this.getVehicle(v.id)));
   }
 
   /**
@@ -394,8 +395,8 @@ export class MotiveELDClient extends ELDAdapter {
       this.makeRequest<MotiveDVIR>(
         "POST",
         `/vehicles/${dvir.vehicleId}/dvir`,
-        payload
-      )
+        payload,
+      ),
     );
 
     this.logEvent({
@@ -413,11 +414,12 @@ export class MotiveELDClient extends ELDAdapter {
       inspectionTime: new Date(result.inspectionTime),
       type: result.type === "pre_trip" ? "pre-trip" : "post-trip",
       condition: (result.condition as "pass" | "defect" | "not-safe") || "pass",
-      defects: result.defects?.map((d) => ({
-        component: d.component,
-        severity: (d.severity as "minor" | "major" | "critical") || "minor",
-        description: d.description,
-      })) || [],
+      defects:
+        result.defects?.map((d) => ({
+          component: d.component,
+          severity: (d.severity as "minor" | "major" | "critical") || "minor",
+          description: d.description,
+        })) || [],
       driverRemarks: result.driverRemarks,
       submittedAt: new Date(result.submittedAt),
       updatedAt: new Date(result.updatedAt),
@@ -435,8 +437,8 @@ export class MotiveELDClient extends ELDAdapter {
       this.makeRequest<{ dvirs: MotiveDVIR[] }>(
         "GET",
         `/vehicles/${vehicleId}/dvirs`,
-        { startDate: startDate.toISOString() }
-      )
+        { startDate: startDate.toISOString() },
+      ),
     );
 
     return response.dvirs.map((d) => ({
@@ -447,11 +449,12 @@ export class MotiveELDClient extends ELDAdapter {
       inspectionTime: new Date(d.inspectionTime),
       type: d.type === "pre_trip" ? "pre-trip" : "post-trip",
       condition: (d.condition as "pass" | "defect" | "not-safe") || "pass",
-      defects: d.defects?.map((df) => ({
-        component: df.component,
-        severity: (df.severity as "minor" | "major" | "critical") || "minor",
-        description: df.description,
-      })) || [],
+      defects:
+        d.defects?.map((df) => ({
+          component: df.component,
+          severity: (df.severity as "minor" | "major" | "critical") || "minor",
+          description: df.description,
+        })) || [],
       driverRemarks: d.driverRemarks,
       submittedAt: new Date(d.submittedAt),
       updatedAt: new Date(d.updatedAt),
@@ -500,7 +503,7 @@ export class MotiveELDClient extends ELDAdapter {
   async healthCheck(): Promise<boolean> {
     try {
       await this.executeWithRetry(() =>
-        this.makeRequest<{ account: { id: string } }>("GET", "/account")
+        this.makeRequest<{ account: { id: string } }>("GET", "/account"),
       );
       return true;
     } catch {
@@ -517,7 +520,7 @@ export class MotiveELDClient extends ELDAdapter {
     method: string,
     path: string,
     params?: Record<string, unknown> | null,
-    body?: unknown
+    body?: unknown,
   ): Promise<T> {
     const url = new URL(`${this.baseUrl}${path}`);
 
@@ -540,7 +543,7 @@ export class MotiveELDClient extends ELDAdapter {
 
     if (!response.ok) {
       throw new Error(
-        `Motive API error: ${response.status} ${response.statusText}`
+        `Motive API error: ${response.status} ${response.statusText}`,
       );
     }
 

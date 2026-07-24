@@ -6,74 +6,84 @@
 /**
  * Unified payment status enumeration
  */
-export type PaymentStatus = 'pending' | 'succeeded' | 'processing' | 'failed' | 'canceled';
+export type PaymentStatus =
+  | "pending"
+  | "succeeded"
+  | "processing"
+  | "failed"
+  | "canceled";
 
 /**
  * Subscription status enumeration
  */
-export type SubscriptionStatus = 'active' | 'past_due' | 'canceled' | 'suspended' | 'ended';
+export type SubscriptionStatus =
+  | "active"
+  | "past_due"
+  | "canceled"
+  | "suspended"
+  | "ended";
 
 /**
  * Refund status enumeration
  */
-export type RefundStatus = 'pending' | 'succeeded' | 'failed' | 'canceled';
+export type RefundStatus = "pending" | "succeeded" | "failed" | "canceled";
 
 /**
  * Refund reason enumeration
  */
 export type RefundReason =
-  | 'duplicate'
-  | 'fraudulent'
-  | 'requested_by_customer'
-  | 'expired_uncaptured_charge'
-  | 'general'
-  | 'customer_request'
-  | 'unrecognized';
+  | "duplicate"
+  | "fraudulent"
+  | "requested_by_customer"
+  | "expired_uncaptured_charge"
+  | "general"
+  | "customer_request"
+  | "unrecognized";
 
 /**
  * Invoice status enumeration
  */
 export type InvoiceStatus =
-  | 'draft'
-  | 'open'
-  | 'paid'
-  | 'void'
-  | 'uncollectible'
-  | 'scheduled';
+  | "draft"
+  | "open"
+  | "paid"
+  | "void"
+  | "uncollectible"
+  | "scheduled";
 
 /**
  * Dispute status enumeration
  */
 export type DisputeStatus =
-  | 'warning_opened'
-  | 'warning_under_review'
-  | 'warning_won'
-  | 'warning_lost'
-  | 'opened'
-  | 'under_review'
-  | 'charge_refunded'
-  | 'won'
-  | 'lost'
-  | 'accepted';
+  | "warning_opened"
+  | "warning_under_review"
+  | "warning_won"
+  | "warning_lost"
+  | "opened"
+  | "under_review"
+  | "charge_refunded"
+  | "won"
+  | "lost"
+  | "accepted";
 
 /**
  * Dispute reason enumeration
  */
 export type DisputeReason =
-  | 'bank_account_closed'
-  | 'bank_cannot_process'
-  | 'check_returned'
-  | 'credit_not_processed'
-  | 'customer_initiated_transfer_reversal'
-  | 'duplicate'
-  | 'fraudulent'
-  | 'general'
-  | 'improper_account_info'
-  | 'insufficient_funds'
-  | 'product_unacceptable'
-  | 'product_not_received'
-  | 'unauthorised'
-  | 'unrecognized_transaction';
+  | "bank_account_closed"
+  | "bank_cannot_process"
+  | "check_returned"
+  | "credit_not_processed"
+  | "customer_initiated_transfer_reversal"
+  | "duplicate"
+  | "fraudulent"
+  | "general"
+  | "improper_account_info"
+  | "insufficient_funds"
+  | "product_unacceptable"
+  | "product_not_received"
+  | "unauthorised"
+  | "unrecognized_transaction";
 
 /**
  * Unified payment intent metadata
@@ -81,7 +91,7 @@ export type DisputeReason =
 export interface PaymentIntent {
   id: string;
   externalId: string; // Provider-specific ID
-  provider: 'stripe' | 'paypal';
+  provider: "stripe" | "paypal";
   amount: number; // In cents
   currency: string; // ISO 4217
   status: PaymentStatus;
@@ -100,7 +110,7 @@ export interface PaymentIntent {
   idempotencyKey?: string;
   statementDescriptor?: string;
   nextAction?: {
-    type: 'use_stripe_sdk' | 'redirect_to_url' | 'oob_otp_verification';
+    type: "use_stripe_sdk" | "redirect_to_url" | "oob_otp_verification";
     url?: string;
   };
 }
@@ -111,7 +121,7 @@ export interface PaymentIntent {
 export interface Subscription {
   id: string;
   externalId: string; // Provider-specific ID
-  provider: 'stripe' | 'paypal';
+  provider: "stripe" | "paypal";
   customerId: string;
   status: SubscriptionStatus;
   items: SubscriptionItem[];
@@ -153,7 +163,7 @@ export interface SubscriptionItem {
 export interface Invoice {
   id: string;
   externalId: string; // Provider-specific ID
-  provider: 'stripe' | 'paypal';
+  provider: "stripe" | "paypal";
   customerId: string;
   subscriptionId?: string;
   amount: number; // In cents
@@ -200,7 +210,7 @@ export interface InvoiceLineItem {
 export interface Refund {
   id: string;
   externalId: string; // Provider-specific ID
-  provider: 'stripe' | 'paypal';
+  provider: "stripe" | "paypal";
   chargeId: string;
   amount: number; // In cents
   currency: string;
@@ -221,7 +231,7 @@ export interface Refund {
 export interface Dispute {
   id: string;
   externalId: string; // Provider-specific ID
-  provider: 'stripe' | 'paypal';
+  provider: "stripe" | "paypal";
   chargeId: string;
   amount: number; // In cents
   currency: string;
@@ -244,11 +254,11 @@ export interface Dispute {
 export interface CheckoutSession {
   id: string;
   externalId: string; // Provider-specific ID
-  provider: 'stripe' | 'paypal';
+  provider: "stripe" | "paypal";
   customerId?: string;
-  mode: 'payment' | 'setup' | 'subscription';
-  paymentStatus: 'unpaid' | 'paid' | 'no_payment_required';
-  status: 'open' | 'complete' | 'expired';
+  mode: "payment" | "setup" | "subscription";
+  paymentStatus: "unpaid" | "paid" | "no_payment_required";
+  status: "open" | "complete" | "expired";
   clientSecret?: string;
   url?: string; // Hosted page URL
   successUrl?: string;
@@ -285,7 +295,7 @@ export interface StripeConfig {
   apiKey: string;
   publishableKey?: string;
   webhookSecret?: string;
-  environment: 'test' | 'live';
+  environment: "test" | "live";
   apiVersion?: string; // e.g., '2023-10-16'
   maxNetworkRetries?: number;
   timeout?: number; // milliseconds
@@ -302,7 +312,7 @@ export interface StripeConfig {
 export interface PayPalConfig {
   clientId: string;
   clientSecret: string;
-  environment: 'sandbox' | 'live';
+  environment: "sandbox" | "live";
   webhookId?: string;
   returnUrl?: string;
   cancelUrl?: string;
@@ -317,29 +327,35 @@ export interface PayPalConfig {
 export interface WitylogixPaymentEvent {
   id: string;
   timestamp: Date;
-  provider: 'stripe' | 'paypal';
+  provider: "stripe" | "paypal";
   externalEventId?: string; // Provider-specific event ID
   type:
-    | 'payment.completed'
-    | 'payment.failed'
-    | 'refund.completed'
-    | 'refund.failed'
-    | 'subscription.created'
-    | 'subscription.updated'
-    | 'subscription.canceled'
-    | 'subscription.paused'
-    | 'subscription.resumed'
-    | 'subscription.ended'
-    | 'invoice.created'
-    | 'invoice.paid'
-    | 'invoice.payment_failed'
-    | 'invoice.voided'
-    | 'invoice.marked_uncollectible'
-    | 'dispute.opened'
-    | 'dispute.closed'
-    | 'chargeback.created'
-    | 'checkout.completed';
-  resourceType: 'payment_intent' | 'subscription' | 'invoice' | 'refund' | 'dispute' | 'checkout_session';
+    | "payment.completed"
+    | "payment.failed"
+    | "refund.completed"
+    | "refund.failed"
+    | "subscription.created"
+    | "subscription.updated"
+    | "subscription.canceled"
+    | "subscription.paused"
+    | "subscription.resumed"
+    | "subscription.ended"
+    | "invoice.created"
+    | "invoice.paid"
+    | "invoice.payment_failed"
+    | "invoice.voided"
+    | "invoice.marked_uncollectible"
+    | "dispute.opened"
+    | "dispute.closed"
+    | "chargeback.created"
+    | "checkout.completed";
+  resourceType:
+    | "payment_intent"
+    | "subscription"
+    | "invoice"
+    | "refund"
+    | "dispute"
+    | "checkout_session";
   resourceId: string;
   data: {
     paymentIntent?: PaymentIntent;
@@ -358,7 +374,7 @@ export interface WitylogixPaymentEvent {
  * Payment webhook payload wrapper
  */
 export interface PaymentWebhookPayload {
-  provider: 'stripe' | 'paypal';
+  provider: "stripe" | "paypal";
   body: string | Record<string, any>;
   signature?: string;
   headers?: Record<string, string>;
@@ -371,7 +387,7 @@ export interface PaymentWebhookPayload {
 export interface PaymentError extends Error {
   code: string;
   statusCode?: number;
-  provider: 'stripe' | 'paypal';
+  provider: "stripe" | "paypal";
   retryable: boolean;
   originalError?: Error;
 }

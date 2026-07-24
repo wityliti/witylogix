@@ -4,7 +4,7 @@
  * Supports trial periods, prorated billing, and automatic renewal cycles.
  */
 
-import { PrismaClient } from '@witylogix/db';
+import { PrismaClient } from "@witylogix/db";
 
 // ─── LOCAL TYPE DEFINITIONS ─────────────────────────────────────────
 // These types replace non-existent exports from @witylogix/db
@@ -22,7 +22,7 @@ export type BillingPlan = {
   id: string;
   name: string;
   price: number;
-  interval: 'monthly' | 'yearly';
+  interval: "monthly" | "yearly";
   trialDays?: number;
   limits?: Record<string, number | null>;
   createdAt?: Date;
@@ -33,7 +33,7 @@ export type BillingSubscription = {
   id: string;
   shopId: string;
   planId: string;
-  status: 'trialing' | 'active' | 'cancelled' | 'expired';
+  status: "trialing" | "active" | "cancelled" | "expired";
   currentPeriodStart: Date;
   currentPeriodEnd: Date;
   trialEnd?: Date | null;
@@ -49,21 +49,21 @@ export type BillingSubscription = {
 export class SubscriptionNotFoundError extends Error {
   constructor(subscriptionId: string) {
     super(`Subscription not found: ${subscriptionId}`);
-    this.name = 'SubscriptionNotFoundError';
+    this.name = "SubscriptionNotFoundError";
   }
 }
 
 export class PlanNotFoundError extends Error {
   constructor(planId: string) {
     super(`Plan not found: ${planId}`);
-    this.name = 'PlanNotFoundError';
+    this.name = "PlanNotFoundError";
   }
 }
 
 export class SubscriptionError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'SubscriptionError';
+    this.name = "SubscriptionError";
   }
 }
 
@@ -73,7 +73,7 @@ export interface SubscriptionWithPlan {
   id: string;
   shopId: string;
   planId: string;
-  status: 'trialing' | 'active' | 'cancelled' | 'expired';
+  status: "trialing" | "active" | "cancelled" | "expired";
   currentPeriodStart: Date;
   currentPeriodEnd: Date;
   trialEnd?: Date | null;
@@ -116,12 +116,16 @@ export class SubscriptionManager {
     }
 
     // Check if shop already has an active subscription
-    const existingSubscription = await (this.prisma as any).billingSubscription.findUnique({
+    const existingSubscription = await (
+      this.prisma as any
+    ).billingSubscription.findUnique({
       where: { shopId },
     });
 
     if (existingSubscription) {
-      throw new SubscriptionError(`Shop ${shopId} already has an active subscription`);
+      throw new SubscriptionError(
+        `Shop ${shopId} already has an active subscription`,
+      );
     }
 
     const now = new Date();
@@ -136,7 +140,7 @@ export class SubscriptionManager {
       periodEnd.setDate(periodEnd.getDate() + trialDays);
     } else {
       periodEnd = new Date(periodStart);
-      const daysInPeriod = plan.interval === 'yearly' ? 365 : 30;
+      const daysInPeriod = plan.interval === "yearly" ? 365 : 30;
       periodEnd.setDate(periodEnd.getDate() + daysInPeriod);
     }
 
@@ -144,7 +148,7 @@ export class SubscriptionManager {
       data: {
         shopId,
         planId,
-        status: isTrialing ? 'trialing' : 'active',
+        status: isTrialing ? "trialing" : "active",
         currentPeriodStart: periodStart,
         currentPeriodEnd: periodEnd,
         trialEnd: isTrialing ? periodEnd : null,
@@ -170,8 +174,13 @@ export class SubscriptionManager {
     const subscription = await this.getSubscriptionWithPlan(subscriptionId);
     const newPlan = await this.getPlan(newPlanId);
 
-    if (subscription.status === 'cancelled' || subscription.status === 'expired') {
-      throw new SubscriptionError('Cannot upgrade a cancelled or expired subscription');
+    if (
+      subscription.status === "cancelled" ||
+      subscription.status === "expired"
+    ) {
+      throw new SubscriptionError(
+        "Cannot upgrade a cancelled or expired subscription",
+      );
     }
 
     const proration = this.calculateProration(
@@ -188,7 +197,7 @@ export class SubscriptionManager {
 
     // Emit event for invoice generation
     // In production, this would trigger invoice-generator to create proration invoice
-    this.emitEvent('subscription.upgraded', {
+    this.emitEvent("subscription.upgraded", {
       subscriptionId,
       oldPlanId: subscription.planId,
       newPlanId,
@@ -208,8 +217,13 @@ export class SubscriptionManager {
   ): Promise<SubscriptionWithPlan> {
     const subscription = await this.getSubscriptionWithPlan(subscriptionId);
 
-    if (subscription.status === 'cancelled' || subscription.status === 'expired') {
-      throw new SubscriptionError('Cannot downgrade a cancelled or expired subscription');
+    if (
+      subscription.status === "cancelled" ||
+      subscription.status === "expired"
+    ) {
+      throw new SubscriptionError(
+        "Cannot downgrade a cancelled or expired subscription",
+      );
     }
 
     // For downgrade, set to take effect at period end
@@ -219,7 +233,7 @@ export class SubscriptionManager {
       include: { plan: true },
     });
 
-    this.emitEvent('subscription.downgraded', {
+    this.emitEvent("subscription.downgraded", {
       subscriptionId,
       oldPlanId: subscription.planId,
       newPlanId,
@@ -240,8 +254,8 @@ export class SubscriptionManager {
   ): Promise<SubscriptionWithPlan> {
     const subscription = await this.getSubscriptionWithPlan(subscriptionId);
 
-    if (subscription.status === 'cancelled') {
-      throw new SubscriptionError('Subscription is already cancelled');
+    if (subscription.status === "cancelled") {
+      throw new SubscriptionError("Subscription is already cancelled");
     }
 
     const now = new Date();
@@ -250,7 +264,7 @@ export class SubscriptionManager {
     const updated = await (this.prisma as any).billingSubscription.update({
       where: { id: subscriptionId },
       data: {
-        status: immediate ? 'cancelled' : subscription.status,
+        status: immediate ? "cancelled" : subscription.status,
         cancelledAt: now,
         cancelAtPeriodEnd: !immediate,
         currentPeriodEnd: immediate ? now : subscription.currentPeriodEnd,
@@ -258,7 +272,7 @@ export class SubscriptionManager {
       include: { plan: true },
     });
 
-    this.emitEvent('subscription.cancelled', {
+    this.emitEvent("subscription.cancelled", {
       subscriptionId,
       immediate,
       cancelledAt: now,
@@ -271,24 +285,31 @@ export class SubscriptionManager {
    * Renew a subscription for the next billing period
    * Called automatically or manually to create the next cycle
    */
-  async renewSubscription(subscriptionId: string): Promise<SubscriptionWithPlan> {
+  async renewSubscription(
+    subscriptionId: string,
+  ): Promise<SubscriptionWithPlan> {
     const subscription = await this.getSubscriptionWithPlan(subscriptionId);
 
-    if (subscription.status === 'cancelled' || subscription.status === 'expired') {
-      throw new SubscriptionError('Cannot renew a cancelled or expired subscription');
+    if (
+      subscription.status === "cancelled" ||
+      subscription.status === "expired"
+    ) {
+      throw new SubscriptionError(
+        "Cannot renew a cancelled or expired subscription",
+      );
     }
 
     const now = new Date();
     const periodStart = subscription.currentPeriodEnd;
     const periodEnd = new Date(periodStart);
 
-    const daysInPeriod = subscription.plan.interval === 'yearly' ? 365 : 30;
+    const daysInPeriod = subscription.plan.interval === "yearly" ? 365 : 30;
     periodEnd.setDate(periodEnd.getDate() + daysInPeriod);
 
     const updated = await (this.prisma as any).billingSubscription.update({
       where: { id: subscriptionId },
       data: {
-        status: 'active',
+        status: "active",
         currentPeriodStart: periodStart,
         currentPeriodEnd: periodEnd,
         cancelAtPeriodEnd: false,
@@ -300,7 +321,7 @@ export class SubscriptionManager {
     // Reset quota tracking for new period
     await this.initializeQuotaTracking(subscriptionId, periodStart, periodEnd);
 
-    this.emitEvent('subscription.renewed', {
+    this.emitEvent("subscription.renewed", {
       subscriptionId,
       periodStart,
       periodEnd,
@@ -312,7 +333,9 @@ export class SubscriptionManager {
   /**
    * Get subscription status with plan details
    */
-  async getSubscriptionStatus(shopId: string): Promise<SubscriptionWithPlan | null> {
+  async getSubscriptionStatus(
+    shopId: string,
+  ): Promise<SubscriptionWithPlan | null> {
     return (this.prisma as any).billingSubscription.findUnique({
       where: { shopId },
       include: { plan: true },
@@ -328,9 +351,11 @@ export class SubscriptionManager {
     const now = new Date();
 
     // Find all subscriptions with expired trials
-    const expiredTrials = await (this.prisma as any).billingSubscription.findMany({
+    const expiredTrials = await (
+      this.prisma as any
+    ).billingSubscription.findMany({
       where: {
-        status: 'trialing',
+        status: "trialing",
         trialEnd: {
           lte: now,
         },
@@ -345,32 +370,35 @@ export class SubscriptionManager {
         if (subscription.paymentMethodId) {
           await (this.prisma as any).billingSubscription.update({
             where: { id: subscription.id },
-            data: { status: 'active' },
+            data: { status: "active" },
           });
 
-          this.emitEvent('subscription.trial_expired', {
+          this.emitEvent("subscription.trial_expired", {
             subscriptionId: subscription.id,
-            action: 'activated',
+            action: "activated",
           });
         } else {
           await (this.prisma as any).billingSubscription.update({
             where: { id: subscription.id },
             data: {
-              status: 'expired',
+              status: "expired",
               cancelledAt: now,
             },
           });
 
-          this.emitEvent('subscription.trial_expired', {
+          this.emitEvent("subscription.trial_expired", {
             subscriptionId: subscription.id,
-            action: 'expired',
+            action: "expired",
           });
         }
 
         processedCount++;
       } catch (error) {
         // Log error and continue processing other trials
-        console.error(`Error processing trial expiration for ${subscription.id}:`, error);
+        console.error(
+          `Error processing trial expiration for ${subscription.id}:`,
+          error,
+        );
       }
     }
 
@@ -387,9 +415,15 @@ export class SubscriptionManager {
     newPlan: BillingPlan,
     daysRemaining: number,
   ): ProrationResult {
-    const currentPrice = typeof currentPlan.price === 'number' ? currentPlan.price : parseFloat(String(currentPlan.price));
-    const newPrice = typeof newPlan.price === 'number' ? newPlan.price : parseFloat(String(newPlan.price));
-    const daysInPeriod = currentPlan.interval === 'yearly' ? 365 : 30;
+    const currentPrice =
+      typeof currentPlan.price === "number"
+        ? currentPlan.price
+        : parseFloat(String(currentPlan.price));
+    const newPrice =
+      typeof newPlan.price === "number"
+        ? newPlan.price
+        : parseFloat(String(newPlan.price));
+    const daysInPeriod = currentPlan.interval === "yearly" ? 365 : 30;
 
     // Daily rates
     const currentDailyRate = currentPrice / daysInPeriod;
@@ -417,7 +451,9 @@ export class SubscriptionManager {
   private async getSubscriptionWithPlan(
     subscriptionId: string,
   ): Promise<SubscriptionWithPlan> {
-    const subscription = await (this.prisma as any).billingSubscription.findUnique({
+    const subscription = await (
+      this.prisma as any
+    ).billingSubscription.findUnique({
       where: { id: subscriptionId },
       include: { plan: true },
     });
@@ -452,10 +488,18 @@ export class SubscriptionManager {
     periodStart: Date,
     periodEnd: Date,
   ): Promise<void> {
-    const resources = ['orders', 'shipments', 'api_calls', 'storage', 'drivers'];
+    const resources = [
+      "orders",
+      "shipments",
+      "api_calls",
+      "storage",
+      "drivers",
+    ];
 
     // Get shop ID for context
-    const subscription = await (this.prisma as any).billingSubscription.findUnique({
+    const subscription = await (
+      this.prisma as any
+    ).billingSubscription.findUnique({
       where: { id: subscriptionId },
     });
 

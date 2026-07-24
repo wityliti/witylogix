@@ -21,7 +21,10 @@ function ipv4ToInt(ip: string): number {
   // strip leading IPv4-mapped-IPv6 prefix if present (e.g. "::ffff:127.0.0.1")
   const clean = ip.replace(/^::ffff:/, "");
   const parts = clean.split(".").map((o) => Number(o));
-  if (parts.length !== 4 || parts.some((n) => Number.isNaN(n) || n < 0 || n > 255)) {
+  if (
+    parts.length !== 4 ||
+    parts.some((n) => Number.isNaN(n) || n < 0 || n > 255)
+  ) {
     return NaN;
   }
   return (
@@ -31,7 +34,7 @@ function ipv4ToInt(ip: string): number {
 
 export function cidrMatch(ip: string, cidr: string): boolean {
   // IPv6 — require exact host match (minimal v1 implementation)
-  if (cidr.includes(":") || ip.includes(":") && !ip.startsWith("::ffff:")) {
+  if (cidr.includes(":") || (ip.includes(":") && !ip.startsWith("::ffff:"))) {
     return ip === cidr.split("/")[0];
   }
   const [net, bitsStr] = cidr.split("/");
@@ -46,7 +49,12 @@ export function cidrMatch(ip: string, cidr: string): boolean {
 
 function allowedCidrs(): string[] {
   const env = process.env.BENCH_ALLOWED_CIDRS;
-  return env ? env.split(",").map((s) => s.trim()).filter(Boolean) : DEFAULT_CIDRS;
+  return env
+    ? env
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : DEFAULT_CIDRS;
 }
 
 export function benchAuth() {
@@ -56,9 +64,10 @@ export function benchAuth() {
   ): Promise<void> {
     const configured = process.env.BENCH_SERVICE_TOKEN;
     if (!configured) {
-      reply
-        .code(503)
-        .send({ code: "bench_disabled", message: "bench admin API not enabled" });
+      reply.code(503).send({
+        code: "bench_disabled",
+        message: "bench admin API not enabled",
+      });
       return;
     }
 

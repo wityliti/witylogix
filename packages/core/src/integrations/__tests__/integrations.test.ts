@@ -45,7 +45,9 @@ describe("Integration Registry", () => {
     it("should return integrations for ORDER_MANAGEMENT category", () => {
       const orders = getIntegrationsByCategory("ORDER_MANAGEMENT");
       expect(orders.length).toBeGreaterThan(0);
-      expect(orders.every((app) => app.category === "ORDER_MANAGEMENT")).toBe(true);
+      expect(orders.every((app) => app.category === "ORDER_MANAGEMENT")).toBe(
+        true,
+      );
     });
 
     it("should return integrations for INVENTORY category", () => {
@@ -67,16 +69,24 @@ describe("Integration Registry", () => {
     });
 
     it("should filter by subcategory when provided", () => {
-      const emailIntegrations = getIntegrationsByCategory("COMMUNICATION", "email");
+      const emailIntegrations = getIntegrationsByCategory(
+        "COMMUNICATION",
+        "email",
+      );
       const allComms = getIntegrationsByCategory("COMMUNICATION");
 
       expect(emailIntegrations.length).toBeGreaterThan(0);
       expect(emailIntegrations.length).toBeLessThanOrEqual(allComms.length);
-      expect(emailIntegrations.every((app) => app.subcategory === "email")).toBe(true);
+      expect(
+        emailIntegrations.every((app) => app.subcategory === "email"),
+      ).toBe(true);
     });
 
     it("should return empty array for invalid subcategory", () => {
-      const invalid = getIntegrationsByCategory("COMMUNICATION", "invalid_subcategory");
+      const invalid = getIntegrationsByCategory(
+        "COMMUNICATION",
+        "invalid_subcategory",
+      );
       expect(invalid).toEqual([]);
     });
   });
@@ -120,9 +130,15 @@ describe("Integration Registry", () => {
     });
 
     it("should filter by category when provided", () => {
-      const availableComms = getAvailableIntegrations({ category: "COMMUNICATION" });
-      expect(availableComms.every((app) => app.category === "COMMUNICATION")).toBe(true);
-      expect(availableComms.every((app) => app.status !== "DEPRECATED")).toBe(true);
+      const availableComms = getAvailableIntegrations({
+        category: "COMMUNICATION",
+      });
+      expect(
+        availableComms.every((app) => app.category === "COMMUNICATION"),
+      ).toBe(true);
+      expect(availableComms.every((app) => app.status !== "DEPRECATED")).toBe(
+        true,
+      );
     });
 
     it("should combine status and category filters", () => {
@@ -131,7 +147,9 @@ describe("Integration Registry", () => {
         category: "COMMUNICATION",
       });
       expect(filtered.every((app) => app.status === "AVAILABLE")).toBe(true);
-      expect(filtered.every((app) => app.category === "COMMUNICATION")).toBe(true);
+      expect(filtered.every((app) => app.category === "COMMUNICATION")).toBe(
+        true,
+      );
     });
   });
 
@@ -149,7 +167,9 @@ describe("Integration Registry", () => {
     it("should search by name case-insensitively", () => {
       const results = searchIntegrations("firebase");
       expect(results.length).toBeGreaterThan(0);
-      expect(results.some((app) => app.name.toLowerCase().includes("firebase"))).toBe(true);
+      expect(
+        results.some((app) => app.name.toLowerCase().includes("firebase")),
+      ).toBe(true);
     });
 
     it("should search by description", () => {
@@ -191,14 +211,21 @@ describe("Integration Registry", () => {
         expect(counts[category]).toHaveProperty("total");
         expect(counts[category]).toHaveProperty("available");
         expect(counts[category].total).toBeGreaterThan(0);
-        expect(counts[category].available).toBeLessThanOrEqual(counts[category].total);
+        expect(counts[category].available).toBeLessThanOrEqual(
+          counts[category].total,
+        );
       }
     });
 
     it("should track available integrations correctly", () => {
       const counts = getIntegrationCounts();
-      const availableStatusOnly = getAvailableIntegrations({ status: "AVAILABLE" });
-      const totalAvailable = Object.values(counts).reduce((sum, cat) => sum + cat.available, 0);
+      const availableStatusOnly = getAvailableIntegrations({
+        status: "AVAILABLE",
+      });
+      const totalAvailable = Object.values(counts).reduce(
+        (sum, cat) => sum + cat.available,
+        0,
+      );
       expect(totalAvailable).toBe(availableStatusOnly.length);
     });
   });
@@ -660,8 +687,12 @@ describe("Integration Metering", () => {
       });
       const afterTime = new Date();
 
-      expect(emittedEvent?.timestamp.getTime()).toBeGreaterThanOrEqual(beforeTime.getTime());
-      expect(emittedEvent?.timestamp.getTime()).toBeLessThanOrEqual(afterTime.getTime());
+      expect(emittedEvent?.timestamp.getTime()).toBeGreaterThanOrEqual(
+        beforeTime.getTime(),
+      );
+      expect(emittedEvent?.timestamp.getTime()).toBeLessThanOrEqual(
+        afterTime.getTime(),
+      );
     });
 
     it("should propagate synchronous callback errors", () => {
@@ -721,7 +752,9 @@ describe("Integration Categories", () => {
 
   it("should have proper subcategories in COMMUNICATION", () => {
     const comms = getIntegrationsByCategory("COMMUNICATION");
-    const subcategories = new Set(comms.map((app) => app.subcategory).filter(Boolean));
+    const subcategories = new Set(
+      comms.map((app) => app.subcategory).filter(Boolean),
+    );
     expect(subcategories.size).toBeGreaterThan(0);
   });
 
@@ -739,14 +772,18 @@ describe("Integration Categories", () => {
   it("should have valid status values", () => {
     for (const app of getAllIntegrationSlugs()) {
       const integration = getIntegrationBySlug(app);
-      expect(integration?.status).toMatch(/^(AVAILABLE|COMING_SOON|BETA|DEPRECATED)$/);
+      expect(integration?.status).toMatch(
+        /^(AVAILABLE|COMING_SOON|BETA|DEPRECATED)$/,
+      );
     }
   });
 
   it("should have valid auth types", () => {
     for (const app of getAllIntegrationSlugs()) {
       const integration = getIntegrationBySlug(app);
-      expect(integration?.authType).toMatch(/^(API_KEY|OAUTH|NONE|MULTI_CREDENTIAL)$/);
+      expect(integration?.authType).toMatch(
+        /^(API_KEY|OAUTH|NONE|MULTI_CREDENTIAL)$/,
+      );
     }
   });
 

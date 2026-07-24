@@ -3,10 +3,10 @@
  * @witylogix/core — Realtime Workflows Test Suite (~300 lines)
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from "vitest";
 
 interface WorkflowEvent {
-  type: 'started' | 'step:started' | 'step:completed' | 'completed' | 'failed';
+  type: "started" | "step:started" | "step:completed" | "completed" | "failed";
   workflowId: string;
   executionId: string;
   timestamp: string;
@@ -15,7 +15,8 @@ interface WorkflowEvent {
 
 class RealtimeWorkflows {
   private rooms: Map<string, Set<string>> = new Map();
-  private eventListeners: Map<string, ((event: WorkflowEvent) => void)[]> = new Map();
+  private eventListeners: Map<string, ((event: WorkflowEvent) => void)[]> =
+    new Map();
   private rateLimitMap: Map<string, number[]> = new Map();
   private rateLimitPerSecond = 100;
 
@@ -50,18 +51,18 @@ class RealtimeWorkflows {
       return false;
     }
 
-    const listeners = this.eventListeners.get('*') || [];
-    listeners.forEach(cb => cb(event));
+    const listeners = this.eventListeners.get("*") || [];
+    listeners.forEach((cb) => cb(event));
 
     if (tenantId) {
       const tenantRoomKey = `tenant:${tenantId}`;
       const tenantListeners = this.eventListeners.get(tenantRoomKey) || [];
-      tenantListeners.forEach(cb => cb(event));
+      tenantListeners.forEach((cb) => cb(event));
     }
 
     const executionRoomKey = `execution:${event.executionId}`;
     const executionListeners = this.eventListeners.get(executionRoomKey) || [];
-    executionListeners.forEach(cb => cb(event));
+    executionListeners.forEach((cb) => cb(event));
 
     return true;
   }
@@ -75,14 +76,14 @@ class RealtimeWorkflows {
 
   private checkRateLimit(): boolean {
     const now = Date.now();
-    const key = 'global_rate_limit';
+    const key = "global_rate_limit";
 
     if (!this.rateLimitMap.has(key)) {
       this.rateLimitMap.set(key, []);
     }
 
     const timestamps = this.rateLimitMap.get(key)!;
-    const recentTimestamps = timestamps.filter(t => now - t < 1000);
+    const recentTimestamps = timestamps.filter((t) => now - t < 1000);
 
     if (recentTimestamps.length >= this.rateLimitPerSecond) {
       return false;
@@ -102,84 +103,86 @@ class RealtimeWorkflows {
   }
 }
 
-describe('Realtime Workflows', () => {
+describe("Realtime Workflows", () => {
   let realtime: RealtimeWorkflows;
 
   beforeEach(() => {
     realtime = new RealtimeWorkflows();
   });
 
-  describe('tenant-scoped room isolation', () => {
-    it('should isolate tenant rooms', () => {
-      realtime.subscribeToTenant('tenant_1', 'client_1');
-      realtime.subscribeToTenant('tenant_2', 'client_2');
+  describe("tenant-scoped room isolation", () => {
+    it("should isolate tenant rooms", () => {
+      realtime.subscribeToTenant("tenant_1", "client_1");
+      realtime.subscribeToTenant("tenant_2", "client_2");
 
-      const tenant1Subs = realtime.getTenantSubscribers('tenant_1');
-      const tenant2Subs = realtime.getTenantSubscribers('tenant_2');
+      const tenant1Subs = realtime.getTenantSubscribers("tenant_1");
+      const tenant2Subs = realtime.getTenantSubscribers("tenant_2");
 
-      expect(tenant1Subs).toContain('client_1');
-      expect(tenant1Subs).not.toContain('client_2');
-      expect(tenant2Subs).toContain('client_2');
+      expect(tenant1Subs).toContain("client_1");
+      expect(tenant1Subs).not.toContain("client_2");
+      expect(tenant2Subs).toContain("client_2");
     });
 
-    it('should handle multiple clients in same tenant', () => {
-      realtime.subscribeToTenant('tenant_1', 'client_1');
-      realtime.subscribeToTenant('tenant_1', 'client_2');
-      realtime.subscribeToTenant('tenant_1', 'client_3');
+    it("should handle multiple clients in same tenant", () => {
+      realtime.subscribeToTenant("tenant_1", "client_1");
+      realtime.subscribeToTenant("tenant_1", "client_2");
+      realtime.subscribeToTenant("tenant_1", "client_3");
 
-      const subscribers = realtime.getTenantSubscribers('tenant_1');
+      const subscribers = realtime.getTenantSubscribers("tenant_1");
       expect(subscribers).toHaveLength(3);
-      expect(subscribers).toContain('client_1');
-      expect(subscribers).toContain('client_2');
-      expect(subscribers).toContain('client_3');
+      expect(subscribers).toContain("client_1");
+      expect(subscribers).toContain("client_2");
+      expect(subscribers).toContain("client_3");
     });
   });
 
-  describe('execution-specific room subscription', () => {
-    it('should subscribe to execution room', () => {
-      realtime.subscribeToExecution('exec_123', 'client_1');
+  describe("execution-specific room subscription", () => {
+    it("should subscribe to execution room", () => {
+      realtime.subscribeToExecution("exec_123", "client_1");
 
-      const subscribers = realtime.getExecutionSubscribers('exec_123');
-      expect(subscribers).toContain('client_1');
+      const subscribers = realtime.getExecutionSubscribers("exec_123");
+      expect(subscribers).toContain("client_1");
     });
 
-    it('should isolate execution rooms', () => {
-      realtime.subscribeToExecution('exec_1', 'client_1');
-      realtime.subscribeToExecution('exec_2', 'client_2');
+    it("should isolate execution rooms", () => {
+      realtime.subscribeToExecution("exec_1", "client_1");
+      realtime.subscribeToExecution("exec_2", "client_2");
 
-      expect(realtime.getExecutionSubscribers('exec_1')).toContain('client_1');
-      expect(realtime.getExecutionSubscribers('exec_2')).toContain('client_2');
-      expect(realtime.getExecutionSubscribers('exec_1')).not.toContain('client_2');
+      expect(realtime.getExecutionSubscribers("exec_1")).toContain("client_1");
+      expect(realtime.getExecutionSubscribers("exec_2")).toContain("client_2");
+      expect(realtime.getExecutionSubscribers("exec_1")).not.toContain(
+        "client_2",
+      );
     });
   });
 
-  describe('rate limiting', () => {
-    it('should allow events below rate limit', () => {
+  describe("rate limiting", () => {
+    it("should allow events below rate limit", () => {
       for (let i = 0; i < 50; i++) {
         const result = realtime.emitEvent({
-          type: 'started',
-          workflowId: 'wf_1',
-          executionId: 'exec_1',
+          type: "started",
+          workflowId: "wf_1",
+          executionId: "exec_1",
           timestamp: new Date().toISOString(),
         });
         expect(result).toBe(true);
       }
     });
 
-    it('should reject events above rate limit', async () => {
+    it("should reject events above rate limit", async () => {
       for (let i = 0; i < 100; i++) {
         realtime.emitEvent({
-          type: 'started',
-          workflowId: 'wf_1',
-          executionId: 'exec_1',
+          type: "started",
+          workflowId: "wf_1",
+          executionId: "exec_1",
           timestamp: new Date().toISOString(),
         });
       }
 
       const result = realtime.emitEvent({
-        type: 'started',
-        workflowId: 'wf_2',
-        executionId: 'exec_2',
+        type: "started",
+        workflowId: "wf_2",
+        executionId: "exec_2",
         timestamp: new Date().toISOString(),
       });
 
@@ -187,139 +190,153 @@ describe('Realtime Workflows', () => {
     });
   });
 
-  describe('event types', () => {
-    it('should emit started event', () => {
+  describe("event types", () => {
+    it("should emit started event", () => {
       const callback = vi.fn();
-      realtime.onEvent('execution:exec_1', callback);
+      realtime.onEvent("execution:exec_1", callback);
 
       realtime.emitEvent({
-        type: 'started',
-        workflowId: 'wf_1',
-        executionId: 'exec_1',
+        type: "started",
+        workflowId: "wf_1",
+        executionId: "exec_1",
         timestamp: new Date().toISOString(),
       });
 
-      expect(callback).toHaveBeenCalledWith(expect.objectContaining({
-        type: 'started',
-      }));
+      expect(callback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: "started",
+        }),
+      );
     });
 
-    it('should emit step:started event', () => {
+    it("should emit step:started event", () => {
       const callback = vi.fn();
-      realtime.onEvent('execution:exec_1', callback);
+      realtime.onEvent("execution:exec_1", callback);
 
       realtime.emitEvent({
-        type: 'step:started',
-        workflowId: 'wf_1',
-        executionId: 'exec_1',
+        type: "step:started",
+        workflowId: "wf_1",
+        executionId: "exec_1",
         timestamp: new Date().toISOString(),
-        data: { stepName: 'process_order' },
+        data: { stepName: "process_order" },
       });
 
-      expect(callback).toHaveBeenCalledWith(expect.objectContaining({
-        type: 'step:started',
-      }));
+      expect(callback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: "step:started",
+        }),
+      );
     });
 
-    it('should emit step:completed event', () => {
+    it("should emit step:completed event", () => {
       const callback = vi.fn();
-      realtime.onEvent('execution:exec_1', callback);
+      realtime.onEvent("execution:exec_1", callback);
 
       realtime.emitEvent({
-        type: 'step:completed',
-        workflowId: 'wf_1',
-        executionId: 'exec_1',
+        type: "step:completed",
+        workflowId: "wf_1",
+        executionId: "exec_1",
         timestamp: new Date().toISOString(),
-        data: { stepName: 'process_order', output: { success: true } },
-      });
-
-      expect(callback).toHaveBeenCalled();
-    });
-
-    it('should emit completed event', () => {
-      const callback = vi.fn();
-      realtime.onEvent('execution:exec_1', callback);
-
-      realtime.emitEvent({
-        type: 'completed',
-        workflowId: 'wf_1',
-        executionId: 'exec_1',
-        timestamp: new Date().toISOString(),
-        data: { output: { result: 'success' } },
+        data: { stepName: "process_order", output: { success: true } },
       });
 
       expect(callback).toHaveBeenCalled();
     });
 
-    it('should emit failed event', () => {
+    it("should emit completed event", () => {
       const callback = vi.fn();
-      realtime.onEvent('execution:exec_1', callback);
+      realtime.onEvent("execution:exec_1", callback);
 
       realtime.emitEvent({
-        type: 'failed',
-        workflowId: 'wf_1',
-        executionId: 'exec_1',
+        type: "completed",
+        workflowId: "wf_1",
+        executionId: "exec_1",
         timestamp: new Date().toISOString(),
-        data: { error: 'Processing failed' },
+        data: { output: { result: "success" } },
+      });
+
+      expect(callback).toHaveBeenCalled();
+    });
+
+    it("should emit failed event", () => {
+      const callback = vi.fn();
+      realtime.onEvent("execution:exec_1", callback);
+
+      realtime.emitEvent({
+        type: "failed",
+        workflowId: "wf_1",
+        executionId: "exec_1",
+        timestamp: new Date().toISOString(),
+        data: { error: "Processing failed" },
       });
 
       expect(callback).toHaveBeenCalled();
     });
   });
 
-  describe('SSE fallback stream', () => {
-    it('should deliver events to all subscribed clients', () => {
+  describe("SSE fallback stream", () => {
+    it("should deliver events to all subscribed clients", () => {
       const callback1 = vi.fn();
       const callback2 = vi.fn();
 
-      realtime.onEvent('tenant:tenant_1', callback1);
-      realtime.onEvent('tenant:tenant_1', callback2);
+      realtime.onEvent("tenant:tenant_1", callback1);
+      realtime.onEvent("tenant:tenant_1", callback2);
 
-      realtime.emitEvent({
-        type: 'started',
-        workflowId: 'wf_1',
-        executionId: 'exec_1',
-        timestamp: new Date().toISOString(),
-      }, 'tenant_1');
+      realtime.emitEvent(
+        {
+          type: "started",
+          workflowId: "wf_1",
+          executionId: "exec_1",
+          timestamp: new Date().toISOString(),
+        },
+        "tenant_1",
+      );
 
       expect(callback1).toHaveBeenCalled();
       expect(callback2).toHaveBeenCalled();
     });
 
-    it('should isolate events by tenant', () => {
+    it("should isolate events by tenant", () => {
       const callback1 = vi.fn();
       const callback2 = vi.fn();
 
-      realtime.onEvent('tenant:tenant_1', callback1);
-      realtime.onEvent('tenant:tenant_2', callback2);
+      realtime.onEvent("tenant:tenant_1", callback1);
+      realtime.onEvent("tenant:tenant_2", callback2);
 
-      realtime.emitEvent({
-        type: 'started',
-        workflowId: 'wf_1',
-        executionId: 'exec_1',
-        timestamp: new Date().toISOString(),
-      }, 'tenant_1');
+      realtime.emitEvent(
+        {
+          type: "started",
+          workflowId: "wf_1",
+          executionId: "exec_1",
+          timestamp: new Date().toISOString(),
+        },
+        "tenant_1",
+      );
 
       expect(callback1).toHaveBeenCalled();
       expect(callback2).not.toHaveBeenCalled();
     });
   });
 
-  describe('unsubscribe', () => {
-    it('should unsubscribe from tenant', () => {
-      realtime.subscribeToTenant('tenant_1', 'client_1');
-      expect(realtime.getTenantSubscribers('tenant_1')).toContain('client_1');
+  describe("unsubscribe", () => {
+    it("should unsubscribe from tenant", () => {
+      realtime.subscribeToTenant("tenant_1", "client_1");
+      expect(realtime.getTenantSubscribers("tenant_1")).toContain("client_1");
 
-      realtime.unsubscribeFromTenant('tenant_1', 'client_1');
-      expect(realtime.getTenantSubscribers('tenant_1')).not.toContain('client_1');
+      realtime.unsubscribeFromTenant("tenant_1", "client_1");
+      expect(realtime.getTenantSubscribers("tenant_1")).not.toContain(
+        "client_1",
+      );
     });
 
-    it('should unsubscribe from execution', () => {
-      realtime.subscribeToExecution('exec_1', 'client_1');
-      expect(realtime.getExecutionSubscribers('exec_1')).toContain('client_1');
+    it("should unsubscribe from execution", () => {
+      realtime.subscribeToExecution("exec_1", "client_1");
+      expect(realtime.getExecutionSubscribers("exec_1")).toContain("client_1");
 
-      realtime.unsubscribeFromExecution('exec_1', 'client_1');
-      expect(realtime.getExecutionSubscribers('exec_1')).not.toContain('client_1');
+      realtime.unsubscribeFromExecution("exec_1", "client_1");
+      expect(realtime.getExecutionSubscribers("exec_1")).not.toContain(
+        "client_1",
+      );
     });
   });
 });

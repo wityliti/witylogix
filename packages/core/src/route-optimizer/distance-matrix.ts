@@ -8,7 +8,12 @@
  * - Support for traffic-aware routing
  */
 
-import type { GeoPoint, DistanceMatrix, DistanceInfo, DistanceMatrixCacheEntry } from "./types.js";
+import type {
+  GeoPoint,
+  DistanceMatrix,
+  DistanceInfo,
+  DistanceMatrixCacheEntry,
+} from "./types.js";
 
 const EARTH_RADIUS_METERS = 6371000;
 const DEFAULT_SPEED_KMH = 60;
@@ -139,7 +144,10 @@ export function haversineDistance(from: GeoPoint, to: GeoPoint): number {
 
   const a =
     Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
-    Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLng / 2) * Math.sin(deltaLng / 2);
+    Math.cos(lat1) *
+      Math.cos(lat2) *
+      Math.sin(deltaLng / 2) *
+      Math.sin(deltaLng / 2);
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return EARTH_RADIUS_METERS * c;
@@ -161,7 +169,7 @@ export function estimateTravelTime(
   from: GeoPoint,
   to: GeoPoint,
   speedKmh: number = DEFAULT_SPEED_KMH,
-  trafficFactor: number = 1.0
+  trafficFactor: number = 1.0,
 ): number {
   const distanceMeters = haversineDistance(from, to);
   const distanceKm = distanceMeters / 1000;
@@ -183,7 +191,7 @@ export function computeDistanceInfo(
   from: GeoPoint,
   to: GeoPoint,
   speedKmh: number = DEFAULT_SPEED_KMH,
-  trafficFactor: number = 1.0
+  trafficFactor: number = 1.0,
 ): DistanceInfo {
   const distanceMeters = haversineDistance(from, to);
   const durationSeconds = estimateTravelTime(from, to, speedKmh, trafficFactor);
@@ -217,10 +225,12 @@ export function computeDistanceInfo(
 export function computeDistanceMatrix(
   points: GeoPoint[],
   speedKmh: number = DEFAULT_SPEED_KMH,
-  trafficFactor: number = 1.0
+  trafficFactor: number = 1.0,
 ): DistanceMatrix {
   if (points.length < 2) {
-    throw new Error(`Distance matrix requires at least 2 points, got ${points.length}`);
+    throw new Error(
+      `Distance matrix requires at least 2 points, got ${points.length}`,
+    );
   }
 
   // Check cache first
@@ -244,7 +254,12 @@ export function computeDistanceMatrix(
         distances[i][j] = 0;
         durations[i][j] = 0;
       } else {
-        const distInfo = computeDistanceInfo(points[i], points[j], speedKmh, trafficFactor);
+        const distInfo = computeDistanceInfo(
+          points[i],
+          points[j],
+          speedKmh,
+          trafficFactor,
+        );
         distances[i][j] = distInfo.distanceMeters;
         distances[j][i] = distInfo.distanceMeters;
         durations[i][j] = distInfo.durationSeconds;
@@ -279,13 +294,17 @@ export function computeDistanceMatrix(
  */
 export function applyTrafficFactor(
   matrix: DistanceMatrix,
-  trafficFactor: number
+  trafficFactor: number,
 ): DistanceMatrix {
   if (trafficFactor < 0) {
-    throw new Error(`Traffic factor must be non-negative, got ${trafficFactor}`);
+    throw new Error(
+      `Traffic factor must be non-negative, got ${trafficFactor}`,
+    );
   }
 
-  const adjustedDurations = matrix.durations.map((row) => row.map((d) => d * trafficFactor));
+  const adjustedDurations = matrix.durations.map((row) =>
+    row.map((d) => d * trafficFactor),
+  );
 
   return {
     ...matrix,
@@ -332,11 +351,15 @@ export function validateDistanceMatrix(matrix: DistanceMatrix): void {
   const n = matrix.points.length;
 
   if (matrix.distances.length !== n) {
-    throw new Error(`Distance matrix rows (${matrix.distances.length}) must match points count (${n})`);
+    throw new Error(
+      `Distance matrix rows (${matrix.distances.length}) must match points count (${n})`,
+    );
   }
 
   if (matrix.durations.length !== n) {
-    throw new Error(`Duration matrix rows (${matrix.durations.length}) must match points count (${n})`);
+    throw new Error(
+      `Duration matrix rows (${matrix.durations.length}) must match points count (${n})`,
+    );
   }
 
   for (let i = 0; i < n; i++) {

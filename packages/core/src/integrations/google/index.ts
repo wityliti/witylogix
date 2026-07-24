@@ -3,20 +3,17 @@
  * Main entry point for Google Maps and Calendar integrations
  */
 
-export {
-  GoogleMapsService,
-  createGoogleMapsService,
-} from './maps-service.js';
+export { GoogleMapsService, createGoogleMapsService } from "./maps-service.js";
 
 export {
   GoogleCalendarService,
   createGoogleCalendarService,
-} from './calendar-service.js';
+} from "./calendar-service.js";
 
 export {
   ZoneVisualizerService,
   createZoneVisualizerService,
-} from './zone-visualizer.js';
+} from "./zone-visualizer.js";
 
 export type {
   GeocodingResult,
@@ -34,7 +31,11 @@ export type {
   CalendarSyncResult,
   OAuth2Token,
   GoogleMapsError,
-} from './types.js';
+} from "./types.js";
 // GoogleDirectionsResult and GoogleOAuth2Config are re-exported under distinct names
 // to avoid collision with traffic/types.ts DirectionsResult and ecommerce OAuth2Config.
-export type { DirectionsResult as GoogleDirectionsResult, OAuth2Config as GoogleOAuth2Config, RateLimitInfo as GoogleRateLimitInfo } from './types.js';
+export type {
+  DirectionsResult as GoogleDirectionsResult,
+  OAuth2Config as GoogleOAuth2Config,
+  RateLimitInfo as GoogleRateLimitInfo,
+} from "./types.js";

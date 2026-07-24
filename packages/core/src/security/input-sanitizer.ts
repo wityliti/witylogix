@@ -184,7 +184,9 @@ export class InputSanitizer {
    * @param str - String to check
    * @returns Array of detected threats
    */
-  private detectSqlInjection(str: string): Array<{ type: "SQL_INJECTION"; pattern: string }> {
+  private detectSqlInjection(
+    str: string,
+  ): Array<{ type: "SQL_INJECTION"; pattern: string }> {
     if (!this.config.detectSqlInjection) {
       return [];
     }
@@ -208,7 +210,9 @@ export class InputSanitizer {
    * @param str - String to check
    * @returns Array of detected threats
    */
-  private detectPathTraversal(str: string): Array<{ type: "PATH_TRAVERSAL"; pattern: string }> {
+  private detectPathTraversal(
+    str: string,
+  ): Array<{ type: "PATH_TRAVERSAL"; pattern: string }> {
     if (!this.config.detectPathTraversal) {
       return [];
     }
@@ -232,7 +236,9 @@ export class InputSanitizer {
    * @param str - String to check
    * @returns Array of detected threats
    */
-  private detectUnicodeAttacks(str: string): Array<{ type: "UNICODE_ATTACK"; pattern: string }> {
+  private detectUnicodeAttacks(
+    str: string,
+  ): Array<{ type: "UNICODE_ATTACK"; pattern: string }> {
     const threats: Array<{ type: "UNICODE_ATTACK"; pattern: string }> = [];
 
     // Check for mixed scripts (Latin + Cyrillic homoglyphs like а/a)
@@ -331,7 +337,10 @@ export class InputSanitizer {
     result = result.replace(/data:text\/html/gi, "");
 
     // Remove dangerous tags
-    result = result.replace(/<(iframe|embed|object|frame|frameset)[^>]*>/gi, "");
+    result = result.replace(
+      /<(iframe|embed|object|frame|frameset)[^>]*>/gi,
+      "",
+    );
 
     return result;
   }
@@ -343,7 +352,7 @@ export class InputSanitizer {
    */
   sanitizeObject(
     obj: unknown,
-    depth: number = 0
+    depth: number = 0,
   ): { value: unknown; modified: boolean } {
     // Prevent deep recursion attacks
     if (depth > 10) {

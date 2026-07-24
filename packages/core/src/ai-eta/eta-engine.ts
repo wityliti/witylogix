@@ -16,11 +16,11 @@
  * ```
  */
 
-import { TimeOfDayModel } from './models/time-of-day-model.js';
-import { DistanceModel } from './models/distance-model.js';
-import { HistoricalModel } from './models/historical-model.js';
-import { TrafficModel } from './models/traffic-model.js';
-import { ModelEnsemble } from './model-ensemble.js';
+import { TimeOfDayModel } from "./models/time-of-day-model.js";
+import { DistanceModel } from "./models/distance-model.js";
+import { HistoricalModel } from "./models/historical-model.js";
+import { TrafficModel } from "./models/traffic-model.js";
+import { ModelEnsemble } from "./model-ensemble.js";
 import type {
   ETAPrediction,
   Coordinates,
@@ -31,7 +31,7 @@ import type {
   BatchETAResponse,
   ModelPrediction,
   AccuracyMetrics,
-} from './types.js';
+} from "./types.js";
 
 /**
  * ETA Engine configuration
@@ -59,8 +59,7 @@ export class ETAEngine {
   /**
    * Zone type detection (simple heuristic)
    */
-  private zoneTypes: Map<string, 'urban' | 'suburban' | 'rural'> =
-    new Map();
+  private zoneTypes: Map<string, "urban" | "suburban" | "rural"> = new Map();
 
   constructor(config?: ETAEngineConfig) {
     this.timeOfDayModel = new TimeOfDayModel();
@@ -85,13 +84,13 @@ export class ETAEngine {
    */
   private setupEnsemble(): void {
     this.ensemble.registerModel(
-      'TimeOfDayModel',
+      "TimeOfDayModel",
       (params) => this.timeOfDayModel.predict(params.baseTime, params.time),
       this.config.enableTimeOfDay,
     );
 
     this.ensemble.registerModel(
-      'DistanceModel',
+      "DistanceModel",
       (params) =>
         this.distanceModel.predict(
           params.origin,
@@ -104,7 +103,7 @@ export class ETAEngine {
     );
 
     this.ensemble.registerModel(
-      'HistoricalModel',
+      "HistoricalModel",
       (params) =>
         this.historicalModel.predict(
           params.origin,
@@ -118,7 +117,7 @@ export class ETAEngine {
     );
 
     this.ensemble.registerModel(
-      'TrafficModel',
+      "TrafficModel",
       (params) =>
         this.trafficModel.predict(
           params.origin,
@@ -174,9 +173,7 @@ export class ETAEngine {
       params;
 
     // Determine zone type
-    const zoneType = zoneId
-      ? (this.zoneTypes.get(zoneId) ?? 'urban')
-      : 'urban';
+    const zoneType = zoneId ? (this.zoneTypes.get(zoneId) ?? "urban") : "urban";
 
     // Base time estimate: 5 minutes + 2 minutes per km
     const baseTime = 5 + distanceKm * 2;
@@ -189,9 +186,7 @@ export class ETAEngine {
 
     // TimeOfDay model
     if (this.config.enableTimeOfDay) {
-      predictions.push(
-        this.timeOfDayModel.predict(baseTime, departureTime),
-      );
+      predictions.push(this.timeOfDayModel.predict(baseTime, departureTime));
     }
 
     // Distance model
@@ -284,10 +279,7 @@ export class ETAEngine {
   /**
    * Record actual delivery time for model training
    */
-  recordActualDelivery(
-    prediction: ETAPrediction,
-    actualTime: Date,
-  ): void {
+  recordActualDelivery(prediction: ETAPrediction, actualTime: Date): void {
     this.ensemble.recordActualDelivery(prediction, actualTime);
   }
 
@@ -329,15 +321,14 @@ export class ETAEngine {
     expected: Date,
     departure: Date,
     baselineMinutes: number,
-  ): 'light' | 'moderate' | 'heavy' | 'unknown' {
-    const actualMinutes =
-      (expected.getTime() - departure.getTime()) / 60000;
+  ): "light" | "moderate" | "heavy" | "unknown" {
+    const actualMinutes = (expected.getTime() - departure.getTime()) / 60000;
 
     const ratio = actualMinutes / baselineMinutes;
 
-    if (ratio < 1.1) return 'light';
-    if (ratio < 1.3) return 'moderate';
-    return 'heavy';
+    if (ratio < 1.1) return "light";
+    if (ratio < 1.3) return "moderate";
+    return "heavy";
   }
 
   /**

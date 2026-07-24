@@ -1,4 +1,4 @@
-export { ETARecalculator } from './eta-recalculator.js';
+export { ETARecalculator } from "./eta-recalculator.js";
 export type {
   ActiveDelivery,
   DriverLocationUpdate,
@@ -7,4 +7,4 @@ export type {
   NotificationTrigger,
   NotificationChannel,
   ETARecalculatorConfig,
-} from './types.js';
+} from "./types.js";

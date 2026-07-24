@@ -6,17 +6,17 @@
 /**
  * Supported SMS providers
  */
-export type SmsProviderType = 'twilio' | 'console';
+export type SmsProviderType = "twilio" | "console";
 
 /**
  * SMS status enumeration
  */
 export enum SmsStatus {
-  PENDING = 'pending',
-  SENT = 'sent',
-  DELIVERED = 'delivered',
-  FAILED = 'failed',
-  UNDELIVERABLE = 'undeliverable',
+  PENDING = "pending",
+  SENT = "sent",
+  DELIVERED = "delivered",
+  FAILED = "failed",
+  UNDELIVERABLE = "undeliverable",
 }
 
 /**

@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import { useState, useCallback } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
-import { RefreshCw, Server, Database, Layers } from 'lucide-react';
-import { useApiQuery } from '@/hooks/use-api';
-import { api } from '@/lib/api';
-import { ErrorState } from '@/components/ui/error-state';
+import { useState, useCallback } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+import { RefreshCw, Server, Database, Layers } from "lucide-react";
+import { useApiQuery } from "@/hooks/use-api";
+import { api } from "@/lib/api";
+import { ErrorState } from "@/components/ui/error-state";
 
 // ─── Types ────────────────────────────────────────────────────
 
 interface ServiceStatus {
   name: string;
-  status: 'healthy' | 'degraded' | 'down';
+  status: "healthy" | "degraded" | "down";
   uptime: number;
   responseTime?: number;
   lastChecked: string;
@@ -30,7 +30,7 @@ interface PlatformStatus {
 interface IntegrationStatus {
   name: string;
   provider: string;
-  status: 'connected' | 'disconnected' | 'error';
+  status: "connected" | "disconnected" | "error";
   lastSync: string | null;
   accountsConnected?: number;
   error?: string;
@@ -38,12 +38,17 @@ interface IntegrationStatus {
 
 interface IntegrationsPayload {
   integrations: IntegrationStatus[];
-  summary: { total: number; connected: number; disconnected: number; error: number };
+  summary: {
+    total: number;
+    connected: number;
+    disconnected: number;
+    error: number;
+  };
 }
 
 interface PlatformAlert {
   id: string;
-  severity: 'info' | 'warning' | 'critical';
+  severity: "info" | "warning" | "critical";
   title: string;
   description: string;
   timestamp: string;
@@ -71,25 +76,59 @@ function HealthScoreGauge({ score }: { score: number }) {
   const radius = 90;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference * (1 - Math.min(score, 100) / 100);
-  const color = score >= 95 ? 'rgb(34, 197, 94)' : score >= 75 ? 'rgb(234, 179, 8)' : 'rgb(239, 68, 68)';
+  const color =
+    score >= 95
+      ? "rgb(34, 197, 94)"
+      : score >= 75
+        ? "rgb(234, 179, 8)"
+        : "rgb(239, 68, 68)";
 
   return (
     <div className="flex flex-col items-center">
       <svg width="220" height="220" viewBox="0 0 220 220" className="mb-4">
-        <circle cx="110" cy="110" r={radius} fill="none" stroke="var(--wl-border)" strokeWidth="8" />
         <circle
-          cx="110" cy="110" r={radius} fill="none" stroke={color} strokeWidth="8"
-          strokeDasharray={circumference} strokeDashoffset={strokeDashoffset}
-          strokeLinecap="round"
-          style={{ transform: 'rotate(-90deg)', transformOrigin: '110px 110px' }}
+          cx="110"
+          cy="110"
+          r={radius}
+          fill="none"
+          stroke="var(--wl-border)"
+          strokeWidth="8"
         />
-        <text x="110" y="108" textAnchor="middle" dy="0.3em" fontSize="36" fontWeight="bold" fill="var(--wl-foreground)">
+        <circle
+          cx="110"
+          cy="110"
+          r={radius}
+          fill="none"
+          stroke={color}
+          strokeWidth="8"
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          style={{
+            transform: "rotate(-90deg)",
+            transformOrigin: "110px 110px",
+          }}
+        />
+        <text
+          x="110"
+          y="108"
+          textAnchor="middle"
+          dy="0.3em"
+          fontSize="36"
+          fontWeight="bold"
+          fill="var(--wl-foreground)"
+        >
           {score.toFixed(0)}
         </text>
-        <text x="110" y="136" textAnchor="middle" fontSize="13" fill="#6b7280">Health Score</text>
+        <text x="110" y="136" textAnchor="middle" fontSize="13" fill="#6b7280">
+          Health Score
+        </text>
       </svg>
-      <Badge variant={score >= 95 ? 'success' : score >= 75 ? 'warning' : 'danger'} className="mt-2">
-        {score >= 95 ? 'Excellent' : score >= 75 ? 'Degraded' : 'Critical'}
+      <Badge
+        variant={score >= 95 ? "success" : score >= 75 ? "warning" : "danger"}
+        className="mt-2"
+      >
+        {score >= 95 ? "Excellent" : score >= 75 ? "Degraded" : "Critical"}
       </Badge>
     </div>
   );
@@ -99,9 +138,9 @@ function ServiceRow({ service }: { service: ServiceStatus }) {
   return (
     <div className="flex items-center justify-between py-3 px-4 border-b border-wl-border-default last:border-0">
       <div className="flex items-center gap-3 flex-1">
-        {service.name === 'API Server' ? (
+        {service.name === "API Server" ? (
           <Server className="w-4 h-4 text-blue-400 shrink-0" />
-        ) : service.name.includes('Redis') ? (
+        ) : service.name.includes("Redis") ? (
           <Layers className="w-4 h-4 text-orange-400 shrink-0" />
         ) : (
           <Database className="w-4 h-4 text-purple-400 shrink-0" />
@@ -109,19 +148,34 @@ function ServiceRow({ service }: { service: ServiceStatus }) {
         <div>
           <h4 className="font-medium text-sm text-white">{service.name}</h4>
           <p className="text-xs text-gray-500 mt-0.5">
-            Checked {service.lastChecked ? new Date(service.lastChecked).toLocaleTimeString() : '—'}
+            Checked{" "}
+            {service.lastChecked
+              ? new Date(service.lastChecked).toLocaleTimeString()
+              : "—"}
           </p>
         </div>
       </div>
       <div className="flex items-center gap-4">
         {service.responseTime != null && (
-          <p className="text-xs font-mono text-gray-400">{service.responseTime}ms</p>
+          <p className="text-xs font-mono text-gray-400">
+            {service.responseTime}ms
+          </p>
         )}
         <Badge
-          variant={service.status === 'healthy' ? 'success' : service.status === 'degraded' ? 'warning' : 'danger'}
+          variant={
+            service.status === "healthy"
+              ? "success"
+              : service.status === "degraded"
+                ? "warning"
+                : "danger"
+          }
           className="w-22 justify-center"
         >
-          {service.status === 'healthy' ? 'Healthy' : service.status === 'degraded' ? 'Degraded' : 'Down'}
+          {service.status === "healthy"
+            ? "Healthy"
+            : service.status === "degraded"
+              ? "Degraded"
+              : "Down"}
         </Badge>
       </div>
     </div>
@@ -133,11 +187,27 @@ function IntegrationCard({ integration }: { integration: IntegrationStatus }) {
     <div className="border border-wl-border-default rounded-lg p-4 hover:bg-wl-bg-elevated transition-colors bg-wl-bg-surface">
       <div className="flex items-start justify-between mb-3">
         <div>
-          <h4 className="font-semibold text-sm text-white">{integration.name}</h4>
-          <p className="text-xs text-gray-400 capitalize">{integration.provider}</p>
+          <h4 className="font-semibold text-sm text-white">
+            {integration.name}
+          </h4>
+          <p className="text-xs text-gray-400 capitalize">
+            {integration.provider}
+          </p>
         </div>
-        <Badge variant={integration.status === 'connected' ? 'success' : integration.status === 'error' ? 'danger' : 'warning'}>
-          {integration.status === 'connected' ? 'Connected' : integration.status === 'error' ? 'Error' : 'Inactive'}
+        <Badge
+          variant={
+            integration.status === "connected"
+              ? "success"
+              : integration.status === "error"
+                ? "danger"
+                : "warning"
+          }
+        >
+          {integration.status === "connected"
+            ? "Connected"
+            : integration.status === "error"
+              ? "Error"
+              : "Inactive"}
         </Badge>
       </div>
       {integration.lastSync && (
@@ -146,45 +216,74 @@ function IntegrationCard({ integration }: { integration: IntegrationStatus }) {
         </p>
       )}
       {integration.error && (
-        <div className="text-red-400 mt-2 p-2 bg-red-500/10 rounded text-xs">{integration.error}</div>
+        <div className="text-red-400 mt-2 p-2 bg-red-500/10 rounded text-xs">
+          {integration.error}
+        </div>
       )}
     </div>
   );
 }
 
-function AlertItem({ alert, onAcknowledge }: { alert: PlatformAlert; onAcknowledge: (id: string) => void }) {
+function AlertItem({
+  alert,
+  onAcknowledge,
+}: {
+  alert: PlatformAlert;
+  onAcknowledge: (id: string) => void;
+}) {
   const [acked, setAcked] = useState(alert.acknowledged);
 
   return (
     <div className="border border-wl-border-default rounded-lg p-4 mb-3 last:mb-0 bg-wl-bg-surface">
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-start gap-3 flex-1">
-          <Badge variant={alert.severity === 'critical' ? 'danger' : alert.severity === 'warning' ? 'warning' : 'info'}>
+          <Badge
+            variant={
+              alert.severity === "critical"
+                ? "danger"
+                : alert.severity === "warning"
+                  ? "warning"
+                  : "info"
+            }
+          >
             {alert.severity.charAt(0).toUpperCase() + alert.severity.slice(1)}
           </Badge>
           <div>
             <h4 className="font-semibold text-sm text-white">{alert.title}</h4>
             <p className="text-xs text-gray-400 mt-1">{alert.description}</p>
-            <p className="text-xs text-gray-500 mt-2">{new Date(alert.timestamp).toLocaleString()}</p>
+            <p className="text-xs text-gray-500 mt-2">
+              {new Date(alert.timestamp).toLocaleString()}
+            </p>
           </div>
         </div>
         {!acked ? (
           <Button
-            variant="ghost" size="sm"
-            onClick={() => { setAcked(true); onAcknowledge(alert.id); }}
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setAcked(true);
+              onAcknowledge(alert.id);
+            }}
             className="ml-2"
           >
             Acknowledge
           </Button>
         ) : (
-          <Badge variant="default" className="ml-2">Acknowledged</Badge>
+          <Badge variant="default" className="ml-2">
+            Acknowledged
+          </Badge>
         )}
       </div>
     </div>
   );
 }
 
-function MetricCard({ label, value, unit, sublabel }: {
+function MetricCard({
+  label,
+  value,
+  unit,
+  sublabel,
+}: {
   label: string;
   value: number | string | undefined;
   unit?: string;
@@ -193,14 +292,18 @@ function MetricCard({ label, value, unit, sublabel }: {
   return (
     <Card className="bg-wl-bg-surface border-wl-border-default">
       <CardContent className="pt-5 pb-4">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{label}</p>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+          {label}
+        </p>
         <div className="flex items-baseline gap-1">
           {value == null ? (
             <span className="text-2xl font-bold text-gray-500">—</span>
           ) : (
             <span className="text-2xl font-bold text-white">{value}</span>
           )}
-          {unit && value != null && <span className="text-xs text-gray-400">{unit}</span>}
+          {unit && value != null && (
+            <span className="text-xs text-gray-400">{unit}</span>
+          )}
         </div>
         {sublabel && <p className="text-xs text-gray-500 mt-1">{sublabel}</p>}
       </CardContent>
@@ -211,7 +314,8 @@ function MetricCard({ label, value, unit, sublabel }: {
 function formatUptime(seconds: number): string {
   if (seconds < 60) return `${seconds}s`;
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`;
+  if (seconds < 86400)
+    return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`;
   return `${Math.floor(seconds / 86400)}d ${Math.floor((seconds % 86400) / 3600)}h`;
 }
 
@@ -223,27 +327,27 @@ export default function PlatformHealthPage() {
     loading: statusLoading,
     error: statusError,
     refetch: refetchStatus,
-  } = useApiQuery<PlatformStatus>('/api/v4/platform/status');
+  } = useApiQuery<PlatformStatus>("/api/v4/platform/status");
 
   const {
     data: integrationsPayload,
     loading: intLoading,
     error: intError,
     refetch: refetchInt,
-  } = useApiQuery<IntegrationsPayload>('/api/v4/platform/integrations');
+  } = useApiQuery<IntegrationsPayload>("/api/v4/platform/integrations");
 
   const {
     data: metricsData,
     loading: metricsLoading,
     error: metricsError,
     refetch: refetchMetrics,
-  } = useApiQuery<PlatformMetrics>('/api/v4/platform/metrics');
+  } = useApiQuery<PlatformMetrics>("/api/v4/platform/metrics");
 
   const {
     data: alertsPayload,
     error: alertsError,
     refetch: refetchAlerts,
-  } = useApiQuery<AlertsPayload>('/api/v4/platform/alerts');
+  } = useApiQuery<AlertsPayload>("/api/v4/platform/alerts");
 
   const loading = statusLoading || intLoading || metricsLoading;
   const criticalError = statusError || intError || metricsError || alertsError;
@@ -267,8 +371,12 @@ export default function PlatformHealthPage() {
     return (
       <div className="space-y-8 bg-wl-bg-root min-h-screen p-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white">Platform Health</h1>
-          <p className="text-gray-400 mt-2">Live system status and integration monitoring</p>
+          <h1 className="text-3xl font-bold tracking-tight text-white">
+            Platform Health
+          </h1>
+          <p className="text-gray-400 mt-2">
+            Live system status and integration monitoring
+          </p>
         </div>
         <ErrorState error={criticalError} onRetry={handleRefresh} />
       </div>
@@ -280,12 +388,18 @@ export default function PlatformHealthPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white">Platform Health</h1>
-          <p className="text-gray-400 mt-2">Live system status and integration monitoring</p>
+          <h1 className="text-3xl font-bold tracking-tight text-white">
+            Platform Health
+          </h1>
+          <p className="text-gray-400 mt-2">
+            Live system status and integration monitoring
+          </p>
         </div>
         <Button onClick={handleRefresh} disabled={loading} variant="primary">
-          <RefreshCw className={cn('w-4 h-4 mr-2', loading && 'animate-spin')} />
-          {loading ? 'Refreshing…' : 'Refresh Status'}
+          <RefreshCw
+            className={cn("w-4 h-4 mr-2", loading && "animate-spin")}
+          />
+          {loading ? "Refreshing…" : "Refresh Status"}
         </Button>
       </div>
 
@@ -320,14 +434,20 @@ export default function PlatformHealthPage() {
           <>
             <MetricCard
               label="Uptime"
-              value={metricsData ? formatUptime(metricsData.uptimeSeconds) : undefined}
+              value={
+                metricsData
+                  ? formatUptime(metricsData.uptimeSeconds)
+                  : undefined
+              }
               sublabel="Since last restart"
             />
             <MetricCard
               label="Memory Usage"
               value={metricsData?.memUsagePct}
               unit="%"
-              sublabel={metricsData ? `${metricsData.heapUsedMb} MB heap` : undefined}
+              sublabel={
+                metricsData ? `${metricsData.heapUsedMb} MB heap` : undefined
+              }
             />
             <MetricCard
               label="DB Latency"
@@ -343,14 +463,16 @@ export default function PlatformHealthPage() {
       <Card className="bg-wl-bg-surface border-wl-border-default">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-white">
-              Service Status
-            </CardTitle>
+            <CardTitle className="text-white">Service Status</CardTitle>
             {statusData && (
               <div className="flex items-center gap-2">
-                <Badge variant="success">{statusData.summary.healthy} Healthy</Badge>
+                <Badge variant="success">
+                  {statusData.summary.healthy} Healthy
+                </Badge>
                 {statusData.summary.degraded > 0 && (
-                  <Badge variant="warning">{statusData.summary.degraded} Degraded</Badge>
+                  <Badge variant="warning">
+                    {statusData.summary.degraded} Degraded
+                  </Badge>
                 )}
                 {statusData.summary.down > 0 && (
                   <Badge variant="danger">{statusData.summary.down} Down</Badge>
@@ -363,7 +485,10 @@ export default function PlatformHealthPage() {
           {statusLoading ? (
             <div className="space-y-1">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex items-center justify-between py-3 px-4">
+                <div
+                  key={i}
+                  className="flex items-center justify-between py-3 px-4"
+                >
                   <div className="flex items-center gap-3">
                     <Skeleton className="h-4 w-4 rounded" />
                     <div>
@@ -381,7 +506,9 @@ export default function PlatformHealthPage() {
             </div>
           ) : (
             <div>
-              {services.map((s) => <ServiceRow key={s.name} service={s} />)}
+              {services.map((s) => (
+                <ServiceRow key={s.name} service={s} />
+              ))}
             </div>
           )}
         </CardContent>
@@ -393,8 +520,13 @@ export default function PlatformHealthPage() {
           <div className="flex items-center justify-between">
             <CardTitle className="text-white">Connected Integrations</CardTitle>
             {integrationsPayload && (
-              <Badge variant={integrationsPayload.summary.error > 0 ? 'warning' : 'success'}>
-                {integrationsPayload.summary.connected} of {integrationsPayload.summary.total} active
+              <Badge
+                variant={
+                  integrationsPayload.summary.error > 0 ? "warning" : "success"
+                }
+              >
+                {integrationsPayload.summary.connected} of{" "}
+                {integrationsPayload.summary.total} active
               </Badge>
             )}
           </div>
@@ -410,15 +542,20 @@ export default function PlatformHealthPage() {
             <div className="py-8 text-center">
               <p className="text-sm text-gray-400">No integrations installed</p>
               <p className="text-xs text-gray-500 mt-1">
-                Connect your first integration from the{' '}
-                <a href="/integrations/catalog" className="text-blue-400 hover:underline">
+                Connect your first integration from the{" "}
+                <a
+                  href="/integrations/catalog"
+                  className="text-blue-400 hover:underline"
+                >
                   Integration Catalog
                 </a>
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {integrations.map((i) => <IntegrationCard key={i.provider} integration={i} />)}
+              {integrations.map((i) => (
+                <IntegrationCard key={i.provider} integration={i} />
+              ))}
             </div>
           )}
         </CardContent>
@@ -430,7 +567,9 @@ export default function PlatformHealthPage() {
           <CardTitle className="text-white">
             Active Alerts
             {alertsPayload && alertsPayload.summary.pending > 0 && (
-              <Badge variant="warning" className="ml-2">{alertsPayload.summary.pending} pending</Badge>
+              <Badge variant="warning" className="ml-2">
+                {alertsPayload.summary.pending} pending
+              </Badge>
             )}
           </CardTitle>
         </CardHeader>
@@ -441,11 +580,17 @@ export default function PlatformHealthPage() {
                 <span className="text-emerald-500 text-lg">✓</span>
               </div>
               <p className="text-sm text-gray-400">No active alerts</p>
-              <p className="text-xs text-gray-500 mt-1">All systems operating normally</p>
+              <p className="text-xs text-gray-500 mt-1">
+                All systems operating normally
+              </p>
             </div>
           ) : (
             alerts.map((alert) => (
-              <AlertItem key={alert.id} alert={alert} onAcknowledge={handleAcknowledge} />
+              <AlertItem
+                key={alert.id}
+                alert={alert}
+                onAcknowledge={handleAcknowledge}
+              />
             ))
           )}
         </CardContent>

@@ -8,6 +8,7 @@
 ## Context
 
 Witylogix requires a real-time route dispatch dashboard enabling dispatchers to monitor, optimize, and manage delivery routes in real-time. The dashboard must provide:
+
 - Real-time visibility of active delivery routes and driver positions
 - Timeline/Gantt visualization of route schedules
 - Drag-and-drop route reassignment for orders
@@ -55,6 +56,7 @@ We will build a two-panel dispatch dashboard with:
 ### Backend Service Architecture
 
 The dispatch service provides:
+
 - **Route Management**: Fetch active routes with real-time stop tracking
 - **Stop Reassignment**: Validate and apply route changes
 - **Route Optimization**: Integrate with existing route optimizer for batch optimization
@@ -87,6 +89,7 @@ Dispatcher Action (drag stop) → Optimistic Update → API Call
 ## Implementation Details
 
 ### File Structure
+
 ```
 apps/dashboard/
 ├── src/app/(dashboard)/dispatch/
@@ -110,6 +113,7 @@ packages/core/src/dispatch/
 ### Type Safety
 
 All components use strict TypeScript with:
+
 - Explicit type definitions for Route, Stop, Driver
 - Type-safe React Query hooks
 - Zod validation for API responses
@@ -126,6 +130,7 @@ All components use strict TypeScript with:
 ## Consequences
 
 ### Positive
+
 - Dispatchers have real-time visibility of all active routes
 - Drag-and-drop reassignment reduces manual data entry errors
 - Open-source stack aligns with Witylogix philosophy
@@ -133,12 +138,14 @@ All components use strict TypeScript with:
 - No external API dependencies (except base maps)
 
 ### Negative
+
 - Custom timeline component requires maintenance
 - WebSocket connections need proper cleanup to prevent memory leaks
 - Real-time sync issues possible in low-bandwidth scenarios
 - Client-side rendering of many routes (1000+) may require virtualization
 
 ### Mitigations
+
 - Implement proper WebSocket cleanup in useEffect hooks
 - Add virtualization for large route lists in future
 - Monitor memory usage in production

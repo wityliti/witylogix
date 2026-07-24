@@ -3,7 +3,7 @@
  * Manages product collections: creation, updates, product management, and auto-collection evaluation
  */
 
-import { PrismaClient } from '@witylogix/db';
+import { PrismaClient } from "@witylogix/db";
 import {
   Collection,
   CollectionProduct,
@@ -17,21 +17,21 @@ import {
   PaginationOptions,
   CollectionListResponse,
   CollectionRule,
-} from './types';
+} from "./types";
 
 // ─── ERROR CLASSES ──────────────────────────────────────────────────
 
 export class CollectionNotFoundError extends Error {
   constructor(collectionId: string) {
     super(`Collection not found: ${collectionId}`);
-    this.name = 'CollectionNotFoundError';
+    this.name = "CollectionNotFoundError";
   }
 }
 
 export class CollectionError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'CollectionError';
+    this.name = "CollectionError";
   }
 }
 
@@ -47,17 +47,17 @@ export class CollectionManager {
     shopId: string,
     data: CreateCollectionRequest,
     externalCollectionId?: string,
-    source?: string
+    source?: string,
   ): Promise<Collection> {
     const collection = await this.prisma.collection.create({
       data: {
         shopId,
         externalId: externalCollectionId,
-        source: source || 'CUSTOM',
+        source: source || "CUSTOM",
         title: data.title,
         description: data.description,
-        type: data.type || 'manual',
-        sortOrder: data.sortOrder || 'manual',
+        type: data.type || "manual",
+        sortOrder: data.sortOrder || "manual",
         imageUrl: data.imageUrl,
         isActive: data.isActive ?? true,
         rules: data.rules ? JSON.parse(JSON.stringify(data.rules)) : null,
@@ -73,7 +73,7 @@ export class CollectionManager {
    */
   async updateCollection(
     collectionId: string,
-    data: UpdateCollectionRequest
+    data: UpdateCollectionRequest,
   ): Promise<Collection> {
     const collection = await this.prisma.collection.findUnique({
       where: { id: collectionId },
@@ -92,7 +92,9 @@ export class CollectionManager {
         sortOrder: data.sortOrder ?? collection.sortOrder,
         imageUrl: data.imageUrl ?? collection.imageUrl,
         isActive: data.isActive ?? collection.isActive,
-        rules: data.rules ? JSON.parse(JSON.stringify(data.rules)) : collection.rules,
+        rules: data.rules
+          ? JSON.parse(JSON.stringify(data.rules))
+          : collection.rules,
       },
     });
 
@@ -121,7 +123,7 @@ export class CollectionManager {
    */
   async addProducts(
     collectionId: string,
-    request: AddProductsRequest
+    request: AddProductsRequest,
   ): Promise<CollectionProduct[]> {
     const collection = await this.prisma.collection.findUnique({
       where: { id: collectionId },
@@ -134,7 +136,7 @@ export class CollectionManager {
     // Get current max position
     const lastProduct = await this.prisma.collectionProduct.findFirst({
       where: { collectionId },
-      orderBy: { position: 'desc' },
+      orderBy: { position: "desc" },
     });
 
     let position = lastProduct ? lastProduct.position + 1 : 0;
@@ -178,7 +180,7 @@ export class CollectionManager {
    */
   async removeProducts(
     collectionId: string,
-    productIds: string[]
+    productIds: string[],
   ): Promise<void> {
     const collection = await this.prisma.collection.findUnique({
       where: { id: collectionId },
@@ -211,7 +213,7 @@ export class CollectionManager {
    */
   async reorderProducts(
     collectionId: string,
-    request: ReorderProductsRequest
+    request: ReorderProductsRequest,
   ): Promise<CollectionProduct[]> {
     const collection = await this.prisma.collection.findUnique({
       where: { id: collectionId },
@@ -245,7 +247,7 @@ export class CollectionManager {
   async syncFromPlatform(
     shopId: string,
     platformCollections: PlatformCollectionData[],
-    source: string = 'SHOPIFY'
+    source: string = "SHOPIFY",
   ): Promise<Collection[]> {
     const collections: Collection[] = [];
 
@@ -270,7 +272,7 @@ export class CollectionManager {
           source,
           title: platformCollection.title,
           description: platformCollection.description,
-          type: platformCollection.rules ? 'auto' : 'manual',
+          type: platformCollection.rules ? "auto" : "manual",
           imageUrl: platformCollection.image?.src,
           rules: platformCollection.rules
             ? JSON.parse(JSON.stringify(platformCollection.rules))
@@ -291,19 +293,20 @@ export class CollectionManager {
    */
   async syncFromShopify(
     shopId: string,
-    shopifyCollections: ShopifyCollectionData[]
+    shopifyCollections: ShopifyCollectionData[],
   ): Promise<Collection[]> {
     // Convert ShopifyCollectionData to PlatformCollectionData format
-    const platformCollections: PlatformCollectionData[] = shopifyCollections.map((sc) => ({
-      externalId: sc.id,
-      title: sc.title,
-      handle: sc.handle,
-      description: sc.description,
-      image: sc.image,
-      rules: sc.rules,
-    }));
+    const platformCollections: PlatformCollectionData[] =
+      shopifyCollections.map((sc) => ({
+        externalId: sc.id,
+        title: sc.title,
+        handle: sc.handle,
+        description: sc.description,
+        image: sc.image,
+        rules: sc.rules,
+      }));
 
-    return this.syncFromPlatform(shopId, platformCollections, 'SHOPIFY');
+    return this.syncFromPlatform(shopId, platformCollections, "SHOPIFY");
   }
 
   /**
@@ -318,8 +321,10 @@ export class CollectionManager {
       throw new CollectionNotFoundError(collectionId);
     }
 
-    if (collection.type !== 'auto' || !collection.rules) {
-      throw new CollectionError('Only automatic collections can have rules evaluated');
+    if (collection.type !== "auto" || !collection.rules) {
+      throw new CollectionError(
+        "Only automatic collections can have rules evaluated",
+      );
     }
 
     // This would normally query products and apply rules
@@ -334,12 +339,14 @@ export class CollectionManager {
   /**
    * Get collection with products
    */
-  async getCollectionWithProducts(collectionId: string): Promise<CollectionWithProducts | null> {
+  async getCollectionWithProducts(
+    collectionId: string,
+  ): Promise<CollectionWithProducts | null> {
     const collection = await this.prisma.collection.findUnique({
       where: { id: collectionId },
       include: {
         products: {
-          orderBy: { position: 'asc' },
+          orderBy: { position: "asc" },
         },
       },
     });
@@ -359,7 +366,7 @@ export class CollectionManager {
    */
   async listCollections(
     shopId: string,
-    pagination?: PaginationOptions
+    pagination?: PaginationOptions,
   ): Promise<CollectionListResponse> {
     const limit = pagination?.limit || 20;
     const offset = pagination?.offset || 0;
@@ -367,7 +374,7 @@ export class CollectionManager {
     const [collections, total] = await Promise.all([
       this.prisma.collection.findMany({
         where: { shopId },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         take: limit,
         skip: offset,
       }),
@@ -400,7 +407,7 @@ export class CollectionManager {
    */
   async getCollectionByExternalId(
     shopId: string,
-    externalCollectionId: string
+    externalCollectionId: string,
   ): Promise<Collection | null> {
     const collection = await this.prisma.collection.findUnique({
       where: {
@@ -429,7 +436,9 @@ export class CollectionManager {
       sortOrder: collection.sortOrder,
       imageUrl: collection.imageUrl,
       isActive: collection.isActive,
-      rules: collection.rules ? JSON.parse(JSON.stringify(collection.rules)) : undefined,
+      rules: collection.rules
+        ? JSON.parse(JSON.stringify(collection.rules))
+        : undefined,
       productCount: collection.productCount,
       createdAt: collection.createdAt,
       updatedAt: collection.updatedAt,
@@ -451,4 +460,5 @@ export class CollectionManager {
 }
 
 // Export singleton instance
-export const collectionManager = (prisma: PrismaClient) => new CollectionManager(prisma);
+export const collectionManager = (prisma: PrismaClient) =>
+  new CollectionManager(prisma);

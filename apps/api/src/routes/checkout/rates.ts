@@ -130,18 +130,18 @@ async function checkoutRatesRoutes(fastify: FastifyInstance): Promise<void> {
           productTypes: input.productTypes,
           ...(input.originLatitude &&
             input.originLongitude && {
-            origin: {
-              latitude: input.originLatitude,
-              longitude: input.originLongitude,
-            },
-          }),
+              origin: {
+                latitude: input.originLatitude,
+                longitude: input.originLongitude,
+              },
+            }),
           ...(input.destinationLatitude &&
             input.destinationLongitude && {
-            destination: {
-              latitude: input.destinationLatitude,
-              longitude: input.destinationLongitude,
-            },
-          }),
+              destination: {
+                latitude: input.destinationLatitude,
+                longitude: input.destinationLongitude,
+              },
+            }),
         });
 
         return {

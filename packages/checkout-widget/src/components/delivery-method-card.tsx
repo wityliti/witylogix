@@ -43,7 +43,7 @@ export function DeliveryMethodCard({
           : isSelected
             ? "bg-wl-primary-100 border-wl-primary-500 dark:bg-wl-primary-900 dark:border-wl-primary-400"
             : "bg-wl-bg-secondary border-wl-border-default hover:border-wl-primary-500 hover:shadow-sm",
-        className
+        className,
       )}
       aria-pressed={isSelected}
       aria-disabled={isDisabled}
@@ -54,8 +54,12 @@ export function DeliveryMethodCard({
         <div className="flex items-start gap-3">
           <span className="text-3xl">{getIcon(method.id)}</span>
           <div className="flex-1">
-            <h3 className="font-semibold text-wl-text-primary">{method.name}</h3>
-            <p className="text-sm text-wl-text-secondary">{method.description}</p>
+            <h3 className="font-semibold text-wl-text-primary">
+              {method.name}
+            </h3>
+            <p className="text-sm text-wl-text-secondary">
+              {method.description}
+            </p>
           </div>
         </div>
 
@@ -63,7 +67,9 @@ export function DeliveryMethodCard({
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="text-sm text-wl-text-tertiary">⏱️</span>
-            <span className="text-sm text-wl-text-secondary">{method.estimatedTime}</span>
+            <span className="text-sm text-wl-text-secondary">
+              {method.estimatedTime}
+            </span>
           </div>
           <div className="text-lg font-bold text-wl-text-primary">
             {new Intl.NumberFormat("en-US", {
@@ -87,7 +93,7 @@ export function DeliveryMethodCard({
           "absolute top-4 right-4 w-5 h-5 rounded-full border-2 transition-all",
           isSelected
             ? "border-wl-primary-500 bg-wl-primary-500"
-            : "border-wl-border-default bg-wl-bg-primary"
+            : "border-wl-border-default bg-wl-bg-primary",
         )}
       >
         {isSelected && (

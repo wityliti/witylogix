@@ -60,13 +60,13 @@ export function FleetHealthGauge({
         weight: 0.2,
       },
     ],
-    [vehicleHealth, fuelEfficiency, driverBehavior, maintenanceCompliance]
+    [vehicleHealth, fuelEfficiency, driverBehavior, maintenanceCompliance],
   );
 
   // Calculate weighted overall score
   const overallScore = useMemo(() => {
     return Math.round(
-      segments.reduce((sum, seg) => sum + seg.score * seg.weight, 0)
+      segments.reduce((sum, seg) => sum + seg.score * seg.weight, 0),
     );
   }, [segments]);
 
@@ -79,13 +79,13 @@ export function FleetHealthGauge({
 
   // Calculate arc angles for each segment
   const arcStartAngle = -Math.PI * 0.7; // Start angle (-126 degrees)
-  const arcEndAngle = Math.PI * 0.7;   // End angle (126 degrees)
+  const arcEndAngle = Math.PI * 0.7; // End angle (126 degrees)
   const totalArcAngle = arcEndAngle - arcStartAngle;
 
   const segmentAngles = segments.map((seg, i) => {
     const prevAngle = segments
       .slice(0, i)
-      .reduce((sum, s) => sum + (totalArcAngle / segments.length), arcStartAngle);
+      .reduce((sum, s) => sum + totalArcAngle / segments.length, arcStartAngle);
     const angle = totalArcAngle / segments.length;
     return { start: prevAngle, end: prevAngle + angle, segment: seg };
   });
@@ -94,7 +94,7 @@ export function FleetHealthGauge({
   const createArcPath = (
     startAngle: number,
     endAngle: number,
-    radius: number
+    radius: number,
   ): string => {
     const x1 = centerX + radius * Math.cos(startAngle);
     const y1 = centerY + radius * Math.sin(startAngle);
@@ -137,9 +137,7 @@ export function FleetHealthGauge({
         {/* Colored segments */}
         {segmentAngles.map((seg, i) => {
           const arcLength =
-            gaugeRadius *
-            (seg.segment.score / 100) *
-            (seg.end - seg.start);
+            gaugeRadius * (seg.segment.score / 100) * (seg.end - seg.start);
 
           return (
             <g key={`segment-${i}`}>
@@ -148,7 +146,7 @@ export function FleetHealthGauge({
                 d={createArcPath(
                   seg.start,
                   seg.start + ((seg.end - seg.start) * seg.segment.score) / 100,
-                  gaugeRadius
+                  gaugeRadius,
                 )}
                 stroke={seg.segment.color}
                 strokeWidth={outerRadius - innerRadius}
@@ -160,8 +158,15 @@ export function FleetHealthGauge({
               {i % 2 === 0 && (
                 <>
                   <text
-                    x={centerX + (gaugeRadius + 30) * Math.cos((seg.start + seg.end) / 2)}
-                    y={centerY + (gaugeRadius + 30) * Math.sin((seg.start + seg.end) / 2) + 4}
+                    x={
+                      centerX +
+                      (gaugeRadius + 30) * Math.cos((seg.start + seg.end) / 2)
+                    }
+                    y={
+                      centerY +
+                      (gaugeRadius + 30) * Math.sin((seg.start + seg.end) / 2) +
+                      4
+                    }
                     textAnchor="middle"
                     fontSize="11"
                     fontWeight="600"

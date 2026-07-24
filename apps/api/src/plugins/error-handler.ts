@@ -3,7 +3,12 @@
  * Also handles Zod validation errors and unexpected errors.
  */
 
-import type { FastifyInstance, FastifyError, FastifyReply, FastifyRequest } from "fastify";
+import type {
+  FastifyInstance,
+  FastifyError,
+  FastifyReply,
+  FastifyRequest,
+} from "fastify";
 import fp from "fastify-plugin";
 import { ZodError } from "zod";
 import { AppError } from "../lib/errors.js";
@@ -11,10 +16,17 @@ import { captureException } from "../lib/sentry.js";
 
 async function errorHandlerPlugin(fastify: FastifyInstance): Promise<void> {
   fastify.setErrorHandler(
-    (error: FastifyError | Error, request: FastifyRequest, reply: FastifyReply) => {
+    (
+      error: FastifyError | Error,
+      request: FastifyRequest,
+      reply: FastifyReply,
+    ) => {
       // Application errors (expected, thrown by our code)
       if (error instanceof AppError) {
-        request.log.warn({ err: error, statusCode: error.statusCode }, error.message);
+        request.log.warn(
+          { err: error, statusCode: error.statusCode },
+          error.message,
+        );
         return reply.status(error.statusCode).send({
           statusCode: error.statusCode,
           error: error.code,
@@ -89,7 +101,10 @@ async function errorHandlerPlugin(fastify: FastifyInstance): Promise<void> {
 
       // Unexpected errors — log full stack, capture to Sentry, return generic message
       request.log.error({ err: error }, "Unhandled error");
-      void captureException(error, { url: request.url, method: request.method });
+      void captureException(error, {
+        url: request.url,
+        method: request.method,
+      });
       return reply.status(500).send({
         statusCode: 500,
         error: "INTERNAL_ERROR",

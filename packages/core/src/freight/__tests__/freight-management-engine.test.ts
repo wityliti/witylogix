@@ -232,7 +232,7 @@ describe("LaneManager", () => {
       });
 
       expect(tier2.pricingTiers[0].tierId).not.toBe(
-        tier2.pricingTiers[1].tierId
+        tier2.pricingTiers[1].tierId,
       );
     });
   });
@@ -386,7 +386,7 @@ describe("CarrierScorecard", () => {
         "carrier-1",
         "Test Carrier",
         metrics,
-        "monthly"
+        "monthly",
       );
 
       expect(result.id).toBeDefined();
@@ -428,7 +428,7 @@ describe("CarrierScorecard", () => {
         "carrier-poor",
         "Poor Carrier",
         poorMetrics,
-        "monthly"
+        "monthly",
       );
 
       const goodScore = scorecard.createScorecard(
@@ -436,7 +436,7 @@ describe("CarrierScorecard", () => {
         "carrier-good",
         "Good Carrier",
         goodMetrics,
-        "monthly"
+        "monthly",
       );
 
       expect(goodScore.overallScore).toBeGreaterThan(poorScore.overallScore);
@@ -463,7 +463,7 @@ describe("CarrierScorecard", () => {
         "carrier-1",
         "Test Carrier",
         initialMetrics,
-        "monthly"
+        "monthly",
       );
 
       const initialScore = card.overallScore;
@@ -499,7 +499,7 @@ describe("RateNegotiationTracker", () => {
         "tenant-1",
         "lane-1",
         carrierIds,
-        5
+        5,
       );
 
       expect(negotiation.id).toBeDefined();
@@ -516,7 +516,7 @@ describe("RateNegotiationTracker", () => {
         "tenant-1",
         "lane-1",
         ["carrier-1", "carrier-2"],
-        5
+        5,
       );
 
       const updated = tracker.receiveBid(negotiation, "carrier-1", {
@@ -534,7 +534,7 @@ describe("RateNegotiationTracker", () => {
         "tenant-1",
         "lane-1",
         ["carrier-1", "carrier-2"],
-        5
+        5,
       );
 
       negotiation = tracker.receiveBid(negotiation, "carrier-1", {
@@ -559,7 +559,7 @@ describe("RateNegotiationTracker", () => {
         "tenant-1",
         "lane-1",
         ["carrier-1", "carrier-2"],
-        5
+        5,
       );
 
       negotiation = tracker.receiveBid(negotiation, "carrier-1", {
@@ -587,7 +587,7 @@ describe("RateNegotiationTracker", () => {
         "tenant-1",
         "lane-1",
         ["carrier-1", "carrier-2", "carrier-3"],
-        5
+        5,
       );
 
       negotiation = tracker.receiveBid(negotiation, "carrier-1", {
@@ -640,7 +640,7 @@ describe("CapacityPlanner", () => {
         "tenant-1",
         "lane-1",
         historicalLoads,
-        30
+        30,
       );
 
       expect(forecast.id).toBeDefined();
@@ -662,7 +662,7 @@ describe("CapacityPlanner", () => {
         "tenant-1",
         "lane-1",
         historicalLoads,
-        30
+        30,
       );
 
       // Even with steady historical data, some forecast points may indicate surge risk
@@ -682,7 +682,7 @@ describe("CapacityPlanner", () => {
         "tenant-1",
         "lane-1",
         historicalLoads,
-        30
+        30,
       );
 
       const updated = planner.activateBackupCarriers(forecast, [
@@ -711,7 +711,7 @@ describe("FreightManagementEngine", () => {
     expect(engine.getLaneManager()).toBeInstanceOf(LaneManager);
     expect(engine.getScorecardService()).toBeInstanceOf(CarrierScorecard);
     expect(engine.getNegotiationTracker()).toBeInstanceOf(
-      RateNegotiationTracker
+      RateNegotiationTracker,
     );
     expect(engine.getCapacityPlanner()).toBeInstanceOf(CapacityPlanner);
   });
@@ -732,18 +732,14 @@ describe("FreightManagementEngine", () => {
       .getNegotiationTracker()
       .awardContract(withBid, "carrier-1", 2.5);
 
-    const contract = engine.createContractFromAward(
-      "tenant-1",
-      awarded,
-      {
-        effectiveDate: new Date(),
-        expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-        baseRate: 2.5,
-        fuelSurcharge: 0,
-        accessorials: [],
-        conditions: [],
-      }
-    );
+    const contract = engine.createContractFromAward("tenant-1", awarded, {
+      effectiveDate: new Date(),
+      expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+      baseRate: 2.5,
+      fuelSurcharge: 0,
+      accessorials: [],
+      conditions: [],
+    });
 
     expect(contract.id).toBeDefined();
     expect(contract.carrierId).toBe("carrier-1");

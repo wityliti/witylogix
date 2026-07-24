@@ -121,7 +121,11 @@ export class TelematicsPoller extends EventEmitter {
 
         if (
           !lastData ||
-          !this.dataEquals(lastData, position as unknown as Record<string, unknown>, ["timestamp"])
+          !this.dataEquals(
+            lastData,
+            position as unknown as Record<string, unknown>,
+            ["timestamp"],
+          )
         ) {
           this.emitEvent({
             id: `${vehicleId}-pos-${Date.now()}`,
@@ -132,7 +136,10 @@ export class TelematicsPoller extends EventEmitter {
             timestamp: new Date(),
           });
 
-          this.lastDataCache.set(cacheKey, position as unknown as Record<string, unknown>);
+          this.lastDataCache.set(
+            cacheKey,
+            position as unknown as Record<string, unknown>,
+          );
         }
 
         state.lastPositionPoll = new Date();
@@ -162,10 +169,11 @@ export class TelematicsPoller extends EventEmitter {
 
         if (
           !lastData ||
-          !this.dataEquals(lastData, diagnostics as unknown as Record<string, unknown>, [
-            "timestamp",
-            "faultCodes",
-          ])
+          !this.dataEquals(
+            lastData,
+            diagnostics as unknown as Record<string, unknown>,
+            ["timestamp", "faultCodes"],
+          )
         ) {
           this.emitEvent({
             id: `${vehicleId}-diag-${Date.now()}`,
@@ -176,7 +184,10 @@ export class TelematicsPoller extends EventEmitter {
             timestamp: new Date(),
           });
 
-          this.lastDataCache.set(cacheKey, diagnostics as unknown as Record<string, unknown>);
+          this.lastDataCache.set(
+            cacheKey,
+            diagnostics as unknown as Record<string, unknown>,
+          );
         }
 
         state.lastDiagnosticPoll = new Date();
@@ -204,7 +215,14 @@ export class TelematicsPoller extends EventEmitter {
         const cacheKey = `fuel:${vehicleId}`;
         const lastData = this.lastDataCache.get(cacheKey);
 
-        if (!lastData || !this.dataEquals(lastData, fuel as unknown as Record<string, unknown>, ["timestamp"])) {
+        if (
+          !lastData ||
+          !this.dataEquals(
+            lastData,
+            fuel as unknown as Record<string, unknown>,
+            ["timestamp"],
+          )
+        ) {
           this.emitEvent({
             id: `${vehicleId}-fuel-${Date.now()}`,
             provider: "samsara",
@@ -214,7 +232,10 @@ export class TelematicsPoller extends EventEmitter {
             timestamp: new Date(),
           });
 
-          this.lastDataCache.set(cacheKey, fuel as unknown as Record<string, unknown>);
+          this.lastDataCache.set(
+            cacheKey,
+            fuel as unknown as Record<string, unknown>,
+          );
         }
 
         state.lastFuelPoll = new Date();
@@ -239,8 +260,7 @@ export class TelematicsPoller extends EventEmitter {
     if (!state) return;
 
     state.errorCount++;
-    state.lastError =
-      error instanceof Error ? error : new Error(String(error));
+    state.lastError = error instanceof Error ? error : new Error(String(error));
 
     // Emit error event
     this.emit("error", {

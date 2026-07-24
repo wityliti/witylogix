@@ -13,10 +13,19 @@
  */
 
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
-import { useLoaderData, useSearchParams, Link, Form, redirect } from "react-router";
+import {
+  useLoaderData,
+  useSearchParams,
+  Link,
+  Form,
+  redirect,
+} from "react-router";
 import { useState, useCallback } from "react";
 import { EmptyState } from "~/components/EmptyState";
-import { createApiClientFromRequest, type PaginatedResponse } from "~/lib/api.server";
+import {
+  createApiClientFromRequest,
+  type PaginatedResponse,
+} from "~/lib/api.server";
 import { authenticate } from "~/lib/shopify.server";
 import {
   Page,
@@ -119,7 +128,10 @@ export async function action({ request }: ActionFunctionArgs) {
       vehiclePlate: (formData.get("vehiclePlate") as string) || undefined,
       maxCapacity: Number(formData.get("maxCapacity") ?? 20),
     };
-    const result = await api.post<{ data: { id: string } }>("/api/v4/drivers", driver);
+    const result = await api.post<{ data: { id: string } }>(
+      "/api/v4/drivers",
+      driver,
+    );
     return redirect(`/drivers/${result.data.id}`);
   }
 
@@ -196,7 +208,9 @@ export default function DriversList() {
         </BlockStack>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Text as="span" variant="bodyMd">{driver.phone}</Text>
+        <Text as="span" variant="bodyMd">
+          {driver.phone}
+        </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
         <BlockStack gap="050">
@@ -246,8 +260,7 @@ export default function DriversList() {
       secondaryActions={[
         {
           content: viewMode === "table" ? "Map View" : "Table View",
-          onAction: () =>
-            setViewMode(viewMode === "table" ? "map" : "table"),
+          onAction: () => setViewMode(viewMode === "table" ? "map" : "table"),
         },
       ]}
     >
@@ -314,12 +327,20 @@ export default function DriversList() {
                 Map view shows live driver locations.
               </Text>
               <Text as="p" variant="bodySm" tone="subdued" alignment="center">
-                {drivers.filter((d) => d.lastLatitude && d.lastLongitude).length}{" "}
+                {
+                  drivers.filter((d) => d.lastLatitude && d.lastLongitude)
+                    .length
+                }{" "}
                 of {drivers.length} drivers have GPS data.
               </Text>
               <div
                 id="drivers-map"
-                style={{ width: "100%", height: 500, borderRadius: 8, backgroundColor: "#e8eaed" }}
+                style={{
+                  width: "100%",
+                  height: 500,
+                  borderRadius: 8,
+                  backgroundColor: "#e8eaed",
+                }}
               />
             </BlockStack>
           </Card>

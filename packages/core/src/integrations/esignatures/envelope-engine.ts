@@ -122,7 +122,10 @@ export class EnvelopeEngine {
   /**
    * Initialize adapter with configuration.
    */
-  async initializeAdapter(name: string, config: ESignatureConfig): Promise<void> {
+  async initializeAdapter(
+    name: string,
+    config: ESignatureConfig,
+  ): Promise<void> {
     let adapter: ESignatureAdapterInterface;
 
     switch (name) {
@@ -151,7 +154,7 @@ export class EnvelopeEngine {
    */
   private selectProvider(
     strategy: ProviderSelectionStrategy,
-    workflow: string
+    workflow: string,
   ): string | null {
     const availableProviders = (this.options.preferredProviders || [])
       .filter((p) => this.adapters.has(p) && this.adapters.get(p))
@@ -168,21 +171,24 @@ export class EnvelopeEngine {
       case "cost":
         return availableProviders.reduce((best, current) => {
           const bestCost = PROVIDER_METADATA[best]?.costPerMonth || Infinity;
-          const currentCost = PROVIDER_METADATA[current]?.costPerMonth || Infinity;
+          const currentCost =
+            PROVIDER_METADATA[current]?.costPerMonth || Infinity;
           return currentCost < bestCost ? current : best;
         });
 
       case "reliability":
         return availableProviders.reduce((best, current) => {
           const bestScore = PROVIDER_METADATA[best]?.reliabilityScore || 0;
-          const currentScore = PROVIDER_METADATA[current]?.reliabilityScore || 0;
+          const currentScore =
+            PROVIDER_METADATA[current]?.reliabilityScore || 0;
           return currentScore > bestScore ? current : best;
         });
 
       case "speed":
         return availableProviders.reduce((best, current) => {
           const bestSpeed = PROVIDER_METADATA[best]?.signatureSpeed || Infinity;
-          const currentSpeed = PROVIDER_METADATA[current]?.signatureSpeed || Infinity;
+          const currentSpeed =
+            PROVIDER_METADATA[current]?.signatureSpeed || Infinity;
           return currentSpeed < bestSpeed ? current : best;
         });
 
@@ -200,7 +206,7 @@ export class EnvelopeEngine {
     action: string,
     provider: string,
     status: "success" | "failure",
-    details?: Record<string, unknown>
+    details?: Record<string, unknown>,
   ): void {
     if (!this.options.enableAuditLog) {
       return;
@@ -232,14 +238,16 @@ export class EnvelopeEngine {
   /**
    * Create and send envelope.
    */
-  async createAndSendEnvelope(envelope: Envelope): Promise<OrchestrationResult> {
+  async createAndSendEnvelope(
+    envelope: Envelope,
+  ): Promise<OrchestrationResult> {
     const operationId = `op_${Date.now()}_${Math.random()}`;
     const startTime = Date.now();
 
     // Select provider
     const selectedProvider = this.selectProvider(
       this.options.selectionStrategy || "features",
-      envelope.workflowMode
+      envelope.workflowMode,
     );
 
     if (!selectedProvider) {
@@ -262,7 +270,10 @@ export class EnvelopeEngine {
 
     let result: EnvelopeResult | null = null;
     let fallbackUsed = false;
-    const providers = [selectedProvider, ...this.getProviderFallbacks(selectedProvider)];
+    const providers = [
+      selectedProvider,
+      ...this.getProviderFallbacks(selectedProvider),
+    ];
 
     for (const provider of providers) {
       try {
@@ -273,11 +284,15 @@ export class EnvelopeEngine {
 
         // Create envelope
         result = await currentAdapter.createEnvelope(envelope);
-        this.logAudit("create_envelope", provider, "success", { envelopeId: result.envelopeId });
+        this.logAudit("create_envelope", provider, "success", {
+          envelopeId: result.envelopeId,
+        });
 
         // Send envelope
         const sendResult = await currentAdapter.sendEnvelope(result.envelopeId);
-        this.logAudit("send_envelope", provider, "success", { envelopeId: result.envelopeId });
+        this.logAudit("send_envelope", provider, "success", {
+          envelopeId: result.envelopeId,
+        });
 
         // Log compliance
         envelope.signers.forEach((signer) => {
@@ -300,9 +315,14 @@ export class EnvelopeEngine {
           auditTrail: this.auditTrail,
         };
       } catch (error) {
-        this.logAudit("create_envelope", provider, "failure", { error: String(error) });
+        this.logAudit("create_envelope", provider, "failure", {
+          error: String(error),
+        });
 
-        if (!this.options.autoFallback || provider === providers[providers.length - 1]) {
+        if (
+          !this.options.autoFallback ||
+          provider === providers[providers.length - 1]
+        ) {
           throw error;
         }
 
@@ -316,7 +336,10 @@ export class EnvelopeEngine {
   /**
    * Get envelope status across provider.
    */
-  async getEnvelopeStatus(envelopeId: string, provider: string): Promise<EnvelopeStatusResult> {
+  async getEnvelopeStatus(
+    envelopeId: string,
+    provider: string,
+  ): Promise<EnvelopeStatusResult> {
     const adapter = this.adapters.get(provider);
     if (!adapter) {
       throw new Error(`Provider ${provider} not initialized`);
@@ -327,7 +350,10 @@ export class EnvelopeEngine {
       this.logAudit("get_status", provider, "success", { envelopeId });
       return status;
     } catch (error) {
-      this.logAudit("get_status", provider, "failure", { error: String(error), envelopeId });
+      this.logAudit("get_status", provider, "failure", {
+        error: String(error),
+        envelopeId,
+      });
       throw error;
     }
   }
@@ -335,7 +361,10 @@ export class EnvelopeEngine {
   /**
    * Get envelope events.
    */
-  async getEnvelopeEvents(envelopeId: string, provider: string): Promise<SigningEvent[]> {
+  async getEnvelopeEvents(
+    envelopeId: string,
+    provider: string,
+  ): Promise<SigningEvent[]> {
     const adapter = this.adapters.get(provider);
     if (!adapter) {
       throw new Error(`Provider ${provider} not initialized`);
@@ -343,10 +372,16 @@ export class EnvelopeEngine {
 
     try {
       const events = await adapter.getEnvelopeEvents(envelopeId);
-      this.logAudit("get_events", provider, "success", { envelopeId, eventCount: events.length });
+      this.logAudit("get_events", provider, "success", {
+        envelopeId,
+        eventCount: events.length,
+      });
       return events;
     } catch (error) {
-      this.logAudit("get_events", provider, "failure", { error: String(error), envelopeId });
+      this.logAudit("get_events", provider, "failure", {
+        error: String(error),
+        envelopeId,
+      });
       throw error;
     }
   }
@@ -356,7 +391,7 @@ export class EnvelopeEngine {
    */
   async downloadEnvelopeDocuments(
     envelopeId: string,
-    provider: string
+    provider: string,
   ): Promise<{ content: string; mimeType: string; fileName: string }> {
     const adapter = this.adapters.get(provider);
     if (!adapter) {
@@ -377,7 +412,10 @@ export class EnvelopeEngine {
 
       return result;
     } catch (error) {
-      this.logAudit("download_documents", provider, "failure", { error: String(error), envelopeId });
+      this.logAudit("download_documents", provider, "failure", {
+        error: String(error),
+        envelopeId,
+      });
       throw error;
     }
   }
@@ -389,7 +427,7 @@ export class EnvelopeEngine {
     envelopeId: string,
     signerEmail: string,
     returnUrl: string,
-    provider: string
+    provider: string,
   ): Promise<EmbedSigningResult> {
     const adapter = this.adapters.get(provider);
     if (!adapter) {
@@ -397,8 +435,15 @@ export class EnvelopeEngine {
     }
 
     try {
-      const result = await adapter.getEmbeddedSigningUrl(envelopeId, signerEmail, returnUrl);
-      this.logAudit("get_signing_url", provider, "success", { envelopeId, signerEmail });
+      const result = await adapter.getEmbeddedSigningUrl(
+        envelopeId,
+        signerEmail,
+        returnUrl,
+      );
+      this.logAudit("get_signing_url", provider, "success", {
+        envelopeId,
+        signerEmail,
+      });
       return result;
     } catch (error) {
       this.logAudit("get_signing_url", provider, "failure", {
@@ -413,7 +458,11 @@ export class EnvelopeEngine {
   /**
    * Void envelope.
    */
-  async voidEnvelope(envelopeId: string, provider: string, reason?: string): Promise<void> {
+  async voidEnvelope(
+    envelopeId: string,
+    provider: string,
+    reason?: string,
+  ): Promise<void> {
     const adapter = this.adapters.get(provider);
     if (!adapter) {
       throw new Error(`Provider ${provider} not initialized`);
@@ -421,7 +470,10 @@ export class EnvelopeEngine {
 
     try {
       await adapter.voidEnvelope(envelopeId, reason);
-      this.logAudit("void_envelope", provider, "success", { envelopeId, reason });
+      this.logAudit("void_envelope", provider, "success", {
+        envelopeId,
+        reason,
+      });
 
       this.logCompliance({
         envelopeId,
@@ -431,7 +483,10 @@ export class EnvelopeEngine {
         action: `Envelope voided: ${reason || "No reason provided"}`,
       });
     } catch (error) {
-      this.logAudit("void_envelope", provider, "failure", { error: String(error), envelopeId });
+      this.logAudit("void_envelope", provider, "failure", {
+        error: String(error),
+        envelopeId,
+      });
       throw error;
     }
   }
@@ -441,7 +496,7 @@ export class EnvelopeEngine {
    */
   async listTemplates(
     provider: string,
-    options?: { limit?: number; offset?: number }
+    options?: { limit?: number; offset?: number },
   ): Promise<{ templates: Template[]; total: number }> {
     const adapter = this.adapters.get(provider);
     if (!adapter) {
@@ -450,10 +505,14 @@ export class EnvelopeEngine {
 
     try {
       const result = await adapter.listTemplates(options);
-      this.logAudit("list_templates", provider, "success", { templateCount: result.templates.length });
+      this.logAudit("list_templates", provider, "success", {
+        templateCount: result.templates.length,
+      });
       return result;
     } catch (error) {
-      this.logAudit("list_templates", provider, "failure", { error: String(error) });
+      this.logAudit("list_templates", provider, "failure", {
+        error: String(error),
+      });
       throw error;
     }
   }
@@ -462,7 +521,12 @@ export class EnvelopeEngine {
    * Get provider fallbacks.
    */
   private getProviderFallbacks(primary: string): string[] {
-    const all = this.options.preferredProviders || ["docusign", "adobe_sign", "pandadoc", "hellosign"];
+    const all = this.options.preferredProviders || [
+      "docusign",
+      "adobe_sign",
+      "pandadoc",
+      "hellosign",
+    ];
     return all.filter((p) => p !== primary && this.adapters.has(p));
   }
 
@@ -497,7 +561,9 @@ export class EnvelopeEngine {
   /**
    * Get provider health.
    */
-  async getProviderHealth(provider: string): Promise<{ healthy: boolean; message: string }> {
+  async getProviderHealth(
+    provider: string,
+  ): Promise<{ healthy: boolean; message: string }> {
     const adapter = this.adapters.get(provider);
     if (!adapter) {
       return {
@@ -519,7 +585,9 @@ export class EnvelopeEngine {
   /**
    * Get all providers health.
    */
-  async getAllProvidersHealth(): Promise<Record<string, { healthy: boolean; message: string }>> {
+  async getAllProvidersHealth(): Promise<
+    Record<string, { healthy: boolean; message: string }>
+  > {
     const results: Record<string, { healthy: boolean; message: string }> = {};
 
     for (const [name] of this.adapters) {

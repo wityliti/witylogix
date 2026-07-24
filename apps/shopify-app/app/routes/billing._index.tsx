@@ -108,7 +108,9 @@ interface UsageStats {
 }
 
 interface BillingPageData {
-  currentPlan: (PlanDetails & { isActive: true; subscriptionId: string | null }) | null;
+  currentPlan:
+    | (PlanDetails & { isActive: true; subscriptionId: string | null })
+    | null;
   nextBillingDate: string | null;
   usage: UsageStats;
   availablePlans: PlanDetails[];
@@ -203,8 +205,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const matchedPlanId =
       Object.entries(PLAN_PRICES).find(([, p]) => p === priceAmount)?.[0] ??
       "PROFESSIONAL";
-    const planDef =
-      PLANS.find((p) => p.id === matchedPlanId) ?? PLANS[1];
+    const planDef = PLANS.find((p) => p.id === matchedPlanId) ?? PLANS[1];
 
     currentPlan = {
       ...planDef,
@@ -286,7 +287,9 @@ export async function action({ request }: ActionFunctionArgs) {
 
   if (result?.userErrors?.length > 0) {
     return {
-      error: result.userErrors.map((e: { message: string }) => e.message).join(", "),
+      error: result.userErrors
+        .map((e: { message: string }) => e.message)
+        .join(", "),
     } satisfies ActionResult;
   }
 
@@ -294,7 +297,9 @@ export async function action({ request }: ActionFunctionArgs) {
     return redirect(result.confirmationUrl);
   }
 
-  return { error: "Failed to create subscription. Please try again." } satisfies ActionResult;
+  return {
+    error: "Failed to create subscription. Please try again.",
+  } satisfies ActionResult;
 }
 
 // ─── Component ─────────────────────────────────────────────

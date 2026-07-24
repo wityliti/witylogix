@@ -230,7 +230,7 @@ describe("RedisRateLimiter", () => {
         const result = await limiter2.checkLimit(
           "tenant-1",
           "PRO",
-          "/api/expensive"
+          "/api/expensive",
         );
         if (i < 9) {
           expect(result.allowed).toBe(true);
@@ -242,7 +242,7 @@ describe("RedisRateLimiter", () => {
       const result = await limiter2.checkLimit(
         "tenant-1",
         "PRO",
-        "/api/expensive"
+        "/api/expensive",
       );
       expect(result.allowed).toBe(false);
     });
@@ -257,7 +257,7 @@ describe("RedisRateLimiter", () => {
         const result = await limiter2.checkLimit(
           "tenant-1",
           "FREE",
-          "/auth/login"
+          "/auth/login",
         );
         expect(result.allowed).toBe(true);
         expect(result.limit).toBe(30);
@@ -267,7 +267,7 @@ describe("RedisRateLimiter", () => {
       const result = await limiter2.checkLimit(
         "tenant-1",
         "FREE",
-        "/auth/login"
+        "/auth/login",
       );
       expect(result.allowed).toBe(false);
     });
@@ -278,7 +278,7 @@ describe("RedisRateLimiter", () => {
       const result = await limiter2.checkLimit(
         "tenant-1",
         "PRO",
-        "/auth/register"
+        "/auth/register",
       );
       expect(result.limit).toBe(30); // Should use auth limit, not PRO limit
     });
@@ -289,7 +289,7 @@ describe("RedisRateLimiter", () => {
       const result = await limiter2.checkLimit(
         "tenant-1",
         "ENTERPRISE",
-        "/auth/reset-password"
+        "/auth/reset-password",
       );
       expect(result.limit).toBe(30); // Should use auth limit regardless of plan
     });

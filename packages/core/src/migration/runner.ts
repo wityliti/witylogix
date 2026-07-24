@@ -11,8 +11,8 @@ import {
   RecordValidationResult,
   ValidationError,
   ConflictResolutionStrategy,
-} from './types.js';
-import { DataMapper } from './mapper.js';
+} from "./types.js";
+import { DataMapper } from "./mapper.js";
 
 /**
  * MigrationRunner: Execute migrations with validation and error handling
@@ -36,14 +36,14 @@ export class MigrationRunner {
   /**
    * Run the complete migration
    */
-  async run(
-    source: any,
-    target: any
-  ): Promise<MigrationReport> {
+  async run(source: any, target: any): Promise<MigrationReport> {
     const startedAt = new Date();
     const collectionReports: MigrationProgress[] = [];
-    const errors: Array<{ collection: string; error: string; fatal?: boolean }> =
-      [];
+    const errors: Array<{
+      collection: string;
+      error: string;
+      fatal?: boolean;
+    }> = [];
     const warnings: Array<{ collection: string; warning: string }> = [];
 
     let totalRecords = 0;
@@ -63,7 +63,7 @@ export class MigrationRunner {
             collectionMapping,
             source,
             target,
-            this.config.batchSize || 100
+            this.config.batchSize || 100,
           );
 
           collectionReports.push(progress);
@@ -74,16 +74,14 @@ export class MigrationRunner {
           totalSkipped += progress.skipped;
 
           // Stop on error if configured
-          if (
-            progress.failed > 0 &&
-            this.config.stopOnError
-          ) {
+          if (progress.failed > 0 && this.config.stopOnError) {
             throw new Error(
-              `Migration stopped: ${progress.failed} records failed in ${collectionMapping.mongoCollection}`
+              `Migration stopped: ${progress.failed} records failed in ${collectionMapping.mongoCollection}`,
             );
           }
         } catch (error) {
-          const errorMsg = error instanceof Error ? error.message : String(error);
+          const errorMsg =
+            error instanceof Error ? error.message : String(error);
           errors.push({
             collection: collectionMapping.mongoCollection,
             error: errorMsg,
@@ -98,7 +96,7 @@ export class MigrationRunner {
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       errors.push({
-        collection: 'MIGRATION',
+        collection: "MIGRATION",
         error: errorMsg,
         fatal: true,
       });
@@ -142,7 +140,7 @@ export class MigrationRunner {
     mapping: CollectionMapping,
     source: any,
     target: any,
-    batchSize: number
+    batchSize: number,
   ): Promise<MigrationProgress> {
     const progress: MigrationProgress = {
       collection: mapping.mongoCollection,
@@ -180,7 +178,7 @@ export class MigrationRunner {
               progress.failed++;
               progress.errors.push({
                 rowIndex: progress.total,
-                error: validation.errors.map((e) => e.error).join('; '),
+                error: validation.errors.map((e) => e.error).join("; "),
                 document: doc,
               });
               continue;
@@ -195,14 +193,14 @@ export class MigrationRunner {
               // Check if conflict exists
               if (
                 error instanceof Error &&
-                error.message.includes('Unique constraint')
+                error.message.includes("Unique constraint")
               ) {
                 // Handle conflict based on strategy
                 const handled = await this.handleConflict(
                   record,
                   mapping,
                   target,
-                  ConflictResolutionStrategy.SKIP
+                  ConflictResolutionStrategy.SKIP,
                 );
                 if (!handled) {
                   progress.failed++;
@@ -233,7 +231,7 @@ export class MigrationRunner {
             progress.eta = this.calculateETA(
               progress.startedAt,
               progress.processed,
-              progress.total
+              progress.total,
             );
           }
         } catch (error) {
@@ -253,13 +251,12 @@ export class MigrationRunner {
         }
       }
 
-      progress.durationMs =
-        new Date().getTime() - progress.startedAt.getTime();
+      progress.durationMs = new Date().getTime() - progress.startedAt.getTime();
     } catch (error) {
       throw new Error(
         `Failed to migrate collection ${mapping.mongoCollection}: ${
           error instanceof Error ? error.message : String(error)
-        }`
+        }`,
       );
     }
 
@@ -271,7 +268,7 @@ export class MigrationRunner {
    */
   validateRecord(
     record: any,
-    mapping: CollectionMapping
+    mapping: CollectionMapping,
   ): RecordValidationResult {
     const errors: ValidationError[] = [];
 
@@ -295,9 +292,9 @@ export class MigrationRunner {
 
       // Basic type validation
       if (value !== undefined && value !== null) {
-        if (typeof value === 'string' && value.length === 0) {
+        if (typeof value === "string" && value.length === 0) {
           // Check if empty string is allowed
-          if (fieldTransform.targetField.includes('Date')) {
+          if (fieldTransform.targetField.includes("Date")) {
             errors.push({
               field: fieldTransform.targetField,
               value,
@@ -321,7 +318,7 @@ export class MigrationRunner {
     record: any,
     mapping: CollectionMapping,
     target: any,
-    strategy: ConflictResolutionStrategy
+    strategy: ConflictResolutionStrategy,
   ): Promise<boolean> {
     switch (strategy) {
       case ConflictResolutionStrategy.SKIP:
@@ -330,11 +327,7 @@ export class MigrationRunner {
       case ConflictResolutionStrategy.OVERWRITE:
         // Update existing record
         try {
-          await target.updateRecord(
-            mapping.prismaModel,
-            record.id,
-            record
-          );
+          await target.updateRecord(mapping.prismaModel, record.id, record);
           return true;
         } catch (e) {
           return false;
@@ -345,14 +338,10 @@ export class MigrationRunner {
         try {
           const existing = await target.getRecord(
             mapping.prismaModel,
-            record.id
+            record.id,
           );
           const merged = { ...existing, ...record };
-          await target.updateRecord(
-            mapping.prismaModel,
-            record.id,
-            merged
-          );
+          await target.updateRecord(mapping.prismaModel, record.id, merged);
           return true;
         } catch (e) {
           return false;
@@ -372,7 +361,7 @@ export class MigrationRunner {
   private calculateETA(
     startTime: Date,
     processed: number,
-    total: number
+    total: number,
   ): Date {
     const now = new Date();
     const elapsed = now.getTime() - startTime.getTime();

@@ -70,10 +70,7 @@ export function recommendIntegrations(
     .slice(0, 10);
 
   // Calculate confidence based on goal clarity
-  const confidence = Math.min(
-    1,
-    company.goals.length > 0 ? 0.9 : 0.5,
-  );
+  const confidence = Math.min(1, company.goals.length > 0 ? 0.9 : 0.5);
 
   const basedOn = [];
   if (company.goals.length > 0) basedOn.push("goals");
@@ -378,7 +375,8 @@ export function suggestNextSteps(
   if (!completedSteps.includes("team_invited")) {
     suggestions.push({
       title: "Invite Team Members",
-      description: "Bring your team aboard to collaborate and get their feedback",
+      description:
+        "Bring your team aboard to collaborate and get their feedback",
       actionUrl: "/team/invite",
       priority: "medium",
       estimateMinutes: 5,
@@ -462,11 +460,14 @@ export function getSimilarCompanyInsights(company: CompanyProfile): {
   // In a real system, this would query an analytics backend
   // For now, provide rule-based insights
 
-  const insights: Record<Industry, {
-    integrations: string[];
-    avgTime: number;
-    metrics: Record<string, number>;
-  }> = {
+  const insights: Record<
+    Industry,
+    {
+      integrations: string[];
+      avgTime: number;
+      metrics: Record<string, number>;
+    }
+  > = {
     [Industry.ECOMMERCE]: {
       integrations: ["shopify", "stripe", "shipstation"],
       avgTime: 180,

@@ -34,10 +34,7 @@ interface EnvelopeTimelineProps {
   className?: string;
 }
 
-
-const getIcon = (
-  type: TimelineEvent["type"]
-) => {
+const getIcon = (type: TimelineEvent["type"]) => {
   switch (type) {
     case "created":
       return PackageIcon;
@@ -53,7 +50,7 @@ const getIcon = (
 };
 
 const getStatusColor = (
-  type: TimelineEvent["type"]
+  type: TimelineEvent["type"],
 ): "success" | "info" | "warning" | "default" => {
   switch (type) {
     case "completed":
@@ -87,7 +84,7 @@ const TimelineEventItem = ({
               "border-2 bg-wl-bg-overlay",
               event.type === "completed" || event.type === "signed"
                 ? "border-wl-success-400 text-wl-success-400"
-                : "border-wl-primary-400 text-wl-primary-400"
+                : "border-wl-primary-400 text-wl-primary-400",
             )}
           >
             <Icon className="w-5 h-5" />
@@ -104,9 +101,7 @@ const TimelineEventItem = ({
                 <h4 className="font-semibold text-wl-text-primary">
                   {event.description}
                 </h4>
-                <Badge variant={getStatusColor(event.type)}>
-                  {event.type}
-                </Badge>
+                <Badge variant={getStatusColor(event.type)}>{event.type}</Badge>
               </div>
               <p className="text-xs text-wl-text-tertiary">
                 {event.timestamp.toLocaleDateString()} at{" "}
@@ -126,7 +121,7 @@ const TimelineEventItem = ({
                 <ChevronDownIcon
                   className={cn(
                     "w-4 h-4 transition-transform",
-                    expanded && "rotate-180"
+                    expanded && "rotate-180",
                   )}
                 />
               </Button>
@@ -138,7 +133,7 @@ const TimelineEventItem = ({
               <div
                 className={cn(
                   "w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold",
-                  "bg-wl-primary-500/20 text-wl-primary-400"
+                  "bg-wl-primary-500/20 text-wl-primary-400",
                 )}
               >
                 {event.signer.initials}
@@ -190,17 +185,17 @@ const EnvelopeTimeline = ({
   }
 
   const sortedEvents = [...events].sort(
-    (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
+    (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
   );
 
   const completionPercentage =
     sortedEvents.length > 0
       ? Math.round(
           (sortedEvents.filter(
-            (e) => e.type === "signed" || e.type === "completed"
+            (e) => e.type === "signed" || e.type === "completed",
           ).length /
             sortedEvents.length) *
-            100
+            100,
         )
       : 0;
 

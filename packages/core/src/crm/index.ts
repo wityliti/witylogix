@@ -64,10 +64,7 @@ export {
 } from "./crm-api.js";
 
 // Webhook handler exports
-export type {
-  RawWebhookEvent,
-  WebhookParser,
-} from "./crm-webhook-handler.js";
+export type { RawWebhookEvent, WebhookParser } from "./crm-webhook-handler.js";
 
 export {
   CrmWebhookHandler,

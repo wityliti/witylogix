@@ -35,9 +35,8 @@ interface PatientCardProps {
   className?: string;
 }
 
-
 const getRiskColor = (
-  level: "low" | "medium" | "high"
+  level: "low" | "medium" | "high",
 ): "success" | "warning" | "danger" => {
   switch (level) {
     case "low":
@@ -68,7 +67,7 @@ const PatientCard = ({
   const [expanded, setExpanded] = useState(false);
 
   const daysAgo = Math.floor(
-    (Date.now() - patient.lastEncounter.getTime()) / (24 * 60 * 60 * 1000)
+    (Date.now() - patient.lastEncounter.getTime()) / (24 * 60 * 60 * 1000),
   );
 
   return (
@@ -82,7 +81,7 @@ const PatientCard = ({
               ? "bg-wl-danger-500/20 text-wl-danger-400"
               : patient.riskLevel === "medium"
                 ? "bg-wl-warning-500/20 text-wl-warning-400"
-                : "bg-wl-success-500/20 text-wl-success-400"
+                : "bg-wl-success-500/20 text-wl-success-400",
           )}
         >
           {patient.initials}
@@ -111,7 +110,7 @@ const PatientCard = ({
           <ChevronDownIcon
             className={cn(
               "w-4 h-4 transition-transform",
-              expanded && "rotate-180"
+              expanded && "rotate-180",
             )}
           />
         </Button>
