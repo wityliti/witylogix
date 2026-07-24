@@ -1124,10 +1124,10 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
   // ── GET /system-health ──────────────────────────────────────
   // Real system health: process metrics + DB/Redis latency + queue sizes.
 
-  const SYSTEM_START = Date.now();
-
-  fastify.get("/system-health", async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.get("/system-health", async (_request: FastifyRequest, _reply: FastifyReply) => {
     const services: Record<string, any>[] = [];
+    return { services };
+  });
 
   // ── GET /queues/jobs — recent jobs across all queues ──────────
 
@@ -1336,8 +1336,8 @@ async function adminRoutes(fastify: FastifyInstance): Promise<void> {
           },
         ],
         metrics: {
-          memoryUsedMB,
-          memoryTotalMB,
+          memoryUsedMB: memUsedMB,
+          memoryTotalMB: memTotalMB,
           memoryUsagePct: memPct,
           processUptimeSec: Math.round(process.uptime()),
           version,
