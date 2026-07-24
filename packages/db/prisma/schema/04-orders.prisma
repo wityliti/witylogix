@@ -67,6 +67,7 @@ model Order {
   deliveryAuditLogs           DeliveryAuditLog[]
   activityFlowId              String?                      @map("activity_flow_id") @db.Uuid
   activityFlow                ActivityFlow?                @relation(fields: [activityFlowId], references: [id])
+  returnRequests              ReturnRequest[]
 
   @@unique([shopId, externalOrderId, source])
   @@index([shopId, status, createdAt(sort: Desc)])

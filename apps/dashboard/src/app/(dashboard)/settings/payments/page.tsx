@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useApiQuery } from '@/hooks/use-api';
-import { api } from '@/lib/api';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { Header } from '@/components/layout/header';
+import { useState } from "react";
+import { useApiQuery } from "@/hooks/use-api";
+import { api } from "@/lib/api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { Header } from "@/components/layout/header";
 import {
   Card,
   CardHeader,
@@ -13,12 +13,12 @@ import {
   CardContent,
   CardDescription,
   CardFooter,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Tabs } from '@/components/ui/tabs';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Tabs } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import {
   CheckCircle,
   AlertCircle,
@@ -29,13 +29,13 @@ import {
   Shield,
   TestTube,
   Loader,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface GatewayConfig {
   id: string;
   name: string;
   code: string;
-  status: 'connected' | 'disconnected';
+  status: "connected" | "disconnected";
   isDefault: boolean;
   isProduction: boolean;
   icon: string;
@@ -55,10 +55,14 @@ interface GatewayConfig {
 }
 
 export default function PaymentSettingsPage() {
-  const { data, loading, error, refetch } = useApiQuery<{ data: GatewayConfig[] }>('/api/v4/payments/gateways');
+  const { data, loading, error, refetch } = useApiQuery<{
+    data: GatewayConfig[];
+  }>("/api/v4/payments/gateways");
 
-  const [activeTab, setActiveTab] = useState('overview');
-  const [isTestPaymentLoading, setIsTestPaymentLoading] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [isTestPaymentLoading, setIsTestPaymentLoading] = useState<
+    string | null
+  >(null);
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
 
   if (loading) return <LoadingSkeleton />;
@@ -85,17 +89,17 @@ export default function PaymentSettingsPage() {
   };
 
   const handleTestPayment = async (code: string): Promise<void> => {
-    setIsTestPaymentLoading(true);
+    setIsTestPaymentLoading(code);
     try {
-      await api.post('/api/v4/payments', {
-        paymentType: 'TEST',
+      await api.post("/api/v4/payments", {
+        paymentType: "TEST",
         paymentMethod: code.toUpperCase(),
         amount: 100,
-        currency: 'USD',
+        currency: "USD",
         metadata: { test: true },
       });
     } finally {
-      setIsTestPaymentLoading(false);
+      setIsTestPaymentLoading(null);
     }
   };
 
@@ -127,9 +131,9 @@ export default function PaymentSettingsPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs
           tabs={[
-            { id: 'overview', label: 'Overview' },
-            { id: 'configuration', label: 'Configuration' },
-            { id: 'fees', label: 'Fee Comparison' },
+            { id: "overview", label: "Overview" },
+            { id: "configuration", label: "Configuration" },
+            { id: "fees", label: "Fee Comparison" },
           ]}
           activeTab={activeTab}
           onChange={setActiveTab}
@@ -137,16 +141,19 @@ export default function PaymentSettingsPage() {
           className="mb-8"
         />
 
-        {activeTab === 'overview' && (
+        {activeTab === "overview" && (
           <div className="space-y-6">
             {gateways.length === 0 ? (
               <Card className="border-dashed border-2 border-wl-border-default bg-wl-bg-surface">
                 <CardContent className="flex items-center justify-center py-16">
                   <div className="text-center">
                     <DollarSign className="w-10 h-10 mx-auto text-gray-600 mb-4" />
-                    <p className="text-sm font-medium text-white mb-2">No payment gateways configured</p>
+                    <p className="text-sm font-medium text-white mb-2">
+                      No payment gateways configured
+                    </p>
                     <p className="text-xs text-gray-400 mb-4">
-                      Cash on Delivery is always available. Add a payment method to unlock card processing.
+                      Cash on Delivery is always available. Add a payment method
+                      to unlock card processing.
                     </p>
                   </div>
                 </CardContent>
@@ -157,8 +164,10 @@ export default function PaymentSettingsPage() {
                   <Card
                     key={gateway.id}
                     className={cn(
-                      'border-2 transition-all bg-wl-bg-surface',
-                      gateway.isDefault ? 'border-blue-500 bg-blue-500/5' : 'border-wl-border-default',
+                      "border-2 transition-all bg-wl-bg-surface",
+                      gateway.isDefault
+                        ? "border-blue-500 bg-blue-500/5"
+                        : "border-wl-border-default",
                     )}
                   >
                     <CardHeader>
@@ -167,11 +176,18 @@ export default function PaymentSettingsPage() {
                           <span className="text-4xl">{gateway.icon}</span>
                           <div>
                             <CardTitle>{gateway.name}</CardTitle>
-                            <CardDescription className="text-xs mt-1">{gateway.code.toUpperCase()}</CardDescription>
+                            <CardDescription className="text-xs mt-1">
+                              {gateway.code.toUpperCase()}
+                            </CardDescription>
                           </div>
                         </div>
                         {gateway.isDefault && (
-                          <Badge variant="primary" className="bg-blue-500 text-white">DEFAULT</Badge>
+                          <Badge
+                            variant="primary"
+                            className="bg-blue-500 text-white"
+                          >
+                            DEFAULT
+                          </Badge>
                         )}
                       </div>
                     </CardHeader>
@@ -180,26 +196,36 @@ export default function PaymentSettingsPage() {
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-400">Status</span>
                         <div className="flex items-center gap-2">
-                          {gateway.status === 'connected' ? (
+                          {gateway.status === "connected" ? (
                             <>
                               <CheckCircle className="w-4 h-4 text-green-500" />
-                              <span className="text-sm font-medium text-green-600">Connected</span>
+                              <span className="text-sm font-medium text-green-600">
+                                Connected
+                              </span>
                             </>
                           ) : (
                             <>
                               <AlertCircle className="w-4 h-4 text-red-500" />
-                              <span className="text-sm font-medium text-red-600">Disconnected</span>
+                              <span className="text-sm font-medium text-red-600">
+                                Disconnected
+                              </span>
                             </>
                           )}
                         </div>
                       </div>
 
                       <div>
-                        <span className="text-sm text-gray-400 block mb-2">Supported Methods</span>
+                        <span className="text-sm text-gray-400 block mb-2">
+                          Supported Methods
+                        </span>
                         <div className="flex flex-wrap gap-1">
                           {gateway.supportedMethods.map((method) => (
-                            <Badge key={method} variant="default" className="text-xs capitalize bg-wl-bg-elevated">
-                              {method.replace('_', ' ')}
+                            <Badge
+                              key={method}
+                              variant="default"
+                              className="text-xs capitalize bg-wl-bg-elevated"
+                            >
+                              {method.replace("_", " ")}
                             </Badge>
                           ))}
                         </div>
@@ -208,15 +234,19 @@ export default function PaymentSettingsPage() {
                       {gateway.healthScore !== undefined && (
                         <div className="grid grid-cols-1 gap-3">
                           <div className="bg-wl-bg-elevated rounded-lg p-3">
-                            <span className="text-xs text-gray-400">Health Score</span>
-                            <p className="text-lg font-semibold text-blue-500 mt-1">{gateway.healthScore}%</p>
+                            <span className="text-xs text-gray-400">
+                              Health Score
+                            </span>
+                            <p className="text-lg font-semibold text-blue-500 mt-1">
+                              {gateway.healthScore}%
+                            </p>
                           </div>
                         </div>
                       )}
                     </CardContent>
 
                     <CardFooter className="flex gap-2">
-                      {gateway.status === 'connected' && !gateway.isDefault && (
+                      {gateway.status === "connected" && !gateway.isDefault && (
                         <Button
                           variant="secondary"
                           size="sm"
@@ -232,10 +262,13 @@ export default function PaymentSettingsPage() {
                         variant="ghost"
                         size="sm"
                         className="flex-1"
-                        onClick={() => handleTestPayment(gateway)}
-                        disabled={gateway.status === 'disconnected' || isTestPaymentLoading === gateway.id}
+                        onClick={() => handleTestPayment(gateway.code)}
+                        disabled={
+                          gateway.status === "disconnected" ||
+                          isTestPaymentLoading === gateway.code
+                        }
                       >
-                        {isTestPaymentLoading === gateway.id ? (
+                        {isTestPaymentLoading === gateway.code ? (
                           <Loader className="w-4 h-4 mr-2 animate-spin" />
                         ) : (
                           <TestTube className="w-4 h-4 mr-2" />
@@ -243,17 +276,18 @@ export default function PaymentSettingsPage() {
                         Test
                       </Button>
 
-                      {gateway.status === 'connected' && gateway.code !== 'cod' && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="flex-1 text-red-600 hover:text-red-700"
-                          onClick={() => handleDisconnect(gateway.id)}
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Remove
-                        </Button>
-                      )}
+                      {gateway.status === "connected" &&
+                        gateway.code !== "cod" && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="flex-1 text-red-600 hover:text-red-700"
+                            onClick={() => handleDisconnect(gateway.id)}
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Remove
+                          </Button>
+                        )}
                     </CardFooter>
                   </Card>
                 ))}
@@ -264,9 +298,12 @@ export default function PaymentSettingsPage() {
               <CardContent className="flex items-center justify-center py-12">
                 <div className="text-center">
                   <Plus className="w-8 h-8 mx-auto text-gray-400 mb-3" />
-                  <p className="text-sm font-medium text-white mb-2">Add Payment Gateway</p>
+                  <p className="text-sm font-medium text-white mb-2">
+                    Add Payment Gateway
+                  </p>
                   <p className="text-xs text-gray-400 mb-4">
-                    Connect Stripe, PayPal, or Square. Requires API keys in environment configuration.
+                    Connect Stripe, PayPal, or Square. Requires API keys in
+                    environment configuration.
                   </p>
                   <Button variant="primary" size="sm">
                     <Plus className="w-4 h-4 mr-2" />
@@ -278,9 +315,9 @@ export default function PaymentSettingsPage() {
           </div>
         )}
 
-        {activeTab === 'configuration' && (
+        {activeTab === "configuration" && (
           <div className="space-y-6">
-            {gateways.filter((g) => g.status === 'connected').length === 0 ? (
+            {gateways.filter((g) => g.status === "connected").length === 0 ? (
               <Card className="bg-wl-bg-surface border border-wl-border-default">
                 <CardContent className="py-12 text-center text-gray-400">
                   No connected gateways to configure.
@@ -288,7 +325,7 @@ export default function PaymentSettingsPage() {
               </Card>
             ) : (
               gateways
-                .filter((g) => g.status === 'connected')
+                .filter((g) => g.status === "connected")
                 .map((gateway) => (
                   <Card key={gateway.id}>
                     <CardHeader>
@@ -296,7 +333,9 @@ export default function PaymentSettingsPage() {
                         <span className="text-2xl">{gateway.icon}</span>
                         <div>
                           <CardTitle>{gateway.name} Configuration</CardTitle>
-                          <CardDescription>API keys and credentials</CardDescription>
+                          <CardDescription>
+                            API keys and credentials
+                          </CardDescription>
                         </div>
                       </div>
                     </CardHeader>
@@ -304,32 +343,37 @@ export default function PaymentSettingsPage() {
                     <CardContent className="space-y-4">
                       {gateway.config?.lastDigits && (
                         <div>
-                          <label className="block text-sm font-medium text-white mb-2">Card Details</label>
+                          <label className="block text-sm font-medium text-white mb-2">
+                            Card Details
+                          </label>
                           <Input
                             type="text"
-                            value={`**** **** **** ${gateway.config.lastDigits}${gateway.config.expiryDate ? ` (exp: ${gateway.config.expiryDate})` : ''}`}
+                            value={`**** **** **** ${gateway.config.lastDigits}${gateway.config.expiryDate ? ` (exp: ${gateway.config.expiryDate})` : ""}`}
                             readOnly
                             className="bg-wl-bg-elevated border-wl-border-default text-white"
                           />
                         </div>
                       )}
 
-                      {gateway.code === 'cod' && (
+                      {gateway.code === "cod" && (
                         <div className="p-4 bg-wl-bg-elevated rounded-lg">
                           <p className="text-sm text-gray-400">
-                            Cash on Delivery requires no API credentials. Collect payment upon delivery.
+                            Cash on Delivery requires no API credentials.
+                            Collect payment upon delivery.
                           </p>
                         </div>
                       )}
 
-                      {!gateway.config?.lastDigits && gateway.code !== 'cod' && (
-                        <div className="p-4 bg-wl-bg-elevated rounded-lg">
-                          <p className="text-sm text-gray-400">
-                            <Shield className="w-3 h-3 inline mr-1" />
-                            Credentials are configured via environment variables and never stored in plain text.
-                          </p>
-                        </div>
-                      )}
+                      {!gateway.config?.lastDigits &&
+                        gateway.code !== "cod" && (
+                          <div className="p-4 bg-wl-bg-elevated rounded-lg">
+                            <p className="text-sm text-gray-400">
+                              <Shield className="w-3 h-3 inline mr-1" />
+                              Credentials are configured via environment
+                              variables and never stored in plain text.
+                            </p>
+                          </div>
+                        )}
                     </CardContent>
                   </Card>
                 ))
@@ -337,45 +381,73 @@ export default function PaymentSettingsPage() {
           </div>
         )}
 
-        {activeTab === 'fees' && (
+        {activeTab === "fees" && (
           <div className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Transaction Fee Comparison</CardTitle>
-                <CardDescription>Estimated fees for your configured payment methods</CardDescription>
+                <CardDescription>
+                  Estimated fees for your configured payment methods
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 {transactionFeesComparison.length === 0 ? (
                   <p className="text-sm text-gray-400 text-center py-8">
-                    No fee data available. Configure payment gateways to see fee comparison.
+                    No fee data available. Configure payment gateways to see fee
+                    comparison.
                   </p>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-wl-border-default">
-                          <th className="text-left py-3 px-4 font-medium text-white">Gateway</th>
-                          <th className="text-right py-3 px-4 font-medium text-white">Rate</th>
-                          <th className="text-right py-3 px-4 font-medium text-white">Fee on $100</th>
-                          <th className="text-right py-3 px-4 font-medium text-white">Fee on $1,000</th>
-                          <th className="text-right py-3 px-4 font-medium text-white">Savings vs Highest</th>
+                          <th className="text-left py-3 px-4 font-medium text-white">
+                            Gateway
+                          </th>
+                          <th className="text-right py-3 px-4 font-medium text-white">
+                            Rate
+                          </th>
+                          <th className="text-right py-3 px-4 font-medium text-white">
+                            Fee on $100
+                          </th>
+                          <th className="text-right py-3 px-4 font-medium text-white">
+                            Fee on $1,000
+                          </th>
+                          <th className="text-right py-3 px-4 font-medium text-white">
+                            Savings vs Highest
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
                         {transactionFeesComparison.map((row, i) => {
-                          const maxFee100 = Math.max(...transactionFeesComparison.map((r) => r.for100));
+                          const maxFee100 = Math.max(
+                            ...transactionFeesComparison.map((r) => r.for100),
+                          );
                           const savings100 = maxFee100 - row.for100;
                           return (
-                            <tr key={i} className="border-b border-wl-border-default hover:bg-wl-bg-elevated transition">
-                              <td className="py-3 px-4"><span className="font-medium text-white">{row.gateway}</span></td>
+                            <tr
+                              key={i}
+                              className="border-b border-wl-border-default hover:bg-wl-bg-elevated transition"
+                            >
+                              <td className="py-3 px-4">
+                                <span className="font-medium text-white">
+                                  {row.gateway}
+                                </span>
+                              </td>
                               <td className="py-3 px-4 text-right text-white">
                                 {row.percent}% + ${(row.fixed / 100).toFixed(2)}
                               </td>
-                              <td className="py-3 px-4 text-right text-white">${(row.for100 / 100).toFixed(2)}</td>
-                              <td className="py-3 px-4 text-right text-white">${(row.for1000 / 100).toFixed(2)}</td>
+                              <td className="py-3 px-4 text-right text-white">
+                                ${(row.for100 / 100).toFixed(2)}
+                              </td>
+                              <td className="py-3 px-4 text-right text-white">
+                                ${(row.for1000 / 100).toFixed(2)}
+                              </td>
                               <td className="py-3 px-4 text-right">
                                 {savings100 > 0 ? (
-                                  <span className="text-emerald-500 font-medium">+${(savings100 / 100).toFixed(2)}</span>
+                                  <span className="text-emerald-500 font-medium">
+                                    +${(savings100 / 100).toFixed(2)}
+                                  </span>
                                 ) : (
                                   <span className="text-gray-400">—</span>
                                 )}
@@ -391,7 +463,8 @@ export default function PaymentSettingsPage() {
                 <div className="mt-6 p-4 bg-wl-bg-elevated rounded-lg">
                   <p className="text-xs text-gray-400">
                     <DollarSign className="w-3 h-3 inline mr-2" />
-                    Fees shown are estimates. Actual fees may vary based on payment method, region, and volume discounts.
+                    Fees shown are estimates. Actual fees may vary based on
+                    payment method, region, and volume discounts.
                   </p>
                 </div>
               </CardContent>
