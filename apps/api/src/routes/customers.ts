@@ -297,15 +297,12 @@ async function customerRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get("/:id", async (request: FastifyRequest, _reply: FastifyReply) => {
     const { id } = request.params as { id: string };
 
-      const customer = await request.tenantDb.customer.findUnique({ where: { id } });
+    const customer = await request.tenantDb.customer.findUnique({ where: { id } });
 
-      if (!customer) throw new NotFoundError("Customer", id);
-      if (customer.shopId !== request.shopId) throw new NotFoundError("Customer", id);
+    if (!customer) throw new NotFoundError("Customer", id);
+    if (customer.shopId !== request.shopId) throw new NotFoundError("Customer", id);
 
-      return { data: normalizeCustomer(customer) };
-    } catch (err) {
-      throw err;
-    }
+    return { data: normalizeCustomer(customer) };
   });
 
   // ── SYNC CUSTOMERS (UPSERT) ────────────────────────────────
