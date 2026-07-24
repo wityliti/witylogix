@@ -1,15 +1,38 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { cn } from '@/lib/utils';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { ErrorState } from '@/components/ui/error-state';
-import { useOrderStats, useOrders } from '@/hooks/use-orders';
-import { useDrivers } from '@/hooks/use-drivers';
-import { useDashboardStats } from '@/hooks/use-dashboard-stats';
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { useOrderStats, useOrders } from "@/hooks/use-orders";
+import { useDrivers } from "@/hooks/use-drivers";
+import { useDashboardStats } from "@/hooks/use-dashboard-stats";
+
+interface Order {
+  id: string;
+  customerId: string;
+  status:
+    | "pending"
+    | "confirmed"
+    | "assigned"
+    | "in_transit"
+    | "delivered"
+    | "cancelled";
+  eta?: string;
+  destination?: string;
+  createdAt: Date;
+}
+
+interface Driver {
+  id: string;
+  name: string;
+  status: "available" | "en-route" | "delivering" | "offline";
+  activeDeliveries: number;
+  utilization: number;
+}
 
 // Shapes matching the real API responses
 interface ApiOrder {
@@ -29,7 +52,15 @@ interface ApiDriver {
   _count: { orders: number };
 }
 
-function Icon({ d, size = 24, className = '' }: { d: string; size?: number; className?: string }) {
+function Icon({
+  d,
+  size = 24,
+  className = "",
+}: {
+  d: string;
+  size?: number;
+  className?: string;
+}) {
   return (
     <svg
       width={size}
@@ -51,13 +82,13 @@ function KPICard({
   label,
   value,
   subtitle,
-  variant = 'default',
+  variant = "default",
   loading = false,
 }: {
   label: string;
   value: string | number;
   subtitle?: string;
-  variant?: 'default' | 'primary' | 'success' | 'warning';
+  variant?: "default" | "primary" | "success" | "warning";
   loading?: boolean;
 }) {
   if (loading) {
@@ -71,16 +102,18 @@ function KPICard({
   }
 
   const accentColor = {
-    default: 'var(--wl-primary)',
-    primary: 'var(--wl-primary)',
-    success: 'var(--wl-success)',
-    warning: '#f59e0b',
+    default: "var(--wl-primary)",
+    primary: "var(--wl-primary)",
+    success: "var(--wl-success)",
+    warning: "#f59e0b",
   }[variant];
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 transition-all duration-200 hover:border-zinc-700 hover:bg-zinc-900/80">
       <div className="flex items-start justify-between mb-4">
-        <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wide">{label}</h3>
+        <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wide">
+          {label}
+        </h3>
       </div>
       <div className="mb-2">
         <p style={{ color: accentColor }} className="text-3xl font-bold">
@@ -92,23 +125,39 @@ function KPICard({
   );
 }
 
-const ORDER_STATUS_CONFIG: Record<string, { badge: 'success' | 'warning' | 'danger' | 'info' | 'primary' | 'default'; label: string }> = {
-  PENDING: { badge: 'warning', label: 'Pending' },
-  ACCEPTED: { badge: 'info', label: 'Accepted' },
-  ASSIGNED: { badge: 'info', label: 'Assigned' },
-  PICKED_UP: { badge: 'primary', label: 'Picked Up' },
-  OUT_FOR_DELIVERY: { badge: 'primary', label: 'In Transit' },
-  ARRIVED: { badge: 'primary', label: 'Arrived' },
-  DELIVERED: { badge: 'success', label: 'Delivered' },
-  FAILED: { badge: 'danger', label: 'Failed' },
-  RETURNED: { badge: 'danger', label: 'Returned' },
-  CANCELLED: { badge: 'danger', label: 'Cancelled' },
+const ORDER_STATUS_CONFIG: Record<
+  string,
+  {
+    badge: "success" | "warning" | "danger" | "info" | "primary" | "default";
+    label: string;
+  }
+> = {
+  PENDING: { badge: "warning", label: "Pending" },
+  ACCEPTED: { badge: "info", label: "Accepted" },
+  ASSIGNED: { badge: "info", label: "Assigned" },
+  PICKED_UP: { badge: "primary", label: "Picked Up" },
+  OUT_FOR_DELIVERY: { badge: "primary", label: "In Transit" },
+  ARRIVED: { badge: "primary", label: "Arrived" },
+  DELIVERED: { badge: "success", label: "Delivered" },
+  FAILED: { badge: "danger", label: "Failed" },
+  RETURNED: { badge: "danger", label: "Returned" },
+  CANCELLED: { badge: "danger", label: "Cancelled" },
 };
 
 function OrderFeedItem({ order }: { order: ApiOrder }) {
-  const config = ORDER_STATUS_CONFIG[order.status] ?? { badge: 'default' as const, label: order.status };
-  const destination = [order.addressLine1, order.city].filter(Boolean).join(', ') || 'Destination pending';
-  const eta = order.estimatedArrival ? new Date(order.estimatedArrival).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : null;
+  const config = ORDER_STATUS_CONFIG[order.status] ?? {
+    badge: "default" as const,
+    label: order.status,
+  };
+  const destination =
+    [order.addressLine1, order.city].filter(Boolean).join(", ") ||
+    "Destination pending";
+  const eta = order.estimatedArrival
+    ? new Date(order.estimatedArrival).toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : null;
 
   return (
     <div className="border-b border-zinc-800 last:border-0 pb-4 last:pb-0 transition-all duration-200 hover:bg-zinc-900/50 px-4 py-3 rounded -mx-4">
@@ -125,7 +174,10 @@ function OrderFeedItem({ order }: { order: ApiOrder }) {
         </div>
         <div className="text-right">
           <p className="text-xs text-gray-600">
-            {new Date(order.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+            {new Date(order.createdAt).toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
           </p>
         </div>
       </div>
@@ -133,14 +185,47 @@ function OrderFeedItem({ order }: { order: ApiOrder }) {
   );
 }
 
-const DRIVER_STATUS_CONFIG: Record<string, { bg: string; border: string; text: string; dot: string; label: string }> = {
-  AVAILABLE: { bg: 'bg-emerald-500/20', border: 'border-emerald-500/50', text: 'text-emerald-400', dot: '#10b981', label: 'AVAILABLE' },
-  ON_ROUTE: { bg: 'bg-blue-500/20', border: 'border-blue-500/50', text: 'text-blue-400', dot: '#3b82f6', label: 'EN ROUTE' },
-  ON_BREAK: { bg: 'bg-amber-500/20', border: 'border-amber-500/50', text: 'text-amber-400', dot: '#f59e0b', label: 'ON BREAK' },
-  OFFLINE: { bg: 'bg-gray-500/20', border: 'border-gray-500/50', text: 'text-gray-400', dot: '#6b7280', label: 'OFFLINE' },
+const DRIVER_STATUS_CONFIG: Record<
+  string,
+  { bg: string; border: string; text: string; dot: string; label: string }
+> = {
+  AVAILABLE: {
+    bg: "bg-emerald-500/20",
+    border: "border-emerald-500/50",
+    text: "text-emerald-400",
+    dot: "#10b981",
+    label: "AVAILABLE",
+  },
+  ON_ROUTE: {
+    bg: "bg-blue-500/20",
+    border: "border-blue-500/50",
+    text: "text-blue-400",
+    dot: "#3b82f6",
+    label: "EN ROUTE",
+  },
+  ON_BREAK: {
+    bg: "bg-amber-500/20",
+    border: "border-amber-500/50",
+    text: "text-amber-400",
+    dot: "#f59e0b",
+    label: "ON BREAK",
+  },
+  OFFLINE: {
+    bg: "bg-gray-500/20",
+    border: "border-gray-500/50",
+    text: "text-gray-400",
+    dot: "#6b7280",
+    label: "OFFLINE",
+  },
 };
 
-function DriverStatusCard({ driver, loading = false }: { driver?: ApiDriver; loading?: boolean }) {
+function DriverStatusCard({
+  driver,
+  loading = false,
+}: {
+  driver?: ApiDriver;
+  loading?: boolean;
+}) {
   if (loading) {
     return (
       <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 animate-pulse">
@@ -153,17 +238,28 @@ function DriverStatusCard({ driver, loading = false }: { driver?: ApiDriver; loa
 
   if (!driver) return null;
 
-  const config = DRIVER_STATUS_CONFIG[driver.status] ?? DRIVER_STATUS_CONFIG.OFFLINE;
+  const config =
+    DRIVER_STATUS_CONFIG[driver.status] ?? DRIVER_STATUS_CONFIG.OFFLINE;
   const activeDeliveries = driver._count?.orders ?? 0;
 
   return (
-    <div className={cn('bg-zinc-900 border border-zinc-800 rounded-lg p-4 transition-all duration-200 hover:border-zinc-700', config.bg)}>
+    <div
+      className={cn(
+        "bg-zinc-900 border border-zinc-800 rounded-lg p-4 transition-all duration-200 hover:border-zinc-700",
+        config.bg,
+      )}
+    >
       <div className="flex items-start justify-between mb-3">
         <div>
           <p className="font-semibold text-gray-100">{driver.name}</p>
           <div className="flex items-center gap-2 mt-1">
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: config.dot }} />
-            <p className={cn('text-xs font-medium', config.text)}>{config.label}</p>
+            <div
+              className="w-2 h-2 rounded-full"
+              style={{ backgroundColor: config.dot }}
+            />
+            <p className={cn("text-xs font-medium", config.text)}>
+              {config.label}
+            </p>
           </div>
         </div>
         <div className="text-right">
@@ -176,20 +272,28 @@ function DriverStatusCard({ driver, loading = false }: { driver?: ApiDriver; loa
 }
 
 export default function HomePage() {
-  const { data: orderStats, loading: statsLoading } = useOrderStats();
+  const { data: orderStats, loading: statsLoading, error: statsError } = useOrderStats();
   const { data: dashStats, loading: dashLoading } = useDashboardStats();
-  const { items: recentApiOrders, loading: ordersLoading } = useOrders({ limit: 5, sort: '-createdAt' } as any);
+  const { items: recentApiOrders, loading: ordersLoading } = useOrders({
+    limit: 5,
+    sort: "-createdAt",
+  } as any);
   const { items: drivers, loading: driversLoading } = useDrivers({ limit: 4 });
 
   const recentOrders: Order[] = recentApiOrders.map((o: any) => ({
     id: o.id,
     customerId: o.customerId,
-    status: (o.status as Order['status']) ?? 'pending',
+    status: (o.status as Order["status"]) ?? "pending",
     eta: o.estimatedDelivery
-      ? new Date(o.estimatedDelivery).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+      ? new Date(o.estimatedDelivery).toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
       : undefined,
     destination: o.deliveryAddress
-      ? `${o.deliveryAddress.street ?? ''}, ${o.deliveryAddress.city ?? ''}`.trim().replace(/^,\s*/, '')
+      ? `${o.deliveryAddress.street ?? ""}, ${o.deliveryAddress.city ?? ""}`
+          .trim()
+          .replace(/^,\s*/, "")
       : undefined,
     createdAt: new Date(o.createdAt),
   }));
@@ -197,25 +301,31 @@ export default function HomePage() {
   const displayDrivers: Driver[] = drivers.map((d: any) => ({
     id: d.id,
     name: d.name,
-    status: (['available', 'en-route', 'delivering', 'offline'].includes(d.status)
+    status: (["available", "en-route", "delivering", "offline"].includes(
+      d.status,
+    )
       ? d.status
-      : d.status === 'on_delivery' ? 'delivering'
-      : d.status === 'online' ? 'available'
-      : 'offline') as Driver['status'],
+      : d.status === "on_delivery"
+        ? "delivering"
+        : d.status === "online"
+          ? "available"
+          : "offline") as Driver["status"],
     activeDeliveries: d.activeDeliveries ?? 0,
     utilization: d.completionRate ?? 0,
   }));
 
-  const totalOrders = dashStats?.totalOrdersToday ?? orderStats?.totalOrders ?? 0;
-  const activeDeliveries = dashStats?.pendingDeliveries ?? 0;
-  const driverUtilization = drivers.length > 0
-    ? Math.round((drivers.filter((d: any) => d.status !== 'offline').length / drivers.length) * 100)
-    : 0;
-  const todayRevenue = dashStats?.totalRevenueToday != null
-    ? `$${dashStats.totalRevenueToday.toFixed(2)}`
-    : orderStats?.totalRevenue != null
-      ? `$${orderStats.totalRevenue.toFixed(2)}`
-      : '—';
+  const totalOrders = dashStats?.totalOrders ?? 0;
+  const activeDeliveries = dashStats?.pendingOrders ?? 0;
+  const driverUtilization =
+    drivers.length > 0
+      ? Math.round(
+          (drivers.filter((d: any) => d.status !== "offline").length /
+            drivers.length) *
+            100,
+        )
+      : 0;
+  const todayRevenue =
+    dashStats?.revenue != null ? `$${dashStats.revenue.toFixed(2)}` : "—";
 
   const overallLoading = statsLoading && dashLoading;
 
@@ -227,7 +337,11 @@ export default function HomePage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-100">Dashboard</h1>
             <p className="text-gray-500 mt-1">
-              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+              {new Date().toLocaleDateString("en-US", {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+              })}
             </p>
           </div>
           <div className="flex gap-3">
@@ -243,7 +357,9 @@ export default function HomePage() {
         {/* Stats error */}
         {statsError && !statsLoading && (
           <div className="p-4 bg-red-950/30 border border-red-900/50 rounded-lg">
-            <p className="text-sm text-red-300">Failed to load dashboard statistics. Please refresh.</p>
+            <p className="text-sm text-red-300">
+              Failed to load dashboard statistics. Please refresh.
+            </p>
           </div>
         )}
 
@@ -253,8 +369,6 @@ export default function HomePage() {
             label="Total Orders"
             value={totalOrders}
             subtitle="Today"
-            trend="up"
-            trendValue={undefined}
             variant="primary"
             loading={overallLoading}
           />
@@ -262,25 +376,19 @@ export default function HomePage() {
             label="Active Deliveries"
             value={activeDeliveries}
             subtitle="In progress"
-            trend="up"
-            trendValue={undefined}
             variant="success"
             loading={overallLoading}
           />
           <KPICard
             label="Driver Utilization"
             value={`${driverUtilization}%`}
-            subtitle={`${drivers.filter((d: any) => d.status !== 'offline').length} active drivers`}
-            trend={driverUtilization > 70 ? 'up' : 'down'}
-            trendValue={undefined}
+            subtitle={`${drivers.filter((d: any) => d.status !== "offline").length} active drivers`}
             loading={driversLoading}
           />
           <KPICard
             label="Revenue"
             value={todayRevenue}
             subtitle="Today"
-            trend="up"
-            trendValue={undefined}
             variant="success"
             loading={overallLoading}
           />
@@ -290,22 +398,22 @@ export default function HomePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <KPICard
             label="Pending Orders"
-            value={stats?.pendingOrders ?? '—'}
+            value={dashStats?.pendingOrders ?? "—"}
             subtitle="Awaiting dispatch"
             variant="warning"
-            loading={statsLoading}
+            loading={dashLoading}
           />
           <KPICard
             label="Total Customers"
-            value={stats?.totalCustomers ?? '—'}
+            value={dashStats?.totalCustomers ?? "—"}
             subtitle="Registered customers"
-            loading={statsLoading}
+            loading={dashLoading}
           />
           <KPICard
             label="Total Drivers"
-            value={stats?.totalDrivers ?? '—'}
+            value={dashStats?.totalDrivers ?? "—"}
             subtitle="Active driver roster"
-            loading={statsLoading}
+            loading={dashLoading}
           />
         </div>
 
@@ -316,7 +424,10 @@ export default function HomePage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Icon d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" size={20} />
+                  <Icon
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                    size={20}
+                  />
                   Recent Orders
                 </CardTitle>
               </CardHeader>
@@ -325,7 +436,10 @@ export default function HomePage() {
                   {ordersLoading ? (
                     <div className="space-y-4">
                       {Array.from({ length: 4 }).map((_, i) => (
-                        <div key={i} className="h-16 bg-zinc-800 rounded animate-pulse" />
+                        <div
+                          key={i}
+                          className="h-16 bg-zinc-800 rounded animate-pulse"
+                        />
                       ))}
                     </div>
                   ) : recentOrders.length > 0 ? (
@@ -336,14 +450,21 @@ export default function HomePage() {
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <Icon d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" size={40} className="mx-auto text-gray-600 mb-2" />
+                      <Icon
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                        size={40}
+                        className="mx-auto text-gray-600 mb-2"
+                      />
                       <p className="text-gray-500">No orders yet</p>
                     </div>
                   )}
                 </div>
                 {recentOrders.length > 0 && (
                   <div className="mt-4 pt-4 border-t border-zinc-800">
-                    <Link href="/orders" className="text-sm text-gray-400 hover:text-gray-200 transition-colors">
+                    <Link
+                      href="/orders"
+                      className="text-sm text-gray-400 hover:text-gray-200 transition-colors"
+                    >
                       View all orders →
                     </Link>
                   </div>
@@ -363,15 +484,26 @@ export default function HomePage() {
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4">
-                  {driversLoading
-                    ? Array.from({ length: 4 }).map((_, i) => <DriverStatusCard key={i} loading={true} />)
-                    : displayDrivers.length === 0
-                      ? <p className="text-sm text-gray-500 text-center py-4">No drivers found</p>
-                      : displayDrivers.map((driver) => <DriverStatusCard key={driver.id} driver={driver} />)}
+                  {driversLoading ? (
+                    Array.from({ length: 4 }).map((_, i) => (
+                      <DriverStatusCard key={i} loading={true} />
+                    ))
+                  ) : displayDrivers.length === 0 ? (
+                    <p className="text-sm text-gray-500 text-center py-4">
+                      No drivers found
+                    </p>
+                  ) : (
+                    displayDrivers.map((driver) => (
+                      <DriverStatusCard key={driver.id} driver={driver} />
+                    ))
+                  )}
                 </div>
                 {drivers.length > 0 && (
                   <div className="mt-4 pt-4 border-t border-zinc-800">
-                    <Link href="/drivers" className="text-sm text-gray-400 hover:text-gray-200 transition-colors">
+                    <Link
+                      href="/drivers"
+                      className="text-sm text-gray-400 hover:text-gray-200 transition-colors"
+                    >
                       View all drivers →
                     </Link>
                   </div>
@@ -389,25 +521,37 @@ export default function HomePage() {
           <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <Link href="/orders/create">
-                <Button variant="secondary" className="w-full flex items-center justify-center gap-2 h-12">
+                <Button
+                  variant="secondary"
+                  className="w-full flex items-center justify-center gap-2 h-12"
+                >
                   <Icon d="M12 5v14m-7-7h14" size={18} />
                   <span>Create Order</span>
                 </Button>
               </Link>
               <Link href="/dispatch">
-                <Button variant="secondary" className="w-full flex items-center justify-center gap-2 h-12">
+                <Button
+                  variant="secondary"
+                  className="w-full flex items-center justify-center gap-2 h-12"
+                >
                   <Icon d="M13 10V3L4 14h7v7l9-11h-7z" size={18} />
                   <span>Dispatch</span>
                 </Button>
               </Link>
               <Link href="/analytics">
-                <Button variant="secondary" className="w-full flex items-center justify-center gap-2 h-12">
+                <Button
+                  variant="secondary"
+                  className="w-full flex items-center justify-center gap-2 h-12"
+                >
                   <Icon d="M18 20V10M12 20V4M6 20v-6" size={18} />
                   <span>Reports</span>
                 </Button>
               </Link>
               <Link href="/drivers">
-                <Button variant="secondary" className="w-full flex items-center justify-center gap-2 h-12">
+                <Button
+                  variant="secondary"
+                  className="w-full flex items-center justify-center gap-2 h-12"
+                >
                   <Icon d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" size={18} />
                   <span>Drivers</span>
                 </Button>
