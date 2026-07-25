@@ -114,7 +114,14 @@ export default function StoresManagement() {
             <p className="text-wl-danger-400 mb-4">Failed to load store data.</p>
             <Button variant="secondary" size="sm" onClick={handleRefresh}>Retry</Button>
           </Card>
-        ) : shop ? (
+        ) : !shop ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <Store size={48} className="text-wl-text-secondary opacity-30 mb-4" />
+            <p className="text-wl-text-primary font-semibold mb-1">No store connected</p>
+            <p className="text-wl-text-secondary text-sm mb-6">Connect your e-commerce store to start managing orders and deliveries.</p>
+            <Button variant="primary">Connect Store</Button>
+          </div>
+        ) : (
           <>
             {/* Summary Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -233,7 +240,7 @@ export default function StoresManagement() {
               ) : null}
             </div>
           </>
-        ) : null}
+        )}
       </div>
     </div>
   );

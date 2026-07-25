@@ -37,6 +37,7 @@ import {
   type NotificationChannel,
 } from "@/hooks/use-notifications";
 import { ErrorState } from "@/components/ui/error-state";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 
 const NotificationsCoverageMap = dynamic(
   () =>
@@ -159,6 +160,8 @@ export default function NotificationsPage() {
     await loadMore();
     setIsLoadingMore(false);
   }, [loadMore]);
+
+  if (isLoading && notifications.length === 0) return <LoadingSkeleton />;
 
   if (error) {
     return (
