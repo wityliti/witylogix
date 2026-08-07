@@ -6,6 +6,7 @@ import { Header } from '@/components/layout/header';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useApiMutation } from '@/hooks/use-api';
+import posthog from 'posthog-js';
 
 interface CustomerPayload {
   firstName: string;
@@ -39,6 +40,11 @@ export default function CreateCustomerPage() {
         lastName: form.lastName.trim() || undefined,
         email: form.email.trim(),
         phone: form.phone.trim() || undefined,
+      });
+      posthog.capture('customer_created', {
+        has_first_name: Boolean(form.firstName.trim()),
+        has_last_name: Boolean(form.lastName.trim()),
+        has_phone: Boolean(form.phone.trim()),
       });
       router.push('/customers');
     } catch (err) {

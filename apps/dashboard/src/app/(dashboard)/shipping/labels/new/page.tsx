@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { useApiMutation } from '@/hooks/use-api';
 import { Package, Truck, DollarSign, CheckCircle, AlertCircle } from 'lucide-react';
+import posthog from 'posthog-js';
 
 type Step = 'package' | 'carrier' | 'rates' | 'review';
 
@@ -35,6 +36,11 @@ export default function CreateLabelPage() {
   const handleCreateLabel = async () => {
     try {
       await createLabel(formData);
+      posthog.capture('shipping_label_created', {
+        carrier: formData.carrier,
+        service: formData.service,
+        weight_lbs: formData.weight,
+      });
       router.push('/shipping/labels');
     } catch (err) {
       console.error('Failed to create label:', err);
