@@ -269,7 +269,7 @@ export default function MarketplacePage() {
   const [isSearching, setIsSearching] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  const { items: connections } = useApiList<{ slug: string }>('/api/v4/integrations/connections');
+  const { items: connections, loading: connectionsLoading } = useApiList<{ slug: string }>('/api/v4/integrations/connections');
   const connectedSlugs = useMemo(() => new Set(connections.map((c) => c.slug)), [connections]);
 
   // Debounce search input
@@ -348,7 +348,11 @@ export default function MarketplacePage() {
     <>
       <Header
         title="Integration Marketplace"
-        subtitle={`${filtered.length} providers available`}
+        subtitle={
+          connectionsLoading
+            ? `${filtered.length} providers available · loading connection status…`
+            : `${filtered.length} providers available · ${connectedSlugs.size} connected`
+        }
       />
 
       <div className={cn("p-6 max-w-7xl mx-auto")}>

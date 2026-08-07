@@ -82,15 +82,20 @@ function useFeatureUsageCounts() {
   const demand = useApiQuery<DemandStats>('/api/ai/demand');
   const slots = useApiQuery<SlotStats>('/api/ai/slots/recommend');
 
+  const loading = eta.loading || leaderboard.loading || demand.loading || slots.loading;
+
   return {
-    '/api/ai/eta/statistics': eta.data?.totalPredictions30d ?? eta.data?.count ?? 0,
-    '/api/ai/analytics/leaderboard': leaderboard.data?.totalEntries ?? leaderboard.data?.count ?? 0,
-    '/api/ai/demand': demand.data?.totalForecasts ?? demand.data?.count ?? 0,
-    '/api/ai/slots/recommend': slots.data?.totalRecommendations ?? slots.data?.count ?? 0,
-  } as Record<string, number>;
+    loading,
+    counts: {
+      '/api/ai/eta/statistics': eta.data?.totalPredictions30d ?? eta.data?.count ?? 0,
+      '/api/ai/analytics/leaderboard': leaderboard.data?.totalEntries ?? leaderboard.data?.count ?? 0,
+      '/api/ai/demand': demand.data?.totalForecasts ?? demand.data?.count ?? 0,
+      '/api/ai/slots/recommend': slots.data?.totalRecommendations ?? slots.data?.count ?? 0,
+    } as Record<string, number>,
+  };
 }
 
-function AiFeatureCard({ card, usageCount }: { card: FeatureCard; usageCount: number }) {
+function AiFeatureCard({ card, usageCount, isLoading }: { card: FeatureCard; usageCount: number; isLoading: boolean }) {
   const isComingSoon = card.status === 'coming_soon';
 
   const inner = (
@@ -116,7 +121,11 @@ function AiFeatureCard({ card, usageCount }: { card: FeatureCard; usageCount: nu
 
       {card.statsPath && (
         <div className="text-xs text-wl-text-tertiary">
-          <span className="font-semibold text-wl-text-secondary">{usageCount.toLocaleString()}</span>
+          {isLoading ? (
+            <span className="inline-block h-3 w-12 bg-wl-bg-elevated rounded animate-pulse" />
+          ) : (
+            <span className="font-semibold text-wl-text-secondary">{usageCount.toLocaleString()}</span>
+          )}
           {' '}uses last 30 days
         </div>
       )}
@@ -146,7 +155,7 @@ function AiFeatureCard({ card, usageCount }: { card: FeatureCard; usageCount: nu
 }
 
 export default function AiHubPage() {
-  const usageCounts = useFeatureUsageCounts();
+  const { counts: usageCounts, loading: countsLoading } = useFeatureUsageCounts();
 
   return (
     <div className="flex flex-col gap-8 p-6 max-w-6xl mx-auto">
@@ -179,6 +188,7 @@ export default function AiHubPage() {
             key={card.name}
             card={card}
             usageCount={card.statsPath ? (usageCounts[card.statsPath] ?? 0) : 0}
+            isLoading={countsLoading}
           />
         ))}
       </div>

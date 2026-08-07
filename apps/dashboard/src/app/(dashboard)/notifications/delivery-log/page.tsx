@@ -2,20 +2,15 @@
 
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { Header } from "@/components/layout/header";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Download, ChevronDown, Calendar } from "lucide-react";
 import Link from "next/link";
-import { useApiList } from '@/hooks/use-api';
+import { TableSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 import {
   useDeliveryLog,
   type DeliveryStatus,
@@ -37,11 +32,13 @@ export default function DeliveryLogPage() {
   const {
     entries,
     isLoading,
+    error,
     hasMore,
     searchQuery,
     filters,
     setSearchQuery,
     setFilters,
+    refetch,
     loadMore,
     exportCSV,
   } = useDeliveryLog();
@@ -284,7 +281,15 @@ export default function DeliveryLogPage() {
           {/* Delivery Log Table */}
           <Card className="bg-wl-bg-surface border-wl-border-default">
             <CardContent className="p-0">
-              {entries.length === 0 ? (
+              {isLoading && entries.length === 0 ? (
+                <TableSkeleton columns={6} rows={8} />
+              ) : error && entries.length === 0 ? (
+                <ErrorState
+                  title="Failed to load delivery log"
+                  error={error}
+                  onRetry={refetch}
+                />
+              ) : entries.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <Calendar className="w-12 h-12 text-gray-400 mb-3" />
                   <p className="text-gray-300">
