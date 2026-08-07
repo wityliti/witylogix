@@ -14,6 +14,7 @@ import { api } from "@/lib/api";
 import { TableSkeleton } from "@/components/ui/loading-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { Header } from "@/components/layout/header";
+import posthog from "posthog-js";
 import {
   Mail,
   MessageSquare,
@@ -112,6 +113,11 @@ function CreateCampaignModal({
         type,
         templateId: templateId.trim() || undefined,
         scheduledAt: scheduledAt || undefined,
+      });
+      posthog.capture("campaign_created", {
+        channel: type.toLowerCase(),
+        has_template: Boolean(templateId.trim()),
+        is_scheduled: Boolean(scheduledAt),
       });
       onCreated();
       onClose();

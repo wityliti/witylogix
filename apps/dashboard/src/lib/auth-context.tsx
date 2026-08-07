@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import posthog from "posthog-js";
 
 /* ═══════════════════════════════════════════════════════════
    AUTH CONTEXT & PROVIDER
@@ -42,6 +43,19 @@ interface AuthResponse {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function identifyUser(user: User) {
+  if (!user.id) {
+    return;
+  }
+
+  posthog.identify(user.id, {
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    shop_id: user.shopId,
+  });
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -62,8 +76,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const storedUser = localStorage.getItem("authUser");
 
         if (cookieToken && storedUser) {
+          const persistedUser = JSON.parse(storedUser) as User;
           setToken(cookieToken);
-          setUser(JSON.parse(storedUser));
+          setUser(persistedUser);
+          identifyUser(persistedUser);
 
           // Only attempt refresh if we have a stored refresh token
           const storedRefreshToken = localStorage.getItem("refreshToken");
@@ -111,8 +127,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           localStorage.setItem("refreshToken", newRefreshToken);
         }
         if (payload.user) {
-          setUser(payload.user);
-          localStorage.setItem("authUser", JSON.stringify(payload.user));
+          const refreshedUser = payload.user as User;
+          setUser(refreshedUser);
+          localStorage.setItem("authUser", JSON.stringify(refreshedUser));
+          identifyUser(refreshedUser);
         }
       } else {
         throw new Error("Token refresh failed");
@@ -171,6 +189,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user: payload.user,
         refreshToken: payload.refreshToken,
       };
+      if (user && user.id !== data.user.id) {
+        posthog.reset();
+      }
+      identifyUser(data.user);
+      posthog.capture("user_logged_in", {
+        login_method: "password",
+        remember_me: rememberMe,
+      });
       setToken(data.token);
       setUser(data.user);
 
@@ -234,6 +260,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user: payload.user,
         refreshToken: payload.refreshToken,
       };
+      if (user && user.id !== responseData.user.id) {
+        posthog.reset();
+      }
+      identifyUser(responseData.user);
+      posthog.capture("user_registered", {
+        has_company_name: Boolean(data.companyName?.trim()),
+      });
       setToken(responseData.token);
       setUser(responseData.user);
 
@@ -256,6 +289,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
+    posthog.capture("user_logged_out");
+    posthog.reset();
+
     // Clear auth state
     setUser(null);
     setToken(null);

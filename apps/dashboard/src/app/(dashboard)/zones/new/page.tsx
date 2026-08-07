@@ -8,6 +8,7 @@ import { WLMap } from '@/components/map/wl-map';
 import { DrawLayer } from '@/components/map/draw-layer';
 import { api } from '@/lib/api';
 import { track } from '@/lib/track';
+import posthog from 'posthog-js';
 import type { ZoneShape } from '@witylogix/validators';
 
 const DEFAULT_CENTER: [number, number] = [77.12, 28.65];
@@ -44,6 +45,12 @@ export default function NewZonePage() {
         shape: shape.type,
         baseRate: Number(baseRate),
         perKmRate: Number(perKmRate),
+      });
+      posthog.capture('delivery_zone_created', {
+        shape_type: shape.type,
+        base_rate: Number(baseRate),
+        per_km_rate: Number(perKmRate),
+        has_free_delivery_threshold: Boolean(freeAbove),
       });
       router.push(`/zones/${body.data.id}`);
     } catch (e) {

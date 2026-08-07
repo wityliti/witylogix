@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { LoadingSkeleton, ErrorState } from "@/components/ui/loading";
 import { useApiQuery, useApiMutation } from "@/hooks/use-api";
+import posthog from "posthog-js";
 import {
   ArrowLeft,
   CheckCircle,
@@ -142,6 +143,11 @@ export default function ProviderDetailPage() {
     setAuthStep("installing");
     try {
       await installIntegration({ credentials, config: {} });
+      posthog.capture("integration_connected", {
+        integration_slug: provider.slug,
+        integration_category: provider.category,
+        auth_type: provider.authType.toLowerCase(),
+      });
       setAuthStep("success");
       void refetch();
     } catch (err) {
